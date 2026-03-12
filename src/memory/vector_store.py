@@ -1,0 +1,197 @@
+"""
+SAGE Framework — Vector Memory (RAG + Feedback Learning)
+=========================================================
+Uses ChromaDB + sentence-transformers for semantic search.
+
+MINIMAL MODE (low-RAM machines):
+  Set SAGE_MINIMAL=1 (or install without chromadb/sentence-transformers).
+  Falls back to a simple keyword-match in-memory list — fully functional,
+  just without semantic similarity ranking.
+
+Memory footprint:
+  Full mode  : ~500 MB RAM (sentence-transformers model)
+  Minimal mode: ~5 MB RAM  (keyword fallback list)
+"""
+
+import os
+import logging
+from typing import List
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Minimal-mode flag — set SAGE_MINIMAL=1 to skip all heavy vector deps
+# ---------------------------------------------------------------------------
+_MINIMAL = os.environ.get("SAGE_MINIMAL", "").strip() in ("1", "true", "yes")
+
+# ---------------------------------------------------------------------------
+# Graceful imports — each dependency checked individually
+# ---------------------------------------------------------------------------
+_HAS_CHROMADB   = False
+_HAS_EMBEDDINGS = False
+Chroma          = None
+EmbeddingClass  = None
+_embedding_source = None
+
+if not _MINIMAL:
+    try:
+        import chromadb  # noqa: F401
+        _HAS_CHROMADB = True
+    except ImportError:
+        pass
+
+    try:
+        from langchain_chroma import Chroma
+    except ImportError:
+        try:
+            from langchain_community.vectorstores import Chroma
+        except ImportError:
+            pass
+
+    try:
+        from langchain_huggingface import HuggingFaceEmbeddings
+        EmbeddingClass    = HuggingFaceEmbeddings
+        _embedding_source = "langchain_huggingface"
+    except ImportError:
+        try:
+            from langchain_community.embeddings import HuggingFaceEmbeddings
+            EmbeddingClass    = HuggingFaceEmbeddings
+            _embedding_source = "langchain_community"
+        except ImportError:
+            pass
+
+
+# ---------------------------------------------------------------------------
+# VectorMemory
+# ---------------------------------------------------------------------------
+
+class VectorMemory:
+    """
+    Persistent vector memory for RAG and feedback learning.
+
+    Degrades gracefully through three modes:
+      1. Full       — ChromaDB + semantic embeddings (best recall)
+      2. Lite       — ChromaDB without sentence-transformers (basic)
+      3. Minimal    — In-memory keyword fallback (no heavy deps)
+
+    The system NEVER crashes due to missing vector DB dependencies.
+    """
+
+    def __init__(self):
+        self._embedding_function = None   # lazy-loaded on first use
+        self._vector_store       = None
+        self._fallback_memory: List[str] = []
+        self._ready = False
+        self._mode  = "minimal"
+
+        if _MINIMAL:
+            logger.info("VectorMemory: minimal mode (SAGE_MINIMAL=1) — keyword fallback only")
+            return
+
+        if _HAS_CHROMADB and Chroma is not None:
+            self._initialize_db()
+        else:
+            missing = []
+            if not _HAS_CHROMADB:
+                missing.append("chromadb")
+            if Chroma is None:
+                missing.append("langchain-chroma")
+            logger.warning(
+                "VectorMemory: ChromaDB unavailable (%s). "
+                "Using keyword fallback. Install with: pip install %s",
+                ", ".join(missing), " ".join(missing),
+            )
+
+    def _get_collection_name(self) -> str:
+        """Use project-specific collection name so projects don't share vectors."""
+        try:
+            from src.core.project_loader import project_config
+            return project_config.get("memory", {}).get(
+                "collection_name",
+                project_config.metadata.get("project", "sage") + "_knowledge"
+            )
+        except Exception:
+            return "sage_knowledge"
+
+    def _get_vector_db_path(self) -> str:
+        try:
+            from src.core.project_loader import project_config
+            return project_config.get("memory", {}).get("vector_db_path", "./data/chroma_db")
+        except Exception:
+            return "./data/chroma_db"
+
+    def _lazy_load_embeddings(self):
+        """Load the embedding model only on first use (saves startup RAM)."""
+        if self._embedding_function is not None:
+            return
+        if EmbeddingClass is None:
+            return
+        try:
+            self._embedding_function = EmbeddingClass(model_name="all-MiniLM-L6-v2")
+            logger.info("Embeddings loaded via %s", _embedding_source)
+        except Exception as exc:
+            logger.warning("Failed to load embeddings (%s) — proceeding without.", exc)
+
+    def _initialize_db(self):
+        persist_path    = self._get_vector_db_path()
+        collection_name = self._get_collection_name()
+        try:
+            self._lazy_load_embeddings()
+            kwargs: dict = {
+                "collection_name":  collection_name,
+                "persist_directory": persist_path,
+            }
+            if self._embedding_function:
+                kwargs["embedding_function"] = self._embedding_function
+            self._vector_store = Chroma(**kwargs)
+            self._ready = True
+            self._mode  = "full" if self._embedding_function else "lite"
+            logger.info("VectorMemory ready (%s) at %s", self._mode, persist_path)
+        except Exception as exc:
+            logger.error("VectorMemory init failed (%s) — keyword fallback active.", exc)
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
+
+    def search(self, query: str, k: int = 3) -> List[str]:
+        """Retrieve relevant context. Semantic search or keyword fallback."""
+        if self._vector_store and self._ready:
+            try:
+                docs = self._vector_store.similarity_search(query, k=k)
+                return [doc.page_content for doc in docs]
+            except Exception as exc:
+                logger.error("Vector search failed: %s", exc)
+
+        # Keyword fallback — works with zero ML deps
+        if self._fallback_memory:
+            query_lower = query.lower()
+            matches = [
+                m for m in self._fallback_memory
+                if any(word in m.lower() for word in query_lower.split()[:5])
+            ]
+            return matches[:k]
+        return []
+
+    def add_feedback(self, text: str, metadata: dict = None):
+        """Learn from human feedback — saved to vector DB or fallback list."""
+        self._fallback_memory.append(text)   # always save (cheap)
+
+        if self._vector_store and self._ready:
+            try:
+                self._vector_store.add_texts(texts=[text], metadatas=[metadata or {}])
+                logger.info("Feedback saved to Vector DB.")
+                return
+            except Exception as exc:
+                logger.error("Failed to save to Vector DB: %s", exc)
+
+        logger.info("Feedback saved to in-memory fallback.")
+
+    @property
+    def mode(self) -> str:
+        """Returns 'full', 'lite', or 'minimal'."""
+        return self._mode
+
+
+# Global singleton
+vector_memory = VectorMemory()

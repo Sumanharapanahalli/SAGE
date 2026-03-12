@@ -1,0 +1,54 @@
+# ==============================================================================
+# SAGE Framework — Project: kappture
+# ==============================================================================
+# Kappture — Human Tracking & Behaviour Analytics Platform
+# ==============================================================================
+
+name: "Kappture Human Tracking"
+version: "1.0.0"
+domain: "cv-tracking"
+description: >
+  Autonomous AI agent for the Kappture human tracking and behaviour analytics
+  platform. Monitors real-time tracking pipeline health, analyzes accuracy
+  and performance metrics, reviews computer vision code, and manages
+  CI/CD for multi-camera tracking deployments.
+  Designed to run on minimum-config hardware (CPU-only supported).
+
+active_modules:
+  - dashboard
+  - analyst
+  - developer
+  - monitor
+  - audit
+  - improvements
+  - llm
+  - settings
+  - agents
+  - yaml-editor
+
+compliance_standards:
+  - "GDPR Article 9 (biometric data processing)"
+  - "IEEE 730 (Software Quality Assurance)"
+  - "ISO/IEC 25010 (Software Quality Model)"
+  - "GDPR Art. 35 (DPIA for tracking systems)"
+
+integrations:
+  - gitlab
+  - github
+  - teams
+  - rtsp           # Real-time camera stream monitoring
+  - prometheus     # System and pipeline metrics
+  - grafana        # Tracking accuracy dashboards
+
+settings:
+  memory:
+    collection_name: "kappture_knowledge"
+  system:
+    max_concurrent_tasks: 1
+
+ui_labels:
+  analyst_page_title:    "Tracking Log Analyzer"
+  analyst_input_label:   "Tracking log, accuracy report, or camera error"
+  developer_page_title:  "CV Code Reviewer"
+  monitor_page_title:    "Pipeline Monitor"
+  dashboard_subtitle:    "Real-time Human Tracking Health"

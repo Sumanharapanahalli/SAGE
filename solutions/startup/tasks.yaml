@@ -1,0 +1,144 @@
+# ==============================================================================
+# SAGE[ai] — Startup Solution: Task Types
+# ==============================================================================
+
+task_types:
+  # Engineering
+  - id: ANALYZE_LOG
+    name: "Analyze Log / Error"
+    agent: analyst
+    description: "Triage a technical error, log, or crash"
+
+  - id: REVIEW_CODE
+    name: "Review Code / MR"
+    agent: developer
+    description: "Code review or merge request analysis"
+
+  # Product
+  - id: WRITE_PRD
+    name: "Write PRD"
+    agent: product_manager
+    description: "Draft a product requirements document for a feature"
+
+  - id: PRIORITISE_ROADMAP
+    name: "Prioritise Roadmap"
+    agent: product_manager
+    description: "Rank and prioritise a list of features or initiatives"
+
+  - id: WRITE_USER_STORIES
+    name: "Write User Stories"
+    agent: product_manager
+    description: "Generate user stories with acceptance criteria"
+
+  # Marketing
+  - id: GTM_STRATEGY
+    name: "Go-to-Market Strategy"
+    agent: marketing_strategist
+    description: "Develop a go-to-market plan for a product or feature launch"
+
+  - id: CONTENT_PLAN
+    name: "Content Plan"
+    agent: marketing_strategist
+    description: "Create a content calendar or campaign plan"
+
+  - id: POSITIONING
+    name: "Positioning & Messaging"
+    agent: marketing_strategist
+    description: "Define positioning against competitors and craft messaging"
+
+  # Sales
+  - id: ICP_DEFINITION
+    name: "Define ICP"
+    agent: sales_strategist
+    description: "Define the Ideal Customer Profile"
+
+  - id: OUTREACH_SEQUENCE
+    name: "Outreach Sequence"
+    agent: sales_strategist
+    description: "Write cold email or LinkedIn outreach sequences"
+
+  - id: SALES_PLAYBOOK
+    name: "Sales Playbook"
+    agent: sales_strategist
+    description: "Create objection handling or discovery call frameworks"
+
+  # Legal
+  - id: CONTRACT_REVIEW
+    name: "Contract Review"
+    agent: legal_advisor
+    description: "Review and flag risks in a contract or agreement"
+
+  - id: PRIVACY_POLICY
+    name: "Privacy / GDPR Review"
+    agent: legal_advisor
+    description: "Review privacy policy or GDPR compliance posture"
+
+  - id: FUNDRAISING_DOCS
+    name: "Fundraising Document Review"
+    agent: legal_advisor
+    description: "Review SAFE, convertible note, or term sheet"
+
+  # Finance
+  - id: UNIT_ECONOMICS
+    name: "Unit Economics Review"
+    agent: financial_analyst
+    description: "Analyse CAC, LTV, churn, and payback period"
+
+  - id: FINANCIAL_MODEL
+    name: "Financial Model"
+    agent: financial_analyst
+    description: "Build or review a 12–18 month financial forecast"
+
+  - id: FUNDRAISING_READINESS
+    name: "Fundraising Readiness"
+    agent: financial_analyst
+    description: "Assess readiness for a funding round"
+
+  # HR
+  - id: JOB_DESCRIPTION
+    name: "Write Job Description"
+    agent: hr_people_ops
+    description: "Draft a compelling, inclusive job description"
+
+  - id: INTERVIEW_DESIGN
+    name: "Design Interview Process"
+    agent: hr_people_ops
+    description: "Create a structured interview and scoring framework"
+
+  - id: COMP_BENCHMARKING
+    name: "Compensation Benchmarking"
+    agent: hr_people_ops
+    description: "Advise on salary + equity for a given role"
+
+  # Architecture
+  - id: SYSTEM_DESIGN
+    name: "System Design"
+    agent: technical_architect
+    description: "Design or review a technical system or component"
+
+  - id: STACK_DECISION
+    name: "Tech Stack Decision"
+    agent: technical_architect
+    description: "Evaluate technology options for a given requirement"
+
+  # Growth
+  - id: FUNNEL_ANALYSIS
+    name: "Funnel Analysis"
+    agent: growth_strategist
+    description: "Diagnose leaks in the AARRR growth funnel"
+
+  - id: EXPERIMENT_DESIGN
+    name: "Growth Experiment"
+    agent: growth_strategist
+    description: "Design a growth experiment with hypothesis and metrics"
+
+  # Customer Success
+  - id: ONBOARDING_DESIGN
+    name: "Onboarding Design"
+    agent: customer_success
+    description: "Design customer onboarding journey for first 90 days"
+
+  - id: CHURN_ANALYSIS
+    name: "Churn Analysis"
+    agent: customer_success
+    description: "Analyse churn drivers and design prevention playbook"

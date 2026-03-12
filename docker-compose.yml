@@ -1,0 +1,80 @@
+# ==============================================================================
+# SAGE Framework — Docker Compose
+# ==============================================================================
+# Usage:
+#   SAGE_PROJECT=medtech docker-compose up --build
+#   SAGE_PROJECT=poseengine docker-compose up --build
+#   SAGE_PROJECT=kappture docker-compose up --build
+#
+# Minimum hardware: 4-core CPU, 4 GB RAM, no GPU required (Gemini CLI mode)
+# Recommended:      8-core CPU, 16 GB RAM, NVIDIA GPU 4GB+ (local LLM mode)
+# ==============================================================================
+
+version: "3.9"
+
+services:
+  # -----------------------------------------------------------------------
+  # Backend — FastAPI + SAGE agents
+  # -----------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sage-backend
+    ports:
+      - "8000:8000"
+    environment:
+      SAGE_PROJECT: ${SAGE_PROJECT:-medtech}
+      # LLM
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      # GitLab
+      GITLAB_URL:        ${GITLAB_URL:-}
+      GITLAB_TOKEN:      ${GITLAB_TOKEN:-}
+      GITLAB_PROJECT_ID: ${GITLAB_PROJECT_ID:-}
+      # Teams
+      TEAMS_TENANT_ID:           ${TEAMS_TENANT_ID:-}
+      TEAMS_CLIENT_ID:           ${TEAMS_CLIENT_ID:-}
+      TEAMS_CLIENT_SECRET:       ${TEAMS_CLIENT_SECRET:-}
+      TEAMS_TEAM_ID:             ${TEAMS_TEAM_ID:-}
+      TEAMS_CHANNEL_ID:          ${TEAMS_CHANNEL_ID:-}
+      TEAMS_INCOMING_WEBHOOK_URL: ${TEAMS_INCOMING_WEBHOOK_URL:-}
+      # Metabase
+      METABASE_URL:              ${METABASE_URL:-}
+      METABASE_USERNAME:         ${METABASE_USERNAME:-}
+      METABASE_PASSWORD:         ${METABASE_PASSWORD:-}
+      METABASE_ERROR_QUESTION_ID: ${METABASE_ERROR_QUESTION_ID:-}
+      # Spira
+      SPIRA_URL:      ${SPIRA_URL:-}
+      SPIRA_USERNAME: ${SPIRA_USERNAME:-}
+      SPIRA_API_KEY:  ${SPIRA_API_KEY:-}
+      SPIRA_PROJECT_ID: ${SPIRA_PROJECT_ID:-}
+    volumes:
+      - sage-data:/app/data       # Persist audit DB, vector DB, models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # -----------------------------------------------------------------------
+  # Frontend — React 18 + Vite (production build served by nginx)
+  # -----------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.web
+    container_name: sage-frontend
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_BASE: http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  sage-data:
+    driver: local
