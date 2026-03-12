@@ -1,0 +1,60 @@
+# ==============================================================================
+# SAGE Framework — Project: poseengine  (Solution 2)
+# ==============================================================================
+# PoseEngine + Native Flutter — Human Pose Recognition & Mobile App
+# ==============================================================================
+
+name: "PoseEngine & Flutter"
+version: "1.0.0"
+domain: "ml-mobile"
+description: >
+  Autonomous AI agent for the PoseEngine computer vision project and its
+  companion native Flutter mobile application.
+  Handles ML training log analysis, model performance monitoring,
+  Flutter CI/CD pipeline review, GitHub/GitLab code review, and
+  inference quality tracking.
+
+# Modules visible in the web UI
+active_modules:
+  - dashboard
+  - analyst
+  - developer
+  - monitor
+  - audit
+  - improvements
+  - llm
+  - settings
+  - agents
+  - yaml-editor
+  - training
+  - models
+
+# Compliance / standards for this project
+compliance_standards:
+  - "IEEE 730 (Software Quality Assurance)"
+  - "Google Flutter Style Guide"
+  - "PEP 8 / Google Python Style Guide"
+  - "GDPR (no biometric data stored)"
+
+# Active integrations
+integrations:
+  - gitlab
+  - github
+  - teams
+  - wandb          # Weights & Biases (ML experiment tracking)
+  - firebase       # Flutter crash reporting
+  - ci_cd          # GitLab CI / GitHub Actions
+
+# Project-specific settings
+settings:
+  memory:
+    collection_name: "poseengine_knowledge"
+  system:
+    max_concurrent_tasks: 1
+
+# Project-specific UI labels (override generic names in the web UI)
+ui_labels:
+  analyst_page_title:   "ML Log Analyzer"
+  analyst_input_label:  "Training / inference log or metric snapshot"
+  developer_page_title: "Code Reviewer"
+  monitor_page_title:   "Pipeline Monitor"

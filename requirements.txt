@@ -1,0 +1,50 @@
+# Core
+pyyaml
+pydantic
+
+# LLM - Claude (Anthropic API, optional — needed for provider="claude")
+anthropic>=0.40.0
+
+# LLM - Local Provider (optional, only needed for provider="local")
+# Install with GPU: pip install llama-cpp-python
+# llama-cpp-python>=0.2.77
+
+# RAG / Vector Memory
+chromadb
+langchain
+langchain-community
+langchain-chroma
+langchain-huggingface
+sentence-transformers
+
+# API
+fastapi
+uvicorn
+pydantic
+
+# Utilities
+python-dotenv
+requests
+pandas
+numpy
+
+# MCP Framework
+fastmcp>=0.1.0
+
+# Hardware — Serial Port
+pyserial
+
+# Hardware — J-Link Debugger
+pylink-square
+
+# HTTP / Async
+httpx
+
+# Microsoft Authentication (Teams Graph API)
+msal
+
+# Microsoft Teams / Graph API
+# (uses requests + msal — no extra SDK required)
+
+# GitLab
+# (uses requests — GitLab REST API v4)

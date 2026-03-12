@@ -1,0 +1,69 @@
+# ==============================================================
+# SAGE[ai] - Configuration
+# ==============================================================
+
+llm:
+  # Provider: "gemini" (Gemini CLI, no API key) or "local" (llama-cpp GGUF)
+  provider: "gemini"
+
+  # --- Gemini CLI Settings (used when provider = "gemini") ---
+  gemini_model: "gemini-2.5-flash"      # Model hint (CLI may override)
+  timeout: 120                           # Max seconds to wait for CLI response
+
+  # --- Local Llama Settings (used when provider = "local") ---
+  model_path: "./data/models/Phi-3-mini-4k-instruct-q4.gguf"
+  temperature: 0.1                       # Low temp for deterministic QMS outputs
+  max_tokens: 3072                       # Context window
+
+memory:
+  vector_db_path: "./data/chroma_db"
+  audit_db_path: "./data/audit_log.db"
+  collection_name: "manufacturing_knowledge"
+
+system:
+  log_level: "INFO"
+  max_concurrent_tasks: 1                # STRICTLY 1 for single-lane safety
+
+# --- GitLab Integration ---
+gitlab:
+  url: "${GITLAB_URL}"
+  token: "${GITLAB_TOKEN}"
+  default_project_id: "${GITLAB_PROJECT_ID}"
+
+# --- Teams Integration ---
+teams:
+  tenant_id: "${TEAMS_TENANT_ID}"
+  client_id: "${TEAMS_CLIENT_ID}"
+  client_secret: "${TEAMS_CLIENT_SECRET}"
+  team_id: "${TEAMS_TEAM_ID}"
+  channel_id: "${TEAMS_CHANNEL_ID}"
+  webhook_url: "${TEAMS_INCOMING_WEBHOOK_URL}"
+  poll_interval_seconds: 30
+
+# --- Metabase Integration ---
+metabase:
+  url: "${METABASE_URL}"
+  username: "${METABASE_USERNAME}"
+  password: "${METABASE_PASSWORD}"
+  error_question_id: "${METABASE_ERROR_QUESTION_ID}"
+  poll_interval_seconds: 60
+
+# --- Spira Integration ---
+spira:
+  url: "${SPIRA_URL}"
+  username: "${SPIRA_USERNAME}"
+  api_key: "${SPIRA_API_KEY}"
+  project_id: "${SPIRA_PROJECT_ID}"
+
+# --- Serial Port ---
+serial:
+  port: "${SERIAL_PORT}"
+  baud_rate: 115200
+  timeout: 5
+
+# --- J-Link Debugger ---
+jlink:
+  device: "${JLINK_DEVICE}"
+  interface: "SWD"
+  speed: 4000
+  serial_number: "${JLINK_SERIAL}"

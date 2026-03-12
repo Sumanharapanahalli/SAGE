@@ -1,0 +1,73 @@
+# ==============================================================================
+# SAGE Framework — Task Types: poseengine
+# ==============================================================================
+# Defines the valid task types for the PoseEngine + Flutter domain.
+# ==============================================================================
+
+task_types:
+  - ANALYZE_TRAINING_LOG    # ML training output analysis
+  - ANALYZE_INFERENCE_LOG   # Real-time inference metrics analysis
+  - ANALYZE_CRASH_LOG       # Flutter / Dart crash report analysis
+  - ANALYZE_CI_LOG          # CI/CD pipeline failure analysis
+  - REVIEW_ML_CODE          # Python / PyTorch / TF code review
+  - REVIEW_FLUTTER_CODE     # Flutter / Dart code review
+  - CREATE_MR               # Create GitLab / GitHub MR
+  - MONITOR_PIPELINE        # Check CI/CD and training job status
+  - MONITOR_MODEL_METRICS   # Fetch and evaluate model performance metrics
+  - PLAN_TASK               # PlannerAgent orchestration step
+
+task_descriptions:
+  ANALYZE_TRAINING_LOG:    "Analyze ML training output, loss curves, and metric progression"
+  ANALYZE_INFERENCE_LOG:   "Analyze real-time inference performance, latency, and accuracy"
+  ANALYZE_CRASH_LOG:       "Analyze Flutter/Dart crash report or native error trace"
+  ANALYZE_CI_LOG:          "Analyze CI/CD pipeline failure and identify root cause"
+  REVIEW_ML_CODE:          "AI code review of Python/PyTorch/TensorFlow model or pipeline code"
+  REVIEW_FLUTTER_CODE:     "AI code review of Flutter/Dart application code"
+  CREATE_MR:               "Create GitLab or GitHub merge request from issue or branch"
+  MONITOR_PIPELINE:        "Check active CI/CD pipeline and training job status"
+  MONITOR_MODEL_METRICS:   "Fetch and evaluate latest model accuracy/latency metrics from W&B or local"
+  PLAN_TASK:               "Use PlannerAgent to decompose a complex request into subtasks"
+
+task_payloads:
+  ANALYZE_TRAINING_LOG:
+    log_text:   "string — raw training log output or W&B export"
+    run_id:     "string — experiment run ID (optional)"
+    epoch:      "integer — current epoch number (optional)"
+
+  ANALYZE_INFERENCE_LOG:
+    log_text:   "string — inference log or metric snapshot"
+    model_name: "string — model identifier (optional)"
+
+  ANALYZE_CRASH_LOG:
+    log_text:    "string — Flutter/Dart crash report or stack trace"
+    platform:    "string — 'android' | 'ios' | 'desktop' (optional)"
+
+  ANALYZE_CI_LOG:
+    log_text:    "string — CI pipeline failure log"
+    pipeline_id: "string — GitLab/GitHub pipeline ID (optional)"
+
+  REVIEW_ML_CODE:
+    project_id: "string — GitLab/GitHub project ID"
+    mr_iid:     "integer — merge request ID"
+    language:   "string — 'python' | 'jupyter' (optional, default: python)"
+
+  REVIEW_FLUTTER_CODE:
+    project_id: "string — GitLab/GitHub project ID"
+    mr_iid:     "integer — merge request ID"
+
+  CREATE_MR:
+    issue_description: "string — what to fix or implement"
+    project_id:        "string — project ID (optional, uses default)"
+    platform:          "string — 'gitlab' | 'github' (default: gitlab)"
+
+  MONITOR_PIPELINE:
+    project_id:   "string — project ID (optional, checks all active)"
+    pipeline_id:  "string — specific pipeline to check (optional)"
+
+  MONITOR_MODEL_METRICS:
+    project_name: "string — W&B project name or local model name"
+    metric_keys:  "list — metrics to check, e.g. [mAP, fps, loss]"
+
+  PLAN_TASK:
+    description: "string — natural language task description for the planner"
+    priority:    "integer 1-10 (default: 5)"

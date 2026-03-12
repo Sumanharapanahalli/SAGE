@@ -1,0 +1,67 @@
+# ==============================================================================
+# SAGE Framework — Task Types: kappture
+# ==============================================================================
+# Defines valid task types for the Kappture human tracking domain.
+# ==============================================================================
+
+task_types:
+  - ANALYZE_TRACKING_LOG      # Real-time tracking accuracy / failure analysis
+  - ANALYZE_CAMERA_ERROR      # RTSP stream or camera hardware failure
+  - ANALYZE_ACCURACY_REPORT   # MOTA/MOTP/IDF1 metric evaluation
+  - ANALYZE_CI_LOG            # CI/CD pipeline failure analysis
+  - REVIEW_TRACKING_CODE      # Python / C++ / CUDA tracking code review
+  - CREATE_MR                 # Create GitLab / GitHub merge request
+  - MONITOR_PIPELINE          # Check live tracking pipeline and cameras
+  - MONITOR_ACCURACY          # Fetch and evaluate tracking accuracy metrics
+  - PLAN_TASK                 # PlannerAgent orchestration step
+
+task_descriptions:
+  ANALYZE_TRACKING_LOG:    "Analyze real-time tracking pipeline output for failures or accuracy drops"
+  ANALYZE_CAMERA_ERROR:    "Diagnose RTSP stream failures, camera offline events, or feed quality issues"
+  ANALYZE_ACCURACY_REPORT: "Evaluate tracking accuracy metrics (MOTA, MOTP, IDF1, FP/FN rates)"
+  ANALYZE_CI_LOG:          "Analyze CI/CD pipeline failure and identify root cause"
+  REVIEW_TRACKING_CODE:    "AI code review of Python/C++/CUDA tracking, detection, or re-ID code"
+  CREATE_MR:               "Create GitLab or GitHub merge request from issue or branch"
+  MONITOR_PIPELINE:        "Check live tracking pipeline health and camera stream status"
+  MONITOR_ACCURACY:        "Fetch and evaluate current tracking accuracy metrics from Prometheus/Grafana"
+  PLAN_TASK:               "Use PlannerAgent to decompose a complex request into subtasks"
+
+task_payloads:
+  ANALYZE_TRACKING_LOG:
+    log_text:    "string — raw tracking log output"
+    camera_id:   "string — camera identifier (optional)"
+    time_range:  "string — ISO time range e.g. '2026-03-11T10:00/2026-03-11T11:00' (optional)"
+
+  ANALYZE_CAMERA_ERROR:
+    log_text:    "string — camera error log or RTSP failure message"
+    camera_id:   "string — camera identifier"
+    stream_url:  "string — RTSP URL (optional, for diagnostics)"
+
+  ANALYZE_ACCURACY_REPORT:
+    report_text: "string — accuracy metrics report text or JSON"
+    baseline_mota: "float — acceptable MOTA threshold (default 0.75)"
+
+  ANALYZE_CI_LOG:
+    log_text:    "string — CI pipeline failure log"
+    pipeline_id: "string — pipeline ID (optional)"
+
+  REVIEW_TRACKING_CODE:
+    project_id:  "string — GitLab/GitHub project ID"
+    mr_iid:      "integer — merge request ID"
+    language:    "string — 'python' | 'cpp' | 'cuda' (optional, default: python)"
+
+  CREATE_MR:
+    issue_description: "string — what to fix or implement"
+    project_id:        "string — project ID (optional, uses default)"
+
+  MONITOR_PIPELINE:
+    camera_ids:    "list — specific cameras to check (optional, checks all)"
+    check_accuracy: "bool — also check accuracy metrics (default: true)"
+
+  MONITOR_ACCURACY:
+    metric_keys:  "list — metrics to evaluate e.g. [MOTA, IDF1, FP_rate]"
+    threshold_config: "dict — per-metric alert thresholds (optional)"
+
+  PLAN_TASK:
+    description: "string — natural language task description for the planner"
+    priority:    "integer 1-10 (default: 5)"
