@@ -43,6 +43,10 @@ numpy
 # MCP Framework
 fastmcp>=0.1.0
 
+# Phase 3 — LangGraph orchestration (optional; set orchestration.engine: langgraph)
+langgraph
+langgraph-checkpoint-sqlite
+
 # Hardware — Serial Port
 pyserial
 

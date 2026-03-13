@@ -430,10 +430,19 @@ class TaskWorker(threading.Thread):
                 raise ValueError("PLAN_TASK missing 'description' in payload.")
             return planner_agent.plan_and_execute(description)
 
+        elif task_type == "WORKFLOW":
+            from src.integrations.langgraph_runner import langgraph_runner
+            workflow_name = payload.get("workflow_name", "")
+            if not workflow_name:
+                raise ValueError("WORKFLOW task missing 'workflow_name' in payload.")
+            state = payload.get("state", {})
+            return langgraph_runner.run(workflow_name, state)
+
         else:
             raise ValueError(
                 f"Unknown task_type: '{task_type}'. "
-                "Supported: ANALYZE_LOG, CREATE_MR, REVIEW_MR, FLASH_FIRMWARE, MONITOR_CHECK, PLAN_TASK"
+                "Supported: ANALYZE_LOG, CREATE_MR, REVIEW_MR, FLASH_FIRMWARE, "
+                "MONITOR_CHECK, PLAN_TASK, WORKFLOW"
             )
 
 

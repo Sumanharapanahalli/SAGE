@@ -1145,3 +1145,78 @@ async def mcp_invoke_tool(request: Request):
         raise HTTPException(status_code=400, detail=result["error"])
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# LangGraph Workflow Endpoints (Phase 3)
+# ---------------------------------------------------------------------------
+
+@app.get("/workflow/list")
+async def workflow_list():
+    """
+    List available LangGraph workflows for the active solution.
+    Returns empty list when orchestration.engine != "langgraph" or langgraph
+    is not installed.
+    """
+    from src.integrations.langgraph_runner import langgraph_runner
+    workflows = langgraph_runner.list_workflows()
+    return {"workflows": workflows, "count": len(workflows)}
+
+
+@app.post("/workflow/run")
+async def workflow_run(request: Request):
+    """
+    Start a LangGraph workflow run.
+    Body: { "workflow_name": str, "state": dict (optional) }
+    Returns: { run_id, status, workflow_name, result }
+    status = "completed" | "awaiting_approval" | "error"
+    """
+    body = await request.json()
+    workflow_name = body.get("workflow_name", "")
+    initial_state = body.get("state", {})
+
+    if not workflow_name:
+        raise HTTPException(status_code=400, detail="workflow_name is required")
+
+    from src.integrations.langgraph_runner import langgraph_runner
+    result = langgraph_runner.run(workflow_name, initial_state)
+
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    return result
+
+
+@app.post("/workflow/resume")
+async def workflow_resume(request: Request):
+    """
+    Resume a workflow paused at an approval gate.
+    Body: { "run_id": str, "feedback": dict (optional) }
+    Feedback dict is merged into graph state (e.g. {"approved": true, "comment": "LGTM"}).
+    """
+    body = await request.json()
+    run_id  = body.get("run_id", "")
+    feedback = body.get("feedback", {})
+
+    if not run_id:
+        raise HTTPException(status_code=400, detail="run_id is required")
+
+    from src.integrations.langgraph_runner import langgraph_runner
+    result = langgraph_runner.resume(run_id, feedback)
+
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    return result
+
+
+@app.get("/workflow/status/{run_id}")
+async def workflow_status(run_id: str):
+    """Get current status of a workflow run by run_id."""
+    from src.integrations.langgraph_runner import langgraph_runner
+    result = langgraph_runner.get_status(run_id)
+
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+
+    return result
