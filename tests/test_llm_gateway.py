@@ -183,3 +183,124 @@ def test_get_provider_name_returns_string():
     name = gw.get_provider_name()
     assert isinstance(name, str), "get_provider_name() must return a string."
     assert len(name) > 0, "get_provider_name() must return a non-empty string."
+
+
+# ---------------------------------------------------------------------------
+# Phase 0 — Langfuse observability tests
+# ---------------------------------------------------------------------------
+
+def test_langfuse_disabled_by_default():
+    """When observability.langfuse_enabled is False, _langfuse_client must remain None."""
+    import src.core.llm_gateway as gw_module
+    cfg = {"llm": {"provider": "gemini"}, "observability": {"langfuse_enabled": False}}
+    gw_module._langfuse_client = None
+    gw_module._init_langfuse(cfg)
+    assert gw_module._langfuse_client is None, (
+        "_langfuse_client should be None when langfuse_enabled is False"
+    )
+
+
+def test_langfuse_no_keys_logs_warning(caplog):
+    """When enabled but keys missing, _init_langfuse should warn and leave client None."""
+    import logging
+    import src.core.llm_gateway as gw_module
+    gw_module._langfuse_client = None
+    cfg = {"observability": {"langfuse_enabled": True, "langfuse_host": "http://localhost:3000"}}
+    with caplog.at_level(logging.WARNING, logger="LLMGateway"):
+        gw_module._init_langfuse(cfg)
+    assert gw_module._langfuse_client is None
+    assert any("LANGFUSE_PUBLIC_KEY" in r.message or "not set" in r.message for r in caplog.records), (
+        "Expected a warning about missing Langfuse keys"
+    )
+
+
+def test_langfuse_import_error_graceful(caplog):
+    """When langfuse package is not installed, _init_langfuse should warn and not crash."""
+    import logging
+    import src.core.llm_gateway as gw_module
+    from unittest.mock import patch
+    gw_module._langfuse_client = None
+    cfg = {"observability": {"langfuse_enabled": True}}
+    with patch.dict("os.environ", {"LANGFUSE_PUBLIC_KEY": "pk", "LANGFUSE_SECRET_KEY": "sk"}), \
+         patch.dict("sys.modules", {"langfuse": None}), \
+         caplog.at_level(logging.WARNING, logger="LLMGateway"):
+        gw_module._init_langfuse(cfg)
+    assert gw_module._langfuse_client is None
+
+
+def test_generate_works_without_langfuse():
+    """generate() must work normally when _langfuse_client is None (no observability)."""
+    import src.core.llm_gateway as gw_module
+    from unittest.mock import MagicMock, patch
+    gw_module._langfuse_client = None
+    from src.core.llm_gateway import LLMGateway
+    gw = LLMGateway()
+    mock_result = MagicMock()
+    mock_result.returncode = 0
+    mock_result.stdout = "result_without_langfuse"
+    mock_result.stderr = ""
+    with patch("subprocess.run", return_value=mock_result):
+        result = gw.generate("prompt", "system", trace_name="test_trace")
+    assert result == "result_without_langfuse"
+
+
+def test_generate_with_langfuse_mock():
+    """When _langfuse_client is mocked, generate() must call trace() and generation.end()."""
+    import src.core.llm_gateway as gw_module
+    from unittest.mock import MagicMock, patch, call
+
+    mock_generation = MagicMock()
+    mock_trace = MagicMock()
+    mock_trace.generation.return_value = mock_generation
+    mock_lf_client = MagicMock()
+    mock_lf_client.trace.return_value = mock_trace
+
+    gw_module._langfuse_client = mock_lf_client
+    try:
+        from src.core.llm_gateway import LLMGateway
+        gw = LLMGateway()
+        mock_run = MagicMock()
+        mock_run.returncode = 0
+        mock_run.stdout = "traced_result"
+        mock_run.stderr = ""
+        with patch("subprocess.run", return_value=mock_run):
+            result = gw.generate("prompt", "system", trace_name="test_agent")
+        assert result == "traced_result"
+        mock_lf_client.trace.assert_called_once()
+        mock_trace.generation.assert_called_once()
+        mock_generation.end.assert_called_once()
+    finally:
+        gw_module._langfuse_client = None  # always restore
+
+
+# ---------------------------------------------------------------------------
+# Task 7 — Domain agnosticism tests
+# ---------------------------------------------------------------------------
+
+def test_vector_store_collection_name_uses_solution_not_hardcoded():
+    """VectorMemory collection name must not contain 'manufacturing' when using default config."""
+    import os
+    os.environ["SAGE_MINIMAL"] = "1"
+    try:
+        import importlib
+        import src.memory.vector_store as vs_module
+        importlib.reload(vs_module)
+        vm = vs_module.VectorMemory()
+        name = vm._get_collection_name()
+        assert "manufacturing" not in name.lower(), (
+            f"Collection name '{name}' must not contain 'manufacturing' — that's a medtech-specific term"
+        )
+    finally:
+        del os.environ["SAGE_MINIMAL"]
+
+
+def test_starter_solution_exists():
+    """solutions/starter/ must exist with all three required YAML files."""
+    import os
+    base = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "solutions", "starter"
+    )
+    for fname in ("project.yaml", "prompts.yaml", "tasks.yaml"):
+        path = os.path.join(base, fname)
+        assert os.path.isfile(path), f"Missing starter template file: {path}"

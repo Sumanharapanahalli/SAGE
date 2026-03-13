@@ -15,9 +15,23 @@ Memory footprint:
 
 import os
 import logging
+import yaml
 from typing import List
 
 logger = logging.getLogger(__name__)
+
+_CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "config", "config.yaml",
+)
+
+
+def _load_base_config() -> dict:
+    try:
+        with open(_CONFIG_PATH) as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        return {}
 
 # ---------------------------------------------------------------------------
 # Minimal-mode flag — set SAGE_MINIMAL=1 to skip all heavy vector deps
@@ -106,7 +120,7 @@ class VectorMemory:
         """Use solution-specific collection name so solutions never share vectors."""
         try:
             from src.core.project_loader import project_config
-            # Solution project.yaml settings.memory.collection_name takes priority
+            # 1. Solution project.yaml settings.memory.collection_name
             solution_name = (
                 project_config.get_project_setting("settings", {})
                 .get("memory", {})
@@ -114,6 +128,11 @@ class VectorMemory:
             )
             if solution_name:
                 return solution_name
+            # 2. Base config.yaml memory.collection_name (if non-empty)
+            cfg_name = _load_base_config().get("memory", {}).get("collection_name", "").strip()
+            if cfg_name:
+                return cfg_name
+            # 3. Default: <solution>_knowledge — always domain-scoped
             return project_config.metadata.get("project", "sage") + "_knowledge"
         except Exception:
             return "sage_knowledge"

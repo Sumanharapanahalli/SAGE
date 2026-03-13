@@ -18,6 +18,36 @@ import os
 import yaml
 from abc import ABC, abstractmethod
 
+# ---------------------------------------------------------------------------
+# Optional Langfuse observability — graceful no-op when not configured
+# ---------------------------------------------------------------------------
+_langfuse_client = None
+
+def _init_langfuse(cfg: dict) -> None:
+    """Initialise Langfuse if enabled and credentials are available."""
+    global _langfuse_client
+    obs = cfg.get("observability", {})
+    if not obs.get("langfuse_enabled", False):
+        return
+    pub_key = os.environ.get("LANGFUSE_PUBLIC_KEY", obs.get("langfuse_public_key", ""))
+    sec_key = os.environ.get("LANGFUSE_SECRET_KEY", obs.get("langfuse_secret_key", ""))
+    host    = obs.get("langfuse_host", "https://cloud.langfuse.com")
+    if not pub_key or not sec_key:
+        logging.getLogger("LLMGateway").warning(
+            "Langfuse enabled in config but LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY "
+            "not set — observability disabled."
+        )
+        return
+    try:
+        from langfuse import Langfuse
+        _langfuse_client = Langfuse(public_key=pub_key, secret_key=sec_key, host=host)
+        logging.getLogger("LLMGateway").info("Langfuse observability active (host: %s)", host)
+    except ImportError:
+        logging.getLogger("LLMGateway").warning(
+            "langfuse package not installed — observability disabled. "
+            "Install with: pip install langfuse"
+        )
+
 CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "config", "config.yaml"
@@ -425,6 +455,9 @@ class LLMGateway:
         config = _load_config()
         llm_cfg = config.get("llm", {})
 
+        # Initialise optional observability
+        _init_langfuse(config)
+
         backend = llm_cfg.get("provider", "gemini")
         self.logger.info("Selected LLM provider: %s", backend)
 
@@ -442,8 +475,16 @@ class LLMGateway:
 
         self.logger.info("LLM Gateway active: %s", self.provider.provider_name())
 
-    def generate(self, prompt, system_prompt="You are a helpful AI assistant."):
-        """Thread-safe generation. Only ONE call at a time."""
+    def generate(self, prompt, system_prompt="You are a helpful AI assistant.",
+                 trace_name: str = "llm_generate", metadata: dict = None):
+        """Thread-safe generation. Only ONE call at a time.
+
+        Args:
+            prompt:       User/task prompt.
+            system_prompt: Role/instruction context.
+            trace_name:   Langfuse trace name (e.g. agent class + method).
+            metadata:     Extra key-value pairs attached to the Langfuse trace.
+        """
         if self.provider is None:
             return "Error: No LLM provider configured."
 
@@ -452,6 +493,23 @@ class LLMGateway:
 
         with self._lock:
             self.logger.debug("Lock acquired. Provider: %s", self.provider.provider_name())
+
+            # --- Langfuse trace (no-op if client not initialised) ---
+            _lf_generation = None
+            if _langfuse_client is not None:
+                try:
+                    _lf_trace = _langfuse_client.trace(
+                        name=trace_name,
+                        metadata={**(metadata or {}), "provider": self.provider.provider_name()},
+                    )
+                    _lf_generation = _lf_trace.generation(
+                        name="generate",
+                        model=getattr(self.provider, "model", "unknown"),
+                        input={"system": system_prompt, "prompt": prompt},
+                    )
+                except Exception as lf_err:
+                    self.logger.debug("Langfuse trace init failed (non-fatal): %s", lf_err)
+
             try:
                 result = self.provider.generate(prompt, system_prompt)
                 elapsed = time.time() - start
@@ -462,10 +520,26 @@ class LLMGateway:
                 self._usage["calls"] += 1
                 self._usage["calls_today"] += 1
                 self._usage["estimated_tokens"] += (len(prompt) + len(system_prompt) + len(result)) // 4
+
+                # Close Langfuse generation span with output
+                if _lf_generation is not None:
+                    try:
+                        _lf_generation.end(
+                            output=result,
+                            usage={"total_tokens": (len(prompt) + len(system_prompt) + len(result)) // 4},
+                        )
+                    except Exception as lf_err:
+                        self.logger.debug("Langfuse generation.end failed (non-fatal): %s", lf_err)
+
                 return result
             except Exception as e:
                 self.logger.error("Generation failed: %s", e)
                 self._usage["errors"] += 1
+                if _lf_generation is not None:
+                    try:
+                        _lf_generation.end(output=f"ERROR: {e}", level="ERROR")
+                    except Exception:
+                        pass
                 return "Error: " + str(e)
 
     def _maybe_reset_daily(self) -> None:

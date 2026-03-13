@@ -94,7 +94,7 @@ def run_cli():
             break
 
         if lower in ("help", "h", "?"):
-            print("  analyze <text>  — Analyze a manufacturing log entry")
+            print("  analyze <text>  — Analyze a log entry, event, or signal")
             print("  quit            — Exit the CLI")
             continue
 
