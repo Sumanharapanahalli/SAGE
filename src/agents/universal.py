@@ -95,11 +95,23 @@ severity: GREEN (no urgent issues), AMBER (attention needed), RED (critical/bloc
 confidence: HIGH, MEDIUM, or LOW based on available information
 """
 
+        # ── Long-term memory injection (non-blocking) ──────────────────────
+        try:
+            from src.memory.long_term_memory import long_term_memory
+            memories = long_term_memory.recall(query=task, user_id=actor, limit=3)
+            if memories:
+                memory_block = "\n".join(f"- {m}" for m in memories)
+                context = f"Relevant past preferences/patterns:\n{memory_block}\n\n{context}".strip()
+        except Exception:
+            pass  # long-term memory is optional — never block agent execution
+
         trace_id = generate_trace_id()
         self.logger.info("UniversalAgent running role=%s trace=%s", role_id, trace_id)
 
         # ── LLM call ───────────────────────────────────────────────────────
-        raw = llm_gateway.generate(prompt, system_prompt)
+        raw = llm_gateway.generate(
+            prompt, system_prompt, trace_name=f"universal_agent_{role_id}"
+        )
 
         # ── Parse response ─────────────────────────────────────────────────
         parsed = extract_json(raw) or {}
