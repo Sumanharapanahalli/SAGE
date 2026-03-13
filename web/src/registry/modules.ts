@@ -227,60 +227,27 @@ export const MODULE_REGISTRY: Record<string, ModuleMetadata> = {
     ],
   },
 
-  // ---------------------------------------------------------------------------
-  // PoseEngine-specific modules
-  // ---------------------------------------------------------------------------
-  'poseengine-analyst': {
-    id: 'poseengine-analyst',
-    name: 'ML Log Analyzer',
-    description: 'Analyze training logs, inference metrics, and crash reports using AI',
-    version: '1.0.0',
-    route: '/analyst',
-    features: ['Training log analysis', 'Inference performance metrics', 'Flutter crash reports', 'CI/CD failure analysis'],
-    improvementHints: ['Add W&B metric visualization', 'Support batch log upload', 'Auto-detect model regression', 'Export analysis reports'],
-  },
-
-  'poseengine-developer': {
-    id: 'poseengine-developer',
-    name: 'Code Reviewer',
-    description: 'AI-powered code review for Python ML code and Flutter/Dart apps',
-    version: '1.0.0',
-    route: '/developer',
-    features: ['PyTorch model code review', 'Flutter/Dart review', 'ReAct multi-step analysis', 'Open MR listing'],
-    improvementHints: ['Add Jupyter notebook review', 'Flutter widget tree analysis', 'Performance profiling hints', 'Auto-suggest test cases'],
-  },
-
-  'poseengine-monitor': {
-    id: 'poseengine-monitor',
-    name: 'Pipeline Monitor',
-    description: 'Monitor CI/CD pipelines, training jobs, and app performance',
-    version: '1.0.0',
-    route: '/monitor',
-    features: ['GitLab CI monitoring', 'Training job status', 'Firebase crash rate', 'Model accuracy tracking'],
-    improvementHints: ['W&B experiment dashboard', 'Slack/Teams alerts', 'Auto-restart failed jobs', 'Historical metric trends'],
-  },
 }
+// ---------------------------------------------------------------------------
+// To add solution-specific modules: extend MODULE_REGISTRY above with your
+// custom module definition. The framework ships with universal modules only.
+// Solution-specific module metadata (names, hints, features) belongs in
+// your solution's project.yaml or as an addition to this registry.
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// Project-scoped module filtering
+// Project-scoped module filtering — driven by active_modules from project.yaml
+// No hardcoded solution names. Pass the active_modules list from the project config.
 // ---------------------------------------------------------------------------
-export function getModulesForProject(projectId: string): Record<string, ModuleMetadata> {
-  if (projectId === 'medtech') {
-    const { dashboard, analyst, developer, audit, monitor, improvements, agents, llm, settings } = MODULE_REGISTRY
-    return { dashboard, analyst, developer, audit, monitor, improvements, agents, llm, settings }
+export function getModulesForProject(activeModules: string[]): Record<string, ModuleMetadata> {
+  if (!activeModules || activeModules.length === 0) {
+    return { ...MODULE_REGISTRY }
   }
-  if (projectId === 'poseengine') {
-    return {
-      dashboard: MODULE_REGISTRY.dashboard,
-      analyst: MODULE_REGISTRY['poseengine-analyst'],
-      developer: MODULE_REGISTRY['poseengine-developer'],
-      monitor: MODULE_REGISTRY['poseengine-monitor'],
-      audit: MODULE_REGISTRY.audit,
-      improvements: MODULE_REGISTRY.improvements,
-    }
+  const result: Record<string, ModuleMetadata> = {}
+  for (const id of activeModules) {
+    if (MODULE_REGISTRY[id]) result[id] = MODULE_REGISTRY[id]
   }
-  // Unknown project — return everything
-  return { ...MODULE_REGISTRY }
+  return result
 }
 
 // ---------------------------------------------------------------------------

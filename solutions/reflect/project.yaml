@@ -69,3 +69,20 @@ ui_labels:
   developer_page_title:  "Code Reviewer"
   monitor_page_title:    "Platform Monitor"
   dashboard_subtitle:    "Reflect Platform Health"
+
+# Dashboard context card — drives the UI without hardcoding in the frontend
+dashboard:
+  badge_color: "bg-teal-100 text-teal-700"
+  context_color: "border-teal-200 bg-teal-50"
+  context_items:
+    - label: "Pipeline"
+      description: "Extract (MediaPipe) → Skill Pack (RSA-signed) → Teach (C++ engine + Flutter)"
+    - label: "Agents"
+      description: "Core, ML Manager, Dev, Tester, Pose Engine, Video Analysis, Infra, Support"
+    - label: "Key Focus"
+      description: "Skill pack quality, 30 FPS scoring, tenant isolation, offline-first"
+  quick_actions:
+    - { label: "Build Advisor",  route: "/analyst",   description: "What to build next" }
+    - { label: "Review Code",    route: "/developer", description: "Extract / C++ / Flutter" }
+    - { label: "AI Agents",      route: "/agents",    description: "10 platform agents" }
+    - { label: "Platform Health",route: "/monitor",   description: "Build & test status" }

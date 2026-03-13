@@ -55,3 +55,20 @@ ui_labels:
   developer_page_title:  "IEC 62304 Code Reviewer"
   monitor_page_title:    "Production Monitor"
   dashboard_subtitle:    "Medical Device Manufacturing Health"
+
+# Dashboard context card — drives the UI without hardcoding in the frontend
+dashboard:
+  badge_color: "bg-blue-100 text-blue-700"
+  context_color: "border-blue-200 bg-blue-50"
+  context_items:
+    - label: "Compliance"
+      description: "ISO 13485, IEC 62304, ISO 14971, FDA 21 CFR Part 11"
+    - label: "Agents"
+      description: "Quality Engineer, Regulatory Specialist, Risk Engineer, Clinical Engineer"
+    - label: "Key Focus"
+      description: "Firmware safety, audit trail integrity, traceability"
+  quick_actions:
+    - { label: "Analyze Log",     route: "/analyst",   description: "Triage firmware error" }
+    - { label: "Review MR",       route: "/developer", description: "IEC 62304 code review" }
+    - { label: "Risk Assessment", route: "/agents",    description: "ISO 14971 analysis" }
+    - { label: "Audit Trail",     route: "/audit",     description: "Compliance records" }

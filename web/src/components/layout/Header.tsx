@@ -8,32 +8,23 @@ async function shutdownSage() {
   await fetch('/api/shutdown', { method: 'POST' })
 }
 
+// Standard page titles for framework routes. Solution-specific page titles
+// are provided via ui_labels in project.yaml or added here in solution forks.
 const PAGE_TITLES: Record<string, string> = {
-  '/': 'Dashboard',
-  '/agents': 'AI Agents',
-  '/analyst': 'Log Analyst',
-  '/developer': 'Developer',
-  '/audit': 'Audit Log',
-  '/monitor': 'Monitor',
+  '/':             'Dashboard',
+  '/agents':       'AI Agents',
+  '/analyst':      'Log Analyst',
+  '/developer':    'Developer',
+  '/audit':        'Audit Log',
+  '/monitor':      'Monitor',
   '/improvements': 'Improvements',
   '/llm':          'LLM Settings',
   '/settings':     'Settings',
   '/yaml-editor':  'Config Editor',
-  '/training':     'Training Runs',
-  '/models':       'Model Registry',
-  '/devices':      'Device Fleet',
-  '/serial':       'Serial Console',
 }
 
-const DOMAIN_BADGE_COLORS: Record<string, string> = {
-  'medtech':          'bg-blue-100 text-blue-700',
-  'medical-device':   'bg-blue-100 text-blue-700',
-  'firmware-embedded':'bg-orange-100 text-orange-700',
-  'ml-mobile':        'bg-purple-100 text-purple-700',
-  'cv-tracking':      'bg-green-100 text-green-700',
-  'startup':          'bg-indigo-100 text-indigo-700',
-  'general':          'bg-gray-100 text-gray-600',
-}
+// Badge color comes from project.yaml dashboard.badge_color — no hardcoded solution names here.
+const DEFAULT_BADGE_COLOR = 'bg-gray-100 text-gray-600'
 
 export default function Header() {
   const { pathname } = useLocation()
@@ -75,8 +66,8 @@ export default function Header() {
   const title = UI_LABEL_ROUTES[pathname] ?? PAGE_TITLES[pathname] ?? 'SAGE[ai]'
   const projectName = projectData?.name ?? 'SAGE Framework'
   const domain = projectData?.domain ?? ''
-  const activeId = projectsData?.active ?? projectData?.project ?? ''
-  const badgeColor = DOMAIN_BADGE_COLORS[domain] ?? DOMAIN_BADGE_COLORS[activeId] ?? 'bg-gray-100 text-gray-600'
+  const dashboardConfig = (projectData as any)?.dashboard ?? {}
+  const badgeColor: string = dashboardConfig.badge_color ?? DEFAULT_BADGE_COLOR
 
   const solutions = projectsData?.projects ?? []
 

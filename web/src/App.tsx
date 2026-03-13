@@ -11,11 +11,20 @@ import LLMSettings from './pages/LLMSettings'
 import Agents from './pages/Agents'
 import Settings from './pages/Settings'
 import YamlEditor from './pages/YamlEditor'
-// Solution-specific pages — organized by solution name
-import TrainingRuns from './pages/solutions/poseengine/TrainingRuns'
-import ModelRegistry from './pages/solutions/poseengine/ModelRegistry'
-import DeviceFleet from './pages/solutions/dfs/DeviceFleet'
-import SerialConsole from './pages/solutions/dfs/SerialConsole'
+
+// ---------------------------------------------------------------------------
+// Standard SAGE routes — solution-agnostic.
+//
+// To add solution-specific pages:
+//   1. Create web/src/pages/solutions/<name>/MyPage.tsx
+//   2. Import it here with a lazy import
+//   3. Add the route below
+//   4. Add the moduleId to active_modules in your solution's project.yaml
+//   5. Add the sidebar entry in components/layout/Sidebar.tsx
+//
+// These additions belong in your solution fork/branch, not in the community
+// framework. The framework ships with universal pages only.
+// ---------------------------------------------------------------------------
 
 export default function App() {
   return (
@@ -36,11 +45,6 @@ export default function App() {
               <Route path="/llm"          element={<LLMSettings />} />
               <Route path="/settings"     element={<Settings />} />
               <Route path="/yaml-editor"  element={<YamlEditor />} />
-              {/* Solution-specific pages */}
-              <Route path="/training"     element={<TrainingRuns />} />
-              <Route path="/models"       element={<ModelRegistry />} />
-              <Route path="/devices"      element={<DeviceFleet />} />
-              <Route path="/serial"       element={<SerialConsole />} />
             </Routes>
           </main>
         </div>

@@ -2,30 +2,33 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Search, GitMerge, ClipboardList,
   Activity, Shield, Lightbulb, Cpu, Settings, FileCode2, Bot,
-  FlaskConical, Box, HardDrive, Terminal,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchFeatureRequests } from '../../api/client'
 import { useProjectConfig } from '../../hooks/useProjectConfig'
 
-// Each link carries a moduleId that matches the keys in active_modules returned
-// by the backend. This allows the sidebar to hide items for inactive modules.
+// ---------------------------------------------------------------------------
+// Standard SAGE sidebar links — solution-agnostic.
+// Visibility is controlled by active_modules in your solution's project.yaml.
+//
+// To add solution-specific sidebar links:
+//   1. Add the moduleId to active_modules in project.yaml
+//   2. Add an entry to this links array in your solution fork/branch
+//   3. Register the route in App.tsx
+//
+// These additions belong in your solution, not in the community framework.
+// ---------------------------------------------------------------------------
 const links = [
-  { to: '/',             icon: LayoutDashboard, label: 'Dashboard',    moduleId: 'dashboard' },
-  { to: '/agents',       icon: Bot,             label: 'Agents',       moduleId: 'agents' },
-  { to: '/analyst',      icon: Search,          label: 'Analyst',      moduleId: 'analyst' },
-  { to: '/developer',    icon: GitMerge,        label: 'Developer',    moduleId: 'developer' },
-  { to: '/audit',        icon: ClipboardList,   label: 'Audit Log',    moduleId: 'audit' },
-  { to: '/monitor',      icon: Activity,        label: 'Monitor',      moduleId: 'monitor' },
-  { to: '/improvements', icon: Lightbulb,       label: 'Improvements', moduleId: 'improvements', badge: true },
-  { to: '/llm',          icon: Cpu,             label: 'LLM',          moduleId: 'llm' },
-  { to: '/settings',     icon: Settings,        label: 'Settings',     moduleId: 'settings' },
-  { to: '/yaml-editor',  icon: FileCode2,       label: 'Config Editor',moduleId: 'yaml-editor' },
-  // Solution-specific pages (visible only when active_modules includes them)
-  { to: '/training',     icon: FlaskConical,    label: 'Training Runs',moduleId: 'training' },
-  { to: '/models',       icon: Box,             label: 'Model Registry',moduleId: 'models' },
-  { to: '/devices',      icon: HardDrive,       label: 'Device Fleet', moduleId: 'devices' },
-  { to: '/serial',       icon: Terminal,         label: 'Serial Console',moduleId: 'serial' },
+  { to: '/',             icon: LayoutDashboard, label: 'Dashboard',     moduleId: 'dashboard' },
+  { to: '/agents',       icon: Bot,             label: 'Agents',        moduleId: 'agents' },
+  { to: '/analyst',      icon: Search,          label: 'Analyst',       moduleId: 'analyst' },
+  { to: '/developer',    icon: GitMerge,        label: 'Developer',     moduleId: 'developer' },
+  { to: '/audit',        icon: ClipboardList,   label: 'Audit Log',     moduleId: 'audit' },
+  { to: '/monitor',      icon: Activity,        label: 'Monitor',       moduleId: 'monitor' },
+  { to: '/improvements', icon: Lightbulb,       label: 'Improvements',  moduleId: 'improvements', badge: true },
+  { to: '/llm',          icon: Cpu,             label: 'LLM',           moduleId: 'llm' },
+  { to: '/settings',     icon: Settings,        label: 'Settings',      moduleId: 'settings' },
+  { to: '/yaml-editor',  icon: FileCode2,       label: 'Config Editor', moduleId: 'yaml-editor' },
 ]
 
 export default function Sidebar() {
