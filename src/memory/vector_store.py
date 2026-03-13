@@ -92,8 +92,9 @@ class VectorMemory:
     """
 
     def __init__(self):
-        self._embedding_function = None   # lazy-loaded on first use
-        self._vector_store       = None
+        self._embedding_function  = None   # lazy-loaded on first use
+        self._vector_store        = None
+        self._llamaindex_index    = None   # set when backend == "llamaindex"
         self._fallback_memory: List[str] = []
         self._ready = False
         self._mode  = "minimal"
@@ -170,6 +171,14 @@ class VectorMemory:
             logger.warning("Failed to load embeddings (%s) — proceeding without.", exc)
 
     def _initialize_db(self):
+        # Check config to decide backend
+        backend = _load_base_config().get("memory", {}).get("backend", "chroma")
+        if backend == "llamaindex":
+            self._initialize_llamaindex_db()
+        else:
+            self._initialize_chroma_db()
+
+    def _initialize_chroma_db(self):
         persist_path    = self._get_vector_db_path()
         collection_name = self._get_collection_name()
         try:
@@ -183,16 +192,53 @@ class VectorMemory:
             self._vector_store = Chroma(**kwargs)
             self._ready = True
             self._mode  = "full" if self._embedding_function else "lite"
-            logger.info("VectorMemory ready (%s) at %s", self._mode, persist_path)
+            logger.info("VectorMemory ready (chroma/%s) at %s", self._mode, persist_path)
         except Exception as exc:
             logger.error("VectorMemory init failed (%s) — keyword fallback active.", exc)
+
+    def _initialize_llamaindex_db(self):
+        """LlamaIndex backend with ChromaDB vector store — better chunking and re-ranking."""
+        persist_path    = self._get_vector_db_path()
+        collection_name = self._get_collection_name()
+        try:
+            import chromadb
+            from llama_index.core import VectorStoreIndex, StorageContext
+            from llama_index.vector_stores.chroma import ChromaVectorStore
+
+            chroma_client     = chromadb.PersistentClient(path=persist_path)
+            chroma_collection = chroma_client.get_or_create_collection(collection_name)
+            lf_vector_store   = ChromaVectorStore(chroma_collection=chroma_collection)
+            storage_context   = StorageContext.from_defaults(vector_store=lf_vector_store)
+            self._llamaindex_index = VectorStoreIndex([], storage_context=storage_context)
+            self._ready = True
+            self._mode  = "llamaindex"
+            logger.info("VectorMemory ready (llamaindex) at %s", persist_path)
+        except ImportError as exc:
+            logger.warning(
+                "LlamaIndex backend unavailable (%s) — falling back to chroma. "
+                "Install with: pip install llama-index-core llama-index-vector-stores-chroma",
+                exc,
+            )
+            self._initialize_chroma_db()
+        except Exception as exc:
+            logger.error("LlamaIndex init failed (%s) — keyword fallback active.", exc)
 
     # ------------------------------------------------------------------
     # Public interface
     # ------------------------------------------------------------------
 
     def search(self, query: str, k: int = 3) -> List[str]:
-        """Retrieve relevant context. Semantic search or keyword fallback."""
+        """Retrieve relevant context. LlamaIndex / ChromaDB / keyword fallback."""
+        # LlamaIndex path
+        if self._mode == "llamaindex" and self._ready:
+            try:
+                retriever = self._llamaindex_index.as_retriever(similarity_top_k=k)
+                nodes = retriever.retrieve(query)
+                return [n.get_content() for n in nodes]
+            except Exception as exc:
+                logger.error("LlamaIndex search failed: %s", exc)
+
+        # ChromaDB (langchain) path
         if self._vector_store and self._ready:
             try:
                 docs = self._vector_store.similarity_search(query, k=k)
@@ -214,13 +260,24 @@ class VectorMemory:
         """Learn from human feedback — saved to vector DB or fallback list."""
         self._fallback_memory.append(text)   # always save (cheap)
 
+        # LlamaIndex path
+        if self._mode == "llamaindex" and self._ready:
+            try:
+                from llama_index.core import Document
+                self._llamaindex_index.insert(Document(text=text, metadata=metadata or {}))
+                logger.info("Feedback saved to LlamaIndex store.")
+                return
+            except Exception as exc:
+                logger.error("Failed to save to LlamaIndex store: %s", exc)
+
+        # ChromaDB (langchain) path
         if self._vector_store and self._ready:
             try:
                 self._vector_store.add_texts(texts=[text], metadatas=[metadata or {}])
-                logger.info("Feedback saved to Vector DB.")
+                logger.info("Feedback saved to ChromaDB.")
                 return
             except Exception as exc:
-                logger.error("Failed to save to Vector DB: %s", exc)
+                logger.error("Failed to save to ChromaDB: %s", exc)
 
         logger.info("Feedback saved to in-memory fallback.")
 

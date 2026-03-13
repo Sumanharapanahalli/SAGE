@@ -25,9 +25,12 @@ def _make_fallback_vm():
         vm = VectorMemory.__new__(VectorMemory)
         import logging
         vm.logger = logging.getLogger("VectorMemory.test")
-        vm._fallback_memory = []
-        vm._vector_store = None
+        vm._fallback_memory    = []
+        vm._vector_store       = None
+        vm._llamaindex_index   = None
+        vm._embedding_function = None
         vm._ready = False
+        vm._mode  = "minimal"
         return vm
 
 
@@ -111,9 +114,12 @@ def test_fallback_used_when_chromadb_unavailable():
             vm = VectorMemory.__new__(VectorMemory)
             import logging
             vm.logger = logging.getLogger("VectorMemory.test2")
-            vm._fallback_memory = []
-            vm._vector_store = None
+            vm._fallback_memory    = []
+            vm._vector_store       = None
+            vm._llamaindex_index   = None
+            vm._embedding_function = None
             vm._ready = False
+            vm._mode  = "minimal"
         except Exception as exc:
             pytest.fail(f"VectorMemory initialization raised an exception without ChromaDB: {exc}")
         assert vm._vector_store is None, "vector_store must be None when ChromaDB is unavailable."

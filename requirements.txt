@@ -20,6 +20,15 @@ langchain-chroma
 langchain-huggingface
 sentence-transformers
 
+# Phase 1 — LlamaIndex RAG backend (optional; set memory.backend: llamaindex)
+llama-index-core
+llama-index-vector-stores-chroma
+
+# Phase 1 — LangChain tool integrations (already pulled via langchain-community above)
+
+# Phase 1 — mem0 long-term memory (optional; only used if enabled)
+mem0ai
+
 # API
 fastapi
 uvicorn
