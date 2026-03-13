@@ -2,6 +2,9 @@
 pyyaml
 pydantic
 
+# Observability — Langfuse (optional: set LANGFUSE_PUBLIC_KEY + LANGFUSE_SECRET_KEY to enable)
+langfuse
+
 # LLM - Claude (Anthropic API, optional — needed for provider="claude")
 anthropic>=0.40.0
 

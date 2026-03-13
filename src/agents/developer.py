@@ -289,7 +289,7 @@ class DeveloperAgent:
             "Follow these steps:\n"
             "1. Call get_pipeline_status to check the CI result.\n"
             "2. Call get_diff to retrieve the code changes.\n"
-            "3. Analyse the diff for bugs, security issues, and ISO 13485 compliance concerns.\n"
+            "3. Analyse the diff for bugs, security issues, and domain-specific compliance concerns.\n"
             "4. Produce FinalAnswer as strict JSON with keys:\n"
             "   'summary' (string), 'issues' (array), 'suggestions' (array), 'approved' (bool)."
         )
@@ -355,13 +355,28 @@ class DeveloperAgent:
             source_branch = f"sage-ai/{issue_iid}-{slug}"
 
         # 3. Use LLM to draft MR title and description
-        system_prompt = (
-            "You are a software development agent for a medical device company. "
-            "Given a GitLab issue, draft a concise merge request title and description. "
-            "Output strict JSON with keys: 'mr_title' (string) and 'mr_description' (string, markdown). "
-            "The description should reference the issue, explain the proposed changes, and list testing steps. "
-            "Do not output markdown fences."
-        )
+        # Prefer solution-level mr_create_system_prompt from prompts.yaml
+        try:
+            from src.core.project_loader import project_config
+            _dev_prompts = project_config.get_prompts().get("developer", {})
+            system_prompt = _dev_prompts.get(
+                "mr_create_system_prompt",
+                (
+                    "You are a software development agent. "
+                    "Given a GitLab issue, draft a concise merge request title and description. "
+                    "Output strict JSON with keys: 'mr_title' (string) and 'mr_description' (string, markdown). "
+                    "The description should reference the issue, explain the proposed changes, and list testing steps. "
+                    "Do not output markdown fences."
+                )
+            )
+        except Exception:
+            system_prompt = (
+                "You are a software development agent. "
+                "Given a GitLab issue, draft a concise merge request title and description. "
+                "Output strict JSON with keys: 'mr_title' (string) and 'mr_description' (string, markdown). "
+                "The description should reference the issue, explain the proposed changes, and list testing steps. "
+                "Do not output markdown fences."
+            )
 
         user_prompt = (
             f"Issue #{issue_iid}: {issue_title}\n"

@@ -1,0 +1,39 @@
+# ==============================================================================
+# SAGE Framework — Task Types: starter (Generic Template)
+# ==============================================================================
+# Add or remove task types to match your domain.
+# The PlannerAgent uses task_descriptions to understand what each type does.
+# ==============================================================================
+
+task_types:
+  - ANALYZE_LOG      # Triage a log entry, error, or event signal
+  - REVIEW_MR        # GitLab merge request AI code review
+  - CREATE_MR        # Create a GitLab MR from an issue description
+  - MONITOR_CHECK    # Run a monitoring cycle across configured integrations
+  - PLAN_TASK        # Decompose a complex request into subtasks
+
+task_descriptions:
+  ANALYZE_LOG:    "Analyze a log entry, error message, or event using RAG + LLM"
+  REVIEW_MR:      "AI code review of a GitLab merge request"
+  CREATE_MR:      "Create a new GitLab merge request from an issue description"
+  MONITOR_CHECK:  "Run one monitoring cycle across all configured integrations"
+  PLAN_TASK:      "Use PlannerAgent to decompose a complex request into subtasks"
+
+task_payloads:
+  ANALYZE_LOG:
+    log_entry: "string — the raw log line(s) or event description to analyze"
+
+  REVIEW_MR:
+    project_id: "string — GitLab project ID"
+    mr_iid:     "integer — merge request internal ID"
+
+  CREATE_MR:
+    issue_description: "string — natural language description of what to fix"
+    project_id:        "string — GitLab project ID (optional, uses default)"
+
+  MONITOR_CHECK:
+    source: "string — integration name or 'all' (default: all)"
+
+  PLAN_TASK:
+    description: "string — natural language task description for the planner"
+    priority:    "integer 1-10 (default: 5)"

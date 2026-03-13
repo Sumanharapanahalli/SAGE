@@ -16,13 +16,35 @@ llm:
   max_tokens: 3072                       # Context window
 
 memory:
+  # backend: "chroma" (default) | "llamaindex"
+  backend: "chroma"
   vector_db_path: "./data/chroma_db"
   audit_db_path: "./data/audit_log.db"
-  collection_name: "manufacturing_knowledge"
+  # collection_name defaults to "<solution_name>_knowledge" — override per solution in project.yaml
+  collection_name: ""
 
 system:
   log_level: "INFO"
   max_concurrent_tasks: 1                # STRICTLY 1 for single-lane safety
+
+# --- Observability (Langfuse — optional, self-hosted or cloud) ---
+observability:
+  langfuse_enabled: false
+  langfuse_host: "http://localhost:3000"  # self-hosted endpoint
+  # langfuse_public_key: "${LANGFUSE_PUBLIC_KEY}"
+  # langfuse_secret_key: "${LANGFUSE_SECRET_KEY}"
+
+# --- Orchestration ---
+orchestration:
+  # engine: "queue" (default built-in SQLite queue) | "langgraph"
+  engine: "queue"
+  # workflows_dir resolved to solutions/{project}/workflows/ automatically
+
+# --- Monitor ---
+monitor:
+  # mode: "polling" (default) | "n8n" | "both"
+  mode: "polling"
+  n8n_webhook_secret: "${N8N_WEBHOOK_SECRET}"
 
 # --- GitLab Integration ---
 gitlab:

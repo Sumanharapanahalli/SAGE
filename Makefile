@@ -208,5 +208,5 @@ help:
 	@echo "Deploy:"
 	@echo "  make docker-up [PROJECT=...] Start via Docker Compose"
 	@echo ""
-	@echo "  Solutions: medtech | poseengine | kappture"
+	@echo "  Solutions: medtech | poseengine | kappture | startup | <your-solution>"
 	@echo ""
