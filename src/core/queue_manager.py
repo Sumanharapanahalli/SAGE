@@ -438,11 +438,19 @@ class TaskWorker(threading.Thread):
             state = payload.get("state", {})
             return langgraph_runner.run(workflow_name, state)
 
+        elif task_type == "CODE_TASK":
+            from src.integrations.autogen_runner import autogen_runner
+            task_description = payload.get("task", "")
+            if not task_description:
+                raise ValueError("CODE_TASK missing 'task' in payload.")
+            trace_id = payload.get("trace_id")
+            return autogen_runner.plan(task_description, trace_id=trace_id)
+
         else:
             raise ValueError(
                 f"Unknown task_type: '{task_type}'. "
                 "Supported: ANALYZE_LOG, CREATE_MR, REVIEW_MR, FLASH_FIRMWARE, "
-                "MONITOR_CHECK, PLAN_TASK, WORKFLOW"
+                "MONITOR_CHECK, PLAN_TASK, WORKFLOW, CODE_TASK"
             )
 
 
