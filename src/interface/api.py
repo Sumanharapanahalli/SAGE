@@ -114,6 +114,11 @@ def _get_audit_logger():
     return audit_logger
 
 
+def _get_task_queue():
+    from src.core.queue_manager import task_queue
+    return task_queue
+
+
 def _get_llm_gateway():
     from src.core.llm_gateway import llm_gateway
     return llm_gateway
@@ -676,6 +681,92 @@ async def teams_webhook(request: Request):
     except Exception as e:
         logger.error("Teams webhook processing error: %s", e)
         raise HTTPException(status_code=400, detail=f"Invalid webhook payload: {e}")
+
+
+# ---------------------------------------------------------------------------
+# n8n Webhook Receiver (Phase 2)
+# ---------------------------------------------------------------------------
+
+@app.post("/webhook/n8n")
+async def n8n_webhook(request: Request):
+    """
+    Receives event payloads from n8n workflows and routes them to the
+    SAGE task queue. Replaces manual polling for any system n8n can watch.
+
+    Expected body (all fields optional except event_type):
+      {
+        "event_type": "log_alert" | "code_review" | "monitor" | "custom",
+        "payload":    { ... task-specific arguments ... },
+        "source":     "string — which n8n workflow or system fired this",
+        "priority":   1-10  (default: 5)
+      }
+
+    HMAC validation: If N8N_WEBHOOK_SECRET env var is set, the request
+    must include X-SAGE-Signature: sha256=<hmac> header.
+    """
+    import hashlib
+    import hmac as hmac_lib
+
+    # --- HMAC signature validation ---
+    secret = os.environ.get("N8N_WEBHOOK_SECRET", "").encode()
+    if secret:
+        sig_header = request.headers.get("X-SAGE-Signature", "")
+        raw_body   = await request.body()
+        expected   = "sha256=" + hmac_lib.new(secret, raw_body, hashlib.sha256).hexdigest()
+        if not hmac_lib.compare_digest(sig_header, expected):
+            raise HTTPException(status_code=401, detail="Invalid webhook signature")
+        body = json.loads(raw_body)
+    else:
+        body = await request.json()
+
+    event_type = body.get("event_type", "")
+    payload    = body.get("payload", {})
+    source     = body.get("source", "n8n")
+    priority   = int(body.get("priority", 5))
+
+    if not event_type:
+        raise HTTPException(status_code=400, detail="event_type is required")
+
+    # Map n8n event types to SAGE task types
+    _EVENT_TO_TASK = {
+        "log_alert":    "ANALYZE_LOG",
+        "code_review":  "REVIEW_MR",
+        "create_mr":    "CREATE_MR",
+        "monitor":      "MONITOR_CHECK",
+        "plan":         "PLAN_TASK",
+        "workflow":     "WORKFLOW",
+        "code_task":    "CODE_TASK",
+    }
+
+    task_type = _EVENT_TO_TASK.get(event_type, event_type.upper())
+
+    # Audit first — log before touching the queue
+    try:
+        audit = _get_audit_logger()
+        audit.log_event(
+            actor=f"n8n_webhook/{source}",
+            action_type="WEBHOOK_RECEIVED",
+            input_context=json.dumps(body)[:500],
+            output_content=f"Routing to task_type={task_type}",
+            metadata={"source": source, "event_type": event_type, "priority": priority},
+        )
+    except Exception as e:
+        logger.warning("Audit log failed for n8n webhook: %s", e)
+
+    # Submit to task queue
+    try:
+        queue = _get_task_queue()
+        task_id = queue.submit(task_type=task_type, payload=payload, priority=priority)
+        logger.info("n8n webhook → task %s queued (id: %s)", task_type, task_id)
+        return {
+            "status": "queued",
+            "task_id": task_id,
+            "task_type": task_type,
+            "source": source,
+        }
+    except Exception as e:
+        logger.error("n8n webhook queue submission failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Failed to queue task: {e}")
 
 
 @app.get("/mr/open")

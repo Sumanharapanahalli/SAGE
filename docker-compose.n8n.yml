@@ -1,0 +1,42 @@
+# ==============================================================================
+# SAGE Framework — Self-Hosted n8n (Event / Trigger Layer)
+# ==============================================================================
+# Run with: docker-compose -f docker-compose.n8n.yml up -d
+#
+# n8n connects to SAGE via:
+#   POST http://sage-backend:8000/webhook/n8n
+#   (or http://localhost:8000/webhook/n8n if running outside Docker)
+#
+# Workflow examples:
+#   - PagerDuty alert → POST /webhook/n8n {event_type: "log_alert", payload: {...}}
+#   - GitLab push     → POST /webhook/n8n {event_type: "code_review", payload: {...}}
+#   - Scheduled cron  → POST /webhook/n8n {event_type: "monitor"}
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-changeme}
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=${TZ:-UTC}
+      # Forward SAGE webhook secret so n8n can set the header
+      - SAGE_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET:-}
+      - SAGE_API_URL=${SAGE_API_URL:-http://host.docker.internal:8000}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  n8n_data:
