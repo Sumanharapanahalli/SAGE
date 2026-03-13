@@ -6,8 +6,27 @@ import os
 import uuid
 from datetime import datetime, timezone
 
-# Load config path (simplified for now)
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "audit_log.db")
+
+def _resolve_db_path() -> str:
+    """
+    Resolve audit DB path to the active solution's data directory.
+    Path: solutions/<project>/data/audit_log.db
+    Falls back to framework-level data/ if no project is set.
+    """
+    project = os.environ.get("SAGE_PROJECT", "").strip().lower()
+    solutions_dir = os.environ.get(
+        "SAGE_SOLUTIONS_DIR",
+        os.path.join(os.path.dirname(__file__), "..", "..", "solutions"),
+    )
+    if project:
+        return os.path.join(os.path.abspath(solutions_dir), project, "data", "audit_log.db")
+    return os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "data", "audit_log.db",
+    )
+
+
+DB_PATH = _resolve_db_path()
 
 class AuditLogger:
     def __init__(self, db_path: str = DB_PATH):

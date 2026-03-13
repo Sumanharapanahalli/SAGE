@@ -44,6 +44,9 @@ venv.bak/
 data/
 logs/
 
+# Solution-local runtime data (audit logs, vector stores) — per user/machine, never commit
+solutions/*/data/
+
 # IDE
 .vscode/
 .idea/
