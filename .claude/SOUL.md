@@ -113,6 +113,29 @@ The `prompts.yaml` is the agent package manifest. Role definitions, system promp
 
 ---
 
+## The Two Backlogs — A Hard Boundary
+
+SAGE is a platform for builders. Every person using SAGE has two completely separate
+improvement streams, and mixing them is a failure mode:
+
+**Solution Backlog (`scope: "solution"`)**
+Features and tasks to build *inside the user's application* — add voice pack to Flutter,
+expand the gym module, build the admin web panel. These go through the full SAGE workflow:
+log → AI plan → approve → implement in the solution codebase.
+The solution team owns this backlog. SAGE's Planner Agent helps prioritise and decompose it.
+
+**SAGE Framework Ideas (`scope: "sage"`)**
+Improvements to the SAGE *platform itself* — new agent capabilities, better UI modules,
+new integrations, richer MCP tools. These are community contributions. They are logged in
+SAGE for visibility and should also be raised as GitHub Issues on the SAGE repo so the
+open-source community can pick them up.
+
+**Rule:** Never treat a solution feature request as a SAGE improvement, or vice versa.
+The `scope` field on every `FeatureRequest` enforces this distinction in code and UI.
+The Improvements page has two tabs — one per scope — so the separation is always visible.
+
+---
+
 ## Memory and Knowledge Architecture
 
 **The vector store is the institutional memory.**

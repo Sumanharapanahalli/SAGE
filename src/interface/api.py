@@ -82,6 +82,7 @@ class FeatureRequestCreate(BaseModel):
     description: str
     priority: str = "medium"       # low / medium / high / critical
     requested_by: str = "anonymous"
+    scope: str = "solution"        # "solution" = build in your app | "sage" = improve the framework
 
 
 class FeatureRequestUpdate(BaseModel):
@@ -151,12 +152,20 @@ def _init_feature_requests_table():
                 priority     TEXT DEFAULT 'medium',
                 status       TEXT DEFAULT 'pending',
                 requested_by TEXT DEFAULT 'anonymous',
+                scope        TEXT DEFAULT 'solution',
                 created_at   TEXT,
                 updated_at   TEXT,
                 reviewer_note TEXT,
                 plan_trace_id TEXT
             )
         """)
+        # Migration: add scope column to existing databases that predate this field
+        try:
+            conn.execute("ALTER TABLE feature_requests ADD COLUMN scope TEXT DEFAULT 'solution'")
+            conn.commit()
+            logger.info("Migrated feature_requests table: added scope column.")
+        except Exception:
+            pass  # Column already exists
         conn.commit()
         conn.close()
         logger.info("Feature requests table ready.")
@@ -733,10 +742,11 @@ async def submit_feature_request(request: FeatureRequestCreate):
         conn.execute(
             """INSERT INTO feature_requests
                (id, module_id, module_name, title, description, priority,
-                status, requested_by, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)""",
+                status, requested_by, scope, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)""",
             (req_id, request.module_id, request.module_name, request.title,
-             request.description, request.priority, request.requested_by, now, now),
+             request.description, request.priority, request.requested_by,
+             request.scope, now, now),
         )
         conn.commit()
         conn.close()
@@ -750,10 +760,10 @@ async def submit_feature_request(request: FeatureRequestCreate):
         audit.log_event(
             actor=request.requested_by,
             action_type="FEATURE_REQUEST_SUBMITTED",
-            input_context=f"module={request.module_id} title={request.title}",
+            input_context=f"scope={request.scope} module={request.module_id} title={request.title}",
             output_content=request.description,
             metadata={"request_id": req_id, "module_id": request.module_id,
-                      "priority": request.priority},
+                      "priority": request.priority, "scope": request.scope},
         )
     except Exception as e:
         logger.warning("Audit log failed for feature request: %s", e)
@@ -769,9 +779,12 @@ async def submit_feature_request(request: FeatureRequestCreate):
 async def list_feature_requests(
     module_id: Optional[str] = None,
     status: Optional[str] = None,
+    scope: Optional[str] = None,   # "solution" | "sage"
 ):
     """
-    List all feature requests, optionally filtered by module_id or status.
+    List feature requests, optionally filtered by module_id, status, or scope.
+    scope="solution" returns items for the active solution's backlog.
+    scope="sage"     returns SAGE framework improvement ideas.
     """
     try:
         db_path = _get_db_path()
@@ -786,6 +799,9 @@ async def list_feature_requests(
         if status:
             query += " AND status = ?"
             params.append(status)
+        if scope:
+            query += " AND scope = ?"
+            params.append(scope)
         query += " ORDER BY created_at DESC"
 
         rows = [dict(r) for r in conn.execute(query, params).fetchall()]
@@ -821,8 +837,15 @@ async def generate_plan_for_request(req_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+    scope = req.get('scope', 'solution')
+    scope_context = (
+        "This is a SOLUTION feature request — it should be implemented in the active solution's codebase."
+        if scope == 'solution' else
+        "This is a SAGE FRAMEWORK improvement request — it should be implemented in the SAGE framework itself (src/, web/src/)."
+    )
     planner_task = (
-        f"Implement feature request for the '{req['module_name']}' UI module.\n"
+        f"{scope_context}\n"
+        f"Feature request for the '{req['module_name']}' module.\n"
         f"Title: {req['title']}\n"
         f"Description: {req['description']}\n"
         f"Priority: {req['priority']}"

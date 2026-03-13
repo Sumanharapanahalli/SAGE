@@ -64,10 +64,11 @@ export const fetchMonitorStatus = () => get<MonitorStatus>('/monitor/status')
 export const submitFeatureRequest = (body: import('../types/module').FeatureRequestPayload) =>
   post<{ id: string; status: string; message: string }>('/feedback/feature-request', body)
 
-export const fetchFeatureRequests = (module_id?: string, status?: string) => {
+export const fetchFeatureRequests = (module_id?: string, status?: string, scope?: string) => {
   const params = new URLSearchParams()
   if (module_id) params.set('module_id', module_id)
   if (status)    params.set('status', status)
+  if (scope)     params.set('scope', scope)
   const qs = params.toString()
   return get<{ requests: import('../types/module').FeatureRequest[]; count: number }>(
     `/feedback/feature-requests${qs ? `?${qs}` : ''}`
