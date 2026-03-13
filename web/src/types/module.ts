@@ -35,6 +35,17 @@ export type RequestStatus =
   | 'completed'
   | 'rejected'
 
+/**
+ * scope distinguishes WHO owns the backlog item:
+ *   "solution" — a feature or task to build in your application (solution backlog)
+ *   "sage"     — an improvement idea for the SAGE platform itself (community / framework)
+ *
+ * Solution requests go through the full SAGE workflow: plan → approve → implement.
+ * SAGE requests are logged here AND should be raised as GitHub Issues on the framework repo
+ * so the community can pick them up.
+ */
+export type RequestScope = 'solution' | 'sage'
+
 export interface FeatureRequest {
   id: string
   module_id: string
@@ -44,6 +55,7 @@ export interface FeatureRequest {
   priority: Priority
   status: RequestStatus
   requested_by: string
+  scope: RequestScope
   created_at: string
   updated_at: string
   reviewer_note?: string
@@ -57,6 +69,7 @@ export interface FeatureRequestPayload {
   description: string
   priority: Priority
   requested_by: string
+  scope: RequestScope
 }
 
 // ---------------------------------------------------------------------------

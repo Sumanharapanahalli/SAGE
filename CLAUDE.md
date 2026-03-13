@@ -71,6 +71,16 @@ Every agent task follows this five-phase cycle. Phase 5 (COMPOUND) feeds Phase 2
 3. Wire role in `UniversalAgent` if task routing requires it
 4. No new Python agent files for new roles — roles are YAML
 
+## The Two Backlogs — Never Mix Them
+
+| Scope | Owned by | Workflow | Where tracked |
+|---|---|---|---|
+| **`solution`** | The builder's team | Log → AI plan → approve → implement in solution | SAGE Improvements → Solution Backlog tab |
+| **`sage`** | SAGE community | Log → GitHub Issue → community PR | SAGE Improvements → SAGE Framework Ideas tab |
+
+Every `FeatureRequest` has a `scope` field. Every submission UI has a scope selector.
+If someone asks "can you add X", first ask: is X for their solution, or for SAGE itself?
+
 ## Critical Rules (from SOUL.md)
 
 - Never commit `solutions/dfs/` — it is proprietary, blocked by .gitignore
