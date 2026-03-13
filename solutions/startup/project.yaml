@@ -42,3 +42,20 @@ settings:
 ui_labels:
   analyst_page_title:  "Engineering Analyst"
   analyst_input_label: "Paste a log, error, or code snippet to analyze"
+
+# Dashboard context card — drives the UI without hardcoding in the frontend
+dashboard:
+  badge_color: "bg-indigo-100 text-indigo-700"
+  context_color: "border-indigo-200 bg-indigo-50"
+  context_items:
+    - label: "Functions"
+      description: "Product, Marketing, Sales, Legal, Finance, HR, Growth, CS"
+    - label: "Agents"
+      description: "9 AI roles covering all startup business functions"
+    - label: "Key Focus"
+      description: "GTM strategy, unit economics, hiring, compliance"
+  quick_actions:
+    - { label: "Product Brief",    route: "/agents", description: "Write a PRD" }
+    - { label: "GTM Strategy",     route: "/agents", description: "Go-to-market planning" }
+    - { label: "Legal Review",     route: "/agents", description: "Contract analysis" }
+    - { label: "Financial Model",  route: "/agents", description: "Unit economics" }

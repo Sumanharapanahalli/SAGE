@@ -2,12 +2,16 @@
 SAGE Framework — Project Configuration Loader
 =============================================
 Loads the active project's configuration, merging the base config/config.yaml
-with project-specific overrides from projects/<project>/{project,prompts,tasks}.yaml.
+with project-specific overrides from solutions/<project>/{project,prompts,tasks}.yaml.
 
 Project selection order (highest priority first):
   1. SAGE_PROJECT environment variable
   2. --project CLI argument  →  call ProjectConfig(project_name="...")
-  3. Default: "medtech"
+  3. SAGE_DEFAULT_PROJECT environment variable
+  4. Auto-discover: first alphabetical solution in SAGE_SOLUTIONS_DIR
+
+The framework has no hardcoded solution name. Solutions live in SAGE_SOLUTIONS_DIR
+(default: ./solutions/) or any external directory set via that env var.
 
 Usage:
     from src.core.project_loader import project_config
@@ -22,7 +26,7 @@ Usage:
     meta = project_config.metadata
 
     # Reload for a different project at runtime
-    project_config.reload("poseengine")
+    project_config.reload("my_solution")
 """
 
 import logging
@@ -40,7 +44,21 @@ _SOLUTIONS_DIR = os.environ.get(
     "SAGE_SOLUTIONS_DIR",
     os.path.join(_PROJECT_ROOT, "solutions")
 )
-_DEFAULT_PROJECT = "medtech"
+
+
+def _auto_discover_project() -> str:
+    """Return the first available solution name, or empty string if none found."""
+    explicit = os.environ.get("SAGE_DEFAULT_PROJECT", "").strip().lower()
+    if explicit:
+        return explicit
+    try:
+        candidates = sorted(
+            d for d in os.listdir(_SOLUTIONS_DIR)
+            if os.path.isfile(os.path.join(_SOLUTIONS_DIR, d, "project.yaml"))
+        )
+        return candidates[0] if candidates else ""
+    except OSError:
+        return ""
 
 
 # ---------------------------------------------------------------------------
@@ -92,7 +110,7 @@ class ProjectConfig:
         self._name = (
             project_name
             or os.environ.get("SAGE_PROJECT", "")
-            or _DEFAULT_PROJECT
+            or _auto_discover_project()
         ).lower().strip()
 
         project_dir = os.path.join(_SOLUTIONS_DIR, self._name)
@@ -128,6 +146,7 @@ class ProjectConfig:
             "compliance_standards":self._project.get("compliance_standards", []),
             "integrations":        self._project.get("integrations", []),
             "ui_labels":           self._project.get("ui_labels", {}),
+            "dashboard":           self._project.get("dashboard", {}),
         }
 
     # ------------------------------------------------------------------

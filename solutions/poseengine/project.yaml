@@ -58,3 +58,20 @@ ui_labels:
   analyst_input_label:  "Training / inference log or metric snapshot"
   developer_page_title: "Code Reviewer"
   monitor_page_title:   "Pipeline Monitor"
+
+# Dashboard context card — drives the UI without hardcoding in the frontend
+dashboard:
+  badge_color: "bg-purple-100 text-purple-700"
+  context_color: "border-purple-200 bg-purple-50"
+  context_items:
+    - label: "Stack"
+      description: "PyTorch, ONNX, TFLite/CoreML, Flutter/Dart"
+    - label: "Agents"
+      description: "ML Engineer, Mobile Developer, Data Scientist, DevOps Engineer"
+    - label: "Key Focus"
+      description: "Model accuracy (mAP), inference latency, mobile performance"
+  quick_actions:
+    - { label: "Training Log", route: "/analyst",   description: "Analyze ML metrics" }
+    - { label: "Review Code",  route: "/developer", description: "PyTorch / Flutter review" }
+    - { label: "ML Advisor",   route: "/agents",    description: "Model design advice" }
+    - { label: "CI/CD Status", route: "/monitor",   description: "Pipeline monitoring" }

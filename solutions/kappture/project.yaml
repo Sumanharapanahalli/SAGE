@@ -52,3 +52,20 @@ ui_labels:
   developer_page_title:  "CV Code Reviewer"
   monitor_page_title:    "Pipeline Monitor"
   dashboard_subtitle:    "Real-time Human Tracking Health"
+
+# Dashboard context card — drives the UI without hardcoding in the frontend
+dashboard:
+  badge_color: "bg-green-100 text-green-700"
+  context_color: "border-green-200 bg-green-50"
+  context_items:
+    - label: "Compliance"
+      description: "GDPR Article 9, IEEE 730, ISO/IEC 25010, GDPR Art. 35 DPIA"
+    - label: "Agents"
+      description: "Privacy Officer, Deployment Engineer, Tracking Analyst, Solutions Architect"
+    - label: "Key Focus"
+      description: "Tracking accuracy (MOTA/IDF1), privacy, edge deployment"
+  quick_actions:
+    - { label: "Tracking Log",  route: "/analyst",   description: "Analyze accuracy report" }
+    - { label: "Privacy Check", route: "/agents",    description: "GDPR compliance review" }
+    - { label: "Pipeline",      route: "/monitor",   description: "Camera & tracking status" }
+    - { label: "Review Code",   route: "/developer", description: "CV pipeline review" }
