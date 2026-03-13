@@ -5,28 +5,63 @@
 # ==============================================================================
 
 task_types:
+  # ── Analysis ──────────────────────────────────────────────────────────────
   - ANALYZE_TRAINING_LOG    # ML training output analysis
   - ANALYZE_INFERENCE_LOG   # Real-time inference metrics analysis
   - ANALYZE_CRASH_LOG       # Flutter / Dart crash report analysis
   - ANALYZE_CI_LOG          # CI/CD pipeline failure analysis
+  - ANALYZE_POSE_SEQUENCE   # Temporal action sequence analysis (N frames → action + deviations)
+
+  # ── Code review ───────────────────────────────────────────────────────────
   - REVIEW_ML_CODE          # Python / PyTorch / TF code review
   - REVIEW_FLUTTER_CODE     # Flutter / Dart code review
-  - CREATE_MR               # Create GitLab / GitHub MR
+
+  # ── MLOps pipeline ────────────────────────────────────────────────────────
+  - EVALUATE_MODEL          # Benchmark model: mAP / OKS / PCKh on test sets
+  - EXPORT_MODEL            # ONNX → TFLite + CoreML conversion + validation
+  - REGISTER_MODEL          # Add model to registry with version, format, accuracy, domain tags
+  - TRAIN_MODEL             # Kick off a distributed training job
+
+  # ── Feedback & domain ─────────────────────────────────────────────────────
+  - GENERATE_FEEDBACK       # Convert deviation scores → human-readable correction cues
+  - ADAPT_DOMAIN            # Route pose analysis to domain-specific rules (yoga/dance/retail/sports)
+
+  # ── Monitoring ────────────────────────────────────────────────────────────
   - MONITOR_PIPELINE        # Check CI/CD and training job status
-  - MONITOR_MODEL_METRICS   # Fetch and evaluate model performance metrics
-  - PLAN_TASK               # PlannerAgent orchestration step
+  - MONITOR_MODEL_METRICS   # Fetch and evaluate model performance metrics from WandB / local
+
+  # ── Build advisory ────────────────────────────────────────────────────────
+  - ADVISE_BUILD            # Tech Lead: identify current gaps, propose next implementation wave
+
+  # ── Scaffolding (mock) ────────────────────────────────────────────────────
+  - EXTRACT_FEATURES        # Extract bounding boxes / skeletons from video dataset
+  - CREATE_MODULE           # Scaffold a new PoseEngine Python module
+  - CREATE_MR               # Create GitLab / GitHub merge request
+
+  # ── Orchestration ─────────────────────────────────────────────────────────
+  - PLAN_TASK               # PlannerAgent: decompose complex request into subtask waves
 
 task_descriptions:
   ANALYZE_TRAINING_LOG:    "Analyze ML training output, loss curves, and metric progression"
   ANALYZE_INFERENCE_LOG:   "Analyze real-time inference performance, latency, and accuracy"
   ANALYZE_CRASH_LOG:       "Analyze Flutter/Dart crash report or native error trace"
   ANALYZE_CI_LOG:          "Analyze CI/CD pipeline failure and identify root cause"
+  ANALYZE_POSE_SEQUENCE:   "Classify action from N-frame pose sequence; detect per-joint deviations vs reference"
   REVIEW_ML_CODE:          "AI code review of Python/PyTorch/TensorFlow model or pipeline code"
   REVIEW_FLUTTER_CODE:     "AI code review of Flutter/Dart application code"
-  CREATE_MR:               "Create GitLab or GitHub merge request from issue or branch"
+  EVALUATE_MODEL:          "Benchmark model accuracy (mAP/OKS/PCKh) on standard and domain-specific test sets"
+  EXPORT_MODEL:            "Convert PyTorch model to ONNX then TFLite/CoreML; validate on-device accuracy"
+  REGISTER_MODEL:          "Record model version, format, accuracy, size, and domain tags in the model registry"
+  TRAIN_MODEL:             "Kick off a distributed training job for the pose estimation model"
+  GENERATE_FEEDBACK:       "Convert joint deviation scores into actionable human-readable correction instructions"
+  ADAPT_DOMAIN:            "Route pose analysis result to domain-specific rules and thresholds (yoga/dance/retail/sports)"
   MONITOR_PIPELINE:        "Check active CI/CD pipeline and training job status"
-  MONITOR_MODEL_METRICS:   "Fetch and evaluate latest model accuracy/latency metrics from W&B or local"
-  PLAN_TASK:               "Use PlannerAgent to decompose a complex request into subtasks"
+  MONITOR_MODEL_METRICS:   "Fetch and evaluate latest model accuracy/latency metrics from WandB or local registry"
+  ADVISE_BUILD:            "Tech Lead analysis: identify current implementation gaps and propose next build wave"
+  EXTRACT_FEATURES:        "Run inference to extract skeletal landmarks from an input video dataset"
+  CREATE_MODULE:           "Scaffold a new data loader or inference module for the PoseEngine architecture"
+  CREATE_MR:               "Create GitLab or GitHub merge request from issue or branch"
+  PLAN_TASK:               "Use PlannerAgent to decompose a complex request into subtask waves"
 
 task_payloads:
   ANALYZE_TRAINING_LOG:
@@ -67,6 +102,60 @@ task_payloads:
   MONITOR_MODEL_METRICS:
     project_name: "string — W&B project name or local model name"
     metric_keys:  "list — metrics to check, e.g. [mAP, fps, loss]"
+
+  TRAIN_MODEL:
+    dataset: "string — path to the training dataset"
+    epochs:  "integer — number of epochs to train (default: 50)"
+
+  EXTRACT_FEATURES:
+    source_video: "string — path to the input video"
+    confidence:   "float — minimum confidence threshold (default: 0.5)"
+
+  CREATE_MODULE:
+    module_name: "string — name of the new python module"
+    description: "string — what the module should do"
+
+  ANALYZE_POSE_SEQUENCE:
+    frames:      "list — each item is a dict of keypoints {nose, left_shoulder, ...} or COCO 17-point array"
+    domain:      "string — yoga | dance | retail | sports | therapy"
+    reference:   "string — action template name to compare against (optional)"
+    fps:         "integer — frame rate of the input sequence (default: 30)"
+
+  EVALUATE_MODEL:
+    model_path:  "string — path to .onnx, .tflite, or .pt checkpoint"
+    model_name:  "string — human-readable model identifier"
+    test_set:    "string — coco_val | mpii_test | custom (path)"
+    domain:      "string — yoga | dance | retail | sports | general (optional)"
+    metrics:     "list — e.g. [mAP, OKS, PCKh, fps] (default: all)"
+
+  EXPORT_MODEL:
+    checkpoint:  "string — path to PyTorch .pt or .pth checkpoint"
+    target:      "string — onnx | tflite | coreml | all (default: all)"
+    quantize:    "string — none | int8 | fp16 (default: none)"
+    output_dir:  "string — where to write exported model files"
+
+  REGISTER_MODEL:
+    name:        "string — model name (e.g. PoseNet-HRNet-W48)"
+    version:     "string — semver (e.g. 3.3.0)"
+    framework:   "string — pytorch | tflite | coreml | onnx"
+    format:      "string — export format string (e.g. ONNX -> TFLite)"
+    accuracy:    "dict — {mAP: float, OKS: float, fps: float}"
+    size_mb:     "float — model file size in MB"
+    domain_tags: "list — domains this model is validated for"
+
+  GENERATE_FEEDBACK:
+    deviations:  "list — [{joint, expected_angle, detected_angle, delta_deg, severity}]"
+    domain:      "string — yoga | dance | retail | sports | therapy"
+    mode:        "string — realtime | review (default: realtime)"
+
+  ADAPT_DOMAIN:
+    analysis:    "dict — raw pose analysis result from ANALYZE_POSE_SEQUENCE"
+    domain:      "string — yoga | dance | retail | sports | therapy"
+
+  ADVISE_BUILD:
+    goal:        "string — what capability or feature you want to build next"
+    domain:      "string — which application domain to prioritise (optional)"
+    context:     "string — any constraints or decisions already made (optional)"
 
   PLAN_TASK:
     description: "string — natural language task description for the planner"

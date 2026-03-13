@@ -103,20 +103,38 @@ class VectorMemory:
             )
 
     def _get_collection_name(self) -> str:
-        """Use project-specific collection name so projects don't share vectors."""
+        """Use solution-specific collection name so solutions never share vectors."""
         try:
             from src.core.project_loader import project_config
-            return project_config.get("memory", {}).get(
-                "collection_name",
-                project_config.metadata.get("project", "sage") + "_knowledge"
+            # Solution project.yaml settings.memory.collection_name takes priority
+            solution_name = (
+                project_config.get_project_setting("settings", {})
+                .get("memory", {})
+                .get("collection_name")
             )
+            if solution_name:
+                return solution_name
+            return project_config.metadata.get("project", "sage") + "_knowledge"
         except Exception:
             return "sage_knowledge"
 
     def _get_vector_db_path(self) -> str:
+        """
+        Resolve vector DB path to the active solution's data directory.
+        Priority: solution project.yaml > default solutions/<name>/data/chroma_db
+        """
         try:
-            from src.core.project_loader import project_config
-            return project_config.get("memory", {}).get("vector_db_path", "./data/chroma_db")
+            from src.core.project_loader import project_config, _SOLUTIONS_DIR
+            # Solution-level override (project.yaml settings.memory.vector_db_path)
+            solution_path = (
+                project_config.get_project_setting("settings", {})
+                .get("memory", {})
+                .get("vector_db_path")
+            )
+            if solution_path:
+                return solution_path
+            # Default: solution-local data dir — isolated per solution
+            return os.path.join(_SOLUTIONS_DIR, project_config.project_name, "data", "chroma_db")
         except Exception:
             return "./data/chroma_db"
 

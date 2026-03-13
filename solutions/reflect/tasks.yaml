@@ -1,0 +1,221 @@
+# ==============================================================================
+# SAGE Framework — Task Types: reflect
+# ==============================================================================
+# Defines the valid task types for the Reflect Movement Analysis Platform.
+# Extract → Teach pipeline, C++ Pose Engine, Flutter app, 10 agents, 7 modules.
+# ==============================================================================
+
+task_types:
+  # ── Build advisory (start here) ───────────────────────────────────────────
+  - ADVISE_BUILD            # Tech Lead: identify gaps, propose next wave
+  - PLAN_TASK               # Planner: decompose complex request into subtask waves
+
+  # ── Analysis ──────────────────────────────────────────────────────────────
+  - ANALYZE_BUILD_ERROR     # Diagnose C++/Flutter/Python build failure
+  - ANALYZE_TEST_FAILURE    # Root-cause a failing test (C++/Python/Flutter)
+  - ANALYZE_SKILL_PACK      # Review skill pack definition.json for quality issues
+  - ANALYZE_CRASH_LOG       # Diagnose Flutter/Dart crash report or native crash
+  - ANALYZE_PERFORMANCE     # Analyze pose engine profiling data or FPS metrics
+  - ANALYZE_CI_LOG          # Diagnose CI pipeline failure
+
+  # ── Code review ───────────────────────────────────────────────────────────
+  - REVIEW_EXTRACT_CODE     # Review Python extract engine code (mediapipe pipeline)
+  - REVIEW_POSE_ENGINE_CODE # Review C++ pose engine code
+  - REVIEW_FLUTTER_CODE     # Review Flutter/Dart app code
+  - REVIEW_AGENT_CODE       # Review Python SAGE agent or tool code
+
+  # ── Movement / skill pack pipeline ────────────────────────────────────────
+  - EXTRACT_MOVEMENT        # Run extraction pipeline on a video to produce skill pack
+  - EVALUATE_SKILL_PACK     # Benchmark skill pack against test recordings
+  - SIGN_SKILL_PACK         # RSA-2048 sign a verified skill pack
+  - CREATE_MOVEMENT         # Scaffold movement definition for a new activity
+  - TUNE_THRESHOLDS         # Auto-tune angle thresholds for a skill pack
+
+  # ── Pose engine (C++) ─────────────────────────────────────────────────────
+  - BUILD_POSE_ENGINE       # CMake build of C++ pose engine
+  - TEST_POSE_ENGINE        # Run C++ pose engine test suite (80 tests)
+  - PROFILE_POSE_ENGINE     # Profile engine performance (FPS, latency)
+  - UPDATE_FFI_BINDINGS     # Update Dart FFI bindings after C++ API change
+
+  # ── Testing ───────────────────────────────────────────────────────────────
+  - RUN_TESTS               # Run test suite (all, extract, pose_engine, agents, flutter)
+  - RUN_COVERAGE            # Generate test coverage report
+  - WRITE_TEST              # Write new test for a feature or bug fix
+
+  # ── Flutter app ───────────────────────────────────────────────────────────
+  - BUILD_FLUTTER_APP       # Build Flutter app (Android/iOS/desktop)
+  - REVIEW_UI_FLOW          # Review a Flutter UI flow or widget tree
+
+  # ── Tenant / white-label ──────────────────────────────────────────────────
+  - CREATE_TENANT           # Scaffold a new white-label tenant
+  - CONFIGURE_TENANT        # Update tenant branding, modules, feature flags
+  - VALIDATE_TENANT         # Run tenant-specific validation suite
+
+  # ── Specification management (GSD) ────────────────────────────────────────
+  - UPDATE_SPEC             # Update PROJECT.md / REQUIREMENTS.md / ROADMAP.md / STATE.md
+  - PLAN_PHASE              # GSD: plan a development phase with wave scheduling
+  - REVIEW_PROGRESS         # GSD: compare STATE.md against ROADMAP.md, identify next step
+
+  # ── Infrastructure ────────────────────────────────────────────────────────
+  - CREATE_MR               # Create GitHub pull request
+  - SCAFFOLD_MODULE         # Scaffold a new activity module (catalog + templates)
+
+
+task_descriptions:
+  ADVISE_BUILD:          "Tech Lead: identify current implementation gaps and propose next build wave"
+  PLAN_TASK:             "Decompose complex request into atomic subtask waves"
+  ANALYZE_BUILD_ERROR:   "Diagnose C++/Flutter/Python build failure and propose fix"
+  ANALYZE_TEST_FAILURE:  "Root-cause a failing test and propose the minimal fix"
+  ANALYZE_SKILL_PACK:    "Review skill pack definition.json: thresholds, phase coverage, angle ranges"
+  ANALYZE_CRASH_LOG:     "Diagnose Flutter/Dart crash report or native signal crash"
+  ANALYZE_PERFORMANCE:   "Analyze pose engine profiling data: FPS, latency, CPU/GPU usage"
+  ANALYZE_CI_LOG:        "Diagnose CI pipeline failure: build, lint, test stage"
+  REVIEW_EXTRACT_CODE:   "Code review of Python extract engine (mediapipe pipeline, normalizer, segmenter)"
+  REVIEW_POSE_ENGINE_CODE: "Code review of C++ pose engine (scoring, confidence, FFI)"
+  REVIEW_FLUTTER_CODE:   "Code review of Flutter/Dart app (camera pipeline, overlay, UX)"
+  REVIEW_AGENT_CODE:     "Code review of Python SAGE agent or tool implementation"
+  EXTRACT_MOVEMENT:      "Run extraction pipeline on a video to produce a skill pack"
+  EVALUATE_SKILL_PACK:   "Benchmark skill pack against test recordings; report pass/fail rate"
+  SIGN_SKILL_PACK:       "RSA-2048 sign a clinically verified skill pack"
+  CREATE_MOVEMENT:       "Scaffold movement definition JSON for a new activity"
+  TUNE_THRESHOLDS:       "Auto-tune joint angle thresholds for a skill pack against recordings"
+  BUILD_POSE_ENGINE:     "CMake configure and build C++ pose engine"
+  TEST_POSE_ENGINE:      "Run C++ pose engine test suite (6 suites, 80 tests)"
+  PROFILE_POSE_ENGINE:   "Profile engine: FPS, scoring latency, memory footprint"
+  UPDATE_FFI_BINDINGS:   "Update Dart FFI bindings after C++ API changes"
+  RUN_TESTS:             "Run test suite — all, extract, pose_engine, agents, or flutter"
+  RUN_COVERAGE:          "Generate test coverage report and identify uncovered paths"
+  WRITE_TEST:            "Write new tests for a feature or to cover a regression"
+  BUILD_FLUTTER_APP:     "Build Flutter app for Android, iOS, or desktop"
+  REVIEW_UI_FLOW:        "Review Flutter UI flow: widget tree, state management, accessibility"
+  CREATE_TENANT:         "Scaffold a new white-label tenant (branding, modules, license)"
+  CONFIGURE_TENANT:      "Update tenant configuration: branding, activity modules, feature flags"
+  VALIDATE_TENANT:       "Run tenant-specific validation: license, signing, module availability"
+  UPDATE_SPEC:           "Update specification documents (PROJECT.md/REQUIREMENTS.md/ROADMAP.md/STATE.md)"
+  PLAN_PHASE:            "GSD: plan a development phase with independent Wave 1 tasks and dependent Wave 2+"
+  REVIEW_PROGRESS:       "GSD: compare current STATE.md against ROADMAP.md, surface next priority"
+  CREATE_MR:             "Create GitHub pull request from a branch or issue description"
+  SCAFFOLD_MODULE:       "Scaffold a new activity module: catalog, movements, templates"
+
+
+task_payloads:
+  ADVISE_BUILD:
+    goal:        "string — what capability or milestone you want to reach next"
+    domain:      "string — which component to prioritise: extract, pose_engine, flutter, agents, tenant (optional)"
+    context:     "string — any constraints or recent decisions (optional)"
+
+  PLAN_TASK:
+    description: "string — natural language task description"
+    priority:    "integer 1–10 (default 5)"
+
+  ANALYZE_BUILD_ERROR:
+    log_text:    "string — full build output"
+    component:   "string — cpp | flutter | python | cmake (optional)"
+
+  ANALYZE_TEST_FAILURE:
+    log_text:    "string — pytest / gtest / flutter test output"
+    test_name:   "string — failing test identifier (optional)"
+    component:   "string — extract | pose_engine | agents | flutter (optional)"
+
+  ANALYZE_SKILL_PACK:
+    pack_path:   "string — path to skill pack folder or definition.json"
+    movement:    "string — movement name (optional)"
+
+  ANALYZE_CRASH_LOG:
+    log_text:    "string — crash report or stack trace"
+    platform:    "string — android | ios | desktop (optional)"
+
+  ANALYZE_PERFORMANCE:
+    profile_data: "string — profiling output or perf report"
+    component:    "string — pose_engine | flutter | extract (optional)"
+
+  ANALYZE_CI_LOG:
+    log_text:    "string — CI pipeline log"
+    pipeline_id: "string — GitHub Actions run ID (optional)"
+
+  REVIEW_EXTRACT_CODE:
+    project_id:  "string — GitHub repo identifier"
+    pr_number:   "integer — pull request number"
+
+  REVIEW_POSE_ENGINE_CODE:
+    project_id:  "string — GitHub repo identifier"
+    pr_number:   "integer — pull request number"
+
+  REVIEW_FLUTTER_CODE:
+    project_id:  "string — GitHub repo identifier"
+    pr_number:   "integer — pull request number"
+
+  EXTRACT_MOVEMENT:
+    source:      "string — video file path, URL, or 'webcam'"
+    movement_name: "string — name to assign to this movement"
+    module:      "string — yoga | gym | physical_therapy | pilates | tai_chi | qigong | barre"
+    phases:      "list — phase names to extract (optional, auto-detected if omitted)"
+
+  EVALUATE_SKILL_PACK:
+    pack_path:   "string — path to skill pack folder"
+    recordings:  "list — paths to test recording files"
+    threshold:   "float — minimum pass rate (default 0.85)"
+
+  SIGN_SKILL_PACK:
+    pack_path:   "string — path to skill pack folder"
+    reviewer:    "string — clinician name / ID who verified"
+
+  CREATE_MOVEMENT:
+    movement_name: "string — name of the movement"
+    module:        "string — activity module it belongs to"
+    phases:        "list — list of phase names (e.g. [hold, transition])"
+
+  TUNE_THRESHOLDS:
+    pack_path:   "string — path to skill pack"
+    recordings:  "list — paths to training recordings"
+    tolerance:   "string — tight | normal | loose (default: normal)"
+
+  BUILD_POSE_ENGINE:
+    build_type:  "string — Debug | Release | RelWithDebInfo (default: Release)"
+    clean:       "bool — run cmake clean before build (default: false)"
+
+  TEST_POSE_ENGINE:
+    suite:       "string — all | scoring | confidence | ffi | performance (default: all)"
+    verbose:     "bool — show individual test output (default: false)"
+
+  RUN_TESTS:
+    scope:       "string — all | extract | pose_engine | agents | flutter | platform_sdk (default: all)"
+    verbose:     "bool (default: false)"
+
+  WRITE_TEST:
+    component:   "string — extract | pose_engine | agents | flutter"
+    feature:     "string — what feature or bug to cover"
+    existing_code: "string — relevant source code to write tests for (optional)"
+
+  BUILD_FLUTTER_APP:
+    target:      "string — android | ios | linux | macos | windows | web (default: android)"
+    mode:        "string — debug | profile | release (default: debug)"
+    tenant:      "string — tenant ID to build for (optional)"
+
+  CREATE_TENANT:
+    tenant_id:   "string — unique tenant identifier (snake_case)"
+    display_name: "string — human-readable name"
+    modules:     "list — activity modules to enable"
+    branding:    "dict — {primary_color, logo_path, app_name}"
+
+  UPDATE_SPEC:
+    file:        "string — PROJECT | REQUIREMENTS | ROADMAP | STATE"
+    changes:     "string — description of what to update"
+
+  PLAN_PHASE:
+    phase_name:  "string — name of the development phase"
+    goal:        "string — what this phase should achieve"
+    constraints: "string — time, resource, or dependency constraints (optional)"
+
+  REVIEW_PROGRESS:
+    focus:       "string — component or milestone to review (optional)"
+
+  CREATE_MR:
+    issue_description: "string — what to fix or implement"
+    branch:            "string — source branch name (optional)"
+    platform:          "string — github (default)"
+
+  SCAFFOLD_MODULE:
+    module_name: "string — activity module name (snake_case)"
+    description: "string — what activities this module covers"
+    movements:   "list — initial movement names to scaffold"
