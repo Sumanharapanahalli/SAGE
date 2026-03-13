@@ -1015,3 +1015,42 @@ async def llm_switch(req: LLMSwitchRequest):
     except Exception as e:
         logger.error("LLM switch failed: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# MCP Registry endpoints (Phase 1.5)
+# ---------------------------------------------------------------------------
+
+@app.get("/mcp/tools")
+async def mcp_list_tools():
+    """
+    List all MCP tools available for the active solution.
+    Discovers tools from solutions/<name>/mcp_servers/*.py.
+    """
+    from src.integrations.mcp_registry import mcp_registry
+    tools = mcp_registry.list_tools()
+    return {"tools": tools, "count": len(tools)}
+
+
+@app.post("/mcp/invoke")
+async def mcp_invoke_tool(request: Request):
+    """
+    Invoke a registered MCP tool by name.
+    Body: { "tool_name": str, "args": dict, "trace_id": str (optional) }
+    Every invocation is audit-logged.
+    """
+    body = await request.json()
+    tool_name = body.get("tool_name", "")
+    args      = body.get("args", {})
+    trace_id  = body.get("trace_id")
+
+    if not tool_name:
+        raise HTTPException(status_code=400, detail="tool_name is required")
+
+    from src.integrations.mcp_registry import mcp_registry
+    result = mcp_registry.invoke(tool_name, args, trace_id=trace_id)
+
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    return result
