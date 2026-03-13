@@ -47,6 +47,10 @@ fastmcp>=0.1.0
 langgraph
 langgraph-checkpoint-sqlite
 
+# Phase 4 — AutoGen multi-agent code tasks (optional)
+# pip install pyautogen   OR   pip install autogen-agentchat
+# pyautogen
+
 # Hardware — Serial Port
 pyserial
 

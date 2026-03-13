@@ -1220,3 +1220,91 @@ async def workflow_status(run_id: str):
         raise HTTPException(status_code=404, detail=result["error"])
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# Code Agent Endpoints (Phase 4 — AutoGen + sandbox)
+# ---------------------------------------------------------------------------
+
+@app.post("/code/plan")
+async def code_plan(request: Request):
+    """
+    Generate a code plan for a task using AutoGen (or LLM fallback).
+    Returns status=awaiting_approval with the plan and extracted code block.
+    Human must call POST /code/approve before execute() is permitted.
+
+    Body: { "task": str, "trace_id": str (optional) }
+    """
+    body = await request.json()
+    task = body.get("task", "")
+    trace_id = body.get("trace_id")
+
+    if not task:
+        raise HTTPException(status_code=400, detail="task is required")
+
+    from src.integrations.autogen_runner import autogen_runner
+    result = autogen_runner.plan(task, trace_id=trace_id)
+
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+
+    return result
+
+
+@app.post("/code/approve")
+async def code_approve(request: Request):
+    """
+    Approve a code plan, enabling sandboxed execution.
+    This is the mandatory SAGE approval gate — never bypassed.
+
+    Body: { "run_id": str, "comment": str (optional) }
+    """
+    body = await request.json()
+    run_id  = body.get("run_id", "")
+    comment = body.get("comment", "")
+
+    if not run_id:
+        raise HTTPException(status_code=400, detail="run_id is required")
+
+    from src.integrations.autogen_runner import autogen_runner
+    result = autogen_runner.approve(run_id, comment=comment)
+
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    return result
+
+
+@app.post("/code/execute")
+async def code_execute(request: Request):
+    """
+    Execute an approved code plan in a Docker sandbox (or local subprocess fallback).
+    Returns stdout, stderr, returncode, and sandbox type.
+
+    Body: { "run_id": str }
+    """
+    body = await request.json()
+    run_id = body.get("run_id", "")
+
+    if not run_id:
+        raise HTTPException(status_code=400, detail="run_id is required")
+
+    from src.integrations.autogen_runner import autogen_runner
+    result = autogen_runner.execute(run_id)
+
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    return result
+
+
+@app.get("/code/status/{run_id}")
+async def code_status(run_id: str):
+    """Get current status of a code run by run_id."""
+    from src.integrations.autogen_runner import autogen_runner
+    result = autogen_runner.get_status(run_id)
+
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+
+    return result
