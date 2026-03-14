@@ -38,7 +38,7 @@ endif
         test-meditation-app test-four-in-a-line \
         test-compliance test-all test-api \
         docker-up docker-down docker-up-d \
-        list-solutions list-projects clean help
+        list-solutions list-projects clean help doctor
 
 # ------------------------------------------------------------------------------
 # Virtual environment setup
@@ -176,6 +176,9 @@ list-solutions:
 	@ls solutions/
 
 list-projects: list-solutions
+
+doctor:
+	$(PYTHON) doctor
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

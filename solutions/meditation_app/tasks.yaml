@@ -27,7 +27,7 @@ task_payloads:
     log_text:    "string — raw Crashlytics crash log or ANR trace"
     platform:    "string — 'ios' | 'android' | 'backend' (optional)"
     app_version: "string — e.g. 2.4.1 (optional)"
-    build_number:"string — e.g. 341 (optional)"
+    build_number: "string — e.g. 341 (optional)"
 
   ANALYZE_APP_REVIEW:
     review_text: "string — the user review text"
