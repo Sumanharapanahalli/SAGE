@@ -3,16 +3,36 @@
 # ==============================================================
 
 llm:
-  # Provider: "gemini" (Gemini CLI, no API key) or "local" (llama-cpp GGUF)
+  # Provider — choose the one that fits your setup (all are no-API-key options):
+  #   "gemini"      — Gemini CLI (npm install -g @google/gemini-cli, then login once)
+  #   "claude-code" — Claude Code CLI (npm install -g @anthropic-ai/claude-code, login once)
+  #   "ollama"      — Ollama local (https://ollama.com, no login, no key, fully offline)
+  #   "local"       — llama-cpp GGUF model (GPU direct, fully offline)
+  #   "generic-cli" — Any CLI tool that accepts a prompt flag (aider, lm-studio, etc.)
+  #   "claude"      — Anthropic API (requires ANTHROPIC_API_KEY — only API-key option)
   provider: "gemini"
 
-  # --- Gemini CLI Settings (used when provider = "gemini") ---
+  # --- Gemini CLI Settings (provider = "gemini") ---
   gemini_model: "gemini-2.5-flash"      # Model hint (CLI may override)
   timeout: 120                           # Max seconds to wait for CLI response
 
-  # --- Local Llama Settings (used when provider = "local") ---
+  # --- Claude Code CLI Settings (provider = "claude-code") ---
+  claude_model: "claude-sonnet-4-6"     # or claude-opus-4-6, claude-haiku-4-5
+  # claude_path: ""                     # Auto-detected; set if not on PATH
+
+  # --- Ollama Settings (provider = "ollama") ---
+  # Run: ollama serve   then   ollama pull llama3.2
+  ollama_model: "llama3.2"              # Any model you've pulled via `ollama pull`
+  ollama_host: "http://localhost:11434" # Ollama server address
+
+  # --- Generic CLI Settings (provider = "generic-cli") ---
+  # generic_cli_path: "/usr/local/bin/my-ai"
+  # generic_cli_args: ["-p", "{prompt}"]   # {prompt} is replaced at runtime
+  # generic_cli_model: "my-model"          # Label only — used in status display
+
+  # --- Local Llama Settings (provider = "local") ---
   model_path: "./data/models/Phi-3-mini-4k-instruct-q4.gguf"
-  temperature: 0.1                       # Low temp for deterministic QMS outputs
+  temperature: 0.1                       # Low temp for deterministic outputs
   max_tokens: 3072                       # Context window
 
 memory:

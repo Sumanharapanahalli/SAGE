@@ -86,6 +86,17 @@ _MODEL_LIMITS: dict = {
     "claude-3-haiku-20240307":    {"daily_requests": 0, "context_tokens": 200_000},
     # Local (unlimited)
     "local":                  {"daily_requests": 0,    "context_tokens": 2048},
+    # Ollama local models (unlimited — runs on your hardware)
+    "llama3.2":               {"daily_requests": 0,    "context_tokens": 128_000},
+    "llama3.1":               {"daily_requests": 0,    "context_tokens": 128_000},
+    "llama3":                 {"daily_requests": 0,    "context_tokens": 8_192},
+    "mistral":                {"daily_requests": 0,    "context_tokens": 32_768},
+    "phi3":                   {"daily_requests": 0,    "context_tokens": 128_000},
+    "qwen2.5":                {"daily_requests": 0,    "context_tokens": 128_000},
+    "deepseek-r1":            {"daily_requests": 0,    "context_tokens": 64_000},
+    "codellama":              {"daily_requests": 0,    "context_tokens": 16_384},
+    # Generic CLI (unlimited — provider-defined)
+    "generic":                {"daily_requests": 0,    "context_tokens": 8_192},
 }
 
 
@@ -414,6 +425,129 @@ class ClaudeAPIProvider(LLMProvider):
             return f"Error: {e}"
 
 
+# ---------------------------------------------------------------------------
+# Provider 5: Ollama (local, no API key, no login — just `ollama serve`)
+# ---------------------------------------------------------------------------
+class OllamaProvider(LLMProvider):
+    """
+    Calls a locally running Ollama server via its REST API.
+    No API keys, no browser login — just install Ollama and run `ollama serve`.
+    Install: https://ollama.com   |   Models: ollama pull llama3.2
+
+    Supports any model pulled via `ollama pull <model>`.
+    Default model: llama3.2 (fast, 3B params, runs on CPU).
+    """
+
+    def __init__(self, config):
+        self.logger = logging.getLogger("OllamaProvider")
+        self.model   = config.get("ollama_model", "llama3.2")
+        self.host    = config.get("ollama_host", "http://localhost:11434")
+        self.timeout = config.get("timeout", 120)
+        self.logger.info("Ollama provider ready (model: %s, host: %s)", self.model, self.host)
+
+    def provider_name(self):
+        return f"Ollama ({self.model})"
+
+    def generate(self, prompt, system_prompt):
+        import json as _json
+        import urllib.request as _req
+        import urllib.error
+
+        payload = _json.dumps({
+            "model":  self.model,
+            "prompt": prompt,
+            "system": system_prompt,
+            "stream": False,
+            "options": {"temperature": 0.1},
+        }).encode()
+
+        try:
+            request = _req.Request(
+                f"{self.host}/api/generate",
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with _req.urlopen(request, timeout=self.timeout) as resp:
+                data = _json.loads(resp.read().decode())
+                return data.get("response", "").strip()
+        except urllib.error.URLError as e:
+            self.logger.error("Ollama connection failed (is `ollama serve` running?): %s", e)
+            return f"Error: Cannot reach Ollama at {self.host}. Run: ollama serve"
+        except Exception as e:
+            self.logger.error("Ollama generate failed: %s", e)
+            return f"Error: {e}"
+
+
+# ---------------------------------------------------------------------------
+# Provider 6: Generic CLI (any tool that reads prompt from stdin or -p flag)
+# ---------------------------------------------------------------------------
+class GenericCLIProvider(LLMProvider):
+    """
+    Wraps any AI CLI tool that accepts a prompt via -p / --prompt flag or stdin.
+    Configure in config.yaml:
+
+      llm:
+        provider: "generic-cli"
+        generic_cli_path: "/usr/local/bin/my-ai-tool"
+        generic_cli_args: ["-p", "{prompt}"]   # {prompt} replaced at runtime
+        generic_cli_model: "my-model"           # used in provider_name only
+
+    This makes SAGE compatible with any future CLI-based model without code changes.
+    Examples: aider, continue, lm-studio-cli, any custom wrapper.
+    """
+
+    def __init__(self, config):
+        self.logger  = logging.getLogger("GenericCLI")
+        self.path    = config.get("generic_cli_path", "")
+        self.args    = config.get("generic_cli_args", ["-p", "{prompt}"])
+        self.model   = config.get("generic_cli_model", "generic")
+        self.timeout = config.get("timeout", 120)
+
+        if not self.path:
+            self.logger.error("generic_cli_path not set in config.yaml")
+        else:
+            self.logger.info("Generic CLI provider: %s (model: %s)", self.path, self.model)
+
+    def provider_name(self):
+        return f"GenericCLI ({self.model})"
+
+    def generate(self, prompt, system_prompt):
+        if not self.path:
+            return "Error: generic_cli_path not configured."
+
+        combined = f"SYSTEM: {system_prompt}\n\nUSER: {prompt}"
+        cmd = [
+            token.replace("{prompt}", combined).replace("{system}", system_prompt)
+            for token in [self.path] + self.args
+        ]
+
+        env = os.environ.copy()
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=self.timeout,
+                encoding="utf-8",
+                errors="replace",
+                env=env,
+            )
+            if result.returncode != 0:
+                err = result.stderr.strip() or "non-zero exit"
+                self.logger.error("Generic CLI error (rc=%d): %s", result.returncode, err)
+                return f"Error from {self.model}: {err}"
+            output = result.stdout.strip()
+            return output if output else f"Error: {self.model} returned empty output."
+        except subprocess.TimeoutExpired:
+            return f"Error: {self.model} CLI timed out."
+        except FileNotFoundError:
+            return f"Error: CLI not found at {self.path}"
+        except Exception as e:
+            self.logger.error("Generic CLI failed: %s", e)
+            return f"Error: {e}"
+
+
 # ===========================================================================
 # LLM Gateway (Singleton + Thread Lock)
 # ===========================================================================
@@ -469,6 +603,10 @@ class LLMGateway:
             self.provider = ClaudeCodeCLIProvider(llm_cfg)
         elif backend == "claude":
             self.provider = ClaudeAPIProvider(llm_cfg)
+        elif backend == "ollama":
+            self.provider = OllamaProvider(llm_cfg)
+        elif backend == "generic-cli":
+            self.provider = GenericCLIProvider(llm_cfg)
         else:
             self.logger.error("Unknown provider '%s'. Defaulting to gemini.", backend)
             self.provider = GeminiCLIProvider(llm_cfg)
