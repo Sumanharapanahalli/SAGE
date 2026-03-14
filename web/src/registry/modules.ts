@@ -227,6 +227,23 @@ export const MODULE_REGISTRY: Record<string, ModuleMetadata> = {
     ],
   },
 
+  'live-console': {
+    id: 'live-console',
+    name: 'Live Console',
+    description: 'Real-time stream of all backend log output — agent activity, LLM calls, approvals.',
+    version: '1.0.0',
+    route: '/live-console',
+    features: [
+      'SSE log streaming from Python backend',
+      'Filter by text or logger name',
+      'Pause and clear controls',
+    ],
+    improvementHints: [
+      'Add log-level filter buttons',
+      'Add download log session as text file',
+    ],
+  },
+
 }
 // ---------------------------------------------------------------------------
 // To add solution-specific modules: extend MODULE_REGISTRY above with your
