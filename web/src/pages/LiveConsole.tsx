@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { ModuleWrapper } from '../components/layout/ModuleWrapper'
+import ModuleWrapper from '../components/shared/ModuleWrapper'
 import { logsStreamUrl } from '../api/client'
 
 interface LogEntry {
@@ -90,11 +90,7 @@ export default function LiveConsole() {
     : entries
 
   return (
-    <ModuleWrapper
-      moduleId="live-console"
-      moduleName="Live Console"
-      moduleVersion="1.0.0"
-    >
+    <ModuleWrapper moduleId="live-console">
       <div className="space-y-3">
         {/* Toolbar */}
         <div className="flex items-center gap-3 flex-wrap">
