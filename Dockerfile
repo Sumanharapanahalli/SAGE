@@ -31,14 +31,13 @@ RUN pip install --no-cache-dir python-pptx || true
 # Copy application
 COPY src/        ./src/
 COPY config/     ./config/
-COPY projects/   ./projects/
-COPY mcp_servers/ ./mcp_servers/
+COPY solutions/  ./solutions/
 
 # Create data directories
 RUN mkdir -p data/chroma_db data/models
 
 # Environment defaults
-ENV SAGE_PROJECT=medtech \
+ENV SAGE_PROJECT=starter \
     LLM_PROVIDER=gemini \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1

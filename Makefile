@@ -7,14 +7,13 @@
 #   make venv-minimal  Create .venv with minimal deps (low-RAM machines)
 #
 # Daily usage:
-#   make run [PROJECT=medtech]   Start FastAPI backend
+#   make run [PROJECT=starter]   Start FastAPI backend
 #   make ui                      Start React web UI (:5173)
 #   make test                    Framework unit tests (venv)
-#   make test-medtech            medtech solution tests (venv)
-#   make test-all                Framework + medtech tests
+#   make test-all                Framework + all solution tests
 # ==============================================================================
 
-PROJECT       ?= medtech
+PROJECT       ?= starter
 SOLUTIONS_DIR ?= solutions
 PORT          ?= 8000
 HOST          ?= 0.0.0.0
@@ -35,7 +34,8 @@ endif
 
 .PHONY: venv venv-minimal install install-dev install-ui install-minimal \
         run api cli monitor demo ui \
-        test test-unit test-solution test-medtech test-poseengine test-kappture \
+        test test-unit test-solution test-medtech test-medtech-team \
+        test-meditation-app test-four-in-a-line \
         test-compliance test-all test-api \
         docker-up docker-down docker-up-d \
         list-solutions list-projects clean help
@@ -129,11 +129,14 @@ test-medtech:
 	  --ignore=solutions/medtech/tests/integration \
 	  -v
 
-test-poseengine:
-	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/poseengine/tests/ -v
+test-medtech-team:
+	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/medtech_team/tests/ -v
 
-test-kappture:
-	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/kappture/tests/ -v
+test-meditation-app:
+	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/meditation_app/tests/ -v
+
+test-four-in-a-line:
+	SAGE_SOLUTIONS_DIR=$(SOLUTIONS_DIR) $(PYTEST) solutions/four_in_a_line/tests/ -v
 
 # Full suite: framework + medtech (excludes mcp/integration which need real services)
 test-all:
@@ -191,15 +194,17 @@ help:
 	@echo "  make install-ui              Install Node.js deps for web UI"
 	@echo ""
 	@echo "Run:"
-	@echo "  make run [PROJECT=medtech]   Start FastAPI backend (:8000)"
+	@echo "  make run [PROJECT=starter]   Start FastAPI backend (:8000)"
 	@echo "  make ui                      Start React web UI (:5173)"
 	@echo "  make cli [PROJECT=...]       Interactive CLI"
 	@echo ""
 	@echo "Test:"
 	@echo "  make test                    Framework unit tests"
-	@echo "  make test-medtech            medtech e2e + validation tests"
-	@echo "  make test-poseengine         poseengine solution tests"
-	@echo "  make test-kappture           kappture solution tests"
+	@echo "  make test-medtech            medtech solution tests"
+	@echo "  make test-medtech-team       medtech_team solution tests"
+	@echo "  make test-meditation-app     meditation_app solution tests"
+	@echo "  make test-four-in-a-line     four_in_a_line solution tests"
+	@echo "  make test-solution PROJECT=X Any solution's tests"
 	@echo "  make test-all                Framework + medtech (no external deps)"
 	@echo "  make test-mcp                MCP tests (needs fastmcp installed)"
 	@echo "  make test-integration        Integration tests (needs live services)"
@@ -208,5 +213,5 @@ help:
 	@echo "Deploy:"
 	@echo "  make docker-up [PROJECT=...] Start via Docker Compose"
 	@echo ""
-	@echo "  Solutions: medtech | poseengine | kappture | startup | <your-solution>"
+	@echo "  Solutions: starter | meditation_app | four_in_a_line | medtech_team | <your-solution>"
 	@echo ""
