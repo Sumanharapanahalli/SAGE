@@ -40,17 +40,18 @@ web/src/                React 18 + TypeScript dashboard
   api/client.ts         All fetch calls — typed
 
 solutions/              Solution configurations (NOT framework code)
-  starter/              Generic template — use for new domains
+  starter/              Generic template — copy this for any new domain
     project.yaml        What this domain IS (declarative agent manifest)
     prompts.yaml        How agents THINK in this domain
     tasks.yaml          What agents CAN DO
     workflows/          LangGraph StateGraph workflows (interrupt → approve)
     mcp_servers/        FastMCP server files — domain tools
     evals/              Eval YAML test suites for benchmarking
-  medtech/              ISO 13485 example (MIT)
-  poseengine/           ML/mobile example (MIT)
-  kappture/             Human tracking example (MIT)
-  dfs/                  DFS proprietary — NEVER commit to this repo
+  meditation_app/       Flutter + Node.js mobile app example
+  four_in_a_line/       Casual game studio example
+  medtech_team/         Regulated medical device team (embedded + web + devops)
+  <proprietary>/        Company-specific solutions — mount via SAGE_SOLUTIONS_DIR,
+                        NEVER stored in this repo
 
 config/config.yaml      Base LLM / memory / integration settings
 .venv/                  Python virtual environment (Windows: Scripts/, Unix: bin/)
@@ -99,10 +100,10 @@ Or switch at runtime: `POST /llm/switch {"provider": "ollama", "model": "llama3.
 
 | Skill | Usage |
 |---|---|
-| `/run-tests` | Run tests — optionally pass a scope: `all`, `medtech`, `api`, `llm` |
-| `/new-solution` | Scaffold a new solution from template: `/new-solution robotics` |
+| `/run-tests` | Run tests — optionally pass a scope: `all`, `api`, `llm`, or a solution name |
+| `/new-solution` | Scaffold a new solution from the starter template: `/new-solution robotics` |
 | `/check-api` | Smoke-test all live API endpoints |
-| `/edit-solution-yaml` | Edit a solution YAML and hot-reload: `/edit-solution-yaml medtech prompts ...` |
+| `/edit-solution-yaml` | Edit a solution YAML and hot-reload: `/edit-solution-yaml meditation_app prompts ...` |
 
 ---
 
@@ -243,7 +244,7 @@ If someone asks "can you add X", first ask: is X for their solution, or for SAGE
 
 ## Critical Rules (from SOUL.md)
 
-- Never commit `solutions/dfs/` — it is proprietary, blocked by .gitignore
+- Never commit proprietary solutions to this repo — mount them via `SAGE_SOLUTIONS_DIR` from a separate private repo
 - Never add solution-specific logic to `src/` — solutions plug in via YAML only
 - Never bypass the audit log or the human approval step
 - Never remove the `threading.Lock` from `LLMGateway`

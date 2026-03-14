@@ -5,7 +5,7 @@ description: >
   or tasks.yaml) and reload the running backend. Use when the user asks to
   change a prompt, add a task type, update active modules, or tweak any
   solution config. $ARGUMENTS format: "<solution> <file> <instruction>"
-  e.g. "medtech prompts update the analyst prompt to include RTOS context"
+  e.g. "meditation_app prompts update the analyst prompt to include iOS crash context"
 user-invocable: true
 allowed-tools: Read, Edit, Bash, Grep
 ---
@@ -17,10 +17,10 @@ Edit a SAGE solution YAML config file based on $ARGUMENTS.
 $ARGUMENTS should be in the form: `<solution> <file> <natural-language-instruction>`
 
 Examples:
-- `medtech prompts add RTOS fault context to the analyst system prompt`
-- `dfs tasks add a new task type FLASH_DIAGNOSTICS for flashing diagnostics`
-- `medtech project add 'ISO 27001' to compliance_standards`
-- `poseengine project set domain to ml-mobile`
+- `meditation_app prompts add push notification context to the analyst system prompt`
+- `four_in_a_line tasks add a new task type ANALYZE_MATCHMAKING for matchmaking analysis`
+- `medtech_team project add 'ISO 27001' to compliance_standards`
+- `my_project project set domain to fintech`
 
 ## Steps
 

@@ -13,7 +13,7 @@ Smoke-test the SAGE Framework REST API running at http://localhost:8000.
 
 ## Endpoints to test (when $ARGUMENTS is empty)
 
-Run each curl and report status code + key fields. Mark ✅ pass or ❌ fail.
+Run each curl and report status code + key fields. Mark PASS or FAIL.
 
 ```bash
 # Core
@@ -47,16 +47,16 @@ Only test that endpoint. Print the full JSON response.
 
 For each endpoint:
 ```
-✅ GET /health          200  status=ok  project=medtech  llm=GeminiCLI(gemini-2.5-flash)
-✅ GET /llm/status      200  calls_today=0  daily_limit=500  model=gemini-2.5-flash
-❌ GET /monitor/status  500  detail="MonitorAgent not initialised"
+PASS  GET /health          200  status=ok  project=starter  llm=GeminiCLI(gemini-2.5-flash)
+PASS  GET /llm/status      200  calls_today=0  daily_limit=500  model=gemini-2.5-flash
+FAIL  GET /monitor/status  500  detail="MonitorAgent not initialised"
 ```
 
 ## Common failures and fixes
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Connection refused | Backend not running | `make run PROJECT=medtech` |
+| Connection refused | Backend not running | `make run PROJECT=starter` |
 | 500 on /config/yaml | solutions/ dir not found | Check `SAGE_SOLUTIONS_DIR` |
 | 500 on /llm/status | LLM gateway init failed | Check Gemini CLI is installed |
 | 404 on any route | Wrong FastAPI version | `make venv` to reinstall deps |
