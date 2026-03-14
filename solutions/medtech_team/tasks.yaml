@@ -1,0 +1,73 @@
+# ==============================================================================
+# SAGE Tasks — Medical Device Software Team
+# ==============================================================================
+
+task_types:
+  - ANALYZE_FIRMWARE_LOG
+  - ANALYZE_WEB_ERROR
+  - ANALYZE_INFRA_ALERT
+  - REVIEW_FIRMWARE_CODE
+  - REVIEW_WEB_CODE
+  - REVIEW_INFRA_CODE
+  - CREATE_MR
+  - MONITOR_DEVICE
+  - PLAN_TASK
+
+task_descriptions:
+  ANALYZE_FIRMWARE_LOG:  "Analyze embedded firmware log, hardware fault, or RTOS trace"
+  ANALYZE_WEB_ERROR:     "Analyze clinical web application error, API failure, or UI bug"
+  ANALYZE_INFRA_ALERT:   "Analyze infrastructure or CI/CD pipeline alert"
+  REVIEW_FIRMWARE_CODE:  "IEC 62304 code review of embedded C/C++ changes"
+  REVIEW_WEB_CODE:       "Code review of clinical web application (React/TypeScript/API)"
+  REVIEW_INFRA_CODE:     "Review infrastructure-as-code changes (Terraform, K8s YAML, CI config)"
+  CREATE_MR:             "Create a GitLab merge request with IEC 62304-compliant description"
+  MONITOR_DEVICE:        "Check device telemetry, CI/CD pipeline, and system health"
+  PLAN_TASK:             "Decompose a complex request into ordered subtasks"
+
+task_payloads:
+  ANALYZE_FIRMWARE_LOG:
+    log_text:        "string — firmware log output, fault handler dump, or RTOS trace"
+    device_id:       "string — device serial number or identifier (optional)"
+    firmware_version:"string — e.g. 1.4.2 (optional)"
+    hardware_rev:    "string — PCB revision (optional)"
+
+  ANALYZE_WEB_ERROR:
+    log_text:        "string — web application error log, stack trace, or API error"
+    endpoint:        "string — affected API endpoint (optional)"
+    user_role:       "string — 'clinician' | 'admin' | 'patient' (optional)"
+    status_code:     "integer — HTTP status code (optional)"
+
+  ANALYZE_INFRA_ALERT:
+    alert_text:      "string — alert message, pipeline failure log, or infrastructure event"
+    environment:     "string — 'dev' | 'staging' | 'production' (optional)"
+    service:         "string — affected service or pipeline name (optional)"
+
+  REVIEW_FIRMWARE_CODE:
+    diff_text:       "string — git diff or C/C++ code snippet"
+    mr_url:          "string — GitLab MR URL (optional)"
+    software_class:  "string — IEC 62304 class: 'A' | 'B' | 'C' (optional)"
+    safety_functions:"string — list of safety functions touched (optional)"
+
+  REVIEW_WEB_CODE:
+    diff_text:       "string — git diff or web code to review"
+    mr_url:          "string — GitLab MR URL (optional)"
+    touches_phi:     "bool — true if this change handles patient health information (optional)"
+
+  REVIEW_INFRA_CODE:
+    diff_text:       "string — Terraform, K8s YAML, or CI config diff"
+    mr_url:          "string — GitLab MR URL (optional)"
+    environment:     "string — 'dev' | 'staging' | 'production' (optional)"
+
+  CREATE_MR:
+    issue_description: "string — what to fix or implement"
+    layer:             "string — 'firmware' | 'web' | 'infra' (optional)"
+    project_id:        "string — GitLab project ID (optional)"
+    target_branch:     "string — e.g. 'main' or 'develop' (optional)"
+
+  MONITOR_DEVICE:
+    device_id:       "string — device or deployment to check (optional)"
+    check_type:      "string — 'telemetry' | 'pipeline' | 'all' (optional)"
+
+  PLAN_TASK:
+    description:     "string — natural language task description for the planner"
+    priority:        "integer — 1-10 (default 5)"

@@ -10,16 +10,16 @@
 ## Solutions
 
 Solutions are **separate from the framework** — each is a folder of 3 YAML files
-(`project.yaml`, `prompts.yaml`, `tasks.yaml`) plus optional tests and tools.
+(`project.yaml`, `prompts.yaml`, `tasks.yaml`). No Python. No framework changes.
 
-### Open example solutions (MIT licensed, included in this repo)
+### Included example solutions
 
-| Solution | Domain | Standards | Key Integrations |
-|---|---|---|---|
-| `medtech` | Medical devices | ISO 13485, IEC 62304, ISO 14971 | GitLab, Teams, Metabase, Spira, J-Link |
-| `poseengine` | ML + Flutter mobile | — | GitLab, WandB, Firebase, CI/CD |
-| `kappture` | Human tracking / CV | GDPR | GitLab, RTSP cameras, Prometheus, Grafana |
-| `startup` | Full startup workspace | — | GitLab, GitHub, Slack, Notion, Google Workspace |
+| Solution | Domain | Roles / Focus |
+|---|---|---|
+| `starter` | Generic template | All agent roles, no integrations — start here |
+| `meditation_app` | Flutter mobile + Node.js | Product advisor, QA analyst, release manager |
+| `four_in_a_line` | Casual game studio | Game designer, AI specialist, monetisation advisor |
+| `medtech_team` | Regulated medical device | Embedded developer, web developer, devops, quality engineer |
 
 ### Proprietary solutions (NOT in this repo)
 
@@ -27,20 +27,19 @@ Company-specific solutions live in their own **private repositories** and are
 mounted at runtime via `SAGE_SOLUTIONS_DIR`. They never touch this repo.
 
 ```bash
-# Example: attach a private DFS solution from a separate repo
-SAGE_SOLUTIONS_DIR=/path/to/dfs-private-repo SAGE_PROJECT=dfs make run
+SAGE_SOLUTIONS_DIR=/path/to/private-solutions make run PROJECT=my_company
 ```
-
-See [`solutions/README.md`](solutions/README.md) for the full licensing model
-and instructions for creating your own proprietary solution repo.
 
 ### Add your own solution
 
 ```bash
-cp -r solutions/medtech solutions/my_solution
+# From the starter template
+cp -r solutions/starter solutions/my_project
 # Edit the three YAML files, then:
-make run PROJECT=my_solution
+make run PROJECT=my_project
 ```
+
+Or let the LLM generate it for you — see [GETTING_STARTED.md](GETTING_STARTED.md).
 
 ---
 
@@ -77,12 +76,12 @@ make ui                     # React web UI at http://localhost:5173
 make test                   # Run framework tests
 ```
 
-To run an existing domain solution:
+To run one of the included example solutions:
 
 ```bash
-make run PROJECT=medtech    # ISO 13485 medical device example
-make run PROJECT=kappture   # Computer vision / human tracking example
-make run PROJECT=poseengine # ML + Flutter mobile example
+make run PROJECT=meditation_app   # Flutter mobile app example
+make run PROJECT=four_in_a_line   # Casual game studio example
+make run PROJECT=medtech_team     # Regulated medical device team example
 ```
 
 > `make venv` creates `.venv/` and installs all dependencies.

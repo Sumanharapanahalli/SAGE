@@ -1,0 +1,64 @@
+# ==============================================================================
+# SAGE Tasks — Meditation App
+# ==============================================================================
+
+task_types:
+  - ANALYZE_CRASH
+  - ANALYZE_APP_REVIEW
+  - ANALYZE_BACKEND_ERROR
+  - REVIEW_FLUTTER_CODE
+  - REVIEW_BACKEND_CODE
+  - CREATE_MR
+  - MONITOR_PIPELINE
+  - PLAN_TASK
+
+task_descriptions:
+  ANALYZE_CRASH:         "Triage a Firebase Crashlytics crash report or ANR trace"
+  ANALYZE_APP_REVIEW:    "Analyze App Store or Play Store user review for engineering signals"
+  ANALYZE_BACKEND_ERROR: "Diagnose a Node.js backend error, timeout, or API failure"
+  REVIEW_FLUTTER_CODE:   "Code review of Flutter widget, Dart logic, or state management changes"
+  REVIEW_BACKEND_CODE:   "Code review of Node.js, Express, or database layer changes"
+  CREATE_MR:             "Create a GitLab merge request from an issue or branch"
+  MONITOR_PIPELINE:      "Check CI/CD pipeline status for iOS or Android build jobs"
+  PLAN_TASK:             "Decompose a complex request into ordered subtasks"
+
+task_payloads:
+  ANALYZE_CRASH:
+    log_text:    "string — raw Crashlytics crash log or ANR trace"
+    platform:    "string — 'ios' | 'android' | 'backend' (optional)"
+    app_version: "string — e.g. 2.4.1 (optional)"
+    build_number:"string — e.g. 341 (optional)"
+
+  ANALYZE_APP_REVIEW:
+    review_text: "string — the user review text"
+    rating:      "integer — star rating 1-5 (optional)"
+    platform:    "string — 'app_store' | 'play_store' (optional)"
+    app_version: "string — version the review was left on (optional)"
+
+  ANALYZE_BACKEND_ERROR:
+    log_text:    "string — Node.js error log, stack trace, or API error response"
+    endpoint:    "string — the API endpoint that failed (optional)"
+    status_code: "integer — HTTP status code (optional)"
+
+  REVIEW_FLUTTER_CODE:
+    diff_text:   "string — git diff or code snippet to review"
+    mr_url:      "string — GitLab MR URL (optional)"
+    context:     "string — description of what the change does (optional)"
+
+  REVIEW_BACKEND_CODE:
+    diff_text:   "string — git diff or code snippet to review"
+    mr_url:      "string — GitLab MR URL (optional)"
+    context:     "string — description of what the change does (optional)"
+
+  CREATE_MR:
+    issue_description: "string — what to fix or implement"
+    project_id:        "string — GitLab project ID (optional, uses default)"
+    target_branch:     "string — e.g. 'main' or 'develop' (optional)"
+
+  MONITOR_PIPELINE:
+    project_id:  "string — GitLab project ID (optional)"
+    branch:      "string — branch to check (optional, defaults to main)"
+
+  PLAN_TASK:
+    description: "string — natural language task description for the planner"
+    priority:    "integer — 1-10 (default 5)"
