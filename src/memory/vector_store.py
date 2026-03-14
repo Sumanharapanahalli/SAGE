@@ -256,6 +256,108 @@ class VectorMemory:
             return matches[:k]
         return []
 
+    # ------------------------------------------------------------------
+    # Knowledge Base CRUD (Phase 7)
+    # ------------------------------------------------------------------
+
+    def list_entries(self, limit: int = 50) -> list[dict]:
+        """
+        Return up to `limit` stored knowledge entries with their IDs.
+        Returns [{id, text, metadata}, ...].
+        """
+        results = []
+
+        # ChromaDB direct peek
+        if self._vector_store and self._ready:
+            try:
+                col = self._vector_store._collection
+                data = col.get(limit=limit, include=["documents", "metadatas"])
+                for doc_id, doc, meta in zip(
+                    data.get("ids", []),
+                    data.get("documents", []),
+                    data.get("metadatas", []),
+                ):
+                    results.append({"id": doc_id, "text": doc, "metadata": meta or {}})
+                return results
+            except Exception as exc:
+                logger.warning("ChromaDB list_entries failed: %s", exc)
+
+        # Fallback list — IDs are positional
+        for i, text in enumerate(self._fallback_memory[:limit]):
+            results.append({"id": str(i), "text": text, "metadata": {}})
+        return results
+
+    def add_entry(self, text: str, metadata: dict = None) -> str:
+        """
+        Add a knowledge entry directly (not just feedback).
+        Returns the assigned entry ID.
+        """
+        import uuid as _uuid
+        entry_id = str(_uuid.uuid4())
+        self._fallback_memory.append(text)
+
+        if self._mode == "llamaindex" and self._ready:
+            try:
+                from llama_index.core import Document
+                self._llamaindex_index.insert(
+                    Document(text=text, metadata={**(metadata or {}), "entry_id": entry_id})
+                )
+                return entry_id
+            except Exception as exc:
+                logger.warning("LlamaIndex add_entry failed: %s", exc)
+
+        if self._vector_store and self._ready:
+            try:
+                ids = self._vector_store.add_texts(
+                    texts=[text],
+                    metadatas=[{**(metadata or {}), "entry_id": entry_id}],
+                    ids=[entry_id],
+                )
+                return ids[0] if ids else entry_id
+            except Exception as exc:
+                logger.warning("ChromaDB add_entry failed: %s", exc)
+
+        return entry_id
+
+    def delete_entry(self, entry_id: str) -> bool:
+        """
+        Delete a knowledge entry by ID.
+        Returns True on success, False if not found.
+        """
+        if self._vector_store and self._ready:
+            try:
+                self._vector_store._collection.delete(ids=[entry_id])
+                logger.info("Deleted knowledge entry %s from ChromaDB", entry_id)
+                return True
+            except Exception as exc:
+                logger.warning("ChromaDB delete_entry failed: %s", exc)
+
+        # Fallback: try positional removal if id is an integer string
+        try:
+            idx = int(entry_id)
+            if 0 <= idx < len(self._fallback_memory):
+                self._fallback_memory.pop(idx)
+                return True
+        except (ValueError, IndexError):
+            pass
+        return False
+
+    def bulk_import(self, entries: list[dict]) -> int:
+        """
+        Add multiple knowledge entries at once.
+        Each entry: {"text": str, "metadata": dict (optional)}.
+        Returns the count of successfully added entries.
+        """
+        count = 0
+        for entry in entries:
+            text = entry.get("text", "").strip()
+            if not text:
+                continue
+            self.add_entry(text, metadata=entry.get("metadata", {}))
+            count += 1
+        logger.info("Bulk imported %d knowledge entries", count)
+        return count
+
     def add_feedback(self, text: str, metadata: dict = None):
         """Learn from human feedback — saved to vector DB or fallback list."""
         self._fallback_memory.append(text)   # always save (cheap)

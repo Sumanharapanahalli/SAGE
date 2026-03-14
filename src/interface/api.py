@@ -26,6 +26,7 @@ from typing import Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------------------------------------------------------------
+# Multi-Tenant Middleware (Phase 10)
+# ---------------------------------------------------------------------------
+
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
+
+
+class TenantMiddleware(BaseHTTPMiddleware):
+    """
+    Extracts X-SAGE-Tenant header and sets the per-request tenant context.
+    This runs before every request, enabling tenant-scoped vector store
+    and audit log queries downstream.
+    """
+    async def dispatch(self, request: StarletteRequest, call_next):
+        tenant = request.headers.get("X-SAGE-Tenant", "").strip()
+        if tenant:
+            from src.core.tenant import set_tenant
+            set_tenant(tenant)
+        response = await call_next(request)
+        return response
+
+
+app.add_middleware(TenantMiddleware)
 
 # ---------------------------------------------------------------------------
 # Pydantic Request Models
@@ -1308,3 +1335,498 @@ async def code_status(run_id: str):
         raise HTTPException(status_code=404, detail=result["error"])
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# Real-time SSE Streaming Endpoints (Phase 5)
+# ---------------------------------------------------------------------------
+
+def _sse_event(data: dict) -> str:
+    """Format a dict as a Server-Sent Events data line."""
+    import json
+    return f"data: {json.dumps(data)}\n\n"
+
+
+@app.post("/analyze/stream")
+async def analyze_stream(request: Request):
+    """
+    Stream an agent analysis response token-by-token via Server-Sent Events.
+
+    Body: { "log_entry": str, "system_prompt": str (optional) }
+
+    SSE event shapes:
+      {"type": "token",  "content": "..."}   — incremental text chunk
+      {"type": "meta",   "trace_id": "..."}  — sent first with trace context
+      {"type": "done",   "content": ""}      — stream finished
+      {"type": "error",  "content": "..."}   — terminal error
+    """
+    body = await request.json()
+    log_entry    = body.get("log_entry", "")
+    system_prompt = body.get(
+        "system_prompt",
+        "You are a precise analyst. Identify the root cause, risk level, and next steps.",
+    )
+
+    if not log_entry:
+        raise HTTPException(status_code=400, detail="log_entry is required")
+
+    import uuid as _uuid
+    trace_id = str(_uuid.uuid4())
+
+    async def _event_stream():
+        from src.core.llm_gateway import llm_gateway
+        from src.memory.audit_logger import audit_logger
+
+        yield _sse_event({"type": "meta", "trace_id": trace_id})
+
+        full_response = []
+        try:
+            for chunk in llm_gateway.generate_stream(
+                prompt=log_entry,
+                system_prompt=system_prompt,
+                trace_name="analyze_stream",
+            ):
+                full_response.append(chunk)
+                yield _sse_event({"type": "token", "content": chunk})
+        except Exception as exc:
+            logger.error("SSE stream error: %s", exc)
+            yield _sse_event({"type": "error", "content": str(exc)})
+            return
+
+        result_text = "".join(full_response)
+
+        # Audit the completed analysis
+        try:
+            audit_logger.log_event(
+                actor="analyze_stream",
+                action_type="ANALYZE_STREAM",
+                input_context=log_entry[:300],
+                output_content=result_text[:500],
+                metadata={"trace_id": trace_id, "streaming": True},
+            )
+        except Exception:
+            pass
+
+        yield _sse_event({"type": "done", "content": "", "trace_id": trace_id})
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",    # disable nginx buffering
+        },
+    )
+
+
+@app.post("/agent/stream")
+async def agent_stream(request: Request):
+    """
+    Stream a universal agent response via Server-Sent Events.
+
+    Body: { "role": str, "task": str, "context": str (optional) }
+
+    Same SSE event shapes as /analyze/stream.
+    """
+    body = await request.json()
+    role = body.get("role", "")
+    task = body.get("task", "")
+    context = body.get("context", "")
+
+    if not role or not task:
+        raise HTTPException(status_code=400, detail="role and task are required")
+
+    import uuid as _uuid
+    trace_id = str(_uuid.uuid4())
+
+    async def _agent_event_stream():
+        from src.core.llm_gateway import llm_gateway
+        from src.core.project_loader import project_config
+        from src.memory.audit_logger import audit_logger
+
+        yield _sse_event({"type": "meta", "trace_id": trace_id})
+
+        try:
+            prompts = project_config.get_prompts()
+            role_cfg = prompts.get(role, {})
+            system_prompt = role_cfg.get(
+                "system_prompt",
+                f"You are an expert {role} agent. Complete the task concisely.",
+            )
+        except Exception:
+            system_prompt = f"You are an expert {role} agent. Complete the task concisely."
+
+        prompt = task
+        if context:
+            prompt = f"Context:\n{context}\n\nTask:\n{task}"
+
+        full_response = []
+        try:
+            for chunk in llm_gateway.generate_stream(
+                prompt=prompt,
+                system_prompt=system_prompt,
+                trace_name=f"agent_stream_{role}",
+            ):
+                full_response.append(chunk)
+                yield _sse_event({"type": "token", "content": chunk})
+        except Exception as exc:
+            logger.error("Agent SSE stream error: %s", exc)
+            yield _sse_event({"type": "error", "content": str(exc)})
+            return
+
+        result_text = "".join(full_response)
+
+        try:
+            audit_logger.log_event(
+                actor=f"agent_stream/{role}",
+                action_type="AGENT_STREAM",
+                input_context=task[:300],
+                output_content=result_text[:500],
+                metadata={"trace_id": trace_id, "role": role, "streaming": True},
+            )
+        except Exception:
+            pass
+
+        yield _sse_event({"type": "done", "content": "", "trace_id": trace_id})
+
+    return StreamingResponse(
+        _agent_event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# Onboarding Wizard (Phase 6)
+# ---------------------------------------------------------------------------
+
+@app.post("/onboarding/generate")
+async def onboarding_generate(request: Request):
+    """
+    Generate a complete SAGE solution (3 YAML files + directory structure)
+    from a plain-language description of the user's domain.
+
+    Body: {
+        "description": str,              — what the solution does (required)
+        "solution_name": str,            — snake_case folder name (required)
+        "compliance_standards": [str],   — optional list
+        "integrations": [str]            — optional list (default: ["gitlab"])
+    }
+
+    Returns: { solution_name, path, status, files, message }
+    status = "created" | "exists"
+    """
+    body = await request.json()
+    description   = body.get("description", "").strip()
+    solution_name = body.get("solution_name", "").strip()
+    compliance    = body.get("compliance_standards", [])
+    integrations  = body.get("integrations", ["gitlab"])
+
+    if not description:
+        raise HTTPException(status_code=400, detail="description is required")
+    if not solution_name:
+        raise HTTPException(status_code=400, detail="solution_name is required")
+
+    try:
+        from src.core.onboarding import generate_solution
+        result = generate_solution(
+            description=description,
+            solution_name=solution_name,
+            compliance_standards=compliance,
+            integrations=integrations,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error("Onboarding generation failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+
+
+@app.get("/onboarding/templates")
+async def onboarding_templates():
+    """
+    Return a list of pre-built solution templates available for use.
+    These are the bundled solutions in the solutions/ directory.
+    """
+    from src.core.project_loader import _SOLUTIONS_DIR
+    templates = []
+    try:
+        for name in sorted(os.listdir(_SOLUTIONS_DIR)):
+            project_file = os.path.join(_SOLUTIONS_DIR, name, "project.yaml")
+            if os.path.isfile(project_file):
+                try:
+                    import yaml as _yaml
+                    with open(project_file) as f:
+                        proj = _yaml.safe_load(f) or {}
+                    templates.append({
+                        "solution_name": name,
+                        "display_name":  proj.get("name", name),
+                        "domain":        proj.get("domain", name),
+                        "description":   proj.get("description", ""),
+                    })
+                except Exception:
+                    templates.append({"solution_name": name})
+    except Exception as e:
+        logger.warning("Could not list templates: %s", e)
+    return {"templates": templates, "count": len(templates)}
+
+
+# ---------------------------------------------------------------------------
+# Knowledge Base CRUD (Phase 7)
+# ---------------------------------------------------------------------------
+
+@app.get("/knowledge/entries")
+async def knowledge_list(limit: int = 50):
+    """
+    List stored knowledge entries with their IDs.
+    Returns [{id, text, metadata}, ...].
+    """
+    from src.memory.vector_store import vector_memory
+    return {"entries": vector_memory.list_entries(limit=limit), "count": limit}
+
+
+@app.post("/knowledge/add")
+async def knowledge_add(request: Request):
+    """
+    Add a knowledge entry to the active solution's vector store.
+    Body: { "text": str, "metadata": dict (optional) }
+    """
+    body = await request.json()
+    text = body.get("text", "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+    metadata = body.get("metadata", {})
+    from src.memory.vector_store import vector_memory
+    entry_id = vector_memory.add_entry(text, metadata=metadata)
+    return {"entry_id": entry_id, "status": "added"}
+
+
+@app.delete("/knowledge/entry/{entry_id}")
+async def knowledge_delete(entry_id: str):
+    """Delete a knowledge entry by ID."""
+    from src.memory.vector_store import vector_memory
+    deleted = vector_memory.delete_entry(entry_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Entry '{entry_id}' not found")
+    return {"entry_id": entry_id, "status": "deleted"}
+
+
+@app.post("/knowledge/import")
+async def knowledge_import(request: Request):
+    """
+    Bulk-import knowledge entries.
+    Body: { "entries": [{"text": str, "metadata": dict}, ...] }
+    """
+    body = await request.json()
+    entries = body.get("entries", [])
+    if not isinstance(entries, list) or not entries:
+        raise HTTPException(status_code=400, detail="entries must be a non-empty list")
+    from src.memory.vector_store import vector_memory
+    count = vector_memory.bulk_import(entries)
+    return {"imported": count, "status": "ok"}
+
+
+@app.post("/knowledge/search")
+async def knowledge_search(request: Request):
+    """
+    Semantic/keyword search of the knowledge base.
+    Body: { "query": str, "k": int (default 5) }
+    """
+    body = await request.json()
+    query = body.get("query", "").strip()
+    k     = min(int(body.get("k", 5)), 20)
+    if not query:
+        raise HTTPException(status_code=400, detail="query is required")
+    from src.memory.vector_store import vector_memory
+    results = vector_memory.search(query, k=k)
+    return {"results": results, "count": len(results), "query": query}
+
+
+# ---------------------------------------------------------------------------
+# Slack Two-Way Approval (Phase 8)
+# ---------------------------------------------------------------------------
+
+@app.post("/slack/send-proposal")
+async def slack_send_proposal(request: Request):
+    """
+    Send an agent proposal to the configured Slack channel.
+    Body: { "trace_id": str, "summary": str, "action_type": str, "actor": str }
+    """
+    body = await request.json()
+    trace_id    = body.get("trace_id", "")
+    summary     = body.get("summary", "").strip()
+    action_type = body.get("action_type", "PROPOSE")
+    actor       = body.get("actor", "SAGE Agent")
+
+    if not trace_id or not summary:
+        raise HTTPException(status_code=400, detail="trace_id and summary are required")
+
+    from src.integrations.slack_approver import send_proposal
+    result = send_proposal({
+        "trace_id":    trace_id,
+        "summary":     summary,
+        "action_type": action_type,
+        "actor":       actor,
+    })
+    return result
+
+
+@app.post("/webhook/slack")
+async def slack_webhook(request: Request):
+    """
+    Receive Slack interactive action callbacks (button clicks).
+    Validates the Slack signature, then routes approve/reject decisions
+    back into the SAGE approval gate.
+
+    Slack sends: application/x-www-form-urlencoded with 'payload' field.
+    """
+    from src.integrations.slack_approver import verify_slack_signature, parse_action_payload
+
+    body = await request.body()
+    timestamp = request.headers.get("X-Slack-Request-Timestamp", "")
+    signature = request.headers.get("X-Slack-Signature", "")
+
+    if not verify_slack_signature(body, timestamp, signature):
+        raise HTTPException(status_code=401, detail="Invalid Slack signature")
+
+    # Slack sends form-encoded payload
+    try:
+        from urllib.parse import parse_qs
+        form = parse_qs(body.decode("utf-8"))
+        payload_str = form.get("payload", ["{}"])[0]
+    except Exception:
+        raise HTTPException(status_code=400, detail="Could not parse Slack payload")
+
+    action = parse_action_payload(payload_str)
+    trace_id = action.get("trace_id", "")
+    decision = action.get("decision", "")
+    user     = action.get("user", "slack_user")
+
+    if not trace_id or decision not in ("approved", "rejected"):
+        raise HTTPException(status_code=400, detail="Invalid action payload")
+
+    # Route to SAGE approval gate
+    try:
+        audit = _get_audit_logger()
+        audit.log_event(
+            actor=f"slack/{user}",
+            action_type=f"SLACK_{decision.upper()}",
+            input_context=f"trace_id={trace_id}",
+            output_content=f"Decision: {decision} by {user}",
+            metadata={"trace_id": trace_id, "decision": decision, "user": user},
+        )
+        logger.info("Slack %s for trace_id=%s by %s", decision, trace_id, user)
+    except Exception as e:
+        logger.warning("Audit log for Slack action failed: %s", e)
+
+    return {"status": "received", "trace_id": trace_id, "decision": decision}
+
+
+# ---------------------------------------------------------------------------
+# Evaluation & Benchmarking (Phase 9)
+# ---------------------------------------------------------------------------
+
+@app.get("/eval/suites")
+async def eval_list_suites():
+    """List available eval suites for the active solution."""
+    from src.core.eval_runner import eval_runner
+    suites = eval_runner.list_suites()
+    return {"suites": suites, "count": len(suites)}
+
+
+@app.post("/eval/run")
+async def eval_run(request: Request):
+    """
+    Run an eval suite (or all suites).
+    Body: { "suite": str (optional — omit to run all) }
+    Returns: { run_id, suite, total_cases, passed_cases, mean_score, results }
+    """
+    body = await request.json()
+    suite = body.get("suite")
+
+    from src.core.eval_runner import eval_runner
+    result = eval_runner.run(suite=suite)
+
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+
+    return result
+
+
+@app.get("/eval/history")
+async def eval_history(suite: str = None, limit: int = 20):
+    """Return historical eval run summaries for trend tracking."""
+    from src.core.eval_runner import eval_runner
+    history = eval_runner.get_history(suite=suite, limit=limit)
+    return {"history": history, "count": len(history)}
+
+
+# ---------------------------------------------------------------------------
+# Temporal Durable Workflows (Phase 11)
+# ---------------------------------------------------------------------------
+
+@app.post("/temporal/workflow/start")
+async def temporal_start(request: Request):
+    """
+    Start a Temporal durable workflow.
+    Falls back to LangGraph runner when Temporal is unavailable.
+
+    Body: { "workflow_name": str, "args": dict (optional), "workflow_id": str (optional) }
+    """
+    body = await request.json()
+    workflow_name = body.get("workflow_name", "")
+    args          = body.get("args", {})
+    workflow_id   = body.get("workflow_id")
+
+    if not workflow_name:
+        raise HTTPException(status_code=400, detail="workflow_name is required")
+
+    from src.integrations.temporal_runner import temporal_runner
+    result = temporal_runner.start(workflow_name, args=args, workflow_id=workflow_id)
+
+    if result.get("status") == "error" and not result.get("fallback"):
+        raise HTTPException(status_code=500, detail=result.get("reason", "Unknown error"))
+
+    return result
+
+
+@app.get("/temporal/workflow/status/{workflow_id}")
+async def temporal_status(workflow_id: str):
+    """Get the current status of a Temporal workflow run."""
+    from src.integrations.temporal_runner import temporal_runner
+    result = temporal_runner.get_status(workflow_id)
+
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+
+    return result
+
+
+@app.get("/temporal/workflow/list")
+async def temporal_list():
+    """List all workflow runs tracked in this process session."""
+    from src.integrations.temporal_runner import temporal_runner
+    return {"runs": temporal_runner.list_runs(), "count": len(temporal_runner.list_runs())}
+
+
+# ---------------------------------------------------------------------------
+# Multi-Tenant Context (Phase 10)
+# ---------------------------------------------------------------------------
+
+@app.get("/tenant/context")
+async def tenant_context(request: Request):
+    """
+    Return the resolved tenant context for the current request.
+    Pass X-SAGE-Tenant header to override the default (active solution name).
+    """
+    from src.core.tenant import get_tenant_id, tenant_scoped_collection
+    tenant = await get_tenant_id(request)
+    return {
+        "tenant_id":  tenant,
+        "collection": tenant_scoped_collection(),
+        "header_set": "X-SAGE-Tenant" in request.headers,
+    }

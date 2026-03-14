@@ -475,6 +475,68 @@ class LLMGateway:
 
         self.logger.info("LLM Gateway active: %s", self.provider.provider_name())
 
+    def generate_stream(self, prompt, system_prompt="You are a helpful AI assistant.",
+                        trace_name: str = "llm_stream", metadata: dict = None):
+        """
+        Streaming variant of generate().  Yields str chunks as they become available.
+
+        For providers that support native streaming (Claude API) tokens are
+        yielded as received.  For CLI-based providers the full response is
+        fetched, then word-chunked to simulate streaming — callers get
+        progressive output either way.
+
+        The thread lock is held for the duration of the stream (same single-
+        lane guarantee as generate()).
+
+        Yields:
+            str  — incremental text chunks, never empty strings.
+        """
+        if self.provider is None:
+            yield "Error: No LLM provider configured."
+            return
+
+        with self._lock:
+            self.logger.debug("Streaming generation started. Provider: %s", self.provider.provider_name())
+            start = time.time()
+
+            # Claude API supports real streaming
+            if isinstance(self.provider, ClaudeAPIProvider) and self.provider._client is not None:
+                try:
+                    import anthropic
+                    with self.provider._client.messages.stream(
+                        model=self.provider.model,
+                        max_tokens=1024,
+                        system=system_prompt,
+                        messages=[{"role": "user", "content": prompt}],
+                    ) as stream:
+                        full = []
+                        for text in stream.text_stream:
+                            full.append(text)
+                            yield text
+                    result = "".join(full)
+                except Exception as e:
+                    self.logger.error("Claude API stream failed: %s", e)
+                    yield f"Error: {e}"
+                    return
+            else:
+                # CLI / local providers: run full generation, then chunk output
+                result = self.provider.generate(prompt, system_prompt)
+                # Yield in ~4-word chunks to simulate progressive streaming
+                words = result.split(" ")
+                chunk_size = 4
+                for i in range(0, len(words), chunk_size):
+                    chunk = " ".join(words[i:i + chunk_size])
+                    if i + chunk_size < len(words):
+                        chunk += " "
+                    yield chunk
+
+            elapsed = time.time() - start
+            self.logger.info("Streaming generation done in %.2fs", elapsed)
+            self._maybe_reset_daily()
+            self._usage["calls"] += 1
+            self._usage["calls_today"] += 1
+            self._usage["estimated_tokens"] += (len(prompt) + len(system_prompt) + len(result)) // 4
+
     def generate(self, prompt, system_prompt="You are a helpful AI assistant.",
                  trace_name: str = "llm_generate", metadata: dict = None):
         """Thread-safe generation. Only ONE call at a time.
