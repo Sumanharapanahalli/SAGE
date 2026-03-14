@@ -1187,7 +1187,7 @@ async def llm_status():
         },
         "config": {
             "minimal_mode": bool(os.environ.get("SAGE_MINIMAL", "") in ("1", "true", "yes")),
-            "project": project_config.project_name or os.environ.get("SAGE_PROJECT", ""),
+            "project": _get_project_config().project_name or os.environ.get("SAGE_PROJECT", ""),
         },
     }
 
