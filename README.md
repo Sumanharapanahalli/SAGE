@@ -62,40 +62,32 @@ make run PROJECT=my_solution
 
 ---
 
-## Quick Start
+## New Here? Start with the Getting Started Guide
 
-### Prerequisites
+**[GETTING_STARTED.md](GETTING_STARTED.md)** — zero integrations, no API keys, running in 15 minutes. Uses the generic `starter` solution. Start here if you have never used SAGE before.
 
-| Requirement | Version | Install |
-|-------------|---------|---------|
-| Python | 3.10+ | [python.org](https://python.org) |
-| Node.js | 18+ | [nodejs.org](https://nodejs.org) |
-| Gemini CLI | Latest | `npm install -g @google/gemini-cli` |
+---
 
-### 5-Step Start
+## Quick Start (if you know what you are doing)
 
 ```bash
-# 1. Clone / enter repo
-cd SystemAutonomousAgent
-
-# 2. Create virtual environment (one-time)
-make venv
-
-# 3. Run a solution
-make run PROJECT=medtech
-
-# 4. Start web UI (separate terminal)
-make ui
-
-# 5. Run tests
-make test           # framework only (216 tests)
-make test-medtech   # medtech solution tests (32 tests)
-make test-all       # everything (248 tests)
+make venv                   # Create .venv and install all deps (one-time)
+make run PROJECT=starter    # Generic starter — works with no integrations
+make ui                     # React web UI at http://localhost:5173
+make test                   # Run framework tests
 ```
 
-> `make venv` creates `.venv/` at the repo root and installs all dependencies.
-> All `make` commands automatically use `.venv/Scripts/python` (Windows) or `.venv/bin/python` (Linux/macOS).
-> If you prefer manual setup: `python -m venv .venv && .venv\Scripts\pip install -r requirements.txt`
+To run an existing domain solution:
+
+```bash
+make run PROJECT=medtech    # ISO 13485 medical device example
+make run PROJECT=kappture   # Computer vision / human tracking example
+make run PROJECT=poseengine # ML + Flutter mobile example
+```
+
+> `make venv` creates `.venv/` and installs all dependencies.
+> All `make` commands use `.venv/Scripts/python` (Windows) or `.venv/bin/python` (Linux/macOS) automatically.
+> Manual setup: `python -m venv .venv && .venv\Scripts\pip install -r requirements.txt`
 
 ### Authenticate Gemini CLI (first time only)
 
