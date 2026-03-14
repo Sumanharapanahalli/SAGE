@@ -28,7 +28,7 @@ task_payloads:
   ANALYZE_FIRMWARE_LOG:
     log_text:        "string — firmware log output, fault handler dump, or RTOS trace"
     device_id:       "string — device serial number or identifier (optional)"
-    firmware_version:"string — e.g. 1.4.2 (optional)"
+    firmware_version: "string — e.g. 1.4.2 (optional)"
     hardware_rev:    "string — PCB revision (optional)"
 
   ANALYZE_WEB_ERROR:
@@ -46,7 +46,7 @@ task_payloads:
     diff_text:       "string — git diff or C/C++ code snippet"
     mr_url:          "string — GitLab MR URL (optional)"
     software_class:  "string — IEC 62304 class: 'A' | 'B' | 'C' (optional)"
-    safety_functions:"string — list of safety functions touched (optional)"
+    safety_functions: "string — list of safety functions touched (optional)"
 
   REVIEW_WEB_CODE:
     diff_text:       "string — git diff or web code to review"

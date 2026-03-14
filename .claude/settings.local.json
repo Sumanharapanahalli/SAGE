@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd C:/sandbox/SAGE*)",
+      "Bash(.venv/Scripts/*)",
+      "Bash(git *)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(grep *)",
+      "Bash(curl *)",
+      "Bash(netstat *)",
+      "Bash(where *)",
+      "Bash(node *)",
+      "Bash(npm *)",
+      "Bash(winget *)",
+      "WebSearch",
+      "WebFetch",
+      "Skill(run-tests)",
+      "Skill(check-api)",
+      "Skill(edit-solution-yaml)",
+      "Skill(new-solution)"
+    ]
+  }
+}

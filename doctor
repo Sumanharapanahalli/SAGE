@@ -1,0 +1,253 @@
+#!/usr/bin/env python3
+"""
+SAGE Framework — Doctor
+=======================
+Runs a full health check of the project and prints a summary.
+Usage: ./doctor   or   python doctor
+"""
+
+import importlib
+import json
+import os
+import subprocess
+import sys
+import yaml
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+VENV_PYTHON = os.path.join(ROOT, ".venv", "Scripts", "python.exe")
+if not os.path.isfile(VENV_PYTHON):
+    VENV_PYTHON = os.path.join(ROOT, ".venv", "bin", "python")
+
+PASS  = "[PASS]"
+FAIL  = "[FAIL]"
+WARN  = "[WARN]"
+INFO  = "[INFO]"
+
+failures = []
+warnings = []
+
+def check(label, ok, detail="", is_warn=False):
+    tag = PASS if ok else (WARN if is_warn else FAIL)
+    print(f"  {tag}  {label}" + (f"  — {detail}" if detail else ""))
+    if not ok:
+        (warnings if is_warn else failures).append(label)
+
+def section(title):
+    print(f"\n{'='*55}")
+    print(f"  {title}")
+    print(f"{'='*55}")
+
+
+# ---------------------------------------------------------------------------
+# 1. Python runtime
+# ---------------------------------------------------------------------------
+section("Python runtime")
+import platform
+py_ver = tuple(map(int, platform.python_version_tuple()[:2]))
+check("Python 3.10+", py_ver >= (3, 10), f"Python {platform.python_version()}")
+check(".venv exists", os.path.isdir(os.path.join(ROOT, ".venv")))
+check(".venv Python reachable", os.path.isfile(VENV_PYTHON), VENV_PYTHON)
+
+
+# ---------------------------------------------------------------------------
+# 2. Core Python dependencies
+# ---------------------------------------------------------------------------
+section("Python dependencies")
+
+CORE_DEPS = [
+    ("fastapi",              "fastapi",              True),
+    ("uvicorn",              "uvicorn",              True),
+    ("pyyaml",               "yaml",                 True),
+    ("pydantic",             "pydantic",             True),
+    ("python-dotenv",        "dotenv",               True),
+    ("requests",             "requests",             True),
+    ("httpx",                "httpx",                True),
+    ("langchain",            "langchain",            True),
+    ("langchain-community",  "langchain_community",  True),
+    ("langchain-chroma",     "langchain_chroma",     True),
+    ("chromadb",             "chromadb",             True),
+    ("sentence-transformers","sentence_transformers", True),
+    ("langgraph",            "langgraph",            True),
+    ("fastmcp",              "fastmcp",              True),
+    ("pyautogen",            "autogen",              False),   # optional
+    ("temporalio",           "temporalio",           False),  # optional
+    ("mem0ai",               "mem0",                 False),  # optional
+]
+
+for pkg, imp, required in CORE_DEPS:
+    try:
+        importlib.import_module(imp)
+        check(pkg, True)
+    except ImportError:
+        check(pkg, False, "run: pip install " + pkg, is_warn=not required)
+
+
+# ---------------------------------------------------------------------------
+# 3. Node / npm (for web UI)
+# ---------------------------------------------------------------------------
+section("Node.js / Web UI")
+
+def cmd(args):
+    try:
+        # shell=True needed on Windows for .cmd shims (npm, gemini, claude)
+        use_shell = sys.platform == "win32" and not os.path.isfile(args[0])
+        r = subprocess.run(args, capture_output=True, text=True, timeout=10, shell=use_shell)
+        return r.stdout.strip(), r.returncode == 0
+    except Exception as e:
+        return str(e), False
+
+node_out, node_ok = cmd(["node", "--version"])
+check("Node.js 18+", node_ok and node_out.startswith("v") and int(node_out[1:].split(".")[0]) >= 18, node_out)
+
+npm_out, npm_ok = cmd(["npm", "--version"])
+check("npm", npm_ok, npm_out)
+
+nm_path = os.path.join(ROOT, "web", "node_modules")
+check("web/node_modules installed", os.path.isdir(nm_path), "run: make install-ui" if not os.path.isdir(nm_path) else "")
+
+ts_ok = os.path.isfile(os.path.join(ROOT, "web", "node_modules", ".bin", "tsc")) or \
+        os.path.isfile(os.path.join(ROOT, "web", "node_modules", ".bin", "tsc.cmd"))
+check("TypeScript available", ts_ok, is_warn=True)
+
+
+# ---------------------------------------------------------------------------
+# 4. LLM providers
+# ---------------------------------------------------------------------------
+section("LLM providers")
+
+gemini_out, gemini_ok = cmd(["gemini", "--version"])
+check("gemini-cli", gemini_ok, gemini_out if gemini_ok else "npm install -g @google/gemini-cli", is_warn=True)
+
+claude_out, claude_ok = cmd(["claude", "--version"])
+check("claude-code-cli", claude_ok, claude_out if claude_ok else "npm install -g @anthropic-ai/claude-code", is_warn=True)
+
+ollama_out, ollama_ok = cmd(["ollama", "--version"])
+check("ollama", ollama_ok, ollama_out if ollama_ok else "optional: install from ollama.com", is_warn=True)
+
+api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+check("ANTHROPIC_API_KEY", bool(api_key), "only needed for claude provider", is_warn=True)
+
+
+# ---------------------------------------------------------------------------
+# 5. Config files
+# ---------------------------------------------------------------------------
+section("Config files")
+
+config_yaml = os.path.join(ROOT, "config", "config.yaml")
+check("config/config.yaml exists", os.path.isfile(config_yaml))
+if os.path.isfile(config_yaml):
+    try:
+        with open(config_yaml, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+        check("config.yaml valid YAML", True)
+        provider = cfg.get("llm", {}).get("provider", "gemini")
+        check(f"LLM provider configured: {provider}", True)
+    except Exception as e:
+        check("config.yaml valid YAML", False, str(e))
+
+env_file = os.path.join(ROOT, ".env")
+check(".env exists", os.path.isfile(env_file), ".env.example available to copy", is_warn=not os.path.isfile(env_file))
+
+
+# ---------------------------------------------------------------------------
+# 6. Solution YAML validation
+# ---------------------------------------------------------------------------
+section("Solution YAML validation")
+
+solutions_dir = os.path.join(ROOT, "solutions")
+yaml_issues = []
+yaml_ok_count = 0
+for name in sorted(os.listdir(solutions_dir)):
+    for fname in ["project.yaml", "prompts.yaml", "tasks.yaml"]:
+        path = os.path.join(solutions_dir, name, fname)
+        if not os.path.isfile(path):
+            continue
+        try:
+            with open(path, encoding="utf-8") as fh:
+                yaml.safe_load(fh)
+            yaml_ok_count += 1
+        except Exception as e:
+            yaml_issues.append(f"{name}/{fname}: {e}")
+
+check(f"{yaml_ok_count} solution YAML files valid", len(yaml_issues) == 0)
+for issue in yaml_issues:
+    print(f"          {FAIL}  {issue}")
+    failures.append(issue)
+
+# List available solutions
+solutions = [n for n in sorted(os.listdir(solutions_dir))
+             if os.path.isfile(os.path.join(solutions_dir, n, "project.yaml"))]
+print(f"  {INFO}  Solutions found: {', '.join(solutions)}")
+
+
+# ---------------------------------------------------------------------------
+# 7. Key source files
+# ---------------------------------------------------------------------------
+section("Key source files")
+
+key_files = [
+    "src/interface/api.py",
+    "src/core/llm_gateway.py",
+    "src/core/project_loader.py",
+    "src/core/queue_manager.py",
+    "src/core/proposal_store.py",
+    "src/core/proposal_executor.py",
+    "src/agents/analyst.py",
+    "src/agents/universal.py",
+    "src/memory/audit_logger.py",
+    "src/memory/vector_store.py",
+]
+for f in key_files:
+    check(f, os.path.isfile(os.path.join(ROOT, f)))
+
+
+# ---------------------------------------------------------------------------
+# 8. Tests
+# ---------------------------------------------------------------------------
+section("Test suite")
+
+result = subprocess.run(
+    [VENV_PYTHON, "-m", "pytest", "tests/", "-q", "--tb=no", "--no-header"],
+    cwd=ROOT, capture_output=True, text=True, timeout=120
+)
+lines = (result.stdout + result.stderr).strip().splitlines()
+summary = lines[-1] if lines else "no output"
+tests_ok = result.returncode == 0
+check("All framework tests pass", tests_ok, summary)
+
+
+# ---------------------------------------------------------------------------
+# 9. Backend reachability (if running)
+# ---------------------------------------------------------------------------
+section("Backend (optional — only if running)")
+
+try:
+    import urllib.request
+    with urllib.request.urlopen("http://localhost:8000/health", timeout=3) as resp:
+        data = json.loads(resp.read())
+    check("Backend reachable at :8000", True, f"provider={data.get('llm_provider')}")
+    check("Active project", True, data.get("project", {}).get("name", "unknown"))
+except Exception:
+    check("Backend reachable at :8000", True, "not running — start with: make run PROJECT=starter", is_warn=True)
+
+
+# ---------------------------------------------------------------------------
+# Summary
+# ---------------------------------------------------------------------------
+print(f"\n{'='*55}")
+print(f"  SUMMARY")
+print(f"{'='*55}")
+print(f"  {FAIL}  Hard failures: {len(failures)}")
+print(f"  {WARN}  Warnings:      {len(warnings)}")
+
+if failures:
+    print(f"\n  Fix these first:")
+    for f in failures:
+        print(f"    - {f}")
+
+if not failures:
+    print(f"\n  Project is healthy. Ready to run:")
+    print(f"    make run PROJECT=starter")
+    print(f"    make ui")
+
+sys.exit(0 if not failures else 1)
