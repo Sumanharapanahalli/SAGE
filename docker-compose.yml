@@ -2,9 +2,9 @@
 # SAGE Framework — Docker Compose
 # ==============================================================================
 # Usage:
-#   SAGE_PROJECT=medtech docker-compose up --build
-#   SAGE_PROJECT=poseengine docker-compose up --build
-#   SAGE_PROJECT=kappture docker-compose up --build
+#   SAGE_PROJECT=starter docker-compose up --build
+#   SAGE_PROJECT=meditation_app docker-compose up --build
+#   SAGE_PROJECT=medtech_team docker-compose up --build
 #
 # Minimum hardware: 4-core CPU, 4 GB RAM, no GPU required (Gemini CLI mode)
 # Recommended:      8-core CPU, 16 GB RAM, NVIDIA GPU 4GB+ (local LLM mode)
@@ -24,7 +24,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      SAGE_PROJECT: ${SAGE_PROJECT:-medtech}
+      SAGE_PROJECT: ${SAGE_PROJECT:-starter}
       # LLM
       LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
       # GitLab
