@@ -117,6 +117,16 @@ class FeatureRequestUpdate(BaseModel):
     reviewer_note: str = ""
 
 
+class ApproveProposalRequest(BaseModel):
+    decided_by: str = "human"
+    feedback: str = ""             # Optional approval note
+
+
+class RejectProposalRequest(BaseModel):
+    decided_by: str = "human"
+    feedback: str = ""             # Required for DESTRUCTIVE proposals
+
+
 # ---------------------------------------------------------------------------
 # Lazy singleton accessors
 # ---------------------------------------------------------------------------
@@ -144,6 +154,11 @@ def _get_audit_logger():
 def _get_task_queue():
     from src.core.queue_manager import task_queue
     return task_queue
+
+
+def _get_proposal_store():
+    from src.core.proposal_store import get_proposal_store
+    return get_proposal_store()
 
 
 def _get_llm_gateway():
@@ -211,6 +226,12 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
     _init_feature_requests_table()
+    # Initialise ProposalStore (creates proposals table if needed)
+    try:
+        _get_proposal_store()
+        logger.info("ProposalStore ready.")
+    except Exception as exc:
+        logger.warning("ProposalStore init skipped: %s", exc)
     yield
 
 app.router.lifespan_context = _lifespan
@@ -339,40 +360,56 @@ class SetModulesRequest(BaseModel):
 @app.post("/config/switch")
 async def switch_project(req: SwitchProjectRequest):
     """
-    Switch the active solution at runtime.
-    Reloads project config, prompts, and task definitions for the given solution.
-    The web UI calls this when the user selects a different solution from the dropdown.
+    Propose switching the active solution at runtime.
+    Returns an EPHEMERAL proposal — actual switch on POST /approve/{trace_id}.
     """
-    from src.core.project_loader import project_config, _SOLUTIONS_DIR
+    from src.core.project_loader import _SOLUTIONS_DIR
+    from src.core.proposal_store import RiskClass
     import os as _os
     proj_dir = _os.path.join(_SOLUTIONS_DIR, req.project)
     if not _os.path.isdir(proj_dir):
         raise HTTPException(status_code=404, detail=f"Solution '{req.project}' not found in {_SOLUTIONS_DIR}")
-    try:
-        project_config.reload(req.project)
-        pc = _get_project_config()
-        logger.info("Switched active project to: %s", req.project)
-        return {
-            "switched": True,
-            "project": req.project,
-            **pc.metadata,
-            "task_types": pc.get_task_types(),
-        }
-    except Exception as e:
-        logger.error("Failed to switch project to %s: %s", req.project, e)
-        raise HTTPException(status_code=500, detail=f"Failed to switch project: {e}")
+    current_project = _get_project_config().project_name
+    store = _get_proposal_store()
+    proposal = store.create(
+        action_type = "config_switch",
+        risk_class  = RiskClass.EPHEMERAL,
+        payload     = {"project": req.project, "previous_project": current_project},
+        description = f"Switch active solution: {current_project} → {req.project}",
+        reversible  = True,
+        proposed_by = "user",
+    )
+    return {
+        "status":      "pending_approval",
+        "trace_id":    proposal.trace_id,
+        "description": proposal.description,
+        "message":     "POST /approve/{trace_id} to switch.",
+    }
 
 
 
 @app.post("/config/modules")
 async def set_modules(req: SetModulesRequest):
     """
-    Override the active modules list for the current solution at runtime.
-    Changes are in-memory only — reload the solution to reset to YAML defaults.
+    Propose updating the active modules list for the current solution.
+    Returns an EPHEMERAL proposal — actual change on POST /approve/{trace_id}.
     """
-    from src.core.project_loader import project_config
-    project_config.set_active_modules(req.modules)
-    return {"active_modules": req.modules}
+    from src.core.proposal_store import RiskClass
+    current_modules = _get_project_config().metadata.get("active_modules", [])
+    store = _get_proposal_store()
+    proposal = store.create(
+        action_type = "config_modules",
+        risk_class  = RiskClass.EPHEMERAL,
+        payload     = {"modules": req.modules, "previous_modules": current_modules},
+        description = f"Update active modules: {current_modules} → {req.modules}",
+        reversible  = True,
+        proposed_by = "user",
+    )
+    return {
+        "status":      "pending_approval",
+        "trace_id":    proposal.trace_id,
+        "description": proposal.description,
+    }
 
 
 @app.get("/config/yaml/{file_name}")
@@ -400,29 +437,49 @@ class YamlWriteRequest(BaseModel):
 @app.put("/config/yaml/{file_name}")
 async def write_yaml_file(file_name: str, req: YamlWriteRequest):
     """
-    Overwrite a solution YAML config file (project | prompts | tasks).
-    Validates that the content is parseable YAML before writing.
-    Reloads the project config after a successful write.
+    Propose overwriting a solution YAML config file (project | prompts | tasks).
+    Returns a STATEFUL proposal with a diff — actual write happens on POST /approve/{trace_id}.
     """
     import yaml as _yaml
     allowed = {"project", "prompts", "tasks"}
     if file_name not in allowed:
         raise HTTPException(status_code=400, detail=f"file_name must be one of: {sorted(allowed)}")
-    # Validate YAML before touching the file
     try:
         _yaml.safe_load(req.content)
     except _yaml.YAMLError as e:
         raise HTTPException(status_code=422, detail=f"Invalid YAML: {e}")
     from src.core.project_loader import project_config, _SOLUTIONS_DIR
+    from src.core.proposal_store import RiskClass
     path = os.path.join(_SOLUTIONS_DIR, project_config.project_name, f"{file_name}.yaml")
     if not os.path.isfile(path):
         raise HTTPException(status_code=404, detail=f"{file_name}.yaml not found for solution '{project_config.project_name}'")
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(req.content)
-    # Reload so the running process picks up the changes
-    project_config.reload(project_config.project_name)
-    logger.info("YAML file saved and config reloaded: %s/%s.yaml", project_config.project_name, file_name)
-    return {"saved": True, "file": file_name, "solution": project_config.project_name}
+    with open(path, "r", encoding="utf-8") as fh:
+        current = fh.read()
+    # Simple line-count diff summary
+    old_lines = current.splitlines()
+    new_lines = req.content.splitlines()
+    diff_summary = f"+{len([l for l in new_lines if l not in old_lines])} / -{len([l for l in old_lines if l not in new_lines])} lines"
+    store = _get_proposal_store()
+    proposal = store.create(
+        action_type = "yaml_edit",
+        risk_class  = RiskClass.STATEFUL,
+        payload     = {
+            "file":     file_name,
+            "content":  req.content,
+            "solution": project_config.project_name,
+            "previous_content": current,
+        },
+        description = f"Edit {file_name}.yaml ({diff_summary})",
+        reversible  = True,
+        proposed_by = "user",
+    )
+    return {
+        "status":      "pending_approval",
+        "trace_id":    proposal.trace_id,
+        "description": proposal.description,
+        "diff_summary": diff_summary,
+        "message":     "Review the change and POST /approve/{trace_id} to apply.",
+    }
 
 
 @app.get("/agent/roles")
@@ -502,25 +559,72 @@ async def analyze(request: AnalyzeRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/approve/{trace_id}")
-async def approve(trace_id: str):
+@app.get("/proposals/pending")
+async def get_pending_proposals():
     """
-    Approves a pending AI proposal, executing the recommended action.
+    Returns all proposals currently awaiting human approval.
+    Used by the Dashboard Pending Approvals panel.
+    """
+    store = _get_proposal_store()
+    proposals = store.get_pending()
+    return {
+        "proposals": [p.model_dump() for p in proposals],
+        "count": len(proposals),
+    }
+
+
+@app.post("/approve/{trace_id}")
+async def approve(trace_id: str, body: ApproveProposalRequest = ApproveProposalRequest()):
+    """
+    Approve a pending proposal.
+
+    For analysis proposals: records approval in audit log.
+    For action proposals (yaml_edit, llm_switch, etc.): executes the action.
 
     Args:
-        trace_id: The trace ID from a previous /analyze response.
+        trace_id: The trace ID from a previous proposal response.
     """
+    from src.core.proposal_executor import execute_approved_proposal
+
+    # --- Check ProposalStore first (HITL action proposals) ---
+    store = _get_proposal_store()
+    proposal = store.get(trace_id)
+    if proposal and proposal.status == "pending":
+        approved = store.approve(trace_id, decided_by=body.decided_by, feedback=body.feedback)
+        # Execute the action
+        try:
+            result = await execute_approved_proposal(approved)
+        except Exception as exc:
+            logger.error("Proposal execution failed after approval: %s", exc)
+            raise HTTPException(status_code=500, detail=f"Proposal approved but execution failed: {exc}")
+        # Audit the approval
+        try:
+            _get_audit_logger().log_event(
+                actor=body.decided_by,
+                action_type="PROPOSAL_APPROVED",
+                input_context=f"trace_id={trace_id} action={approved.action_type}",
+                output_content=json.dumps(result),
+                metadata={"trace_id": trace_id, "risk_class": approved.risk_class.value},
+            )
+        except Exception as e:
+            logger.error("Audit log failed on approve: %s", e)
+        return {
+            "status": "approved",
+            "trace_id": trace_id,
+            "action_type": approved.action_type,
+            "result": result,
+        }
+
+    # --- Fallback: legacy in-memory analysis proposals ---
     if trace_id not in _pending_proposals:
         raise HTTPException(status_code=404, detail=f"Trace ID '{trace_id}' not found or already processed.")
 
     proposal_entry = _pending_proposals[trace_id]
     proposal_entry["status"] = "approved"
-
-    # Audit the approval
     try:
         audit = _get_audit_logger()
         audit.log_event(
-            actor="Human_Engineer",
+            actor=body.decided_by,
             action_type="APPROVAL",
             input_context=f"trace_id={trace_id}",
             output_content=json.dumps(proposal_entry["proposal"]),
@@ -530,31 +634,51 @@ async def approve(trace_id: str):
         logger.error("Audit log failed on approve: %s", e)
 
     del _pending_proposals[trace_id]
-    logger.info("Proposal approved via API: trace_id=%s", trace_id)
-
+    logger.info("Analysis proposal approved: trace_id=%s", trace_id)
     return {
         "status": "approved",
         "trace_id": trace_id,
-        "message": "Proposal approved and logged. Action may now be executed.",
+        "message": "Proposal approved and logged.",
     }
 
 
 @app.post("/reject/{trace_id}")
 async def reject(trace_id: str, request: RejectRequest):
     """
-    Rejects a pending AI proposal with human feedback (enables learning).
+    Reject a pending proposal with human feedback.
 
-    Args:
-        trace_id: The trace ID from a previous /analyze response.
+    For analysis proposals: stores feedback in vector memory for learning.
+    For action proposals: marks rejected, no action taken.
 
     Request body: {"feedback": "The real root cause is..."}
     """
+    # --- Check ProposalStore first (HITL action proposals) ---
+    store = _get_proposal_store()
+    proposal = store.get(trace_id)
+    if proposal and proposal.status == "pending":
+        store.reject(trace_id, decided_by="human", feedback=request.feedback)
+        try:
+            _get_audit_logger().log_event(
+                actor="human",
+                action_type="PROPOSAL_REJECTED",
+                input_context=f"trace_id={trace_id} action={proposal.action_type}",
+                output_content=request.feedback,
+                metadata={"trace_id": trace_id, "risk_class": proposal.risk_class.value},
+            )
+        except Exception as e:
+            logger.error("Audit log failed on reject: %s", e)
+        return {
+            "status": "rejected",
+            "trace_id": trace_id,
+            "feedback_recorded": True,
+        }
+
+    # --- Fallback: legacy in-memory analysis proposals ---
     if trace_id not in _pending_proposals:
         raise HTTPException(status_code=404, detail=f"Trace ID '{trace_id}' not found or already processed.")
 
     proposal_entry = _pending_proposals[trace_id]
     proposal_entry["status"] = "rejected"
-
     try:
         analyst = _get_analyst()
         analyst.learn_from_feedback(
@@ -566,8 +690,7 @@ async def reject(trace_id: str, request: RejectRequest):
         logger.error("Learning from feedback failed: %s", e)
 
     del _pending_proposals[trace_id]
-    logger.info("Proposal rejected with feedback via API: trace_id=%s", trace_id)
-
+    logger.info("Analysis proposal rejected: trace_id=%s", trace_id)
     return {
         "status": "rejected",
         "trace_id": trace_id,
@@ -1079,60 +1202,35 @@ class LLMSwitchRequest(BaseModel):
 @app.post("/llm/switch")
 async def llm_switch(req: LLMSwitchRequest):
     """
-    Switch LLM provider at runtime (gemini, local, or claude).
-    Reinitialises the LLMGateway with the new provider.
+    Propose switching the LLM provider at runtime.
+    Returns an EPHEMERAL proposal (5-min expiry) — actual switch on POST /approve/{trace_id}.
     """
-    from src.core.llm_gateway import LLMGateway, GeminiCLIProvider, LocalLlamaProvider, ClaudeCodeCLIProvider, ClaudeAPIProvider
-    import yaml
-
-    if req.provider not in ("gemini", "local", "claude-code", "claude"):
-        raise HTTPException(status_code=400, detail="provider must be 'gemini', 'local', 'claude-code', or 'claude'")
-
-    try:
-        with open(os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "config", "config.yaml"
-        )) as f:
-            cfg = yaml.safe_load(f) or {}
-        llm_cfg = cfg.get("llm", {})
-
-        if req.provider == "gemini" and req.model:
-            llm_cfg["gemini_model"] = req.model
-        elif req.provider == "local" and req.model:
-            llm_cfg["model_path"] = req.model
-        elif req.provider == "claude-code":
-            if req.model:
-                llm_cfg["claude_model"] = req.model
-            if req.claude_path:
-                llm_cfg["claude_path"] = req.claude_path
-        elif req.provider == "claude":
-            if req.model:
-                llm_cfg["claude_model"] = req.model
-            if req.api_key:
-                os.environ["ANTHROPIC_API_KEY"] = req.api_key
-
-        gw = LLMGateway()
-        if req.provider == "gemini":
-            gw.provider = GeminiCLIProvider(llm_cfg)
-        elif req.provider == "local":
-            gw.provider = LocalLlamaProvider(llm_cfg)
-        elif req.provider == "claude-code":
-            gw.provider = ClaudeCodeCLIProvider(llm_cfg)
-        else:
-            gw.provider = ClaudeAPIProvider(llm_cfg)
-
-        logger.info("LLM provider switched to: %s", gw.get_provider_name())
-        gw.reset_usage()
-
-        return {
-            "switched": True,
-            "provider": req.provider,
-            "provider_name": gw.get_provider_name(),
-            "model": req.model,
-        }
-    except Exception as e:
-        logger.error("LLM switch failed: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+    from src.core.proposal_store import RiskClass
+    allowed = ("gemini", "local", "claude-code", "claude", "ollama", "generic-cli")
+    if req.provider not in allowed:
+        raise HTTPException(status_code=400, detail=f"provider must be one of: {allowed}")
+    current_provider = _get_llm_gateway().get_provider_name()
+    store = _get_proposal_store()
+    proposal = store.create(
+        action_type = "llm_switch",
+        risk_class  = RiskClass.EPHEMERAL,
+        payload     = {
+            "provider":    req.provider,
+            "model":       req.model,
+            "api_key":     req.api_key,
+            "claude_path": req.claude_path,
+        },
+        description = f"Switch LLM provider: {current_provider} → {req.provider}" + (f" ({req.model})" if req.model else ""),
+        reversible  = True,
+        proposed_by = "user",
+    )
+    return {
+        "status":      "pending_approval",
+        "trace_id":    proposal.trace_id,
+        "description": proposal.description,
+        "expires_at":  proposal.expires_at,
+        "message":     "POST /approve/{trace_id} to apply. Expires in 5 minutes.",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1500,6 +1598,97 @@ async def agent_stream(request: Request):
 
 
 # ---------------------------------------------------------------------------
+# Live Log Streaming — makes CLI/agent activity visible in the Web UI
+# ---------------------------------------------------------------------------
+
+import asyncio
+import queue as _queue
+import threading
+
+
+class _SSELogHandler(logging.Handler):
+    """
+    Logging handler that pushes every log record into a per-connection queue.
+    The queue is attached to a GET /logs/stream SSE connection.
+    """
+    _listeners: list["_SSELogHandler"] = []
+    _lock = threading.Lock()
+
+    def __init__(self):
+        super().__init__()
+        self.q: _queue.Queue = _queue.Queue(maxsize=500)
+        with _SSELogHandler._lock:
+            _SSELogHandler._listeners.append(self)
+
+    def emit(self, record: logging.LogRecord):
+        try:
+            msg = self.format(record)
+            self.q.put_nowait({
+                "level":   record.levelname,
+                "name":    record.name,
+                "message": msg,
+                "ts":      datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            })
+        except _queue.Full:
+            pass  # drop oldest if consumer is slow
+
+    def close(self):
+        with _SSELogHandler._lock:
+            try:
+                _SSELogHandler._listeners.remove(self)
+            except ValueError:
+                pass
+        super().close()
+
+
+def _attach_log_handler() -> "_SSELogHandler":
+    """Create and attach a new SSE log handler to the root logger."""
+    handler = _SSELogHandler()
+    handler.setFormatter(logging.Formatter("%(name)s — %(message)s"))
+    handler.setLevel(logging.INFO)
+    logging.getLogger().addHandler(handler)
+    return handler
+
+
+@app.get("/logs/stream")
+async def logs_stream():
+    """
+    SSE endpoint — streams Python logging output to the browser in real time.
+    Open this from the Live Console page to see all agent/framework activity.
+
+    Event shape: data: {"level": "INFO", "name": "src.agents.analyst", "message": "...", "ts": "..."}
+    """
+    handler = _attach_log_handler()
+
+    async def _generator():
+        try:
+            # Send a heartbeat immediately so the browser knows we're connected
+            yield "data: {\"level\":\"INFO\",\"name\":\"sage\",\"message\":\"Live console connected.\",\"ts\":\"" + datetime.now(timezone.utc).isoformat() + "\"}\n\n"
+            while True:
+                try:
+                    record = handler.q.get(timeout=0.5)
+                    payload = json.dumps(record, ensure_ascii=False)
+                    yield f"data: {payload}\n\n"
+                except _queue.Empty:
+                    # heartbeat every 15 s to keep connection alive
+                    yield ": heartbeat\n\n"
+                    await asyncio.sleep(0)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            handler.close()
+
+    return StreamingResponse(
+        _generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control":    "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
 # Onboarding Wizard (Phase 6)
 # ---------------------------------------------------------------------------
 
@@ -1592,7 +1781,8 @@ async def knowledge_list(limit: int = 50):
 @app.post("/knowledge/add")
 async def knowledge_add(request: Request):
     """
-    Add a knowledge entry to the active solution's vector store.
+    Propose adding a knowledge entry to the vector store.
+    Returns STATEFUL proposal — actual add on POST /approve/{trace_id}.
     Body: { "text": str, "metadata": dict (optional) }
     """
     body = await request.json()
@@ -1600,34 +1790,84 @@ async def knowledge_add(request: Request):
     if not text:
         raise HTTPException(status_code=400, detail="text is required")
     metadata = body.get("metadata", {})
-    from src.memory.vector_store import vector_memory
-    entry_id = vector_memory.add_entry(text, metadata=metadata)
-    return {"entry_id": entry_id, "status": "added"}
+    from src.core.proposal_store import RiskClass
+    preview = text[:120] + ("..." if len(text) > 120 else "")
+    store = _get_proposal_store()
+    proposal = store.create(
+        action_type = "knowledge_add",
+        risk_class  = RiskClass.STATEFUL,
+        payload     = {"text": text, "metadata": metadata},
+        description = f"Add knowledge entry: \"{preview}\"",
+        reversible  = True,
+        proposed_by = "user",
+    )
+    return {
+        "status":   "pending_approval",
+        "trace_id": proposal.trace_id,
+        "preview":  preview,
+        "message":  "POST /approve/{trace_id} to add to knowledge base.",
+    }
 
 
 @app.delete("/knowledge/entry/{entry_id}")
-async def knowledge_delete(entry_id: str):
-    """Delete a knowledge entry by ID."""
+async def knowledge_delete(entry_id: str, note: str = ""):
+    """
+    Propose deleting a knowledge entry (DESTRUCTIVE — never expires).
+    Pass ?note=reason to provide context for the approval.
+    """
     from src.memory.vector_store import vector_memory
-    deleted = vector_memory.delete_entry(entry_id)
-    if not deleted:
+    from src.core.proposal_store import RiskClass
+    # Verify entry exists before proposing
+    entries = vector_memory.list_entries(limit=1000)
+    found = next((e for e in entries if str(e.get("id")) == entry_id), None)
+    if not found:
         raise HTTPException(status_code=404, detail=f"Entry '{entry_id}' not found")
-    return {"entry_id": entry_id, "status": "deleted"}
+    preview = str(found.get("text", ""))[:80]
+    store = _get_proposal_store()
+    proposal = store.create(
+        action_type = "knowledge_delete",
+        risk_class  = RiskClass.DESTRUCTIVE,
+        payload     = {"entry_id": entry_id, "preview": preview},
+        description = f"DELETE knowledge entry {entry_id}: \"{preview}\"",
+        reversible  = False,
+        proposed_by = "user",
+    )
+    return {
+        "status":      "pending_approval",
+        "trace_id":    proposal.trace_id,
+        "description": proposal.description,
+        "warning":     "This action is IRREVERSIBLE. POST /approve/{trace_id} with a note to confirm.",
+    }
 
 
 @app.post("/knowledge/import")
 async def knowledge_import(request: Request):
     """
-    Bulk-import knowledge entries.
+    Propose bulk-importing knowledge entries.
+    Returns STATEFUL proposal — actual import on POST /approve/{trace_id}.
     Body: { "entries": [{"text": str, "metadata": dict}, ...] }
     """
     body = await request.json()
     entries = body.get("entries", [])
     if not isinstance(entries, list) or not entries:
         raise HTTPException(status_code=400, detail="entries must be a non-empty list")
-    from src.memory.vector_store import vector_memory
-    count = vector_memory.bulk_import(entries)
-    return {"imported": count, "status": "ok"}
+    from src.core.proposal_store import RiskClass
+    sample = entries[0].get("text", "")[:80] if entries else ""
+    store = _get_proposal_store()
+    proposal = store.create(
+        action_type = "knowledge_import",
+        risk_class  = RiskClass.STATEFUL,
+        payload     = {"entries": entries},
+        description = f"Bulk import {len(entries)} knowledge entries (sample: \"{sample}\")",
+        reversible  = True,
+        proposed_by = "user",
+    )
+    return {
+        "status":   "pending_approval",
+        "trace_id": proposal.trace_id,
+        "count":    len(entries),
+        "sample":   sample,
+    }
 
 
 @app.post("/knowledge/search")

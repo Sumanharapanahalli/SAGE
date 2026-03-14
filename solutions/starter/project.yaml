@@ -25,6 +25,7 @@ active_modules:
   - settings
   - agents
   - yaml-editor
+  - live-console
 
 # Compliance or quality standards this project must satisfy (optional — leave empty if none)
 compliance_standards: []

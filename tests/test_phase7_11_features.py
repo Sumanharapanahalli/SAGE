@@ -112,13 +112,12 @@ class TestKnowledgeCRUD:
     # API tests
 
     def test_knowledge_add_returns_200(self):
-        from src.memory import vector_store as vs_module
-        mock_vm = MagicMock()
-        mock_vm.add_entry.return_value = "entry_123"
-        with patch.object(vs_module, "vector_memory", mock_vm):
-            resp = _client().post("/knowledge/add", json={"text": "Some domain knowledge"})
+        # knowledge_add now returns a STATEFUL proposal (HITL gate)
+        resp = _client().post("/knowledge/add", json={"text": "Some domain knowledge"})
         assert resp.status_code == 200
-        assert resp.json()["entry_id"] == "entry_123"
+        data = resp.json()
+        assert data["status"] == "pending_approval"
+        assert "trace_id" in data
 
     def test_knowledge_add_missing_text_returns_400(self):
         resp = _client().post("/knowledge/add", json={})
@@ -136,34 +135,36 @@ class TestKnowledgeCRUD:
         assert len(data["entries"]) == 1
 
     def test_knowledge_delete_returns_200(self):
+        # knowledge_delete now returns a DESTRUCTIVE proposal (HITL gate)
         from src.memory import vector_store as vs_module
         mock_vm = MagicMock()
-        mock_vm.delete_entry.return_value = True
+        mock_vm.list_entries.return_value = [{"id": "entry_123", "text": "Some knowledge", "metadata": {}}]
         with patch.object(vs_module, "vector_memory", mock_vm):
             resp = _client().delete("/knowledge/entry/entry_123")
         assert resp.status_code == 200
-        assert resp.json()["status"] == "deleted"
+        data = resp.json()
+        assert data["status"] == "pending_approval"
+        assert "trace_id" in data
 
     def test_knowledge_delete_unknown_returns_404(self):
         from src.memory import vector_store as vs_module
         mock_vm = MagicMock()
-        mock_vm.delete_entry.return_value = False
+        mock_vm.list_entries.return_value = []
         with patch.object(vs_module, "vector_memory", mock_vm):
             resp = _client().delete("/knowledge/entry/bad_id")
         assert resp.status_code == 404
 
     def test_knowledge_import_returns_200(self):
-        from src.memory import vector_store as vs_module
-        mock_vm = MagicMock()
-        mock_vm.bulk_import.return_value = 3
-        with patch.object(vs_module, "vector_memory", mock_vm):
-            resp = _client().post("/knowledge/import", json={
-                "entries": [
-                    {"text": "A"}, {"text": "B"}, {"text": "C"}
-                ]
-            })
+        # knowledge_import now returns a STATEFUL proposal (HITL gate)
+        resp = _client().post("/knowledge/import", json={
+            "entries": [
+                {"text": "A"}, {"text": "B"}, {"text": "C"}
+            ]
+        })
         assert resp.status_code == 200
-        assert resp.json()["imported"] == 3
+        data = resp.json()
+        assert data["status"] == "pending_approval"
+        assert data["count"] == 3
 
     def test_knowledge_import_empty_returns_400(self):
         resp = _client().post("/knowledge/import", json={"entries": []})
