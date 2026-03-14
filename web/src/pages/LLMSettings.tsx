@@ -93,7 +93,7 @@ function pctTextColor(pct: number): string {
 // ---------------------------------------------------------------------------
 export default function LLMSettings() {
   const queryClient = useQueryClient()
-  const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'local' | 'claude-code' | 'claude'>('gemini')
+  const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'local' | 'claude-code' | 'claude' | 'ollama'>('gemini')
   const [geminiModel, setGeminiModel] = useState('gemini-2.5-flash')
   const [claudeModel, setClaudeModel] = useState('claude-sonnet-4-5')
   const [claudeApiKey, setClaudeApiKey] = useState('')
@@ -107,12 +107,19 @@ export default function LLMSettings() {
     refetchInterval: 10_000,
   })
 
+  const [switchPending, setSwitchPending] = useState<{ trace_id: string; description: string } | null>(null)
+
   const switchMutation = useMutation({
     mutationFn: switchLLM,
-    onSuccess: () => {
+    onSuccess: (resp: any) => {
       setSwitchError('')
-      queryClient.invalidateQueries({ queryKey: ['llm-status'] })
-      queryClient.invalidateQueries({ queryKey: ['health'] })
+      if (resp?.status === 'pending_approval' && resp?.trace_id) {
+        setSwitchPending({ trace_id: resp.trace_id, description: resp.description ?? '' })
+      } else {
+        // Legacy direct-switch response
+        queryClient.invalidateQueries({ queryKey: ['llm-status'] })
+        queryClient.invalidateQueries({ queryKey: ['health'] })
+      }
     },
     onError: (e: Error) => setSwitchError(e.message),
   })
@@ -313,6 +320,17 @@ export default function LLMSettings() {
             Local Llama
             <div className="text-xs font-normal opacity-70 mt-0.5">Air-gapped GGUF</div>
           </button>
+          <button
+            onClick={() => setSelectedProvider('ollama')}
+            className={`py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+              selectedProvider === 'ollama'
+                ? 'bg-teal-50 border-teal-400 text-teal-700'
+                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Ollama
+            <div className="text-xs font-normal opacity-70 mt-0.5">Local server — no key</div>
+          </button>
         </div>
 
         {selectedProvider === 'claude-code' && (
@@ -419,6 +437,28 @@ export default function LLMSettings() {
           </div>
         )}
 
+        {selectedProvider === 'ollama' && (
+          <div>
+            <label className="text-xs font-medium text-gray-600 block mb-1.5">Model name</label>
+            <input
+              type="text"
+              value={localPath || 'llama3.2'}
+              onChange={e => setLocalPath(e.target.value)}
+              placeholder="llama3.2"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Requires <code className="font-mono">ollama serve</code> running locally. No API key needed.
+            </p>
+          </div>
+        )}
+
+        {switchPending && (
+          <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-3 py-2 text-sm text-yellow-800">
+            Switch proposed — approve it in the <a href="/" className="underline font-medium">Dashboard</a>.
+            <div className="text-xs text-yellow-600 mt-0.5 font-mono">{switchPending.description}</div>
+          </div>
+        )}
         {switchError && (
           <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{switchError}</p>
         )}
@@ -430,6 +470,7 @@ export default function LLMSettings() {
               model: selectedProvider === 'gemini' ? geminiModel
                    : selectedProvider === 'claude-code' ? claudeModel
                    : selectedProvider === 'claude' ? claudeModel
+                   : selectedProvider === 'ollama' ? (localPath || 'llama3.2')
                    : localPath || undefined,
               api_key: selectedProvider === 'claude' ? claudeApiKey || undefined : undefined,
               claude_path: selectedProvider === 'claude-code' ? claudePath || undefined : undefined,
@@ -443,10 +484,11 @@ export default function LLMSettings() {
           className="w-full bg-gray-900 hover:bg-gray-700 disabled:opacity-40 text-white
                      text-sm font-medium py-2.5 rounded-lg transition-colors"
         >
-          {switchMutation.isPending ? 'Switching…'
+          {switchMutation.isPending ? 'Proposing switch…'
             : selectedProvider === 'gemini' ? 'Switch to Gemini CLI'
             : selectedProvider === 'claude-code' ? 'Switch to Claude Code CLI'
             : selectedProvider === 'claude' ? 'Switch to Claude API'
+            : selectedProvider === 'ollama' ? 'Switch to Ollama'
             : 'Switch to Local Llama'}
         </button>
       </div>
