@@ -1,0 +1,62 @@
+# ==============================================================================
+# SAGE Tasks — Four in a Line Game
+# ==============================================================================
+
+task_types:
+  - ANALYZE_CRASH
+  - ANALYZE_PLAYER_SIGNAL
+  - ANALYZE_GAME_BUG
+  - REVIEW_GAME_CODE
+  - REVIEW_UI_CODE
+  - CREATE_MR
+  - MONITOR_ANALYTICS
+  - PLAN_TASK
+
+task_descriptions:
+  ANALYZE_CRASH:         "Triage a game crash, exception, or ANR report"
+  ANALYZE_PLAYER_SIGNAL: "Analyze a player retention, funnel, or analytics metric signal"
+  ANALYZE_GAME_BUG:      "Diagnose a reported game logic, AI, or UI bug"
+  REVIEW_GAME_CODE:      "Code review of game logic, AI opponent, or win-detection code"
+  REVIEW_UI_CODE:        "Code review of UI components, animations, or layout changes"
+  CREATE_MR:             "Create a GitHub PR from an issue or branch description"
+  MONITOR_ANALYTICS:     "Check latest player retention, DAU, and funnel metrics"
+  PLAN_TASK:             "Decompose a complex request into ordered subtasks"
+
+task_payloads:
+  ANALYZE_CRASH:
+    log_text:    "string — crash log, stack trace, or exception report"
+    platform:    "string — 'ios' | 'android' | 'web' (optional)"
+    app_version: "string — game version number (optional)"
+    session_id:  "string — player session ID if available (optional)"
+
+  ANALYZE_PLAYER_SIGNAL:
+    signal_text: "string — analytics metric, chart description, or cohort data"
+    metric_name: "string — e.g. 'day7_retention' | 'level_3_funnel' (optional)"
+    date_range:  "string — ISO date range (optional)"
+
+  ANALYZE_GAME_BUG:
+    description: "string — bug description with reproduction steps"
+    game_mode:   "string — 'vs_ai' | 'two_player' | 'puzzle' (optional)"
+    platform:    "string — 'ios' | 'android' | 'web' (optional)"
+
+  REVIEW_GAME_CODE:
+    diff_text:   "string — git diff or code to review"
+    pr_url:      "string — GitHub PR URL (optional)"
+    context:     "string — what the change does (optional)"
+
+  REVIEW_UI_CODE:
+    diff_text:   "string — git diff or UI code to review"
+    pr_url:      "string — GitHub PR URL (optional)"
+    context:     "string — what the change does (optional)"
+
+  CREATE_MR:
+    issue_description: "string — what to fix or implement"
+    target_branch:     "string — e.g. 'main' or 'develop' (optional)"
+
+  MONITOR_ANALYTICS:
+    date:        "string — date to check (optional, defaults to today)"
+    metric:      "string — specific metric to focus on (optional)"
+
+  PLAN_TASK:
+    description: "string — natural language task description for the planner"
+    priority:    "integer — 1-10 (default 5)"

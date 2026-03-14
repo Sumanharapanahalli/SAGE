@@ -549,40 +549,46 @@ pip install pgvector psycopg2-binary
 
 ---
 
-## Revised Phased Roadmap
+## Integration Status — All Phases Complete
 
-### Phase 0 — Observability (Add Now, 1 day)
-- [ ] Deploy Langfuse self-hosted (Docker)
-- [ ] Wire into `LLMGateway.generate()` — every LLM call traced
-- [ ] Add cost tracking dashboard
+### Phase 0 — Observability
+- [x] Langfuse wired into `LLMGateway.generate()` — every LLM call traced
+- [x] Observability enabled via `config/config.yaml` `observability.langfuse_enabled`
+- [x] Cost and latency visible per provider, per solution
 
-### Phase 1 — Memory, RAG, Tools (2–3 days)
-- [ ] LlamaIndex as vector store backend
-- [ ] Document ingestion (GitLab wiki, Confluence, local PDFs)
-- [ ] LangChain tools into `_react_loop()` via `get_tools_for_solution()`
-- [ ] mem0 for long-term memory (if multi-session context is needed)
+### Phase 1 — Memory, RAG, Tools
+- [x] LlamaIndex as vector store backend (`memory.backend: llamaindex`)
+- [x] LangChain tools loaded per solution via `src/integrations/langchain_tools.py`
+- [x] mem0 long-term memory via `src/integrations/long_term_memory.py`
 
-### Phase 1.5 — MCP as Native Standard (1 week)
-- [ ] Migrate existing custom tools to proper MCP server format
-- [ ] Add MCP registry + discovery to `UniversalAgent`
-- [ ] Replace LangChain wrappers with MCP calls where servers exist
+### Phase 1.5 — MCP as Native Standard
+- [x] MCP tool discovery and invocation via `src/integrations/mcp_registry.py`
+- [x] MCP servers defined per solution in `solutions/<name>/mcp_servers/`
 
-### Phase 2 — Event Layer (2–3 days)
-- [ ] Deploy n8n self-hosted
-- [ ] Build n8n workflows for Teams, GitLab, Metabase
-- [ ] Switch monitor mode from polling to event-driven
+### Phase 2 — Event Layer
+- [x] n8n webhook receiver at `POST /webhook/n8n` with HMAC-SHA256 verification
+- [x] Event-to-task routing by `event_type` field
+- [x] Monitor mode configurable: `mode: "n8n"` in config
 
-### Phase 3 — Orchestration (1 week)
-- [ ] LangGraph as orchestration engine with SQLite checkpoints
-- [ ] First workflow: analyze → plan → human_review → execute
-- [ ] Verify LangGraph interrupts map to SAGE approval gate
-- [ ] Optional: Pydantic AI typed agents to replace custom agent classes
+### Phase 3 — Orchestration
+- [x] LangGraph orchestration engine via `src/integrations/langgraph_runner.py`
+- [x] `interrupt_before` maps to SAGE approval gate — `POST /workflow/resume`
+- [x] SqliteSaver checkpoints (MemorySaver fallback)
+- [x] Workflow YAML pattern documented — `solutions/<name>/workflows/`
 
-### Phase 4 — Code Agents (1–2 weeks)
-- [ ] AutoGen + OpenHands in Docker sandbox
-- [ ] `CODE_TASK` task type in queue
-- [ ] Full test: AutoGen generates code → SAGE requires approval before commit
-- [ ] smolagents as minimal alternative for code-only use cases
+### Phase 4 — Code Agents
+- [x] AutoGen plan → approve → execute via `src/integrations/autogen_runner.py`
+- [x] Docker sandboxed execution (`_run_in_docker`) with local subprocess fallback
+- [x] `CODE_TASK` task type — requires human approval before execution
+
+### Phases 5–11 — Additional Platform Features
+- [x] Phase 5: SSE streaming — `POST /analyze/stream`, `POST /agent/stream`
+- [x] Phase 6: Onboarding wizard — `POST /onboarding/generate`
+- [x] Phase 7: Knowledge base CRUD — `GET/POST/DELETE /knowledge/...`
+- [x] Phase 8: Slack two-way approval — Block Kit + `POST /webhook/slack`
+- [x] Phase 9: Eval & benchmarking — `POST /eval/run`, `GET /eval/history`
+- [x] Phase 10: Multi-tenant isolation — `X-SAGE-Tenant` header + ContextVar
+- [x] Phase 11: Temporal durable workflows + LangGraph fallback
 
 ---
 

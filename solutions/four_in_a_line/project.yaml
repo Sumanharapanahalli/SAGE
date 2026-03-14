@@ -1,0 +1,65 @@
+# ==============================================================================
+# SAGE Solution — Four in a Line (Casual Game)
+# ==============================================================================
+# Example: cross-platform casual puzzle game (Unity or React Native)
+# Shows: game logic analysis, player analytics, monetisation review
+# ==============================================================================
+
+name: "Four in a Line — Game Studio"
+version: "1.0.0"
+domain: "game-dev"
+description: >
+  AI agent system for a cross-platform Four in a Line puzzle game. Agents
+  analyze game crash reports and bug logs, monitor player analytics for
+  retention and churn signals, review game logic and AI opponent code,
+  and assist with game balance and feature planning.
+
+active_modules:
+  - dashboard
+  - analyst
+  - developer
+  - monitor
+  - audit
+  - improvements
+  - agents
+  - llm
+  - settings
+
+compliance_standards:
+  - "GDPR (player data and analytics)"
+  - "COPPA (if targeting under-13 players)"
+  - "Apple App Store Guidelines"
+  - "Google Play Policy"
+
+integrations:
+  - github
+  - slack
+
+settings:
+  memory:
+    collection_name: "four_in_a_line_knowledge"
+  system:
+    max_concurrent_tasks: 1
+
+ui_labels:
+  analyst_page_title:   "Bug & Signal Analyzer"
+  analyst_input_label:  "Paste a crash log, bug report, or player analytics signal"
+  developer_page_title: "Game Code Reviewer"
+  monitor_page_title:   "Player Health Monitor"
+  dashboard_subtitle:   "Four in a Line — Studio Health"
+
+dashboard:
+  badge_color: "bg-yellow-100 text-yellow-800"
+  context_color: "border-yellow-200 bg-yellow-50"
+  context_items:
+    - label: "Platform"
+      description: "Cross-platform (iOS, Android, Web) — Unity or React Native"
+    - label: "Key Signals"
+      description: "Crash reports, DAU/retention, level completion funnels"
+    - label: "Team"
+      description: "Small indie studio — developer, designer, QA, game designer"
+  quick_actions:
+    - { label: "Analyze Bug",       route: "/analyst",   description: "Triage a crash or game bug" }
+    - { label: "Review Code",       route: "/developer", description: "Game logic or AI code review" }
+    - { label: "Player Analytics",  route: "/monitor",   description: "Retention and funnel signals" }
+    - { label: "Game Advisor",      route: "/agents",    description: "Balance and design advisor" }

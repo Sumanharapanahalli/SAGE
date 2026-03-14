@@ -1,0 +1,69 @@
+# ==============================================================================
+# SAGE Solution — Medical Device Software Team
+# ==============================================================================
+# Example: regulated medical device company with embedded, web, and devops roles
+# Standards: ISO 13485, IEC 62304, ISO 14971, FDA 21 CFR Part 11
+# ==============================================================================
+
+name: "Medical Device Software Team"
+version: "1.0.0"
+domain: "medtech"
+description: >
+  AI agent system for a medical device software team building firmware for
+  embedded devices alongside a clinical web dashboard and cloud infrastructure.
+  Agents triage firmware logs and hardware faults, review embedded C/C++ and
+  web application code, oversee CI/CD and deployment pipelines, and ensure
+  every decision is auditable under ISO 13485 and IEC 62304.
+
+active_modules:
+  - dashboard
+  - analyst
+  - developer
+  - monitor
+  - audit
+  - improvements
+  - agents
+  - llm
+  - settings
+
+compliance_standards:
+  - "ISO 13485:2016 (Quality Management System)"
+  - "IEC 62304:2006/AMD1:2015 (Medical Device Software Lifecycle)"
+  - "ISO 14971:2019 (Risk Management)"
+  - "FDA 21 CFR Part 11 (Electronic Records and Signatures)"
+  - "FDA Cybersecurity Guidance 2023"
+  - "IEC 60601-1 (General Safety for Medical Electrical Equipment)"
+
+integrations:
+  - gitlab
+  - slack
+  - jira
+
+settings:
+  memory:
+    collection_name: "medtech_team_knowledge"
+  system:
+    max_concurrent_tasks: 1
+
+ui_labels:
+  analyst_page_title:   "Fault & Signal Analyzer"
+  analyst_input_label:  "Paste firmware log, hardware fault trace, or system error"
+  developer_page_title: "Code Reviewer (Embedded / Web / Infra)"
+  monitor_page_title:   "System Health Monitor"
+  dashboard_subtitle:   "Medical Device Software — Engineering Health"
+
+dashboard:
+  badge_color: "bg-blue-100 text-blue-800"
+  context_color: "border-blue-200 bg-blue-50"
+  context_items:
+    - label: "Device"
+      description: "Embedded firmware (C/C++) + clinical web dashboard (React) + cloud infra"
+    - label: "Standards"
+      description: "ISO 13485, IEC 62304, ISO 14971, FDA 21 CFR Part 11"
+    - label: "Critical Rule"
+      description: "Every agent proposal requires human approval before any action — no exceptions"
+  quick_actions:
+    - { label: "Analyze Fault",      route: "/analyst",   description: "Triage firmware or system fault" }
+    - { label: "Review Code",        route: "/developer", description: "Embedded, web, or infra review" }
+    - { label: "System Monitor",     route: "/monitor",   description: "Device and pipeline health" }
+    - { label: "Specialist Agents",  route: "/agents",    description: "Role-specific expert analysis" }
