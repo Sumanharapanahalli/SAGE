@@ -11,6 +11,7 @@ import LLMSettings from './pages/LLMSettings'
 import Agents from './pages/Agents'
 import Settings from './pages/Settings'
 import YamlEditor from './pages/YamlEditor'
+import LiveConsole from './pages/LiveConsole'
 
 // ---------------------------------------------------------------------------
 // Standard SAGE routes — solution-agnostic.
@@ -44,7 +45,8 @@ export default function App() {
               <Route path="/improvements" element={<Improvements />} />
               <Route path="/llm"          element={<LLMSettings />} />
               <Route path="/settings"     element={<Settings />} />
-              <Route path="/yaml-editor"  element={<YamlEditor />} />
+              <Route path="/yaml-editor"   element={<YamlEditor />} />
+              <Route path="/live-console"  element={<LiveConsole />} />
             </Routes>
           </main>
         </div>

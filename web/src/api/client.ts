@@ -118,15 +118,26 @@ export const runAgent = (role_id: string, task: string, context?: string) =>
     severity: string; confidence: string; status: string
   }>('/agent/run', { role_id, task, context: context ?? '' })
 
-// Set active modules for current solution (runtime override)
+// Set active modules for current solution (runtime override) — returns proposal
 export const setActiveModules = (modules: string[]) =>
-  post<{ active_modules: string[] }>('/config/modules', { modules })
+  post<ProposalResponse>('/config/modules', { modules })
 
-// Switch active solution at runtime
+// Switch active solution at runtime — returns proposal
 export const switchProject = (project: string) =>
-  post<{ switched: boolean; project: string; name: string; domain: string; active_modules: string[] }>(
-    '/config/switch', { project }
+  post<ProposalResponse>('/config/switch', { project })
+
+// Pending approvals — for the Dashboard panel
+export const fetchPendingProposals = () =>
+  get<{ proposals: Proposal[]; count: number }>('/proposals/pending')
+
+// Approve a proposal (analysis or action)
+export const approveProposalFull = (trace_id: string, decided_by = 'human', feedback = '') =>
+  post<{ status: string; trace_id: string; action_type?: string; result?: unknown }>(
+    `/approve/${trace_id}`, { decided_by, feedback }
   )
+
+// Live log stream — returns an EventSource URL (no fetch wrapper needed)
+export const logsStreamUrl = () => '/api/logs/stream'
 
 // Project config
 export const fetchProjectConfig = () =>
@@ -149,6 +160,30 @@ export const fetchProjects = () =>
   )
 
 // --- Types ---
+
+export interface Proposal {
+  trace_id:    string
+  created_at:  string
+  action_type: string
+  risk_class:  'INFORMATIONAL' | 'EPHEMERAL' | 'STATEFUL' | 'EXTERNAL' | 'DESTRUCTIVE'
+  reversible:  boolean
+  proposed_by: string
+  description: string
+  payload:     Record<string, unknown>
+  status:      'pending' | 'approved' | 'rejected' | 'expired'
+  decided_by:  string | null
+  decided_at:  string | null
+  feedback:    string | null
+  expires_at:  string | null
+}
+
+export interface ProposalResponse {
+  status:      string   // "pending_approval"
+  trace_id:    string
+  description: string
+  [key: string]: unknown
+}
+
 export interface HealthResponse {
   status: string
   service: string

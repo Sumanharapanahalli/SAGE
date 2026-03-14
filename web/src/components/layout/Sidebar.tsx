@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Search, GitMerge, ClipboardList,
-  Activity, Shield, Lightbulb, Cpu, Settings, FileCode2, Bot,
+  Activity, Shield, Lightbulb, Cpu, Settings, FileCode2, Bot, Terminal,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchFeatureRequests } from '../../api/client'
@@ -28,7 +28,8 @@ const links = [
   { to: '/improvements', icon: Lightbulb,       label: 'Improvements',  moduleId: 'improvements', badge: true },
   { to: '/llm',          icon: Cpu,             label: 'LLM',           moduleId: 'llm' },
   { to: '/settings',     icon: Settings,        label: 'Settings',      moduleId: 'settings' },
-  { to: '/yaml-editor',  icon: FileCode2,       label: 'Config Editor', moduleId: 'yaml-editor' },
+  { to: '/yaml-editor',   icon: FileCode2,  label: 'Config Editor', moduleId: 'yaml-editor' },
+  { to: '/live-console',  icon: Terminal,   label: 'Live Console',  moduleId: 'live-console' },
 ]
 
 export default function Sidebar() {
