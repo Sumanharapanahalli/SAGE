@@ -87,3 +87,60 @@ export interface ImprovementAccess {
   canGeneratePlan: boolean
   mode: ImprovementMode
 }
+
+// ---------------------------------------------------------------------------
+// Task Queue Types
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Cost Tracking Types (T1-004)
+// ---------------------------------------------------------------------------
+
+export interface DailyCost {
+  date: string
+  calls: number
+  cost_usd: number
+}
+
+export interface CostByModel {
+  model: string
+  calls: number
+  cost: number
+}
+
+export interface CostBySolution {
+  solution: string
+  calls: number
+  cost: number
+}
+
+export interface CostSummary {
+  total_cost_usd: number
+  total_calls: number
+  total_input_tokens: number
+  total_output_tokens: number
+  avg_cost_per_call: number
+  by_model: CostByModel[]
+  by_solution: CostBySolution[]
+  period_days: number
+  tenant: string | null
+  solution: string | null
+}
+
+export interface QueueTask {
+  task_id: string
+  task_type: string
+  payload: Record<string, unknown>
+  priority: number
+  status: 'pending' | 'in_progress' | 'completed' | 'failed'
+  created_at: string
+  started_at?: string
+  completed_at?: string
+  result?: string
+  error?: string
+  plan_trace_id?: string
+  source?: string
+  // joined from feature_requests:
+  feature_title?: string
+  feature_scope?: string
+}

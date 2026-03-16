@@ -1,6 +1,6 @@
 # SAGE Framework — User Guide
 
-> Version 3.0.0 | Last updated: 2026-03-14
+> Version 3.1.0 | Last updated: 2026-03-15
 
 This guide covers everything needed to install, configure, run, and operate the SAGE Framework from day to day. It assumes no prior knowledge of the codebase.
 
@@ -15,8 +15,9 @@ This guide covers everything needed to install, configure, run, and operate the 
 5. [Human-in-the-Loop Workflow](#5-human-in-the-loop-workflow)
 6. [Feature Request System](#6-feature-request-system)
 7. [Adding a New Solution](#7-adding-a-new-solution)
-8. [Running Tests](#8-running-tests)
-9. [Troubleshooting](#9-troubleshooting)
+8. [Solution Theming](#8-solution-theming)
+9. [Running Tests](#9-running-tests)
+10. [Troubleshooting](#10-troubleshooting)
 
 ---
 
@@ -254,17 +255,18 @@ Double-click `sage.bat` — starts backend + frontend with no visible terminal w
 
 ## 4. Using the Web UI
 
-Open `http://localhost:5173`. The sidebar has ten pages (which are visible depends on your solution's `active_modules` list in `project.yaml`).
+Open `http://localhost:5173`. The sidebar shows pages according to your solution's `active_modules` list in `project.yaml`. The header includes a **solution switcher** dropdown (click the solution name) and an online/offline indicator showing the active LLM provider.
 
 ### 4.1 Dashboard
 
 Default landing page. Shows:
 
-- **System Health Card** — backend status, LLM provider, active solution, integration flags.
-- **Active Alerts Panel** — pending proposals awaiting human review.
-- **Error Trend Chart** — analysis events over the last 7 days from the audit log.
-
-Auto-refreshes every 30 seconds.
+- **Domain Context Card** — solution name, version, and key facts from `project.yaml dashboard.context_items`.
+- **Quick Actions** — shortcut buttons from `project.yaml dashboard.quick_actions`.
+- **Pending Approvals Panel** — all proposals awaiting human review, with Approve/Reject controls. Auto-refreshes every 10 seconds.
+- **System Health Card** — backend status, LLM provider, and active solution.
+- **Active Alerts Panel** — recent flagged events from the audit log.
+- **Error Trend Chart** — analysis events over the last 7 days.
 
 ### 4.2 Analyst Page
 
@@ -275,11 +277,11 @@ Submit logs, metrics, or error text for AI analysis.
 3. A proposal card appears: severity badge (RED/AMBER/GREEN/UNKNOWN), root cause hypothesis, recommended action, and trace ID.
 4. Use the approval buttons — see Section 5.
 
-The input label adapts to the active solution (e.g. "Crash log or app store review" for `meditation_app`).
+The input label and page title adapt to the active solution via `ui_labels` in `project.yaml`.
 
 ### 4.3 Developer Page
 
-Manages GitLab/GitHub merge request operations. Requires a GitLab/GitHub integration to be configured; remove `developer` from `active_modules` in `project.yaml` if you are not using it.
+Manages GitLab/GitHub merge request operations. Requires a GitLab/GitHub integration to be configured; remove `developer` from `active_modules` if not used.
 
 - **Open MRs** — list open MRs for your project.
 - **Review MR** — AI review via the ReAct loop (pipeline → diff → analysis).
@@ -295,7 +297,20 @@ Searchable, paginated view of the immutable compliance audit trail. Every analys
 
 ### 4.6 Agents Page
 
-Run any solution-defined agent role directly against a task. Roles are defined in `prompts.yaml` under `roles:`. Select a role, enter a task description, click Run. Supports SSE streaming via `POST /agent/stream`.
+Run any solution-defined agent role directly against a task.
+
+1. **Select a role** from the role grid — roles come from `prompts.yaml → roles:`.
+2. Optionally use a **quick template** button (populated from `project.yaml ui_labels.agent_quick_templates`).
+3. Enter your task description and optional context.
+4. Click **Ask [Role Name]** — the agent responds with analysis, recommendations, and next steps, all requiring human approval before action.
+
+**Hire Agent** — define a new role on the fly without editing files:
+
+1. Click **Hire Agent** (top-right of the page).
+2. Choose an icon, enter a name, description, and system prompt.
+3. Optionally add task types (written to `tasks.yaml`).
+4. Click **Propose Role** → creates a HITL proposal.
+5. Approve it on the Dashboard or via the API — the role appears immediately after approval.
 
 ### 4.7 LLM Settings Page
 
@@ -315,6 +330,24 @@ Edit `project.yaml`, `prompts.yaml`, or `tasks.yaml` live in the browser. Change
 ### 4.10 Settings Page
 
 Solution-level settings: collection name, max concurrent tasks, UI label overrides.
+
+### 4.11 Live Console Page
+
+Real-time SSE event stream — shows every task submission, agent response, and system event as it happens. Useful for debugging and monitoring agent activity without polling the audit log.
+
+### 4.12 New Solution Page (Onboarding Wizard)
+
+A conversational wizard that generates a complete new solution from a plain-language description.
+
+1. Click **Start Conversation**.
+2. Answer the assistant's guided questions about your domain, team, compliance requirements, and integrations.
+3. Watch the **Gathered Info** panel fill in as the LLM extracts details from your answers.
+4. When enough information has been collected, a **Generate Solution** button appears.
+5. Click it — a HITL proposal is created to write `project.yaml`, `prompts.yaml`, and `tasks.yaml`.
+6. Approve the proposal on the Dashboard. The solution directory is created immediately.
+7. Restart the backend with `make run PROJECT=<your_solution_name>`.
+
+This is the recommended path for any new domain. The direct API endpoint (`POST /onboarding/generate`) is also available for scripted or CI usage — see Section 7.
 
 ---
 
@@ -384,7 +417,11 @@ A SAGE solution is three YAML files — no Python code changes required.
 
 See [docs/ADDING_A_PROJECT.md](ADDING_A_PROJECT.md) for the full step-by-step guide.
 
-**Fastest path — onboarding wizard:**
+**Option A — Conversational wizard in the web UI (recommended):**
+
+Open the **New Solution** page in the sidebar (wand icon). The wizard guides you through a multi-turn conversation, extracts your domain info, and creates a HITL proposal to generate all three YAML files. Approve it on the Dashboard, then restart with `make run PROJECT=<name>`. See [Section 4.12](#412-new-solution-page-onboarding-wizard) for the step-by-step flow.
+
+**Option B — Direct API call (scripted/CI use):**
 
 ```bash
 curl -X POST http://localhost:8000/onboarding/generate \
@@ -395,10 +432,10 @@ curl -X POST http://localhost:8000/onboarding/generate \
     "compliance_standards": ["SOC 2 Type II"],
     "integrations": ["github", "slack"]
   }'
-# Then: make run PROJECT=invoicing_saas
+# Returns a trace_id — approve it, then: make run PROJECT=invoicing_saas
 ```
 
-**From the starter template:**
+**Option C — From the starter template:**
 
 ```bash
 cp -r solutions/starter solutions/my_project
@@ -408,7 +445,92 @@ make run PROJECT=my_project
 
 ---
 
-## 8. Running Tests
+## 8. Solution Theming
+
+Each solution can have a completely unique visual identity — sidebar colour, accent buttons, header badge — all controlled by the `theme:` block in `project.yaml`. The framework reads these values on startup and applies them as CSS variables across the entire web UI. No React code changes are needed.
+
+### 8.1 Theme Block Format
+
+Add a `theme:` section to your solution's `project.yaml`:
+
+```yaml
+theme:
+  sidebar_bg:          "#111827"   # sidebar background
+  sidebar_text:        "#9ca3af"   # inactive nav item text
+  sidebar_active_bg:   "#15803d"   # active nav item background
+  sidebar_active_text: "#ffffff"   # active nav item / heading text
+  sidebar_hover_bg:    "#1f2937"   # nav item hover background
+  sidebar_accent:      "#6366f1"   # badge and icon accent colour
+  accent:              "#6366f1"   # primary action buttons
+  accent_hover:        "#4f46e5"   # primary button hover
+  badge_bg:            "#f3f4f6"   # header domain badge background
+  badge_text:          "#374151"   # header domain badge text
+```
+
+All values are standard CSS colour strings: `#hex`, `hsl(...)`, `rgb(...)`, or named colours. Omit the `theme:` block entirely to use the default SAGE dark-sidebar theme.
+
+### 8.2 Example Themes
+
+**Medical / clinical (blue sidebar):**
+```yaml
+theme:
+  sidebar_bg:         "#1e3a5f"
+  sidebar_active_bg:  "#1d4ed8"
+  sidebar_accent:     "#60a5fa"
+  accent:             "#2563eb"
+  accent_hover:       "#1d4ed8"
+```
+
+**Game studio (dark purple):**
+```yaml
+theme:
+  sidebar_bg:         "#1e1b2e"
+  sidebar_active_bg:  "#7c3aed"
+  sidebar_accent:     "#a78bfa"
+  accent:             "#7c3aed"
+  accent_hover:       "#6d28d9"
+```
+
+**Startup / green growth:**
+```yaml
+theme:
+  sidebar_bg:         "#14532d"
+  sidebar_active_bg:  "#166534"
+  sidebar_accent:     "#86efac"
+  accent:             "#16a34a"
+  accent_hover:       "#15803d"
+```
+
+### 8.3 Quick Templates for the Agents Page
+
+Populate per-role quick-fill buttons on the Agents page by adding `agent_quick_templates` under `ui_labels`:
+
+```yaml
+ui_labels:
+  agent_quick_templates:
+    analyst:
+      - label: "Review latest error"
+        task:  "Analyze the most recent error log and identify the root cause"
+      - label: "Performance check"
+        task:  "Review system performance metrics and suggest optimisations"
+    developer:
+      - label: "Code review"
+        task:  "Review the latest code changes and flag potential issues"
+        context: "Focus on security and correctness"
+```
+
+Keys map to role IDs in `prompts.yaml`. The framework renders these as clickable chips above the task input — clicking one pre-fills the task (and optional context) field.
+
+### 8.4 How Themes Apply at Runtime
+
+1. `GET /config/project` returns the full `project.yaml` including the `theme:` block.
+2. The React `ThemeProvider` component reads `projectData.theme` and writes each key as a CSS custom property on `document.documentElement`.
+3. All sidebar, button, and badge styles reference these properties (`var(--sage-sidebar-bg)` etc.).
+4. When you switch solutions via the header dropdown, the theme updates instantly — no page reload.
+
+---
+
+## 9. Running Tests
 
 ```bash
 # Framework tests (383+ tests — fast, no external services)
@@ -450,7 +572,7 @@ make test-api
 
 ---
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 ### "Gemini CLI not found"
 

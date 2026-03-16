@@ -57,6 +57,9 @@ pyserial
 # Hardware — J-Link Debugger
 pylink-square
 
+# Authentication — JWT (OIDC) + API key
+python-jose[cryptography]
+
 # HTTP / Async
 httpx
 
@@ -68,3 +71,8 @@ msal
 
 # GitLab
 # (uses requests — GitLab REST API v4)
+
+# Composio — 100+ pre-built tool integrations for AI agents (optional)
+# pip install composio-langchain
+# Set COMPOSIO_API_KEY in .env, then: composio add <app>
+composio-langchain

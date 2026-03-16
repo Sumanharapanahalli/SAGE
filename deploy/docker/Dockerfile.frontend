@@ -1,0 +1,51 @@
+# ==============================================================================
+# SAGE Frontend — Dockerfile (multi-stage)
+# ==============================================================================
+# Stage 1: Node.js build — compiles React 18 + TypeScript to static assets
+# Stage 2: nginx:alpine  — serves the static assets (~25MB final image)
+#
+# Build:
+#   docker build -f deploy/docker/Dockerfile.frontend -t sage-frontend:latest .
+#   (must be run from the repo root, not from web/)
+#
+# The nginx config (deploy/docker/nginx.conf) handles:
+#   - SPA routing: all paths fall back to index.html
+#   - Reverse proxy: /api/ → backend service
+#   - gzip for static assets
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Stage 1: Builder
+# ------------------------------------------------------------------------------
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+# Copy package manifests first — npm ci only re-runs when lockfile changes
+COPY web/package*.json ./
+
+# npm ci is preferred over npm install in CI/CD: reproducible, strict lockfile
+RUN npm ci
+
+# Copy the rest of the frontend source
+COPY web/ .
+
+# Vite production build — outputs to /app/dist
+RUN npm run build
+
+# ------------------------------------------------------------------------------
+# Stage 2: Serve with nginx
+# ------------------------------------------------------------------------------
+FROM nginx:alpine
+
+# Copy compiled assets from the builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy our custom nginx config (SPA routing + backend proxy)
+COPY deploy/docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+# nginx runs on port 80 by default
+EXPOSE 80
+
+# nginx:alpine already defines a sensible CMD — no override needed.
+# The default CMD is: nginx -g "daemon off;"

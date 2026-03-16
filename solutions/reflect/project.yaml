@@ -30,6 +30,8 @@ active_modules:
   - settings
   - agents
   - yaml-editor
+  - live-console
+  - integrations
 
 # Activity modules currently implemented in Reflect
 activity_modules:

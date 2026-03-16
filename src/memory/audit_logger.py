@@ -39,7 +39,7 @@ class AuditLogger:
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        
+
         # Schema: Immutable log of interactions
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS compliance_audit_log (
@@ -50,33 +50,77 @@ class AuditLogger:
                 input_context TEXT,          -- The prompt or data triggering the action
                 output_content TEXT,         -- The AI's response or System's result
                 metadata JSON,               -- JSON blob for extra tags (TraceID, GitHash)
-                verification_signature TEXT  -- Placeholder for digital signature
+                verification_signature TEXT, -- Placeholder for digital signature
+                approved_by TEXT,            -- Identity that approved/rejected (named approvals)
+                approver_role TEXT,          -- RBAC role of the approver
+                approver_email TEXT,         -- Email of the approver
+                approver_provider TEXT       -- Auth provider: "oidc" | "api_key" | "anonymous"
             )
         ''')
         conn.commit()
+
+        # Idempotent migrations for databases created before named-approvals feature
+        _identity_columns = [
+            ("approved_by",        "TEXT"),
+            ("approver_role",      "TEXT"),
+            ("approver_email",     "TEXT"),
+            ("approver_provider",  "TEXT"),
+        ]
+        for col_name, col_type in _identity_columns:
+            try:
+                conn.execute(f"ALTER TABLE compliance_audit_log ADD COLUMN {col_name} {col_type}")
+                conn.commit()
+                self.logger.info("Migrated compliance_audit_log: added column %s", col_name)
+            except Exception:
+                pass  # column already exists
+
         conn.close()
 
-    def log_event(self, actor: str, action_type: str, input_context: str, output_content: str, metadata: dict = None):
+    def log_event(
+        self,
+        actor: str,
+        action_type: str,
+        input_context: str,
+        output_content: str,
+        metadata: dict = None,
+        # Named-approval identity fields (optional — populated when auth is enabled)
+        approved_by: str = None,
+        approver_role: str = None,
+        approver_email: str = None,
+        approver_provider: str = None,
+    ):
         """
         Log an event to the persistent audit trail.
+
+        The optional approved_by / approver_* kwargs capture the identity of
+        the human who approved or rejected a proposal (T1-001 Named Approvals).
         """
         event_id = str(uuid.uuid4())
         timestamp = datetime.now(timezone.utc).isoformat()
         metadata_json = json.dumps(metadata) if metadata else "{}"
-        
+
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO compliance_audit_log (id, timestamp, actor, action_type, input_context, output_content, metadata)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (event_id, timestamp, actor, action_type, input_context, output_content, metadata_json))
+            cursor.execute(
+                '''
+                INSERT INTO compliance_audit_log
+                    (id, timestamp, actor, action_type, input_context, output_content,
+                     metadata, approved_by, approver_role, approver_email, approver_provider)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''',
+                (
+                    event_id, timestamp, actor, action_type,
+                    input_context, output_content, metadata_json,
+                    approved_by, approver_role, approver_email, approver_provider,
+                ),
+            )
             conn.commit()
             conn.close()
-            self.logger.info(f"Audit Logged: {action_type} by {actor} (ID: {event_id})")
+            self.logger.info("Audit Logged: %s by %s (ID: %s)", action_type, actor, event_id)
             return event_id
         except Exception as e:
-            self.logger.critical(f"FAILED TO WRITE AUDIT LOG: {e}")
+            self.logger.critical("FAILED TO WRITE AUDIT LOG: %s", e)
             # In a medical device, failure to log might mean we must STOP the system.
             raise e
 

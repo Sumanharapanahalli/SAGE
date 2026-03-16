@@ -244,6 +244,77 @@ export const MODULE_REGISTRY: Record<string, ModuleMetadata> = {
     ],
   },
 
+  queue: {
+    id: 'queue',
+    name: 'Task Queue',
+    description: 'View and monitor all queued tasks from approved implementation plans.',
+    version: '1.0.0',
+    route: '/queue',
+    features: [
+      'List all tasks with status: pending / in_progress / completed / failed',
+      'Filter by status and source (SAGE framework vs solution)',
+      'Color-coded by source: purple for SAGE tasks, orange for solution tasks',
+      'Stats bar showing total, pending, in-progress, completed, and failed counts',
+      'Auto-refreshes every 5 seconds',
+      'Collapsible payload details per task',
+      'Links tasks to their originating feature request',
+    ],
+    improvementHints: [
+      'Add ability to cancel pending tasks',
+      'Add task retry button for failed tasks',
+      'Add task duration display (started_at → completed_at)',
+      'Add per-task log viewer showing related console output',
+      'Add CSV export of task history',
+    ],
+  },
+
+  costs: {
+    id: 'costs',
+    name: 'Cost Tracker',
+    description: 'Per-tenant LLM token and cost tracking with budget controls and daily charts.',
+    version: '1.0.0',
+    route: '/costs',
+    features: [
+      'Total spend, projected monthly cost, call count, avg cost per call',
+      'Daily cost bar chart (inline SVG — no chart library)',
+      'Top solutions by cost with proportional bar',
+      'Cost breakdown by model (table)',
+      'Input/output token totals',
+      'Period selector: 7d / 30d / 90d',
+      'Auto-refresh every 30 seconds',
+    ],
+    improvementHints: [
+      'Add budget limit configuration UI per solution',
+      'Add cost alert email/Slack notification when 80% budget used',
+      'Add CSV export of cost history',
+      'Add per-request cost drill-down linked to audit log trace_id',
+      'Add cost forecast chart with linear regression',
+    ],
+  },
+
+  'access-control': {
+    id: 'access-control',
+    name: 'Access Control',
+    description: 'Manage API keys and user role assignments for the active solution.',
+    version: '1.0.0',
+    route: '/access-control',
+    features: [
+      'Create and revoke API keys (sk-sage-* format, SHA-256 hash stored only)',
+      'Assign and list user roles per solution (viewer / operator / approver / admin)',
+      'Current user identity card showing provider and role',
+      'Role hierarchy reference panel',
+      'OIDC-ready (Okta / Azure AD / Google Workspace) with API key fallback',
+      'Auth disabled by default — zero impact on existing functionality',
+    ],
+    improvementHints: [
+      'Add last-used timestamp per API key',
+      'Add OIDC provider connection wizard',
+      'Add role change audit log viewer',
+      'Add bulk role import from CSV',
+      'Add key expiry / rotation policy',
+    ],
+  },
+
 }
 // ---------------------------------------------------------------------------
 // To add solution-specific modules: extend MODULE_REGISTRY above with your

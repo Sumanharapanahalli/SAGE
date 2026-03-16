@@ -1,0 +1,73 @@
+# ==============================================================================
+# SAGE Backend — Dockerfile
+# ==============================================================================
+# Single-stage build for simplicity and debuggability.
+# Multi-stage is omitted because Python's bytecode files (.pyc) don't add
+# significant size, and the dev/prod images are identical in content.
+#
+# Build:
+#   docker build -f deploy/docker/Dockerfile.backend -t sage-backend:latest .
+#
+# Run:
+#   docker run -p 8000:8000 -e SAGE_PROJECT=starter sage-backend:latest
+#
+# Notes:
+#   - curl is installed for the HEALTHCHECK only. Remove if image size matters
+#     and health checks are delegated to Kubernetes probes.
+#   - PYTHONUTF8=1 ensures UTF-8 output on Windows hosts.
+#   - Single uvicorn worker: LLMGateway uses a threading.Lock — multiple workers
+#     would each create their own LLMGateway singleton without coordination.
+#     Horizontal scaling is done by running multiple pods/containers instead.
+# ==============================================================================
+FROM python:3.11-slim
+
+# Install system dependencies:
+#   curl   — HEALTHCHECK probe
+#   git    — some Python packages (e.g. langchain) fetch git metadata at install
+#   build-essential — C extensions (chromadb, sentence-transformers)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements first to exploit Docker layer cache.
+# Only re-runs pip install when requirements.txt changes.
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application source — ordered from least-to-most-likely-to-change
+# so Docker cache invalidation is minimal on code changes.
+COPY src/ src/
+COPY config/ config/
+COPY solutions/ solutions/
+
+# Create data directories for the audit DB, vector store, and downloaded models.
+# In production these are mounted from a PVC — this ensures they exist in the
+# image for environments where no PVC is configured (dev, single-node).
+RUN mkdir -p data/chroma_db data/models
+
+# Environment defaults — all overridable at container runtime
+ENV SAGE_PROJECT=starter \
+    LLM_PROVIDER=ollama \
+    OLLAMA_MODEL=llama3.2 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUTF8=1 \
+    PYTHONIOENCODING=utf-8
+
+EXPOSE 8000
+
+# Kubernetes liveness/readiness probes call GET /health directly via the k8s
+# API — the HEALTHCHECK here is used only by Docker Engine / Compose.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Single uvicorn worker — see note above about LLMGateway threading.Lock.
+# --timeout-keep-alive 30 matches terminationGracePeriodSeconds in Helm.
+CMD ["python", "-m", "uvicorn", "src.interface.api:app", \
+     "--host", "0.0.0.0", "--port", "8000", \
+     "--workers", "1", "--timeout-keep-alive", "30"]

@@ -65,12 +65,25 @@ class PlannerAgent:
     # Core Planning
     # -----------------------------------------------------------------------
 
-    def create_plan(self, description: str) -> list[dict]:
+    # SAGE framework task types — used when planning framework improvements (scope=sage)
+    FRAMEWORK_TASK_TYPES = {
+        "ANALYZE":  "Analyse existing code, architecture, or requirements",
+        "DEVELOP":  "Write or modify code files in the SAGE codebase",
+        "REVIEW":   "Review code quality, security, or correctness",
+        "TEST":     "Write or run tests to verify correctness",
+        "PLAN":     "Decompose a sub-goal into further steps",
+        "DOCUMENT": "Update documentation or comments",
+    }
+
+    def create_plan(self, description: str, override_task_types: dict | None = None) -> list[dict]:
         """
         Uses the LLM to decompose a complex task into ordered subtasks.
 
         Args:
-            description: High-level task description in natural language.
+            description:         High-level task description in natural language.
+            override_task_types: Optional dict of {TYPE: description} to use instead of
+                                 the active solution's task types. Pass
+                                 PlannerAgent.FRAMEWORK_TASK_TYPES for sage-scope items.
 
         Returns:
             List of subtask dicts, each with 'task_type', 'payload', and
@@ -78,17 +91,33 @@ class PlannerAgent:
         """
         self.logger.info("Creating plan for: %s", description[:120])
 
-        from src.core.project_loader import project_config
-        valid_types = _get_valid_task_types()
-        task_descs = project_config.get_task_descriptions()
-        descs_str = "\n".join(
-            f"  {k}: {v}" for k, v in task_descs.items()
-            if k in valid_types
-        ) or "  " + "\n  ".join(sorted(valid_types))
+        if override_task_types:
+            valid_types = set(override_task_types.keys())
+            descs_str = "\n".join(f"  {k}: {v}" for k, v in override_task_types.items())
+            system_prompt_base = (
+                "You are a software engineering planner. Decompose the task into ordered "
+                "implementation steps using ONLY the valid task types listed. "
+                "Output a JSON array. Each element must have: "
+                "'step' (int), 'task_type' (string), 'description' (string), 'payload' (object). "
+                "VALID_TASK_TYPES: " + ", ".join(sorted(valid_types))
+            )
+        else:
+            from src.core.project_loader import project_config
+            valid_types = _get_valid_task_types()
+            task_descs = project_config.get_task_descriptions()
+            descs_str = "\n".join(
+                f"  {k}: {v}" for k, v in task_descs.items()
+                if k in valid_types
+            ) or "  " + "\n  ".join(sorted(valid_types))
+            system_prompt_base = project_config.get_planner_prompt().replace(
+                "VALID_TASK_TYPES", ", ".join(sorted(valid_types))
+            )
+            # Inject SKILL.md domain knowledge when available
+            _skill = project_config.skill_content
+            if _skill:
+                system_prompt_base = system_prompt_base + "\n\n## Domain Skills\n" + _skill
 
-        system_prompt = project_config.get_planner_prompt().replace(
-            "VALID_TASK_TYPES", ", ".join(sorted(valid_types))
-        ) + (
+        system_prompt = system_prompt_base + (
             f"\n\nTask type descriptions:\n{descs_str}\n\n"
             "Rules:\n"
             "  - Only include steps that are directly necessary.\n"
@@ -103,6 +132,11 @@ class PlannerAgent:
 
         try:
             response_text = response_text.replace("```json", "").replace("```", "").strip()
+            # Extract JSON array even when the LLM adds prose before/after it
+            import re as _re
+            arr_match = _re.search(r'\[[\s\S]*\]', response_text)
+            if arr_match:
+                response_text = arr_match.group(0)
             plan = json.loads(response_text)
             if not isinstance(plan, list):
                 raise ValueError("Expected a JSON array.")
@@ -110,17 +144,16 @@ class PlannerAgent:
             self.logger.error("Plan parsing failed: %s | Raw: %s", exc, response_text[:300])
             return []
 
-        # Validate and filter steps
-        valid_types = _get_valid_task_types()
+        # Validate and filter steps — use override_task_types when provided
+        effective_valid_types = valid_types  # already set above from override or project config
         validated = []
         for step in plan:
             task_type = step.get("task_type", "").upper()
-            if task_type not in valid_types:
+            if task_type not in effective_valid_types:
                 self.logger.warning("Planner emitted unknown task_type '%s' — skipping.", task_type)
                 continue
             if not isinstance(step.get("payload"), dict):
-                self.logger.warning("Step %s has no valid payload — skipping.", step.get("step"))
-                continue
+                step["payload"] = {}  # default to empty payload rather than skipping
             step["task_type"] = task_type
             validated.append(step)
 

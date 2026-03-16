@@ -25,6 +25,9 @@ active_modules:
   - agents
   - llm
   - settings
+  - yaml-editor
+  - live-console
+  - integrations
 
 compliance_standards:
   - "ISO 13485:2016 (Quality Management System)"

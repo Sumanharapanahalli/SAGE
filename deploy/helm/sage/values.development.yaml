@@ -1,0 +1,77 @@
+# ==============================================================================
+# SAGE Helm Chart — Development Overrides
+# ==============================================================================
+# Minimal resource footprint for local clusters (kind, minikube, k3s).
+# Apply on top of values.yaml:
+#   helm install sage ./helm/sage \
+#     -f values.yaml \
+#     -f values.development.yaml
+# ==============================================================================
+
+backend:
+  replicaCount: 1
+
+  image:
+    # Always pull in dev so the local build cache is used when tags match
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+frontend:
+  replicaCount: 1
+
+  image:
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# No persistent storage needed in dev — data is ephemeral per session
+persistence:
+  enabled: false
+
+# Expose via NodePort instead of Ingress for easy local access
+backend:
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 30800
+
+frontend:
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 80
+    nodePort: 30300
+
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+podDisruptionBudget:
+  # PDB with minAvailable:1 blocks node drain when only 1 replica exists — disable in dev
+  enabled: false
+
+secrets:
+  # In dev, pass secrets as plain env vars via helm --set or a .env file
+  provider: env
+
+config:
+  llmProvider: ollama
+  ollamaModel: "llama3.2"
+  project: starter
+  logLevel: DEBUG

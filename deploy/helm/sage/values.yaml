@@ -1,0 +1,240 @@
+# ==============================================================================
+# SAGE Helm Chart — Default Values
+# ==============================================================================
+# These are the base defaults. Override with:
+#   helm install sage ./helm/sage -f values.production.yaml
+# All values here are safe for local/dev use out-of-the-box.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Backend — FastAPI + SAGE agents
+# ------------------------------------------------------------------------------
+backend:
+  replicaCount: 1
+
+  image:
+    repository: sage-backend
+    tag: latest
+    # IfNotPresent avoids unnecessary pulls in dev; use Always in CI/CD pipelines
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8000
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  # Liveness probe: restart the container if the process hangs
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+
+  # Readiness probe: hold traffic until the app is ready to serve requests
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  # Graceful shutdown window — allows in-flight requests to complete
+  terminationGracePeriodSeconds: 30
+
+  # Rollout strategy — RollingUpdate avoids downtime during upgrades
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+# ------------------------------------------------------------------------------
+# Frontend — React 18 + nginx SPA
+# ------------------------------------------------------------------------------
+frontend:
+  replicaCount: 1
+
+  image:
+    repository: sage-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 3
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  terminationGracePeriodSeconds: 10
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+# ------------------------------------------------------------------------------
+# Persistent storage — SQLite audit DB + ChromaDB vector store
+# ------------------------------------------------------------------------------
+persistence:
+  # Disable by default. Enable in production to survive pod restarts.
+  enabled: false
+  storageClassName: ""
+  accessMode: ReadWriteOnce
+  size: 5Gi
+  # Mount path inside the backend container
+  mountPath: /app/data
+
+# ------------------------------------------------------------------------------
+# Ingress — disabled by default, enable in production with a real hostname
+# ------------------------------------------------------------------------------
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    # Uncomment for cert-manager TLS automation:
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    {}
+  hosts:
+    - host: sage.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: backend
+  tls:
+    # enabled: true requires a cert-manager ClusterIssuer or a pre-existing TLS secret
+    enabled: false
+    secretName: sage-tls
+
+# ------------------------------------------------------------------------------
+# Horizontal Pod Autoscaler — disabled by default, enable in production
+# ------------------------------------------------------------------------------
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  # Scale up when CPU utilization exceeds this threshold across all pods
+  targetCPUUtilizationPercentage: 70
+  # Optional memory-based scaling (requires metrics-server with memory support)
+  targetMemoryUtilizationPercentage: ""
+
+# ------------------------------------------------------------------------------
+# Pod Disruption Budget — prevents all pods being evicted simultaneously
+# Keeps at least minAvailable pods running during node drains / upgrades
+# ------------------------------------------------------------------------------
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# ------------------------------------------------------------------------------
+# Secrets management
+# provider options: env | vault | aws | azure
+#   env    — secrets injected via environment variables (default, simple)
+#   vault  — HashiCorp Vault agent sidecar injection
+#   aws    — AWS Secrets Manager via secrets-store-csi-driver
+#   azure  — Azure Key Vault via secrets-store-csi-driver
+# ------------------------------------------------------------------------------
+secrets:
+  provider: env
+
+  # Values for provider=env (values here are overridden by real env vars at runtime)
+  env:
+    anthropicApiKey: ""
+    slackBotToken: ""
+    slackSigningSecret: ""
+    langfusePublicKey: ""
+    langfuseSecretKey: ""
+
+  # Values for provider=vault (HashiCorp Vault)
+  vault:
+    address: "https://vault.example.com"
+    role: "sage-role"
+    # Path in Vault where SAGE secrets live (e.g. secret/sage/production)
+    path: "secret/sage"
+
+  # Values for provider=aws (AWS Secrets Manager)
+  aws:
+    region: "us-east-1"
+    secretName: "sage/production"
+
+  # Values for provider=azure (Azure Key Vault)
+  azure:
+    keyvaultName: "sage-keyvault"
+    tenantId: ""
+
+# ------------------------------------------------------------------------------
+# SAGE application config — non-secret runtime settings
+# These are mounted as a ConfigMap, not a Secret
+# ------------------------------------------------------------------------------
+config:
+  # LLM provider: ollama | gemini | claude-code | claude | generic-cli | local
+  llmProvider: ollama
+  ollamaModel: "llama3.2"
+  # Active solution/project loaded at startup
+  project: starter
+  # Gemini CLI model name (used when llmProvider=gemini)
+  geminiModel: "gemini-2.0-flash"
+  # Log level: DEBUG | INFO | WARNING | ERROR
+  logLevel: INFO
+  # SAGE_SOLUTIONS_DIR override (empty = use bundled solutions/)
+  solutionsDir: ""
+
+# ------------------------------------------------------------------------------
+# Service account — allows fine-grained RBAC for secrets-store-csi-driver
+# ------------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# ------------------------------------------------------------------------------
+# Pod scheduling constraints
+# ------------------------------------------------------------------------------
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Extra annotations applied to all pods (e.g. Datadog, Prometheus scrape)
+podAnnotations: {}

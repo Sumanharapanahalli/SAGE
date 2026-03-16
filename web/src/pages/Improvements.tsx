@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   fetchFeatureRequests,
+  fetchProposal,
+  approveProposalFull,
   generatePlanForRequest,
   updateFeatureRequest,
   submitFeatureRequest,
@@ -11,6 +13,7 @@ import ModuleWrapper from '../components/shared/ModuleWrapper'
 import { Loader2, Zap, CheckCircle, XCircle, Clock, GitBranch, ChevronDown, ChevronUp, Plus, X, Layers, Wrench, ExternalLink } from 'lucide-react'
 import { getModuleAccess } from '../registry/modules'
 import { useProjectConfig } from '../hooks/useProjectConfig'
+import { Tooltip } from '../components/shared/Tooltip'
 
 // ---------------------------------------------------------------------------
 // Status + Priority display helpers
@@ -34,6 +37,15 @@ const STATUS_ICON: Record<RequestStatus, React.ReactNode> = {
   rejected:    <XCircle size={12} />,
 }
 
+const STATUS_TOOLTIP: Record<RequestStatus, string> = {
+  pending:     'Not yet reviewed. Click to expand and Approve or Generate AI Plan.',
+  approved:    'Endorsed for implementation. Click Generate AI Plan to create implementation steps.',
+  in_planning: 'AI plan generated and waiting for your approval. Expand to review and approve the plan.',
+  in_progress: 'Plan approved — implementation tasks are queued and running.',
+  completed:   'All implementation tasks have been completed.',
+  rejected:    'This request was rejected. See reviewer note for details.',
+}
+
 const PRIORITY_DOT: Record<Priority, string> = {
   low:      'bg-gray-400',
   medium:   'bg-amber-400',
@@ -42,28 +54,116 @@ const PRIORITY_DOT: Record<Priority, string> = {
 }
 
 // ---------------------------------------------------------------------------
+// StepCard — renders a single plan step
+// ---------------------------------------------------------------------------
+
+function StepCard({ step, index }: { step: { step?: number; task_type?: string; description?: string; payload?: Record<string, unknown> }, index: number }) {
+  const [open, setOpen] = useState(false)
+  const taskType = step.task_type ?? 'TASK'
+  const TASK_COLORS: Record<string, string> = {
+    ANALYZE:   'bg-blue-100 text-blue-700',
+    DEVELOP:   'bg-green-100 text-green-700',
+    REVIEW:    'bg-amber-100 text-amber-700',
+    PLAN:      'bg-purple-100 text-purple-700',
+    MONITOR:   'bg-cyan-100 text-cyan-700',
+  }
+  const colorClass = TASK_COLORS[taskType.toUpperCase()] ?? 'bg-gray-100 text-gray-600'
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="flex items-start gap-2 px-3 py-2">
+        <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+          {index + 1}
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${colorClass}`}>{taskType}</span>
+            <span className="text-xs text-gray-700">{step.description}</span>
+          </div>
+        </div>
+        {step.payload && Object.keys(step.payload).length > 0 && (
+          <button onClick={() => setOpen(v => !v)} className="text-gray-400 hover:text-gray-600 shrink-0">
+            {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          </button>
+        )}
+      </div>
+      {open && step.payload && (
+        <pre className="bg-gray-50 border-t border-gray-100 px-3 py-2 text-[10px] font-mono overflow-auto max-h-32 whitespace-pre-wrap text-gray-600">
+          {JSON.stringify(step.payload, null, 2)}
+        </pre>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Request card — adapts based on scope
 // ---------------------------------------------------------------------------
 
 function RequestCard({ req }: { req: FeatureRequest }) {
   const [expanded, setExpanded] = useState(false)
+  const [showPlan, setShowPlan] = useState(false)
   const [reviewNote, setNote]   = useState('')
   const [showNote, setShowNote] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
+  const [errorMsg, setErrorMsg]     = useState('')
+  const [approverIdentity, setApproverIdentity] = useState(() => localStorage.getItem('sage_approver_identity') || '')
   const access = getModuleAccess()
   const qc = useQueryClient()
 
+  const { data: planData, isFetching: planLoading } = useQuery({
+    queryKey: ['proposal', req.plan_trace_id],
+    queryFn: () => fetchProposal(req.plan_trace_id!),
+    enabled: showPlan && !!req.plan_trace_id,
+    staleTime: 60_000,
+  })
+
   const { mutate: plan, isPending: planning } = useMutation({
     mutationFn: () => generatePlanForRequest(req.id),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: ['feature-requests'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['feature-requests'] })
+      setSuccessMsg('✓ Plan generated — expand "View plan details" to review')
+      setTimeout(() => setSuccessMsg(''), 5000)
+    },
+    onError: (err: Error) => {
+      setErrorMsg(`Plan generation failed: ${err.message}`)
+      setSuccessMsg('')
+    },
   })
 
   const { mutate: update, isPending: updating } = useMutation({
     mutationFn: (action: string) =>
       updateFeatureRequest(req.id, { action, reviewer_note: reviewNote }),
-    onSuccess: () => {
+    onSuccess: (_data, action) => {
       qc.invalidateQueries({ queryKey: ['feature-requests'] })
       setShowNote(false)
       setNote('')
+      const msgs: Record<string, string> = {
+        approve: '✓ Approved — added to implementation backlog',
+        reject:  '✓ Rejected and noted',
+      }
+      setSuccessMsg(msgs[action] ?? '✓ Updated')
+      setErrorMsg('')
+      setTimeout(() => setSuccessMsg(''), 3000)
+    },
+    onError: (err: Error) => {
+      setErrorMsg(err.message ?? 'Update failed')
+      setSuccessMsg('')
+    },
+  })
+
+  const { mutate: approvePlan, isPending: approvingPlan } = useMutation({
+    mutationFn: () => approveProposalFull(req.plan_trace_id!, approverIdentity || 'human'),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['feature-requests'] })
+      qc.invalidateQueries({ queryKey: ['proposal', req.plan_trace_id] })
+      setSuccessMsg('✓ Plan approved — tasks queued for implementation')
+      setErrorMsg('')
+      setTimeout(() => setSuccessMsg(''), 4000)
+    },
+    onError: (err: Error) => {
+      setErrorMsg(err.message ?? 'Approval failed')
+      setSuccessMsg('')
     },
   })
 
@@ -91,10 +191,15 @@ function RequestCard({ req }: { req: FeatureRequest }) {
               SAGE
             </span>
           )}
-          <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${STATUS_STYLES[sStatus]}`}>
-            {STATUS_ICON[sStatus]}
-            {req.status.replace('_', ' ')}
-          </span>
+          <Tooltip
+            content={STATUS_TOOLTIP[sStatus] ?? 'Unknown status'}
+            position="left"
+          >
+            <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${STATUS_STYLES[sStatus]}`}>
+              {STATUS_ICON[sStatus]}
+              {req.status.replace('_', ' ')}
+            </span>
+          </Tooltip>
           <button onClick={() => setExpanded((v) => !v)} className="text-gray-400 hover:text-gray-600">
             {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
@@ -112,55 +217,152 @@ function RequestCard({ req }: { req: FeatureRequest }) {
           )}
 
           {req.plan_trace_id && (
-            <div className="text-xs text-purple-600 bg-purple-50 rounded-lg px-3 py-1.5">
-              Plan trace: <span className="font-mono">{req.plan_trace_id.slice(0, 16)}…</span>
+            <div className="space-y-2">
+              <button
+                onClick={() => setShowPlan((v) => !v)}
+                className="flex items-center gap-1.5 text-xs text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg px-3 py-1.5 transition-colors w-full"
+              >
+                {showPlan ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                {showPlan ? 'Hide plan details' : 'View plan details'}
+                <Tooltip content="This is the AI-generated implementation plan. Review the steps, then approve to queue them for execution." position="top" icon />
+                <span className="ml-auto font-mono text-purple-400">{req.plan_trace_id.slice(0, 12)}…</span>
+              </button>
+
+              {showPlan && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-3">
+                  {planLoading && (
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <Loader2 size={12} className="animate-spin" /> Loading plan…
+                    </div>
+                  )}
+
+                  {!planLoading && !planData && (
+                    <p className="text-xs text-gray-400">Plan not available. It may have expired or not yet been generated.</p>
+                  )}
+
+                  {!planLoading && planData && (() => {
+                    const steps: Array<{step?: number; task_type?: string; description?: string; payload?: Record<string, unknown>}> = Array.isArray(planData.payload?.steps) ? planData.payload.steps as Array<{step?: number; task_type?: string; description?: string; payload?: Record<string, unknown>}> : []
+                    return (
+                      <div className="space-y-3">
+                        {/* Plan header */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-xs text-gray-800">{planData.description}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${planData.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : planData.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
+                            {planData.status}
+                          </span>
+                          <Tooltip content={planData.status === 'pending' ? 'Waiting for your approval. Review the steps below, then click Approve Plan.' : planData.status === 'approved' ? 'This plan has been approved. Tasks are queued for execution.' : 'Plan status'} icon />
+                        </div>
+
+                        {/* Steps */}
+                        {steps.length > 0 ? (
+                          <div className="space-y-2">
+                            {steps.map((step, i) => (
+                              <StepCard key={i} step={step} index={i} />
+                            ))}
+                          </div>
+                        ) : (
+                          <pre className="bg-white border border-gray-200 rounded p-2 text-[11px] font-mono overflow-auto max-h-48 whitespace-pre-wrap">
+                            {JSON.stringify(planData.payload, null, 2)}
+                          </pre>
+                        )}
+
+                        {/* Approve plan section — only if plan is pending */}
+                        {planData.status === 'pending' && (
+                          <div className="border-t border-gray-200 pt-3 space-y-2">
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                              <span className="font-semibold">Ready to approve?</span>
+                              <Tooltip content="Approving queues these tasks for execution. Only admin can approve SAGE framework plans." icon />
+                            </div>
+                            {isSage && (
+                              <div className="space-y-1">
+                                <label className="text-[11px] text-gray-500 font-medium flex items-center gap-1">
+                                  Approving as (admin required for SAGE plans)
+                                  <Tooltip content="SAGE framework plans require admin approval. Enter your admin identity (e.g. 'admin' or 'suman') to proceed." icon />
+                                </label>
+                                <input
+                                  value={approverIdentity}
+                                  onChange={e => {
+                                    setApproverIdentity(e.target.value)
+                                    localStorage.setItem('sage_approver_identity', e.target.value)
+                                  }}
+                                  placeholder="Your admin identity…"
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                />
+                              </div>
+                            )}
+                            <button
+                              disabled={approvingPlan || (isSage && !approverIdentity.trim())}
+                              onClick={() => approvePlan()}
+                              className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-medium px-4 py-1.5 rounded-lg transition-colors"
+                            >
+                              {approvingPlan ? <><Loader2 size={12} className="animate-spin" /> Approving…</> : <><CheckCircle size={12} /> Approve Plan & Queue Tasks</>}
+                            </button>
+                          </div>
+                        )}
+
+                        {planData.status === 'approved' && (
+                          <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-1.5">
+                            <CheckCircle size={12} /> Plan approved — implementation tasks are queued. Track progress in the Live Console.
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Success / error banners */}
+          {successMsg && (
+            <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5">
+              {successMsg}
+            </div>
+          )}
+          {errorMsg && (
+            <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+              {errorMsg}
             </div>
           )}
 
           {/* Action buttons */}
           {access.canApprove && ['pending', 'approved'].includes(req.status) && (
             <div className="flex flex-wrap gap-2 pt-1">
-              {/* Only solution-scope items get AI planning + approval workflow */}
-              {!isSage && access.canGeneratePlan && req.status !== 'in_planning' && (
-                <button
-                  disabled={planning}
-                  onClick={() => plan()}
-                  className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <Zap size={13} />
-                  {planning ? 'Generating plan…' : 'Generate AI Plan'}
-                </button>
+              {access.canGeneratePlan && req.status !== 'in_planning' && (
+                <Tooltip content="Ask the AI to decompose this feature into concrete implementation steps. You will review and approve the plan before anything is built." position="top">
+                  <button
+                    disabled={planning}
+                    onClick={() => plan()}
+                    className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Zap size={13} />
+                    {planning ? 'Generating plan…' : 'Generate AI Plan'}
+                  </button>
+                </Tooltip>
               )}
 
               {req.status === 'pending' && (
-                <button
-                  disabled={updating}
-                  onClick={() => update('approve')}
-                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <CheckCircle size={13} />
-                  Approve
-                </button>
+                <Tooltip content="Mark this feature request as approved for planning. The next step is to Generate an AI Plan." position="top">
+                  <button
+                    disabled={updating}
+                    onClick={() => update('approve')}
+                    className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <CheckCircle size={13} />
+                    Approve
+                  </button>
+                </Tooltip>
               )}
 
-              {req.status !== 'completed' && (
+              <Tooltip content="Reject this request. You can add a note explaining why." position="top">
                 <button
-                  disabled={updating}
-                  onClick={() => update('complete')}
-                  className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                  onClick={() => setShowNote((v) => !v)}
+                  className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
                 >
-                  <CheckCircle size={13} />
-                  Mark Complete
+                  <XCircle size={13} />
+                  Reject
                 </button>
-              )}
-
-              <button
-                onClick={() => setShowNote((v) => !v)}
-                className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-              >
-                <XCircle size={13} />
-                Reject
-              </button>
+              </Tooltip>
             </div>
           )}
 
@@ -425,6 +627,21 @@ export default function Improvements() {
             <Plus size={15} />
             New Request
           </button>
+        </div>
+
+        {/* Workflow guide */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700">
+          <div className="font-semibold text-blue-800 mb-1 flex items-center gap-1.5">
+            <Zap size={13} /> How it works
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {['1. Submit idea', '→', '2. Approve it', '→', '3. Generate AI Plan', '→', '4. Review & approve plan', '→', '5. Tasks execute automatically'].map((s, i) => (
+              <span key={i} className={s === '→' ? 'text-blue-400' : 'bg-white border border-blue-200 rounded px-1.5 py-0.5 font-medium'}>
+                {s}
+              </span>
+            ))}
+          </div>
+          <p className="mt-1.5 text-blue-600">SAGE framework items (blue SAGE badge) require admin approval for plan generation and approval.</p>
         </div>
 
         {/* Submit form */}

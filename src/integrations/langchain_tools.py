@@ -59,7 +59,14 @@ def get_tools_for_solution(solution_name: str = None) -> dict:
         logger.warning("Could not load project integrations: %s", exc)
         return tools
 
+    composio_apps: list[str] = []
+
     for integration in integrations:
+        # Handle composio:<app> prefixed entries (e.g. "composio:github")
+        if integration.startswith("composio:"):
+            composio_apps.append(integration[len("composio:"):])
+            continue
+
         loader = _LOADERS.get(integration)
         if loader is None:
             continue
@@ -70,6 +77,16 @@ def get_tools_for_solution(solution_name: str = None) -> dict:
                 logger.info("Loaded %d tool(s) for integration: %s", len(new_tools), integration)
         except Exception as exc:
             logger.warning("Failed to load tools for '%s': %s", integration, exc)
+
+    # Load all Composio apps in one call (more efficient than per-app)
+    if composio_apps:
+        try:
+            from src.integrations.composio_tools import get_composio_tools
+            composio_tool_dict = get_composio_tools(composio_apps)
+            if composio_tool_dict:
+                tools.update(composio_tool_dict)
+        except Exception as exc:
+            logger.warning("Composio tools failed to load: %s", exc)
 
     logger.info("Tool registry built: %s", list(tools.keys()))
     return tools

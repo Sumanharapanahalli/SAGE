@@ -49,7 +49,8 @@ class TaskStatus:
 class Task:
     """Represents a single unit of work in the task queue."""
 
-    def __init__(self, task_type: str, payload: dict, priority: int = 5):
+    def __init__(self, task_type: str, payload: dict, priority: int = 5,
+                 plan_trace_id: str = "", source: str = ""):
         self.task_id = str(uuid.uuid4())
         self.task_type = task_type
         self.payload = payload
@@ -60,6 +61,8 @@ class Task:
         self.completed_at: Optional[str] = None
         self.result: Any = None
         self.error: Optional[str] = None
+        self.plan_trace_id: str = plan_trace_id
+        self.source: str = source
 
     def __lt__(self, other: "Task") -> bool:
         """Priority queue comparison: lower priority number = higher priority."""
@@ -111,19 +114,29 @@ class TaskQueue:
             conn = sqlite3.connect(self._db_path)
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS task_queue (
-                    task_id      TEXT PRIMARY KEY,
-                    task_type    TEXT NOT NULL,
-                    payload      TEXT NOT NULL,
-                    priority     INTEGER DEFAULT 5,
-                    status       TEXT DEFAULT 'pending',
-                    created_at   TEXT,
-                    started_at   TEXT,
-                    completed_at TEXT,
-                    result       TEXT,
-                    error        TEXT
+                    task_id        TEXT PRIMARY KEY,
+                    task_type      TEXT NOT NULL,
+                    payload        TEXT NOT NULL,
+                    priority       INTEGER DEFAULT 5,
+                    status         TEXT DEFAULT 'pending',
+                    created_at     TEXT,
+                    started_at     TEXT,
+                    completed_at   TEXT,
+                    result         TEXT,
+                    error          TEXT,
+                    plan_trace_id  TEXT,
+                    source         TEXT
                 )
             """)
             conn.commit()
+            # Migration: add columns to pre-existing databases
+            for col, col_type in [("plan_trace_id", "TEXT"), ("source", "TEXT")]:
+                try:
+                    conn.execute(f"ALTER TABLE task_queue ADD COLUMN {col} {col_type}")
+                    conn.commit()
+                    self.logger.info("Migrated task_queue: added column %s", col)
+                except Exception:
+                    pass  # Column already exists
             conn.close()
             self.logger.info("Task queue SQLite storage initialised at %s", self._db_path)
         except Exception as exc:
@@ -175,8 +188,8 @@ class TaskQueue:
             conn = sqlite3.connect(self._db_path)
             conn.execute(
                 "INSERT OR REPLACE INTO task_queue "
-                "(task_id, task_type, payload, priority, status, created_at) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "(task_id, task_type, payload, priority, status, created_at, plan_trace_id, source) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     task.task_id,
                     task.task_type,
@@ -184,6 +197,8 @@ class TaskQueue:
                     task.priority,
                     task.status,
                     task.created_at,
+                    task.plan_trace_id,
+                    task.source,
                 ),
             )
             conn.commit()
@@ -217,26 +232,29 @@ class TaskQueue:
     # Public Queue Operations
     # -----------------------------------------------------------------------
 
-    def submit(self, task_type: str, payload: dict, priority: int = 5) -> str:
+    def submit(self, task_type: str, payload: dict, priority: int = 5,
+               plan_trace_id: str = "", source: str = "") -> str:
         """
         Adds a new task to the queue and persists it to SQLite.
 
         Args:
-            task_type: Task category (e.g. 'ANALYZE_LOG', 'CREATE_MR')
-            payload:   Task-specific data dict
-            priority:  Integer priority 1-10 (1=highest, default=5)
+            task_type:      Task category (e.g. 'ANALYZE_LOG', 'CREATE_MR')
+            payload:        Task-specific data dict
+            priority:       Integer priority 1-10 (1=highest, default=5)
+            plan_trace_id:  Optional trace_id of the implementation plan proposal
+            source:         'sage' for framework tasks, 'solution' for solution tasks
 
         Returns:
             task_id string for tracking.
         """
-        task = Task(task_type, payload, priority)
+        task = Task(task_type, payload, priority, plan_trace_id=plan_trace_id, source=source)
         with self._lock:
             self._tasks[task.task_id] = task
         self._db_insert(task)
         self._queue.put((priority, task.created_at, task))
         self.logger.info(
-            "Task submitted: %s [%s] priority=%d (id: %s)",
-            task_type, TaskStatus.PENDING, priority, task.task_id,
+            "Task submitted: %s [%s] priority=%d source=%s (id: %s)",
+            task_type, TaskStatus.PENDING, priority, source or "unknown", task.task_id,
         )
         return task.task_id
 

@@ -1,0 +1,46 @@
+{{/*
+==============================================================================
+SAGE ConfigMap — Non-Secret Runtime Configuration
+==============================================================================
+Only non-sensitive values live here. Secrets (API keys, tokens) go in
+secret.yaml and are never stored in ConfigMaps.
+
+The backend reads these via environment variables injected in the deployment.
+Changing a ConfigMap value requires a pod restart to take effect — use
+`kubectl rollout restart deployment/<name>` after a helm upgrade.
+==============================================================================
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sage.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sage.labels" . | nindent 4 }}
+data:
+  # Active SAGE solution/project loaded at startup.
+  # Equivalent to: make run PROJECT=<value>
+  SAGE_PROJECT: {{ .Values.config.project | quote }}
+
+  # LLM provider: ollama | gemini | claude-code | claude | generic-cli | local
+  # Switching this value and rolling the deployment changes the LLM mid-flight.
+  LLM_PROVIDER: {{ .Values.config.llmProvider | quote }}
+
+  # Ollama model name — only used when LLM_PROVIDER=ollama
+  OLLAMA_MODEL: {{ .Values.config.ollamaModel | quote }}
+
+  # Gemini model name — only used when LLM_PROVIDER=gemini
+  GEMINI_MODEL: {{ .Values.config.geminiModel | quote }}
+
+  # Python log level for all SAGE modules
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+
+  {{- if .Values.config.solutionsDir }}
+  # Override path for solution configs. Used when solutions live outside the
+  # container image (e.g. mounted from a ConfigMap or private repo sidecar).
+  SAGE_SOLUTIONS_DIR: {{ .Values.config.solutionsDir | quote }}
+  {{- end }}
+
+  # Backend service URL used by the frontend nginx proxy.
+  # Must match the backend service name and port defined in service-backend.yaml.
+  BACKEND_SERVICE_URL: {{ printf "http://%s:%d" (include "sage.backend.fullname" .) (int .Values.backend.service.port) | quote }}

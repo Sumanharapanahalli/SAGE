@@ -1,0 +1,33 @@
+{{/*
+==============================================================================
+SAGE PodDisruptionBudget
+==============================================================================
+Prevents all backend pods from being evicted simultaneously during:
+  - Node drain (kubectl drain <node>)
+  - Cluster upgrades
+  - Voluntary disruptions (reschedules, maintenance)
+
+minAvailable: 1 (dev) ensures at least one pod stays up during drains.
+minAvailable: 2 (production) is set in values.production.yaml for HA.
+
+IMPORTANT: If replicaCount=1 and minAvailable=1, a node drain will block
+indefinitely because evicting the pod would violate the PDB. This is why
+values.development.yaml disables the PDB — to avoid blocking local node
+drain operations in single-node clusters.
+==============================================================================
+*/}}
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "sage.backend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sage.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "sage.backend.selectorLabels" . | nindent 6 }}
+{{- end }}

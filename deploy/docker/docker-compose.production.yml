@@ -1,0 +1,157 @@
+# ==============================================================================
+# SAGE Framework — Production Docker Compose
+# ==============================================================================
+# Use this for single-server production deployments (VM, bare metal, VPS).
+# For Kubernetes, use the Helm chart in deploy/helm/sage/ instead.
+#
+# Usage:
+#   1. Copy .env.example to .env and fill in real values
+#   2. Build images:  docker-compose -f docker-compose.production.yml build
+#   3. Start:         docker-compose -f docker-compose.production.yml up -d
+#   4. Tail logs:     docker-compose -f docker-compose.production.yml logs -f
+#   5. Stop:          docker-compose -f docker-compose.production.yml down
+#
+# Required .env variables:
+#   SAGE_PROJECT         — solution name (e.g. starter, meditation_app)
+#   LLM_PROVIDER         — llm provider (e.g. ollama, gemini, claude)
+#   ANTHROPIC_API_KEY    — only if LLM_PROVIDER=claude
+#   SLACK_BOT_TOKEN      — only if Slack integration is enabled
+#   SLACK_SIGNING_SECRET — only if Slack integration is enabled
+# ==============================================================================
+
+version: "3.9"
+
+services:
+  # --------------------------------------------------------------------------
+  # Backend — FastAPI + SAGE agents
+  # --------------------------------------------------------------------------
+  backend:
+    build:
+      context: ../..          # repo root
+      dockerfile: deploy/docker/Dockerfile.backend
+    image: sage-backend:${IMAGE_TAG:-latest}
+    container_name: sage-backend
+    restart: unless-stopped
+
+    # Expose on localhost only — nginx frontend handles public traffic.
+    # Remove this port binding if using an external reverse proxy (e.g. Traefik).
+    ports:
+      - "127.0.0.1:8000:8000"
+
+    environment:
+      # Application config — non-sensitive, safe to set directly
+      SAGE_PROJECT:   ${SAGE_PROJECT:-starter}
+      LLM_PROVIDER:   ${LLM_PROVIDER:-ollama}
+      OLLAMA_MODEL:   ${OLLAMA_MODEL:-llama3.2}
+      LOG_LEVEL:      ${LOG_LEVEL:-INFO}
+
+      # Secrets — set in .env file, never hardcoded here
+      ANTHROPIC_API_KEY:    ${ANTHROPIC_API_KEY:-}
+      SLACK_BOT_TOKEN:      ${SLACK_BOT_TOKEN:-}
+      SLACK_SIGNING_SECRET: ${SLACK_SIGNING_SECRET:-}
+      LANGFUSE_PUBLIC_KEY:  ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY:  ${LANGFUSE_SECRET_KEY:-}
+
+      # GitLab integration
+      GITLAB_URL:         ${GITLAB_URL:-}
+      GITLAB_TOKEN:       ${GITLAB_TOKEN:-}
+      GITLAB_PROJECT_ID:  ${GITLAB_PROJECT_ID:-}
+
+      # Python settings
+      PYTHONUNBUFFERED:     "1"
+      PYTHONUTF8:           "1"
+      PYTHONIOENCODING:     "utf-8"
+
+    volumes:
+      # Persist audit SQLite DB, ChromaDB vector store, and downloaded models
+      - sage-data:/app/data
+
+    networks:
+      - sage-internal
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+    # Graceful shutdown: give uvicorn 30s to finish in-flight requests
+    stop_grace_period: 30s
+
+    # Limit resources to prevent the backend consuming all RAM during LLM calls
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+  # --------------------------------------------------------------------------
+  # Frontend — React 18 + nginx
+  # --------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ../..          # repo root (Dockerfile.frontend copies from web/)
+      dockerfile: deploy/docker/Dockerfile.frontend
+    image: sage-frontend:${IMAGE_TAG:-latest}
+    container_name: sage-frontend
+    restart: unless-stopped
+
+    ports:
+      # Expose port 80 publicly. Place a TLS-terminating reverse proxy
+      # (nginx, Caddy, Traefik) in front for HTTPS in production.
+      - "80:80"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    networks:
+      - sage-internal
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+    stop_grace_period: 10s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+
+# ------------------------------------------------------------------------------
+# Named volumes — persisted across container restarts and upgrades
+# ------------------------------------------------------------------------------
+volumes:
+  # sage-data: audit log (SQLite), vector store (ChromaDB), model cache
+  # Bind-mount alternative for easier local backup:
+  #   sage-data:
+  #     driver: local
+  #     driver_opts:
+  #       type: none
+  #       o: bind
+  #       device: /opt/sage/data
+  sage-data:
+    driver: local
+
+# ------------------------------------------------------------------------------
+# Networks — isolate SAGE traffic from other containers on the host
+# ------------------------------------------------------------------------------
+networks:
+  sage-internal:
+    driver: bridge
+    # Assign a fixed subnet to avoid conflicts with other Docker networks
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

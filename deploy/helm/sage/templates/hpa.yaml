@@ -1,0 +1,65 @@
+{{/*
+==============================================================================
+SAGE HorizontalPodAutoscaler
+==============================================================================
+Scales the backend deployment based on CPU (and optionally memory) usage.
+Only enabled in production (autoscaling.enabled=true).
+
+The HPA controller checks metrics every 15s (default). It scales up when
+average CPU across all pods exceeds targetCPUUtilizationPercentage and
+scales down conservatively (5-minute stabilization window) to avoid flapping.
+
+Note: when HPA is active, do NOT set replicas in the Deployment spec —
+the HPA owns that field. The deployment-backend.yaml template guards this
+with {{- if not .Values.autoscaling.enabled }}.
+==============================================================================
+*/}}
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "sage.backend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sage.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "sage.backend.fullname" . }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+    # Primary scaling signal: CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+    {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+    # Secondary signal: memory utilization (requires metrics-server >= 0.6)
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+  behavior:
+    # Scale up quickly when load spikes (1 pod per 15s stabilization window)
+    scaleUp:
+      stabilizationWindowSeconds: 15
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    # Scale down slowly to avoid thrashing (5 minute window)
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+{{- end }}

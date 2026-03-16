@@ -26,6 +26,10 @@ class AnalystAgent:
 
         # 2. Construct Prompt — domain-specific via project_loader
         system_prompt, user_tmpl = project_config.get_analyst_prompts()
+        # Inject SKILL.md domain knowledge when available
+        skill = project_config.skill_content
+        if skill:
+            system_prompt = system_prompt + "\n\n## Domain Skills\n" + skill
         user_prompt = user_tmpl.format(input=log_entry, context=context_str)
 
         # 3. LLM Inference

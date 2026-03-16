@@ -355,7 +355,7 @@ class DeveloperAgent:
             source_branch = f"sage-ai/{issue_iid}-{slug}"
 
         # 3. Use LLM to draft MR title and description
-        # Prefer solution-level mr_create_system_prompt from prompts.yaml
+        # Prefer solution-level mr_create_system_prompt from prompts.yaml / SKILL.md
         try:
             from src.core.project_loader import project_config
             _dev_prompts = project_config.get_prompts().get("developer", {})
@@ -369,6 +369,9 @@ class DeveloperAgent:
                     "Do not output markdown fences."
                 )
             )
+            _skill = project_config.skill_content
+            if _skill:
+                system_prompt = system_prompt + "\n\n## Domain Skills\n" + _skill
         except Exception:
             system_prompt = (
                 "You are a software development agent. "

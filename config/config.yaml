@@ -10,19 +10,19 @@ llm:
   #   "local"       — llama-cpp GGUF model (GPU direct, fully offline)
   #   "generic-cli" — Any CLI tool that accepts a prompt flag (aider, lm-studio, etc.)
   #   "claude"      — Anthropic API (requires ANTHROPIC_API_KEY — only API-key option)
-  provider: "gemini"
+  provider: "claude-code"
 
   # --- Gemini CLI Settings (provider = "gemini") ---
   gemini_model: "gemini-2.5-flash"      # Model hint (CLI may override)
   timeout: 120                           # Max seconds to wait for CLI response
 
   # --- Claude Code CLI Settings (provider = "claude-code") ---
-  claude_model: "claude-sonnet-4-6"     # or claude-opus-4-6, claude-haiku-4-5
+  claude_model: "claude-sonnet-4-6"
   # claude_path: ""                     # Auto-detected; set if not on PATH
 
   # --- Ollama Settings (provider = "ollama") ---
   # Run: ollama serve   then   ollama pull llama3.2
-  ollama_model: "llama3.2"              # Any model you've pulled via `ollama pull`
+  ollama_model: "qwen3.5:0.8b"         # Any model you've pulled via `ollama pull`
   ollama_host: "http://localhost:11434" # Ollama server address
 
   # --- Generic CLI Settings (provider = "generic-cli") ---
@@ -34,6 +34,80 @@ llm:
   model_path: "./data/models/Phi-3-mini-4k-instruct-q4.gguf"
   temperature: 0.1                       # Low temp for deterministic outputs
   max_tokens: 3072                       # Context window
+
+  # --- Budget Controls (T1-004) ---
+  budgets:
+    enabled: false
+    default_monthly_usd: 50.0
+    hard_cutoff: false        # if true, block calls when budget exceeded
+    per_solution: {}          # solution_name: monthly_usd_limit
+
+  # --- Task Routing by Task Type (T1-004) ---
+  task_routing:
+    enabled: false
+    routes:
+      ANALYZE_LOG:    "ollama/llama3.2"   # cheap model for simple analysis
+      REVIEW_CODE:    "claude-sonnet-4-6" # best model for code review
+      PLAN_TASK:      "gemini-2.5-flash"  # fast model for planning
+
+# --- PII Detection & Data Residency (T1-002) ---
+pii:
+  enabled: false            # set true to activate scrubbing
+  mode: "redact"            # redact | mask | flag_only
+  entities:                 # Presidio entity types to detect
+    - PERSON
+    - EMAIL_ADDRESS
+    - PHONE_NUMBER
+    - LOCATION
+    - MEDICAL_LICENSE
+    - US_SSN
+    - CREDIT_CARD
+    - IBAN_CODE
+  redaction_char: "[REDACTED]"
+  fail_on_detection: false  # if true, reject prompt instead of redacting
+data_residency:
+  enabled: false
+  region: "us"              # us | eu | apac
+  eu_providers:             # when region=eu, route to these providers only
+    - ollama
+    - local
+
+# --- Approval Roles (RBAC) ---
+# Maps each action_type to the minimum role required to approve it.
+# Set to null (or omit) to allow anyone to approve.
+# Roles are hierarchical: admin > operator > reviewer > anyone
+approval_roles:
+  llm_switch:          "admin"
+  yaml_edit:           "admin"
+  config_switch:       "admin"
+  config_modules:      "admin"
+  agent_hire:          "admin"
+  composio_connect:    "admin"
+  onboarding_generate: "admin"
+  knowledge_delete:    "admin"
+  knowledge_import:        "operator"
+  knowledge_add:           "operator"
+  implementation_plan_sage: "admin"
+  code_diff:           "admin"
+  analysis:            ~           # anyone can approve analysis proposals
+
+# Who belongs to each role. Add names/identifiers that match what users
+# type in the "Approving as" field in the web UI.
+# "any" as a list entry means the role accepts any identifier.
+approvers:
+  admin:    ["admin", "suman"]
+  operator: ["admin", "operator", "suman", "lead"]
+  reviewer: ["any"]
+
+auth:
+  enabled: false
+  oidc:
+    provider: "google"       # okta | azure_ad | google
+    issuer_url: ""
+    client_id: ""
+    client_secret: ""
+    audience: ""
+  session_ttl_seconds: 28800  # 8 hours
 
 memory:
   # backend: "chroma" (default) | "llamaindex"

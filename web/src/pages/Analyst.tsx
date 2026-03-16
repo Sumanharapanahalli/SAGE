@@ -10,7 +10,7 @@ export default function Analyst() {
   const [proposal, setProposal] = useState<AnalysisResponse | null>(null)
   const { data: projectData } = useProjectConfig()
 
-  const labels = projectData?.ui_labels ?? {}
+  const labels = (projectData?.ui_labels ?? {}) as Record<string, string>
   const inputLabel = labels.analyst_input_label ?? 'Paste error log or metric report here...'
 
   return (

@@ -21,10 +21,30 @@ const PAGE_TITLES: Record<string, string> = {
   '/llm':          'LLM Settings',
   '/settings':     'Settings',
   '/yaml-editor':  'Config Editor',
+  '/live-console': 'Live Console',
+  '/onboarding':   'New Solution',
+  '/queue':          'Task Queue',
+  '/access-control': 'Access Control',
+  '/costs':          'Cost Tracker',
 }
 
 // Badge color comes from project.yaml dashboard.badge_color — no hardcoded solution names here.
 const DEFAULT_BADGE_COLOR = 'bg-gray-100 text-gray-600'
+
+// Domain badge colors for the solution switcher dropdown
+const DOMAIN_BADGE_COLORS: Record<string, string> = {
+  'medtech':      'bg-blue-100 text-blue-700',
+  'medical':      'bg-blue-100 text-blue-700',
+  'firmware':     'bg-orange-100 text-orange-700',
+  'embedded':     'bg-orange-100 text-orange-700',
+  'ml':           'bg-purple-100 text-purple-700',
+  'mobile':       'bg-purple-100 text-purple-700',
+  'game-dev':     'bg-yellow-100 text-yellow-700',
+  'startup':      'bg-green-100 text-green-700',
+  'tracking':     'bg-red-100 text-red-700',
+  'analytics':    'bg-indigo-100 text-indigo-700',
+  'generic':      'bg-gray-100 text-gray-600',
+}
 
 export default function Header() {
   const { pathname } = useLocation()
@@ -56,6 +76,7 @@ export default function Header() {
   })
 
   const online = !healthError && !!healthData
+  const activeId = (healthData as any)?.project?.project ?? ''
   // Use solution ui_labels if available, fall back to generic PAGE_TITLES
   const uiLabels = (projectData as any)?.ui_labels ?? {}
   const UI_LABEL_ROUTES: Record<string, string> = {
@@ -92,7 +113,10 @@ export default function Header() {
         </button>
 
         {domain && (
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${badgeColor}`}>
+          <span
+            className="text-xs font-medium px-2 py-0.5 rounded-full shrink-0"
+            style={{ backgroundColor: 'var(--sage-badge-bg)', color: 'var(--sage-badge-text)' }}
+          >
             {domain}
           </span>
         )}

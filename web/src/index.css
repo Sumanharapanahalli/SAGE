@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ──────────────────────────────────────────────────────────────────────────
+   SAGE CSS Custom Properties — Solution Theming System
+
+   Each solution can override these in its project.yaml under the `theme:` key.
+   ThemeProvider.tsx reads those values and writes them to document.documentElement
+   at runtime, enabling instant theme switching without page reload.
+
+   Solutions without a `theme:` block get these defaults — the standard SAGE
+   dark-sidebar / indigo-accent appearance.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Sidebar */
+  --sage-sidebar-bg:          #111827;   /* gray-900 */
+  --sage-sidebar-text:        #9ca3af;   /* gray-400 */
+  --sage-sidebar-active-bg:   #15803d;   /* green-700 */
+  --sage-sidebar-active-text: #ffffff;
+  --sage-sidebar-hover-bg:    #1f2937;   /* gray-800 */
+  --sage-sidebar-accent:      #4ade80;   /* green-400 — logo flash + ping */
+
+  /* Primary accent — buttons, focused inputs, selected cards */
+  --sage-accent:              #6366f1;   /* indigo-500 */
+  --sage-accent-hover:        #4f46e5;   /* indigo-600 */
+  --sage-accent-light:        #eef2ff;   /* indigo-50 */
+  --sage-accent-text:         #ffffff;
+
+  /* Domain badge in header */
+  --sage-badge-bg:            #f3f4f6;   /* gray-100 */
+  --sage-badge-text:          #4b5563;   /* gray-600 */
+}
+
 body {
   @apply bg-gray-50 text-gray-900 font-sans;
+}
+
+/* Nav item hover — references CSS variable so solution themes work on hover too */
+.sage-nav-item {
+  transition: background-color 0.15s, color 0.15s;
+}
+.sage-nav-item:hover {
+  background-color: var(--sage-sidebar-hover-bg);
+  color: var(--sage-sidebar-active-text);
 }

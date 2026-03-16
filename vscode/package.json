@@ -1,0 +1,131 @@
+{
+  "name": "sage-framework",
+  "displayName": "SAGE[ai] — Smart Agentic-Guided Empowerment",
+  "description": "SAGE Framework VS Code integration: analyze logs, review diffs, manage proposals, track LLM quota — without leaving the editor.",
+  "version": "0.1.0",
+  "publisher": "sage-local",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other", "Machine Learning"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sage.analyzeSelection",
+        "title": "SAGE: Analyze Selection",
+        "icon": "$(search)"
+      },
+      {
+        "command": "sage.analyzeFile",
+        "title": "SAGE: Analyze Current File"
+      },
+      {
+        "command": "sage.reviewDiff",
+        "title": "SAGE: Review Current Git Diff"
+      },
+      {
+        "command": "sage.showDashboard",
+        "title": "SAGE: Show Dashboard"
+      },
+      {
+        "command": "sage.refreshProposals",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "sage.approveProposal",
+        "title": "Approve",
+        "icon": "$(check)"
+      },
+      {
+        "command": "sage.rejectProposal",
+        "title": "Reject",
+        "icon": "$(x)"
+      },
+      {
+        "command": "sage.submitImprovement",
+        "title": "SAGE: Submit Improvement Request"
+      },
+      {
+        "command": "sage.switchSolution",
+        "title": "SAGE: Switch Solution"
+      },
+      {
+        "command": "sage.showLLMStatus",
+        "title": "SAGE: Show LLM Quota"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "sage.analyzeSelection",
+          "when": "editorHasSelection",
+          "group": "sage@1"
+        },
+        {
+          "command": "sage.analyzeFile",
+          "when": "!editorHasSelection",
+          "group": "sage@1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "sage.refreshProposals",
+          "when": "view == sageProposals",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "sage.approveProposal",
+          "when": "view == sageProposals && viewItem == proposal",
+          "group": "inline@1"
+        },
+        {
+          "command": "sage.rejectProposal",
+          "when": "view == sageProposals && viewItem == proposal",
+          "group": "inline@2"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "sageProposals",
+          "name": "SAGE Proposals",
+          "contextualTitle": "SAGE[ai]"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SAGE Framework",
+      "properties": {
+        "sage.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "SAGE Framework backend URL"
+        },
+        "sage.pollInterval": {
+          "type": "number",
+          "default": 15,
+          "description": "Status polling interval in seconds (min 5)"
+        },
+        "sage.notifyOnNewProposal": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code notification when a new proposal arrives"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.3.0"
+  }
+}

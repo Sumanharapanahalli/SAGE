@@ -1,0 +1,117 @@
+# ==============================================================================
+# SAGE NetworkPolicy
+# ==============================================================================
+# Zero-trust network model: deny everything, then allow exactly what's needed.
+#
+# Traffic rules:
+#   backend  → internet    ALLOW  (LLM API calls: Anthropic, Gemini, Langfuse)
+#   frontend → backend     ALLOW  (API proxy via nginx /api/)
+#   external → frontend    ALLOW  (ingress from users)
+#   external → backend     ALLOW  (ingress /api/ via ingress controller)
+#   pod      → pod (other) DENY   (no lateral movement between components)
+#
+# Requires a CNI plugin that enforces NetworkPolicy (Calico, Cilium, Weave Net).
+# Flannel does NOT enforce NetworkPolicy without a separate policy engine.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Backend: allow ingress from frontend pods and ingress controller
+#             allow all egress (LLM calls to external APIs)
+# ------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sage-backend-policy
+  namespace: sage-framework
+  labels:
+    app.kubernetes.io/name: sage
+    app.kubernetes.io/component: backend
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: backend
+
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow frontend pods to reach the backend (nginx /api/ proxy)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: frontend
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow ingress controller to reach the backend directly
+    # Ingress controllers typically run in their own namespace; adjust the
+    # namespaceSelector to match your cluster's ingress namespace.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    # Allow all outbound traffic from the backend.
+    # This covers: LLM API endpoints (Anthropic, Google, Ollama), Vault,
+    # Slack webhooks, Langfuse, and any other external integrations.
+    # Tighten this in high-security environments by adding specific CIDRs.
+    - {}
+
+---
+# ------------------------------------------------------------------------------
+# 2. Frontend: allow ingress from outside the cluster (via ingress controller)
+#              allow egress only to backend pods
+# ------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sage-frontend-policy
+  namespace: sage-framework
+  labels:
+    app.kubernetes.io/name: sage
+    app.kubernetes.io/component: frontend
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: frontend
+
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow ingress controller to serve user traffic
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+
+  egress:
+    # Frontend only talks to the backend service — nothing else
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: backend
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # DNS resolution — required for service name lookup (kube-dns / CoreDNS)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
