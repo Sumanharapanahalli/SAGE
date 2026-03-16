@@ -1,0 +1,14 @@
+apiVersion: v2
+name: sage
+description: SAGE Framework — Smart Agentic-Guided Empowerment
+type: application
+version: 2.1.0
+appVersion: "2.0.0"
+keywords:
+  - ai
+  - agents
+  - framework
+  - lean-development
+maintainers:
+  - name: SAGE Community
+    url: https://github.com/sage-framework/sage

@@ -162,6 +162,9 @@ class GeminiCLIProvider(LLMProvider):
             return "Error: Gemini CLI not found. Install with: npm install -g @google/gemini-cli"
 
         combined = (
+            "IMPORTANT: You are acting as a pure text-generation API. "
+            "Do NOT use any tools, do NOT run any commands, do NOT execute code, "
+            "do NOT read files. Respond ONLY with the requested text output.\n\n"
             "SYSTEM INSTRUCTION (follow strictly):\n"
             + system_prompt + "\n\n"
             + "USER REQUEST:\n"
@@ -195,6 +198,7 @@ class GeminiCLIProvider(LLMProvider):
                 encoding="utf-8",
                 errors="replace",
                 env=env,
+                cwd=os.path.expanduser("~"),  # avoid picking up CLAUDE.md/GEMINI.md from project dir
             )
 
             if result.returncode != 0:
@@ -676,14 +680,16 @@ class LLMGateway:
             self._usage["estimated_tokens"] += (len(prompt) + len(system_prompt) + len(result)) // 4
 
     def generate(self, prompt, system_prompt="You are a helpful AI assistant.",
-                 trace_name: str = "llm_generate", metadata: dict = None):
+                 trace_name: str = "llm_generate", metadata: dict = None,
+                 trace_id: str = ""):
         """Thread-safe generation. Only ONE call at a time.
 
         Args:
-            prompt:       User/task prompt.
+            prompt:        User/task prompt.
             system_prompt: Role/instruction context.
-            trace_name:   Langfuse trace name (e.g. agent class + method).
-            metadata:     Extra key-value pairs attached to the Langfuse trace.
+            trace_name:    Langfuse trace name (e.g. agent class + method).
+            metadata:      Extra key-value pairs attached to the Langfuse trace.
+            trace_id:      Optional trace ID for cost tracking correlation.
         """
         if self.provider is None:
             return "Error: No LLM provider configured."
@@ -693,6 +699,50 @@ class LLMGateway:
 
         with self._lock:
             self.logger.debug("Lock acquired. Provider: %s", self.provider.provider_name())
+
+            # ----------------------------------------------------------------
+            # T1-002: PII detection and data residency check
+            # ----------------------------------------------------------------
+            config = _load_config()
+            try:
+                from src.core import pii_filter
+                scrubbed_prompt, detected_entities = pii_filter.scrub_text(prompt, config)
+                if detected_entities:
+                    self.logger.warning(
+                        "PII detected and redacted: %s", detected_entities
+                    )
+                    pii_cfg = config.get("pii", {})
+                    if pii_cfg.get("fail_on_detection", False):
+                        raise ValueError(
+                            f"Prompt rejected: PII detected — {detected_entities}"
+                        )
+                prompt = scrubbed_prompt
+
+                if not pii_filter.check_data_residency(self.provider.provider_name(), config):
+                    raise ValueError(
+                        "Provider not allowed for configured data residency region"
+                    )
+            except ImportError:
+                pass  # pii_filter not available — proceed without PII check
+
+            # ----------------------------------------------------------------
+            # T1-004: Budget check before LLM call
+            # ----------------------------------------------------------------
+            try:
+                from src.core import cost_tracker as _ct
+                from src.core.tenant import get_current_tenant
+                _tenant = get_current_tenant()
+                _solution = ""
+                try:
+                    from src.core.project_loader import project_config as _pc
+                    _solution = _pc.project_name or ""
+                except Exception:
+                    pass
+                _ct.check_budget(_tenant, _solution)
+            except ValueError:
+                raise
+            except Exception:
+                pass  # cost_tracker import failure is non-fatal
 
             # --- Langfuse trace (no-op if client not initialised) ---
             _lf_generation = None
@@ -716,22 +766,45 @@ class LLMGateway:
                 self.logger.info("Generation done in %.2fs", elapsed)
                 # Roll daily counter over at UTC midnight
                 self._maybe_reset_daily()
-                # Track usage — estimate tokens as (input + output chars) / 4
+                # Estimate tokens as (input + output chars) / 4
+                input_tokens  = (len(prompt) + len(system_prompt)) // 4
+                output_tokens = len(result) // 4
                 self._usage["calls"] += 1
                 self._usage["calls_today"] += 1
-                self._usage["estimated_tokens"] += (len(prompt) + len(system_prompt) + len(result)) // 4
+                self._usage["estimated_tokens"] += input_tokens + output_tokens
+
+                # ----------------------------------------------------------------
+                # T1-004: Record cost after successful generation
+                # ----------------------------------------------------------------
+                try:
+                    from src.core import cost_tracker as _ct
+                    from src.core.tenant import get_current_tenant
+                    _tenant = get_current_tenant()
+                    _solution = ""
+                    try:
+                        from src.core.project_loader import project_config as _pc
+                        _solution = _pc.project_name or ""
+                    except Exception:
+                        pass
+                    _model = getattr(self.provider, "model", "unknown")
+                    _ct.record_usage(_tenant, _solution, _model, input_tokens, output_tokens, trace_id)
+                except Exception:
+                    pass  # cost tracking is non-fatal
 
                 # Close Langfuse generation span with output
                 if _lf_generation is not None:
                     try:
                         _lf_generation.end(
                             output=result,
-                            usage={"total_tokens": (len(prompt) + len(system_prompt) + len(result)) // 4},
+                            usage={"total_tokens": input_tokens + output_tokens},
                         )
                     except Exception as lf_err:
                         self.logger.debug("Langfuse generation.end failed (non-fatal): %s", lf_err)
 
                 return result
+            except ValueError:
+                # Re-raise budget/PII errors as-is (not wrapped as "Error: ...")
+                raise
             except Exception as e:
                 self.logger.error("Generation failed: %s", e)
                 self._usage["errors"] += 1
@@ -741,6 +814,83 @@ class LLMGateway:
                     except Exception:
                         pass
                 return "Error: " + str(e)
+
+    def generate_for_task(self, task_type: str, prompt: str,
+                          system_prompt: str = "You are a helpful AI assistant.",
+                          trace_name: str = "llm_generate", metadata: dict = None,
+                          trace_id: str = "") -> str:
+        """
+        Route to a task-specific model if task_routing is configured.
+
+        Looks up llm.task_routing.routes[task_type] in config.yaml.
+        Falls back to the default provider when routing is disabled or no
+        route is defined for this task_type.
+
+        Format: "provider/model" (e.g. "ollama/llama3.2") or just "model"
+        (e.g. "claude-sonnet-4-6", reuses current provider type).
+        """
+        config = _load_config()
+        routing_cfg = config.get("llm", {}).get("task_routing", {})
+
+        if not routing_cfg.get("enabled", False):
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+        routes: dict = routing_cfg.get("routes", {})
+        route_value: str = routes.get(task_type, "")
+
+        if not route_value:
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+        # Parse "provider/model" or just "model"
+        if "/" in route_value:
+            routed_provider, routed_model = route_value.split("/", 1)
+        else:
+            routed_provider = ""
+            routed_model = route_value
+
+        # If current provider matches routed provider (or no provider given),
+        # temporarily override the model if it differs
+        current_provider_name = self.provider.provider_name().lower() if self.provider else ""
+        if not routed_provider or routed_provider.lower() in current_provider_name:
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+        # Different provider requested — build a temporary provider instance
+        self.logger.info(
+            "Task routing: task_type=%s → provider=%s model=%s",
+            task_type, routed_provider, routed_model,
+        )
+        llm_cfg = config.get("llm", {}).copy()
+        try:
+            if routed_provider == "ollama":
+                llm_cfg["ollama_model"] = routed_model
+                tmp_provider = OllamaProvider(llm_cfg)
+            elif routed_provider in ("claude", "claude-code"):
+                llm_cfg["claude_model"] = routed_model
+                tmp_provider = ClaudeCodeCLIProvider(llm_cfg)
+            elif routed_provider == "gemini":
+                llm_cfg["gemini_model"] = routed_model
+                tmp_provider = GeminiCLIProvider(llm_cfg)
+            else:
+                self.logger.warning(
+                    "Task routing: unknown provider '%s' — using default", routed_provider
+                )
+                return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+            # Run with the temporary provider (still under the main lock via generate())
+            saved_provider = self.provider
+            self.provider = tmp_provider
+            try:
+                result = self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+            finally:
+                self.provider = saved_provider
+            return result
+
+        except Exception as exc:
+            self.logger.warning(
+                "Task routing provider init failed (%s) — falling back to default: %s",
+                routed_provider, exc,
+            )
+            return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
 
     def _maybe_reset_daily(self) -> None:
         """Reset calls_today when we cross a UTC midnight boundary."""

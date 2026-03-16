@@ -1,0 +1,77 @@
+{{/*
+==============================================================================
+SAGE Frontend Deployment
+==============================================================================
+Serves the React 18 SPA via nginx. The nginx config handles:
+  - SPA routing: all paths fall back to index.html
+  - Reverse proxy: /api/ → backend service
+  - gzip compression for static assets
+The frontend pods are stateless — no PVC needed.
+==============================================================================
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sage.frontend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sage.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.frontend.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "sage.frontend.selectorLabels" . | nindent 6 }}
+  strategy:
+    {{- toYaml .Values.frontend.strategy | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sage.frontend.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "sage.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.frontend.terminationGracePeriodSeconds }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+
+          env:
+            # The frontend resolves /api/ via nginx proxy_pass — the backend
+            # service name is passed so nginx can be templated at build time
+            # if needed. At runtime nginx handles routing via its config.
+            - name: BACKEND_SERVICE
+              value: {{ printf "http://%s:%d" (include "sage.backend.fullname" .) (int .Values.backend.service.port) | quote }}
+
+          livenessProbe:
+            {{- toYaml .Values.frontend.livenessProbe | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.frontend.readinessProbe | nindent 12 }}
+
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}

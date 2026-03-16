@@ -1,0 +1,29 @@
+{{/*
+==============================================================================
+SAGE Frontend Service
+==============================================================================
+ClusterIP by default — traffic arrives via Ingress.
+In development, switched to NodePort via values.development.yaml for easy
+local access without an Ingress controller.
+==============================================================================
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sage.frontend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sage.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  type: {{ .Values.frontend.service.type }}
+  ports:
+    - port: {{ .Values.frontend.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+      {{- if and (eq .Values.frontend.service.type "NodePort") .Values.frontend.service.nodePort }}
+      nodePort: {{ .Values.frontend.service.nodePort }}
+      {{- end }}
+  selector:
+    {{- include "sage.frontend.selectorLabels" . | nindent 4 }}

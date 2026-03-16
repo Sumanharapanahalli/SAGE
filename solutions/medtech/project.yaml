@@ -24,6 +24,8 @@ active_modules:
   - settings
   - agents
   - yaml-editor
+  - live-console
+  - integrations
 
 # Regulatory / compliance standards this project must satisfy
 compliance_standards:

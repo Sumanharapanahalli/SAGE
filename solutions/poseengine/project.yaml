@@ -26,6 +26,8 @@ active_modules:
   - settings
   - agents
   - yaml-editor
+  - live-console
+  - integrations
   - training
   - models
 

@@ -1,0 +1,123 @@
+{
+  "name": "sage-framework",
+  "displayName": "SAGE[ai] — Smart Agentic-Guided Empowerment",
+  "description": "SAGE Framework VS Code integration: analyze logs, review diffs, manage proposals, audit log, live console — without leaving the editor.",
+  "version": "0.2.0",
+  "publisher": "sage-local",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other", "Machine Learning"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "sage.analyzeSelection",       "title": "SAGE: Analyze Selection",             "icon": "$(search)" },
+      { "command": "sage.analyzeFile",            "title": "SAGE: Analyze Current File" },
+      { "command": "sage.reviewDiff",             "title": "SAGE: Review Current Git Diff" },
+      { "command": "sage.showDashboard",          "title": "SAGE: Show Dashboard" },
+      { "command": "sage.refreshProposals",       "title": "Refresh",                             "icon": "$(refresh)" },
+      { "command": "sage.approveProposal",        "title": "Approve",                             "icon": "$(check)" },
+      { "command": "sage.rejectProposal",         "title": "Reject",                              "icon": "$(x)" },
+      { "command": "sage.approveBackendProposal", "title": "Approve",                             "icon": "$(check)" },
+      { "command": "sage.rejectBackendProposal",  "title": "Reject",                              "icon": "$(x)" },
+      { "command": "sage.submitImprovement",      "title": "SAGE: Submit Improvement Request" },
+      { "command": "sage.switchSolution",         "title": "SAGE: Switch Solution" },
+      { "command": "sage.showLLMStatus",          "title": "SAGE: Show LLM Quota" },
+      { "command": "sage.refreshAuditLog",        "title": "Refresh",                             "icon": "$(refresh)" },
+      { "command": "sage.showAuditDetail",        "title": "Show Detail" },
+      { "command": "sage.startLiveConsole",       "title": "SAGE: Start Live Console",            "icon": "$(play)" },
+      { "command": "sage.stopLiveConsole",        "title": "SAGE: Stop Live Console",             "icon": "$(debug-stop)" }
+    ],
+    "menus": {
+      "editor/context": [
+        { "command": "sage.analyzeSelection", "when": "editorHasSelection", "group": "sage@1" },
+        { "command": "sage.analyzeFile",      "when": "!editorHasSelection", "group": "sage@1" }
+      ],
+      "view/title": [
+        { "command": "sage.refreshProposals",  "when": "view == sageProposals", "group": "navigation" },
+        { "command": "sage.refreshAuditLog",   "when": "view == sageAuditLog",  "group": "navigation" },
+        { "command": "sage.startLiveConsole",  "when": "view == sageAuditLog",  "group": "navigation@2" },
+        { "command": "sage.stopLiveConsole",   "when": "view == sageAuditLog",  "group": "navigation@3" }
+      ],
+      "view/item/context": [
+        {
+          "command": "sage.approveProposal",
+          "when": "view == sageProposals && viewItem == proposal",
+          "group": "inline@1"
+        },
+        {
+          "command": "sage.rejectProposal",
+          "when": "view == sageProposals && viewItem == proposal",
+          "group": "inline@2"
+        },
+        {
+          "command": "sage.approveBackendProposal",
+          "when": "view == sageProposals && viewItem == backendProposal",
+          "group": "inline@1"
+        },
+        {
+          "command": "sage.rejectBackendProposal",
+          "when": "view == sageProposals && viewItem == backendProposal",
+          "group": "inline@2"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sage-sidebar",
+          "title": "SAGE[ai]",
+          "icon": "$(shield)"
+        }
+      ]
+    },
+    "views": {
+      "sage-sidebar": [
+        {
+          "id": "sageProposals",
+          "name": "Proposals & Approvals",
+          "contextualTitle": "SAGE[ai] — Proposals"
+        },
+        {
+          "id": "sageAuditLog",
+          "name": "Audit Log (QMS)",
+          "contextualTitle": "SAGE[ai] — Audit Log"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SAGE Framework",
+      "properties": {
+        "sage.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "SAGE Framework backend URL"
+        },
+        "sage.pollInterval": {
+          "type": "number",
+          "default": 15,
+          "description": "Status polling interval in seconds (min 5)"
+        },
+        "sage.notifyOnNewProposal": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code notification when a new proposal arrives"
+        },
+        "sage.autoStartLiveConsole": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start the Live Console when the extension activates"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.3.0"
+  }
+}

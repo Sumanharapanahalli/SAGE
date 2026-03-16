@@ -26,6 +26,13 @@ async function patch<T>(path: string, body?: unknown): Promise<T> {
   return res.json()
 }
 
+async function del<T>(path: string): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.statusText}`)
+  if (res.status === 204) return undefined as unknown as T
+  return res.json()
+}
+
 // Health
 export const fetchHealth = () => get<HealthResponse>('/health')
 
@@ -106,6 +113,23 @@ export const saveYamlFile = (file: 'project' | 'prompts' | 'tasks', content: str
     return res.json() as Promise<{ saved: boolean; file: string; solution: string }>
   })
 
+// SKILL.md editor — read / write single-file solution config
+export const fetchSkillMd = () =>
+  get<{ solution: string; content: string }>('/config/skill')
+
+export const saveSkillMd = (content: string) =>
+  fetch('/api/config/skill', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  }).then(async res => {
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail ?? 'Save failed')
+    }
+    return res.json() as Promise<{ saved: boolean; solution: string; message: string }>
+  })
+
 // Universal Agent roles + run
 export const fetchAgentRoles = () =>
   get<{ roles: { id: string; name: string; description: string; icon: string }[] }>('/agent/roles')
@@ -117,6 +141,33 @@ export const runAgent = (role_id: string, task: string, context?: string) =>
     recommendations: string[]; next_steps: string[]
     severity: string; confidence: string; status: string
   }>('/agent/run', { role_id, task, context: context ?? '' })
+
+export const hireAgent = (params: {
+  role_id: string; name: string; description: string
+  icon: string; system_prompt: string; task_types: string[]
+}) => post<ProposalResponse>('/agents/hire', params)
+
+// Conversational Onboarding
+export interface OnboardingMessage { role: 'assistant' | 'user'; content: string; ts: number }
+export interface OnboardingInfo {
+  description: string; solution_name: string
+  compliance_standards: string[]; integrations: string[]; team_context: string
+}
+export interface OnboardingSession {
+  session_id: string; state: string
+  messages: OnboardingMessage[]; info: OnboardingInfo
+  proposal_trace_id?: string; solution_name_final?: string
+}
+export const startOnboardingSession = () =>
+  post<OnboardingSession>('/onboarding/session')
+export const sendOnboardingMessage = (session_id: string, message: string) =>
+  post<{ reply: string; state: string; info: OnboardingInfo; session_id: string }>(
+    `/onboarding/session/${session_id}/message`, { message }
+  )
+export const generateOnboardingSolution = (session_id: string) =>
+  post<{ trace_id: string; description: string; solution_name: string; state: string }>(
+    `/onboarding/session/${session_id}/generate`
+  )
 
 // Set active modules for current solution (runtime override) — returns proposal
 export const setActiveModules = (modules: string[]) =>
@@ -130,6 +181,20 @@ export const switchProject = (project: string) =>
 export const fetchPendingProposals = () =>
   get<{ proposals: Proposal[]; count: number }>('/proposals/pending')
 
+// Single proposal by trace_id — for plan detail view in Improvements
+export const fetchProposal = (trace_id: string) =>
+  get<Proposal>(`/proposals/${trace_id}`)
+
+export const approveBatchProposals = (trace_ids: string[], decided_by: string, feedback = '') =>
+  post<{ results: Array<{ trace_id: string; status: string; reason?: string; result?: unknown }>; count: number }>(
+    '/proposals/approve-batch', { trace_ids, decided_by, feedback }
+  )
+
+export const fetchApprovalRoles = () =>
+  get<{ approval_roles: Record<string, string | null>; approvers: Record<string, string[]> }>(
+    '/config/approval-roles'
+  )
+
 // Approve a proposal (analysis or action)
 export const approveProposalFull = (trace_id: string, decided_by = 'human', feedback = '') =>
   post<{ status: string; trace_id: string; action_type?: string; result?: unknown }>(
@@ -138,6 +203,69 @@ export const approveProposalFull = (trace_id: string, decided_by = 'human', feed
 
 // Live log stream — returns an EventSource URL (no fetch wrapper needed)
 export const logsStreamUrl = () => '/api/logs/stream'
+
+// Composio integrations
+export interface ComposioConnectedApp {
+  app: string
+  status: string
+  connected_account_id: string
+}
+export interface ComposioTool {
+  name: string
+  description: string
+}
+export const fetchComposioStatus = () =>
+  get<{ available: boolean; api_key_set: boolean; connected_apps: ComposioConnectedApp[]; count: number }>(
+    '/integrations/composio/status'
+  )
+export const fetchComposioTools = () =>
+  get<{ available: boolean; apps: string[]; tools: ComposioTool[]; count: number; message?: string }>(
+    '/integrations/composio/tools'
+  )
+export const connectComposioApp = (app: string, redirect_url = '') =>
+  post<{ status: string; trace_id: string; app: string; connection_url: string; message: string }>(
+    '/integrations/composio/connect', { app, redirect_url }
+  )
+
+// Cost Tracking (T1-004)
+export const fetchCostSummary = (params?: { tenant?: string; solution?: string; period_days?: number }) => {
+  const qs = new URLSearchParams()
+  if (params?.tenant)      qs.set('tenant', params.tenant)
+  if (params?.solution)    qs.set('solution', params.solution)
+  if (params?.period_days) qs.set('period_days', String(params.period_days))
+  const q = qs.toString()
+  return get<import('../types/module').CostSummary>(`/costs/summary${q ? `?${q}` : ''}`)
+}
+
+export const fetchCostDaily = (params?: { tenant?: string; solution?: string; period_days?: number }) => {
+  const qs = new URLSearchParams()
+  if (params?.tenant)      qs.set('tenant', params.tenant)
+  if (params?.solution)    qs.set('solution', params.solution)
+  if (params?.period_days) qs.set('period_days', String(params.period_days))
+  const q = qs.toString()
+  return get<{ daily: import('../types/module').DailyCost[]; count: number; period_days: number }>(
+    `/costs/daily${q ? `?${q}` : ''}`
+  )
+}
+
+export const setCostBudget = (body: { tenant?: string; solution?: string; monthly_usd: number }) =>
+  post<{ saved: boolean; key: string; monthly_usd: number; message: string }>('/costs/budget', body)
+
+// Task Queue
+export const fetchQueueTasks = (params?: { status?: string; source?: string }) =>
+  get<import('../types/module').QueueTask[]>(
+    `/queue/tasks${params && Object.keys(params).length > 0 ? '?' + new URLSearchParams(params as Record<string, string>) : ''}`
+  )
+
+// Solution theme (all fields optional — missing fields fall back to CSS :root defaults)
+export interface SageTheme {
+  sidebar_bg?: string;          sidebar_text?: string
+  sidebar_active_bg?: string;   sidebar_active_text?: string
+  sidebar_hover_bg?: string;    sidebar_accent?: string
+  accent?: string;              accent_hover?: string
+  accent_light?: string;        accent_text?: string
+  badge_bg?: string;            badge_text?: string
+}
 
 // Project config
 export const fetchProjectConfig = () =>
@@ -151,7 +279,9 @@ export const fetchProjectConfig = () =>
     compliance_standards: string[]
     task_types: string[]
     task_descriptions: Record<string, string>
-    ui_labels: Record<string, string>
+    ui_labels: Record<string, unknown>
+    dashboard?: Record<string, unknown>
+    theme?: SageTheme
   }>('/config/project')
 
 export const fetchProjects = () =>
@@ -162,19 +292,20 @@ export const fetchProjects = () =>
 // --- Types ---
 
 export interface Proposal {
-  trace_id:    string
-  created_at:  string
-  action_type: string
-  risk_class:  'INFORMATIONAL' | 'EPHEMERAL' | 'STATEFUL' | 'EXTERNAL' | 'DESTRUCTIVE'
-  reversible:  boolean
-  proposed_by: string
-  description: string
-  payload:     Record<string, unknown>
-  status:      'pending' | 'approved' | 'rejected' | 'expired'
-  decided_by:  string | null
-  decided_at:  string | null
-  feedback:    string | null
-  expires_at:  string | null
+  trace_id:      string
+  created_at:    string
+  action_type:   string
+  risk_class:    'INFORMATIONAL' | 'EPHEMERAL' | 'STATEFUL' | 'EXTERNAL' | 'DESTRUCTIVE'
+  reversible:    boolean
+  proposed_by:   string
+  description:   string
+  payload:       Record<string, unknown>
+  status:        'pending' | 'approved' | 'rejected' | 'expired'
+  decided_by:    string | null
+  decided_at:    string | null
+  feedback:      string | null
+  expires_at:    string | null
+  required_role: string | null
 }
 
 export interface ProposalResponse {
@@ -285,6 +416,11 @@ export interface PipelineResponse {
 
 export interface MonitorStatus {
   running: boolean
-  threads?: Record<string, { running: boolean; last_poll?: string; event_count: number }>
-  [key: string]: unknown
+  active_threads: string[]
+  thread_count: number
+  seen_messages: number
+  seen_issues: number
+  teams_configured: boolean
+  metabase_configured: boolean
+  gitlab_configured: boolean
 }

@@ -1,0 +1,59 @@
+{{/*
+==============================================================================
+SAGE Ingress
+==============================================================================
+Routes external traffic to frontend (/) and backend (/api/).
+Disabled by default — enable in values.production.yaml or with:
+  --set ingress.enabled=true --set ingress.hosts[0].host=sage.example.com
+
+TLS: when ingress.tls.enabled=true, cert-manager is expected to provision
+the certificate automatically via the cluster-issuer annotation. Requires
+cert-manager to be installed in the cluster.
+==============================================================================
+*/}}
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "sage.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sage.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        {{- range .Values.ingress.hosts }}
+        - {{ .host | quote }}
+        {{- end }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                {{- if eq .service "backend" }}
+                name: {{ include "sage.backend.fullname" $ }}
+                port:
+                  number: {{ $.Values.backend.service.port }}
+                {{- else }}
+                name: {{ include "sage.frontend.fullname" $ }}
+                port:
+                  number: {{ $.Values.frontend.service.port }}
+                {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}

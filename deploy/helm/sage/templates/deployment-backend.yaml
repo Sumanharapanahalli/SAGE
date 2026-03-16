@@ -1,0 +1,190 @@
+{{/*
+==============================================================================
+SAGE Backend Deployment
+==============================================================================
+Runs the FastAPI application (src/interface/api.py) via uvicorn.
+Key design decisions:
+  - Single worker per pod: SAGE's LLMGateway uses a threading.Lock — running
+    multiple workers would deadlock. Scale horizontally via replicaCount/HPA.
+  - graceful shutdown: terminationGracePeriodSeconds gives in-flight requests
+    time to complete before the pod is killed.
+  - Persistence: when enabled, the audit SQLite DB and ChromaDB vector store
+    are written to a PVC so they survive pod restarts and upgrades.
+==============================================================================
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sage.backend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sage.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+  annotations:
+    # Record which values file produced this deployment for audit traceability
+    deployment.kubernetes.io/revision: "1"
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  # When HPA is enabled, the HPA object controls replica count — not this field
+  replicas: {{ .Values.backend.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "sage.backend.selectorLabels" . | nindent 6 }}
+  strategy:
+    {{- toYaml .Values.backend.strategy | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sage.backend.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if eq .Values.secrets.provider "vault" }}
+        # Vault agent injector reads these annotations to mount secrets as files
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: {{ .Values.secrets.vault.role | quote }}
+        vault.hashicorp.com/agent-inject-secret-sage: {{ printf "%s/data" .Values.secrets.vault.path | quote }}
+        vault.hashicorp.com/agent-inject-template-sage: |
+          {{`{{- with secret "`}}{{ .Values.secrets.vault.path }}{{`" -}}`}}
+          {{`export ANTHROPIC_API_KEY="{{ .Data.data.anthropic_api_key }}"`}}
+          {{`export SLACK_BOT_TOKEN="{{ .Data.data.slack_bot_token }}"`}}
+          {{`export SLACK_SIGNING_SECRET="{{ .Data.data.slack_signing_secret }}"`}}
+          {{`export LANGFUSE_PUBLIC_KEY="{{ .Data.data.langfuse_public_key }}"`}}
+          {{`export LANGFUSE_SECRET_KEY="{{ .Data.data.langfuse_secret_key }}"`}}
+          {{`{{- end }}`}}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "sage.serviceAccountName" . }}
+      # Allow time for in-flight LLM calls (which can take 30-60s) to complete
+      terminationGracePeriodSeconds: {{ .Values.backend.terminationGracePeriodSeconds }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- if or (eq .Values.secrets.provider "aws") (eq .Values.secrets.provider "azure") }}
+      # CSI secrets-store volume — populated by the provider sidecar before the
+      # main container starts. Secrets are then exposed as env vars or files.
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ printf "%s-secrets" (include "sage.fullname" .) | quote }}
+      {{- else if .Values.persistence.enabled }}
+      volumes:
+        - name: sage-data
+          persistentVolumeClaim:
+            claimName: {{ include "sage.fullname" . }}-data
+      {{- end }}
+
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          env:
+            # Non-secret config comes from ConfigMap
+            - name: SAGE_PROJECT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sage.fullname" . }}-config
+                  key: SAGE_PROJECT
+            - name: LLM_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sage.fullname" . }}-config
+                  key: LLM_PROVIDER
+            - name: OLLAMA_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sage.fullname" . }}-config
+                  key: OLLAMA_MODEL
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sage.fullname" . }}-config
+                  key: LOG_LEVEL
+            {{- if .Values.config.solutionsDir }}
+            - name: SAGE_SOLUTIONS_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sage.fullname" . }}-config
+                  key: SAGE_SOLUTIONS_DIR
+            {{- end }}
+
+            {{- if eq .Values.secrets.provider "env" }}
+            # Secrets injected directly as env vars (dev/simple deployments)
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sage.fullname" . }}-secrets
+                  key: ANTHROPIC_API_KEY
+                  optional: true
+            - name: SLACK_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sage.fullname" . }}-secrets
+                  key: SLACK_BOT_TOKEN
+                  optional: true
+            - name: SLACK_SIGNING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sage.fullname" . }}-secrets
+                  key: SLACK_SIGNING_SECRET
+                  optional: true
+            - name: LANGFUSE_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sage.fullname" . }}-secrets
+                  key: LANGFUSE_PUBLIC_KEY
+                  optional: true
+            - name: LANGFUSE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sage.fullname" . }}-secrets
+                  key: LANGFUSE_SECRET_KEY
+                  optional: true
+            {{- end }}
+
+          {{- if or (eq .Values.secrets.provider "aws") (eq .Values.secrets.provider "azure") }}
+          volumeMounts:
+            - name: secrets-store
+              mountPath: /mnt/secrets
+              readOnly: true
+          {{- else if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: sage-data
+              mountPath: {{ .Values.persistence.mountPath }}
+          {{- end }}
+
+          livenessProbe:
+            {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.backend.readinessProbe | nindent 12 }}
+
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+
+          # Propagate SIGTERM to uvicorn so it drains connections gracefully
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]

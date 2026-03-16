@@ -1,0 +1,73 @@
+SAGE Framework has been deployed!
+
+Release:   {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Version:   {{ .Chart.AppVersion }}
+
+=== Access ===
+
+{{- if .Values.ingress.enabled }}
+  SAGE UI:  https://{{ (index .Values.ingress.hosts 0).host }}
+  API:      https://{{ (index .Values.ingress.hosts 0).host }}/api/
+{{- else if contains "NodePort" .Values.frontend.service.type }}
+  Get the node IP:
+    export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} \
+      -o jsonpath="{.items[0].status.addresses[0].address}")
+  Frontend: http://$NODE_IP:{{ .Values.frontend.service.nodePort }}
+  Backend:  http://$NODE_IP:{{ .Values.backend.service.nodePort }}
+{{- else }}
+  Forward ports for local access:
+    kubectl port-forward --namespace {{ .Release.Namespace }} \
+      svc/{{ include "sage.frontend.fullname" . }} 3000:80 &
+    kubectl port-forward --namespace {{ .Release.Namespace }} \
+      svc/{{ include "sage.backend.fullname" . }} 8000:8000 &
+  Frontend: http://localhost:3000
+  API:      http://localhost:8000
+  API docs: http://localhost:8000/docs
+{{- end }}
+
+=== Health Check ===
+
+  kubectl get pods --namespace {{ .Release.Namespace }} \
+    -l "app.kubernetes.io/instance={{ .Release.Name }}"
+
+  kubectl logs --namespace {{ .Release.Namespace }} \
+    -l "app.kubernetes.io/component=backend" --tail=50
+
+=== Secrets Provider: {{ .Values.secrets.provider }} ===
+
+{{- if eq .Values.secrets.provider "vault" }}
+  Vault address: {{ .Values.secrets.vault.address }}
+  Vault role:    {{ .Values.secrets.vault.role }}
+  Vault path:    {{ .Values.secrets.vault.path }}
+
+  Ensure the Vault agent injector is installed and the role is configured:
+    vault write auth/kubernetes/role/{{ .Values.secrets.vault.role }} \
+      bound_service_account_names={{ include "sage.serviceAccountName" . }} \
+      bound_service_account_namespaces={{ .Release.Namespace }} \
+      policies=sage-policy ttl=24h
+{{- else if eq .Values.secrets.provider "aws" }}
+  AWS region:     {{ .Values.secrets.aws.region }}
+  Secret name:    {{ .Values.secrets.aws.secretName }}
+  Ensure the pod's IRSA role has secretsmanager:GetSecretValue permission.
+{{- else if eq .Values.secrets.provider "azure" }}
+  Key Vault name: {{ .Values.secrets.azure.keyvaultName }}
+  Tenant ID:      {{ .Values.secrets.azure.tenantId }}
+  Ensure Azure Workload Identity is configured for the service account.
+{{- else }}
+  Secrets are injected via environment variables.
+  Update with: helm upgrade {{ .Release.Name }} ./helm/sage \
+    --set secrets.env.anthropicApiKey=<new-key>
+{{- end }}
+
+=== Active LLM Provider: {{ .Values.config.llmProvider }} ===
+
+  Switch at runtime:
+    curl -X POST http://localhost:8000/llm/switch \
+      -H "Content-Type: application/json" \
+      -d '{"provider": "ollama", "model": "llama3.2"}'
+
+=== Documentation ===
+
+  User Guide:    SAGE_UI → Help
+  Architecture:  https://github.com/sage-framework/sage/blob/main/ARCHITECTURE.md

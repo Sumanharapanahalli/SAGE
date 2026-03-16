@@ -39,11 +39,11 @@ class RiskClass(str, Enum):
 
 # Expiry window per risk class (None = never expires)
 _EXPIRY_MINUTES: dict[RiskClass, Optional[int]] = {
-    RiskClass.INFORMATIONAL: 5,
-    RiskClass.EPHEMERAL:     5,
-    RiskClass.STATEFUL:      60 * 24,        # 24 h
-    RiskClass.EXTERNAL:      60 * 72,        # 72 h
-    RiskClass.DESTRUCTIVE:   None,           # never
+    RiskClass.INFORMATIONAL: 60,          # 1 h
+    RiskClass.EPHEMERAL:     60 * 8,      # 8 h — full working day
+    RiskClass.STATEFUL:      60 * 24 * 7, # 7 days
+    RiskClass.EXTERNAL:      60 * 24 * 14,# 14 days
+    RiskClass.DESTRUCTIVE:   None,        # never expires
 }
 
 
@@ -60,11 +60,16 @@ class Proposal(BaseModel):
     proposed_by: str = "system"             # "AnalystAgent" | "user:admin" | "OnboardingWizard"
     description: str                        # Human-readable summary
     payload:     dict                       # The actual action data
-    status:      str = "pending"            # pending | approved | rejected | expired
-    decided_by:  Optional[str]  = None
-    decided_at:  Optional[str]  = None
-    feedback:    Optional[str]  = None      # Rejection reason or approval note
-    expires_at:  Optional[str]  = None      # ISO timestamp, None = never
+    status:        str = "pending"          # pending | approved | rejected | expired
+    decided_by:    Optional[str]  = None
+    decided_at:    Optional[str]  = None
+    feedback:      Optional[str]  = None    # Rejection reason or approval note
+    expires_at:    Optional[str]  = None    # ISO timestamp, None = never
+    required_role: Optional[str]  = None    # Role required to approve (RBAC)
+    # Named-approvals identity (T1-001) — populated when auth is enabled
+    approved_by:      str = ""
+    approver_role:    str = ""
+    approver_email:   str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -89,22 +94,39 @@ class ProposalStore:
         conn = sqlite3.connect(self.db_path)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS proposals (
-                trace_id    TEXT PRIMARY KEY,
-                created_at  TEXT NOT NULL,
-                action_type TEXT NOT NULL,
-                risk_class  TEXT NOT NULL,
-                reversible  INTEGER NOT NULL,
-                proposed_by TEXT NOT NULL,
-                description TEXT NOT NULL,
-                payload     TEXT NOT NULL,   -- JSON
-                status      TEXT NOT NULL DEFAULT 'pending',
-                decided_by  TEXT,
-                decided_at  TEXT,
-                feedback    TEXT,
-                expires_at  TEXT
+                trace_id        TEXT PRIMARY KEY,
+                created_at      TEXT NOT NULL,
+                action_type     TEXT NOT NULL,
+                risk_class      TEXT NOT NULL,
+                reversible      INTEGER NOT NULL,
+                proposed_by     TEXT NOT NULL,
+                description     TEXT NOT NULL,
+                payload         TEXT NOT NULL,   -- JSON
+                status          TEXT NOT NULL DEFAULT 'pending',
+                decided_by      TEXT,
+                decided_at      TEXT,
+                feedback        TEXT,
+                expires_at      TEXT,
+                required_role   TEXT,
+                approved_by     TEXT DEFAULT '',
+                approver_role   TEXT DEFAULT '',
+                approver_email  TEXT DEFAULT ''
             )
         """)
         conn.commit()
+        # Idempotent migrations for pre-existing databases
+        _new_cols = [
+            ("required_role",  "TEXT"),
+            ("approved_by",    "TEXT DEFAULT ''"),
+            ("approver_role",  "TEXT DEFAULT ''"),
+            ("approver_email", "TEXT DEFAULT ''"),
+        ]
+        for col, defn in _new_cols:
+            try:
+                conn.execute(f"ALTER TABLE proposals ADD COLUMN {col} {defn}")
+                conn.commit()
+            except Exception:
+                pass  # column already exists
         conn.close()
         logger.debug("ProposalStore table ready at %s", self.db_path)
 
@@ -118,20 +140,25 @@ class ProposalStore:
         return conn
 
     def _row_to_proposal(self, row: sqlite3.Row) -> Proposal:
+        keys = row.keys()
         return Proposal(
-            trace_id    = row["trace_id"],
-            created_at  = row["created_at"],
-            action_type = row["action_type"],
-            risk_class  = RiskClass(row["risk_class"]),
-            reversible  = bool(row["reversible"]),
-            proposed_by = row["proposed_by"],
-            description = row["description"],
-            payload     = json.loads(row["payload"]),
-            status      = row["status"],
-            decided_by  = row["decided_by"],
-            decided_at  = row["decided_at"],
-            feedback    = row["feedback"],
-            expires_at  = row["expires_at"],
+            trace_id       = row["trace_id"],
+            created_at     = row["created_at"],
+            action_type    = row["action_type"],
+            risk_class     = RiskClass(row["risk_class"]),
+            reversible     = bool(row["reversible"]),
+            proposed_by    = row["proposed_by"],
+            description    = row["description"],
+            payload        = json.loads(row["payload"]),
+            status         = row["status"],
+            decided_by     = row["decided_by"],
+            decided_at     = row["decided_at"],
+            feedback       = row["feedback"],
+            expires_at     = row["expires_at"],
+            required_role  = row["required_role"] if "required_role" in keys else None,
+            approved_by    = row["approved_by"]    if "approved_by"    in keys else "",
+            approver_role  = row["approver_role"]  if "approver_role"  in keys else "",
+            approver_email = row["approver_email"] if "approver_email" in keys else "",
         )
 
     # ------------------------------------------------------------------
@@ -146,6 +173,7 @@ class ProposalStore:
         description: str,
         reversible: bool = True,
         proposed_by: str = "system",
+        required_role: Optional[str] = None,
     ) -> Proposal:
         """Create and persist a new pending proposal."""
         expiry_mins = _EXPIRY_MINUTES.get(risk_class)
@@ -157,27 +185,28 @@ class ProposalStore:
             expires_at = None
 
         proposal = Proposal(
-            action_type = action_type,
-            risk_class  = risk_class,
-            reversible  = reversible,
-            proposed_by = proposed_by,
-            description = description,
-            payload     = payload,
-            expires_at  = expires_at,
+            action_type   = action_type,
+            risk_class    = risk_class,
+            reversible    = reversible,
+            proposed_by   = proposed_by,
+            description   = description,
+            payload       = payload,
+            expires_at    = expires_at,
+            required_role = required_role,
         )
 
         conn = self._conn()
         conn.execute(
             """INSERT INTO proposals
                (trace_id, created_at, action_type, risk_class, reversible,
-                proposed_by, description, payload, status, expires_at)
-               VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                proposed_by, description, payload, status, expires_at, required_role)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 proposal.trace_id, proposal.created_at, proposal.action_type,
                 proposal.risk_class.value, int(proposal.reversible),
                 proposal.proposed_by, proposal.description,
                 json.dumps(proposal.payload), proposal.status,
-                proposal.expires_at,
+                proposal.expires_at, proposal.required_role,
             ),
         )
         conn.commit()
@@ -211,7 +240,13 @@ class ProposalStore:
         conn.close()
         return [self._row_to_proposal(r) for r in rows]
 
-    def approve(self, trace_id: str, decided_by: str = "human", feedback: str = "") -> Proposal:
+    def approve(
+        self,
+        trace_id: str,
+        decided_by: str = "human",
+        feedback: str = "",
+        user=None,  # Optional[UserIdentity] — passed when auth is enabled
+    ) -> Proposal:
         """Mark a proposal as approved. Raises ValueError if not found or not pending."""
         proposal = self.get(trace_id)
         if not proposal:
@@ -219,22 +254,39 @@ class ProposalStore:
         if proposal.status != "pending":
             raise ValueError(f"Proposal '{trace_id}' is already {proposal.status}.")
 
-        decided_at = datetime.now(timezone.utc).isoformat()
+        decided_at     = datetime.now(timezone.utc).isoformat()
+        approved_by    = user.name  if user else decided_by
+        approver_role  = user.role  if user else ""
+        approver_email = user.email if user else ""
+
         conn = self._conn()
         conn.execute(
-            "UPDATE proposals SET status='approved', decided_by=?, decided_at=?, feedback=? WHERE trace_id=?",
-            (decided_by, decided_at, feedback or None, trace_id),
+            """UPDATE proposals
+               SET status='approved', decided_by=?, decided_at=?, feedback=?,
+                   approved_by=?, approver_role=?, approver_email=?
+               WHERE trace_id=?""",
+            (decided_by, decided_at, feedback or None,
+             approved_by, approver_role, approver_email, trace_id),
         )
         conn.commit()
         conn.close()
-        proposal.status     = "approved"
-        proposal.decided_by = decided_by
-        proposal.decided_at = decided_at
-        proposal.feedback   = feedback or None
+        proposal.status        = "approved"
+        proposal.decided_by    = decided_by
+        proposal.decided_at    = decided_at
+        proposal.feedback      = feedback or None
+        proposal.approved_by   = approved_by
+        proposal.approver_role = approver_role
+        proposal.approver_email = approver_email
         logger.info("Proposal approved: %s by %s", trace_id, decided_by)
         return proposal
 
-    def reject(self, trace_id: str, decided_by: str = "human", feedback: str = "") -> Proposal:
+    def reject(
+        self,
+        trace_id: str,
+        decided_by: str = "human",
+        feedback: str = "",
+        user=None,  # Optional[UserIdentity] — passed when auth is enabled
+    ) -> Proposal:
         """Mark a proposal as rejected with optional feedback."""
         proposal = self.get(trace_id)
         if not proposal:
@@ -242,18 +294,29 @@ class ProposalStore:
         if proposal.status != "pending":
             raise ValueError(f"Proposal '{trace_id}' is already {proposal.status}.")
 
-        decided_at = datetime.now(timezone.utc).isoformat()
+        decided_at     = datetime.now(timezone.utc).isoformat()
+        approved_by    = user.name  if user else decided_by
+        approver_role  = user.role  if user else ""
+        approver_email = user.email if user else ""
+
         conn = self._conn()
         conn.execute(
-            "UPDATE proposals SET status='rejected', decided_by=?, decided_at=?, feedback=? WHERE trace_id=?",
-            (decided_by, decided_at, feedback or None, trace_id),
+            """UPDATE proposals
+               SET status='rejected', decided_by=?, decided_at=?, feedback=?,
+                   approved_by=?, approver_role=?, approver_email=?
+               WHERE trace_id=?""",
+            (decided_by, decided_at, feedback or None,
+             approved_by, approver_role, approver_email, trace_id),
         )
         conn.commit()
         conn.close()
-        proposal.status     = "rejected"
-        proposal.decided_by = decided_by
-        proposal.decided_at = decided_at
-        proposal.feedback   = feedback or None
+        proposal.status        = "rejected"
+        proposal.decided_by    = decided_by
+        proposal.decided_at    = decided_at
+        proposal.feedback      = feedback or None
+        proposal.approved_by   = approved_by
+        proposal.approver_role = approver_role
+        proposal.approver_email = approver_email
         logger.info("Proposal rejected: %s by %s — %s", trace_id, decided_by, feedback)
         return proposal
 

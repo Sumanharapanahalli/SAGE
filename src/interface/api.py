@@ -21,10 +21,10 @@ import os
 import sqlite3
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -100,6 +100,15 @@ class AgentRunRequest(BaseModel):
     task: str
     context: str = ""
     actor: str = "web-ui"
+
+
+class AgentHireRequest(BaseModel):
+    role_id: str           # snake_case unique key, e.g. "security_reviewer"
+    name: str              # Display name, e.g. "Security Reviewer"
+    description: str       # One-line description
+    icon: str = "🤖"       # Emoji icon
+    system_prompt: str     # Full system prompt for this role
+    task_types: List[str] = []   # Optional task type IDs to add to tasks.yaml
 
 
 class FeatureRequestCreate(BaseModel):
@@ -181,6 +190,63 @@ def _get_db_path() -> str:
     return audit_logger.db_path
 
 
+def _get_active_solution() -> str:
+    try:
+        return _get_project_config().project_name
+    except Exception:
+        return os.environ.get("SAGE_PROJECT", "default")
+
+
+# ---------------------------------------------------------------------------
+# RBAC helpers — role-based approval enforcement
+# ---------------------------------------------------------------------------
+
+def _get_required_role(action_type: str) -> Optional[str]:
+    """Look up the required role for an action_type from config.yaml."""
+    try:
+        import yaml
+        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__)))), "config", "config.yaml")
+        with open(config_path) as f:
+            cfg = yaml.safe_load(f) or {}
+        return cfg.get("approval_roles", {}).get(action_type)
+    except Exception:
+        return None
+
+
+def _check_approver_permission(action_type: str, decided_by: str) -> tuple[bool, str]:
+    """
+    Returns (allowed: bool, reason: str).
+    Passes if:
+    - No required_role configured for this action_type, OR
+    - The decided_by identity is in the approvers list for the required role, OR
+    - The role's approvers list contains "any"
+    """
+    try:
+        import yaml
+        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__)))), "config", "config.yaml")
+        with open(config_path) as f:
+            cfg = yaml.safe_load(f) or {}
+        required_role = cfg.get("approval_roles", {}).get(action_type)
+        if not required_role:
+            return True, ""
+        approvers_cfg = cfg.get("approvers", {})
+        allowed_list = approvers_cfg.get(required_role, [])
+        if "any" in allowed_list:
+            return True, ""
+        # Hierarchical: admin can approve anything
+        # Check all roles that include this user
+        for role, members in approvers_cfg.items():
+            if decided_by in members and role == "admin":
+                return True, ""
+        if decided_by in allowed_list:
+            return True, ""
+        return False, f"Action '{action_type}' requires role '{required_role}'. '{decided_by}' is not authorised."
+    except Exception:
+        return True, ""  # fail open if config unreadable
+
+
 # ---------------------------------------------------------------------------
 # Feature request DB initialisation (called at startup)
 # ---------------------------------------------------------------------------
@@ -232,6 +298,15 @@ async def _lifespan(_app: FastAPI):
         logger.info("ProposalStore ready.")
     except Exception as exc:
         logger.warning("ProposalStore init skipped: %s", exc)
+    # Initialise auth tables (api_keys, user_roles) so they're ready on first request
+    try:
+        from src.core.api_keys import _ensure_table as _ensure_api_keys
+        from src.core.rbac import _ensure_table as _ensure_user_roles
+        _ensure_api_keys()
+        _ensure_user_roles()
+        logger.info("Auth tables ready.")
+    except Exception as exc:
+        logger.warning("Auth table init skipped: %s", exc)
     yield
 
 app.router.lifespan_context = _lifespan
@@ -372,12 +447,13 @@ async def switch_project(req: SwitchProjectRequest):
     current_project = _get_project_config().project_name
     store = _get_proposal_store()
     proposal = store.create(
-        action_type = "config_switch",
-        risk_class  = RiskClass.EPHEMERAL,
-        payload     = {"project": req.project, "previous_project": current_project},
-        description = f"Switch active solution: {current_project} → {req.project}",
-        reversible  = True,
-        proposed_by = "user",
+        action_type   = "config_switch",
+        risk_class    = RiskClass.EPHEMERAL,
+        payload       = {"project": req.project, "previous_project": current_project},
+        description   = f"Switch active solution: {current_project} → {req.project}",
+        reversible    = True,
+        proposed_by   = "user",
+        required_role = _get_required_role("config_switch"),
     )
     return {
         "status":      "pending_approval",
@@ -398,12 +474,13 @@ async def set_modules(req: SetModulesRequest):
     current_modules = _get_project_config().metadata.get("active_modules", [])
     store = _get_proposal_store()
     proposal = store.create(
-        action_type = "config_modules",
-        risk_class  = RiskClass.EPHEMERAL,
-        payload     = {"modules": req.modules, "previous_modules": current_modules},
-        description = f"Update active modules: {current_modules} → {req.modules}",
-        reversible  = True,
-        proposed_by = "user",
+        action_type   = "config_modules",
+        risk_class    = RiskClass.EPHEMERAL,
+        payload       = {"modules": req.modules, "previous_modules": current_modules},
+        description   = f"Update active modules: {current_modules} → {req.modules}",
+        reversible    = True,
+        proposed_by   = "user",
+        required_role = _get_required_role("config_modules"),
     )
     return {
         "status":      "pending_approval",
@@ -461,17 +538,18 @@ async def write_yaml_file(file_name: str, req: YamlWriteRequest):
     diff_summary = f"+{len([l for l in new_lines if l not in old_lines])} / -{len([l for l in old_lines if l not in new_lines])} lines"
     store = _get_proposal_store()
     proposal = store.create(
-        action_type = "yaml_edit",
-        risk_class  = RiskClass.STATEFUL,
-        payload     = {
+        action_type   = "yaml_edit",
+        risk_class    = RiskClass.STATEFUL,
+        payload       = {
             "file":     file_name,
             "content":  req.content,
             "solution": project_config.project_name,
             "previous_content": current,
         },
-        description = f"Edit {file_name}.yaml ({diff_summary})",
-        reversible  = True,
-        proposed_by = "user",
+        description   = f"Edit {file_name}.yaml ({diff_summary})",
+        reversible    = True,
+        proposed_by   = "user",
+        required_role = _get_required_role("yaml_edit"),
     )
     return {
         "status":      "pending_approval",
@@ -480,6 +558,65 @@ async def write_yaml_file(file_name: str, req: YamlWriteRequest):
         "diff_summary": diff_summary,
         "message":     "Review the change and POST /approve/{trace_id} to apply.",
     }
+
+
+@app.get("/config/skill")
+async def read_skill_md():
+    """
+    Return the SKILL.md content for the active solution.
+    Returns 404 if the solution does not use SKILL.md format.
+    """
+    from src.core.project_loader import project_config
+    path = project_config.skill_md_path
+    if not path or not os.path.isfile(path):
+        raise HTTPException(
+            status_code=404,
+            detail=f"SKILL.md not found for solution '{project_config.project_name}'"
+        )
+    with open(path, "r", encoding="utf-8") as fh:
+        content = fh.read()
+    return {"solution": project_config.project_name, "content": content}
+
+
+class SkillWriteRequest(BaseModel):
+    content: str
+
+
+@app.post("/config/skill")
+async def write_skill_md(req: SkillWriteRequest):
+    """
+    Propose overwriting the SKILL.md for the active solution and reload.
+    The write is applied immediately (no approval gate) so the editor
+    gets instant feedback — SKILL.md edits are lower-risk than production
+    YAML changes because the file is version-controlled alongside the solution.
+    """
+    from src.core.project_loader import project_config, _SOLUTIONS_DIR
+    path = os.path.join(_SOLUTIONS_DIR, project_config.project_name, "SKILL.md")
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(req.content)
+    project_config.reload(project_config.project_name)
+    return {
+        "saved": True,
+        "solution": project_config.project_name,
+        "message": "SKILL.md saved and solution reloaded.",
+    }
+
+
+@app.get("/config/approval-roles")
+async def get_approval_roles():
+    """Return configured approval roles and who belongs to each."""
+    try:
+        import yaml
+        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__)))), "config", "config.yaml")
+        with open(config_path) as f:
+            cfg = yaml.safe_load(f) or {}
+        return {
+            "approval_roles": cfg.get("approval_roles", {}),
+            "approvers": cfg.get("approvers", {}),
+        }
+    except Exception as exc:
+        return {"approval_roles": {}, "approvers": {}, "error": str(exc)}
 
 
 @app.get("/agent/roles")
@@ -518,6 +655,57 @@ async def agent_run(req: AgentRunRequest):
     except Exception as e:
         logger.error("UniversalAgent run failed: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/agents/hire")
+async def agents_hire(req: AgentHireRequest):
+    """
+    Propose hiring (creating) a new agent role in this solution.
+    Creates a STATEFUL HITL proposal — actual YAML write on POST /approve/{trace_id}.
+    """
+    import re
+    from src.core.proposal_store import RiskClass
+
+    # Validate role_id format
+    if not re.match(r'^[a-z][a-z0-9_]{1,49}$', req.role_id):
+        raise HTTPException(
+            status_code=400,
+            detail="role_id must be lowercase snake_case, 2-50 chars, starting with a letter."
+        )
+
+    # Check for duplicate role
+    roles_cfg = _get_project_config().get_prompts().get("roles", {})
+    if req.role_id in roles_cfg:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Role '{req.role_id}' already exists in this solution."
+        )
+
+    store = _get_proposal_store()
+    proposal = store.create(
+        action_type   = "agent_hire",
+        risk_class    = RiskClass.STATEFUL,
+        payload       = {
+            "role_id":       req.role_id,
+            "name":          req.name,
+            "description":   req.description,
+            "icon":          req.icon,
+            "system_prompt": req.system_prompt,
+            "task_types":    req.task_types,
+            "solution":      _get_project_config().project_name,
+        },
+        description   = f"Hire new agent role: {req.icon} {req.name} ({req.role_id})",
+        reversible    = True,
+        proposed_by   = "user",
+        required_role = _get_required_role("agent_hire"),
+    )
+    return {
+        "status":      "pending_approval",
+        "trace_id":    proposal.trace_id,
+        "description": proposal.description,
+        "expires_at":  proposal.expires_at.isoformat() if proposal.expires_at else None,
+        "message":     "POST /approve/{trace_id} to add this role to prompts.yaml + tasks.yaml.",
+    }
 
 
 @app.post("/analyze")
@@ -573,25 +761,126 @@ async def get_pending_proposals():
     }
 
 
+@app.get("/proposals/{trace_id}")
+async def get_proposal(trace_id: str):
+    """
+    Returns a single proposal by trace_id (any status).
+    Used by the Improvements page to show plan details.
+    """
+    store = _get_proposal_store()
+    proposal = store.get(trace_id)
+    if not proposal:
+        raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+    return proposal.model_dump()
+
+
+class BatchApproveRequest(BaseModel):
+    trace_ids: list[str]
+    decided_by: str = "human"
+    feedback: str = ""
+
+
+@app.post("/proposals/approve-batch")
+async def approve_batch(body: BatchApproveRequest):
+    """
+    Approve multiple proposals at once. Skips any that fail role checks.
+    Returns per-proposal results.
+    """
+    from src.core.proposal_executor import execute_approved_proposal
+    store = _get_proposal_store()
+    results = []
+    for trace_id in body.trace_ids:
+        proposal = store.get(trace_id)
+        if not proposal or proposal.status != "pending":
+            results.append({"trace_id": trace_id, "status": "skipped", "reason": "not found or not pending"})
+            continue
+        allowed, reason = _check_approver_permission(proposal.action_type, body.decided_by)
+        if not allowed:
+            results.append({"trace_id": trace_id, "status": "forbidden", "reason": reason})
+            continue
+        try:
+            approved = store.approve(trace_id, decided_by=body.decided_by, feedback=body.feedback)
+            result = await execute_approved_proposal(approved)
+            results.append({"trace_id": trace_id, "status": "approved", "result": result})
+        except Exception as exc:
+            results.append({"trace_id": trace_id, "status": "error", "reason": str(exc)})
+    return {"results": results, "count": len(results)}
+
+
 @app.post("/approve/{trace_id}")
-async def approve(trace_id: str, body: ApproveProposalRequest = ApproveProposalRequest()):
+async def approve(trace_id: str, request: Request, body: ApproveProposalRequest = ApproveProposalRequest(),
+                  background_tasks: BackgroundTasks = BackgroundTasks()):
     """
     Approve a pending proposal.
 
     For analysis proposals: records approval in audit log.
     For action proposals (yaml_edit, llm_switch, etc.): executes the action.
+    For long-running actions (implementation_plan, code_diff): execution fires in background.
 
     Args:
         trace_id: The trace ID from a previous proposal response.
     """
     from src.core.proposal_executor import execute_approved_proposal
+    from src.core.auth import optional_auth as _optional_auth
+
+    # Capture identity when auth is enabled (transparent when auth.enabled: false)
+    auth_user = await _optional_auth(request)
+
+    # Long-running action types that must run in background to avoid blocking the request
+    _BACKGROUND_TYPES = {"implementation_plan", "code_diff"}
 
     # --- Check ProposalStore first (HITL action proposals) ---
     store = _get_proposal_store()
     proposal = store.get(trace_id)
     if proposal and proposal.status == "pending":
-        approved = store.approve(trace_id, decided_by=body.decided_by, feedback=body.feedback)
-        # Execute the action
+        # Role-based approval check
+        allowed, reason = _check_approver_permission(proposal.action_type, body.decided_by)
+        if not allowed:
+            raise HTTPException(status_code=403, detail=reason)
+        approved = store.approve(trace_id, decided_by=body.decided_by, feedback=body.feedback, user=auth_user)
+
+        # Auto-update linked feature_request to in_progress
+        try:
+            db_path = _get_db_path()
+            _conn = sqlite3.connect(db_path)
+            _conn.execute(
+                "UPDATE feature_requests SET status='in_progress', updated_at=? WHERE plan_trace_id=?",
+                (datetime.now(timezone.utc).isoformat(), trace_id),
+            )
+            _conn.commit()
+            _conn.close()
+        except Exception as _e:
+            logger.warning("Could not auto-update feature request for trace_id=%s: %s", trace_id, _e)
+
+        if approved.action_type in _BACKGROUND_TYPES:
+            # Fire-and-forget: return immediately, run execution in background
+            async def _bg_exec():
+                try:
+                    result = await execute_approved_proposal(approved)
+                    _get_audit_logger().log_event(
+                        actor=body.decided_by,
+                        action_type="PROPOSAL_APPROVED",
+                        input_context=f"trace_id={trace_id} action={approved.action_type}",
+                        output_content=json.dumps(result),
+                        metadata={"trace_id": trace_id, "risk_class": approved.risk_class.value},
+                        approved_by=auth_user.name if auth_user else body.decided_by,
+                        approver_role=auth_user.role if auth_user else "",
+                        approver_email=auth_user.email if auth_user else "",
+                        approver_provider=auth_user.provider if auth_user else "",
+                    )
+                except Exception as exc:
+                    logger.error("Background execution failed for %s: %s", trace_id, exc)
+
+            import asyncio
+            asyncio.ensure_future(_bg_exec())
+            return {
+                "status": "approved",
+                "trace_id": trace_id,
+                "action_type": approved.action_type,
+                "result": {"message": "Execution started in background. Check Dashboard for code_diff proposals."},
+            }
+
+        # Execute the action synchronously (fast actions)
         try:
             result = await execute_approved_proposal(approved)
         except Exception as exc:
@@ -605,6 +894,10 @@ async def approve(trace_id: str, body: ApproveProposalRequest = ApproveProposalR
                 input_context=f"trace_id={trace_id} action={approved.action_type}",
                 output_content=json.dumps(result),
                 metadata={"trace_id": trace_id, "risk_class": approved.risk_class.value},
+                approved_by=auth_user.name if auth_user else body.decided_by,
+                approver_role=auth_user.role if auth_user else "",
+                approver_email=auth_user.email if auth_user else "",
+                approver_provider=auth_user.provider if auth_user else "",
             )
         except Exception as e:
             logger.error("Audit log failed on approve: %s", e)
@@ -643,7 +936,7 @@ async def approve(trace_id: str, body: ApproveProposalRequest = ApproveProposalR
 
 
 @app.post("/reject/{trace_id}")
-async def reject(trace_id: str, request: RejectRequest):
+async def reject(trace_id: str, http_request: Request, request: RejectRequest):
     """
     Reject a pending proposal with human feedback.
 
@@ -652,11 +945,16 @@ async def reject(trace_id: str, request: RejectRequest):
 
     Request body: {"feedback": "The real root cause is..."}
     """
+    from src.core.auth import optional_auth as _optional_auth
+
+    # Capture identity when auth is enabled (transparent when auth.enabled: false)
+    auth_user = await _optional_auth(http_request)
+
     # --- Check ProposalStore first (HITL action proposals) ---
     store = _get_proposal_store()
     proposal = store.get(trace_id)
     if proposal and proposal.status == "pending":
-        store.reject(trace_id, decided_by="human", feedback=request.feedback)
+        rejected = store.reject(trace_id, decided_by="human", feedback=request.feedback, user=auth_user)
         try:
             _get_audit_logger().log_event(
                 actor="human",
@@ -664,9 +962,21 @@ async def reject(trace_id: str, request: RejectRequest):
                 input_context=f"trace_id={trace_id} action={proposal.action_type}",
                 output_content=request.feedback,
                 metadata={"trace_id": trace_id, "risk_class": proposal.risk_class.value},
+                approved_by=auth_user.name if auth_user else "human",
+                approver_role=auth_user.role if auth_user else "",
+                approver_email=auth_user.email if auth_user else "",
+                approver_provider=auth_user.provider if auth_user else "",
             )
         except Exception as e:
             logger.error("Audit log failed on reject: %s", e)
+        # If rejecting a code_diff proposal, revert the working tree
+        if rejected and rejected.action_type == "code_diff":
+            try:
+                from src.core.proposal_executor import _revert_code_diff
+                import asyncio
+                asyncio.create_task(_revert_code_diff(rejected))
+            except Exception as _rev_exc:
+                logger.warning("code_diff revert failed: %s", _rev_exc)
         return {
             "status": "rejected",
             "trace_id": trace_id,
@@ -919,6 +1229,73 @@ async def n8n_webhook(request: Request):
         raise HTTPException(status_code=500, detail=f"Failed to queue task: {e}")
 
 
+@app.get("/queue/tasks")
+async def list_queue_tasks(
+    status: str = None,
+    source: str = None,
+    limit: int = 100,
+):
+    """
+    List all tasks in the task queue, with optional status/source filters.
+    Joins with feature_requests on plan_trace_id to include feature title and scope.
+    """
+    try:
+        db_path = _get_db_path()
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+
+        where_clauses = []
+        params: list = []
+        if status:
+            where_clauses.append("t.status = ?")
+            params.append(status)
+        if source:
+            where_clauses.append("t.source = ?")
+            params.append(source)
+
+        where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+        params.append(limit)
+
+        rows = conn.execute(
+            f"""
+            SELECT
+                t.task_id, t.task_type, t.payload, t.priority,
+                t.status, t.created_at, t.started_at, t.completed_at,
+                t.result, t.error, t.plan_trace_id, t.source,
+                fr.title  AS feature_title,
+                fr.scope  AS feature_scope
+            FROM task_queue t
+            LEFT JOIN feature_requests fr ON fr.plan_trace_id = t.plan_trace_id
+                AND t.plan_trace_id IS NOT NULL AND t.plan_trace_id != ''
+            {where_sql}
+            ORDER BY t.created_at DESC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+        conn.close()
+
+        tasks = []
+        for row in rows:
+            task = dict(row)
+            # Decode JSON payload safely
+            try:
+                task["payload"] = json.loads(task["payload"]) if task["payload"] else {}
+            except Exception:
+                task["payload"] = {}
+            # Decode JSON result safely
+            try:
+                task["result"] = json.loads(task["result"]) if task["result"] else None
+            except Exception:
+                task["result"] = task["result"]
+            tasks.append(task)
+
+        return tasks
+    except Exception as exc:
+        logger.error("list_queue_tasks error: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @app.get("/mr/open")
 async def list_open_mrs(project_id: int):
     """
@@ -1080,13 +1457,13 @@ async def generate_plan_for_request(req_id: str):
 
     scope = req.get('scope', 'solution')
     scope_context = (
-        "This is a SOLUTION feature request — it should be implemented in the active solution's codebase."
-        if scope == 'solution' else
-        "This is a SAGE FRAMEWORK improvement request — it should be implemented in the SAGE framework itself (src/, web/src/)."
+        "This is a SAGE FRAMEWORK improvement — implement in src/ and web/src/. "
+        "Output concrete file-level implementation steps."
+        if scope == 'sage' else
+        "This is a SOLUTION feature — implement in the active solution's codebase."
     )
     planner_task = (
         f"{scope_context}\n"
-        f"Feature request for the '{req['module_name']}' module.\n"
         f"Title: {req['title']}\n"
         f"Description: {req['description']}\n"
         f"Priority: {req['priority']}"
@@ -1094,26 +1471,55 @@ async def generate_plan_for_request(req_id: str):
 
     try:
         planner = _get_planner()
-        result = planner.plan_and_execute(planner_task)
+        from src.agents.planner import PlannerAgent
+        task_types = PlannerAgent.FRAMEWORK_TASK_TYPES if scope == "sage" else None
+        steps = planner.create_plan(planner_task, override_task_types=task_types)
     except Exception as e:
         logger.error("Planner failed for feature request %s: %s", req_id, e)
         raise HTTPException(status_code=500, detail=str(e))
 
-    # Update status
+    if not steps:
+        raise HTTPException(status_code=422, detail="LLM could not produce an executable plan. Try rephrasing the description.")
+
+    # Store as a ProposalStore entry (HITL — nothing executes until approved)
+    from src.core.proposal_store import RiskClass
+    store = _get_proposal_store()
+    required_role = _get_required_role("implementation_plan_sage") if scope == "sage" else None
+    proposal = store.create(
+        action_type="implementation_plan",
+        risk_class=RiskClass.STATEFUL,
+        payload={
+            "description": planner_task,
+            "steps": steps,
+            "scope": scope,
+            "feature_request_id": req_id,
+        },
+        description=f"Implementation plan: {req['title']}",
+        reversible=False,
+        proposed_by="PlannerAgent",
+        required_role=required_role,
+    )
+
     now = datetime.now(timezone.utc).isoformat()
     try:
         db_path = _get_db_path()
         conn = sqlite3.connect(db_path)
         conn.execute(
             "UPDATE feature_requests SET status='in_planning', plan_trace_id=?, updated_at=? WHERE id=?",
-            (result.get("trace_id"), now, req_id),
+            (proposal.trace_id, now, req_id),
         )
         conn.commit()
         conn.close()
     except Exception as e:
         logger.error("DB update failed after planning: %s", e)
 
-    return {"request_id": req_id, "status": "in_planning", "plan": result}
+    return {
+        "request_id": req_id,
+        "status": "in_planning",
+        "trace_id": proposal.trace_id,
+        "step_count": len(steps),
+        "plan": steps,
+    }
 
 
 @app.patch("/feedback/feature-requests/{req_id}")
@@ -1173,6 +1579,21 @@ async def llm_status():
     model_info = llm_gateway.get_model_info()
     now = datetime.now(timezone.utc).isoformat()
 
+    # --- PII filter status ---
+    import yaml as _yaml
+    _config_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "config", "config.yaml",
+    )
+    _full_cfg: dict = {}
+    try:
+        with open(_config_path, "r") as _f:
+            _full_cfg = _yaml.safe_load(_f) or {}
+    except Exception:
+        pass
+    _pii_cfg = _full_cfg.get("pii", {})
+    _dr_cfg = _full_cfg.get("data_residency", {})
+
     return {
         "provider": llm_gateway.get_provider_name(),
         "model_info": model_info,
@@ -1189,6 +1610,16 @@ async def llm_status():
             "minimal_mode": bool(os.environ.get("SAGE_MINIMAL", "") in ("1", "true", "yes")),
             "project": _get_project_config().project_name or os.environ.get("SAGE_PROJECT", ""),
         },
+        "pii_filter": {
+            "enabled":          _pii_cfg.get("enabled", False),
+            "mode":             _pii_cfg.get("mode", "redact"),
+            "entities":         _pii_cfg.get("entities", []),
+            "fail_on_detection": _pii_cfg.get("fail_on_detection", False),
+        },
+        "data_residency": {
+            "enabled": _dr_cfg.get("enabled", False),
+            "region":  _dr_cfg.get("region", "us"),
+        },
     }
 
 
@@ -1197,6 +1628,7 @@ class LLMSwitchRequest(BaseModel):
     model: Optional[str] = None   # gemini model name, GGUF path, or claude model name
     api_key: Optional[str] = None  # Anthropic API key (claude only, stored in env)
     claude_path: Optional[str] = None  # Custom path to claude.exe (claude-code only)
+    save_as_default: bool = False  # If True, persist selection to config.yaml
 
 
 @app.post("/llm/switch")
@@ -1212,17 +1644,19 @@ async def llm_switch(req: LLMSwitchRequest):
     current_provider = _get_llm_gateway().get_provider_name()
     store = _get_proposal_store()
     proposal = store.create(
-        action_type = "llm_switch",
-        risk_class  = RiskClass.EPHEMERAL,
-        payload     = {
-            "provider":    req.provider,
-            "model":       req.model,
-            "api_key":     req.api_key,
-            "claude_path": req.claude_path,
+        action_type   = "llm_switch",
+        risk_class    = RiskClass.EPHEMERAL,
+        payload       = {
+            "provider":        req.provider,
+            "model":           req.model,
+            "api_key":         req.api_key,
+            "claude_path":     req.claude_path,
+            "save_as_default": req.save_as_default,
         },
-        description = f"Switch LLM provider: {current_provider} → {req.provider}" + (f" ({req.model})" if req.model else ""),
-        reversible  = True,
-        proposed_by = "user",
+        description   = f"Switch LLM provider: {current_provider} → {req.provider}" + (f" ({req.model})" if req.model else "") + (" [save as default]" if req.save_as_default else ""),
+        reversible    = True,
+        proposed_by   = "user",
+        required_role = _get_required_role("llm_switch"),
     )
     return {
         "status":      "pending_approval",
@@ -1735,6 +2169,59 @@ async def onboarding_generate(request: Request):
         raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
 
 
+@app.post("/onboarding/session")
+async def onboarding_session_create():
+    """
+    Start a new conversational onboarding session.
+    Returns: {session_id, state, messages: [{role, content, ts}]}
+    """
+    from src.core.onboarding_session import create_session
+    session = create_session()
+    return session.to_dict()
+
+
+@app.post("/onboarding/session/{session_id}/message")
+async def onboarding_session_message(session_id: str, request: Request):
+    """
+    Send a user message to the onboarding conversation.
+    Body: {"message": str}
+    Returns: {reply, state, info, session_id}
+    """
+    from src.core.onboarding_session import send_message
+    body = await request.json()
+    user_msg = body.get("message", "").strip()
+    if not user_msg:
+        raise HTTPException(status_code=400, detail="message is required")
+    result = send_message(session_id, user_msg)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@app.post("/onboarding/session/{session_id}/generate")
+async def onboarding_session_generate(session_id: str):
+    """
+    Trigger YAML generation for the gathered info.
+    Creates a HITL proposal — approve it to write the solution files.
+    Returns: {trace_id, description, solution_name, state}
+    """
+    from src.core.onboarding_session import request_generate
+    result = request_generate(session_id)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+@app.get("/onboarding/session/{session_id}")
+async def onboarding_session_get(session_id: str):
+    """Get the current state of an onboarding session."""
+    from src.core.onboarding_session import get_session
+    session = get_session(session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found or expired.")
+    return session.to_dict()
+
+
 @app.get("/onboarding/templates")
 async def onboarding_templates():
     """
@@ -1794,12 +2281,13 @@ async def knowledge_add(request: Request):
     preview = text[:120] + ("..." if len(text) > 120 else "")
     store = _get_proposal_store()
     proposal = store.create(
-        action_type = "knowledge_add",
-        risk_class  = RiskClass.STATEFUL,
-        payload     = {"text": text, "metadata": metadata},
-        description = f"Add knowledge entry: \"{preview}\"",
-        reversible  = True,
-        proposed_by = "user",
+        action_type   = "knowledge_add",
+        risk_class    = RiskClass.STATEFUL,
+        payload       = {"text": text, "metadata": metadata},
+        description   = f"Add knowledge entry: \"{preview}\"",
+        reversible    = True,
+        proposed_by   = "user",
+        required_role = _get_required_role("knowledge_add"),
     )
     return {
         "status":   "pending_approval",
@@ -1825,12 +2313,13 @@ async def knowledge_delete(entry_id: str, note: str = ""):
     preview = str(found.get("text", ""))[:80]
     store = _get_proposal_store()
     proposal = store.create(
-        action_type = "knowledge_delete",
-        risk_class  = RiskClass.DESTRUCTIVE,
-        payload     = {"entry_id": entry_id, "preview": preview},
-        description = f"DELETE knowledge entry {entry_id}: \"{preview}\"",
-        reversible  = False,
-        proposed_by = "user",
+        action_type   = "knowledge_delete",
+        risk_class    = RiskClass.DESTRUCTIVE,
+        payload       = {"entry_id": entry_id, "preview": preview},
+        description   = f"DELETE knowledge entry {entry_id}: \"{preview}\"",
+        reversible    = False,
+        proposed_by   = "user",
+        required_role = _get_required_role("knowledge_delete"),
     )
     return {
         "status":      "pending_approval",
@@ -1855,12 +2344,13 @@ async def knowledge_import(request: Request):
     sample = entries[0].get("text", "")[:80] if entries else ""
     store = _get_proposal_store()
     proposal = store.create(
-        action_type = "knowledge_import",
-        risk_class  = RiskClass.STATEFUL,
-        payload     = {"entries": entries},
-        description = f"Bulk import {len(entries)} knowledge entries (sample: \"{sample}\")",
-        reversible  = True,
-        proposed_by = "user",
+        action_type   = "knowledge_import",
+        risk_class    = RiskClass.STATEFUL,
+        payload       = {"entries": entries},
+        description   = f"Bulk import {len(entries)} knowledge entries (sample: \"{sample}\")",
+        reversible    = True,
+        proposed_by   = "user",
+        required_role = _get_required_role("knowledge_import"),
     )
     return {
         "status":   "pending_approval",
@@ -2070,3 +2560,327 @@ async def tenant_context(request: Request):
         "collection": tenant_scoped_collection(),
         "header_set": "X-SAGE-Tenant" in request.headers,
     }
+
+
+# ---------------------------------------------------------------------------
+# Composio integration endpoints
+# ---------------------------------------------------------------------------
+
+class ComposioConnectRequest(BaseModel):
+    app: str                    # e.g. "github", "jira", "slack"
+    redirect_url: str = ""      # Optional URL to redirect after OAuth
+
+
+@app.get("/integrations/composio/status")
+async def composio_status():
+    """
+    Returns Composio availability and list of connected apps.
+    """
+    from src.integrations.composio_tools import is_available, list_connected_apps
+    available = is_available()
+    connected = list_connected_apps() if available else []
+    return {
+        "available": available,
+        "api_key_set": bool(os.environ.get("COMPOSIO_API_KEY", "")),
+        "connected_apps": connected,
+        "count": len(connected),
+    }
+
+
+@app.post("/integrations/composio/connect")
+async def composio_connect(req: ComposioConnectRequest):
+    """
+    Initiate a Composio OAuth connection for an app.
+    Returns the URL the user should visit to authorise access.
+    This creates a HITL proposal — the connection URL is provided for human action.
+    """
+    from src.integrations.composio_tools import get_connection_url, is_available
+    from src.core.proposal_store import get_proposal_store, RiskClass
+
+    if not is_available():
+        raise HTTPException(
+            status_code=503,
+            detail="Composio unavailable. Install composio-langchain and set COMPOSIO_API_KEY."
+        )
+
+    redirect = req.redirect_url or None
+    url = get_connection_url(req.app, redirect_url=redirect)
+    if not url:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not get connection URL for '{req.app}'. "
+                   "Ensure the app name is valid and your API key has permission."
+        )
+
+    store = get_proposal_store()
+    proposal = store.create(
+        action_type="composio_connect",
+        risk_class=RiskClass.EXTERNAL,
+        reversible=True,
+        proposed_by="web-ui",
+        description=f"Connect Composio app: {req.app}",
+        payload={"app": req.app, "connection_url": url},
+        required_role=_get_required_role("composio_connect"),
+    )
+    return {
+        "status": "pending_approval",
+        "trace_id": proposal.trace_id,
+        "app": req.app,
+        "connection_url": url,
+        "message": f"Visit the connection_url to authorise {req.app}. "
+                   "Then approve this proposal to register the integration.",
+    }
+
+
+@app.get("/integrations/composio/tools")
+async def composio_tools_list():
+    """
+    List tools loaded for the active solution's composio:* integrations.
+    """
+    from src.core.project_loader import project_config
+    integrations = project_config.metadata.get("integrations", [])
+    composio_apps = [i[len("composio:"):] for i in integrations if i.startswith("composio:")]
+
+    if not composio_apps:
+        return {"tools": [], "apps": [], "message": "No composio:* entries in project.yaml integrations."}
+
+    from src.integrations.composio_tools import get_composio_tools, is_available
+    if not is_available():
+        return {"tools": [], "apps": composio_apps, "available": False,
+                "message": "Composio unavailable — install composio-langchain and set COMPOSIO_API_KEY."}
+
+    tool_dict = get_composio_tools(composio_apps)
+    return {
+        "available": True,
+        "apps": composio_apps,
+        "tools": [
+            {"name": name, "description": getattr(t, "description", "")}
+            for name, t in tool_dict.items()
+        ],
+        "count": len(tool_dict),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Authentication & Access Control (T1-001)
+# ---------------------------------------------------------------------------
+
+class CreateApiKeyRequest(BaseModel):
+    name:     str
+    email:    str
+    solution: str = ""
+    role:     str = "operator"
+
+
+class AssignRoleRequest(BaseModel):
+    email:    str
+    solution: str = ""
+    role:     str
+
+
+@app.get("/auth/me")
+async def auth_me(request: Request):
+    """
+    Return the current user's identity.
+    When auth is disabled, returns the anonymous admin identity.
+    Useful for the UI to know who is authenticated and what role they have.
+    """
+    from src.core.auth import get_current_user as _get_current_user
+    user = await _get_current_user(request)
+    return {
+        "sub":      user.sub,
+        "email":    user.email,
+        "name":     user.name,
+        "role":     user.role,
+        "provider": user.provider,
+    }
+
+
+@app.post("/auth/api-keys")
+async def create_api_key_endpoint(req: CreateApiKeyRequest, request: Request):
+    """
+    Create a new API key. Requires ADMIN role.
+    Returns { id, key, name } — key is shown once, store it securely.
+    """
+    from src.core.auth import get_current_user as _get_current_user
+    from src.core.rbac import require_role, Role
+    from src.core.api_keys import create_api_key
+    from fastapi import Depends
+
+    user = await _get_current_user(request)
+    from src.core.rbac import _ROLE_RANK
+    if _ROLE_RANK.get(user.role, 0) < _ROLE_RANK.get("admin", 3):
+        raise HTTPException(status_code=403, detail="ADMIN role required to create API keys.")
+
+    solution = req.solution or _get_active_solution()
+    plain_key, key_id = create_api_key(
+        name=req.name,
+        email=req.email,
+        solution=solution,
+        role=req.role,
+    )
+    logger.info("API key created by %s: id=%s name=%s", user.email, key_id, req.name)
+    return {"id": key_id, "key": plain_key, "name": req.name}
+
+
+@app.get("/auth/api-keys")
+async def list_api_keys_endpoint(request: Request):
+    """
+    List all API keys for the active solution. Requires ADMIN role.
+    Key hashes are never returned.
+    """
+    from src.core.auth import get_current_user as _get_current_user
+    from src.core.api_keys import list_api_keys
+    from src.core.rbac import _ROLE_RANK
+
+    user = await _get_current_user(request)
+    if _ROLE_RANK.get(user.role, 0) < _ROLE_RANK.get("admin", 3):
+        raise HTTPException(status_code=403, detail="ADMIN role required.")
+
+    solution = _get_active_solution()
+    keys = list_api_keys(solution)
+    return {"api_keys": keys, "count": len(keys)}
+
+
+@app.delete("/auth/api-keys/{key_id}")
+async def revoke_api_key_endpoint(key_id: str, request: Request):
+    """Revoke an API key by ID. Requires ADMIN role."""
+    from src.core.auth import get_current_user as _get_current_user
+    from src.core.api_keys import revoke_api_key
+    from src.core.rbac import _ROLE_RANK
+
+    user = await _get_current_user(request)
+    if _ROLE_RANK.get(user.role, 0) < _ROLE_RANK.get("admin", 3):
+        raise HTTPException(status_code=403, detail="ADMIN role required.")
+
+    revoked = revoke_api_key(key_id, revoked_by=user.email or user.name)
+    if not revoked:
+        raise HTTPException(status_code=404, detail=f"API key '{key_id}' not found or already revoked.")
+    return {"revoked": True, "id": key_id}
+
+
+@app.get("/auth/roles")
+async def list_roles_endpoint(request: Request):
+    """List user role assignments for the active solution. Requires ADMIN role."""
+    from src.core.auth import get_current_user as _get_current_user
+    from src.core.rbac import list_roles, _ROLE_RANK
+
+    user = await _get_current_user(request)
+    if _ROLE_RANK.get(user.role, 0) < _ROLE_RANK.get("admin", 3):
+        raise HTTPException(status_code=403, detail="ADMIN role required.")
+
+    solution = _get_active_solution()
+    roles = list_roles(solution)
+    return {"roles": roles, "count": len(roles)}
+
+
+@app.post("/auth/roles")
+async def assign_role_endpoint(req: AssignRoleRequest, request: Request):
+    """Assign a role to a user for the active solution. Requires ADMIN role."""
+    from src.core.auth import get_current_user as _get_current_user
+    from src.core.rbac import assign_role, Role, _ROLE_RANK
+
+    user = await _get_current_user(request)
+    if _ROLE_RANK.get(user.role, 0) < _ROLE_RANK.get("admin", 3):
+        raise HTTPException(status_code=403, detail="ADMIN role required.")
+
+    try:
+        role_enum = Role(req.role)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid role '{req.role}'. Valid: viewer, operator, approver, admin.")
+
+    solution = req.solution or _get_active_solution()
+    assign_role(email=req.email, solution=solution, role=role_enum, granted_by=user.email or user.name)
+    return {"assigned": True, "email": req.email, "solution": solution, "role": req.role}
+
+
+# ===========================================================================
+# Cost Tracking Endpoints (T1-004)
+# ===========================================================================
+
+class BudgetSetRequest(BaseModel):
+    tenant: Optional[str] = None
+    solution: Optional[str] = None
+    monthly_usd: float
+
+
+@app.get("/costs/summary")
+async def costs_summary(
+    tenant: Optional[str] = None,
+    solution: Optional[str] = None,
+    period_days: int = 30,
+):
+    """
+    Return aggregated LLM cost summary.
+
+    Query params:
+      tenant:      Filter by tenant (optional)
+      solution:    Filter by solution (optional)
+      period_days: Rolling window in days (default 30)
+    """
+    try:
+        from src.core import cost_tracker
+        return cost_tracker.get_summary(tenant=tenant, solution=solution, period_days=period_days)
+    except Exception as e:
+        logger.error("costs/summary failed: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/costs/daily")
+async def costs_daily(
+    tenant: Optional[str] = None,
+    solution: Optional[str] = None,
+    period_days: int = 30,
+):
+    """
+    Return daily cost breakdown for charting.
+
+    Query params:
+      tenant:      Filter by tenant (optional)
+      solution:    Filter by solution (optional)
+      period_days: Rolling window in days (default 30)
+    """
+    try:
+        from src.core import cost_tracker
+        rows = cost_tracker.get_daily(tenant=tenant, solution=solution, period_days=period_days)
+        return {"daily": rows, "count": len(rows), "period_days": period_days}
+    except Exception as e:
+        logger.error("costs/daily failed: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/costs/budget")
+async def costs_set_budget(req: BudgetSetRequest):
+    """
+    Set a monthly budget limit for a tenant/solution.
+    Persists to the llm.budgets.per_solution section of config.yaml.
+    """
+    import yaml
+
+    config_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "config", "config.yaml",
+    )
+    try:
+        with open(config_path, "r") as f:
+            cfg = yaml.safe_load(f) or {}
+
+        llm_section = cfg.setdefault("llm", {})
+        budget_section = llm_section.setdefault("budgets", {})
+        per_solution = budget_section.setdefault("per_solution", {})
+
+        key = req.solution or req.tenant or "default"
+        per_solution[key] = req.monthly_usd
+
+        with open(config_path, "w") as f:
+            yaml.dump(cfg, f, default_flow_style=False, allow_unicode=True)
+
+        return {
+            "saved": True,
+            "key": key,
+            "monthly_usd": req.monthly_usd,
+            "message": f"Budget of ${req.monthly_usd:.2f}/month set for '{key}'.",
+        }
+    except Exception as e:
+        logger.error("costs/budget POST failed: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))

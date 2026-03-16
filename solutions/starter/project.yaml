@@ -26,6 +26,8 @@ active_modules:
   - agents
   - yaml-editor
   - live-console
+  - onboarding
+  - integrations
 
 # Compliance or quality standards this project must satisfy (optional — leave empty if none)
 compliance_standards: []
@@ -55,6 +57,45 @@ ui_labels:
   developer_page_title: "Code Reviewer"
   monitor_page_title:   "Operations Monitor"
   dashboard_subtitle:   "Project Health Overview"
+  # agent_quick_templates: per-role quick-fill buttons on the Agents page.
+  # Keys are role IDs from prompts.yaml. Each entry is a list of templates.
+  # Remove this section if your roles don't need quick templates.
+  agent_quick_templates:
+    analyst:
+      - label: "Review latest error"
+        task:  "Analyze the most recent error log and identify the root cause"
+        context: ""
+      - label: "Performance check"
+        task:  "Review system performance metrics and suggest optimisations"
+    developer:
+      - label: "Code review"
+        task:  "Review the latest code changes and flag potential issues"
+      - label: "Refactor advice"
+        task:  "Suggest improvements to the current codebase structure"
+
+# ---------------------------------------------------------------------------
+# Theme — controls sidebar, accent, and badge colours across the entire UI.
+# All values are CSS colour strings (hex, hsl, rgb, or named colours).
+# Leave this section out to use the default SAGE dark-sidebar theme.
+# ---------------------------------------------------------------------------
+# theme:
+#   sidebar_bg:         "#111827"   # sidebar background
+#   sidebar_text:       "#9ca3af"   # inactive nav item text
+#   sidebar_active_bg:  "#15803d"   # active nav item background
+#   sidebar_active_text:"#ffffff"   # active nav item text
+#   sidebar_hover_bg:   "#1f2937"   # nav item hover background
+#   sidebar_accent:     "#6366f1"   # badge / icon accent colour
+#   accent:             "#6366f1"   # primary action buttons
+#   accent_hover:       "#4f46e5"   # primary button hover
+#   badge_bg:           "#f3f4f6"   # header domain badge background
+#   badge_text:         "#374151"   # header domain badge text
+# Example — green sidebar:
+# theme:
+#   sidebar_bg:         "#14532d"
+#   sidebar_active_bg:  "#166534"
+#   sidebar_accent:     "#86efac"
+#   accent:             "#16a34a"
+#   accent_hover:       "#15803d"
 
 dashboard:
   badge_color: "bg-gray-100 text-gray-700"

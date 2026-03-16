@@ -1,0 +1,116 @@
+# ==============================================================================
+# SAGE Helm Chart — Production Overrides
+# ==============================================================================
+# Apply on top of values.yaml:
+#   helm install sage ./helm/sage \
+#     -f values.yaml \
+#     -f values.production.yaml \
+#     --set secrets.provider=vault
+# ==============================================================================
+
+# Production runs 3 backend replicas for HA and load distribution
+backend:
+  replicaCount: 3
+
+  image:
+    # Pin to a specific digest in production — never use :latest
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+  # Tighter rollout — never allow zero replicas during a deploy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+frontend:
+  replicaCount: 2
+
+  image:
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+
+# Production MUST persist data — SQLite audit log and ChromaDB must survive pod restarts
+persistence:
+  enabled: true
+  # Use a storage class that supports ReadWriteMany if running >1 backend replica
+  # with shared storage (e.g. efs, nfs, azurefile, gp3-rwo-shared).
+  # For RWO with a single writer, stick with the default gp2/premium-ssd.
+  storageClassName: ""
+  accessMode: ReadWriteOnce
+  size: 20Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+  hosts:
+    - host: sage.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: backend
+  tls:
+    enabled: true
+    secretName: sage-tls
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: true
+  # In production, keep at least 2 pods alive during voluntary disruptions
+  minAvailable: 2
+
+# Production secrets come from an external provider — not env vars
+secrets:
+  provider: vault
+  vault:
+    address: "https://vault.example.com"
+    role: "sage-production-role"
+    path: "secret/sage/production"
+
+config:
+  llmProvider: ollama
+  project: starter
+  logLevel: INFO
+
+# Spread pods across availability zones to survive a zone failure
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                  - backend
+          topologyKey: topology.kubernetes.io/zone

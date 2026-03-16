@@ -1,0 +1,18 @@
+# ==============================================================================
+# SAGE Namespace
+# ==============================================================================
+# All SAGE resources live in the sage-framework namespace for isolation.
+# This makes RBAC, NetworkPolicy, and resource quotas straightforward to apply.
+#
+# Create before helm install:
+#   kubectl apply -f deploy/k8s/namespace.yaml
+# ==============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sage-framework
+  labels:
+    # Standard label for NetworkPolicy selectors and tooling (e.g. Cilium, Calico)
+    kubernetes.io/metadata.name: sage-framework
+    app.kubernetes.io/name: sage
+    app.kubernetes.io/managed-by: helm

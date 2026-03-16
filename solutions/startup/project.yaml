@@ -25,6 +25,8 @@ active_modules:
   - llm
   - settings
   - yaml-editor
+  - live-console
+  - integrations
 
 integrations:
   - gitlab

@@ -54,7 +54,10 @@ def _auto_discover_project() -> str:
     try:
         candidates = sorted(
             d for d in os.listdir(_SOLUTIONS_DIR)
-            if os.path.isfile(os.path.join(_SOLUTIONS_DIR, d, "project.yaml"))
+            if (
+                os.path.isfile(os.path.join(_SOLUTIONS_DIR, d, "SKILL.md"))
+                or os.path.isfile(os.path.join(_SOLUTIONS_DIR, d, "project.yaml"))
+            )
         )
         return candidates[0] if candidates else ""
     except OSError:
@@ -72,6 +75,116 @@ def _load_yaml(path: str) -> dict:
             return yaml.safe_load(fh) or {}
     logger.debug("Config file not found (using defaults): %s", path)
     return {}
+
+
+def _parse_skill_md(path: str) -> tuple[dict, dict, dict, str]:
+    """
+    Parse a SKILL.md file with YAML frontmatter.
+
+    Returns (project_dict, prompts_dict, tasks_dict, skill_content_body).
+
+    Format:
+        ---
+        <YAML frontmatter>
+        ---
+        <markdown body>
+
+    The frontmatter must contain all structured config (project metadata,
+    agent_roles, tasks).  The markdown body is stored as skill_content and
+    injected into every agent system prompt as domain context.
+    """
+    if not os.path.exists(path):
+        return {}, {}, {}, ""
+
+    with open(path, "r", encoding="utf-8") as fh:
+        raw = fh.read()
+
+    # Split on the frontmatter delimiters --- \n
+    parts = raw.split("---\n", 2)
+    if len(parts) < 3:
+        # Malformed — try splitting with \r\n
+        parts = raw.split("---\r\n", 2)
+    if len(parts) < 3:
+        logger.warning("SKILL.md at %s has no valid frontmatter — treating entire file as body.", path)
+        return {}, {}, {}, raw.strip()
+
+    _, frontmatter_raw, body = parts
+    skill_content = body.strip()
+
+    try:
+        fm = yaml.safe_load(frontmatter_raw) or {}
+    except yaml.YAMLError as exc:
+        logger.error("SKILL.md frontmatter YAML parse error at %s: %s", path, exc)
+        return {}, {}, {}, skill_content
+
+    # ── Build project dict from frontmatter top-level keys ────────────────
+    project_dict = {
+        "name":                 fm.get("name", ""),
+        "version":              fm.get("version", "1.0.0"),
+        "domain":               fm.get("domain", "general"),
+        "description":          fm.get("description", ""),
+        "active_modules":       fm.get("modules", fm.get("active_modules", [])),
+        "compliance_standards": fm.get("compliance_standards", []),
+        "integrations":         fm.get("integrations", []),
+        "ui_labels":            fm.get("ui_labels", {}),
+        "dashboard":            fm.get("dashboard", {}),
+        "settings":             fm.get("settings", {}),
+    }
+    # Copy through any extra top-level keys (e.g. source_repo, tenants)
+    skip = {
+        "name", "version", "domain", "description", "modules", "active_modules",
+        "compliance_standards", "integrations", "ui_labels", "dashboard",
+        "settings", "tasks", "agent_roles",
+    }
+    for k, v in fm.items():
+        if k not in skip:
+            project_dict[k] = v
+
+    # ── Build prompts dict from agent_roles ───────────────────────────────
+    prompts_dict: dict = {}
+    agent_roles = fm.get("agent_roles", {})
+    # Standard named agents — map to the keys project_loader already knows
+    for role_key in ("analyst", "developer", "planner", "monitor"):
+        if role_key in agent_roles:
+            role_cfg = agent_roles[role_key]
+            if role_key == "analyst":
+                prompts_dict["analyst"] = {
+                    "system_prompt":       role_cfg.get("system_prompt", ""),
+                    "user_prompt_template": role_cfg.get(
+                        "user_prompt_template",
+                        "INPUT:\n{input}\n\nPAST CONTEXT:\n{context}\n\nGenerate Analysis JSON:",
+                    ),
+                    "output_schema":       role_cfg.get("output_schema", {}),
+                }
+            elif role_key == "developer":
+                prompts_dict["developer"] = {
+                    "review_system_prompt":    role_cfg.get("system_prompt", ""),
+                    "mr_create_system_prompt": role_cfg.get("mr_create_system_prompt", ""),
+                }
+            elif role_key == "planner":
+                prompts_dict["planner"] = {"system_prompt": role_cfg.get("system_prompt", "")}
+            elif role_key == "monitor":
+                prompts_dict["monitor"] = {"system_prompt": role_cfg.get("system_prompt", "")}
+
+    # Any extra roles go into prompts_dict["roles"] for UniversalAgent
+    universal_roles = {
+        k: v for k, v in agent_roles.items()
+        if k not in ("analyst", "developer", "planner", "monitor")
+    }
+    if universal_roles:
+        prompts_dict["roles"] = universal_roles
+
+    # ── Build tasks dict ──────────────────────────────────────────────────
+    tasks_raw = fm.get("tasks", {})
+    if isinstance(tasks_raw, list):
+        # Simple list of task type strings
+        tasks_dict: dict = {"task_types": tasks_raw}
+    elif isinstance(tasks_raw, dict):
+        tasks_dict = tasks_raw
+    else:
+        tasks_dict = {}
+
+    return project_dict, prompts_dict, tasks_dict, skill_content
 
 
 # ---------------------------------------------------------------------------
@@ -99,6 +212,8 @@ class ProjectConfig:
         self._project: dict = {}
         self._prompts: dict = {}
         self._tasks: dict = {}
+        self._skill_content: str = ""
+        self._skill_md_path: str = ""
         self.reload(project_name)
 
     # ------------------------------------------------------------------
@@ -115,11 +230,26 @@ class ProjectConfig:
 
         project_dir = os.path.join(_SOLUTIONS_DIR, self._name)
         self._base    = _load_yaml(os.path.join(_PROJECT_ROOT, "config", "config.yaml"))
-        self._project = _load_yaml(os.path.join(project_dir, "project.yaml"))
-        self._prompts = _load_yaml(os.path.join(project_dir, "prompts.yaml"))
-        self._tasks   = _load_yaml(os.path.join(project_dir, "tasks.yaml"))
 
-        logger.info("SAGE project loaded: '%s'  (%s)", self._name, project_dir)
+        skill_path = os.path.join(project_dir, "SKILL.md")
+        if os.path.isfile(skill_path):
+            # SKILL.md takes priority — parse frontmatter + body
+            self._project, self._prompts, self._tasks, self._skill_content = (
+                _parse_skill_md(skill_path)
+            )
+            self._skill_md_path = skill_path
+            logger.info(
+                "SAGE project loaded from SKILL.md: '%s'  (%s)",
+                self._name, skill_path,
+            )
+        else:
+            # Fall back to legacy 3-file layout
+            self._project = _load_yaml(os.path.join(project_dir, "project.yaml"))
+            self._prompts = _load_yaml(os.path.join(project_dir, "prompts.yaml"))
+            self._tasks   = _load_yaml(os.path.join(project_dir, "tasks.yaml"))
+            self._skill_content = ""
+            self._skill_md_path = ""
+            logger.info("SAGE project loaded: '%s'  (%s)", self._name, project_dir)
 
     # ------------------------------------------------------------------
     # Project name (read-only)
@@ -148,6 +278,24 @@ class ProjectConfig:
             "ui_labels":           self._project.get("ui_labels", {}),
             "dashboard":           self._project.get("dashboard", {}),
         }
+
+    # ------------------------------------------------------------------
+    # SKILL.md access
+    # ------------------------------------------------------------------
+
+    @property
+    def skill_content(self) -> str:
+        """
+        Markdown body from SKILL.md.  Non-empty only when the solution uses
+        SKILL.md format.  Agents inject this into their system prompts to
+        provide rich domain knowledge.
+        """
+        return self._skill_content
+
+    @property
+    def skill_md_path(self) -> str:
+        """Absolute path to the active SKILL.md, or empty string if not in use."""
+        return self._skill_md_path
 
     # ------------------------------------------------------------------
     # Prompt accessors — return project prompts or framework defaults

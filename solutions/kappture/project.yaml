@@ -25,6 +25,8 @@ active_modules:
   - settings
   - agents
   - yaml-editor
+  - live-console
+  - integrations
 
 compliance_standards:
   - "GDPR Article 9 (biometric data processing)"

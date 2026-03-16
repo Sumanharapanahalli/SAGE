@@ -73,9 +73,17 @@ class UniversalAgent:
                 f"Available: {list(roles.keys())}"
             )
 
-        role_name   = role_cfg.get("name", role_id)
+        role_name     = role_cfg.get("name", role_id)
         system_prompt = role_cfg.get("system_prompt", f"You are a {role_name} assistant.")
-        icon        = role_cfg.get("icon", "🤖")
+        icon          = role_cfg.get("icon", "🤖")
+        # Inject SKILL.md domain knowledge when available
+        try:
+            from src.core.project_loader import project_config as _pc
+            _skill = _pc.skill_content
+            if _skill:
+                system_prompt = system_prompt + "\n\n## Domain Skills\n" + _skill
+        except Exception:
+            pass  # never block agent execution
 
         # ── Build prompt ───────────────────────────────────────────────────
         context_block = f"\n\nAdditional context:\n{context}" if context.strip() else ""

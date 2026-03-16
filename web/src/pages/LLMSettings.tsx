@@ -11,6 +11,18 @@ interface ModelInfo {
   unlimited: boolean
 }
 
+interface PIIFilterStatus {
+  enabled: boolean
+  mode: string
+  entities: string[]
+  fail_on_detection: boolean
+}
+
+interface DataResidencyStatus {
+  enabled: boolean
+  region: string
+}
+
 interface LLMStatus {
   provider: string
   model_info: ModelInfo
@@ -27,6 +39,8 @@ interface LLMStatus {
     minimal_mode: boolean
     project: string
   }
+  pii_filter?: PIIFilterStatus
+  data_residency?: DataResidencyStatus
 }
 
 async function fetchLLMStatus(): Promise<LLMStatus> {
@@ -35,7 +49,7 @@ async function fetchLLMStatus(): Promise<LLMStatus> {
   return res.json()
 }
 
-async function switchLLM(body: { provider: string; model?: string; api_key?: string; claude_path?: string }) {
+async function switchLLM(body: { provider: string; model?: string; api_key?: string; claude_path?: string; save_as_default?: boolean }) {
   const res = await fetch('/api/llm/switch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -95,10 +109,11 @@ export default function LLMSettings() {
   const queryClient = useQueryClient()
   const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'local' | 'claude-code' | 'claude' | 'ollama'>('gemini')
   const [geminiModel, setGeminiModel] = useState('gemini-2.5-flash')
-  const [claudeModel, setClaudeModel] = useState('claude-sonnet-4-5')
+  const [claudeModel, setClaudeModel] = useState('claude-sonnet-4-6')
   const [claudeApiKey, setClaudeApiKey] = useState('')
   const [localPath, setLocalPath] = useState('')
-  const [claudePath, setClaudePath] = useState('C:\\Users\\SumanHarapanahalli.AzureAD\\.local\\bin\\claude.exe')
+  const [claudePath, setClaudePath] = useState('')
+  const [saveAsDefault, setSaveAsDefault] = useState(false)
   const [switchError, setSwitchError] = useState('')
 
   const { data, isLoading, isError } = useQuery({
@@ -271,6 +286,66 @@ export default function LLMSettings() {
         )}
       </div>
 
+      {/* PII Filter status */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-700">PII Filter</h3>
+          {data.pii_filter?.enabled ? (
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+              Active
+            </span>
+          ) : (
+            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+              Disabled
+            </span>
+          )}
+        </div>
+
+        {data.pii_filter?.enabled ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Mode</span>
+              <span className="font-mono text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                {data.pii_filter.mode}
+              </span>
+            </div>
+            {data.pii_filter.fail_on_detection && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-700">
+                Fail-on-detection enabled — prompts with PII will be rejected.
+              </div>
+            )}
+            {data.pii_filter.entities.length > 0 && (
+              <div>
+                <div className="text-xs text-gray-500 mb-1.5">Monitored entity types</div>
+                <div className="flex flex-wrap gap-1">
+                  {data.pii_filter.entities.map(entity => (
+                    <span
+                      key={entity}
+                      className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded font-mono"
+                    >
+                      {entity}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {data.data_residency?.enabled && (
+              <div className="flex items-center justify-between text-sm pt-1">
+                <span className="text-gray-500">Data Residency</span>
+                <span className="font-mono text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded uppercase">
+                  {data.data_residency.region}
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400">
+            PII detection is off. Set <code className="font-mono">pii.enabled: true</code> in{' '}
+            <code className="font-mono">config/config.yaml</code> to activate scrubbing.
+          </p>
+        )}
+      </div>
+
       {/* Switch provider */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
         <h3 className="text-sm font-semibold text-gray-700">Switch Provider</h3>
@@ -342,10 +417,10 @@ export default function LLMSettings() {
                 onChange={e => setClaudeModel(e.target.value)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
               >
-                <option value="claude-sonnet-4-5">claude-sonnet-4-5 — balanced (recommended)</option>
-                <option value="claude-sonnet-4-6">claude-sonnet-4-6 — latest Sonnet</option>
-                <option value="claude-opus-4-5">claude-opus-4-5 — highest quality</option>
+                <option value="claude-sonnet-4-6">claude-sonnet-4-6 — latest Sonnet (recommended)</option>
+                <option value="claude-opus-4-6">claude-opus-4-6 — highest quality</option>
                 <option value="claude-haiku-4-5">claude-haiku-4-5 — fastest</option>
+                <option value="claude-sonnet-4-5">claude-sonnet-4-5 — previous Sonnet</option>
               </select>
             </div>
             <div>
@@ -357,7 +432,7 @@ export default function LLMSettings() {
                 type="text"
                 value={claudePath}
                 onChange={e => setClaudePath(e.target.value)}
-                placeholder="C:\Users\...\.local\bin\claude.exe"
+                placeholder="Auto-detected (e.g. C:\Users\<you>\.local\bin\claude.exe)"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
               />
             </div>
@@ -463,6 +538,20 @@ export default function LLMSettings() {
           <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{switchError}</p>
         )}
 
+        {/* Save as default toggle */}
+        <label className="flex items-center gap-2.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={saveAsDefault}
+            onChange={e => setSaveAsDefault(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
+          />
+          <span className="text-sm text-gray-700">
+            Save as default{' '}
+            <span className="text-xs text-gray-400">(persists to config.yaml — survives restarts)</span>
+          </span>
+        </label>
+
         <button
           onClick={() =>
             switchMutation.mutate({
@@ -474,6 +563,7 @@ export default function LLMSettings() {
                    : localPath || undefined,
               api_key: selectedProvider === 'claude' ? claudeApiKey || undefined : undefined,
               claude_path: selectedProvider === 'claude-code' ? claudePath || undefined : undefined,
+              save_as_default: saveAsDefault,
             })
           }
           disabled={
@@ -485,11 +575,11 @@ export default function LLMSettings() {
                      text-sm font-medium py-2.5 rounded-lg transition-colors"
         >
           {switchMutation.isPending ? 'Proposing switch…'
-            : selectedProvider === 'gemini' ? 'Switch to Gemini CLI'
-            : selectedProvider === 'claude-code' ? 'Switch to Claude Code CLI'
-            : selectedProvider === 'claude' ? 'Switch to Claude API'
-            : selectedProvider === 'ollama' ? 'Switch to Ollama'
-            : 'Switch to Local Llama'}
+            : selectedProvider === 'gemini' ? `Switch to Gemini CLI${saveAsDefault ? ' & Save Default' : ''}`
+            : selectedProvider === 'claude-code' ? `Switch to Claude Code CLI${saveAsDefault ? ' & Save Default' : ''}`
+            : selectedProvider === 'claude' ? `Switch to Claude API${saveAsDefault ? ' & Save Default' : ''}`
+            : selectedProvider === 'ollama' ? `Switch to Ollama${saveAsDefault ? ' & Save Default' : ''}`
+            : `Switch to Local Llama${saveAsDefault ? ' & Save Default' : ''}`}
         </button>
       </div>
 

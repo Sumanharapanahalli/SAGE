@@ -12,6 +12,13 @@ import Agents from './pages/Agents'
 import Settings from './pages/Settings'
 import YamlEditor from './pages/YamlEditor'
 import LiveConsole from './pages/LiveConsole'
+import Onboarding from './pages/Onboarding'
+import Integrations from './pages/Integrations'
+import Queue from './pages/Queue'
+import AccessControl from './pages/AccessControl'
+import Costs from './pages/Costs'
+import ThemeProvider from './components/theme/ThemeProvider'
+import { AuthProvider } from './context/AuthContext'
 
 // ---------------------------------------------------------------------------
 // Standard SAGE routes — solution-agnostic.
@@ -30,6 +37,8 @@ import LiveConsole from './pages/LiveConsole'
 export default function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
+      <ThemeProvider>
       <div className="flex h-screen overflow-hidden bg-gray-50">
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
@@ -47,10 +56,17 @@ export default function App() {
               <Route path="/settings"     element={<Settings />} />
               <Route path="/yaml-editor"   element={<YamlEditor />} />
               <Route path="/live-console"  element={<LiveConsole />} />
+              <Route path="/onboarding"     element={<Onboarding />} />
+              <Route path="/integrations"  element={<Integrations />} />
+              <Route path="/queue"          element={<Queue />} />
+              <Route path="/access-control" element={<AccessControl />} />
+              <Route path="/costs"          element={<Costs />} />
             </Routes>
           </main>
         </div>
       </div>
+      </ThemeProvider>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

@@ -24,6 +24,9 @@ active_modules:
   - agents
   - llm
   - settings
+  - yaml-editor
+  - live-console
+  - integrations
 
 compliance_standards:
   - "GDPR (player data and analytics)"
