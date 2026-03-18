@@ -6,20 +6,36 @@
 # ==============================================================================
 
 task_types:
-  - ANALYZE_LOG        # Firmware / manufacturing log triage
-  - REVIEW_MR          # GitLab merge request AI review (ReAct loop)
-  - CREATE_MR          # Create GitLab MR from issue
-  - FLASH_FIRMWARE     # Flash device via J-Link MCP server
-  - MONITOR_CHECK      # Manual trigger of MonitorAgent cycle
-  - PLAN_TASK          # PlannerAgent orchestration step
+  - ANALYZE_LOG            # Firmware / manufacturing log triage
+  - REVIEW_MR              # GitLab merge request AI review (ReAct loop)
+  - CREATE_MR              # Create GitLab MR from issue
+  - FLASH_FIRMWARE         # Flash device via J-Link MCP server
+  - MONITOR_CHECK          # Manual trigger of MonitorAgent cycle
+  - PLAN_TASK              # PlannerAgent orchestration step
+  - ANALYZE_DEVICE_LOG     # Medical device diagnostic log triage
+  - REVIEW_FIRMWARE_CHANGE # IEC 62304 firmware change review
+  - GENERATE_CAPA          # ISO 13485 CAPA generation
+  - REVIEW_DHF_ENTRY       # Design History File entry review
+  - ANALYZE_ADVERSE_EVENT  # Post-market adverse event analysis
+  - REVIEW_510K_SECTION    # FDA 510(k) submission section review
+  - VALIDATE_TEST_PROTOCOL # V&V test protocol review
+  - REVIEW_RISK_ANALYSIS   # ISO 14971 risk analysis review
 
 task_descriptions:
-  ANALYZE_LOG:     "Analyze a firmware error log or manufacturing event using RAG + LLM"
-  REVIEW_MR:       "AI code review of a GitLab merge request using the ReAct loop"
-  CREATE_MR:       "Create a new GitLab merge request from a Spira/GitLab issue"
-  FLASH_FIRMWARE:  "Flash compiled firmware binary to a device via J-Link debugger"
-  MONITOR_CHECK:   "Run one monitoring cycle across Teams, Metabase, and GitLab"
-  PLAN_TASK:       "Use PlannerAgent to decompose a complex request into subtasks"
+  ANALYZE_LOG:            "Analyze a firmware error log or manufacturing event using RAG + LLM"
+  REVIEW_MR:              "AI code review of a GitLab merge request using the ReAct loop"
+  CREATE_MR:              "Create a new GitLab merge request from a Spira/GitLab issue"
+  FLASH_FIRMWARE:         "Flash compiled firmware binary to a device via J-Link debugger"
+  MONITOR_CHECK:          "Run one monitoring cycle across Teams, Metabase, and GitLab"
+  PLAN_TASK:              "Use PlannerAgent to decompose a complex request into subtasks"
+  ANALYZE_DEVICE_LOG:     "Triage a medical device diagnostic log, fault code, or error trace"
+  REVIEW_FIRMWARE_CHANGE: "Review a firmware change for IEC 62304 Class B/C compliance and MISRA correctness"
+  GENERATE_CAPA:          "Generate a corrective and preventive action (CAPA) record per ISO 13485 requirements"
+  REVIEW_DHF_ENTRY:       "Review a Design History File entry for completeness and FDA 21 CFR Part 820 compliance"
+  ANALYZE_ADVERSE_EVENT:  "Analyze a post-market adverse event report for safety signal and MDR/FSCA trigger"
+  REVIEW_510K_SECTION:    "Review a section of a 510(k) submission for substantial equivalence and completeness"
+  VALIDATE_TEST_PROTOCOL: "Review a V&V test protocol for IEC 62304 coverage and acceptance criteria adequacy"
+  REVIEW_RISK_ANALYSIS:   "Review an ISO 14971 risk analysis entry for FMEA completeness and risk acceptability"
 
 # Payload schemas per task type (used for validation and UI hints)
 task_payloads:
@@ -44,3 +60,59 @@ task_payloads:
   PLAN_TASK:
     description: "string — natural language task description for the planner"
     priority:    "integer 1-10 (default: 5)"
+
+  ANALYZE_DEVICE_LOG:
+    required:
+      - log_entry: "string — raw device log, fault code, or diagnostic output"
+    optional:
+      - device_model: "string — device model or part number"
+      - software_version: "string — device software version string"
+
+  REVIEW_FIRMWARE_CHANGE:
+    required:
+      - change_description: "string — firmware change description, diff, or anomaly report"
+    optional:
+      - software_class: "string — IEC 62304 software safety class (A/B/C)"
+      - component: "string — affected firmware module or component"
+
+  GENERATE_CAPA:
+    required:
+      - nonconformance_description: "string — description of the nonconformance or deviation"
+    optional:
+      - source: "string — e.g. 'audit finding', 'complaint', 'manufacturing deviation'"
+      - iso_clause: "string — ISO 13485 clause reference"
+
+  REVIEW_DHF_ENTRY:
+    required:
+      - dhf_entry: "string — DHF document excerpt or description of the entry to review"
+    optional:
+      - design_phase: "string — e.g. 'design input', 'design output', 'design verification'"
+      - regulation_ref: "string — applicable regulation (e.g. '21 CFR 820.30')"
+
+  ANALYZE_ADVERSE_EVENT:
+    required:
+      - event_description: "string — adverse event report or complaint description"
+    optional:
+      - device_model: "string — device model involved in the event"
+      - patient_impact: "string — reported patient impact or injury"
+
+  REVIEW_510K_SECTION:
+    required:
+      - section_text: "string — 510(k) submission section to review"
+    optional:
+      - section_name: "string — e.g. 'Device Description', 'Substantial Equivalence', 'Performance Testing'"
+      - predicate_device: "string — predicate device name or 510(k) number"
+
+  VALIDATE_TEST_PROTOCOL:
+    required:
+      - protocol_text: "string — test protocol, test case, or test report to review"
+    optional:
+      - software_class: "string — IEC 62304 software safety class (A/B/C)"
+      - test_type: "string — 'unit' | 'integration' | 'system' | 'usability'"
+
+  REVIEW_RISK_ANALYSIS:
+    required:
+      - risk_entry: "string — FMEA row, hazard analysis entry, or risk control description"
+    optional:
+      - risk_matrix_ref: "string — reference to the project risk acceptability matrix"
+      - device_function: "string — device function or use scenario being analyzed"

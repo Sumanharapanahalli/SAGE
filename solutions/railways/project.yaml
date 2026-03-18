@@ -1,0 +1,80 @@
+# ==============================================================================
+# SAGE Solution — Railway Systems & Signalling Team
+# ==============================================================================
+# Ready-to-use template for railway engineering teams working on signalling,
+# TCMS, traction, and safety-critical onboard systems.
+# Standards: EN 50128, EN 50129, EN 50126, CENELEC, IEC 62280
+# ==============================================================================
+
+name: "Railway Systems & Signalling Team"
+version: "1.0.0"
+domain: "railways"
+description: >
+  AI agent system for railway engineering teams building signalling, ETCS/ERTMS,
+  traction, and onboard control systems. Agents triage fault logs and maintenance
+  reports, review safety-critical signalling changes, support RAMS analysis and
+  safety case reviews, and ensure traceability across CENELEC SIL-2/3/4 lifecycles.
+
+active_modules:
+  - dashboard
+  - analyst
+  - developer
+  - monitor
+  - audit
+  - improvements
+  - llm
+  - settings
+  - agents
+  - yaml-editor
+  - onboarding
+
+compliance_standards:
+  - "EN 50128:2011+A1:2020 (Railway Software for Control and Protection Systems)"
+  - "EN 50129:2018 (Railway Safety-Related Electronic Systems)"
+  - "EN 50126-1:2017 (Railway RAMS — Specification and Demonstration)"
+  - "EN 50126-2:2017 (Railway RAMS — Systems Approach)"
+  - "IEC 62280:2014 (Railway Communication Security)"
+  - "UNISIG SUBSET-026 (ETCS System Requirements Specification)"
+
+integrations: []
+
+settings:
+  memory:
+    collection_name: "railways_knowledge"
+  system:
+    max_concurrent_tasks: 1
+
+ui_labels:
+  analyst_page_title:   "Railway Fault & Event Analyzer"
+  analyst_input_label:  "Paste fault log, ETCS event, maintenance report, or SCADA alarm"
+  developer_page_title: "Safety-Critical Software Reviewer"
+  monitor_page_title:   "Railway Operations Monitor"
+  dashboard_subtitle:   "Railway Systems Team — Safety & Operations Health"
+  agent_quick_templates:
+    signalling_engineer:
+      - label: "ETCS fault analysis"
+        task:  "Analyze this ETCS onboard fault log and identify the root cause and affected subsystem"
+        context: ""
+      - label: "Interlocking change review"
+        task:  "Review this interlocking logic change for safety implications and EN 50128 compliance"
+    safety_assurance_engineer:
+      - label: "HAZOP review"
+        task:  "Review this HAZOP worksheet entry for completeness and correct severity/likelihood ratings"
+      - label: "Safety case gap analysis"
+        task:  "Analyze this EN 50129 safety case section for missing objective evidence"
+
+dashboard:
+  badge_color: "bg-red-100 text-red-800"
+  context_color: "border-red-200 bg-red-50"
+  context_items:
+    - label: "Systems"
+      description: "ETCS/ERTMS, interlocking, TCMS, traction, communications, PIS"
+    - label: "Standards"
+      description: "EN 50128, EN 50129, EN 50126, CENELEC, IEC 62280"
+    - label: "Critical Rule"
+      description: "SIL-3/4 proposals require independent safety assessor review — no autonomous action"
+  quick_actions:
+    - { label: "Analyze Fault",      route: "/analyst",   description: "Triage fault log or SCADA alarm" }
+    - { label: "Review Change",      route: "/developer", description: "Signalling or software change review" }
+    - { label: "System Monitor",     route: "/monitor",   description: "Fleet and operations health" }
+    - { label: "Specialist Agents",  route: "/agents",    description: "Signalling, safety, and maintenance roles" }

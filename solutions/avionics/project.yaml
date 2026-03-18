@@ -1,0 +1,81 @@
+# ==============================================================================
+# SAGE Solution — Avionics & Aerospace Team
+# ==============================================================================
+# Ready-to-use template for avionics software and systems engineering teams.
+# Standards: DO-178C, DO-254, ARP4754A, FAA Part 25, EASA CS-25, ARINC 653
+# ==============================================================================
+
+name: "Avionics & Aerospace Team"
+version: "1.0.0"
+domain: "avionics"
+description: >
+  AI agent system for avionics software and systems engineering teams developing
+  DO-178C DAL A-D software, DO-254 hardware design assurance, and ARP4754A system
+  development for fixed-wing and rotary aircraft. Agents analyze flight data and
+  avionics faults, review software and ICD changes, support airworthiness certification,
+  and maintain traceability across the full certification evidence package.
+
+active_modules:
+  - dashboard
+  - analyst
+  - developer
+  - monitor
+  - audit
+  - improvements
+  - llm
+  - settings
+  - agents
+  - yaml-editor
+  - onboarding
+
+compliance_standards:
+  - "DO-178C (Software Considerations in Airborne Systems and Equipment Certification)"
+  - "DO-254 (Design Assurance Guidance for Airborne Electronic Hardware)"
+  - "ARP4754A (Guidelines for Development of Civil Aircraft and Systems)"
+  - "DO-160G (Environmental Conditions and Test Procedures for Airborne Equipment)"
+  - "FAA Part 25 (Airworthiness Standards — Transport Category Airplanes)"
+  - "EASA CS-25 (Certification Specifications for Large Aeroplanes)"
+  - "ARINC 653 (Avionics Application Software Standard Interface)"
+
+integrations: []
+
+settings:
+  memory:
+    collection_name: "avionics_knowledge"
+  system:
+    max_concurrent_tasks: 1
+
+ui_labels:
+  analyst_page_title:   "Avionics Fault & Flight Data Analyzer"
+  analyst_input_label:  "Paste avionics fault log, flight data excerpt, PIREP, or test result"
+  developer_page_title: "DO-178C Software Reviewer"
+  monitor_page_title:   "Avionics System Monitor"
+  dashboard_subtitle:   "Avionics Team — Certification & Engineering Health"
+  agent_quick_templates:
+    avionics_software_engineer:
+      - label: "DO-178C coverage review"
+        task:  "Review the structural coverage analysis report for completeness against DAL-B requirements"
+        context: ""
+      - label: "ARINC 653 partition review"
+        task:  "Review this ARINC 653 partition configuration for scheduling correctness and health monitoring"
+    airworthiness_engineer:
+      - label: "Compliance matrix review"
+        task:  "Review the means of compliance matrix for FAA Part 25 Subpart F requirements"
+      - label: "STC impact assessment"
+        task:  "Assess whether this avionics modification requires a new STC or amendment to existing"
+
+dashboard:
+  badge_color: "bg-sky-100 text-sky-800"
+  context_color: "border-sky-200 bg-sky-50"
+  context_items:
+    - label: "Certification Basis"
+      description: "DO-178C, DO-254, ARP4754A — DAL A through D software and hardware"
+    - label: "Standards"
+      description: "FAA Part 25, EASA CS-25, DO-160G, ARINC 653"
+    - label: "Critical Rule"
+      description: "DAL-A proposals require DER/CVE review — no autonomous certification action"
+  quick_actions:
+    - { label: "Analyze Fault",        route: "/analyst",   description: "Triage avionics fault or flight data" }
+    - { label: "Review Software",      route: "/developer", description: "DO-178C code or ICD review" }
+    - { label: "System Monitor",       route: "/monitor",   description: "Test campaign and cert health" }
+    - { label: "Specialist Agents",    route: "/agents",    description: "Certification, systems, and flight test roles" }

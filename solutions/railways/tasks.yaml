@@ -1,0 +1,95 @@
+# ==============================================================================
+# SAGE Framework — Task Types: railways
+# ==============================================================================
+# Defines valid task types for the railway systems and signalling domain.
+# Used by the TaskQueue dispatcher and PlannerAgent validation.
+# ==============================================================================
+
+task_types:
+  - ANALYZE_FAULT_LOG          # Railway fault log or SCADA alarm triage
+  - REVIEW_SIGNALLING_CHANGE   # Signalling or interlocking change review
+  - ANALYZE_TRACTION_EVENT     # Traction or propulsion system event analysis
+  - REVIEW_SAFETY_CASE         # Safety case or HAZOP worksheet review
+  - ANALYZE_MAINTENANCE_REPORT # CBM or maintenance report analysis
+  - VALIDATE_TEST_PROCEDURE    # Test specification or HIL/SIL result review
+  - REVIEW_MR                  # Software change merge request review
+  - MONITOR_CHECK              # Manual monitoring cycle trigger
+  - PLAN_TASK                  # PlannerAgent orchestration step
+
+task_descriptions:
+  ANALYZE_FAULT_LOG:          "Triage a railway fault log, TCMS event, or SCADA alarm to identify root cause and severity"
+  REVIEW_SIGNALLING_CHANGE:   "Review a signalling logic or interlocking table change for safety and EN 50128 compliance"
+  ANALYZE_TRACTION_EVENT:     "Analyze a traction fault code, inverter event, or wheel-slip incident"
+  REVIEW_SAFETY_CASE:         "Review a safety case section, HAZOP worksheet, or FMEA entry for EN 50129 completeness"
+  ANALYZE_MAINTENANCE_REPORT: "Analyze a CBM report, maintenance work order, or component health report"
+  VALIDATE_TEST_PROCEDURE:    "Review a test specification, HIL/SIL test result, or V&V evidence for SIL coverage"
+  REVIEW_MR:                  "AI code review of a safety-critical software change against EN 50128 requirements"
+  MONITOR_CHECK:              "Run one monitoring cycle across SCADA, fleet telemetry, and CI/CD integrations"
+  PLAN_TASK:                  "Use PlannerAgent to decompose a complex request into atomic subtasks"
+
+task_payloads:
+  ANALYZE_FAULT_LOG:
+    required:
+      - log_entry: "string — raw fault log, TCMS event list, or SCADA alarm description"
+    optional:
+      - subsystem: "string — e.g. 'ETCS', 'TCMS', 'traction', 'doors', 'communications'"
+      - vehicle_id: "string — vehicle or train set identifier"
+      - location: "string — line section or infrastructure reference"
+
+  REVIEW_SIGNALLING_CHANGE:
+    required:
+      - change_description: "string — description of the signalling or interlocking change"
+    optional:
+      - sil_level: "string — SIL level of the affected function (SIL-1 to SIL-4)"
+      - affected_subsystem: "string — e.g. 'interlocking', 'ETCS OBU', 'ETCS RBC'"
+      - change_ref: "string — change request or modification notice reference"
+
+  ANALYZE_TRACTION_EVENT:
+    required:
+      - event_data: "string — traction fault code, TCMS event, or inverter alarm"
+    optional:
+      - vehicle_id: "string — vehicle or consist identifier"
+      - propulsion_type: "string — e.g. 'AC induction', 'PMSM', 'diesel-electric'"
+      - operating_context: "string — speed, gradient, load at time of event"
+
+  REVIEW_SAFETY_CASE:
+    required:
+      - document_excerpt: "string — safety case section, HAZOP entry, or FMEA row"
+    optional:
+      - standard_ref: "string — applicable standard clause (e.g. EN 50129 Clause 5.3)"
+      - sil_target: "string — target SIL level"
+      - review_scope: "string — 'hazop' | 'fmea' | 'fta' | 'safety_case' | 'rams'"
+
+  ANALYZE_MAINTENANCE_REPORT:
+    required:
+      - report_text: "string — maintenance report, CBM alert, or work order description"
+    optional:
+      - component: "string — component or subsystem being maintained"
+      - maintenance_type: "string — 'preventive' | 'corrective' | 'condition-based'"
+      - vehicle_id: "string — vehicle or infrastructure identifier"
+
+  VALIDATE_TEST_PROCEDURE:
+    required:
+      - procedure_text: "string — test specification, test case, or test result summary"
+    optional:
+      - sil_level: "string — SIL level requiring V&V (SIL-1 to SIL-4)"
+      - test_type: "string — 'hil' | 'sil' | 'dynamic' | 'static_analysis'"
+      - requirements_ref: "string — requirements specification reference"
+
+  REVIEW_MR:
+    required:
+      - project_id: "string — project identifier"
+      - mr_iid: "integer — merge request or change request identifier"
+    optional:
+      - sil_level: "string — SIL level of the modified software"
+      - standard_ref: "string — applicable EN 50128 software integrity level"
+
+  MONITOR_CHECK:
+    optional:
+      - source: "string — 'scada' | 'fleet' | 'ci' | 'all' (default: all)"
+
+  PLAN_TASK:
+    required:
+      - description: "string — natural language task description for the planner"
+    optional:
+      - priority: "integer 1-10 (default: 5)"

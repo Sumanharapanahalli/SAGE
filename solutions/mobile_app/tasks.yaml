@@ -1,0 +1,93 @@
+# ==============================================================================
+# SAGE Framework — Task Types: mobile_app
+# ==============================================================================
+# Defines valid task types for the mobile app development domain.
+# Used by the TaskQueue dispatcher and PlannerAgent validation.
+# ==============================================================================
+
+task_types:
+  - ANALYZE_CRASH_REPORT      # iOS or Android crash report triage
+  - REVIEW_PULL_REQUEST       # AI code review of a pull request
+  - ANALYZE_ANR               # Android ANR trace analysis
+  - REVIEW_APP_STORE_REVIEW   # App Store or Play Store user review analysis
+  - ANALYZE_PERFORMANCE_TRACE # Performance or memory trace analysis
+  - PLAN_RELEASE              # Mobile app release checklist planning
+  - REVIEW_UI_CHANGE          # UI/UX change review against platform guidelines
+  - MONITOR_CHECK             # Manual monitoring cycle trigger
+  - PLAN_TASK                 # PlannerAgent orchestration step
+
+task_descriptions:
+  ANALYZE_CRASH_REPORT:      "Symbolicate and triage an iOS or Android crash report from Crashlytics, Sentry, or raw format"
+  REVIEW_PULL_REQUEST:       "AI code review of a mobile pull request for memory safety, thread safety, and platform compliance"
+  ANALYZE_ANR:               "Analyze an Android ANR trace to identify the blocking main-thread operation"
+  REVIEW_APP_STORE_REVIEW:   "Analyze App Store or Google Play user reviews for sentiment, bugs, and policy risks"
+  ANALYZE_PERFORMANCE_TRACE: "Analyze a performance trace for frame drops, memory pressure, or battery drain"
+  PLAN_RELEASE:              "Generate a mobile app release checklist covering testing, signing, staged rollout, and monitoring"
+  REVIEW_UI_CHANGE:          "Review a UI/UX change for compliance with Apple HIG, Material Design, and accessibility guidelines"
+  MONITOR_CHECK:             "Run one monitoring cycle across Crashlytics, App Store Connect, Play Console, and CI/CD"
+  PLAN_TASK:                 "Use PlannerAgent to decompose a complex request into atomic subtasks"
+
+task_payloads:
+  ANALYZE_CRASH_REPORT:
+    required:
+      - crash_report: "string — raw crash report, symbolicated stack trace, or Crashlytics event"
+    optional:
+      - platform: "string — 'ios' | 'android' | 'flutter'"
+      - app_version: "string — app version string"
+      - dsym_available: "boolean — whether dSYM files are available for symbolication"
+
+  REVIEW_PULL_REQUEST:
+    required:
+      - project_id: "string — GitHub/GitLab project identifier"
+      - pr_number: "integer — pull request number"
+    optional:
+      - platform: "string — 'ios' | 'android' | 'flutter' | 'all'"
+      - focus_area: "string — specific concern (e.g. 'memory', 'privacy', 'performance')"
+
+  ANALYZE_ANR:
+    required:
+      - anr_trace: "string — raw Android ANR trace from /data/anr/traces.txt or Play Console"
+    optional:
+      - app_version: "string — app version string"
+      - device_info: "string — device model and Android version"
+
+  REVIEW_APP_STORE_REVIEW:
+    required:
+      - review_text: "string — user review text from App Store Connect or Play Console"
+    optional:
+      - store: "string — 'appstore' | 'playstore'"
+      - rating: "integer — star rating (1-5)"
+      - app_version: "string — app version the review refers to"
+
+  ANALYZE_PERFORMANCE_TRACE:
+    required:
+      - trace_data: "string — performance trace output, profiler export, or summary metrics"
+    optional:
+      - platform: "string — 'ios' | 'android' | 'flutter'"
+      - trace_type: "string — 'memory' | 'cpu' | 'battery' | 'network' | 'frames'"
+
+  PLAN_RELEASE:
+    required:
+      - release_description: "string — description of what this release contains"
+    optional:
+      - platforms: "list — ['ios', 'android', 'flutter'] (default: all)"
+      - release_type: "string — 'patch' | 'minor' | 'major'"
+      - staged_rollout: "boolean — whether to use phased/staged rollout"
+
+  REVIEW_UI_CHANGE:
+    required:
+      - change_description: "string — description of the UI/UX change"
+    optional:
+      - platform: "string — 'ios' | 'android' | 'flutter'"
+      - screenshots: "string — description or reference to screenshots"
+      - accessibility_required: "boolean — whether WCAG/accessibility review is needed"
+
+  MONITOR_CHECK:
+    optional:
+      - source: "string — 'crashlytics' | 'appstore' | 'playstore' | 'ci' | 'all' (default: all)"
+
+  PLAN_TASK:
+    required:
+      - description: "string — natural language task description for the planner"
+    optional:
+      - priority: "integer 1-10 (default: 5)"
