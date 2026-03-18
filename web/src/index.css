@@ -9,38 +9,120 @@
    ThemeProvider.tsx reads those values and writes them to document.documentElement
    at runtime, enabling instant theme switching without page reload.
 
-   Solutions without a `theme:` block get these defaults — the standard SAGE
-   dark-sidebar / indigo-accent appearance.
+   Solutions without a `theme:` block get these defaults — the Paperclip-style
+   sharp zinc/slate aesthetic.
    ────────────────────────────────────────────────────────────────────────── */
+
+/* Sharp aesthetic: zero border-radius everywhere */
+* {
+  border-radius: 0 !important;
+}
+
 :root {
   /* Sidebar */
-  --sage-sidebar-bg:          #111827;   /* gray-900 */
-  --sage-sidebar-text:        #9ca3af;   /* gray-400 */
-  --sage-sidebar-active-bg:   #15803d;   /* green-700 */
-  --sage-sidebar-active-text: #ffffff;
-  --sage-sidebar-hover-bg:    #1f2937;   /* gray-800 */
-  --sage-sidebar-accent:      #4ade80;   /* green-400 — logo flash + ping */
+  --sage-sidebar-bg:          #18181b;   /* zinc-900 */
+  --sage-sidebar-text:        #a1a1aa;   /* zinc-400 */
+  --sage-sidebar-active-bg:   transparent;
+  --sage-sidebar-active-text: #f4f4f5;   /* zinc-100 */
+  --sage-sidebar-hover-bg:    #27272a;   /* zinc-800 */
+  --sage-sidebar-accent:      #71717a;   /* zinc-500 */
 
   /* Primary accent — buttons, focused inputs, selected cards */
-  --sage-accent:              #6366f1;   /* indigo-500 */
-  --sage-accent-hover:        #4f46e5;   /* indigo-600 */
-  --sage-accent-light:        #eef2ff;   /* indigo-50 */
+  --sage-accent:              #3f3f46;   /* zinc-700 */
+  --sage-accent-hover:        #52525b;   /* zinc-600 */
+  --sage-accent-light:        #f4f4f5;   /* zinc-100 */
   --sage-accent-text:         #ffffff;
 
   /* Domain badge in header */
-  --sage-badge-bg:            #f3f4f6;   /* gray-100 */
-  --sage-badge-text:          #4b5563;   /* gray-600 */
+  --sage-badge-bg:            #27272a;   /* zinc-800 */
+  --sage-badge-text:          #a1a1aa;   /* zinc-400 */
+
+  /* Company rail */
+  --sage-rail-bg:             #09090b;   /* zinc-950 */
+  --sage-rail-text:           #71717a;   /* zinc-500 */
+  --sage-rail-active:         #f4f4f5;   /* zinc-100 */
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 font-sans;
+  @apply bg-zinc-50 text-zinc-900 font-sans;
 }
 
-/* Nav item hover — references CSS variable so solution themes work on hover too */
+/* Nav item hover */
 .sage-nav-item {
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.1s, color 0.1s;
 }
 .sage-nav-item:hover {
   background-color: var(--sage-sidebar-hover-bg);
   color: var(--sage-sidebar-active-text);
+}
+
+/* Active nav item: bold text + left accent border, no background pill */
+.sage-nav-item-active {
+  color: var(--sage-sidebar-active-text);
+  font-weight: 600;
+  border-left: 2px solid #f4f4f5;
+  background-color: transparent;
+}
+
+/* Group label in sidebar */
+.sage-nav-group {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #52525b;
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+/* Command palette overlay */
+.sage-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+}
+
+.sage-palette-box {
+  width: 100%;
+  max-width: 560px;
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+
+.sage-palette-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #3f3f46;
+  color: #f4f4f5;
+  font-size: 0.9rem;
+  padding: 0.875rem 1rem;
+  outline: none;
+}
+
+.sage-palette-input::placeholder {
+  color: #52525b;
+}
+
+.sage-palette-result {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #a1a1aa;
+  transition: background-color 0.1s;
+}
+
+.sage-palette-result:hover,
+.sage-palette-result.active {
+  background-color: #27272a;
+  color: #f4f4f5;
 }

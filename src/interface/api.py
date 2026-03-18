@@ -13,6 +13,7 @@ Endpoints:
   POST /mr/review             - Review a merge request
   GET  /monitor/status        - Monitor agent status
   POST /webhook/teams         - Receive Teams webhook notifications
+  POST /swe/task              - Submit autonomous SWE task (open-swe pattern)
 """
 
 import json
@@ -1296,6 +1297,65 @@ async def list_queue_tasks(
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.get("/queue/status")
+async def get_queue_status():
+    """
+    Returns real-time queue summary including parallel execution state.
+
+    Response fields:
+      pending_count:   Tasks waiting to be dispatched.
+      parallel_mode:   Whether parallel wave execution is currently active.
+      active_wave:     Current wave number (0 when idle).
+      wave_size:       Number of tasks in the current wave (0 when idle).
+      parallel_enabled: Whether the parallel runner is configured as enabled.
+      max_workers:     Configured thread pool size.
+    """
+    try:
+        from src.core.queue_manager import task_queue, parallel_runner
+        return {
+            "pending_count": task_queue.get_pending_count(),
+            "parallel_mode": parallel_runner.parallel_active,
+            "active_wave": parallel_runner.active_wave,
+            "wave_size": parallel_runner.wave_size,
+            "parallel_enabled": parallel_runner.config.parallel_enabled,
+            "max_workers": parallel_runner.config.max_workers,
+        }
+    except Exception as exc:
+        logger.error("queue/status error: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/queue/config")
+async def set_queue_config(max_workers: int = 4, parallel_enabled: bool = True):
+    """
+    Adjust parallel execution settings at runtime.
+
+    Query / body params:
+      max_workers:      Max threads in the wave executor pool (min 1).
+      parallel_enabled: Set false to revert all solutions to single-lane
+                        sequential execution (compliance solutions are always
+                        sequential regardless of this flag).
+
+    Returns the updated configuration.
+    """
+    try:
+        from src.core.queue_manager import parallel_runner
+        parallel_runner.config.max_workers = max_workers
+        parallel_runner.config.parallel_enabled = parallel_enabled
+        logger.info(
+            "Queue config updated: max_workers=%d parallel_enabled=%s",
+            parallel_runner.config.max_workers,
+            parallel_runner.config.parallel_enabled,
+        )
+        return {
+            "status": "updated",
+            "config": parallel_runner.config.to_dict(),
+        }
+    except Exception as exc:
+        logger.error("queue/config error: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @app.get("/mr/open")
 async def list_open_mrs(project_id: int):
     """
@@ -1707,6 +1767,195 @@ async def mcp_invoke_tool(request: Request):
 
 
 # ---------------------------------------------------------------------------
+# Workflow Diagram Endpoints — visual Mermaid diagrams for all solutions
+# ---------------------------------------------------------------------------
+
+def _build_mermaid_from_source(source: str) -> str:
+    """
+    Fallback: parse a LangGraph workflow Python source file and build a
+    Mermaid flowchart string from add_node / add_edge / set_entry_point calls.
+    """
+    import re
+    nodes = re.findall(r'graph\.add_node\(["\'](\w+)["\']', source)
+    raw_edges = re.findall(r'graph\.add_edge\(["\'](\w+)["\'],\s*["\'](\w+)["\']', source)
+    entry = re.findall(r'graph\.set_entry_point\(["\'](\w+)["\']', source)
+    # END edges
+    end_edges = re.findall(r'graph\.add_edge\(["\'](\w+)["\'],\s*END\b', source)
+
+    if not nodes:
+        return "graph TD\n    A[No nodes found]"
+
+    lines = ["graph TD"]
+    # entry → first node label
+    if entry:
+        lines.append(f"    __start__(( )) --> {entry[0]}")
+    for src, dst in raw_edges:
+        lines.append(f"    {src} --> {dst}")
+    for src in end_edges:
+        lines.append(f"    {src} --> __end__(( ))")
+
+    # Label each node
+    node_labels = "\n    ".join(f'{n}["{n}"]' for n in nodes)
+    lines.append(f"    {node_labels}")
+    return "\n".join(lines)
+
+
+def _get_solutions_dir() -> str:
+    try:
+        from src.core.project_loader import _SOLUTIONS_DIR
+        return _SOLUTIONS_DIR
+    except Exception:
+        return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__)))), "solutions")
+
+
+def _discover_all_workflow_diagrams() -> list:
+    """
+    Walk solutions/*/workflows/*.py, load each workflow, and extract a
+    Mermaid diagram string. Returns a list of workflow descriptor dicts.
+    """
+    import importlib.util
+    import sys
+
+    solutions_dir = _get_solutions_dir()
+    results = []
+
+    if not os.path.isdir(solutions_dir):
+        return results
+
+    for solution_name in sorted(os.listdir(solutions_dir)):
+        solution_path = os.path.join(solutions_dir, solution_name)
+        if not os.path.isdir(solution_path):
+            continue
+
+        # Check project.yaml for manual workflow_diagram override
+        project_yaml_path = os.path.join(solution_path, "project.yaml")
+        yaml_diagram_override = None
+        try:
+            import yaml
+            with open(project_yaml_path) as f:
+                pdata = yaml.safe_load(f) or {}
+            yaml_diagram_override = pdata.get("workflow_diagram")
+        except Exception:
+            pass
+
+        workflows_dir = os.path.join(solution_path, "workflows")
+        if not os.path.isdir(workflows_dir):
+            continue
+
+        for filename in sorted(os.listdir(workflows_dir)):
+            if not filename.endswith(".py") or filename.startswith("_"):
+                continue
+
+            workflow_name = filename[:-3]
+            workflow_path = os.path.join(workflows_dir, filename)
+
+            # Read source for fallback parsing and description extraction
+            try:
+                with open(workflow_path, encoding="utf-8", errors="replace") as f:
+                    source = f.read()
+            except Exception:
+                continue
+
+            if "StateGraph" not in source:
+                continue
+
+            mermaid_diagram = None
+            node_count = 0
+
+            # 1. Try yaml override (per-solution, applies to all workflows)
+            if yaml_diagram_override:
+                mermaid_diagram = str(yaml_diagram_override)
+
+            # 2. Try draw_mermaid() from the compiled workflow object
+            if not mermaid_diagram:
+                try:
+                    # Ensure solution dir is importable
+                    if solution_path not in sys.path:
+                        sys.path.insert(0, solution_path)
+
+                    spec = importlib.util.spec_from_file_location(
+                        f"_sage_wf_preview_{solution_name}_{workflow_name}",
+                        workflow_path,
+                    )
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    graph = getattr(mod, "workflow", None)
+                    if graph is not None:
+                        mermaid_diagram = graph.get_graph().draw_mermaid()
+                        # Count nodes
+                        try:
+                            node_count = len(graph.get_graph().nodes)
+                        except Exception:
+                            pass
+                except Exception:
+                    pass  # Fall through to static parse
+
+            # 3. Static regex fallback
+            if not mermaid_diagram:
+                mermaid_diagram = _build_mermaid_from_source(source)
+
+            # Count nodes from Mermaid string if not already set
+            if node_count == 0:
+                import re
+                node_count = len(re.findall(r'\b\w+\[', mermaid_diagram))
+
+            # Extract description from module docstring
+            import re
+            description = ""
+            docmatch = re.match(r'"""(.*?)"""', source, re.DOTALL)
+            if docmatch:
+                first_line = docmatch.group(1).strip().split("\n")[0].strip()
+                description = first_line[:200] if first_line else ""
+
+            results.append({
+                "solution": solution_name,
+                "workflow_name": workflow_name,
+                "mermaid_diagram": mermaid_diagram,
+                "node_count": node_count,
+                "description": description,
+            })
+
+    return results
+
+
+@app.get("/workflows")
+async def list_workflow_diagrams():
+    """
+    Discover all LangGraph workflow files across all solutions and return
+    their Mermaid diagrams. Diagrams are generated from the compiled
+    StateGraph (draw_mermaid) or parsed from source as a fallback.
+
+    Returns: list of {solution, workflow_name, mermaid_diagram, node_count, description}
+    """
+    try:
+        workflows = _discover_all_workflow_diagrams()
+        return {"workflows": workflows, "count": len(workflows)}
+    except Exception as exc:
+        logger.error("Failed to discover workflow diagrams: %s", exc)
+        return {"workflows": [], "count": 0, "error": str(exc)}
+
+
+@app.get("/workflows/{solution}/{workflow_name}")
+async def get_workflow_diagram(solution: str, workflow_name: str):
+    """Get a single workflow Mermaid diagram by solution + workflow_name."""
+    try:
+        all_workflows = _discover_all_workflow_diagrams()
+        for wf in all_workflows:
+            if wf["solution"] == solution and wf["workflow_name"] == workflow_name:
+                return wf
+        raise HTTPException(
+            status_code=404,
+            detail=f"Workflow '{workflow_name}' not found in solution '{solution}'",
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Failed to get workflow diagram %s/%s: %s", solution, workflow_name, exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
 # LangGraph Workflow Endpoints (Phase 3)
 # ---------------------------------------------------------------------------
 
@@ -1777,6 +2026,62 @@ async def workflow_status(run_id: str):
 
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# SWE Agent Endpoint — open-swe pattern
+# ---------------------------------------------------------------------------
+
+class SWETaskRequest(BaseModel):
+    task: str
+    repo_path: str = "."
+    repo_url: Optional[str] = None
+    solution_name: Optional[str] = None
+
+
+@app.post("/swe/task")
+async def swe_task(req: SWETaskRequest):
+    """
+    Submit an autonomous SWE task.
+
+    The agent will:
+      1. Explore the repository (README, AGENTS.md, file tree)
+      2. Plan minimal, targeted changes
+      3. Implement the changes file by file
+      4. Verify with tests related to changed files only
+      5. Commit to a branch and propose a PR
+
+    The workflow pauses before `finalize` for human approval.
+    Use POST /workflow/resume with the returned run_id to approve or reject.
+
+    Body:
+      task        : str  — natural language task description
+      repo_path   : str  — path to local repo (default: ".")
+      repo_url    : str  — git URL to clone (optional; overrides repo_path)
+      solution_name: str — solution context (optional)
+
+    Returns:
+      run_id, status ("awaiting_approval"), workflow result with PR proposal
+    """
+    from src.integrations.langgraph_runner import langgraph_runner
+
+    initial_state = {
+        "task": req.task,
+        "repo_path": os.path.abspath(req.repo_path) if req.repo_path else ".",
+    }
+    if req.repo_url:
+        initial_state["repo_url"] = req.repo_url
+    if req.solution_name:
+        initial_state["solution_name"] = req.solution_name
+
+    result = langgraph_runner.run("swe_workflow", initial_state)
+
+    if "error" in result and "not found" in str(result.get("error", "")):
+        raise HTTPException(status_code=404, detail=result["error"])
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
 
     return result
 
