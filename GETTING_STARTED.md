@@ -306,6 +306,37 @@ curl http://localhost:8000/knowledge/entries | python -m json.tool
 
 ---
 
+## Dashboard Pages (full list)
+
+| Page | Route | Purpose |
+|---|---|---|
+| Dashboard | `/` | Project health overview, quick actions |
+| **Approvals** | `/approvals` | HITL inbox — every AI proposal, risk-sorted |
+| **Issues** | `/issues` | Feature backlog with priority filters |
+| **Activity** | `/activity` | Real-time audit log timeline |
+| Task Queue | `/queue` | Pending/running/completed tasks |
+| Live Console | `/live-console` | Streaming agent output |
+| Agents | `/agents` | Run custom roles, hire agents |
+| **Org Chart** | `/org` | Agent team hierarchy, live status |
+| Analyst | `/analyst` | Log/error triage |
+| Developer | `/developer` | MR review, code diff proposals |
+| Monitor | `/monitor` | System event monitoring |
+| **Goals** | `/goals` | OKR tracker — objectives + key results |
+| Improvements | `/improvements` | SAGE framework ideas backlog |
+| **Workflows** | `/workflows` | Mermaid diagrams auto-generated from LangGraph |
+| Config Editor | `/yaml-editor` | Live YAML editing with hot-reload |
+| Audit Log | `/audit` | Full compliance trail |
+| LLM Settings | `/llm` | Provider switch, token stats |
+| Integrations | `/integrations` | GitLab, Slack, n8n, Composio |
+| New Solution | `/onboarding` | Conversational wizard + domain template chooser |
+| Access Control | `/access-control` | RBAC roles and API keys |
+| Costs | `/costs` | Token spend, budget controls |
+| Settings | `/settings` | Solution config |
+
+Cmd+K opens the command palette to jump to any page instantly.
+
+---
+
 ## Intelligence Layer Features
 
 ### Approvals Inbox
@@ -348,6 +379,18 @@ curl -X POST http://localhost:8000/onboarding/session \
 ```
 
 Or use the **Onboarding** page in the web UI for a guided step-by-step flow.
+
+### Domain Org Structure Chooser
+When creating a new solution via the Onboarding page, SAGE shows pre-built agent team templates for 6 domains. Pick one, enable/disable individual roles, and the YAML is generated with the right system prompts, task types, and compliance standards already in place.
+
+| Template | Compliance standards pre-loaded |
+|---|---|
+| General Engineering | None |
+| Medical Device (MedTech) | IEC 62304, ISO 14971, IEC 60601-1, FDA 21 CFR 820 |
+| Automotive Infotainment | ISO 26262, UN ECE WP.29, ISO/SAE 21434 |
+| Mobile App | Apple App Store, Google Play, GDPR |
+| Railway Systems | EN 50128, EN 50129, EN 50126 |
+| Avionics | DO-178C, DO-254, ARP4754A, FAA Part 25 |
 
 ---
 

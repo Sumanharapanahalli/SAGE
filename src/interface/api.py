@@ -3443,3 +3443,78 @@ async def distillation_comparisons(solution: str, limit: int = 20):
         return {"comparisons": records, "total": len(records)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Agent Status Endpoint
+# ===========================================================================
+
+@app.get("/agents/status")
+async def agents_status():
+    """
+    Return live status for all known agent roles in the active solution.
+    Reads recent audit log to determine active/idle state and last task.
+    """
+    try:
+        from src.memory.audit_logger import AuditLogger
+        from src.core.project_loader import get_project_config as _gpc
+        import time
+
+        pc = _gpc()
+        prompts = pc.metadata.get("roles", {}) if pc else {}
+        audit = AuditLogger()
+
+        # Query last 100 audit entries to derive per-role stats
+        entries = audit.get_entries(limit=100)
+        today_start = time.strftime("%Y-%m-%d")
+
+        role_stats: dict[str, dict] = {}
+        for entry in entries:
+            actor = entry.get("actor", "")
+            ts = entry.get("timestamp", "")
+            action = entry.get("action_type", "")
+            if not actor:
+                continue
+            if actor not in role_stats:
+                role_stats[actor] = {"last_task": None, "last_ts": None, "count_today": 0}
+            if role_stats[actor]["last_ts"] is None or ts > role_stats[actor]["last_ts"]:
+                role_stats[actor]["last_task"] = action
+                role_stats[actor]["last_ts"] = ts
+            if ts.startswith(today_start):
+                role_stats[actor]["count_today"] += 1
+
+        # Build response — include all prompts.yaml roles plus known base agents
+        known_roles = [
+            "AnalystAgent", "DeveloperAgent", "PlannerAgent",
+            "MonitorAgent", "UniversalAgent", "SWEAgent",
+        ]
+        result = []
+        for role in known_roles:
+            stats = role_stats.get(role, {})
+            last_ts = stats.get("last_ts")
+            # Active = had activity in last 5 minutes
+            status = "idle"
+            if last_ts:
+                try:
+                    from datetime import datetime, timezone
+                    last_dt = datetime.fromisoformat(last_ts.replace("Z", "+00:00"))
+                    age_secs = (datetime.now(timezone.utc) - last_dt).total_seconds()
+                    if age_secs < 300:
+                        status = "active"
+                except Exception:
+                    pass
+            result.append({
+                "role": role,
+                "status": status,
+                "last_task": stats.get("last_task"),
+                "task_count_today": stats.get("count_today", 0),
+            })
+        return result
+    except Exception as e:
+        logger.error("agents/status error: %s", e)
+        # Return static fallback — OrgChart page handles this gracefully
+        return [
+            {"role": r, "status": "idle", "last_task": None, "task_count_today": 0}
+            for r in ["AnalystAgent", "DeveloperAgent", "PlannerAgent",
+                      "MonitorAgent", "UniversalAgent", "SWEAgent"]
+        ]
