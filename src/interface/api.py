@@ -2431,6 +2431,109 @@ async def logs_stream():
 # Onboarding Wizard (Phase 6)
 # ---------------------------------------------------------------------------
 
+ORG_TEMPLATES = [
+    {
+        "id": "starter",
+        "name": "General Engineering Team",
+        "description": "Analyst, Developer, Planner, Monitor — works for any software domain",
+        "role_count": 4,
+        "compliance_standards": [],
+        "icon": "⚙️",
+        "roles": [
+            {"key": "analyst",   "name": "Signal Analyst",  "description": "Triage logs and errors"},
+            {"key": "developer", "name": "Code Reviewer",   "description": "Review MRs and code changes"},
+            {"key": "planner",   "name": "Task Planner",    "description": "Decompose complex requests"},
+            {"key": "monitor",   "name": "Monitor",         "description": "Watch systems and alert"},
+        ],
+    },
+    {
+        "id": "medtech",
+        "name": "Medical Device Team",
+        "description": "Regulatory affairs, firmware, QA, clinical specialist — ISO 13485 / IEC 62304",
+        "role_count": 7,
+        "compliance_standards": ["ISO 13485", "IEC 62304", "ISO 14971"],
+        "icon": "🏥",
+        "roles": [
+            {"key": "regulatory_affairs_lead", "name": "Regulatory Affairs Lead",  "description": "FDA/CE submissions and DHF"},
+            {"key": "biomedical_engineer",      "name": "Biomedical Engineer",      "description": "Class II/III device hardware/firmware"},
+            {"key": "software_qa_engineer",     "name": "Software QA Engineer",     "description": "IEC 62304 V&V, traceability"},
+            {"key": "clinical_specialist",      "name": "Clinical Specialist",      "description": "CER, post-market surveillance"},
+            {"key": "quality_management_lead",  "name": "Quality Management Lead",  "description": "CAPA, audits, nonconformance"},
+            {"key": "embedded_firmware_dev",    "name": "Embedded Firmware Dev",    "description": "Safety-critical C/C++ for medical hardware"},
+            {"key": "cybersecurity_analyst",    "name": "Cybersecurity Analyst",    "description": "FDA cybersecurity guidance"},
+        ],
+    },
+    {
+        "id": "automotive",
+        "name": "Automotive Infotainment & Telematics",
+        "description": "HMI, ADAS, telematics, functional safety — ISO 26262 / UN ECE WP.29",
+        "role_count": 7,
+        "compliance_standards": ["ISO 26262", "UN ECE WP.29", "ISO/SAE 21434"],
+        "icon": "🚗",
+        "roles": [
+            {"key": "hmi_engineer",               "name": "HMI Engineer",               "description": "IVI UI/UX, AUTOSAR HMI"},
+            {"key": "telematics_engineer",         "name": "Telematics Engineer",         "description": "V2X, CAN/LIN, OBD-II"},
+            {"key": "adas_engineer",               "name": "ADAS Engineer",               "description": "Sensor fusion, ISO 26262 ASIL"},
+            {"key": "functional_safety_engineer",  "name": "Functional Safety Engineer",  "description": "FTA/FMEA, ASIL decomposition"},
+            {"key": "connectivity_engineer",       "name": "Connectivity Engineer",       "description": "4G/5G, OTA updates"},
+            {"key": "audio_video_engineer",        "name": "Audio/Video Engineer",        "description": "Codec, media framework"},
+            {"key": "cybersecurity_engineer",      "name": "Cybersecurity Engineer",      "description": "TARA, HSM, secure boot"},
+        ],
+    },
+    {
+        "id": "mobile_app",
+        "name": "Mobile App Development",
+        "description": "iOS, Android, Flutter engineers with QA, DevOps, and App Store specialist",
+        "role_count": 7,
+        "compliance_standards": ["Apple App Store Guidelines", "Google Play Policy", "GDPR"],
+        "icon": "📱",
+        "roles": [
+            {"key": "ios_engineer",               "name": "iOS Engineer",               "description": "Swift/SwiftUI, App Store"},
+            {"key": "android_engineer",           "name": "Android Engineer",           "description": "Kotlin/Jetpack, Google Play"},
+            {"key": "flutter_engineer",           "name": "Flutter Engineer",           "description": "Dart/Flutter cross-platform"},
+            {"key": "mobile_qa_engineer",         "name": "Mobile QA Engineer",         "description": "Device farm, UI automation"},
+            {"key": "mobile_devops_engineer",     "name": "Mobile DevOps",              "description": "Fastlane, CI/CD, signing"},
+            {"key": "mobile_performance_engineer","name": "Performance Engineer",       "description": "Memory, battery, network"},
+            {"key": "app_store_specialist",       "name": "App Store Specialist",       "description": "ASO, review management"},
+        ],
+    },
+    {
+        "id": "railways",
+        "name": "Railway Systems & Signalling",
+        "description": "Signalling, traction, TCMS, safety assurance — EN 50128 / EN 50129",
+        "role_count": 7,
+        "compliance_standards": ["EN 50128", "EN 50129", "EN 50126"],
+        "icon": "🚂",
+        "roles": [
+            {"key": "signalling_engineer",         "name": "Signalling Engineer",         "description": "ETCS/ERTMS, interlocking, SIL"},
+            {"key": "traction_engineer",           "name": "Traction Engineer",           "description": "Propulsion, energy recovery"},
+            {"key": "onboard_systems_engineer",    "name": "Onboard Systems Engineer",    "description": "TCMS, door systems, PIS"},
+            {"key": "safety_assurance_engineer",   "name": "Safety Assurance Engineer",   "description": "RAMS, HAZOP, safety case"},
+            {"key": "communications_engineer",     "name": "Communications Engineer",     "description": "GSM-R/FRMCS, train radio"},
+            {"key": "maintenance_engineer",        "name": "Maintenance Engineer",        "description": "CBM, fault codes, SCADA"},
+            {"key": "test_verification_engineer",  "name": "Test & Verification Engineer","description": "HIL/SIL, test specifications"},
+        ],
+    },
+    {
+        "id": "avionics",
+        "name": "Avionics & Aerospace",
+        "description": "DO-178C avionics software, systems engineering, airworthiness — FAA/EASA",
+        "role_count": 7,
+        "compliance_standards": ["DO-178C", "DO-254", "ARP4754A", "FAA Part 25"],
+        "icon": "✈️",
+        "roles": [
+            {"key": "avionics_software_engineer", "name": "Avionics Software Engineer", "description": "DO-178C DAL, ARINC 653"},
+            {"key": "systems_engineer",           "name": "Systems Engineer",           "description": "ARP4754A, FHA/PSSA/SSA"},
+            {"key": "flight_test_engineer",       "name": "Flight Test Engineer",       "description": "Flight data analysis, PIREP"},
+            {"key": "airworthiness_engineer",     "name": "Airworthiness Engineer",     "description": "FAA Part 25, EASA CS-25, STC"},
+            {"key": "navigation_engineer",        "name": "Navigation Engineer",        "description": "ILS/VOR/GNSS, FMS"},
+            {"key": "certification_specialist",   "name": "Certification Specialist",   "description": "DER coordination, compliance matrix"},
+            {"key": "hardware_design_assurance",  "name": "Hardware Design Assurance",  "description": "DO-254, FPGA/ASIC review"},
+        ],
+    },
+]
+
+
 @app.post("/onboarding/generate")
 async def onboarding_generate(request: Request):
     """
@@ -2525,6 +2628,12 @@ async def onboarding_session_get(session_id: str):
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found or expired.")
     return session.to_dict()
+
+
+@app.get("/onboarding/org-templates")
+async def get_org_templates():
+    """Return available pre-built org structures for onboarding."""
+    return {"templates": ORG_TEMPLATES}
 
 
 @app.get("/onboarding/templates")
@@ -3188,4 +3297,149 @@ async def costs_set_budget(req: BudgetSetRequest):
         }
     except Exception as e:
         logger.error("costs/budget POST failed: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# SAGE Intelligence (SLM) Endpoints
+# ===========================================================================
+
+@app.get("/sage/status")
+async def sage_intelligence_status():
+    """Return SAGEIntelligence SLM configuration and availability."""
+    try:
+        from src.core.sage_intelligence import SAGEIntelligence
+        si = SAGEIntelligence()
+        available = False
+        if si.enabled:
+            try:
+                import urllib.request
+                urllib.request.urlopen(f"{si.host}/api/tags", timeout=2)
+                available = True
+            except Exception:
+                available = False
+        return {
+            "enabled": si.enabled,
+            "model": si.model,
+            "provider": si.provider,
+            "ollama_host": si.host,
+            "light_task_threshold": si.light_task_threshold,
+            "slm_available": available,
+            "fallback_on_error": si.fallback_on_error,
+        }
+    except Exception as e:
+        return {"enabled": False, "error": str(e)}
+
+
+@app.get("/sage/ask")
+async def sage_ask(question: str):
+    """Answer a question about the SAGE framework using the SLM."""
+    try:
+        from src.core.sage_intelligence import SAGEIntelligence
+        si = SAGEIntelligence()
+        answer = si.answer_framework_question(question)
+        return {"question": question, "answer": answer, "slm_used": si.enabled}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class IntentRequest(BaseModel):
+    input: str
+    solution_context: Optional[dict] = None
+
+
+@app.post("/sage/intent")
+async def sage_intent(req: IntentRequest):
+    """Convert natural language user input into a structured SAGE API call."""
+    try:
+        from src.core.sage_intelligence import SAGEIntelligence
+        si = SAGEIntelligence()
+        ctx = req.solution_context or {}
+        if not ctx:
+            pc = _get_project_config()
+            ctx = {"task_types": pc.get_task_types() if pc else []}
+        result = si.convert_to_api_call(req.input, ctx)
+        if result is None:
+            return {"success": False, "message": "SAGEIntelligence not enabled or SLM unavailable."}
+        return {"success": True, "api_call": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/sage/lint-yaml")
+async def sage_lint_yaml(file_name: str, content: str):
+    """Lint a SAGE YAML configuration file for common mistakes."""
+    try:
+        from src.core.sage_intelligence import SAGEIntelligence
+        si = SAGEIntelligence()
+        errors = si.lint_yaml(file_name, content)
+        return {"file": file_name, "errors": errors, "valid": len(errors) == 0}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Dual LLM / Teacher-Student Endpoints
+# ===========================================================================
+
+@app.get("/llm/dual-status")
+async def dual_llm_status():
+    """Return teacher-student LLM configuration for the active solution."""
+    try:
+        from src.integrations.dual_llm_runner import DualLLMRunner
+        pc = _get_project_config()
+        solution = pc.project_name if pc else "starter"
+        runner = DualLLMRunner(solution)
+        cfg = runner.config
+        return {
+            "solution": solution,
+            "mode": cfg.get("mode", "single"),
+            "strategy": cfg.get("strategy", "teacher_only"),
+            "student": cfg.get("student", {}),
+            "teacher": cfg.get("teacher", {}),
+            "distillation_enabled": cfg.get("distillation", {}).get("enabled", False),
+            "dual_mode_active": cfg.get("mode") == "dual",
+        }
+    except Exception as e:
+        return {"dual_mode_active": False, "error": str(e)}
+
+
+@app.get("/distillation/{solution}/stats")
+async def distillation_stats(solution: str):
+    """Return distillation statistics for a solution."""
+    try:
+        base = os.path.join("data", "distillation", solution)
+        result = {"solution": solution, "comparisons": 0, "escalations": 0, "observations": 0}
+        for fname, key in [("comparisons.jsonl", "comparisons"),
+                           ("escalations.jsonl", "escalations"),
+                           ("shadow_observations.jsonl", "observations")]:
+            path = os.path.join(base, fname)
+            if os.path.exists(path):
+                with open(path) as f:
+                    result[key] = sum(1 for line in f if line.strip())
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/distillation/{solution}/comparisons")
+async def distillation_comparisons(solution: str, limit: int = 20):
+    """Return recent teacher-student comparison records."""
+    try:
+        import json as _json
+        path = os.path.join("data", "distillation", solution, "comparisons.jsonl")
+        if not os.path.exists(path):
+            return {"comparisons": [], "total": 0}
+        records = []
+        with open(path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        records.append(_json.loads(line))
+                    except Exception:
+                        pass
+        records = records[-limit:]
+        return {"comparisons": records, "total": len(records)}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
