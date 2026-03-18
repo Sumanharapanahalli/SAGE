@@ -1,6 +1,6 @@
 # SAGE Framework — User Guide
 
-> Version 3.1.0 | Last updated: 2026-03-15
+> Version 4.0.0 | Last updated: 2026-03-18 | Browser-verified ✅
 
 This guide covers everything needed to install, configure, run, and operate the SAGE Framework from day to day. It assumes no prior knowledge of the codebase.
 
@@ -12,12 +12,14 @@ This guide covers everything needed to install, configure, run, and operate the 
 2. [Configuration](#2-configuration)
 3. [Running a Solution](#3-running-a-solution)
 4. [Using the Web UI](#4-using-the-web-ui)
-5. [Human-in-the-Loop Workflow](#5-human-in-the-loop-workflow)
-6. [Feature Request System](#6-feature-request-system)
-7. [Adding a New Solution](#7-adding-a-new-solution)
-8. [Solution Theming](#8-solution-theming)
-9. [Running Tests](#9-running-tests)
-10. [Troubleshooting](#10-troubleshooting)
+5. [Human-in-the-Loop Approvals Inbox](#5-human-in-the-loop-approvals-inbox)
+6. [Intelligence Layer v1](#6-intelligence-layer-v1)
+7. [Domain Solutions](#7-domain-solutions)
+8. [Feature Request System](#8-feature-request-system)
+9. [Adding a New Solution](#9-adding-a-new-solution)
+10. [Solution Theming](#10-solution-theming)
+11. [Running Tests](#11-running-tests)
+12. [Troubleshooting](#12-troubleshooting)
 
 ---
 
@@ -179,14 +181,19 @@ curl -X POST http://localhost:8000/config/switch \
 
 ## 3. Running a Solution
 
-### 3.1 Included Example Solutions
+### 3.1 Included Solutions
 
-| Solution | Domain | Good for learning |
-|---------|--------|------------------|
-| `starter` | Generic template | First run, any domain |
-| `meditation_app` | Flutter mobile + Node.js | Consumer app, GDPR |
-| `four_in_a_line` | Casual game | Game studio, COPPA |
-| `medtech_team` | Medical device | Regulated, ISO 13485 |
+| Solution | Domain | Compliance |
+|---------|--------|-----------|
+| `starter` | Generic template | None |
+| `meditation_app` | Flutter mobile + Node.js | GDPR |
+| `four_in_a_line` | Casual game studio | GDPR, COPPA |
+| `medtech_team` | Medical device (embedded + web) | IEC 62304, ISO 14971, FDA 21 CFR 820 |
+| `automotive` | Infotainment, ADAS, telematics | ISO 26262, UN ECE WP.29, ISO/SAE 21434 |
+| `mobile_app` | iOS + Android + Flutter | App Store, Google Play, GDPR |
+| `railways` | Signalling, traction, TCMS | EN 50128, EN 50129, EN 50126 |
+| `avionics` | Avionics SW + systems | DO-178C, DO-254, ARP4754A |
+| `iot_medical` | IoT medical device (Class C) | IEC 62304, ISO 14971, IEC 62443 |
 
 ### 3.2 Starting the Backend
 
@@ -255,7 +262,24 @@ Double-click `sage.bat` — starts backend + frontend with no visible terminal w
 
 ## 4. Using the Web UI
 
-Open `http://localhost:5173`. The sidebar shows pages according to your solution's `active_modules` list in `project.yaml`. The header includes a **solution switcher** dropdown (click the solution name) and an online/offline indicator showing the active LLM provider.
+Open `http://localhost:5173`. The sidebar is organised into four sections: **WORK**, **AGENTS**, **INTELLIGENCE**, **SETTINGS**. Pages shown depend on your solution's `active_modules` list in `project.yaml`. The header shows the active solution, Cmd+K command palette trigger, and live LLM provider indicator.
+
+**Cmd+K** — press anywhere to open the command palette and jump to any of the 22 pages instantly.
+
+### Browser-Verified Pages (tested 2026-03-18)
+
+| Page | Status | Notes |
+|------|--------|-------|
+| Dashboard | ✅ PASS | Domain context card, quick actions, 630 pending approvals shown |
+| Approvals | ✅ PASS | HITL inbox: DESTRUCTIVE/IRREVERSIBLE badges, approve/reject, full payload |
+| Agents | ✅ PASS | Domain-specific agent grid (11 automotive agents shown) |
+| Org Chart | ✅ PASS | Founder → 6 agents tree, live status, daily task counts |
+| Workflows | ✅ PASS | 4 workflows with Mermaid diagrams auto-generated |
+| Analyst | ✅ PASS | Domain-adapted title "Vehicle Log & Trace Analyzer" |
+| Activity | ✅ PASS | Real-time audit log, All/Tasks/Proposals/LLM/Errors tabs |
+| Goals | ✅ PASS | OKR tracker: 2 objectives with progress bars |
+| Onboarding | ✅ PASS | 3-step wizard: Describe → Answer → Approve & activate |
+| Audit Log | ✅ PASS | Full table: timestamp, actor, action type, trace ID, Export CSV |
 
 ### 4.1 Dashboard
 
@@ -351,45 +375,200 @@ This is the recommended path for any new domain. The direct API endpoint (`POST 
 
 ---
 
-## 5. Human-in-the-Loop Workflow
+## 5. Human-in-the-Loop Approvals Inbox
 
-Human approval is mandatory for every AI proposal. The system will not execute any action without it.
+Every AI-initiated write action generates a **Proposal** before anything executes. The Approvals inbox (`/approvals`) is the founder's primary interface.
 
-### 5.1 Approving a Proposal (Web UI)
+### 5.1 Risk Tiers
 
-1. Read the severity, root cause hypothesis, and recommended action on the Analyst page.
-2. Click **Approve** → `POST /approve/{trace_id}` is called → logged to audit trail.
+| Tier | Colour | Example | Expiry |
+|------|--------|---------|--------|
+| INFORMATIONAL | Gray | Read-only query | 1 hour |
+| EPHEMERAL | Blue | LLM provider switch | 8 hours |
+| STATEFUL | Amber | Knowledge base edit | 7 days |
+| EXTERNAL | Orange | GitLab MR creation | 14 days |
+| DESTRUCTIVE | Red | Delete knowledge entry | Never |
 
-### 5.2 Rejecting with Feedback
+DESTRUCTIVE proposals show a red warning banner and require an explicit human note before approval.
 
-1. Click **Reject**.
-2. Type your correction — be specific: "This is not a network error, it is a database connection pool exhaustion. Check db_pool.py line 87."
-3. Click **Submit Feedback** → `POST /reject/{trace_id}` → your correction is embedded into ChromaDB.
-4. The next similar event retrieves your correction as RAG context — the AI improves.
+### 5.2 Approving via the Inbox (Web UI)
+
+1. Open `/approvals` — proposals are sorted by risk (highest first).
+2. Click any proposal to see the full payload in the right panel.
+3. Enter your name in **Approving as** (for the named-approval audit trail).
+4. Add optional feedback, then click **Approve** or **Reject**.
+5. For low-risk batches: tick **Select all** → **Approve all in group**.
 
 ### 5.3 Approving via REST API
 
 ```bash
 # Approve
-curl -X POST http://localhost:8000/approve/a1b2c3d4-...
+curl -X POST http://localhost:8000/approve/a1b2c3d4-... \
+  -H "Content-Type: application/json" \
+  -d '{"feedback": "approved — looks correct"}'
 
-# Reject with feedback
+# Reject with correction
 curl -X POST http://localhost:8000/reject/a1b2c3d4-... \
   -H "Content-Type: application/json" \
   -d '{"feedback": "Root cause is db pool exhaustion, not network timeout"}'
+
+# List pending
+curl http://localhost:8000/proposals/pending
 ```
 
 ### 5.4 Slack Block Kit Approval
 
-When `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET` are configured, proposals are posted to your Slack channel as interactive messages. Click Approve/Reject directly in Slack — the callback hits `POST /webhook/slack`.
-
-### 5.5 Teams Adaptive Card Approval
-
-When Teams integration is configured, proposals are posted as adaptive cards. Approve/Reject buttons call back to `POST /webhook/teams`.
+When `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET` are configured, proposals are posted to your Slack channel as interactive messages with Approve/Reject buttons. Callback hits `POST /webhook/slack`.
 
 ---
 
-## 6. Feature Request System
+## 6. Intelligence Layer v1
+
+### 6.1 SAGE Intelligence SLM
+
+An on-device small language model (Gemma 3 1B via Ollama) handles meta-questions about the framework itself — zero cloud calls required.
+
+```bash
+# Ask the SLM anything about SAGE
+curl "http://localhost:8000/sage/ask?question=which+endpoint+switches+the+llm+provider"
+
+# Convert plain intent to API call
+curl -X POST http://localhost:8000/sage/intent \
+  -d '{"text": "switch to ollama llama3.2"}'
+
+# Lint YAML before saving
+curl -X POST http://localhost:8000/sage/lint-yaml \
+  -d '{"yaml_content": "roles:\n  - name: analyst"}'
+```
+
+Status: `GET /sage/status` — shows `slm_available`, model name, and capabilities. Requires `ollama serve` with `ollama pull gemma3:1b`.
+
+### 6.2 Teacher-Student Distillation
+
+The heavy teacher LLM (Claude/GPT-4) generates analyses; a fast student SLM learns from them. Cost drops over time without quality regression.
+
+```bash
+# Check drift stats
+curl http://localhost:8000/distillation/starter/stats
+
+# See recent comparisons
+curl http://localhost:8000/distillation/starter/comparisons
+```
+
+Enable in `config/config.yaml`:
+```yaml
+llm_strategy:
+  mode: "dual"
+  teacher:
+    provider: "claude-code"
+  student:
+    provider: "ollama"
+    confidence_threshold: 0.85
+  distillation:
+    enabled: true
+```
+
+### 6.3 SWE Agent (open-swe pattern)
+
+Submit a coding task and the SWE agent autonomously explores the repo, plans, implements, runs tests, and opens a PR — then pauses for your review.
+
+```bash
+curl -X POST http://localhost:8000/swe/task \
+  -H "Content-Type: application/json" \
+  -d '{"task": "Fix null pointer in CheckoutService", "repo_path": "/path/to/repo"}'
+# → {"run_id": "...", "status": "awaiting_approval", "result": {"pr_url": "..."}}
+
+# Resume after review
+curl -X POST http://localhost:8000/workflow/resume \
+  -d '{"run_id": "...", "feedback": {"approved": true}}'
+```
+
+### 6.4 Visual Workflow Diagrams
+
+`/workflows` auto-generates Mermaid diagrams from every LangGraph `StateGraph` in every solution. Browser-verified: **4 workflows discovered** (swe_workflow, analysis_workflow, hil_workflow, swe_workflow).
+
+### 6.5 Parallel Task Execution
+
+Independent tasks run concurrently in waves. Configure at runtime:
+
+```bash
+curl -X POST "http://localhost:8000/queue/config?max_workers=4&parallel_enabled=true"
+```
+
+Solutions with `compliance_standards` automatically fall back to sequential single-lane execution.
+
+### 6.6 HIL Testing (Hardware-in-the-Loop)
+
+For embedded/IoT products — test on real hardware and generate regulatory evidence:
+
+```bash
+# Connect
+curl -X POST http://localhost:8000/hil/connect \
+  -d '{"transport": "serial", "port": "/dev/ttyUSB0", "baud": 115200}'
+
+# Run a suite
+curl -X POST http://localhost:8000/hil/run-suite \
+  -d '{"suite_name": "safety_critical", "firmware_path": "build/firmware.bin"}'
+
+# Get regulatory evidence report
+curl http://localhost:8000/hil/report/{session_id}
+```
+
+Transports: `mock` (no hardware) · `serial` · `jlink` · `can` · `openocd`
+
+### 6.7 Compliance Flags & Gap Assessment
+
+```bash
+# List supported domains
+curl http://localhost:8000/compliance/domains
+
+# Get checklist for a domain
+curl http://localhost:8000/compliance/checklist/medtech
+
+# Assess gaps for active solution
+curl -X POST http://localhost:8000/compliance/gap-assessment \
+  -d '{"solution_name": "iot_medical", "domain": "medtech"}'
+```
+
+Supported domains: `medtech` · `automotive` · `railways` · `avionics` · `iot_ics`
+
+---
+
+## 7. Domain Solutions
+
+Pre-built agent teams with correct roles, system prompts, task types, and compliance standards for regulated industries.
+
+### 7.1 Choosing a Domain Template
+
+When creating a new solution via the **Onboarding** page (`/onboarding`), the wizard shows domain templates:
+
+| Template | Pre-loaded standards | Agent roles |
+|---|---|---|
+| General Engineering | None | SWE, Test, Reviewer, Planner, CoS |
+| MedTech | IEC 62304, ISO 14971, IEC 60601-1, FDA 21 CFR 820 | Software, QA, Risk, Regulatory, Validation, Safety, System |
+| Automotive | ISO 26262, UN ECE WP.29, ISO/SAE 21434 | HMI, ADAS, Telematics, Safety, Cybersecurity, Test, Systems |
+| Mobile App | App Store, Google Play, GDPR | iOS, Android, Backend, UX, Security, QA, DevOps |
+| Railways | EN 50128, EN 50129, EN 50126 | Signalling, Traction, TCMS, Safety, Verification, Cybersecurity, Systems |
+| Avionics | DO-178C, DO-254, ARP4754A | Avionics SW, DAL, Systems, Airworthiness, Test, Cybersecurity, DER |
+
+### 7.2 Using a Domain Solution Directly
+
+```bash
+make run PROJECT=automotive    # ISO 26262 team
+make run PROJECT=railways      # EN 50128 SIL-4 team
+make run PROJECT=avionics      # DO-178C DAL A team
+make run PROJECT=iot_medical   # IEC 62304 Class C IoT medical
+```
+
+The Agents page will show domain-specific roles immediately. The Analyst page title and input placeholder adapt to the domain automatically.
+
+### 7.3 Org Chart
+
+`/org` shows the full agent team hierarchy with `reports_to` relationships, live status (Active/Idle/Error), and daily task counts. The Founder sits at the top — always "In Control".
+
+---
+
+## 8. Feature Request System
 
 Every page has a built-in improvement request system via the `ModuleWrapper` component.
 
@@ -411,7 +590,7 @@ Every page has a built-in improvement request system via the `ModuleWrapper` com
 
 ---
 
-## 7. Adding a New Solution
+## 9. Adding a New Solution
 
 A SAGE solution is three YAML files — no Python code changes required.
 
@@ -445,7 +624,7 @@ make run PROJECT=my_project
 
 ---
 
-## 8. Solution Theming
+## 10. Solution Theming
 
 Each solution can have a completely unique visual identity — sidebar colour, accent buttons, header badge — all controlled by the `theme:` block in `project.yaml`. The framework reads these values on startup and applies them as CSS variables across the entire web UI. No React code changes are needed.
 
@@ -530,10 +709,10 @@ Keys map to role IDs in `prompts.yaml`. The framework renders these as clickable
 
 ---
 
-## 9. Running Tests
+## 11. Running Tests
 
 ```bash
-# Framework tests (383+ tests — fast, no external services)
+# Framework tests (397 tests — fast, no external services)
 make test
 
 # Example solution tests
@@ -572,7 +751,7 @@ make test-api
 
 ---
 
-## 10. Troubleshooting
+## 12. Troubleshooting
 
 ### "Gemini CLI not found"
 
