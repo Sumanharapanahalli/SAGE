@@ -1,0 +1,115 @@
+# ==============================================================================
+# SAGE Solution — iot_medical
+# Medical IoT Device (Bluedrop-style)
+# ==============================================================================
+# Covers: embedded firmware device + cloud backend + mobile companion app
+# Regulatory scope: IEC 62304 Class C, ISO 14971, IEC 60601-1, FDA 21 CFR 820,
+#                   IEC 62443, EU MDR
+#
+# Software Class C: death or serious injury possible if software fails.
+# All IEC 62304 §5.5-5.7 verification requirements apply.
+# HIL testing is mandatory for integration and system test evidence.
+# ==============================================================================
+
+project_name: iot_medical
+display_name: "Medical IoT Device"
+description: >
+  AI-assisted development and compliance tooling for a safety-critical medical
+  IoT device. Covers the full regulated development lifecycle from requirements
+  through post-market surveillance. Firmware (RTOS/embedded C), cloud backend
+  (REST + MQTT), and mobile companion app (Flutter).
+
+# --- Compliance & Regulatory Context ---
+compliance_standards:
+  - "IEC 62304:2015+A1"       # Medical device software
+  - "ISO 14971:2019"          # Risk management
+  - "IEC 60601-1:2005+A1"     # Electrical safety
+  - "IEC 60601-1-2:2014+A1"   # EMC
+  - "IEC 62443-3-3:2013"      # IoT/ICS cybersecurity
+  - "FDA 21 CFR 820"          # Quality system regulation
+  - "FDA Cybersecurity 2023"  # Cybersecurity guidance
+  - "EU MDR 2017/745"         # EU Medical Device Regulation
+
+software_class: "C"           # IEC 62304 Class C — death or serious injury possible
+risk_domain: "medtech"        # Maps to COMPLIANCE_FLAGS["medtech"]
+risk_level: "CLASS_C"         # Highest medtech risk level
+
+# --- Hardware & Transport ---
+hardware:
+  transports:
+    - serial                  # UART debug and programming
+    - jlink                   # J-Link SWD for firmware flashing and RTT
+  hil_testing: true           # HIL testing is mandatory for Class C
+  hil_required_for:
+    - integration_test        # IEC 62304 §5.6
+    - system_test             # IEC 62304 §5.7
+    - risk_control_verification  # ISO 14971 §6.5
+    - electrical_safety       # IEC 60601-1 §8
+  default_transport: "jlink"
+
+# --- Active Modules ---
+modules:
+  git_monitor: true
+  code_review: true
+  hil_testing: true           # Hardware-in-the-loop testing integration
+  risk_management: true       # ISO 14971 hazard analysis and risk register
+  regulatory_docs: true       # DHF/TCF artifact generation
+  sbom: true                  # Software Bill of Materials (FDA requirement)
+  cybersecurity: true         # IEC 62443 / FDA cybersecurity assessment
+  post_market: true           # EU MDR Article 83 surveillance
+
+# --- Team Roles (maps to prompts.yaml) ---
+agents:
+  - firmware_safety_engineer
+  - hardware_design_engineer
+  - regulatory_affairs_lead
+  - cybersecurity_engineer
+  - risk_manager
+  - verification_engineer
+  - post_market_specialist
+  - analyst                   # General log/event triage
+  - developer                 # Code review and MR management
+  - planner                   # Task decomposition
+
+# --- Integrations ---
+integrations:
+  gitlab: true
+  slack: true
+  langgraph: true             # Durable regulated workflows
+  mcp: true                   # Hardware tools MCP server
+
+# --- Memory ---
+memory:
+  collection_name: "iot_medical_knowledge"
+  seed_documents:
+    - "IEC 62304 key clauses"
+    - "ISO 14971 hazard categories"
+    - "IEC 60601-1 safety classes"
+    - "FDA cybersecurity threat taxonomy"
+
+# --- Quality Gates (all must pass before release) ---
+quality_gates:
+  - id: QG-001
+    name: "All IEC 62304 §5.5 unit tests pass"
+    task_type: UNIT_TEST
+    blocking: true
+  - id: QG-002
+    name: "HIL integration tests pass (IEC 62304 §5.6)"
+    task_type: HIL_TEST_FIRMWARE
+    blocking: true
+  - id: QG-003
+    name: "Risk control verification complete (ISO 14971 §6.5)"
+    task_type: REVIEW_TEST_RESULTS
+    blocking: true
+  - id: QG-004
+    name: "Cybersecurity assessment complete (FDA 2023 Guidance)"
+    task_type: CYBERSECURITY_ASSESSMENT
+    blocking: true
+  - id: QG-005
+    name: "SBOM generated and validated (FDA SBOM requirement)"
+    task_type: GENERATE_SBOM
+    blocking: true
+  - id: QG-006
+    name: "DHF updated with all current evidence"
+    task_type: UPDATE_DHF
+    blocking: true

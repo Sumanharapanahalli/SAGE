@@ -3518,3 +3518,256 @@ async def agents_status():
             for r in ["AnalystAgent", "DeveloperAgent", "PlannerAgent",
                       "MonitorAgent", "UniversalAgent", "SWEAgent"]
         ]
+
+
+# ==============================================================================
+# HIL (Hardware-in-the-Loop) Testing Endpoints
+# ==============================================================================
+
+@app.get("/hil/status")
+async def hil_status():
+    """Return HIL runner connection status and last session info."""
+    try:
+        from src.integrations.hil_runner import _hil_runner
+        if _hil_runner is None:
+            return {
+                "connected": False,
+                "transport": "none",
+                "session_id": None,
+                "tests_run": 0,
+                "message": "No HIL runner initialised. POST /hil/connect to start.",
+            }
+        return _hil_runner.status()
+    except Exception as e:
+        return {"connected": False, "error": str(e)}
+
+
+@app.post("/hil/connect")
+async def hil_connect(request: Request):
+    """
+    Connect to hardware transport.
+
+    Body (JSON):
+      transport : "mock" | "serial" | "jlink" | "can" | "openocd"  (default: mock)
+      config    : dict — transport-specific config (port, baud_rate, device, speed, ...)
+    """
+    try:
+        body = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        transport = body.get("transport", "mock")
+        config    = body.get("config", {})
+    except Exception:
+        transport = "mock"
+        config    = {}
+
+    try:
+        from src.integrations.hil_runner import get_hil_runner
+        runner    = get_hil_runner(transport=transport, config=config)
+        connected = runner.connect()
+        return {
+            "transport":  transport,
+            "connected":  connected,
+            "session_id": runner.session_id,
+            "message": "Connected" if connected else f"Could not connect to {transport} hardware — operating in degraded mode",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/hil/run-suite")
+async def hil_run_suite(request: Request):
+    """
+    Run a list of HIL test cases against the connected hardware.
+
+    Body (JSON):
+      tests     : list[dict]  — list of HILTestCase dicts
+                  Each: {id, name, requirement_id, description, procedure, expected_result,
+                          transport?, timeout_seconds?}
+      transport : str         — transport to use (default: mock)
+      config    : dict        — transport config (optional)
+    """
+    try:
+        body      = await request.json()
+        tests_raw = body.get("tests", [])
+        transport = body.get("transport", "mock")
+        config    = body.get("config", {})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
+
+    if not tests_raw:
+        raise HTTPException(status_code=400, detail="'tests' list is required and must not be empty")
+
+    try:
+        from src.integrations.hil_runner import get_hil_runner, HILTestCase, HILTransport
+        runner = get_hil_runner(transport=transport, config=config)
+        if not runner._connected:
+            runner.connect()
+
+        test_cases = []
+        for item in tests_raw:
+            transport_str = item.get("transport", transport)
+            try:
+                t_enum = HILTransport(transport_str.lower())
+            except ValueError:
+                t_enum = HILTransport.MOCK
+            test_cases.append(HILTestCase(
+                id=item.get("id", "TC-UNKNOWN"),
+                name=item.get("name", "Unnamed test"),
+                requirement_id=item.get("requirement_id", "REQ-UNKNOWN"),
+                description=item.get("description", ""),
+                procedure=item.get("procedure", []),
+                expected_result=item.get("expected_result", ""),
+                transport=t_enum,
+                timeout_seconds=item.get("timeout_seconds", 30),
+            ))
+
+        results = runner.run_suite(test_cases)
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/hil/report/{session_id}")
+async def hil_report(session_id: str, standard: str = "IEC62304"):
+    """
+    Generate a regulatory evidence report for a HIL test session.
+
+    Path:  session_id — HIL session ID (from /hil/connect or /hil/run-suite)
+    Query: standard   — IEC62304 | DO178C | EN50128 | ISO26262 | IEC62443 (default: IEC62304)
+    """
+    try:
+        from src.integrations.hil_runner import _hil_runner
+        if _hil_runner is None or _hil_runner.session_id != session_id:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No active HIL session with id '{session_id}'. Run /hil/run-suite first.",
+            )
+        report = _hil_runner.generate_report(standard=standard)
+        return report
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==============================================================================
+# Compliance Flags Endpoints
+# ==============================================================================
+
+@app.get("/compliance/domains")
+async def compliance_domains():
+    """List all supported compliance domains and their risk levels."""
+    try:
+        from src.core.compliance_flags import COMPLIANCE_FLAGS
+        result = []
+        for domain, entry in COMPLIANCE_FLAGS.items():
+            result.append({
+                "domain":           domain,
+                "standard":         entry.get("standard", ""),
+                "description":      entry.get("description", ""),
+                "authority":        entry.get("authority", ""),
+                "risk_levels":      entry.get("risk_levels", []),
+                "hil_required_for": entry.get("hil_required_for", []),
+            })
+        return {"domains": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/compliance/flags/{domain}")
+async def compliance_flags_endpoint(domain: str, risk_level: str = "HIGH"):
+    """
+    Return required compliance flags for a domain at a given risk level.
+
+    Path:  domain     — medtech | automotive | railways | avionics | iot_ics
+    Query: risk_level — domain-specific level (e.g. CLASS_C, ASIL_D, SIL_4, DAL_A, SL_3)
+    """
+    try:
+        from src.core.compliance_flags import (
+            get_required_flags,
+            get_hil_required_tests,
+            COMPLIANCE_FLAGS,
+            list_domains,
+        )
+        if domain.lower() not in COMPLIANCE_FLAGS:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Unknown domain '{domain}'. Valid domains: {list_domains()}",
+            )
+        flags     = get_required_flags(domain, risk_level)
+        hil_tests = get_hil_required_tests(domain, risk_level)
+        entry     = COMPLIANCE_FLAGS[domain.lower()]
+        return {
+            "domain":                domain,
+            "risk_level":            risk_level.upper(),
+            "standard":              entry.get("standard", ""),
+            "description":           entry.get("description", ""),
+            "authority":             entry.get("authority", ""),
+            "flags":                 flags,
+            "hil_required_flag_ids": hil_tests,
+            "total_flags":           len(flags),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/compliance/checklist/{domain}")
+async def compliance_checklist_endpoint(domain: str, risk_level: str = "HIGH"):
+    """
+    Generate a full compliance checklist for a domain and risk level.
+
+    Path:  domain     — medtech | automotive | railways | avionics | iot_ics
+    Query: risk_level — domain-specific level (e.g. CLASS_C, ASIL_D, SIL_4, DAL_A, SL_3)
+
+    Returns all compliance flags, required tasks, and evidence artifacts.
+    Each item has a null status field ready for audit population.
+    """
+    try:
+        from src.core.compliance_flags import generate_compliance_checklist, COMPLIANCE_FLAGS, list_domains
+        if domain.lower() not in COMPLIANCE_FLAGS:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Unknown domain '{domain}'. Valid domains: {list_domains()}",
+            )
+        checklist = generate_compliance_checklist(domain, risk_level)
+        return checklist
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/compliance/gap-assessment")
+async def compliance_gap_assessment(request: Request):
+    """
+    Assess compliance gaps given a list of completed task types.
+
+    Body (JSON):
+      domain          : str       — medtech | automotive | railways | avionics | iot_ics
+      risk_level      : str       — domain-specific risk level
+      completed_tasks : list[str] — task type strings already completed
+
+    Returns missing tasks, HIL gaps, and overall compliance percentage.
+    """
+    try:
+        body            = await request.json()
+        domain          = body.get("domain", "")
+        risk_level      = body.get("risk_level", "")
+        completed_tasks = body.get("completed_tasks", [])
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
+
+    if not domain or not risk_level:
+        raise HTTPException(status_code=400, detail="'domain' and 'risk_level' are required")
+
+    try:
+        from src.core.compliance_flags import assess_compliance_gap, COMPLIANCE_FLAGS, list_domains
+        if domain.lower() not in COMPLIANCE_FLAGS:
+            raise HTTPException(status_code=404, detail=f"Unknown domain. Valid: {list_domains()}")
+        result = assess_compliance_gap(domain, risk_level, completed_tasks)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
