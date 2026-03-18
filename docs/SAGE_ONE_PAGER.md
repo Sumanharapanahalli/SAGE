@@ -58,6 +58,24 @@ Any job role becomes an AI agent. The founder hires, configures, and routes work
 
 ---
 
+## Intelligence Layer v1 (NEW)
+
+| Feature | What It Does |
+|---|---|
+| **Approvals Inbox** | Risk-ranked HITL inbox — every AI write action surfaces here before execution. 5 risk tiers: INFORMATIONAL → EPHEMERAL → STATEFUL → EXTERNAL → DESTRUCTIVE. Batch-approve low-risk items. |
+| **SAGE Intelligence SLM** | On-device Gemma 3 1B via Ollama answers framework questions, classifies task tiers (LIGHT/STANDARD/HEAVY), lints YAML, converts intent to API calls — zero cloud calls for meta-operations. |
+| **Teacher-Student LLM** | Heavy teacher LLM generates rich analyses; fast student SLM learns from them. Distillation logs saved to JSONL. Score drift tracked in `/distillation/<solution>/stats`. |
+| **Conversational Onboarding** | Two-path wizard: (A) point to an existing repo → LLM analyzes stack + CI + compliance hints and generates all 3 YAML files; (B) guided Q&A → same output. SQLite-persisted session state. |
+| **Domain Org Structure Chooser** | Pick a pre-built agent team template for 6 domains. Enable/disable individual roles. YAML generated with right prompts, task types, and compliance standards pre-loaded. |
+| **Visual Workflow Diagrams** | `/workflows` page auto-generates Mermaid diagrams from every LangGraph StateGraph. Always accurate — never manually drawn. |
+| **Parallel Task Execution** | Wave scheduler runs independent tasks concurrently via ThreadPoolExecutor. Compliance solutions auto-fall back to sequential single-lane execution. |
+| **SWE Agent (open-swe)** | 6-node LangGraph pipeline: explore → plan → implement → verify → propose_pr → finalize. Opens a real GitHub PR and pauses for founder review before marking complete. |
+| **HIL Testing** | Hardware-in-the-loop runner: 5 transports (mock, serial, J-Link, CAN, OpenOCD). Generates regulatory evidence reports from test results. |
+| **Compliance Flags** | Automated compliance checklist generation for 5 regulated industries. Gap assessment against active solution's declared standards. |
+| **Org Chart** | Agent team hierarchy with `reports_to` relationships. Live status shows active/idle/error per agent. Daily task counts, last activity. |
+
+---
+
 ## Framework Capabilities
 
 | Capability | What It Does |
@@ -69,7 +87,7 @@ Any job role becomes an AI agent. The founder hires, configures, and routes work
 | **Planner Agent** | Decomposes complex requests into ordered subtask sequences |
 | **Monitor Agent** | Classifies events from integrated systems, triggers workflows |
 | **Hire/Fire Agent** | Add or remove agent roles at runtime via UI or API |
-| **Org Chart** | Visual role hierarchy with `reports_to` relationships |
+| **Org Chart** | Visual role hierarchy with `reports_to` relationships and live status |
 | **Agent Handoff** | Chain from_role → to_role, passing output as context |
 | **Continuous Tester** | Background pytest daemon, logs failures to audit trail |
 | **TDD Workflow** | PostToolUse hook enforces Red-Green-Refactor discipline |
@@ -83,8 +101,39 @@ Any job role becomes an AI agent. The founder hires, configures, and routes work
 | **n8n Webhooks** | 400+ event sources routed into the agent queue |
 | **Temporal Workflows** | Durable, crash-proof workflow execution |
 | **Langfuse Observability** | LLM trace, cost tracking, LLM-as-a-Judge evals |
-| **Onboarding Wizard** | LLM generates all 3 solution YAML files from a description |
+| **Onboarding Wizard** | LLM generates all 3 solution YAML files from a description or existing repo |
 | **SSE Streaming** | Token-streaming for analysis and agent responses |
+
+---
+
+## Dashboard (22 Pages)
+
+| Page | Route | Purpose |
+|---|---|---|
+| Dashboard | `/` | Project health overview, quick actions |
+| **Approvals** | `/approvals` | HITL inbox — every AI proposal, risk-sorted |
+| **Issues** | `/issues` | Feature backlog with priority filters |
+| **Activity** | `/activity` | Real-time audit log timeline |
+| Task Queue | `/queue` | Pending/running/completed tasks |
+| Live Console | `/live-console` | Streaming agent output |
+| Agents | `/agents` | Run custom roles, hire agents |
+| **Org Chart** | `/org` | Agent team hierarchy, live status |
+| Analyst | `/analyst` | Log/error triage |
+| Developer | `/developer` | MR review, code diff proposals |
+| Monitor | `/monitor` | System event monitoring |
+| **Goals** | `/goals` | OKR tracker — objectives + key results |
+| Improvements | `/improvements` | SAGE framework ideas backlog |
+| **Workflows** | `/workflows` | Mermaid diagrams auto-generated from LangGraph |
+| Config Editor | `/yaml-editor` | Live YAML editing with hot-reload |
+| Audit Log | `/audit` | Full compliance trail |
+| LLM Settings | `/llm` | Provider switch, token stats |
+| Integrations | `/integrations` | GitLab, Slack, n8n, Composio |
+| New Solution | `/onboarding` | Conversational wizard + domain template chooser |
+| Access Control | `/access-control` | RBAC roles and API keys |
+| Costs | `/costs` | Token spend, budget controls |
+| Settings | `/settings` | Solution config |
+
+Cmd+K opens the command palette to jump to any page instantly.
 
 ---
 
@@ -143,14 +192,19 @@ make venv
 
 ---
 
-## Solution Examples
+## Regulated Domain Solutions
 
-| Solution | Domain | Compliance |
+Pre-built agent teams with correct roles, system prompts, task types, and compliance standards:
+
+| Solution | Domain | Compliance Standards |
 |---|---|---|
 | `starter` | Generic template — any domain | None |
-| `medtech_team` | Medical device (embedded + web + devops) | ISO 13485, IEC 62304 |
-| `meditation_app` | Flutter + Node.js mobile app | GDPR |
-| `four_in_a_line` | Casual game studio | GDPR, COPPA |
+| `medtech_team` | Medical device (embedded + web + devops) | IEC 62304, ISO 14971, IEC 60601-1, FDA 21 CFR 820 |
+| `automotive` | Infotainment + telematics + ADAS | ISO 26262, UN ECE WP.29, ISO/SAE 21434 |
+| `mobile_app` | iOS + Android + Flutter | Apple App Store, Google Play, GDPR |
+| `railways` | Signalling + traction + TCMS | EN 50128, EN 50129, EN 50126 |
+| `avionics` | Avionics SW + systems + airworthiness | DO-178C, DO-254, ARP4754A, FAA Part 25 |
+| `iot_medical` | IoT medical device (IEC 62304 Class C) | IEC 62304, ISO 14971, IEC 62443 |
 | `your_company` | Mount via `SAGE_SOLUTIONS_DIR` | Whatever you need |
 
 ---
@@ -159,7 +213,7 @@ make venv
 
 | Layer | Technology | License |
 |---|---|---|
-| LLM (local) | Ollama + llama3.2, Mistral, Phi-3 | MIT/Apache |
+| LLM (local) | Ollama + llama3.2, Mistral, Phi-3, Gemma 3 | MIT/Apache |
 | LLM (cloud, free) | Gemini CLI, Claude Code CLI | Free tier |
 | Orchestration | LangGraph | MIT |
 | Code Agent | AutoGen | MIT |
@@ -170,6 +224,7 @@ make venv
 | Workflows | Temporal.io | MIT |
 | API | FastAPI + Uvicorn | MIT |
 | UI | React 18 + Vite + Tailwind | MIT |
+| Diagrams | Mermaid.js (auto-generated) | MIT |
 
 **Zero mandatory API keys. Zero vendor lock-in.**
 
