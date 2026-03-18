@@ -5,6 +5,7 @@ import {
   OnboardingMessage, OnboardingInfo, OnboardingSession,
 } from '../api/client'
 import { Loader2, Send, Sparkles, CheckCircle, ArrowRight, Bot, User } from 'lucide-react'
+import OrgStructureChooser, { type OrgChoice } from '../components/onboarding/OrgStructureChooser'
 
 // ---------------------------------------------------------------------------
 // Chat message bubble
@@ -89,7 +90,19 @@ export default function Onboarding() {
   const [state, setState]             = useState<string>('idle')
   const [input, setInput]             = useState('')
   const [generated, setGenerated]     = useState<{ traceId: string; solutionName: string } | null>(null)
+  const [orgChoice, setOrgChoice]     = useState<OrgChoice | null>(null)
   const bottomRef                     = useRef<HTMLDivElement>(null)
+
+  // Derive a template pre-selection hint from the gathered info description
+  const domainHint: string | undefined = (() => {
+    const desc = (info.description + ' ' + info.solution_name).toLowerCase()
+    if (desc.includes('medtech') || desc.includes('medical') || desc.includes('device') || desc.includes('iso 13485') || desc.includes('iec 62304')) return 'medtech'
+    if (desc.includes('automotive') || desc.includes('infotainment') || desc.includes('adas') || desc.includes('iso 26262')) return 'automotive'
+    if (desc.includes('mobile') || desc.includes('ios') || desc.includes('android') || desc.includes('flutter') || desc.includes('app store')) return 'mobile_app'
+    if (desc.includes('railway') || desc.includes('signalling') || desc.includes('tcms') || desc.includes('en 50128')) return 'railways'
+    if (desc.includes('avionics') || desc.includes('aerospace') || desc.includes('do-178') || desc.includes('faa') || desc.includes('easa')) return 'avionics'
+    return undefined
+  })()
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -250,12 +263,27 @@ export default function Onboarding() {
       {/* Generated proposal card */}
       {generated && <GeneratedCard traceId={generated.traceId} solutionName={generated.solutionName} />}
 
+      {/* Org structure chooser — shown when SAGE has enough info */}
+      {(isReady || isComplete) && !generated && (
+        <div
+          className="px-4 py-4 shrink-0 overflow-y-auto"
+          style={{ borderTop: '1px solid #27272a', backgroundColor: '#09090b', maxHeight: '380px' }}
+        >
+          <OrgStructureChooser
+            preselectedId={domainHint}
+            onChange={setOrgChoice}
+          />
+        </div>
+      )}
+
       {/* Generate button — shown when ready */}
       {isReady && !isComplete && (
         <div className="px-4 py-3 bg-indigo-50 border-t border-indigo-100">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-indigo-700">
-              SAGE has enough information to generate your solution.
+              {orgChoice
+                ? `Team selected: ${orgChoice.enabledRoles.length} roles enabled.`
+                : 'SAGE has enough information to generate your solution.'}
             </p>
             <button
               onClick={() => generateMutation.mutate()}

@@ -18,7 +18,25 @@
       "Skill(run-tests)",
       "Skill(check-api)",
       "Skill(edit-solution-yaml)",
-      "Skill(new-solution)"
+      "Skill(new-solution)",
+      "Bash(gh api:*)",
+      "Skill(update-config)",
+      "Bash(.venv/bin/pytest tests/ -q --tb=short)",
+      "Bash(.venv/bin/pytest tests/test_phase7_11_features.py::TestKnowledgeCRUD::test_knowledge_add_returns_200 -q --tb=long)",
+      "Bash(.venv/bin/pytest tests/test_proposal_executor.py tests/test_phase7_11_features.py::TestKnowledgeCRUD -q --tb=short)",
+      "Bash(.venv/bin/python -c \"from src.interface.api import create_app; app = create_app\\(\\); print\\(''''API imports OK''''\\)\")",
+      "Bash(BASE=\"http://localhost:8001\" __NEW_LINE_ee9fb47b4e0f9f5e__ echo \"=== PROPOSALS ===\" curl -s \"$BASE/proposals\")",
+      "Bash(BASE=\"http://localhost:8001\" echo \"=== RAW PROPOSALS RESPONSE ===\" curl -s \"$BASE/proposals\")",
+      "Bash(.venv/bin/python -c \"import pptx; print\\('pptx OK'\\)\" 2>&1)",
+      "Bash(.venv/bin/pip install:*)",
+      "Bash(.venv/bin/python -m pytest tests/ -x -q --tb=no)",
+      "Bash(1 curl:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''PASS /proposals/pending:'''', len\\(d[''''proposals'''']\\), ''''pending''''\\)\" echo \"=== Compliance ===\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''PASS /compliance/checklist/medtech:'''', len\\(d.get\\(''''checklist'''',[]\\)\\), ''''items''''\\)\" echo \"=== Org Templates ===\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''PASS /llm/dual-status: mode='''', d.get\\(''''mode''''\\), ''''dual_active='''', d.get\\(''''dual_mode_active''''\\)\\)\" echo \"=== HIL ===\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''PASS /hil/status: transport='''', d.get\\(''''transport''''\\), ''''connected='''', d.get\\(''''connected''''\\)\\)\" echo \"=== Workflows ===\")",
+      "Bash(sed -i 's/^## 9\\\\. Running Tests/## 11. Running Tests/' /home/shetty/sandbox/SAGE/docs/USER_GUIDE.md)",
+      "Bash(sed -i 's/^## 10\\\\. Troubleshooting/## 12. Troubleshooting/' /home/shetty/sandbox/SAGE/docs/USER_GUIDE.md)"
     ]
   }
 }
