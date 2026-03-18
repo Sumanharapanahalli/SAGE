@@ -27,9 +27,24 @@ All endpoints are served at `http://localhost:8000`. Every response is JSON.
 | POST | `/agent/run` | Run a named agent role (blocking) |
 | POST | `/agent/stream` | Run agent with SSE token streaming |
 | GET | `/agent/roles` | List available roles for active solution |
-| POST | `/approve/{trace_id}` | Approve a pending proposal |
-| POST | `/reject/{trace_id}` | Reject with feedback |
+| GET | `/agents/status` | Live status of all agents (active/idle, last task, daily counts) |
 | GET | `/audit` | Query audit log |
+
+---
+
+## HITL — Human-in-the-Loop Approvals
+
+Every AI write action generates a proposal. Nothing executes without human approval.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/proposals/pending` | List all pending proposals, sorted by risk |
+| POST | `/approve/{trace_id}` | Approve a pending proposal `{"feedback": "..."}` |
+| POST | `/reject/{trace_id}` | Reject with feedback `{"feedback": "reason"}` |
+
+**Risk tiers (low → high):** `INFORMATIONAL` · `EPHEMERAL` · `STATEFUL` · `EXTERNAL` · `DESTRUCTIVE`
+
+Low-risk proposals can be batch-approved. DESTRUCTIVE proposals never expire and require an explicit human note.
 
 ---
 
@@ -51,8 +66,31 @@ All endpoints are served at `http://localhost:8000`. Every response is JSON.
 |---|---|---|
 | GET | `/llm/status` | Current provider, model, usage stats |
 | POST | `/llm/switch` | Switch provider at runtime |
+| GET | `/llm/dual-status` | Teacher + student LLM status and confidence thresholds |
 
 **Supported providers (no API key):** `gemini`, `claude-code`, `ollama`, `local`, `generic-cli`
+
+---
+
+## SAGE Intelligence (SLM)
+
+On-device small language model for meta-operations — zero cloud calls for framework questions.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/sage/status` | SLM availability, model, capabilities |
+| GET | `/sage/ask?question=...` | Ask the SLM a framework question |
+| POST | `/sage/intent` | Convert plain-language intent to API call `{"text": "..."}` |
+| POST | `/sage/lint-yaml` | Lint a YAML string `{"yaml_content": "..."}` |
+
+---
+
+## Teacher-Student Distillation
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/distillation/{solution}/stats` | Score drift, confidence metrics, sample count |
+| GET | `/distillation/{solution}/comparisons` | Recent teacher vs student comparison pairs |
 
 ---
 
@@ -60,10 +98,14 @@ All endpoints are served at `http://localhost:8000`. Every response is JSON.
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/onboarding/generate` | Generate full solution from description |
+| POST | `/onboarding/generate` | Generate full solution from description (single-turn) |
 | GET | `/onboarding/templates` | List bundled solution templates |
+| GET | `/onboarding/org-templates` | Domain org structure templates (6 domains) |
+| POST | `/onboarding/session` | Start conversational onboarding session |
+| POST | `/onboarding/session/{session_id}/message` | Continue session `{"message": "..."}` |
+| GET | `/onboarding/session/{session_id}` | Get session state |
 
-**Body for generate:**
+**Single-turn generate body:**
 ```json
 {
   "description": "We build surgical robots...",
@@ -72,6 +114,57 @@ All endpoints are served at `http://localhost:8000`. Every response is JSON.
   "integrations": ["gitlab", "slack"]
 }
 ```
+
+**Two-path session start:**
+```bash
+# Path A — analyze existing local repo
+curl -X POST http://localhost:8000/onboarding/session \
+  -d '{"path": "A", "existing_path": "/path/to/my/project"}'
+
+# Path B — fresh Q&A wizard
+curl -X POST http://localhost:8000/onboarding/session \
+  -d '{"path": "B"}'
+```
+
+---
+
+## SWE Agent (open-swe pattern)
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/swe/task` | Submit coding task → autonomous explore/plan/implement/PR |
+
+**Body:**
+```json
+{"task": "Fix null pointer in CheckoutService", "repo_path": "/path/to/repo"}
+```
+
+**Returns:** `{"run_id": "...", "status": "awaiting_approval", "result": {"pr_url": "..."}}`
+
+Approve via `POST /workflow/resume {"run_id": "...", "feedback": {"approved": true}}`
+
+---
+
+## Visual Workflows
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/workflows` | List all LangGraph workflows across all solutions |
+| GET | `/workflows/{solution}/{workflow_name}` | Get workflow + Mermaid diagram |
+
+Mermaid diagrams are auto-generated from `StateGraph.draw_mermaid()` — always accurate.
+
+---
+
+## Task Queue
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/queue/status` | Queue depth, running tasks, worker count |
+| POST | `/queue/config` | `?max_workers=4&parallel_enabled=true` |
+| POST | `/task` | Submit task `{"task_type": "...", "input_data": {...}, "depends_on": []}` |
+| GET | `/tasks` | List tasks with optional status filter |
+| GET | `/tasks/{task_id}` | Get task details |
 
 ---
 
@@ -103,6 +196,32 @@ All endpoints are served at `http://localhost:8000`. Every response is JSON.
 |---|---|---|
 | GET | `/mcp/tools` | List registered MCP tools |
 | POST | `/mcp/invoke` | Invoke tool `{"tool_name": "...", "args": {}}` |
+
+---
+
+## HIL — Hardware-in-the-Loop Testing
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/hil/status` | HIL runner status, active transport |
+| POST | `/hil/connect` | Connect to hardware `{"transport": "serial", "port": "/dev/ttyUSB0"}` |
+| POST | `/hil/run-suite` | Run test suite `{"suite_name": "...", "firmware_path": "..."}` |
+| GET | `/hil/report/{session_id}` | Get regulatory evidence report for session |
+
+**Supported transports:** `mock` · `serial` · `jlink` · `can` · `openocd`
+
+---
+
+## Compliance
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/compliance/domains` | List supported compliance domains |
+| GET | `/compliance/flags/{domain}` | Get all compliance flags for a domain |
+| GET | `/compliance/checklist/{domain}` | Generate compliance checklist |
+| POST | `/compliance/gap-assessment` | Assess gap `{"solution_name": "...", "domain": "..."}` |
+
+**Supported domains:** `medtech` · `automotive` · `railways` · `avionics` · `iot_ics`
 
 ---
 
@@ -197,3 +316,12 @@ Add `X-SAGE-Tenant: <team_name>` header to any request to scope it to a team.
 | POST | `/feedback/feature-request` | Log improvement idea |
 | GET | `/feedback/feature-requests` | List improvement requests |
 | POST | `/feedback/feature-requests/{id}/plan` | Generate AI plan for a request |
+
+---
+
+## Notes
+
+- All write endpoints that affect shared state go through the **Proposal Store** and require `POST /approve/{trace_id}` before executing.
+- Add `X-SAGE-Tenant` header to scope any request to a team/tenant.
+- SSE streaming endpoints (`/analyze/stream`, `/agent/stream`) return `text/event-stream`.
+- The SWE agent and HIL runner each return a `run_id` for async tracking via `/workflow/status/{run_id}`.

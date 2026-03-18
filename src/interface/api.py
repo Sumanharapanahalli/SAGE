@@ -3387,18 +3387,26 @@ async def dual_llm_status():
     """Return teacher-student LLM configuration for the active solution."""
     try:
         from src.integrations.dual_llm_runner import DualLLMRunner
+        import yaml as _yaml
         pc = _get_project_config()
         solution = pc.project_name if pc else "starter"
-        runner = DualLLMRunner(solution)
-        cfg = runner.config
+        # Load llm_strategy from config.yaml if present
+        _cfg_path = os.path.join("config", "config.yaml")
+        _raw_cfg = {}
+        if os.path.exists(_cfg_path):
+            with open(_cfg_path) as _f:
+                _raw_cfg = _yaml.safe_load(_f) or {}
+        strategy_cfg = _raw_cfg.get("llm_strategy", {})
+        runner = DualLLMRunner(strategy_cfg, solution_name=solution)
         return {
             "solution": solution,
-            "mode": cfg.get("mode", "single"),
-            "strategy": cfg.get("strategy", "teacher_only"),
-            "student": cfg.get("student", {}),
-            "teacher": cfg.get("teacher", {}),
-            "distillation_enabled": cfg.get("distillation", {}).get("enabled", False),
-            "dual_mode_active": cfg.get("mode") == "dual",
+            "dual_mode_active": strategy_cfg.get("mode") == "dual",
+            "mode": strategy_cfg.get("mode", "single"),
+            "strategy": runner.default_strategy,
+            "confidence_threshold": runner.confidence_threshold,
+            "distillation_enabled": runner.distillation_enabled,
+            "teacher_provider": strategy_cfg.get("teacher", {}).get("provider"),
+            "student_provider": strategy_cfg.get("student", {}).get("provider"),
         }
     except Exception as e:
         return {"dual_mode_active": False, "error": str(e)}
