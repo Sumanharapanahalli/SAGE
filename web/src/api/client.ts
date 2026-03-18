@@ -147,6 +147,28 @@ export const hireAgent = (params: {
   icon: string; system_prompt: string; task_types: string[]
 }) => post<ProposalResponse>('/agents/hire', params)
 
+// Org Structure Templates — onboarding chooser
+export interface OrgTemplateRole {
+  key: string
+  name: string
+  description: string
+}
+
+export interface OrgTemplate {
+  id: string
+  name: string
+  description: string
+  role_count: number
+  compliance_standards: string[]
+  icon: string
+  roles: OrgTemplateRole[]
+}
+
+export async function fetchOrgTemplates(): Promise<OrgTemplate[]> {
+  const data = await get<{ templates: OrgTemplate[] }>('/onboarding/org-templates')
+  return data.templates ?? []
+}
+
 // Conversational Onboarding
 export interface OnboardingMessage { role: 'assistant' | 'user'; content: string; ts: number }
 export interface OnboardingInfo {
