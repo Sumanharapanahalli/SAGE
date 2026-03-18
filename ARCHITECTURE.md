@@ -808,10 +808,35 @@ Never short-circuit any phase. Phase 5 is not optional — every rejection is a 
 | 10 | Multi-tenant isolation | `tenant.py`, `X-SAGE-Tenant` header |
 | 11 | Temporal durable workflows | `temporal_runner.py` |
 
-### Next — Intelligence Layer (Planned)
+### Intelligence Layer v1 (Complete)
 
-- **LLM Router** — lightweight local model (1B) classifies task complexity and routes to appropriate provider; full model used only for reasoning-heavy tasks
+| Feature | Key files | Description |
+|---------|-----------|-------------|
+| **HITL ProposalStore** | `src/core/proposal_store.py`, `src/core/proposal_executor.py` | All write operations converted to proposals; `RiskClass` enum (INFORMATIONAL→DESTRUCTIVE); approve/reject triggers `ProposalExecutor` dispatch |
+| **SAGEIntelligence SLM** | `src/core/sage_intelligence.py` | Gemma 3 1B via Ollama classifies task tier (LIGHT/STANDARD/HEAVY), lints YAML, converts intent to API calls, answers framework Q&A |
+| **Teacher-Student LLM** | `src/integrations/dual_llm_runner.py` | Dual LLM strategies: `teacher_only`, `student_first`, `parallel_compare`, `student_only`; distillation logs to `data/distillation/` |
+| **Conversational Onboarding** | `src/core/onboarding.py`, `src/core/onboarding_analyzer.py` | Two-path wizard: Path A analyzes existing repo (local or GitHub URL), Path B fresh Q&A; SQLite-persisted sessions; generates all 3 YAML files |
+| **Parallel Wave Scheduler** | `src/core/queue_manager.py` `ParallelTaskRunner` | Groups independent tasks into waves; `ThreadPoolExecutor` concurrent dispatch; compliance solutions fall back to sequential; runtime config via `POST /queue/config` |
+| **open-swe SWE Workflow** | `solutions/starter/workflows/swe_workflow.py` | LangGraph 6-node pipeline: explore→plan→implement→verify→propose_pr→[HITL gate]→finalize; auto-detects stack; opens real GitHub PR; `POST /swe/task` |
+| **Visual Workflows** | `src/interface/api.py GET /workflows`, `web/src/pages/Workflows.tsx` | Auto-generates Mermaid diagrams from LangGraph `draw_mermaid()`; regex fallback parser; rendered in dashboard with mermaid.js |
+
+### Paperclip Dashboard (Complete)
+
+Full Paperclip-style founder command center. One human + AI agent team, everything visible from one screen.
+
+| Page | Route | Description |
+|------|-------|-------------|
+| **Approvals** | `/approvals` | HITL inbox — risk-sorted proposals, batch approve, auto-poll, sidebar count badge |
+| **Issues** | `/issues` | Feature backlog with priority, status filters, slide-over detail |
+| **Activity** | `/activity` | Real-time audit log timeline — color-coded by event type, auto-refresh 5s |
+| **Goals** | `/goals` | OKR tracker — objectives + key results, progress bars, localStorage persistence |
+| **Org Chart** | `/org` | Agent team hierarchy — Founder → 6 roles, live status dots, task counts |
+| **Workflows** | `/workflows` | Mermaid diagram viewer — one card per workflow, full-screen modal, copy button |
+
+**UI changes:** CompanyRail (far-left solution switcher), sharp zero-radius zinc aesthetic, Cmd+K command palette (all 16 routes), sidebar grouped WORK/AGENTS/INTELLIGENCE/SETTINGS.
+
+### Next — Platform Expansion
+
 - **Marketplace** — community-contributed solution YAML bundles
 - **SaaS delivery** — hosted SAGE with solution selection at sign-up
-- **RBAC** — role-based access control on approvals and feature requests
-- **Compliance report generation** — per-solution audit export in regulatory formats
+- **Compliance report generation** — per-solution audit export in regulatory formats (ISO 13485, FDA 21 CFR Part 11)

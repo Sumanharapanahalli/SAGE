@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar'
 import Header from './components/layout/Header'
+import CommandPalette from './components/CommandPalette'
 import Dashboard from './pages/Dashboard'
 import Analyst from './pages/Analyst'
 import Developer from './pages/Developer'
@@ -17,6 +19,12 @@ import Integrations from './pages/Integrations'
 import Queue from './pages/Queue'
 import AccessControl from './pages/AccessControl'
 import Costs from './pages/Costs'
+import Workflows from './pages/Workflows'
+import Approvals from './pages/Approvals'
+import Goals from './pages/Goals'
+import OrgChart from './pages/OrgChart'
+import Issues from './pages/Issues'
+import Activity from './pages/Activity'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
 
@@ -34,15 +42,27 @@ import { AuthProvider } from './context/AuthContext'
 // framework. The framework ships with universal pages only.
 // ---------------------------------------------------------------------------
 
-export default function App() {
+function AppShell() {
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
+  // Cmd+K / Ctrl+K opens the command palette
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setPaletteOpen(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
   return (
-    <BrowserRouter>
-      <AuthProvider>
-      <ThemeProvider>
-      <div className="flex h-screen overflow-hidden bg-gray-50">
+    <>
+      <div className="flex h-screen overflow-hidden bg-zinc-50">
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <Header />
+          <Header onOpenPalette={() => setPaletteOpen(true)} />
           <main className="flex-1 overflow-y-auto p-6">
             <Routes>
               <Route path="/"             element={<Dashboard />} />
@@ -61,11 +81,28 @@ export default function App() {
               <Route path="/queue"          element={<Queue />} />
               <Route path="/access-control" element={<AccessControl />} />
               <Route path="/costs"          element={<Costs />} />
+              <Route path="/workflows"      element={<Workflows />} />
+              <Route path="/approvals"      element={<Approvals />} />
+              <Route path="/goals"          element={<Goals />} />
+              <Route path="/org"            element={<OrgChart />} />
+              <Route path="/issues"         element={<Issues />} />
+              <Route path="/activity"       element={<Activity />} />
             </Routes>
           </main>
         </div>
       </div>
-      </ThemeProvider>
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <ThemeProvider>
+          <AppShell />
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   )

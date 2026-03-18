@@ -52,50 +52,57 @@ function ResultCard({ result }: { result: AgentResult }) {
   const sevStyle = SEV_STYLES[result.severity] ?? SEV_STYLES.GREEN
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div
+      className="overflow-hidden"
+      style={{ border: '1px solid #3f3f46', backgroundColor: '#18181b' }}
+    >
       {/* Header */}
-      <div className="flex items-start gap-3 px-5 py-4">
-        <span className="text-2xl shrink-0">{result.icon}</span>
+      <div className="flex items-start gap-3 px-4 py-3">
+        <span className="text-xl shrink-0">{result.icon}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-gray-800 text-sm">{result.role_name}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${sevStyle}`}>
+            <span className="font-semibold text-sm" style={{ color: '#f4f4f5' }}>{result.role_name}</span>
+            <span
+              className="text-xs px-1.5 py-0.5 font-medium"
+              style={{ border: '1px solid #3f3f46', color: '#a1a1aa' }}
+            >
               {result.severity}
             </span>
             <span className={`text-xs font-medium ${CONF_COLOR[result.confidence] ?? 'text-gray-500'}`}>
-              {result.confidence} confidence
+              {result.confidence} conf
             </span>
           </div>
-          <p className="text-sm text-gray-700 mt-1 font-medium">{result.summary}</p>
-          <p className="text-xs text-gray-400 mt-0.5 font-mono truncate">
+          <p className="text-sm font-medium mt-1" style={{ color: '#d4d4d8' }}>{result.summary}</p>
+          <p className="text-xs mt-0.5 font-mono truncate" style={{ color: '#52525b' }}>
             trace: {result.trace_id.slice(0, 16)}…
           </p>
         </div>
         <button
           onClick={() => setExpanded(v => !v)}
-          className="text-gray-400 hover:text-gray-600 shrink-0"
+          className="shrink-0"
+          style={{ color: '#52525b' }}
         >
-          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </button>
       </div>
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="border-t border-gray-100 px-5 pb-5 pt-4 space-y-4">
+        <div className="px-4 pb-4 pt-3 space-y-3" style={{ borderTop: '1px solid #27272a' }}>
           {/* Analysis */}
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Analysis</h4>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{result.analysis}</p>
+            <h4 className="text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: '#52525b' }}>Analysis</h4>
+            <p className="text-xs whitespace-pre-wrap leading-relaxed" style={{ color: '#a1a1aa' }}>{result.analysis}</p>
           </div>
 
           {/* Recommendations */}
           {result.recommendations.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Recommendations</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#52525b' }}>Recommendations</h4>
               <ul className="space-y-1.5">
                 {result.recommendations.map((r, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <CheckCircle size={14} className="text-green-500 mt-0.5 shrink-0" />
+                  <li key={i} className="flex items-start gap-2 text-xs" style={{ color: '#a1a1aa' }}>
+                    <CheckCircle size={12} className="mt-0.5 shrink-0" style={{ color: '#22c55e' }} />
                     {r}
                   </li>
                 ))}
@@ -106,12 +113,14 @@ function ResultCard({ result }: { result: AgentResult }) {
           {/* Next steps */}
           {result.next_steps.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Next Steps</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#52525b' }}>Next Steps</h4>
               <ol className="space-y-1.5 list-none">
                 {result.next_steps.map((s, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="bg-gray-100 text-gray-600 text-xs font-bold rounded-full w-5 h-5
-                                     flex items-center justify-center shrink-0 mt-0.5">
+                  <li key={i} className="flex items-start gap-2 text-xs" style={{ color: '#a1a1aa' }}>
+                    <span
+                      className="text-xs font-bold w-4 h-4 flex items-center justify-center shrink-0 mt-0.5"
+                      style={{ backgroundColor: '#27272a', color: '#71717a' }}
+                    >
                       {i + 1}
                     </span>
                     {s}
@@ -121,8 +130,11 @@ function ResultCard({ result }: { result: AgentResult }) {
             </div>
           )}
 
-          <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            ⚠ Pending human review — approve or reject this recommendation before acting on it.
+          <p
+            className="text-xs px-3 py-2"
+            style={{ backgroundColor: '#1a1500', border: '1px solid #52400a', color: '#a16207' }}
+          >
+            Pending human review — approve or reject this recommendation before acting on it.
           </p>
         </div>
       )}
@@ -131,7 +143,7 @@ function ResultCard({ result }: { result: AgentResult }) {
 }
 
 // ---------------------------------------------------------------------------
-// Role selector card
+// Role selector card — Paperclip-style sharp card grid
 // ---------------------------------------------------------------------------
 function RoleCard({
   role,
@@ -145,15 +157,40 @@ function RoleCard({
   return (
     <button
       onClick={onClick}
-      className={`text-left p-4 rounded-xl border transition-all ${
-        selected
-          ? 'border-indigo-400 bg-indigo-50 shadow-sm'
-          : 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50'
-      }`}
+      className="text-left p-4 transition-all w-full"
+      style={{
+        border: selected ? '1px solid #f4f4f5' : '1px solid #3f3f46',
+        backgroundColor: selected ? '#27272a' : '#18181b',
+        color: selected ? '#f4f4f5' : '#a1a1aa',
+      }}
     >
-      <div className="text-2xl mb-2">{role.icon}</div>
-      <div className="text-sm font-semibold text-gray-800">{role.name}</div>
-      <div className="text-xs text-gray-500 mt-0.5 leading-snug">{role.description}</div>
+      {/* Status indicator + icon row */}
+      <div className="flex items-start justify-between mb-3">
+        <span className="text-xl">{role.icon}</span>
+        {/* Status dot: always "idle" in this view — active when selected */}
+        <span
+          className="w-1.5 h-1.5 mt-1"
+          style={{
+            display: 'inline-block',
+            backgroundColor: selected ? '#22c55e' : '#52525b',
+            flexShrink: 0,
+          }}
+          title={selected ? 'Active' : 'Idle'}
+        />
+      </div>
+      <div className="text-xs font-semibold mb-0.5" style={{ color: selected ? '#f4f4f5' : '#a1a1aa' }}>
+        {role.name}
+      </div>
+      <div className="text-xs leading-snug" style={{ color: '#52525b' }}>
+        {role.description}
+      </div>
+      {/* Status label */}
+      <div
+        className="mt-2 text-xs font-medium"
+        style={{ color: selected ? '#22c55e' : '#3f3f46' }}
+      >
+        {selected ? 'active' : 'idle'}
+      </div>
     </button>
   )
 }
@@ -199,22 +236,36 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
 
   const autoRoleId = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
 
+  const inputStyle = {
+    backgroundColor: '#09090b',
+    border: '1px solid #3f3f46',
+    color: '#d4d4d8',
+    width: '100%',
+    padding: '0.5rem 0.75rem',
+    fontSize: '0.875rem',
+    outline: 'none',
+  }
+
   if (submitted) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center space-y-4">
-          <div className="text-4xl">{icon}</div>
-          <h3 className="text-lg font-semibold text-gray-800">Proposal submitted</h3>
-          <p className="text-sm text-gray-600">{submitted.description}</p>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-700 text-left">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div
+          className="w-full max-w-md p-8 text-center space-y-4"
+          style={{ backgroundColor: '#18181b', border: '1px solid #3f3f46' }}
+        >
+          <div className="text-3xl">{icon}</div>
+          <h3 className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>Proposal submitted</h3>
+          <p className="text-xs" style={{ color: '#a1a1aa' }}>{submitted.description}</p>
+          <div className="px-4 py-3 text-xs text-left" style={{ backgroundColor: '#1a1500', border: '1px solid #52400a', color: '#a16207' }}>
             <p className="font-semibold mb-1">Waiting for human approval</p>
             <p>Go to <strong>Proposals &amp; Approvals</strong> in the sidebar to approve this role.
                Once approved, the role card will appear immediately in the Agents page.</p>
-            <p className="mt-1 font-mono text-amber-500">trace: {submitted.trace_id.slice(0, 16)}…</p>
+            <p className="mt-1 font-mono" style={{ color: '#71717a' }}>trace: {submitted.trace_id.slice(0, 16)}…</p>
           </div>
           <button
             onClick={onClose}
-            className="w-full bg-indigo-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-indigo-700"
+            className="w-full py-2.5 text-sm font-medium transition-colors"
+            style={{ backgroundColor: '#f4f4f5', color: '#09090b' }}
           >
             Done
           </button>
@@ -224,31 +275,36 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        style={{ backgroundColor: '#18181b', border: '1px solid #3f3f46' }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #27272a' }}>
           <div className="flex items-center gap-2">
-            <UserPlus size={18} className="text-indigo-600" />
-            <h2 className="text-base font-semibold text-gray-800">Hire a New Agent</h2>
+            <UserPlus size={15} style={{ color: '#71717a' }} />
+            <h2 className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>Hire a New Agent</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X size={18} />
+          <button onClick={onClose} style={{ color: '#52525b' }}>
+            <X size={16} />
           </button>
         </div>
 
-        <div className="px-6 py-5 space-y-4">
+        <div className="px-5 py-4 space-y-4">
           {/* Icon picker */}
           <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1.5">Icon</label>
-            <div className="flex flex-wrap gap-2 mb-2">
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>Icon</label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
               {EMOJI_SUGGESTIONS.map(e => (
                 <button
                   key={e}
                   onClick={() => setIcon(e)}
-                  className={`text-xl w-9 h-9 rounded-lg border flex items-center justify-center transition-all ${
-                    icon === e ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'
-                  }`}
+                  className="text-lg w-8 h-8 flex items-center justify-center transition-all"
+                  style={{
+                    border: icon === e ? '1px solid #f4f4f5' : '1px solid #3f3f46',
+                    backgroundColor: icon === e ? '#27272a' : 'transparent',
+                  }}
                 >{e}</button>
               ))}
             </div>
@@ -256,94 +312,95 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
               value={icon}
               onChange={e => setIcon(e.target.value)}
               placeholder="Or type any emoji"
-              className="w-24 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              style={{ ...inputStyle, width: '6rem', textAlign: 'center' }}
             />
           </div>
 
           {/* Name */}
           <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1.5">
-              Display Name <span className="text-red-500">*</span>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+              Display Name <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <input
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Security Reviewer"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              style={inputStyle}
             />
             {name && (
-              <p className="text-xs text-gray-400 mt-1">
-                Role ID: <code className="bg-gray-100 px-1 rounded">{autoRoleId || '…'}</code>
+              <p className="text-xs mt-1" style={{ color: '#52525b' }}>
+                Role ID: <code style={{ backgroundColor: '#27272a', padding: '0 4px', color: '#a1a1aa' }}>{autoRoleId || '…'}</code>
               </p>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1.5">
-              Description <span className="text-red-500">*</span>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+              Description <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <input
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="e.g. Reviews code and configs for security vulnerabilities"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              style={inputStyle}
             />
           </div>
 
           {/* System prompt */}
           <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1.5">
-              System Prompt <span className="text-red-500">*</span>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+              System Prompt <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <textarea
               value={systemPrompt}
               onChange={e => setSystemPrompt(e.target.value)}
               placeholder={`You are a [role] expert.\nWhen given a task:\n1. Analyze carefully\n2. Provide actionable recommendations\n\nReturn JSON with: summary, analysis, recommendations, next_steps, severity, confidence`}
               rows={7}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono
-                         resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="font-mono resize-none focus:outline-none"
+              style={inputStyle}
             />
           </div>
 
           {/* Task types */}
           <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1.5">
-              Task Types <span className="text-gray-400 font-normal">(optional, comma-separated)</span>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+              Task Types <span style={{ color: '#52525b' }}>(optional, comma-separated)</span>
             </label>
             <input
               value={taskTypesStr}
               onChange={e => setTaskTypesStr(e.target.value)}
               placeholder="e.g. SECURITY_REVIEW, VULN_SCAN"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              style={inputStyle}
             />
-            <p className="text-xs text-gray-400 mt-1">Will be added to this solution's tasks.yaml</p>
+            <p className="text-xs mt-1" style={{ color: '#52525b' }}>Will be added to this solution's tasks.yaml</p>
           </div>
 
           {error && (
-            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="text-xs px-3 py-2" style={{ backgroundColor: '#1a0000', border: '1px solid #7f1d1d', color: '#fca5a5' }}>
               {(error as Error).message}
             </p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 px-6 pb-6">
+        <div className="flex gap-2 px-5 pb-5">
           <button
             onClick={onClose}
-            className="flex-1 border border-gray-200 text-gray-600 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50"
+            className="flex-1 py-2.5 text-sm font-medium transition-colors"
+            style={{ border: '1px solid #3f3f46', color: '#71717a', backgroundColor: 'transparent' }}
           >
             Cancel
           </button>
           <button
             onClick={() => mutate()}
             disabled={isPending || !name.trim() || !description.trim() || !systemPrompt.trim()}
-            className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700
-                       disabled:opacity-40 text-white rounded-lg py-2.5 text-sm font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 text-sm font-medium py-2.5 transition-colors disabled:opacity-40"
+            style={{ backgroundColor: '#f4f4f5', color: '#09090b' }}
           >
             {isPending
-              ? <><Loader2 size={15} className="animate-spin" /> Proposing…</>
-              : <><UserPlus size={15} /> Propose Role</>
+              ? <><Loader2 size={14} className="animate-spin" /> Proposing…</>
+              : <><UserPlus size={14} /> Propose Role</>
             }
           </button>
         </div>
@@ -382,8 +439,8 @@ export default function Agents() {
 
   if (rolesLoading) {
     return (
-      <div className="flex items-center justify-center h-48 text-gray-400 gap-2">
-        <Loader2 className="animate-spin" size={18} /> Loading agents…
+      <div className="flex items-center justify-center h-48 gap-2" style={{ color: '#52525b' }}>
+        <Loader2 className="animate-spin" size={16} /> Loading agents…
       </div>
     )
   }
@@ -395,21 +452,23 @@ export default function Agents() {
         <div className="flex justify-end">
           <button
             onClick={() => setShowHire(true)}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700
-                       text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 transition-colors"
+            style={{ backgroundColor: '#f4f4f5', color: '#09090b' }}
           >
-            <UserPlus size={15} /> Hire Agent
+            <UserPlus size={13} /> Hire Agent
           </button>
         </div>
-        <div className="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center max-w-xl mx-auto">
-          <div className="text-4xl mb-3">🤖</div>
-          <div className="font-semibold text-gray-700 mb-1">No agent roles defined</div>
-          <p className="text-sm text-gray-400">
-            Click <strong>Hire Agent</strong> above to define a new role on the fly — it writes
-            directly to <code className="bg-gray-100 px-1 rounded">prompts.yaml</code> via HITL approval.
-            <br /><br />
-            Or switch to a solution that has agent roles defined in its{' '}
-            <code className="bg-gray-100 px-1 rounded">prompts.yaml</code>.
+        <div
+          className="p-12 text-center max-w-xl mx-auto"
+          style={{ border: '1px dashed #3f3f46', backgroundColor: '#18181b' }}
+        >
+          <div className="text-3xl mb-3">🤖</div>
+          <div className="font-semibold mb-1 text-sm" style={{ color: '#a1a1aa' }}>No agent roles defined</div>
+          <p className="text-xs" style={{ color: '#52525b' }}>
+            Click <strong style={{ color: '#71717a' }}>Hire Agent</strong> above to define a new role on the fly — it writes
+            directly to <code style={{ backgroundColor: '#27272a', padding: '0 4px', color: '#a1a1aa' }}>prompts.yaml</code> via HITL approval.
+            {' '}Or switch to a solution that has agent roles defined in its{' '}
+            <code style={{ backgroundColor: '#27272a', padding: '0 4px', color: '#a1a1aa' }}>prompts.yaml</code>.
           </p>
         </div>
       </div>
@@ -417,28 +476,28 @@ export default function Agents() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-5 max-w-4xl">
       {showHire && <HireAgentModal onClose={() => setShowHire(false)} />}
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">AI Agents</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Select a role, describe your task, and get expert-level analysis with recommendations.
+          <h2 className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>AI Agents</h2>
+          <p className="text-xs mt-0.5" style={{ color: '#71717a' }}>
+            Select a role, describe your task, and get expert-level analysis.
             Every result requires human approval before acting.
           </p>
         </div>
         <button
           onClick={() => setShowHire(true)}
-          className="flex items-center gap-1.5 shrink-0 bg-indigo-600 hover:bg-indigo-700
-                     text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 shrink-0 text-xs font-medium px-3 py-2 transition-colors"
+          style={{ backgroundColor: '#f4f4f5', color: '#09090b' }}
         >
-          <UserPlus size={15} /> Hire Agent
+          <UserPlus size={13} /> Hire Agent
         </button>
       </div>
 
-      {/* Role grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      {/* Role grid — Paperclip org-chart style */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
         {roles.map(role => (
           <RoleCard
             key={role.id}
@@ -451,11 +510,11 @@ export default function Agents() {
 
       {/* Task form */}
       {selectedRole && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
+        <div className="p-4 space-y-4" style={{ border: '1px solid #3f3f46', backgroundColor: '#18181b' }}>
           <div className="flex items-center gap-2">
-            <span className="text-xl">{selectedRole.icon}</span>
-            <h3 className="font-semibold text-gray-800">{selectedRole.name}</h3>
-            <span className="text-xs text-gray-400">— {selectedRole.description}</span>
+            <span className="text-lg">{selectedRole.icon}</span>
+            <h3 className="font-semibold text-sm" style={{ color: '#f4f4f5' }}>{selectedRole.name}</h3>
+            <span className="text-xs" style={{ color: '#52525b' }}>— {selectedRole.description}</span>
           </div>
 
           {/* Task templates — loaded from project.yaml ui_labels.agent_quick_templates */}
@@ -465,16 +524,16 @@ export default function Agents() {
             return (
               <div>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <Sparkles size={12} className="text-indigo-500" />
-                  <span className="text-xs font-medium text-gray-500">Quick templates</span>
+                  <Sparkles size={11} style={{ color: '#71717a' }} />
+                  <span className="text-xs font-medium" style={{ color: '#52525b' }}>Quick templates</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {templates.map(tmpl => (
                     <button
                       key={tmpl.label}
                       onClick={() => { setTask(tmpl.task); if (tmpl.context) setContext(tmpl.context) }}
-                      className="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1.5
-                                 rounded-lg border border-indigo-200 transition-colors"
+                      className="text-xs px-2 py-1 transition-colors"
+                      style={{ backgroundColor: '#27272a', color: '#a1a1aa', border: '1px solid #3f3f46' }}
                     >
                       {tmpl.label}
                     </button>
@@ -485,42 +544,49 @@ export default function Agents() {
           })()}
 
           <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1.5">
-              Task / Question <span className="text-red-500">*</span>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+              Task / Question <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <textarea
               value={task}
               onChange={e => setTask(e.target.value)}
               placeholder={`Describe what you need from the ${selectedRole.name}…`}
               rows={4}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm
-                         resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full px-3 py-2.5 text-sm resize-none focus:outline-none"
+              style={{
+                backgroundColor: '#09090b',
+                border: '1px solid #3f3f46',
+                color: '#d4d4d8',
+              }}
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1.5">
-              Additional context <span className="text-gray-400 font-normal">(optional)</span>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+              Additional context <span style={{ color: '#52525b' }}>(optional)</span>
             </label>
             <textarea
               value={context}
               onChange={e => setContext(e.target.value)}
               placeholder="Company stage, constraints, existing work, relevant numbers…"
               rows={2}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                         resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full px-3 py-2 text-sm resize-none focus:outline-none"
+              style={{
+                backgroundColor: '#09090b',
+                border: '1px solid #3f3f46',
+                color: '#d4d4d8',
+              }}
             />
           </div>
 
           <button
             onClick={() => mutate()}
             disabled={isPending || !task.trim()}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700
-                       disabled:opacity-40 text-white text-sm font-medium
-                       px-5 py-2.5 rounded-lg transition-colors"
+            className="flex items-center gap-2 text-sm font-medium px-4 py-2 transition-colors disabled:opacity-40"
+            style={{ backgroundColor: '#f4f4f5', color: '#09090b' }}
           >
             {isPending
-              ? <><Loader2 size={15} className="animate-spin" /> {selectedRole.name} is thinking…</>
+              ? <><Loader2 size={14} className="animate-spin" /> {selectedRole.name} is thinking…</>
               : <><span>{selectedRole.icon}</span> Ask {selectedRole.name}</>
             }
           </button>
@@ -529,14 +595,15 @@ export default function Agents() {
 
       {/* Results */}
       {results.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+            <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#52525b' }}>
               Results — {results.length}
             </h3>
             <button
               onClick={() => setResults([])}
-              className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+              className="text-xs transition-colors"
+              style={{ color: '#52525b' }}
             >
               Clear all
             </button>

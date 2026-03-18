@@ -306,6 +306,51 @@ curl http://localhost:8000/knowledge/entries | python -m json.tool
 
 ---
 
+## Intelligence Layer Features
+
+### Approvals Inbox
+The **Approvals** page (`/approvals`) is the founder's primary interface. Every AI-proposed write action — YAML changes, LLM switches, knowledge imports — surfaces here as a risk-ranked proposal before anything is executed. Approve or reject with one click.
+
+Risk levels: INFORMATIONAL (gray) → EPHEMERAL → STATEFUL → EXTERNAL → DESTRUCTIVE (red). Low-risk proposals can be batch-approved.
+
+### SWE Agent (open-swe pattern)
+Submit a coding task and the SWE agent autonomously explores the repo, plans the changes, implements them, runs targeted tests, and opens a GitHub PR — then pauses for your review before marking complete.
+
+```bash
+curl -X POST http://localhost:8000/swe/task \
+  -H "Content-Type: application/json" \
+  -d '{"task": "Fix null pointer in CheckoutService", "repo_path": "/path/to/repo"}'
+# Returns: {"run_id": "...", "status": "awaiting_approval", "result": {"pr_url": ...}}
+```
+
+Approve the PR via `POST /workflow/resume {"run_id": "...", "feedback": {"approved": true}}`.
+
+### Visual Workflows
+The **Workflows** page (`/workflows`) auto-generates Mermaid diagrams from every LangGraph StateGraph in every solution. Open it to show any founder or stakeholder the exact flow each agent follows — always accurate, never stale.
+
+### Parallel Task Execution
+Independent tasks now run concurrently in waves. Solutions with `compliance_standards` automatically fall back to sequential single-lane execution. Adjust at runtime:
+```bash
+curl -X POST "http://localhost:8000/queue/config?max_workers=4&parallel_enabled=true"
+```
+
+### Conversational Onboarding — Analyze Existing Repo
+If you already have a codebase, point SAGE at it and the LLM will analyze it, detect your stack, CI system, and compliance hints, then generate all three YAML files and confirm its understanding before writing:
+
+```bash
+# Path A — analyze existing local repo
+curl -X POST http://localhost:8000/onboarding/session \
+  -d '{"path": "A", "existing_path": "/path/to/my/project"}'
+
+# Path B — fresh Q&A wizard
+curl -X POST http://localhost:8000/onboarding/session \
+  -d '{"path": "B"}'
+```
+
+Or use the **Onboarding** page in the web UI for a guided step-by-step flow.
+
+---
+
 ## Next Steps
 
 | Goal | Read |

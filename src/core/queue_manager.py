@@ -14,6 +14,11 @@ Task types:
 ISO 13485 Note: Single-lane serialized execution ensures a deterministic,
 auditable sequence of AI actions. No parallel AI decisions.
 
+Wave Execution Note: When compliance_mode is False, ParallelTaskRunner groups
+independent tasks (no depends_on) into wave 0 and runs them concurrently via
+ThreadPoolExecutor. Tasks with depends_on are deferred to subsequent waves.
+LLM calls inside each task still route through the single-lane LLMGateway lock.
+
 Persistence Note: Tasks are written to SQLite on submit and updated on
 completion/failure. Pending tasks are restored on process restart.
 """
@@ -26,8 +31,9 @@ import sqlite3
 import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +56,8 @@ class Task:
     """Represents a single unit of work in the task queue."""
 
     def __init__(self, task_type: str, payload: dict, priority: int = 5,
-                 plan_trace_id: str = "", source: str = ""):
+                 plan_trace_id: str = "", source: str = "",
+                 depends_on: Optional[List[str]] = None):
         self.task_id = str(uuid.uuid4())
         self.task_type = task_type
         self.payload = payload
@@ -63,6 +70,10 @@ class Task:
         self.error: Optional[str] = None
         self.plan_trace_id: str = plan_trace_id
         self.source: str = source
+        # List of task_ids this task depends on (empty = no dependencies = wave 0)
+        self.depends_on: List[str] = depends_on or []
+        # Wave metadata populated by ParallelTaskRunner at dispatch time
+        self.metadata: dict = {}
 
     def __lt__(self, other: "Task") -> bool:
         """Priority queue comparison: lower priority number = higher priority."""
@@ -79,6 +90,8 @@ class Task:
             "completed_at": self.completed_at,
             "error": self.error,
             "payload_keys": list(self.payload.keys()),
+            "depends_on": self.depends_on,
+            "metadata": self.metadata,
         }
 
 
@@ -130,7 +143,12 @@ class TaskQueue:
             """)
             conn.commit()
             # Migration: add columns to pre-existing databases
-            for col, col_type in [("plan_trace_id", "TEXT"), ("source", "TEXT")]:
+            for col, col_type in [
+                ("plan_trace_id", "TEXT"),
+                ("source", "TEXT"),
+                ("depends_on", "TEXT"),
+                ("metadata", "TEXT"),
+            ]:
                 try:
                     conn.execute(f"ALTER TABLE task_queue ADD COLUMN {col} {col_type}")
                     conn.commit()
@@ -169,6 +187,10 @@ class TaskQueue:
                 task.completed_at = None
                 task.result = None
                 task.error = None
+                raw_depends = row["depends_on"] if "depends_on" in row.keys() else None
+                task.depends_on = json.loads(raw_depends) if raw_depends else []
+                raw_meta = row["metadata"] if "metadata" in row.keys() else None
+                task.metadata = json.loads(raw_meta) if raw_meta else {}
 
                 with self._lock:
                     self._tasks[task.task_id] = task
@@ -188,8 +210,9 @@ class TaskQueue:
             conn = sqlite3.connect(self._db_path)
             conn.execute(
                 "INSERT OR REPLACE INTO task_queue "
-                "(task_id, task_type, payload, priority, status, created_at, plan_trace_id, source) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "(task_id, task_type, payload, priority, status, created_at, "
+                "plan_trace_id, source, depends_on, metadata) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     task.task_id,
                     task.task_type,
@@ -199,6 +222,8 @@ class TaskQueue:
                     task.created_at,
                     task.plan_trace_id,
                     task.source,
+                    json.dumps(task.depends_on),
+                    json.dumps(task.metadata),
                 ),
             )
             conn.commit()
@@ -207,12 +232,12 @@ class TaskQueue:
             self.logger.error("DB insert failed for task %s: %s", task.task_id, exc)
 
     def _db_update(self, task: Task):
-        """Update status, timestamps and result/error for an existing task."""
+        """Update status, timestamps, result/error, and metadata for an existing task."""
         try:
             conn = sqlite3.connect(self._db_path)
             conn.execute(
                 "UPDATE task_queue "
-                "SET status=?, started_at=?, completed_at=?, result=?, error=? "
+                "SET status=?, started_at=?, completed_at=?, result=?, error=?, metadata=? "
                 "WHERE task_id=?",
                 (
                     task.status,
@@ -220,6 +245,7 @@ class TaskQueue:
                     task.completed_at,
                     json.dumps(task.result) if task.result is not None else None,
                     task.error,
+                    json.dumps(task.metadata),
                     task.task_id,
                 ),
             )
@@ -233,7 +259,8 @@ class TaskQueue:
     # -----------------------------------------------------------------------
 
     def submit(self, task_type: str, payload: dict, priority: int = 5,
-               plan_trace_id: str = "", source: str = "") -> str:
+               plan_trace_id: str = "", source: str = "",
+               depends_on: Optional[List[str]] = None) -> str:
         """
         Adds a new task to the queue and persists it to SQLite.
 
@@ -243,11 +270,14 @@ class TaskQueue:
             priority:       Integer priority 1-10 (1=highest, default=5)
             plan_trace_id:  Optional trace_id of the implementation plan proposal
             source:         'sage' for framework tasks, 'solution' for solution tasks
+            depends_on:     Optional list of task_ids this task depends on.
+                            Tasks with no depends_on are placed in wave 0.
 
         Returns:
             task_id string for tracking.
         """
-        task = Task(task_type, payload, priority, plan_trace_id=plan_trace_id, source=source)
+        task = Task(task_type, payload, priority, plan_trace_id=plan_trace_id,
+                    source=source, depends_on=depends_on)
         with self._lock:
             self._tasks[task.task_id] = task
         self._db_insert(task)
@@ -297,7 +327,10 @@ class TaskQueue:
                 self.logger.info("Task completed: %s (id: %s)", task.task_type, task_id)
             else:
                 self.logger.warning("mark_done called for unknown task_id: %s", task_id)
-        self._queue.task_done()
+        try:
+            self._queue.task_done()
+        except ValueError:
+            pass  # task was not dequeued via get_next() (e.g. parallel runner path)
 
     def mark_failed(self, task_id: str, error: str):
         """Marks a task as failed and persists the error message."""
@@ -473,7 +506,269 @@ class TaskWorker(threading.Thread):
 
 
 # ---------------------------------------------------------------------------
+# Parallel Task Runner
+# ---------------------------------------------------------------------------
+
+class ParallelConfig:
+    """
+    Runtime-adjustable configuration for ParallelTaskRunner.
+
+    Attributes:
+        max_workers:       Maximum threads in the pool (default 4).
+        parallel_enabled:  When False the runner falls back to sequential,
+                           identical to the legacy single-lane behaviour.
+    """
+
+    def __init__(self, max_workers: int = 4, parallel_enabled: bool = True):
+        self._lock = threading.Lock()
+        self._max_workers = max_workers
+        self._parallel_enabled = parallel_enabled
+
+    @property
+    def max_workers(self) -> int:
+        with self._lock:
+            return self._max_workers
+
+    @max_workers.setter
+    def max_workers(self, value: int):
+        with self._lock:
+            self._max_workers = max(1, int(value))
+
+    @property
+    def parallel_enabled(self) -> bool:
+        with self._lock:
+            return self._parallel_enabled
+
+    @parallel_enabled.setter
+    def parallel_enabled(self, value: bool):
+        with self._lock:
+            self._parallel_enabled = bool(value)
+
+    def to_dict(self) -> dict:
+        with self._lock:
+            return {
+                "max_workers": self._max_workers,
+                "parallel_enabled": self._parallel_enabled,
+            }
+
+
+class ParallelTaskRunner:
+    """
+    Wave-based parallel task executor.
+
+    A *wave* is a set of tasks that share no data dependencies and can
+    therefore run concurrently.  The scheduler:
+
+      1. Inspects all PENDING tasks passed to execute_parallel().
+      2. Assigns tasks with an empty depends_on list to wave 0.
+      3. Assigns tasks whose entire depends_on set is satisfied by wave N
+         to wave N+1.
+      4. Submits each wave to a ThreadPoolExecutor, waiting for every task
+         in the wave to complete before advancing.
+
+    Compliance override:
+      If compliance_mode=True (project has compliance_standards set) the runner
+      falls back to strict sequential single-lane execution regardless of the
+      parallel_enabled flag.  This matches the ISO 13485 guarantee.
+
+    LLM single-lane guarantee:
+      Task parallelism is at the *dispatch* level only.  LLM calls inside each
+      task still route through the LLMGateway's threading.Lock, so inference
+      remains single-lane.
+    """
+
+    def __init__(self, queue_manager: "TaskQueue", config: "ParallelConfig" = None):
+        self._queue = queue_manager
+        self.config = config or ParallelConfig()
+        self.logger = logging.getLogger("ParallelTaskRunner")
+        # Live state — updated during execute_parallel(); read by /queue/status
+        self._state_lock = threading.Lock()
+        self._active_wave: int = 0
+        self._wave_size: int = 0
+        self._parallel_active: bool = False
+
+    # ------------------------------------------------------------------
+    # Public state accessors (for /queue/status)
+    # ------------------------------------------------------------------
+
+    @property
+    def active_wave(self) -> int:
+        with self._state_lock:
+            return self._active_wave
+
+    @property
+    def wave_size(self) -> int:
+        with self._state_lock:
+            return self._wave_size
+
+    @property
+    def parallel_active(self) -> bool:
+        with self._state_lock:
+            return self._parallel_active
+
+    # ------------------------------------------------------------------
+    # Core execution helpers
+    # ------------------------------------------------------------------
+
+    def _run_one(self, worker: TaskWorker, task: Task) -> dict:
+        """
+        Execute a single task via the worker's _dispatch() method.
+        Updates task status on the queue and returns a result summary.
+        This method is called from a thread-pool thread.
+        """
+        task.started_at = datetime.now(timezone.utc).isoformat()
+        with self._queue._lock:
+            task.status = TaskStatus.IN_PROGRESS
+            self._queue._db_update(task)
+
+        try:
+            result = worker._dispatch(task)
+            self._queue.mark_done(task.task_id, result)
+            return {"task_id": task.task_id, "status": TaskStatus.COMPLETED, "result": result}
+        except Exception as exc:
+            self.logger.error("Parallel task %s failed: %s", task.task_id, exc)
+            self._queue.mark_failed(task.task_id, str(exc))
+            return {"task_id": task.task_id, "status": TaskStatus.FAILED, "error": str(exc)}
+
+    def run_wave(self, tasks: List[Task], wave_id: int, worker: TaskWorker) -> List[dict]:
+        """
+        Run a list of independent tasks concurrently.
+
+        Tags each task's metadata with wave_id and parallel_group (sibling
+        task IDs in the same wave) before dispatch.
+
+        Returns:
+            List of result dicts, one per task.
+        """
+        if not tasks:
+            return []
+
+        sibling_ids = [t.task_id for t in tasks]
+        for task in tasks:
+            task.metadata["wave_id"] = wave_id
+            task.metadata["parallel_group"] = [tid for tid in sibling_ids if tid != task.task_id]
+            self._queue._db_update(task)
+
+        max_workers = min(self.config.max_workers, len(tasks))
+        self.logger.info(
+            "Wave %d: dispatching %d task(s) with %d worker(s)",
+            wave_id, len(tasks), max_workers,
+        )
+
+        results: List[dict] = []
+        with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="sage-wave") as pool:
+            futures = {pool.submit(self._run_one, worker, task): task for task in tasks}
+            for future in as_completed(futures):
+                try:
+                    results.append(future.result())
+                except Exception as exc:
+                    task = futures[future]
+                    self.logger.error("Wave %d future error for %s: %s", wave_id, task.task_id, exc)
+                    results.append({"task_id": task.task_id, "status": TaskStatus.FAILED,
+                                    "error": str(exc)})
+        return results
+
+    def execute_parallel(self, pending_tasks: List[Task], worker: TaskWorker,
+                         compliance_mode: bool = False) -> None:
+        """
+        Group tasks into waves and execute them.
+
+        Wave assignment algorithm:
+          - Wave 0: tasks whose depends_on list is empty.
+          - Wave N+1: tasks whose entire depends_on set is a subset of
+            task IDs that completed in wave 0..N.
+
+        Falls back to strict sequential execution when:
+          - compliance_mode is True, OR
+          - self.config.parallel_enabled is False
+
+        Args:
+            pending_tasks:   List of Task objects to execute (all PENDING).
+            worker:          TaskWorker instance used for _dispatch().
+            compliance_mode: If True, force sequential single-lane execution.
+        """
+        if not pending_tasks:
+            return
+
+        sequential = compliance_mode or not self.config.parallel_enabled
+        mode_label = "sequential (compliance)" if compliance_mode else (
+            "sequential (parallel disabled)" if not self.config.parallel_enabled else "parallel"
+        )
+        self.logger.info(
+            "execute_parallel: %d task(s) in %s mode", len(pending_tasks), mode_label
+        )
+
+        if sequential:
+            with self._state_lock:
+                self._parallel_active = False
+                self._active_wave = 0
+                self._wave_size = 1
+            for task in pending_tasks:
+                task.started_at = datetime.now(timezone.utc).isoformat()
+                with self._queue._lock:
+                    task.status = TaskStatus.IN_PROGRESS
+                    self._queue._db_update(task)
+                try:
+                    result = worker._dispatch(task)
+                    self._queue.mark_done(task.task_id, result)
+                except Exception as exc:
+                    self.logger.error("Sequential task %s failed: %s", task.task_id, exc)
+                    self._queue.mark_failed(task.task_id, str(exc))
+            with self._state_lock:
+                self._parallel_active = False
+                self._active_wave = 0
+                self._wave_size = 0
+            return
+
+        # Build wave assignment
+        completed_ids: set = set()
+        remaining = list(pending_tasks)
+        wave_id = 0
+
+        with self._state_lock:
+            self._parallel_active = True
+
+        try:
+            while remaining:
+                # Collect tasks whose dependencies are all satisfied
+                wave_tasks = [
+                    t for t in remaining
+                    if set(t.depends_on).issubset(completed_ids)
+                ]
+                if not wave_tasks:
+                    # Dependency cycle or unresolvable — fall back to sequential remainder
+                    self.logger.warning(
+                        "Wave scheduler: %d task(s) have unresolvable dependencies, "
+                        "running sequentially.", len(remaining)
+                    )
+                    wave_tasks = remaining
+
+                with self._state_lock:
+                    self._active_wave = wave_id
+                    self._wave_size = len(wave_tasks)
+
+                results = self.run_wave(wave_tasks, wave_id, worker)
+
+                # Mark all completed tasks so subsequent waves can use them
+                for res in results:
+                    if res["status"] == TaskStatus.COMPLETED:
+                        completed_ids.add(res["task_id"])
+
+                # Remove dispatched tasks from remaining
+                dispatched_ids = {t.task_id for t in wave_tasks}
+                remaining = [t for t in remaining if t.task_id not in dispatched_ids]
+                wave_id += 1
+        finally:
+            with self._state_lock:
+                self._parallel_active = False
+                self._active_wave = 0
+                self._wave_size = 0
+
+
+# ---------------------------------------------------------------------------
 # Global instances
 # ---------------------------------------------------------------------------
+parallel_config = ParallelConfig()
 task_queue = TaskQueue()
 task_worker = TaskWorker(task_queue)
+parallel_runner = ParallelTaskRunner(task_queue, parallel_config)

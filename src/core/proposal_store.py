@@ -116,6 +116,7 @@ class ProposalStore:
         conn.commit()
         # Idempotent migrations for pre-existing databases
         _new_cols = [
+            ("expires_at",     "TEXT"),
             ("required_role",  "TEXT"),
             ("approved_by",    "TEXT DEFAULT ''"),
             ("approver_role",  "TEXT DEFAULT ''"),

@@ -120,6 +120,9 @@ memory:
 system:
   log_level: "INFO"
   max_concurrent_tasks: 1                # STRICTLY 1 for single-lane safety
+  # Parallel wave execution — ignored when compliance_standards is set on the project
+  parallel_enabled: true                 # set false to revert to single-lane for all projects
+  parallel_max_workers: 4               # max threads in the wave executor pool
 
 # --- Observability (Langfuse — optional, self-hosted or cloud) ---
 observability:

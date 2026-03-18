@@ -11,6 +11,7 @@ task_types:
   - CREATE_MR        # Create a GitLab MR from an issue description
   - MONITOR_CHECK    # Run a monitoring cycle across configured integrations
   - PLAN_TASK        # Decompose a complex request into subtasks
+  - SWE_TASK         # Autonomous SWE agent — explore, plan, implement, verify, open PR
 
 task_descriptions:
   ANALYZE_LOG:    "Analyze a log entry, error message, or event using RAG + LLM"
@@ -18,6 +19,7 @@ task_descriptions:
   CREATE_MR:      "Create a new GitLab merge request from an issue description"
   MONITOR_CHECK:  "Run one monitoring cycle across all configured integrations"
   PLAN_TASK:      "Use PlannerAgent to decompose a complex request into subtasks"
+  SWE_TASK:       "Autonomous software engineering task — explore, plan, implement, verify, and open a PR"
 
 task_payloads:
   ANALYZE_LOG:
@@ -37,3 +39,8 @@ task_payloads:
   PLAN_TASK:
     description: "string — natural language task description for the planner"
     priority:    "integer 1-10 (default: 5)"
+
+  SWE_TASK:
+    task:      "string — natural language description of the software task or issue"
+    repo_path: "string — absolute path to local repo (optional, defaults to cwd)"
+    repo_url:  "string — git URL to clone if repo is remote (optional)"

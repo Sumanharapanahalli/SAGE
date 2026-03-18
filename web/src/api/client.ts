@@ -201,6 +201,12 @@ export const approveProposalFull = (trace_id: string, decided_by = 'human', feed
     `/approve/${trace_id}`, { decided_by, feedback }
   )
 
+// Reject a proposal (analysis or action) with full decided_by + feedback
+export const rejectProposalFull = (trace_id: string, _decided_by = 'human', feedback = '') =>
+  post<{ status: string; trace_id: string; feedback_recorded: boolean; message: string }>(
+    `/reject/${trace_id}`, { feedback }
+  )
+
 // Live log stream — returns an EventSource URL (no fetch wrapper needed)
 export const logsStreamUrl = () => '/api/logs/stream'
 
@@ -250,6 +256,21 @@ export const fetchCostDaily = (params?: { tenant?: string; solution?: string; pe
 
 export const setCostBudget = (body: { tenant?: string; solution?: string; monthly_usd: number }) =>
   post<{ saved: boolean; key: string; monthly_usd: number; message: string }>('/costs/budget', body)
+
+// Workflow Diagrams
+export interface WorkflowDiagram {
+  solution: string
+  workflow_name: string
+  mermaid_diagram: string
+  node_count: number
+  description: string
+}
+
+export const fetchWorkflowDiagrams = () =>
+  get<{ workflows: WorkflowDiagram[]; count: number; error?: string }>('/workflows')
+
+export const fetchWorkflowDiagram = (solution: string, workflowName: string) =>
+  get<WorkflowDiagram>(`/workflows/${solution}/${workflowName}`)
 
 // Task Queue
 export const fetchQueueTasks = (params?: { status?: string; source?: string }) =>
@@ -423,4 +444,115 @@ export interface MonitorStatus {
   teams_configured: boolean
   metabase_configured: boolean
   gitlab_configured: boolean
+}
+
+// Issues — mapped from feature requests
+export interface Issue {
+  id: string
+  title: string
+  description: string
+  status: 'open' | 'in_progress' | 'done' | 'cancelled'
+  priority: 'urgent' | 'high' | 'medium' | 'low'
+  scope: 'solution' | 'sage'
+  created_at: string
+  solution_name?: string
+  proposed_solution?: string
+}
+
+export async function fetchIssues(): Promise<Issue[]> {
+  const data = await get<{ requests: import('../types/module').FeatureRequest[]; count: number }>(
+    '/feedback/feature-requests'
+  )
+  return (data.requests ?? []).map(r => {
+    const statusMap: Record<string, Issue['status']> = {
+      pending:     'open',
+      approved:    'open',
+      in_planning: 'in_progress',
+      in_progress: 'in_progress',
+      completed:   'done',
+      rejected:    'cancelled',
+    }
+    const priorityMap: Record<string, Issue['priority']> = {
+      critical: 'urgent',
+      high:     'high',
+      medium:   'medium',
+      low:      'low',
+    }
+    return {
+      id:                r.id,
+      title:             r.title,
+      description:       r.description,
+      status:            statusMap[r.status] ?? 'open',
+      priority:          priorityMap[r.priority] ?? 'medium',
+      scope:             r.scope,
+      created_at:        r.created_at,
+      solution_name:     r.module_name,
+      proposed_solution: r.reviewer_note,
+    }
+  })
+}
+
+// Activity feed — maps audit log entries
+export interface AuditEvent {
+  id: string
+  trace_id: string
+  event_type: string
+  agent: string
+  description: string
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export async function fetchAuditEvents(limit = 50, offset = 0): Promise<AuditEvent[]> {
+  const data = await get<AuditResponse>(`/audit?limit=${limit}&offset=${offset}`)
+  return (data.entries ?? []).map(e => ({
+    id:          e.id,
+    trace_id:    e.verification_signature ?? e.id,
+    event_type:  e.action_type,
+    agent:       e.actor,
+    description: e.output_content ?? e.action_type,
+    metadata:    (() => { try { return JSON.parse(e.metadata ?? '{}') } catch { return {} } })(),
+    created_at:  e.timestamp,
+  }))
+}
+
+// Agent status — for OrgChart page
+export interface AgentStatus {
+  role: string
+  status: 'active' | 'idle' | 'error'
+  last_task?: string
+  task_count_today?: number
+}
+
+export async function fetchAgentStatuses(): Promise<AgentStatus[]> {
+  try {
+    return await get<AgentStatus[]>('/agents/status')
+  } catch {
+    // Fall back to static list of known SAGE roles
+    return [
+      { role: 'Analyst',   status: 'idle', last_task: undefined, task_count_today: 0 },
+      { role: 'Developer', status: 'idle', last_task: undefined, task_count_today: 0 },
+      { role: 'Monitor',   status: 'idle', last_task: undefined, task_count_today: 0 },
+      { role: 'Planner',   status: 'idle', last_task: undefined, task_count_today: 0 },
+      { role: 'Universal', status: 'idle', last_task: undefined, task_count_today: 0 },
+    ]
+  }
+}
+
+// OrgChart node — used by legacy OrgChart rendering (falls back gracefully)
+export interface OrgChartNode {
+  role_id: string
+  name: string
+  icon: string
+  department: string
+  domain_type?: string
+  children: OrgChartNode[]
+}
+
+export async function getOrgChart(): Promise<{ root_roles: OrgChartNode[]; total: number }> {
+  try {
+    return await get<{ root_roles: OrgChartNode[]; total: number }>('/org-chart')
+  } catch {
+    return { root_roles: [], total: 0 }
+  }
 }
