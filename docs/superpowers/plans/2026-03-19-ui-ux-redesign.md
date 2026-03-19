@@ -1,6 +1,6 @@
 # UI/UX Redesign Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Rebuild the SAGE sidebar into a 3-column layout (solution rail + collapsible 5-area nav + content) with hover tooltips, a 5-step onboarding wizard modal, and a 6-stop spotlight tour.
 
@@ -36,7 +36,7 @@
 - Modify: `web/package.json`
 - Create: `web/src/test/setup.ts`
 
-- [ ] **Step 1: Install test dependencies**
+- [x] **Step 1: Install test dependencies**
 
 ```bash
 cd web && npm install --save-dev vitest @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom
@@ -44,7 +44,7 @@ cd web && npm install --save-dev vitest @testing-library/react @testing-library/
 
 Expected: packages installed, no errors.
 
-- [ ] **Step 2: Add vitest config to vite.config.ts**
+- [x] **Step 2: Add vitest config to vite.config.ts**
 
 Read `web/vite.config.ts` first, then add the `test` block inside `defineConfig({...})`:
 
@@ -56,7 +56,7 @@ test: {
 },
 ```
 
-- [ ] **Step 3: Create test setup file**
+- [x] **Step 3: Create test setup file**
 
 Create `web/src/test/setup.ts`:
 
@@ -64,7 +64,7 @@ Create `web/src/test/setup.ts`:
 import '@testing-library/jest-dom'
 ```
 
-- [ ] **Step 4: Add test script to package.json**
+- [x] **Step 4: Add test script to package.json**
 
 In the `scripts` block, add:
 ```json
@@ -72,7 +72,7 @@ In the `scripts` block, add:
 "test:watch": "vitest"
 ```
 
-- [ ] **Step 5: Verify test runner works**
+- [x] **Step 5: Verify test runner works**
 
 Create `web/src/test/smoke.test.ts`:
 ```ts
@@ -86,7 +86,7 @@ describe('test infrastructure', () => {
 Run: `cd web && npm test`
 Expected: 1 test passes.
 
-- [ ] **Step 6: Delete smoke test, commit**
+- [x] **Step 6: Delete smoke test, commit**
 
 ```bash
 rm web/src/test/smoke.test.ts
@@ -102,7 +102,7 @@ git commit -m "feat(web): add vitest + testing-library test infrastructure"
 - Create: `web/src/components/layout/Tooltip.tsx`
 - Create: `web/src/test/Tooltip.test.tsx`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/src/test/Tooltip.test.tsx`:
 
@@ -150,7 +150,7 @@ describe('Tooltip', () => {
 })
 ```
 
-- [ ] **Step 2: Run test — expect failure**
+- [x] **Step 2: Run test — expect failure**
 
 ```bash
 cd web && npm test src/test/Tooltip.test.tsx
@@ -158,7 +158,7 @@ cd web && npm test src/test/Tooltip.test.tsx
 
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement Tooltip.tsx**
+- [x] **Step 3: Implement Tooltip.tsx**
 
 Create `web/src/components/layout/Tooltip.tsx`:
 
@@ -220,7 +220,7 @@ export default function Tooltip({ text, children, side = 'right' }: TooltipProps
 }
 ```
 
-- [ ] **Step 4: Run test — expect pass**
+- [x] **Step 4: Run test — expect pass**
 
 ```bash
 cd web && npm test src/test/Tooltip.test.tsx
@@ -228,7 +228,7 @@ cd web && npm test src/test/Tooltip.test.tsx
 
 Expected: 5 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/src/components/layout/Tooltip.tsx web/src/test/Tooltip.test.tsx
@@ -243,7 +243,7 @@ git commit -m "feat(web): Tooltip component with 200ms delay"
 - Create: `web/src/components/onboarding/useTour.ts`
 - Create: `web/src/test/useTour.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/src/test/useTour.test.ts`:
 
@@ -311,7 +311,7 @@ describe('useTour', () => {
 })
 ```
 
-- [ ] **Step 2: Run test — expect failure**
+- [x] **Step 2: Run test — expect failure**
 
 ```bash
 cd web && npm test src/test/useTour.test.ts
@@ -319,7 +319,7 @@ cd web && npm test src/test/useTour.test.ts
 
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Create useTour.ts**
+- [x] **Step 3: Create useTour.ts**
 
 First check that `web/src/components/onboarding/` exists (it does — OrgStructureChooser is there).
 
@@ -391,7 +391,7 @@ export function useTour() {
 }
 ```
 
-- [ ] **Step 4: Run test — expect pass**
+- [x] **Step 4: Run test — expect pass**
 
 ```bash
 cd web && npm test src/test/useTour.test.ts
@@ -399,7 +399,7 @@ cd web && npm test src/test/useTour.test.ts
 
 Expected: 7 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/src/components/onboarding/useTour.ts web/src/test/useTour.test.ts
@@ -416,7 +416,7 @@ git commit -m "feat(web): useTour hook with localStorage persistence (uses solut
 
 Reuses `fetchPendingProposals` and `fetchQueueTasks` from `client.ts` — no new fetch functions. Polls every 10s.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/src/test/StatsStrip.test.tsx`:
 
@@ -462,7 +462,7 @@ describe('StatsStrip', () => {
 })
 ```
 
-- [ ] **Step 2: Run test — expect failure**
+- [x] **Step 2: Run test — expect failure**
 
 ```bash
 cd web && npm test src/test/StatsStrip.test.tsx
@@ -470,7 +470,7 @@ cd web && npm test src/test/StatsStrip.test.tsx
 
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement StatsStrip.tsx**
+- [x] **Step 3: Implement StatsStrip.tsx**
 
 Create `web/src/components/layout/StatsStrip.tsx`:
 
@@ -537,7 +537,7 @@ export default function StatsStrip() {
 }
 ```
 
-- [ ] **Step 4: Run test — expect pass**
+- [x] **Step 4: Run test — expect pass**
 
 ```bash
 cd web && npm test src/test/StatsStrip.test.tsx
@@ -545,7 +545,7 @@ cd web && npm test src/test/StatsStrip.test.tsx
 
 Expected: 2 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/src/components/layout/StatsStrip.tsx web/src/test/StatsStrip.test.tsx
@@ -571,7 +571,7 @@ git commit -m "feat(web): StatsStrip — live-polling APPROVALS/QUEUED/AGENTS ti
 
 **Note on isToured in SolutionSwitcher:** Pass the solution **id** (e.g. `iot_medical`), not the display name. The `activeId` from `fetchHealth` is the correct key.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/src/test/Sidebar.test.tsx`:
 
@@ -664,7 +664,7 @@ describe('Sidebar', () => {
 })
 ```
 
-- [ ] **Step 2: Run test — expect failure**
+- [x] **Step 2: Run test — expect failure**
 
 ```bash
 cd web && npm test src/test/Sidebar.test.tsx
@@ -672,7 +672,7 @@ cd web && npm test src/test/Sidebar.test.tsx
 
 Expected: FAIL.
 
-- [ ] **Step 3: Implement new Sidebar.tsx**
+- [x] **Step 3: Implement new Sidebar.tsx**
 
 Completely replace `web/src/components/layout/Sidebar.tsx`. Key sections:
 
@@ -1017,7 +1017,7 @@ export default function Sidebar() {
 
 The `SAGE_VERSION` constant remains at the top of the file (keep from original).
 
-- [ ] **Step 4: Run test — expect pass**
+- [x] **Step 4: Run test — expect pass**
 
 ```bash
 cd web && npm test src/test/Sidebar.test.tsx
@@ -1025,7 +1025,7 @@ cd web && npm test src/test/Sidebar.test.tsx
 
 Expected: 6 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/src/components/layout/Sidebar.tsx web/src/test/Sidebar.test.tsx
@@ -1070,7 +1070,7 @@ const ROUTE_TO_AREA: Record<string, string> = {
 }
 ```
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/src/test/Header.test.tsx`:
 
@@ -1132,7 +1132,7 @@ describe('Header breadcrumb', () => {
 })
 ```
 
-- [ ] **Step 2: Run test — expect failure**
+- [x] **Step 2: Run test — expect failure**
 
 ```bash
 cd web && npm test src/test/Header.test.tsx
@@ -1140,7 +1140,7 @@ cd web && npm test src/test/Header.test.tsx
 
 Expected: FAIL.
 
-- [ ] **Step 3: Modify Header.tsx**
+- [x] **Step 3: Modify Header.tsx**
 
 Read `web/src/components/layout/Header.tsx`. Apply these changes:
 
@@ -1165,7 +1165,7 @@ Read `web/src/components/layout/Header.tsx`. Apply these changes:
 6. The header div changes from `h-12` to `h-14` (56px) to comfortably fit two lines:
    Change `className="h-12 border-b flex items-center px-4 gap-3 shrink-0 relative"` to `className="h-14 border-b flex items-center px-4 gap-3 shrink-0 relative"`.
 
-- [ ] **Step 4: Run test — expect pass**
+- [x] **Step 4: Run test — expect pass**
 
 ```bash
 cd web && npm test src/test/Header.test.tsx
@@ -1173,7 +1173,7 @@ cd web && npm test src/test/Header.test.tsx
 
 Expected: 5 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/src/components/layout/Header.tsx web/src/test/Header.test.tsx
@@ -1194,7 +1194,7 @@ Step 5's "Start tour" button must call `POST /config/switch` (via `switchProject
 
 Step 4 must include an "Open in Config Editor" button per YAML tab that navigates to `/yaml-editor` and closes the wizard.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/src/test/OnboardingWizard.test.tsx`:
 
@@ -1328,7 +1328,7 @@ describe('OnboardingWizard', () => {
 })
 ```
 
-- [ ] **Step 2: Run test — expect failure**
+- [x] **Step 2: Run test — expect failure**
 
 ```bash
 cd web && npm test src/test/OnboardingWizard.test.tsx
@@ -1336,7 +1336,7 @@ cd web && npm test src/test/OnboardingWizard.test.tsx
 
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement OnboardingWizard.tsx**
+- [x] **Step 3: Implement OnboardingWizard.tsx**
 
 Create `web/src/components/onboarding/OnboardingWizard.tsx`. The API call is inline (no client.ts modification):
 
@@ -1671,7 +1671,7 @@ export default function OnboardingWizard({ onClose, onTourStart }: Props) {
 }
 ```
 
-- [ ] **Step 4: Run test — expect pass**
+- [x] **Step 4: Run test — expect pass**
 
 ```bash
 cd web && npm test src/test/OnboardingWizard.test.tsx
@@ -1679,7 +1679,7 @@ cd web && npm test src/test/OnboardingWizard.test.tsx
 
 Expected: 6 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/src/components/onboarding/OnboardingWizard.tsx web/src/test/OnboardingWizard.test.tsx
@@ -1696,7 +1696,7 @@ git commit -m "feat(web): 5-step OnboardingWizard with inline fetch, YAML review
 
 6-stop spotlight overlay. Reads tour state from `TourContext` (defined in App.tsx — see Task 9).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `web/src/test/TourOverlay.test.tsx`:
 
@@ -1777,7 +1777,7 @@ describe('TourOverlay', () => {
 })
 ```
 
-- [ ] **Step 2: Run test — expect failure**
+- [x] **Step 2: Run test — expect failure**
 
 ```bash
 cd web && npm test src/test/TourOverlay.test.tsx
@@ -1785,7 +1785,7 @@ cd web && npm test src/test/TourOverlay.test.tsx
 
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement TourOverlay.tsx**
+- [x] **Step 3: Implement TourOverlay.tsx**
 
 Create `web/src/components/onboarding/TourOverlay.tsx`:
 
@@ -1877,7 +1877,7 @@ export default function TourOverlay() {
 }
 ```
 
-- [ ] **Step 4: Run test — expect pass**
+- [x] **Step 4: Run test — expect pass**
 
 ```bash
 cd web && npm test src/test/TourOverlay.test.tsx
@@ -1885,7 +1885,7 @@ cd web && npm test src/test/TourOverlay.test.tsx
 
 Expected: 6 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/src/components/onboarding/TourOverlay.tsx web/src/test/TourOverlay.test.tsx
@@ -1903,7 +1903,7 @@ git commit -m "feat(web): TourOverlay 6-stop spotlight tour"
 
 **Note on TourContext:** The spec's Files table lists 9 files. `TourContext.tsx` is a 10th. It is required to share `useTour` state between `App.tsx` (which mounts `TourOverlay`) and `Sidebar.tsx` (which calls `startTour` and `openWizard`). Without it, `useTour` would be instantiated twice with disconnected state. The alternative — passing callbacks as props through `AppShell` → `Sidebar` — requires changes to Sidebar's props contract not described in the spec. TourContext is the minimal correct solution.
 
-- [ ] **Step 1: Create TourContext.tsx**
+- [x] **Step 1: Create TourContext.tsx**
 
 Create `web/src/context/TourContext.tsx`:
 
@@ -1948,7 +1948,7 @@ export function useTourContext() {
 }
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `web/src/test/AppWiring.test.tsx`:
 
@@ -1983,7 +1983,7 @@ describe('App wiring', () => {
 })
 ```
 
-- [ ] **Step 3: Run test — expect failure**
+- [x] **Step 3: Run test — expect failure**
 
 ```bash
 cd web && npm test src/test/AppWiring.test.tsx
@@ -1991,7 +1991,7 @@ cd web && npm test src/test/AppWiring.test.tsx
 
 Expected: FAIL — TourOverlay not mounted yet.
 
-- [ ] **Step 4: Replace Onboarding.tsx**
+- [x] **Step 4: Replace Onboarding.tsx**
 
 Replace entire `web/src/pages/Onboarding.tsx` with:
 
@@ -2015,7 +2015,7 @@ export default function Onboarding() {
 }
 ```
 
-- [ ] **Step 5: Modify App.tsx**
+- [x] **Step 5: Modify App.tsx**
 
 Changes to `web/src/App.tsx`:
 
@@ -2069,7 +2069,7 @@ export default function App() {
 }
 ```
 
-- [ ] **Step 6: Run test — expect pass**
+- [x] **Step 6: Run test — expect pass**
 
 ```bash
 cd web && npm test src/test/AppWiring.test.tsx
@@ -2077,7 +2077,7 @@ cd web && npm test src/test/AppWiring.test.tsx
 
 Expected: 2 tests pass.
 
-- [ ] **Step 7: Run all frontend tests**
+- [x] **Step 7: Run all frontend tests**
 
 ```bash
 cd web && npm test
@@ -2085,7 +2085,7 @@ cd web && npm test
 
 Expected: All tests pass.
 
-- [ ] **Step 8: TypeScript check**
+- [x] **Step 8: TypeScript check**
 
 ```bash
 cd web && npx tsc --noEmit
@@ -2093,7 +2093,7 @@ cd web && npx tsc --noEmit
 
 Expected: 0 errors.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add web/src/context/TourContext.tsx web/src/pages/Onboarding.tsx web/src/App.tsx web/src/test/AppWiring.test.tsx
@@ -2106,7 +2106,7 @@ git commit -m "feat(web): wire TourProvider + TourOverlay at root, replace Onboa
 
 **Files:** None (verification only)
 
-- [ ] **Step 1: Start backend and frontend**
+- [x] **Step 1: Start backend and frontend**
 
 ```bash
 # Terminal 1:
@@ -2118,14 +2118,14 @@ make ui
 
 Open http://localhost:5173.
 
-- [ ] **Step 2: Verify 3-column layout**
+- [x] **Step 2: Verify 3-column layout**
 
 - Solution Rail (44px dark `#020617` column) on far left
 - Sidebar (220px) shows solution name + ChevronsUpDown icon at top
 - Stats strip shows APPROVALS / QUEUED / AGENTS tiles
 - Work area is open: Approvals, Task Queue, Dashboard, Live Console visible
 
-- [ ] **Step 3: Test area accordion**
+- [x] **Step 3: Test area accordion**
 
 Click Intelligence → Agents, Analyst, Developer, Monitor, Improvements, Workflows, Goals. Work items gone.
 Click Knowledge → Vector Store, Channels, Audit Log, Costs. Intelligence collapsed.
@@ -2133,7 +2133,7 @@ Click Organization → Org Graph, Onboarding.
 Click Admin → LLM Settings, Config Editor, Access Control, Integrations, Settings.
 Click Work again → Work re-opens.
 
-- [ ] **Step 4: Test tooltips**
+- [x] **Step 4: Test tooltips**
 
 Hover each nav item → tooltip after ~200ms to the right.
 Hover stats tiles → tooltip below.
@@ -2141,13 +2141,13 @@ Hover solution avatars → full solution name.
 Hover "+" → "Create a new solution".
 Hover Building2 icon → "View organization graph".
 
-- [ ] **Step 5: Test breadcrumb**
+- [x] **Step 5: Test breadcrumb**
 
 Navigate to /analyst → header line 1: `iot_medical / Intelligence`, line 2: `Log Analyst`.
 Navigate to /settings → `iot_medical / Admin` / `Settings`.
 Navigate to / → `iot_medical / Work` / `Dashboard`.
 
-- [ ] **Step 6: Test onboarding wizard via "+" button**
+- [x] **Step 6: Test onboarding wizard via "+" button**
 
 Click "+" in rail → wizard modal appears, 5 circles in progress bar.
 Fill description → solution_name auto-populates.
@@ -2157,26 +2157,26 @@ On completion → step 4 YAML tabs. Switch between project.yaml, prompts.yaml, t
 "Open in Config Editor" button navigates to /yaml-editor with file param and closes wizard.
 "Looks good" → step 5. "Start tour" and "Go to dashboard" buttons present.
 
-- [ ] **Step 7: Test tour flow**
+- [x] **Step 7: Test tour flow**
 
 Click "Start tour" → TourOverlay appears. "1 of 6" counter. Heading "Your live dashboard".
 Next → stop 2. Next... → stop 6 ("Your solutions"). "Done" button.
 Click Done → tour dismissed, solution marked as toured in localStorage.
 
-- [ ] **Step 8: Test Restart tour**
+- [x] **Step 8: Test Restart tour**
 
 Click solution name in sidebar → dropdown opens. "Restart tour" visible at bottom.
 Click → tour starts again from stop 1.
 
-- [ ] **Step 9: Test /onboarding route directly**
+- [x] **Step 9: Test /onboarding route directly**
 
 Navigate to /onboarding → wizard overlay appears full-screen.
 
-- [ ] **Step 10: Confirm /org is gone**
+- [x] **Step 10: Confirm /org is gone**
 
 Navigate to /org → no route (blank or 404). /org-graph still works.
 
-- [ ] **Step 11: Run backend tests**
+- [x] **Step 11: Run backend tests**
 
 ```bash
 make test
@@ -2184,7 +2184,7 @@ make test
 
 Expected: all Python tests pass.
 
-- [ ] **Step 12: Final commit**
+- [x] **Step 12: Final commit**
 
 ```bash
 git add -A
