@@ -3919,3 +3919,17 @@ async def get_repo_map(max_files: int = 50):
         return {"map": generate_repo_map(root, max_files=max_files)}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
+# OpenShell Sandbox — availability and version info
+# ---------------------------------------------------------------------------
+
+@app.get("/sandbox/status")
+async def get_sandbox_status():
+    """Returns OpenShell sandbox availability and version info."""
+    try:
+        from src.integrations.openshell_runner import get_openshell_runner
+        return get_openshell_runner().status()
+    except Exception as exc:
+        return {"available": False, "error": str(exc)}

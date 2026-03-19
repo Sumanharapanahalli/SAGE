@@ -72,22 +72,34 @@ data_residency:
     - ollama
     - local
 
+# --- GitHub Integration ---
+# Used for routing SAGE framework improvement ideas to GitHub PRs.
+github:
+  repo_url: "https://github.com/Sumanharapanahalli/SAGE"
+
+# OpenShell sandbox configuration (optional — graceful degradation when not installed)
+sandbox:
+  enabled: true                    # set false to disable sandboxing even if openshell is installed
+  default_timeout_seconds: 300     # max seconds a sandboxed task can run
+  auto_sandbox_task_types:         # task types to auto-sandbox when policy is declared
+    - SWE_TASK
+    - code_diff
+
 # --- Approval Roles (RBAC) ---
-# Maps each action_type to the minimum role required to approve it.
-# Set to null (or omit) to allow anyone to approve.
+# Maps solution-level action_types to the minimum role required to approve.
+# Framework control operations (config_switch, llm_switch, config_modules) no longer
+# go through the approval queue — they execute immediately. Only solution-level
+# agent proposals require human sign-off here.
 # Roles are hierarchical: admin > operator > reviewer > anyone
 approval_roles:
-  llm_switch:          "admin"
   yaml_edit:           "admin"
-  config_switch:       "admin"
-  config_modules:      "admin"
   agent_hire:          "admin"
   composio_connect:    "admin"
   onboarding_generate: "admin"
   knowledge_delete:    "admin"
-  knowledge_import:        "operator"
-  knowledge_add:           "operator"
-  implementation_plan_sage: "admin"
+  knowledge_import:    "operator"
+  knowledge_add:       "operator"
+  implementation_plan: ~           # anyone can approve solution implementation plans
   code_diff:           "admin"
   analysis:            ~           # anyone can approve analysis proposals
 
@@ -112,8 +124,12 @@ auth:
 memory:
   # backend: "chroma" (default) | "llamaindex"
   backend: "chroma"
-  vector_db_path: "./data/chroma_db"
-  audit_db_path: "./data/audit_log.db"
+
+  # Runtime data paths auto-resolve to <solution_dir>/.sage/ — one per solution,
+  # fully isolated. Override only if you need a non-standard location.
+  # vector_db_path: ""    # default: <solution_dir>/.sage/chroma_db
+  # audit_db_path:  ""    # default: <solution_dir>/.sage/audit_log.db
+
   # collection_name defaults to "<solution_name>_knowledge" — override per solution in project.yaml
   collection_name: ""
 

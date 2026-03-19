@@ -410,6 +410,11 @@ class ProjectConfig:
         """Return scheduled task definitions from tasks.yaml."""
         return self._tasks.get("scheduled", [])
 
+    def get_task_sandbox_policy(self, task_type: str) -> dict | None:
+        """Return OpenShell sandbox policy config for task_type, or None if not declared."""
+        policies = self._tasks.get("task_sandbox_policies", {})
+        return policies.get(task_type)
+
     # ------------------------------------------------------------------
     # Base config passthrough (for integrations: gitlab, teams, etc.)
     # ------------------------------------------------------------------
