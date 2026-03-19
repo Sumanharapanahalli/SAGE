@@ -273,7 +273,7 @@ The sidebar is a 3-column layout: `SolutionRail` (44px) + `Sidebar` (220px) + co
 
 **TourOverlay**: 6-stop spotlight using `getBoundingClientRect` + 4 overlay rects. Stops target `[data-tour="stats-strip"]`, `[data-tour="nav-approvals"]`, `[data-tour="nav-queue"]`, `[data-tour="area-intelligence"]`, `[data-tour="area-knowledge"]`, `[data-tour="solution-rail"]`. Stores toured solution IDs in localStorage key `sage_toured_solutions`.
 
-**Known limitation**: Tooltip component uses `position: absolute` on nav items. The NAV element has `overflow: auto`, which visually clips tooltips that extend outside the nav bounds. Stats strip tooltips (side="bottom") and area header tooltips are unaffected if their containers don't have overflow clipping.
+**Tooltip implementation**: Tooltip component uses `position: fixed` with coordinates computed from `getBoundingClientRect()` on the trigger element. This ensures tooltips always render above the nav's `overflow: auto` clipping boundary and are visible over any adjacent panel.
 
 ## Adding a New UI Page
 
