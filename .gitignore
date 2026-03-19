@@ -38,14 +38,20 @@ venv.bak/
 .env.test.local
 .env.production.local
 
-# Database
+# Database / legacy framework data dir
 *.db
 *.sqlite3
 data/
 logs/
 
-# Solution-local runtime data (audit logs, vector stores) — per user/machine, never commit
-solutions/*/data/
+# .sage/ — per-solution runtime data directory (audit log, vector store, logs)
+# This mirrors the .claude/ convention: auto-created at first run, never committed.
+# Every solution repo should also have .sage/ in its own .gitignore.
+.sage/
+**/.sage/
+
+# .sage_worktrees/ — per-proposal git worktree isolation (auto-created, never committed)
+.sage_worktrees/
 
 # IDE
 .vscode/
@@ -53,19 +59,33 @@ solutions/*/data/
 *.swp
 
 # =============================================================================
-# PROPRIETARY SOLUTIONS — never commit company-specific solutions to this repo
+# SOLUTIONS — allowlist approach (exclude all, explicitly allow open examples)
 # =============================================================================
-# The Sage framework is MIT-licensed. Solutions may have different licenses.
-# Company/customer solutions must live in their own private repositories and
-# be mounted at runtime via the SAGE_SOLUTIONS_DIR environment variable.
+# The SAGE framework ships with a small set of open reference solutions.
+# Every other solution — including your real product — MUST live in a
+# separate private repository and be mounted at runtime via SAGE_SOLUTIONS_DIR.
 #
-# Pattern: any solutions/<name>/ folder that is NOT one of the maintained
-# open examples is excluded here.
+# This is an ALLOWLIST. Only the four directories listed below are committed
+# to the public framework repo. All others are silently ignored by git.
+# If you add a new reference example to the framework, add it here explicitly.
+#
+# Your product solutions: create a private repo, clone SAGE, set
+# SAGE_SOLUTIONS_DIR=/path/to/your/private/solutions and they will never
+# appear in this repo regardless of how many you create.
 # =============================================================================
-solutions/dfs/
-solutions/customer_*/
-solutions/private_*/
-solutions/proprietary_*/
+
+# Step 1 — exclude every solution directory by default
+solutions/*/
+
+# Step 2 — re-include only the maintained open reference examples
+!solutions/starter
+!solutions/starter/**
+!solutions/meditation_app
+!solutions/meditation_app/**
+!solutions/four_in_a_line
+!solutions/four_in_a_line/**
+!solutions/medtech_team
+!solutions/medtech_team/**
 
 # Node / Web build artefacts
 web/node_modules/
