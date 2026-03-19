@@ -96,6 +96,7 @@ function AppShell() {
               <Route path="/org-graph"      element={<OrgGraph />} />
               <Route path="/issues"         element={<Issues />} />
               <Route path="/activity"       element={<Activity />} />
+              <Route path="/knowledge"      element={<AuditLog />} />
             </Routes>
           </main>
         </div>

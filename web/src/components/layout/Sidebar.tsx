@@ -58,7 +58,7 @@ const NAV_AREAS: NavArea[] = [
   {
     id: 'knowledge', label: 'Knowledge', icon: Database, accent: '#10b981', tooltip: 'Vector knowledge base, shared channels, and compliance records',
     items: [
-      { to: '/settings',  icon: BookOpen,      label: 'Vector Store', moduleId: 'settings', tooltip: "Search and manage entries in this solution's knowledge base" },
+      { to: '/knowledge', icon: BookOpen,      label: 'Vector Store', moduleId: 'knowledge', tooltip: "Search and manage entries in this solution's knowledge base" },
       { to: '/activity',  icon: Activity,      label: 'Channels',     moduleId: 'audit',    tooltip: 'Cross-team knowledge channels shared via org configuration' },
       { to: '/audit',     icon: ClipboardList, label: 'Audit Log',    moduleId: 'audit',    tooltip: 'Full compliance audit trail — proposals, approvals, rejections' },
       { to: '/costs',     icon: DollarSign,    label: 'Costs',        moduleId: 'costs',    tooltip: 'LLM token usage and budget controls per solution' },
