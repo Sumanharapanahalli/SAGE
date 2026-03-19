@@ -2843,6 +2843,30 @@ async def knowledge_search(request: Request):
     return {"results": results, "count": len(results), "query": query}
 
 
+class KnowledgeSyncRequest(BaseModel):
+    directory: str = ""   # default: active solution dir
+
+
+@app.post("/knowledge/sync")
+async def trigger_knowledge_sync(req: KnowledgeSyncRequest = KnowledgeSyncRequest()):
+    """
+    Walk the solution directory and import text files into the vector store.
+    Returns count of imported chunks.
+    """
+    from src.core.knowledge_syncer import sync_directory
+    from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
+    root = req.directory or os.path.join(_SOLUTIONS_DIR, project_config.project_name)
+    if not os.path.isdir(root):
+        raise HTTPException(status_code=400, detail=f"Directory not found: {root}")
+    try:
+        count = sync_directory(root)
+        return {"status": "ok", "chunks_imported": count, "directory": root}
+    except Exception as exc:
+        logger.error("knowledge_sync failed: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 # ---------------------------------------------------------------------------
 # Slack Two-Way Approval (Phase 8)
 # ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@ task_types:
   - MONITOR_CHECK    # Run a monitoring cycle across configured integrations
   - PLAN_TASK        # Decompose a complex request into subtasks
   - SWE_TASK         # Autonomous SWE agent — explore, plan, implement, verify, open PR
+  - KNOWLEDGE_SYNC   # walk a directory and import text files into vector store
 
 task_descriptions:
   ANALYZE_LOG:    "Analyze a log entry, error message, or event using RAG + LLM"
@@ -20,6 +21,7 @@ task_descriptions:
   MONITOR_CHECK:  "Run one monitoring cycle across all configured integrations"
   PLAN_TASK:      "Use PlannerAgent to decompose a complex request into subtasks"
   SWE_TASK:       "Autonomous software engineering task — explore, plan, implement, verify, and open a PR"
+  KNOWLEDGE_SYNC: "Walk a directory and bulk-import text files into the vector knowledge store"
 
 task_payloads:
   ANALYZE_LOG:
@@ -44,6 +46,9 @@ task_payloads:
     task:      "string — natural language description of the software task or issue"
     repo_path: "string — absolute path to local repo (optional, defaults to cwd)"
     repo_url:  "string — git URL to clone if repo is remote (optional)"
+
+  KNOWLEDGE_SYNC:
+    directory: "string — absolute path to sync (optional, defaults to solution dir)"
 
 # Optional: shell hooks run before/after each task type.
 # task_hooks:
