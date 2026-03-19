@@ -397,6 +397,15 @@ class ProjectConfig:
         """Return task_type → human-readable description mapping."""
         return self._tasks.get("task_descriptions", {})
 
+    def get_task_hooks(self, task_type: str) -> dict:
+        """Return {'pre': [...], 'post': [...]} shell commands for task_type, or empty lists."""
+        hooks_map = self._tasks.get("task_hooks", {})
+        entry = hooks_map.get(task_type, {})
+        return {
+            "pre":  entry.get("pre", []),
+            "post": entry.get("post", []),
+        }
+
     # ------------------------------------------------------------------
     # Base config passthrough (for integrations: gitlab, teams, etc.)
     # ------------------------------------------------------------------

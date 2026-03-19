@@ -44,6 +44,20 @@ _DB_PATH = os.path.join(
 )
 
 
+def _run_hooks(commands: list, cwd: str = None) -> None:
+    """Run a list of shell commands sequentially. Logs failures but does not raise."""
+    import subprocess as _sp
+    for cmd in commands:
+        try:
+            result = _sp.run(cmd, shell=True, capture_output=True, text=True, timeout=30, cwd=cwd)
+            if result.returncode != 0:
+                logger.warning("Hook command failed (rc=%d): %s\n%s", result.returncode, cmd, result.stderr)
+            else:
+                logger.debug("Hook ran ok: %s", cmd)
+        except Exception as exc:
+            logger.warning("Hook exception for '%s': %s", cmd, exc)
+
+
 class TaskStatus:
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
@@ -260,7 +274,8 @@ class TaskQueue:
 
     def submit(self, task_type: str, payload: dict, priority: int = 5,
                plan_trace_id: str = "", source: str = "",
-               depends_on: Optional[List[str]] = None) -> str:
+               depends_on: Optional[List[str]] = None,
+               metadata: Optional[Dict[str, Any]] = None) -> str:
         """
         Adds a new task to the queue and persists it to SQLite.
 
@@ -272,12 +287,16 @@ class TaskQueue:
             source:         'sage' for framework tasks, 'solution' for solution tasks
             depends_on:     Optional list of task_ids this task depends on.
                             Tasks with no depends_on are placed in wave 0.
+            metadata:       Optional extra key-value pairs persisted with the task
+                            and returned by get_all_tasks() for filtering.
 
         Returns:
             task_id string for tracking.
         """
         task = Task(task_type, payload, priority, plan_trace_id=plan_trace_id,
                     source=source, depends_on=depends_on)
+        if metadata:
+            task.metadata.update(metadata)
         with self._lock:
             self._tasks[task.task_id] = task
         self._db_insert(task)
@@ -423,12 +442,16 @@ class TaskWorker(threading.Thread):
         task_type = task.task_type.upper()
         payload = task.payload
 
+        from src.core.project_loader import project_config
+        hooks = project_config.get_task_hooks(task_type)
+        _run_hooks(hooks["pre"])
+
         if task_type == "ANALYZE_LOG":
             from src.agents.analyst import analyst_agent
             log_entry = payload.get("log_entry", "")
             if not log_entry:
                 raise ValueError("ANALYZE_LOG task missing 'log_entry' in payload.")
-            return analyst_agent.analyze_log(log_entry)
+            result = analyst_agent.analyze_log(log_entry)
 
         elif task_type == "CREATE_MR":
             from src.agents.developer import developer_agent
@@ -436,7 +459,7 @@ class TaskWorker(threading.Thread):
             issue_iid = payload.get("issue_iid")
             if not project_id or not issue_iid:
                 raise ValueError("CREATE_MR task missing 'project_id' or 'issue_iid'.")
-            return developer_agent.create_mr_from_issue(
+            result = developer_agent.create_mr_from_issue(
                 project_id=int(project_id),
                 issue_iid=int(issue_iid),
                 source_branch=payload.get("source_branch"),
@@ -448,7 +471,7 @@ class TaskWorker(threading.Thread):
             mr_iid = payload.get("mr_iid")
             if not project_id or not mr_iid:
                 raise ValueError("REVIEW_MR task missing 'project_id' or 'mr_iid'.")
-            return developer_agent.review_merge_request(
+            result = developer_agent.review_merge_request(
                 project_id=int(project_id),
                 mr_iid=int(mr_iid),
             )
@@ -465,21 +488,21 @@ class TaskWorker(threading.Thread):
             connect_result = connect_jlink(device=device, interface=interface, speed=speed)
             if "error" in connect_result:
                 raise RuntimeError(f"J-Link connect failed: {connect_result['error']}")
-            return flash_firmware(bin_path=bin_path)
+            result = flash_firmware(bin_path=bin_path)
 
         elif task_type == "MONITOR_CHECK":
             from src.agents.monitor import monitor_agent
             source = payload.get("source", "all")
             if source in ("teams", "all") and monitor_agent._teams_team_id:
                 monitor_agent._poll_teams.__func__  # Check it exists
-            return {"status": "monitor_check_triggered", "source": source}
+            result = {"status": "monitor_check_triggered", "source": source}
 
         elif task_type == "PLAN_TASK":
             from src.agents.planner import planner_agent
             description = payload.get("description", "")
             if not description:
                 raise ValueError("PLAN_TASK missing 'description' in payload.")
-            return planner_agent.plan_and_execute(description)
+            result = planner_agent.plan_and_execute(description)
 
         elif task_type == "WORKFLOW":
             from src.integrations.langgraph_runner import langgraph_runner
@@ -487,7 +510,7 @@ class TaskWorker(threading.Thread):
             if not workflow_name:
                 raise ValueError("WORKFLOW task missing 'workflow_name' in payload.")
             state = payload.get("state", {})
-            return langgraph_runner.run(workflow_name, state)
+            result = langgraph_runner.run(workflow_name, state)
 
         elif task_type == "CODE_TASK":
             from src.integrations.autogen_runner import autogen_runner
@@ -495,7 +518,7 @@ class TaskWorker(threading.Thread):
             if not task_description:
                 raise ValueError("CODE_TASK missing 'task' in payload.")
             trace_id = payload.get("trace_id")
-            return autogen_runner.plan(task_description, trace_id=trace_id)
+            result = autogen_runner.plan(task_description, trace_id=trace_id)
 
         else:
             raise ValueError(
@@ -503,6 +526,9 @@ class TaskWorker(threading.Thread):
                 "Supported: ANALYZE_LOG, CREATE_MR, REVIEW_MR, FLASH_FIRMWARE, "
                 "MONITOR_CHECK, PLAN_TASK, WORKFLOW, CODE_TASK"
             )
+
+        _run_hooks(hooks["post"])
+        return result
 
 
 # ---------------------------------------------------------------------------
