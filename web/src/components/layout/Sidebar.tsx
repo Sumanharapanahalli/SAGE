@@ -96,7 +96,7 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
   const { data: projectsData } = useQuery({ queryKey: ['projects'], queryFn: fetchProjects, staleTime: 60_000 })
   const switchMutation = useMutation({
     mutationFn: (id: string) => switchProject(id),
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['health'] }),
   })
 
   const solutions = projectsData?.projects ?? []
@@ -231,7 +231,7 @@ export default function Sidebar() {
   const { data: projectsData } = useQuery({ queryKey: ['projects'], queryFn: fetchProjects, staleTime: 60_000 })
   const switchMutation = useMutation({
     mutationFn: (id: string) => switchProject(id),
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['health'] }),
   })
 
   const { data: projectData } = useProjectConfig()
@@ -243,7 +243,10 @@ export default function Sidebar() {
   // Auto-expand the area containing the active route
   useEffect(() => {
     for (const area of NAV_AREAS) {
-      if (area.items.some(item => item.to === pathname || (item.to === '/' && pathname === '/'))) {
+      if (area.items.some(item => {
+        if (item.to === '/') return pathname === '/'
+        return pathname === item.to || pathname.startsWith(item.to + '/')
+      })) {
         setOpenArea(area.id)
         return
       }
