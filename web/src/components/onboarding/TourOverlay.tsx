@@ -30,7 +30,7 @@ export default function TourOverlay() {
     } else {
       setTargetRect(null)
     }
-  }, [tourState.active, tourState.currentStop])
+  }, [tourState.active, tourState.currentStop, stop])
 
   if (!tourState.active || !stop) return null
 
