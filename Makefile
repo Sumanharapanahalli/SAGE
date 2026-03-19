@@ -7,13 +7,13 @@
 #   make venv-minimal  Create .venv with minimal deps (low-RAM machines)
 #
 # Daily usage:
-#   make run [PROJECT=starter]   Start FastAPI backend
+#   make run [PROJECT=iot_medical]   Start FastAPI backend
 #   make ui                      Start React web UI (:5173)
 #   make test                    Framework unit tests (venv)
 #   make test-all                Framework + all solution tests
 # ==============================================================================
 
-PROJECT       ?= starter
+PROJECT       ?= iot_medical
 SOLUTIONS_DIR ?= solutions
 PORT          ?= 8000
 HOST          ?= 0.0.0.0
