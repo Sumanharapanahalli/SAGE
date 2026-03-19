@@ -436,31 +436,22 @@ class SetModulesRequest(BaseModel):
 @app.post("/config/switch")
 async def switch_project(req: SwitchProjectRequest):
     """
-    Propose switching the active solution at runtime.
-    Returns an EPHEMERAL proposal — actual switch on POST /approve/{trace_id}.
+    Switch the active solution at runtime. Executes immediately — no approval gate.
+    Framework-level control operations bypass the proposal queue; solution-level
+    agent proposals retain full HITL approval.
     """
-    from src.core.project_loader import _SOLUTIONS_DIR
-    from src.core.proposal_store import RiskClass
+    from src.core.project_loader import _SOLUTIONS_DIR, project_config as _pc
     import os as _os
     proj_dir = _os.path.join(_SOLUTIONS_DIR, req.project)
     if not _os.path.isdir(proj_dir):
         raise HTTPException(status_code=404, detail=f"Solution '{req.project}' not found in {_SOLUTIONS_DIR}")
     current_project = _get_project_config().project_name
-    store = _get_proposal_store()
-    proposal = store.create(
-        action_type   = "config_switch",
-        risk_class    = RiskClass.EPHEMERAL,
-        payload       = {"project": req.project, "previous_project": current_project},
-        description   = f"Switch active solution: {current_project} → {req.project}",
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("config_switch"),
-    )
+    _pc.reload(req.project)
+    logger.info("Solution switched: %s → %s", current_project, req.project)
     return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
-        "description": proposal.description,
-        "message":     "POST /approve/{trace_id} to switch.",
+        "status":           "switched",
+        "previous_project": current_project,
+        "project":          req.project,
     }
 
 
@@ -468,25 +459,17 @@ async def switch_project(req: SwitchProjectRequest):
 @app.post("/config/modules")
 async def set_modules(req: SetModulesRequest):
     """
-    Propose updating the active modules list for the current solution.
-    Returns an EPHEMERAL proposal — actual change on POST /approve/{trace_id}.
+    Update the active modules list for the current solution. Executes immediately.
+    Framework control operations bypass the proposal queue.
     """
-    from src.core.proposal_store import RiskClass
+    from src.core.project_loader import project_config as _pc
     current_modules = _get_project_config().metadata.get("active_modules", [])
-    store = _get_proposal_store()
-    proposal = store.create(
-        action_type   = "config_modules",
-        risk_class    = RiskClass.EPHEMERAL,
-        payload       = {"modules": req.modules, "previous_modules": current_modules},
-        description   = f"Update active modules: {current_modules} → {req.modules}",
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("config_modules"),
-    )
+    _pc.set_active_modules(req.modules)
+    logger.info("Modules updated: %s → %s", current_modules, req.modules)
     return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
-        "description": proposal.description,
+        "status":           "updated",
+        "previous_modules": current_modules,
+        "active_modules":   req.modules,
     }
 
 
@@ -1010,6 +993,37 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
     }
 
 
+@app.post("/proposals/{trace_id}/undo")
+async def undo_proposal(trace_id: str):
+    """
+    Undo an approved proposal. Currently supports code_diff action type.
+    Returns 404 if not found, 409 if still pending (not yet approved).
+    """
+    store = _get_proposal_store()
+    proposal = store.get(trace_id)
+    if proposal is None:
+        raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+    if proposal.status == "pending":
+        raise HTTPException(status_code=409, detail="Cannot undo a pending proposal. Reject it instead.")
+    if proposal.action_type == "code_diff":
+        try:
+            from src.core.proposal_executor import _revert_code_diff
+            import asyncio
+            asyncio.ensure_future(_revert_code_diff(proposal))
+            _get_audit_logger().log_event(
+                actor="human",
+                action_type="PROPOSAL_UNDONE",
+                input_context=f"trace_id={trace_id} action={proposal.action_type}",
+                output_content="Undo requested for approved code_diff",
+                metadata={"trace_id": trace_id},
+            )
+            return {"status": "undo_triggered", "trace_id": trace_id, "action_type": proposal.action_type}
+        except Exception as exc:
+            logger.error("Undo failed: %s", exc)
+            raise HTTPException(status_code=500, detail=str(exc))
+    return {"status": "not_undoable", "trace_id": trace_id, "reason": f"{proposal.action_type} is not reversible via undo."}
+
+
 @app.get("/audit")
 async def get_audit(limit: int = 50, offset: int = 0):
     """
@@ -1516,14 +1530,45 @@ async def generate_plan_for_request(req_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
     scope = req.get('scope', 'solution')
-    scope_context = (
-        "This is a SAGE FRAMEWORK improvement — implement in src/ and web/src/. "
-        "Output concrete file-level implementation steps."
-        if scope == 'sage' else
-        "This is a SOLUTION feature — implement in the active solution's codebase."
-    )
+    now = datetime.now(timezone.utc).isoformat()
+
+    # SAGE framework improvements go through GitHub PRs, not the internal approval queue.
+    if scope == "sage":
+        import urllib.parse
+        from src.core.config_loader import load_config as _load_cfg
+        _cfg = _load_cfg()
+        github_repo = (
+            _cfg.get("github", {}).get("repo_url", "").rstrip("/")
+            or "https://github.com/Sumanharapanahalli/SAGE"
+        )
+        issue_title = urllib.parse.quote(req["title"])
+        issue_body = urllib.parse.quote(
+            f"## Description\n{req['description']}\n\n"
+            f"**Priority:** {req['priority']}\n\n"
+            f"---\n*Submitted via SAGE Improvements*"
+        )
+        github_url = f"{github_repo}/issues/new?title={issue_title}&body={issue_body}&labels=enhancement"
+        try:
+            db_path = _get_db_path()
+            conn = sqlite3.connect(db_path)
+            conn.execute(
+                "UPDATE feature_requests SET status='github_pr', updated_at=? WHERE id=?",
+                (now, req_id),
+            )
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logger.warning("DB update failed for github_pr status: %s", e)
+        return {
+            "request_id":       req_id,
+            "status":           "github_pr",
+            "github_issue_url": github_url,
+            "message":          "SAGE framework improvements are contributed via GitHub. Use the link to open an issue or PR.",
+        }
+
+    # Solution-scope: run planner and create a HITL approval proposal as normal.
     planner_task = (
-        f"{scope_context}\n"
+        "This is a SOLUTION feature — implement in the active solution's codebase.\n"
         f"Title: {req['title']}\n"
         f"Description: {req['description']}\n"
         f"Priority: {req['priority']}"
@@ -1531,9 +1576,7 @@ async def generate_plan_for_request(req_id: str):
 
     try:
         planner = _get_planner()
-        from src.agents.planner import PlannerAgent
-        task_types = PlannerAgent.FRAMEWORK_TASK_TYPES if scope == "sage" else None
-        steps = planner.create_plan(planner_task, override_task_types=task_types)
+        steps = planner.create_plan(planner_task)
     except Exception as e:
         logger.error("Planner failed for feature request %s: %s", req_id, e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1541,10 +1584,8 @@ async def generate_plan_for_request(req_id: str):
     if not steps:
         raise HTTPException(status_code=422, detail="LLM could not produce an executable plan. Try rephrasing the description.")
 
-    # Store as a ProposalStore entry (HITL — nothing executes until approved)
     from src.core.proposal_store import RiskClass
     store = _get_proposal_store()
-    required_role = _get_required_role("implementation_plan_sage") if scope == "sage" else None
     proposal = store.create(
         action_type="implementation_plan",
         risk_class=RiskClass.STATEFUL,
@@ -1557,10 +1598,9 @@ async def generate_plan_for_request(req_id: str):
         description=f"Implementation plan: {req['title']}",
         reversible=False,
         proposed_by="PlannerAgent",
-        required_role=required_role,
+        required_role=_get_required_role("implementation_plan"),
     )
 
-    now = datetime.now(timezone.utc).isoformat()
     try:
         db_path = _get_db_path()
         conn = sqlite3.connect(db_path)
@@ -1575,10 +1615,10 @@ async def generate_plan_for_request(req_id: str):
 
     return {
         "request_id": req_id,
-        "status": "in_planning",
-        "trace_id": proposal.trace_id,
+        "status":     "in_planning",
+        "trace_id":   proposal.trace_id,
         "step_count": len(steps),
-        "plan": steps,
+        "plan":       steps,
     }
 
 
@@ -1694,37 +1734,25 @@ class LLMSwitchRequest(BaseModel):
 @app.post("/llm/switch")
 async def llm_switch(req: LLMSwitchRequest):
     """
-    Propose switching the LLM provider at runtime.
-    Returns an EPHEMERAL proposal (5-min expiry) — actual switch on POST /approve/{trace_id}.
+    Switch the LLM provider at runtime. Executes immediately — no approval gate.
+    Framework control operations bypass the proposal queue.
     """
-    from src.core.proposal_store import RiskClass
+    from types import SimpleNamespace
+    from src.core.proposal_executor import _execute_llm_switch as _do_llm_switch
     allowed = ("gemini", "local", "claude-code", "claude", "ollama", "generic-cli")
     if req.provider not in allowed:
         raise HTTPException(status_code=400, detail=f"provider must be one of: {allowed}")
     current_provider = _get_llm_gateway().get_provider_name()
-    store = _get_proposal_store()
-    proposal = store.create(
-        action_type   = "llm_switch",
-        risk_class    = RiskClass.EPHEMERAL,
-        payload       = {
-            "provider":        req.provider,
-            "model":           req.model,
-            "api_key":         req.api_key,
-            "claude_path":     req.claude_path,
-            "save_as_default": req.save_as_default,
-        },
-        description   = f"Switch LLM provider: {current_provider} → {req.provider}" + (f" ({req.model})" if req.model else "") + (" [save as default]" if req.save_as_default else ""),
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("llm_switch"),
-    )
-    return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
-        "description": proposal.description,
-        "expires_at":  proposal.expires_at,
-        "message":     "POST /approve/{trace_id} to apply. Expires in 5 minutes.",
-    }
+    fake = SimpleNamespace(payload={
+        "provider":        req.provider,
+        "model":           req.model,
+        "api_key":         req.api_key,
+        "claude_path":     req.claude_path,
+        "save_as_default": req.save_as_default,
+    })
+    result = await _do_llm_switch(fake)
+    logger.info("LLM switched: %s → %s", current_provider, req.provider)
+    return {"status": "switched", "previous_provider": current_provider, **result}
 
 
 # ---------------------------------------------------------------------------

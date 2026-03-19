@@ -5,6 +5,7 @@ import {
   approveProposalFull,
   rejectProposalFull,
   approveBatchProposals,
+  undoProposal,
 } from '../api/client'
 import type { Proposal } from '../api/client'
 import { Inbox, CheckSquare, X, AlertTriangle, Clock, Check, RefreshCw } from 'lucide-react'
@@ -189,11 +190,13 @@ function DetailPanel({
   proposal,
   onApprove,
   onReject,
+  onUndo,
   loading,
 }: {
   proposal: Proposal | null
   onApprove: (traceId: string, approver: string, feedback: string) => Promise<void>
   onReject: (traceId: string, approver: string, feedback: string) => Promise<void>
+  onUndo: (traceId: string) => void
   loading: boolean
 }) {
   const [approver, setApprover] = useState<string>(
@@ -313,19 +316,53 @@ function DetailPanel({
           <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#52525b' }}>
             Payload
           </p>
-          <pre
-            className="text-xs overflow-auto p-4 font-mono leading-relaxed"
-            style={{
-              backgroundColor: '#09090b',
-              color: '#a1a1aa',
-              border: '1px solid #27272a',
-              maxHeight: '320px',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-all',
-            }}
-          >
-            {JSON.stringify(proposal.payload, null, 2)}
-          </pre>
+          {proposal.action_type === 'code_diff' && proposal.payload?.diff ? (
+            <div
+              className="text-xs overflow-auto p-4 font-mono leading-relaxed"
+              style={{
+                backgroundColor: '#09090b',
+                border: '1px solid #27272a',
+                maxHeight: '320px',
+              }}
+            >
+              {String(proposal.payload.diff).split('\n').map((line, i) => {
+                let color = '#a1a1aa'
+                let bg = 'transparent'
+                if (line.startsWith('+') && !line.startsWith('+++')) {
+                  color = '#86efac'
+                  bg = 'rgba(22,101,52,0.3)'
+                } else if (line.startsWith('-') && !line.startsWith('---')) {
+                  color = '#fca5a5'
+                  bg = 'rgba(127,29,29,0.3)'
+                } else if (line.startsWith('@@')) {
+                  color = '#93c5fd'
+                  bg = 'rgba(30,58,138,0.2)'
+                }
+                return (
+                  <span
+                    key={i}
+                    style={{ display: 'block', color, backgroundColor: bg, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+                  >
+                    {line || '\u00a0'}
+                  </span>
+                )
+              })}
+            </div>
+          ) : (
+            <pre
+              className="text-xs overflow-auto p-4 font-mono leading-relaxed"
+              style={{
+                backgroundColor: '#09090b',
+                color: '#a1a1aa',
+                border: '1px solid #27272a',
+                maxHeight: '320px',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-all',
+              }}
+            >
+              {JSON.stringify(proposal.payload, null, 2)}
+            </pre>
+          )}
         </div>
       </div>
 
@@ -396,6 +433,16 @@ function DetailPanel({
             Reject
           </button>
         </div>
+        {proposal.action_type === 'code_diff' && proposal.status === 'approved' && (
+          <button
+            onClick={() => onUndo(proposal.trace_id)}
+            className="px-3 py-1.5 text-xs font-medium rounded"
+            style={{ background: '#78350f', color: '#fde68a' }}
+            title="Revert the applied code changes"
+          >
+            Undo
+          </button>
+        )}
       </div>
     </div>
   )
@@ -500,6 +547,13 @@ export default function Approvals() {
       addToast('Rejection failed — check API', 'error')
     }
   }, [addToast, removeProposal, queryClient])
+
+  // Undo approved code_diff proposal
+  const undoMutation = useMutation({
+    mutationFn: (trace_id: string) => undoProposal(trace_id),
+    onSuccess: () => addToast('Undo triggered — changes will be reverted', 'success'),
+    onError: (err: Error) => addToast(err.message, 'error'),
+  })
 
   // Batch approve
   const batchMutation = useMutation({
@@ -644,6 +698,7 @@ export default function Approvals() {
         proposal={selected}
         onApprove={handleApprove}
         onReject={handleReject}
+        onUndo={(traceId) => undoMutation.mutate(traceId)}
         loading={batchMutation.isPending}
       />
 
