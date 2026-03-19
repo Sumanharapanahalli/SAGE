@@ -297,6 +297,18 @@ export const fetchWorkflowDiagrams = () =>
 export const fetchWorkflowDiagram = (solution: string, workflowName: string) =>
   get<WorkflowDiagram>(`/workflows/${solution}/${workflowName}`)
 
+// Active Agents — live panel on Dashboard
+export interface ActiveAgentEntry {
+  task_id: string
+  task_type: string
+  status: string
+  started_at: string | null
+  source: string
+}
+
+export const fetchActiveAgents = () =>
+  get<{ agents: ActiveAgentEntry[]; count: number }>('/agents/active')
+
 // Task Queue
 export const fetchQueueTasks = (params?: { status?: string; source?: string }) =>
   get<import('../types/module').QueueTask[]>(
