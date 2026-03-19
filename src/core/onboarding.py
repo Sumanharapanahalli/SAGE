@@ -223,7 +223,7 @@ def _try_add_to_org(org_name: str, solution_name: str) -> None:
             logger.debug(
                 "Solution '%s' already listed in org.yaml — no change", solution_name
             )
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:
         logger.warning(
             "Could not auto-add '%s' to org '%s': %s", solution_name, org_name, exc
         )
