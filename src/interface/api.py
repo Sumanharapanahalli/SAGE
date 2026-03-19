@@ -4016,6 +4016,173 @@ async def get_repo_map(max_files: int = 50):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+# ============================================================
+# Organization endpoints — org.yaml CRUD
+# ============================================================
+
+def _get_org_yaml_path() -> str:
+    """Path to org.yaml in SAGE_SOLUTIONS_DIR root."""
+    import os as _os
+    return _os.path.join(_get_solutions_dir(), "org.yaml")
+
+
+def _read_org_yaml() -> dict:
+    import yaml as _yaml
+    path = _get_org_yaml_path()
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        return _yaml.safe_load(f) or {}
+
+
+def _write_org_yaml(data: dict) -> None:
+    import yaml as _yaml
+    path = _get_org_yaml_path()
+    with open(path, "w", encoding="utf-8") as f:
+        _yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+
+
+@app.get("/org")
+async def org_get():
+    """Return org.yaml content enriched with cross_team_routes from all solutions."""
+    from src.core.org_loader import org_loader as _ol
+    data = _read_org_yaml()
+    data["routes"] = _ol.get_all_routes()
+    return data
+
+
+@app.post("/org/reload")
+async def org_reload():
+    """Re-read org.yaml and refresh the OrgLoader singleton."""
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "reloaded"}
+
+
+@app.post("/org/channels")
+async def org_channels_create(request: Request):
+    """Create a knowledge channel. Body: {name, producers, consumers}"""
+    body = await request.json()
+    name = body.get("name", "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="channel name is required")
+    data = _read_org_yaml()
+    data.setdefault("org", {}).setdefault("knowledge_channels", {})[name] = {
+        "producers": body.get("producers", []),
+        "consumers": body.get("consumers", []),
+    }
+    _write_org_yaml(data)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "created", "channel": name}
+
+
+@app.delete("/org/channels/{name}")
+async def org_channels_delete(name: str):
+    """Delete a knowledge channel from org.yaml."""
+    data = _read_org_yaml()
+    channels = data.get("org", {}).get("knowledge_channels", {})
+    if name not in channels:
+        raise HTTPException(status_code=404, detail=f"channel '{name}' not found")
+    del channels[name]
+    _write_org_yaml(data)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "deleted", "channel": name}
+
+
+@app.post("/org/solutions")
+async def org_solutions_add(request: Request):
+    """Add parent: to a solution's project.yaml. Body: {solution, parent}"""
+    import yaml as _yaml, os as _os
+    body = await request.json()
+    solution = body.get("solution", "").strip()
+    parent = body.get("parent", "").strip()
+    if not solution or not parent:
+        raise HTTPException(status_code=400, detail="solution and parent are required")
+    sols_dir = _get_solutions_dir()
+    proj_path = _os.path.join(sols_dir, solution, "project.yaml")
+    if not _os.path.exists(proj_path):
+        raise HTTPException(status_code=404, detail=f"solution '{solution}' not found")
+    with open(proj_path, "r", encoding="utf-8") as f:
+        proj = _yaml.safe_load(f) or {}
+    proj["parent"] = parent
+    with open(proj_path, "w", encoding="utf-8") as f:
+        _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "added", "solution": solution, "parent": parent}
+
+
+@app.delete("/org/solutions/{name}")
+async def org_solutions_remove(name: str):
+    """Remove parent: from a solution's project.yaml."""
+    import yaml as _yaml, os as _os
+    sols_dir = _get_solutions_dir()
+    proj_path = _os.path.join(sols_dir, name, "project.yaml")
+    if not _os.path.exists(proj_path):
+        raise HTTPException(status_code=404, detail=f"solution '{name}' not found")
+    with open(proj_path, "r", encoding="utf-8") as f:
+        proj = _yaml.safe_load(f) or {}
+    proj.pop("parent", None)
+    with open(proj_path, "w", encoding="utf-8") as f:
+        _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "removed", "solution": name}
+
+
+@app.post("/org/routes")
+async def org_routes_add(request: Request):
+    """Add cross_team_route to a solution's project.yaml. Body: {solution, target}"""
+    import yaml as _yaml, os as _os
+    body = await request.json()
+    solution = body.get("solution", "").strip()
+    target = body.get("target", "").strip()
+    if not solution or not target:
+        raise HTTPException(status_code=400, detail="solution and target are required")
+    sols_dir = _get_solutions_dir()
+    proj_path = _os.path.join(sols_dir, solution, "project.yaml")
+    if not _os.path.exists(proj_path):
+        raise HTTPException(status_code=404, detail=f"solution '{solution}' not found")
+    with open(proj_path, "r", encoding="utf-8") as f:
+        proj = _yaml.safe_load(f) or {}
+    routes = proj.get("cross_team_routes", [])
+    if not any(r.get("target") == target for r in routes):
+        routes.append({"target": target})
+    proj["cross_team_routes"] = routes
+    with open(proj_path, "w", encoding="utf-8") as f:
+        _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "added", "solution": solution, "target": target}
+
+
+@app.delete("/org/routes")
+async def org_routes_delete(request: Request):
+    """Remove cross_team_route. Body: {solution, target}"""
+    import yaml as _yaml, os as _os
+    body = await request.json()
+    solution = body.get("solution", "").strip()
+    target = body.get("target", "").strip()
+    if not solution or not target:
+        raise HTTPException(status_code=400, detail="solution and target are required")
+    sols_dir = _get_solutions_dir()
+    proj_path = _os.path.join(sols_dir, solution, "project.yaml")
+    if not _os.path.exists(proj_path):
+        raise HTTPException(status_code=404, detail=f"solution '{solution}' not found")
+    with open(proj_path, "r", encoding="utf-8") as f:
+        proj = _yaml.safe_load(f) or {}
+    proj["cross_team_routes"] = [
+        r for r in proj.get("cross_team_routes", []) if r.get("target") != target
+    ]
+    with open(proj_path, "w", encoding="utf-8") as f:
+        _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "removed", "solution": solution, "target": target}
+
+
 # ---------------------------------------------------------------------------
 # OpenShell Sandbox — availability and version info
 # ---------------------------------------------------------------------------
