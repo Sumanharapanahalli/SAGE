@@ -309,6 +309,10 @@ export interface ActiveAgentEntry {
 export const fetchActiveAgents = () =>
   get<{ agents: ActiveAgentEntry[]; count: number }>('/agents/active')
 
+// Repo Map
+export const fetchRepoMap = (max_files = 50) =>
+  get<{ map: string }>(`/repo/map?max_files=${max_files}`)
+
 // Task Queue
 export const fetchQueueTasks = (params?: { status?: string; source?: string }) =>
   get<import('../types/module').QueueTask[]>(
