@@ -4190,6 +4190,28 @@ async def org_routes_delete(request: Request):
 
 
 # ---------------------------------------------------------------------------
+# Dev users (dev-mode identity roster)
+# ---------------------------------------------------------------------------
+
+@app.get("/config/dev-users")
+async def get_dev_users():
+    """Return dev-mode user roster from config/dev_users.yaml.
+    Returns empty list if file does not exist — graceful degradation.
+    """
+    import yaml as _yaml
+    path = os.environ.get(
+        "SAGE_DEV_USERS_PATH",
+        os.path.join(os.path.dirname(__file__), "..", "..", "config", "dev_users.yaml")
+    )
+    path = os.path.normpath(path)
+    if not os.path.exists(path):
+        return {"users": []}
+    with open(path, "r", encoding="utf-8") as f:
+        data = _yaml.safe_load(f) or {}
+    return {"users": data.get("users", [])}
+
+
+# ---------------------------------------------------------------------------
 # OpenShell Sandbox — availability and version info
 # ---------------------------------------------------------------------------
 

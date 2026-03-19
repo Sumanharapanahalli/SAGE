@@ -1,0 +1,24 @@
+# config/dev_users.yaml
+# Dev-mode user roster. Loaded by GET /config/dev-users.
+# Each entry maps to a UserIdentity in the frontend (sub=id, provider='dev').
+users:
+  - id: suman
+    name: Suman H.
+    email: suman@example.com
+    role: admin
+    avatar_color: '#6366f1'
+  - id: dr_chen
+    name: Dr. Chen
+    email: chen@example.com
+    role: approver
+    avatar_color: '#10b981'
+  - id: reviewer_2
+    name: Priya S.
+    email: priya@example.com
+    role: approver
+    avatar_color: '#f59e0b'
+  - id: viewer_1
+    name: Guest Viewer
+    email: viewer@example.com
+    role: viewer
+    avatar_color: '#64748b'

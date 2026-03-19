@@ -119,3 +119,15 @@ dashboard:
     - { label: "Review Code",    route: "/developer", description: "AI code review" }
     - { label: "Run Agents",     route: "/agents",    description: "Custom agent roles" }
     - { label: "Audit Trail",    route: "/audit",     description: "Decision history" }
+
+# Role assignments for dev-mode identity switching.
+# Maps role names to lists of user IDs from config/dev_users.yaml.
+# "*" means all users have that role.
+roles:
+  admin:
+    - suman
+  approver:
+    - suman
+    - dr_chen
+  viewer:
+    - "*"
