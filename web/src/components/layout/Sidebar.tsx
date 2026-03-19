@@ -30,12 +30,12 @@ interface NavItem {
   to: string; icon: LucideIcon; label: string; moduleId: string; tooltip: string
 }
 interface NavArea {
-  id: string; label: string; icon: LucideIcon; accent: string; items: NavItem[]
+  id: string; label: string; icon: LucideIcon; accent: string; items: NavItem[]; tooltip: string
 }
 
 const NAV_AREAS: NavArea[] = [
   {
-    id: 'work', label: 'Work', icon: CheckSquare, accent: '#ef4444',
+    id: 'work', label: 'Work', icon: CheckSquare, accent: '#ef4444', tooltip: 'View and act on agent proposals, queued tasks, and live activity',
     items: [
       { to: '/approvals',    icon: Inbox,           label: 'Approvals',    moduleId: 'approvals',    tooltip: 'Agent proposals waiting for your review before execution' },
       { to: '/queue',        icon: ListOrdered,     label: 'Task Queue',   moduleId: 'queue',        tooltip: 'Tasks currently queued or running across all agents' },
@@ -44,7 +44,7 @@ const NAV_AREAS: NavArea[] = [
     ],
   },
   {
-    id: 'intelligence', label: 'Intelligence', icon: Zap, accent: '#a78bfa',
+    id: 'intelligence', label: 'Intelligence', icon: Zap, accent: '#a78bfa', tooltip: 'Run agent tasks, review plans, and track improvement goals',
     items: [
       { to: '/agents',       icon: Bot,       label: 'Agents',       moduleId: 'agents',       tooltip: "Submit a task to an agent role defined in this solution's prompts.yaml" },
       { to: '/analyst',      icon: Search,    label: 'Analyst',      moduleId: 'analyst',      tooltip: 'AI triage of log entries and error signals' },
@@ -56,7 +56,7 @@ const NAV_AREAS: NavArea[] = [
     ],
   },
   {
-    id: 'knowledge', label: 'Knowledge', icon: Database, accent: '#10b981',
+    id: 'knowledge', label: 'Knowledge', icon: Database, accent: '#10b981', tooltip: 'Vector knowledge base, shared channels, and compliance records',
     items: [
       { to: '/settings',  icon: BookOpen,      label: 'Vector Store', moduleId: 'settings', tooltip: "Search and manage entries in this solution's knowledge base" },
       { to: '/activity',  icon: Activity,      label: 'Channels',     moduleId: 'audit',    tooltip: 'Cross-team knowledge channels shared via org configuration' },
@@ -65,14 +65,14 @@ const NAV_AREAS: NavArea[] = [
     ],
   },
   {
-    id: 'organization', label: 'Organization', icon: Building2, accent: '#3b82f6',
+    id: 'organization', label: 'Organization', icon: Building2, accent: '#3b82f6', tooltip: 'Visualize and configure the multi-solution org structure',
     items: [
       { to: '/org-graph',  icon: Network, label: 'Org Graph',  moduleId: 'org',        tooltip: 'React Flow graph of solutions, knowledge channels, and task routing' },
       { to: '/onboarding', icon: Wand2,   label: 'Onboarding', moduleId: 'onboarding', tooltip: 'Generate a new solution from a plain-language description' },
     ],
   },
   {
-    id: 'admin', label: 'Admin', icon: Shield, accent: '#475569',
+    id: 'admin', label: 'Admin', icon: Shield, accent: '#475569', tooltip: 'Framework-level configuration — not solution-specific',
     items: [
       { to: '/llm',            icon: Cpu,         label: 'LLM Settings',   moduleId: 'llm',            tooltip: 'Switch LLM provider and model; view session token usage' },
       { to: '/yaml-editor',    icon: FileCode2,   label: 'Config Editor',  moduleId: 'yaml-editor',    tooltip: 'Edit solution YAML files with live validation' },
@@ -275,26 +275,28 @@ export default function Sidebar() {
             const isOpen = openArea === area.id
             return (
               <div key={area.id}>
-                <button
-                  data-tour={`area-${area.id}`}
-                  onClick={() => setOpenArea(isOpen ? '' : area.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%',
-                           padding: '6px 12px', background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  <area.icon size={13} style={{ color: area.accent, flexShrink: 0 }} />
-                  <span style={{ flex: 1, fontSize: '11px', fontWeight: 600, color: '#94a3b8',
-                                 textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    {area.label}
-                  </span>
-                  {!isOpen && (
-                    <span style={{ fontSize: '10px', color: '#334155' }}>{visibleItems.length}</span>
-                  )}
-                  <ChevronDown
-                    size={12}
-                    style={{ color: '#334155', flexShrink: 0,
-                             transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.15s' }}
-                  />
-                </button>
+                <Tooltip text={area.tooltip}>
+                  <button
+                    data-tour={`area-${area.id}`}
+                    onClick={() => setOpenArea(isOpen ? '' : area.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%',
+                             padding: '6px 12px', background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    <area.icon size={13} style={{ color: area.accent, flexShrink: 0 }} />
+                    <span style={{ flex: 1, fontSize: '11px', fontWeight: 600, color: '#94a3b8',
+                                   textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      {area.label}
+                    </span>
+                    {!isOpen && (
+                      <span style={{ fontSize: '10px', color: '#334155' }}>{visibleItems.length}</span>
+                    )}
+                    <ChevronDown
+                      size={12}
+                      style={{ color: '#334155', flexShrink: 0,
+                               transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.15s' }}
+                    />
+                  </button>
+                </Tooltip>
                 {isOpen && visibleItems.map(item => (
                   <Tooltip key={item.to + item.label} text={item.tooltip}>
                     <NavLink
