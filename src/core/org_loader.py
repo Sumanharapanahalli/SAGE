@@ -5,6 +5,7 @@ Gracefully degrades when org.yaml is absent.
 """
 import logging
 import os
+import re
 from typing import Optional
 import yaml
 
@@ -16,6 +17,14 @@ class OrgLoaderError(Exception):
 
 
 class OrgLoader:
+    """
+    Reads org.yaml once at construction. Immutable after init.
+    Re-instantiate via reload_org_loader() after org.yaml changes.
+
+    Gracefully degrades: when org.yaml is absent, all methods return
+    empty lists, False, or None — existing single-solution behaviour unchanged.
+    """
+
     def __init__(self, solutions_dir: str):
         self._solutions_dir = solutions_dir
         self._org: dict = {}
@@ -43,6 +52,7 @@ class OrgLoader:
         return chain
 
     def get_merged_prompts(self, solution_name: str) -> dict:
+        """Merge prompts.yaml root→child. Child key wins on conflict."""
         merged: dict = {}
         for name in reversed(self.get_parent_chain(solution_name)):
             data = self._load_yaml(os.path.join(self._solutions_dir, name, "prompts.yaml"))
@@ -50,6 +60,7 @@ class OrgLoader:
         return merged
 
     def get_merged_tasks(self, solution_name: str) -> dict:
+        """Merge tasks.yaml root→child. Child entry replaces parent entirely on conflict."""
         merged_types: list = []
         merged_desc: dict = {}
         merged_payloads: dict = {}
@@ -76,6 +87,7 @@ class OrgLoader:
         return result
 
     def get_channel_collection_names(self, solution_name: str) -> list:
+        """Return chroma collection names this solution consumes."""
         channels = self._org.get("org", {}).get("knowledge_channels", {})
         return [
             self._normalize_channel(name)
@@ -88,10 +100,10 @@ class OrgLoader:
         if not root:
             return None
         path = os.path.join(self._solutions_dir, root, ".sage", "chroma_db")
-        os.makedirs(path, exist_ok=True)
         return path
 
     def get_producer_channel_name(self, solution_name: str, channel_label: str) -> Optional[str]:
+        """Return normalized collection name if solution is a producer for channel_label, else None."""
         channels = self._org.get("org", {}).get("knowledge_channels", {})
         if channel_label not in channels:
             return None
@@ -108,6 +120,7 @@ class OrgLoader:
         return any(r.get("target") == target_solution for r in project.get("cross_team_routes", []))
 
     def get_all_routes(self) -> list:
+        """Return all cross_team_routes across all solutions as [{source, target}]."""
         result = []
         if not os.path.isdir(self._solutions_dir):
             return result
@@ -150,7 +163,7 @@ class OrgLoader:
 
     @staticmethod
     def _normalize_channel(name: str) -> str:
-        return "channel_" + name.lower().replace("-", "_")
+        return "channel_" + re.sub(r'[^a-z0-9_]', '_', name.lower())
 
     @staticmethod
     def _load_yaml(path: str) -> dict:
