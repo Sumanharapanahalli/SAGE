@@ -322,6 +322,9 @@ export const triggerKnowledgeSync = (directory = '') =>
   post<{ status: string; chunks_imported: number }>('/knowledge/sync', { directory })
 
 // Task Queue
+export const fetchTaskSubtasks = (task_id: string) =>
+  get<{ task_id: string; subtasks: unknown[] }>(`/tasks/${task_id}/subtasks`)
+
 export const fetchQueueTasks = (params?: { status?: string; source?: string }) =>
   get<import('../types/module').QueueTask[]>(
     `/queue/tasks${params && Object.keys(params).length > 0 ? '?' + new URLSearchParams(params as Record<string, string>) : ''}`
