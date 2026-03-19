@@ -69,6 +69,7 @@ export default function OnboardingWizard({ onClose, onTourStart }: Props) {
   const [generateResult, setGenerateResult] = useState<GenerateResponse | null>(null)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [activeYamlTab, setActiveYamlTab] = useState('project.yaml')
+  const [switchError, setSwitchError] = useState<string | null>(null)
 
   const { data: projectsData } = useQuery({ queryKey: ['projects'], queryFn: fetchProjects, staleTime: 60_000 })
   const solutions = projectsData?.projects ?? []
@@ -96,9 +97,10 @@ export default function OnboardingWizard({ onClose, onTourStart }: Props) {
   const switchMutation = useMutation({ mutationFn: (id: string) => switchProject(id) })
 
   useEffect(() => {
-    if (step === 3 && !generateMutation.isPending && !generateResult && !generateError) {
+    if (step === 3 && !generateResult && !generateError) {
       generateMutation.mutate()
     }
+    // eslint-disable-line react-hooks/exhaustive-deps
   }, [step])
 
   const toggleList = (list: string[], setList: (v: string[]) => void, val: string) => {
@@ -292,8 +294,12 @@ export default function OnboardingWizard({ onClose, onTourStart }: Props) {
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
               <button
                 onClick={async () => {
-                  await switchMutation.mutateAsync(generateResult.solution_name)
-                  onTourStart(generateResult.solution_name)
+                  try {
+                    await switchMutation.mutateAsync(generateResult.solution_name)
+                    onTourStart(generateResult.solution_name)
+                  } catch (err) {
+                    setSwitchError(err instanceof Error ? err.message : 'Switch failed')
+                  }
                 }}
                 style={{ padding: '8px 20px', background: '#3b82f6', color: '#fff', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
               >
@@ -301,15 +307,22 @@ export default function OnboardingWizard({ onClose, onTourStart }: Props) {
               </button>
               <button
                 onClick={async () => {
-                  await switchMutation.mutateAsync(generateResult.solution_name)
-                  onClose()
-                  navigate('/')
+                  try {
+                    await switchMutation.mutateAsync(generateResult.solution_name)
+                    onClose()
+                    navigate('/')
+                  } catch (err) {
+                    setSwitchError(err instanceof Error ? err.message : 'Switch failed')
+                  }
                 }}
                 style={{ fontSize: '13px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 Go to dashboard
               </button>
             </div>
+            {switchError && (
+              <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '8px' }}>{switchError}</div>
+            )}
           </div>
         )}
       </div>

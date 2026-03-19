@@ -124,4 +124,52 @@ describe('OnboardingWizard', () => {
     expect(screen.getByRole('button', { name: /Open in Config Editor/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Looks good' })).toBeInTheDocument()
   })
+
+  it('step 5 calls switchProject and onTourStart when Start tour clicked', async () => {
+    const { switchProject } = await import('../api/client')
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        solution_name: 'my_app', path: '/solutions/my_app', status: 'created',
+        files: { 'project.yaml': 'name: my_app\n', 'prompts.yaml': '# prompts', 'tasks.yaml': '# tasks' },
+        message: 'ok', suggested_routes: [],
+      }),
+    })
+
+    render(<OnboardingWizard {...defaultProps} />, { wrapper: Wrapper })
+    fireEvent.change(screen.getByPlaceholderText(/Describe your solution/i), { target: { value: 'A platform' } })
+    fireEvent.change(screen.getByLabelText(/Solution name/i), { target: { value: 'my_app' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(await screen.findByText('Skip'))
+    expect(await screen.findByText('project.yaml')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Looks good' }))
+    expect(await screen.findByText('Solution ready')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Start tour' }))
+    await waitFor(() => expect(switchProject).toHaveBeenCalledWith('my_app'))
+    await waitFor(() => expect(defaultProps.onTourStart).toHaveBeenCalledWith('my_app'))
+  })
+
+  it('shows error message when switchProject fails', async () => {
+    const { switchProject } = await import('../api/client')
+    ;(switchProject as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Switch error'))
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        solution_name: 'my_app', path: '/solutions/my_app', status: 'created',
+        files: { 'project.yaml': 'name: my_app\n', 'prompts.yaml': '# prompts', 'tasks.yaml': '# tasks' },
+        message: 'ok', suggested_routes: [],
+      }),
+    })
+
+    render(<OnboardingWizard {...defaultProps} />, { wrapper: Wrapper })
+    fireEvent.change(screen.getByPlaceholderText(/Describe your solution/i), { target: { value: 'A platform' } })
+    fireEvent.change(screen.getByLabelText(/Solution name/i), { target: { value: 'my_app' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(await screen.findByText('Skip'))
+    expect(await screen.findByText('project.yaml')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Looks good' }))
+    expect(await screen.findByText('Solution ready')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Start tour' }))
+    expect(await screen.findByText('Switch error')).toBeInTheDocument()
+  })
 })
