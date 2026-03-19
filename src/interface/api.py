@@ -3556,6 +3556,32 @@ async def agents_status():
         ]
 
 
+@app.get("/agents/active")
+async def get_active_agents():
+    """
+    Returns currently active (in-progress) tasks from the queue manager.
+    Used by the Live Agents panel on the Dashboard.
+    """
+    try:
+        qm = _get_task_queue()
+        all_tasks = qm.get_all_tasks()   # returns list of dicts
+        active = [
+            {
+                "task_id":    t["task_id"],
+                "task_type":  t["task_type"],
+                "status":     t["status"],
+                "started_at": t.get("started_at"),
+                "source":     t.get("source", ""),
+            }
+            for t in all_tasks
+            if t["status"] in ("in_progress", "pending")
+        ]
+        return {"agents": active, "count": len(active)}
+    except Exception as exc:
+        logger.error("get_active_agents failed: %s", exc)
+        return {"agents": [], "count": 0}
+
+
 # ==============================================================================
 # HIL (Hardware-in-the-Loop) Testing Endpoints
 # ==============================================================================
