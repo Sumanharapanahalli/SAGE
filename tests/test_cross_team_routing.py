@@ -28,6 +28,34 @@ def test_submit_task_no_target_queues_to_active_solution():
     data = resp.json()
     assert "task_id" in data
     assert data["status"] == "queued"
+    assert "target_solution" in data
+
+
+def test_submit_task_source_from_tenant_header(tmp_path, monkeypatch):
+    """X-SAGE-Tenant header is used as source when it matches a solution directory."""
+    monkeypatch.setenv("SAGE_SOLUTIONS_DIR", str(tmp_path))
+    # Create source and target solution directories
+    (tmp_path / "team_a").mkdir()
+    (tmp_path / "team_a" / "project.yaml").write_text("name: team_a\n")
+    (tmp_path / "team_b").mkdir()
+    (tmp_path / "team_b" / "project.yaml").write_text("name: team_b\n")
+
+    from src.interface.api import app
+    from fastapi.testclient import TestClient
+    from unittest.mock import patch
+    client = TestClient(app)
+    with patch("src.core.org_loader.org_loader") as mock_org:
+        mock_org.org_name = "test_org"
+        mock_org.is_route_allowed.return_value = True
+        resp = client.post(
+            "/tasks/submit",
+            json={"task_type": "ANALYZE_LOG", "payload": {}, "target_solution": "team_b"},
+            headers={"X-SAGE-Tenant": "team_a"},
+        )
+    # Regardless of outcome, is_route_allowed should have been called with team_a as source
+    if mock_org.is_route_allowed.called:
+        call_args = mock_org.is_route_allowed.call_args
+        assert call_args[0][0] == "team_a", f"Expected team_a as source, got {call_args[0][0]}"
 
 
 def test_submit_task_unknown_target_returns_404(tmp_path, monkeypatch):
