@@ -77,6 +77,12 @@ def _load_yaml(path: str) -> dict:
     return {}
 
 
+def _get_org_loader():
+    """Lazy import to avoid circular dependency at module load time."""
+    from src.core.org_loader import org_loader
+    return org_loader
+
+
 def _parse_skill_md(path: str) -> tuple[dict, dict, dict, str]:
     """
     Parse a SKILL.md file with YAML frontmatter.
@@ -390,11 +396,30 @@ class ProjectConfig:
     # ------------------------------------------------------------------
 
     def get_task_types(self) -> list[str]:
-        """Return list of valid task_type strings for this project."""
+        """Return list of valid task_type strings for this project.
+
+        When an org is configured and the active solution has a parent chain,
+        returns the merged task types from the full parent chain (root → child),
+        so child solutions inherit task types declared in parent solutions.
+        Falls back to the solution's own tasks.yaml when no org is active.
+        """
+        ol = _get_org_loader()
+        if ol.org_name and self._name:
+            merged = ol.get_merged_tasks(self._name)
+            return merged.get("task_types", self._tasks.get("task_types", list(_DEFAULT_TASK_TYPES)))
         return self._tasks.get("task_types", list(_DEFAULT_TASK_TYPES))
 
     def get_task_descriptions(self) -> dict[str, str]:
-        """Return task_type → human-readable description mapping."""
+        """Return task_type → human-readable description mapping.
+
+        When an org is configured, returns merged descriptions from the full
+        parent chain (root → child), with child entries overriding parent on conflict.
+        Falls back to the solution's own tasks.yaml when no org is active.
+        """
+        ol = _get_org_loader()
+        if ol.org_name and self._name:
+            merged = ol.get_merged_tasks(self._name)
+            return merged.get("task_descriptions", self._tasks.get("task_descriptions", {}))
         return self._tasks.get("task_descriptions", {})
 
     def get_task_hooks(self, task_type: str) -> dict:
