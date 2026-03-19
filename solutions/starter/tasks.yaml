@@ -52,3 +52,12 @@ task_payloads:
 #       - "echo 'Analysis starting' >> /tmp/sage_hooks.log"
 #     post:
 #       - "echo 'Analysis complete' >> /tmp/sage_hooks.log"
+
+# Optional: tasks submitted automatically on a schedule.
+# Requires the scheduler to be running (starts with the backend).
+# scheduled:
+#   - task_type: MONITOR_CHECK
+#     cron: "*/5 * * * *"   # every 5 minutes
+#     payload:
+#       source: "all"
+#     priority: 8

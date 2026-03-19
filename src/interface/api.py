@@ -198,6 +198,21 @@ def _get_active_solution() -> str:
         return os.environ.get("SAGE_PROJECT", "default")
 
 
+_task_scheduler = None
+
+def _get_task_scheduler():
+    global _task_scheduler
+    if _task_scheduler is None:
+        from src.core.task_scheduler import TaskScheduler
+        from src.core.project_loader import project_config
+        _task_scheduler = TaskScheduler(
+            queue_manager=_get_task_queue(),
+            project_config=project_config,
+        )
+        _task_scheduler.start()
+    return _task_scheduler
+
+
 # ---------------------------------------------------------------------------
 # RBAC helpers — role-based approval enforcement
 # ---------------------------------------------------------------------------
@@ -1126,6 +1141,16 @@ async def monitor_status():
     except Exception as e:
         logger.error("Monitor status endpoint error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/scheduler/status")
+async def get_scheduler_status():
+    """Returns task scheduler running state and schedule count."""
+    try:
+        sched = _get_task_scheduler()
+        return sched.status()
+    except Exception as exc:
+        return {"running": False, "error": str(exc)}
 
 
 @app.post("/webhook/teams")

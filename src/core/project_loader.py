@@ -406,6 +406,10 @@ class ProjectConfig:
             "post": entry.get("post", []),
         }
 
+    def get_scheduled_tasks(self) -> list:
+        """Return scheduled task definitions from tasks.yaml."""
+        return self._tasks.get("scheduled", [])
+
     # ------------------------------------------------------------------
     # Base config passthrough (for integrations: gitlab, teams, etc.)
     # ------------------------------------------------------------------
