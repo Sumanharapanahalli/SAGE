@@ -60,6 +60,20 @@ describe('TourOverlay', () => {
     expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument()
   })
 
+  it('shows Prev button and calls prevStop at stop > 0', () => {
+    vi.mocked(useTourContext).mockReturnValue({
+      tourState: { active: true, currentStop: 2, solutionName: 'my_app' },
+      nextStop: mockNextStop, prevStop: mockPrevStop, skipTour: mockSkipTour,
+      startTour: vi.fn(), isToured: vi.fn(() => false), restartTour: vi.fn(),
+      wizardOpen: false, openWizard: vi.fn(), closeWizard: vi.fn(),
+    })
+    render(<TourOverlay />)
+    const prevBtn = screen.getByRole('button', { name: 'Prev' })
+    expect(prevBtn).toBeInTheDocument()
+    fireEvent.click(prevBtn)
+    expect(mockPrevStop).toHaveBeenCalled()
+  })
+
   it('returns null when tour inactive', () => {
     vi.mocked(useTourContext).mockReturnValue({
       tourState: { active: false, currentStop: 0, solutionName: '' },
