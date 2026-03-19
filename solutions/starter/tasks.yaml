@@ -44,3 +44,11 @@ task_payloads:
     task:      "string — natural language description of the software task or issue"
     repo_path: "string — absolute path to local repo (optional, defaults to cwd)"
     repo_url:  "string — git URL to clone if repo is remote (optional)"
+
+# Optional: shell hooks run before/after each task type.
+# task_hooks:
+#   ANALYZE_LOG:
+#     pre:
+#       - "echo 'Analysis starting' >> /tmp/sage_hooks.log"
+#     post:
+#       - "echo 'Analysis complete' >> /tmp/sage_hooks.log"
