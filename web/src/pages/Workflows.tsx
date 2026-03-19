@@ -1,26 +1,45 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { GitBranch, RefreshCw, Copy, Check, X, AlertCircle } from 'lucide-react'
-import mermaid from 'mermaid'
 import { fetchWorkflowDiagrams, type WorkflowDiagram } from '../api/client'
 
 // ---------------------------------------------------------------------------
-// Mermaid initialisation — dark theme, no auto-start
+// Mermaid — loaded lazily via indirect dynamic import so Vite doesn't
+// fail the build when the package is absent (no network to install it).
 // ---------------------------------------------------------------------------
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'dark',
-  themeVariables: {
-    background: '#09090b',
-    primaryColor: '#27272a',
-    primaryTextColor: '#f4f4f5',
-    primaryBorderColor: '#3f3f46',
-    lineColor: '#71717a',
-    secondaryColor: '#18181b',
-    tertiaryColor: '#18181b',
-  },
-  flowchart: { curve: 'linear', useMaxWidth: true },
-})
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _mermaid: any = null
+let _mermaidInit = false
+
+async function getMermaid(): Promise<any> {
+  if (_mermaid) return _mermaid
+  try {
+    const pkg = 'mermaid'
+    // Dynamic import via variable — Vite skips static analysis for this form
+    const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ pkg)
+    _mermaid = mod.default ?? mod
+    if (!_mermaidInit) {
+      _mermaid.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        themeVariables: {
+          background: '#09090b',
+          primaryColor: '#27272a',
+          primaryTextColor: '#f4f4f5',
+          primaryBorderColor: '#3f3f46',
+          lineColor: '#71717a',
+          secondaryColor: '#18181b',
+          tertiaryColor: '#18181b',
+        },
+        flowchart: { curve: 'linear', useMaxWidth: true },
+      })
+      _mermaidInit = true
+    }
+    return _mermaid
+  } catch {
+    return null
+  }
+}
 
 // ---------------------------------------------------------------------------
 // DiagramModal — full-screen overlay with rendered Mermaid SVG
@@ -38,10 +57,12 @@ function DiagramModal({ wf, onClose }: DiagramModalProps) {
 
   useEffect(() => {
     const id = `mermaid-modal-${wf.solution}-${wf.workflow_name}`.replace(/[^a-zA-Z0-9-]/g, '-')
-    mermaid
-      .render(id, wf.mermaid_diagram)
-      .then(({ svg: rendered }) => setSvg(rendered))
-      .catch(err => setRenderError(String(err)))
+    getMermaid().then(m => {
+      if (!m) { setRenderError('Mermaid not installed — run: npm install mermaid'); return }
+      m.render(id, wf.mermaid_diagram)
+        .then(({ svg: rendered }: { svg: string }) => setSvg(rendered))
+        .catch((err: unknown) => setRenderError(String(err)))
+    })
   }, [wf])
 
   function handleCopy() {
@@ -171,10 +192,12 @@ function WorkflowCard({ wf, onClick }: WorkflowCardProps) {
   const [previewSvg, setPreviewSvg] = useState<string>('')
 
   useEffect(() => {
-    mermaid
-      .render(previewId.current, wf.mermaid_diagram)
-      .then(({ svg }) => setPreviewSvg(svg))
-      .catch(() => setPreviewSvg(''))
+    getMermaid().then(m => {
+      if (!m) return
+      m.render(previewId.current, wf.mermaid_diagram)
+        .then(({ svg }: { svg: string }) => setPreviewSvg(svg))
+        .catch(() => setPreviewSvg(''))
+    })
   }, [wf.mermaid_diagram])
 
   return (
