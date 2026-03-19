@@ -1,323 +1,334 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Search, GitMerge, ClipboardList,
   Activity, Lightbulb, Cpu, Settings, FileCode2, Bot,
   Terminal, Wand2, Plug, ListOrdered, ShieldCheck, DollarSign,
-  Shield, GitBranch, CircleDot, Radio, Target, Users, Inbox, Network, type LucideIcon,
+  GitBranch, Target, Inbox, Network, Building2,
+  CheckSquare, Zap, Database, BookOpen, Shield,
+  ChevronDown, ChevronsUpDown, type LucideIcon,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchFeatureRequests, fetchQueueTasks, fetchProjects, switchProject, fetchHealth, fetchPendingProposals } from '../../api/client'
+import { fetchProjects, fetchHealth, switchProject } from '../../api/client'
 import { useProjectConfig } from '../../hooks/useProjectConfig'
+import Tooltip from './Tooltip'
+import StatsStrip from './StatsStrip'
+import { useTourContext } from '../../context/TourContext'
+import OnboardingWizard from '../onboarding/OnboardingWizard'
 
-// ---------------------------------------------------------------------------
-// Standard SAGE sidebar links — solution-agnostic.
-// Visibility is controlled by active_modules in your solution's project.yaml.
-//
-// To add solution-specific sidebar links:
-//   1. Add the moduleId to active_modules in project.yaml
-//   2. Add an entry to this links array in your solution fork/branch
-//   3. Register the route in App.tsx
 // ---------------------------------------------------------------------------
 const SAGE_VERSION = 'v2.1'
 
+function initials(id: string): string {
+  const words = id.split(/[_\s-]+/).filter(Boolean)
+  if (words.length === 1) return id.slice(0, 2).toUpperCase()
+  return (words[0][0] + words[1][0]).toUpperCase()
+}
+
+// ---------------------------------------------------------------------------
 interface NavItem {
-  to: string
-  icon: LucideIcon
-  label: string
-  moduleId: string
-  badge?: boolean
-  queueBadge?: boolean
-  approvalsBadge?: boolean
+  to: string; icon: LucideIcon; label: string; moduleId: string; tooltip: string
+}
+interface NavArea {
+  id: string; label: string; icon: LucideIcon; accent: string; items: NavItem[]
 }
 
-interface NavGroup {
-  label: string
-  items: NavItem[]
-}
-
-// Nav groups: Paperclip-style grouping
-const NAV_GROUPS: NavGroup[] = [
+const NAV_AREAS: NavArea[] = [
   {
-    label: 'WORK',
+    id: 'work', label: 'Work', icon: CheckSquare, accent: '#ef4444',
     items: [
-      { to: '/approvals',    icon: Inbox,           label: 'Approvals',     moduleId: 'approvals',    approvalsBadge: true },
-      { to: '/',             icon: LayoutDashboard, label: 'Dashboard',     moduleId: 'dashboard' },
-      { to: '/queue',        icon: ListOrdered,     label: 'Task Queue',    moduleId: 'queue',        queueBadge: true },
-      { to: '/issues',       icon: CircleDot,       label: 'Issues',        moduleId: 'improvements' },
-      { to: '/activity',     icon: Radio,           label: 'Activity',      moduleId: 'audit' },
-      { to: '/live-console', icon: Terminal,        label: 'Live Console',  moduleId: 'live-console' },
+      { to: '/approvals',    icon: Inbox,           label: 'Approvals',    moduleId: 'approvals',    tooltip: 'Agent proposals waiting for your review before execution' },
+      { to: '/queue',        icon: ListOrdered,     label: 'Task Queue',   moduleId: 'queue',        tooltip: 'Tasks currently queued or running across all agents' },
+      { to: '/',             icon: LayoutDashboard, label: 'Dashboard',    moduleId: 'dashboard',    tooltip: 'System health, recent activity, and integration status' },
+      { to: '/live-console', icon: Terminal,        label: 'Live Console', moduleId: 'live-console', tooltip: 'Real-time backend log stream' },
     ],
   },
   {
-    label: 'AGENTS',
+    id: 'intelligence', label: 'Intelligence', icon: Zap, accent: '#a78bfa',
     items: [
-      { to: '/agents',    icon: Bot,      label: 'Agents',      moduleId: 'agents' },
-      { to: '/org',       icon: Users,    label: 'Org Chart',   moduleId: 'org-chart' },
-      { to: '/org-graph', icon: Network,  label: 'Organization',moduleId: 'org' },
-      { to: '/analyst',   icon: Search,   label: 'Analyst',   moduleId: 'analyst' },
-      { to: '/developer', icon: GitMerge, label: 'Developer', moduleId: 'developer' },
-      { to: '/monitor',   icon: Activity, label: 'Monitor',   moduleId: 'monitor' },
+      { to: '/agents',       icon: Bot,       label: 'Agents',       moduleId: 'agents',       tooltip: "Submit a task to an agent role defined in this solution's prompts.yaml" },
+      { to: '/analyst',      icon: Search,    label: 'Analyst',      moduleId: 'analyst',      tooltip: 'AI triage of log entries and error signals' },
+      { to: '/developer',    icon: GitMerge,  label: 'Developer',    moduleId: 'developer',    tooltip: 'Code review and merge request creation via connected GitLab' },
+      { to: '/monitor',      icon: Activity,  label: 'Monitor',      moduleId: 'monitor',      tooltip: 'Live status of all configured integration polling threads' },
+      { to: '/improvements', icon: Lightbulb, label: 'Improvements', moduleId: 'improvements', tooltip: 'Feature request queue and AI-generated implementation plans' },
+      { to: '/workflows',    icon: GitBranch, label: 'Workflows',    moduleId: 'workflows',    tooltip: 'LangGraph workflow definitions and execution history' },
+      { to: '/goals',        icon: Target,    label: 'Goals',        moduleId: 'improvements', tooltip: 'High-level objectives tracked against in-progress work' },
     ],
   },
   {
-    label: 'INTELLIGENCE',
+    id: 'knowledge', label: 'Knowledge', icon: Database, accent: '#10b981',
     items: [
-      { to: '/improvements', icon: Lightbulb,     label: 'Improvements',  moduleId: 'improvements', badge: true },
-      { to: '/goals',        icon: Target,        label: 'Goals',         moduleId: 'improvements' },
-      { to: '/workflows',    icon: GitBranch,     label: 'Workflows',     moduleId: 'workflows' },
-      { to: '/yaml-editor',  icon: FileCode2,     label: 'Config Editor', moduleId: 'yaml-editor' },
-      { to: '/audit',        icon: ClipboardList, label: 'Audit Log',     moduleId: 'audit' },
+      { to: '/settings',  icon: BookOpen,      label: 'Vector Store', moduleId: 'settings', tooltip: "Search and manage entries in this solution's knowledge base" },
+      { to: '/activity',  icon: Activity,      label: 'Channels',     moduleId: 'audit',    tooltip: 'Cross-team knowledge channels shared via org configuration' },
+      { to: '/audit',     icon: ClipboardList, label: 'Audit Log',    moduleId: 'audit',    tooltip: 'Full compliance audit trail — proposals, approvals, rejections' },
+      { to: '/costs',     icon: DollarSign,    label: 'Costs',        moduleId: 'costs',    tooltip: 'LLM token usage and budget controls per solution' },
     ],
   },
   {
-    label: 'SETTINGS',
+    id: 'organization', label: 'Organization', icon: Building2, accent: '#3b82f6',
     items: [
-      { to: '/llm',          icon: Cpu,        label: 'LLM',           moduleId: 'llm' },
-      { to: '/integrations', icon: Plug,       label: 'Integrations',  moduleId: 'integrations' },
-      { to: '/onboarding',   icon: Wand2,      label: 'New Solution',  moduleId: 'onboarding' },
-      { to: '/access-control', icon: ShieldCheck, label: 'Access Control', moduleId: 'access-control' },
-      { to: '/costs',        icon: DollarSign, label: 'Costs',         moduleId: 'costs' },
-      { to: '/settings',     icon: Settings,   label: 'Settings',      moduleId: 'settings' },
+      { to: '/org-graph',  icon: Network, label: 'Org Graph',  moduleId: 'org',        tooltip: 'React Flow graph of solutions, knowledge channels, and task routing' },
+      { to: '/onboarding', icon: Wand2,   label: 'Onboarding', moduleId: 'onboarding', tooltip: 'Generate a new solution from a plain-language description' },
+    ],
+  },
+  {
+    id: 'admin', label: 'Admin', icon: Shield, accent: '#475569',
+    items: [
+      { to: '/llm',            icon: Cpu,         label: 'LLM Settings',   moduleId: 'llm',            tooltip: 'Switch LLM provider and model; view session token usage' },
+      { to: '/yaml-editor',    icon: FileCode2,   label: 'Config Editor',  moduleId: 'yaml-editor',    tooltip: 'Edit solution YAML files with live validation' },
+      { to: '/access-control', icon: ShieldCheck, label: 'Access Control', moduleId: 'access-control', tooltip: 'Manage API keys and user role assignments' },
+      { to: '/integrations',   icon: Plug,        label: 'Integrations',   moduleId: 'integrations',   tooltip: 'Status and configuration for all connected integrations' },
+      { to: '/settings',       icon: Settings,    label: 'Settings',       moduleId: 'settings',       tooltip: 'Framework-wide settings and display preferences' },
     ],
   },
 ]
 
-// Starter solutions shown in the CompanyRail when no projects API data
-const FALLBACK_SOLUTIONS = [
-  { id: 'starter',        initial: 'S', title: 'Starter' },
-  { id: 'medtech_team',   initial: 'M', title: 'MedTech' },
-  { id: 'four_in_a_line', initial: '4', title: 'Four In A Line' },
-]
-
 // ---------------------------------------------------------------------------
-// CompanyRail — far-left w-12 column
+// SolutionRail — 44px far-left column
 // ---------------------------------------------------------------------------
-function CompanyRail() {
+function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { data: healthData } = useQuery({
-    queryKey: ['health'],
-    queryFn: fetchHealth,
-    refetchInterval: 30_000,
-  })
+  const { data: healthData } = useQuery({ queryKey: ['health'], queryFn: fetchHealth, refetchInterval: 30_000 })
   const activeId = (healthData as any)?.project?.project ?? ''
 
-  const { data: projectsData } = useQuery({
-    queryKey: ['projects'],
-    queryFn: fetchProjects,
-    staleTime: 60_000,
-  })
-
+  const { data: projectsData } = useQuery({ queryKey: ['projects'], queryFn: fetchProjects, staleTime: 60_000 })
   const switchMutation = useMutation({
     mutationFn: (id: string) => switchProject(id),
     onSuccess: () => queryClient.invalidateQueries(),
   })
 
   const solutions = projectsData?.projects ?? []
-  const railSolutions = solutions.length > 0
-    ? solutions.map(s => ({ id: s.id, initial: s.name.charAt(0).toUpperCase(), title: s.name }))
-    : FALLBACK_SOLUTIONS
 
   return (
     <div
-      className="flex flex-col items-center h-full shrink-0 py-2"
-      style={{ width: '48px', backgroundColor: 'var(--sage-rail-bg)', borderRight: '1px solid #27272a' }}
+      data-tour="solution-rail"
+      style={{ width: '44px', display: 'flex', flexDirection: 'column', alignItems: 'center',
+               height: '100%', padding: '8px 0', backgroundColor: '#020617',
+               borderRight: '1px solid #0f172a', flexShrink: 0 }}
     >
-      {/* SAGE icon */}
-      <button
-        onClick={() => navigate('/')}
-        className="flex items-center justify-center mb-3"
-        style={{ width: '32px', height: '32px', color: '#71717a' }}
-        title="SAGE Framework"
-      >
-        <Shield size={18} />
-      </button>
-
-      {/* Divider */}
-      <div style={{ width: '24px', height: '1px', backgroundColor: '#27272a', marginBottom: '8px' }} />
-
-      {/* Solution avatars */}
-      <div className="flex flex-col items-center gap-1.5 flex-1 overflow-y-auto" style={{ overflowX: 'hidden' }}>
-        {railSolutions.map(sol => {
-          const isActive = sol.id === activeId
-          return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                    overflowY: 'auto', width: '100%', paddingTop: '4px' }}>
+        {solutions.map(sol => (
+          <Tooltip key={sol.id} text={sol.name}>
             <button
-              key={sol.id}
-              onClick={() => !isActive && switchMutation.mutate(sol.id)}
-              title={sol.title}
-              className="flex items-center justify-center text-xs font-bold transition-colors"
+              onClick={() => sol.id !== activeId && switchMutation.mutate(sol.id)}
               style={{
-                width: '28px',
-                height: '28px',
-                flexShrink: 0,
-                backgroundColor: isActive ? '#f4f4f5' : '#27272a',
-                color: isActive ? '#09090b' : '#71717a',
-                border: isActive ? '1px solid #f4f4f5' : '1px solid #3f3f46',
-                cursor: isActive ? 'default' : 'pointer',
+                width: '28px', height: '28px', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', fontSize: '10px', fontWeight: 700, flexShrink: 0,
+                backgroundColor: sol.id === activeId ? '#3b82f6' : '#1e293b',
+                color: sol.id === activeId ? '#fff' : '#64748b',
+                cursor: sol.id === activeId ? 'default' : 'pointer',
+                border: 'none',
               }}
             >
-              {sol.initial}
+              {initials(sol.id)}
             </button>
-          )
-        })}
+          </Tooltip>
+        ))}
       </div>
-
-      {/* Divider */}
-      <div style={{ width: '24px', height: '1px', backgroundColor: '#27272a', margin: '8px 0' }} />
-
-      {/* Settings icon at bottom */}
-      <button
-        onClick={() => navigate('/settings')}
-        className="flex items-center justify-center"
-        style={{ width: '32px', height: '32px', color: '#52525b' }}
-        title="Settings"
-      >
-        <Settings size={14} />
-      </button>
+      <Tooltip text="Create a new solution">
+        <button
+          onClick={onOpenWizard}
+          style={{ width: '28px', height: '28px', color: '#334155', fontSize: '18px',
+                   lineHeight: 1, marginBottom: '8px', background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          +
+        </button>
+      </Tooltip>
+      <Tooltip text="View organization graph">
+        <button
+          onClick={() => navigate('/org-graph')}
+          style={{ width: '32px', height: '32px', color: '#334155', background: 'none',
+                   border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Building2 size={16} />
+        </button>
+      </Tooltip>
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Main Sidebar
+// SolutionSwitcher — dropdown at top of main sidebar
+// ---------------------------------------------------------------------------
+interface SwitcherProps {
+  projectName: string
+  solutions: Array<{ id: string; name: string }>
+  activeId: string
+  onSwitch: (id: string) => void
+  showRestartTour: boolean
+  onRestartTour: () => void
+}
+
+function SolutionSwitcher({ projectName, solutions, activeId, onSwitch, showRestartTour, onRestartTour }: SwitcherProps) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div style={{ position: 'relative', borderBottom: '1px solid #1e293b' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ display: 'flex', width: '100%', alignItems: 'center', gap: '6px',
+                 padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer' }}
+      >
+        <span style={{ flex: 1, fontSize: '13px', fontWeight: 600, color: '#f1f5f9',
+                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
+          {projectName}
+        </span>
+        <ChevronsUpDown size={14} style={{ color: '#475569', flexShrink: 0 }} />
+      </button>
+      {open && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setOpen(false)} />
+          <div style={{ position: 'absolute', left: 0, top: '100%', width: '100%', zIndex: 20,
+                        backgroundColor: '#0f172a', border: '1px solid #1e293b',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+            {solutions.map(sol => (
+              <button
+                key={sol.id}
+                onClick={() => { onSwitch(sol.id); setOpen(false) }}
+                disabled={sol.id === activeId}
+                style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px',
+                         fontSize: '12px', color: sol.id === activeId ? '#f1f5f9' : '#64748b',
+                         backgroundColor: sol.id === activeId ? '#172033' : 'transparent',
+                         border: 'none', cursor: sol.id === activeId ? 'default' : 'pointer' }}
+              >
+                {sol.name}
+              </button>
+            ))}
+            {showRestartTour && (
+              <>
+                <div style={{ borderTop: '1px solid #1e293b', margin: '4px 0' }} />
+                <button
+                  onClick={() => { onRestartTour(); setOpen(false) }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px',
+                           fontSize: '12px', color: '#64748b', background: 'none',
+                           border: 'none', cursor: 'pointer' }}
+                >
+                  Restart tour
+                </button>
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Main Sidebar export
 // ---------------------------------------------------------------------------
 export default function Sidebar() {
-  // Pending improvement-request badge count
-  const { data: featureData } = useQuery({
-    queryKey: ['feature-requests', '', 'pending'],
-    queryFn: () => fetchFeatureRequests(undefined, 'pending'),
-    refetchInterval: 60_000,
-  })
-  const pendingCount = featureData?.count ?? 0
+  const [openArea, setOpenArea] = useState<string>('work')
+  const { pathname } = useLocation()
+  const queryClient = useQueryClient()
+  const { openWizard, wizardOpen, closeWizard, startTour, isToured, restartTour } = useTourContext()
 
-  // Active task queue badge count (pending + in_progress)
-  const { data: queueData } = useQuery({
-    queryKey: ['queue-tasks-sidebar'],
-    queryFn: () => fetchQueueTasks(),
-    refetchInterval: 15_000,
-  })
-  const activeQueueCount = (queueData ?? []).filter(
-    t => t.status === 'pending' || t.status === 'in_progress'
-  ).length
+  const { data: healthData } = useQuery({ queryKey: ['health'], queryFn: fetchHealth, refetchInterval: 30_000 })
+  const activeId = (healthData as any)?.project?.project ?? ''
 
-  // Pending approvals badge count
-  const { data: approvalsData } = useQuery({
-    queryKey: ['proposals-pending'],
-    queryFn: fetchPendingProposals,
-    refetchInterval: 10_000,
+  const { data: projectsData } = useQuery({ queryKey: ['projects'], queryFn: fetchProjects, staleTime: 60_000 })
+  const switchMutation = useMutation({
+    mutationFn: (id: string) => switchProject(id),
+    onSuccess: () => queryClient.invalidateQueries(),
   })
-  const pendingApprovalsCount = approvalsData?.count ?? 0
 
-  // Project-aware module visibility
   const { data: projectData } = useProjectConfig()
   const activeModules: string[] = projectData?.active_modules ?? []
-  const projectName = projectData?.name ?? ''
-
-  // If active_modules is empty (fallback / API unreachable), show everything
+  const projectName = projectData?.name ?? 'SAGE'
   const isVisible = (moduleId: string) =>
     activeModules.length === 0 || activeModules.includes(moduleId)
 
+  // Auto-expand the area containing the active route
+  useEffect(() => {
+    for (const area of NAV_AREAS) {
+      if (area.items.some(item => item.to === pathname || (item.to === '/' && pathname === '/'))) {
+        setOpenArea(area.id)
+        return
+      }
+    }
+  }, [pathname])
+
+  const solutions = projectsData?.projects ?? []
+
   return (
-    <aside className="flex h-full shrink-0">
-      {/* CompanyRail */}
-      <CompanyRail />
-
-      {/* Main nav sidebar */}
-      <div
-        className="flex flex-col h-full"
-        style={{ width: '200px', backgroundColor: 'var(--sage-sidebar-bg)', borderRight: '1px solid #27272a' }}
-      >
-        {/* Logo / brand */}
-        <div
-          className="flex flex-col px-3 py-3"
-          style={{ borderBottom: '1px solid #27272a' }}
-          title={projectName || 'Smart Agentic-Guided Empowerment'}
-        >
-          {projectName ? (
-            <>
-              <span className="text-sm font-bold tracking-tight leading-tight truncate" style={{ color: '#f4f4f5' }}>
-                {projectName}
-              </span>
-              <span className="text-[9px] mt-0.5" style={{ color: '#3f3f46' }}>
-                powered by SAGE[ai]
-              </span>
-            </>
-          ) : (
-            <span className="text-sm font-bold tracking-tight" style={{ color: '#f4f4f5' }}>
-              SAGE<span style={{ color: '#71717a' }}>[ai]</span>
-            </span>
-          )}
+    <aside style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
+      <SolutionRail onOpenWizard={openWizard} />
+      <div style={{ width: '220px', display: 'flex', flexDirection: 'column', height: '100%',
+                    backgroundColor: 'var(--sage-sidebar-bg)', borderRight: '1px solid #1e293b' }}>
+        <SolutionSwitcher
+          projectName={projectName}
+          solutions={solutions}
+          activeId={activeId}
+          onSwitch={(id) => switchMutation.mutate(id)}
+          showRestartTour={isToured(activeId)}
+          onRestartTour={() => restartTour(activeId)}
+        />
+        <div data-tour="stats-strip">
+          <StatsStrip />
         </div>
-
-        {/* Navigation groups */}
-        <nav className="flex-1 overflow-y-auto py-2">
-          {NAV_GROUPS.map(group => {
-            const visibleItems = group.items.filter(({ moduleId }) => isVisible(moduleId))
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
+          {NAV_AREAS.map(area => {
+            const visibleItems = area.items.filter(({ moduleId }) => isVisible(moduleId))
             if (visibleItems.length === 0) return null
+            const isOpen = openArea === area.id
             return (
-              <div key={group.label} className="mb-1">
-                <div className="sage-nav-group">{group.label}</div>
-                {visibleItems.map(({ to, icon: Icon, label, badge, queueBadge, approvalsBadge, moduleId }) => (
-                  <NavLink
-                    key={moduleId}
-                    to={to}
-                    end={to === '/'}
-                    className={({ isActive }) =>
-                      `sage-nav-item flex items-center gap-2.5 px-3 py-2 text-xs${isActive ? ' sage-nav-item-active' : ''}`
-                    }
-                    style={({ isActive }) =>
-                      isActive
-                        ? { color: 'var(--sage-sidebar-active-text)' }
-                        : { color: 'var(--sage-sidebar-text)' }
-                    }
-                  >
-                    <Icon size={14} />
-                    <span className="flex-1">{label}</span>
-                    {badge && pendingCount > 0 && (
-                      <span
-                        className="text-xs font-bold px-1 py-0.5 min-w-[16px] text-center"
-                        style={{ backgroundColor: '#3f3f46', color: '#a1a1aa', fontSize: '10px' }}
-                      >
-                        {pendingCount}
-                      </span>
-                    )}
-                    {queueBadge && activeQueueCount > 0 && (
-                      <span
-                        className="text-xs font-bold px-1 py-0.5 min-w-[16px] text-center"
-                        style={{ backgroundColor: '#3f3f46', color: '#a1a1aa', fontSize: '10px' }}
-                      >
-                        {activeQueueCount}
-                      </span>
-                    )}
-                    {approvalsBadge && pendingApprovalsCount > 0 && (
-                      <span
-                        className="text-xs font-bold px-1 py-0.5 min-w-[16px] text-center"
-                        style={{ backgroundColor: '#dc2626', color: '#fff', fontSize: '10px' }}
-                      >
-                        {pendingApprovalsCount}
-                      </span>
-                    )}
-                  </NavLink>
+              <div key={area.id}>
+                <button
+                  data-tour={`area-${area.id}`}
+                  onClick={() => setOpenArea(isOpen ? '' : area.id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%',
+                           padding: '6px 12px', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  <area.icon size={13} style={{ color: area.accent, flexShrink: 0 }} />
+                  <span style={{ flex: 1, fontSize: '11px', fontWeight: 600, color: '#94a3b8',
+                                 textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {area.label}
+                  </span>
+                  {!isOpen && (
+                    <span style={{ fontSize: '10px', color: '#334155' }}>{visibleItems.length}</span>
+                  )}
+                  <ChevronDown
+                    size={12}
+                    style={{ color: '#334155', flexShrink: 0,
+                             transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.15s' }}
+                  />
+                </button>
+                {isOpen && visibleItems.map(item => (
+                  <Tooltip key={item.to + item.label} text={item.tooltip}>
+                    <NavLink
+                      to={item.to}
+                      end={item.to === '/'}
+                      data-tour={item.label === 'Approvals' ? 'nav-approvals' : item.label === 'Task Queue' ? 'nav-queue' : undefined}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                               padding: '6px 12px 6px 28px', fontSize: '12px', textDecoration: 'none',
+                               borderLeft: `2px solid ${area.accent}20` }}
+                      className={({ isActive }) => isActive ? 'sage-nav-item-active' : ''}
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <item.icon size={13} />
+                          <span style={{ color: isActive ? '#93c5fd' : '#64748b' }}>{item.label}</span>
+                        </>
+                      )}
+                    </NavLink>
+                  </Tooltip>
                 ))}
               </div>
             )
           })}
         </nav>
-
-        {/* Footer */}
-        <div
-          className="px-3 py-2.5 text-xs space-y-0.5"
-          style={{ borderTop: '1px solid #27272a', color: '#3f3f46' }}
-        >
-          {projectName && (
-            <div className="font-medium truncate" style={{ color: '#52525b' }}>
-              {projectName}
-            </div>
-          )}
-          <div>SAGE Framework {SAGE_VERSION}</div>
+        <div style={{ padding: '8px 12px', borderTop: '1px solid #1e293b', color: '#334155', fontSize: '11px' }}>
+          SAGE Framework {SAGE_VERSION}
         </div>
       </div>
+      {wizardOpen && (
+        <OnboardingWizard
+          onClose={closeWizard}
+          onTourStart={(solutionId) => { closeWizard(); startTour(solutionId) }}
+        />
+      )}
     </aside>
   )
 }
