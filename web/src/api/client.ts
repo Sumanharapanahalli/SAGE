@@ -321,6 +321,10 @@ export const fetchRepoMap = (max_files = 50) =>
 export const triggerKnowledgeSync = (directory = '') =>
   post<{ status: string; chunks_imported: number }>('/knowledge/sync', { directory })
 
+// OpenShell Sandbox
+export const fetchSandboxStatus = () =>
+  get<{ available: boolean; version?: string; install?: string }>('/sandbox/status')
+
 // Task Queue
 export const fetchTaskSubtasks = (task_id: string) =>
   get<{ task_id: string; subtasks: unknown[] }>(`/tasks/${task_id}/subtasks`)
