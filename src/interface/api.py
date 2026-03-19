@@ -2686,10 +2686,12 @@ async def onboarding_generate(request: Request):
     status = "created" | "exists"
     """
     body = await request.json()
-    description   = body.get("description", "").strip()
-    solution_name = body.get("solution_name", "").strip()
-    compliance    = body.get("compliance_standards", [])
-    integrations  = body.get("integrations", ["gitlab"])
+    description      = body.get("description", "").strip()
+    solution_name    = body.get("solution_name", "").strip()
+    compliance       = body.get("compliance_standards", [])
+    integrations     = body.get("integrations", ["gitlab"])
+    parent_solution  = body.get("parent_solution", "").strip()
+    org_name         = body.get("org_name", "").strip()
 
     if not description:
         raise HTTPException(status_code=400, detail="description is required")
@@ -2703,6 +2705,8 @@ async def onboarding_generate(request: Request):
             solution_name=solution_name,
             compliance_standards=compliance,
             integrations=integrations,
+            parent_solution=parent_solution,
+            org_name=org_name,
         )
         return result
     except ValueError as e:
