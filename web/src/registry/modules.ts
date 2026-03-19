@@ -292,6 +292,28 @@ export const MODULE_REGISTRY: Record<string, ModuleMetadata> = {
     ],
   },
 
+  org: {
+    id: 'org',
+    name: 'Organization',
+    description: 'Visualize and configure solution hierarchy, knowledge channels, and cross-team routing',
+    version: '1.0.0',
+    route: '/org-graph',
+    features: [
+      'React Flow graph visualization of all solutions in the org',
+      'Blue edges — knowledge channel flows between producer and consumer solutions',
+      'Orange edges — task routing links between solutions',
+      'Root solution highlighted with dashed border',
+      'Knowledge Channels table listing all channels and their members',
+      'Reload button to re-fetch org.yaml at runtime',
+    ],
+    improvementHints: [
+      'Add inline channel creation form in the graph sidebar',
+      'Add drag-to-connect interaction for creating routing links',
+      'Add per-node click panel showing solution stats',
+      'Add animated edge particles to show live data flow',
+    ],
+  },
+
   'access-control': {
     id: 'access-control',
     name: 'Access Control',

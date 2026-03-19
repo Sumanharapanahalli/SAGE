@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar'
 import Header from './components/layout/Header'
 import CommandPalette from './components/CommandPalette'
+import { useProjectConfig } from './hooks/useProjectConfig'
 import Dashboard from './pages/Dashboard'
 import Analyst from './pages/Analyst'
 import Developer from './pages/Developer'
@@ -23,6 +24,7 @@ import Workflows from './pages/Workflows'
 import Approvals from './pages/Approvals'
 import Goals from './pages/Goals'
 import OrgChart from './pages/OrgChart'
+import OrgGraph from './pages/OrgGraph'
 import Issues from './pages/Issues'
 import Activity from './pages/Activity'
 import ThemeProvider from './components/theme/ThemeProvider'
@@ -44,6 +46,12 @@ import { AuthProvider } from './context/AuthContext'
 
 function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const { data: projectData } = useProjectConfig()
+
+  // Keep browser tab title in sync with active solution
+  useEffect(() => {
+    document.title = projectData?.name ? projectData.name : 'SAGE[ai]'
+  }, [projectData?.name])
 
   // Cmd+K / Ctrl+K opens the command palette
   useEffect(() => {
@@ -85,6 +93,7 @@ function AppShell() {
               <Route path="/approvals"      element={<Approvals />} />
               <Route path="/goals"          element={<Goals />} />
               <Route path="/org"            element={<OrgChart />} />
+              <Route path="/org-graph"      element={<OrgGraph />} />
               <Route path="/issues"         element={<Issues />} />
               <Route path="/activity"       element={<Activity />} />
             </Routes>
