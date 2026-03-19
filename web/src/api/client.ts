@@ -67,6 +67,10 @@ export const fetchPipelineStatus = (project_id: number, mr_iid: number) =>
 // Monitor
 export const fetchMonitorStatus = () => get<MonitorStatus>('/monitor/status')
 
+// Scheduler
+export const fetchSchedulerStatus = () =>
+  get<{ running: boolean; scheduled_count: number }>('/scheduler/status')
+
 // Feature requests — module self-improvement loop
 export const submitFeatureRequest = (body: import('../types/module').FeatureRequestPayload) =>
   post<{ id: string; status: string; message: string }>('/feedback/feature-request', body)
