@@ -23,8 +23,9 @@ import Costs from './pages/Costs'
 import Workflows from './pages/Workflows'
 import Approvals from './pages/Approvals'
 import Goals from './pages/Goals'
-import OrgChart from './pages/OrgChart'
 import OrgGraph from './pages/OrgGraph'
+import TourOverlay from './components/onboarding/TourOverlay'
+import { TourProvider } from './context/TourContext'
 import Issues from './pages/Issues'
 import Activity from './pages/Activity'
 import ThemeProvider from './components/theme/ThemeProvider'
@@ -92,7 +93,6 @@ function AppShell() {
               <Route path="/workflows"      element={<Workflows />} />
               <Route path="/approvals"      element={<Approvals />} />
               <Route path="/goals"          element={<Goals />} />
-              <Route path="/org"            element={<OrgChart />} />
               <Route path="/org-graph"      element={<OrgGraph />} />
               <Route path="/issues"         element={<Issues />} />
               <Route path="/activity"       element={<Activity />} />
@@ -101,6 +101,7 @@ function AppShell() {
         </div>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <TourOverlay />
     </>
   )
 }
@@ -110,7 +111,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <ThemeProvider>
-          <AppShell />
+          <TourProvider>
+            <AppShell />
+          </TourProvider>
         </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
