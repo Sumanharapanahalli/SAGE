@@ -2754,18 +2754,53 @@ async def knowledge_list(limit: int = 50):
     return {"entries": vector_memory.list_entries(limit=limit), "count": limit}
 
 
+def _write_to_channel_collection(db_path: str, collection_name: str, text: str, metadata: dict):
+    """Write a knowledge entry to a shared channel chroma collection. Non-fatal on error."""
+    try:
+        import importlib.util
+        if importlib.util.find_spec("chromadb") is None:
+            return
+        import chromadb
+        import uuid as _uuid
+        _client = chromadb.PersistentClient(path=db_path)
+        _col = _client.get_or_create_collection(collection_name)
+        _col.add(documents=[text], metadatas=[metadata or {}], ids=[str(_uuid.uuid4())])
+        logger.info("Written to channel collection %s", collection_name)
+    except Exception as _exc:
+        logger.warning("Channel write failed (non-fatal): %s", _exc)
+
+
 @app.post("/knowledge/add")
 async def knowledge_add(request: Request):
     """
     Propose adding a knowledge entry to the vector store.
     Returns STATEFUL proposal — actual add on POST /approve/{trace_id}.
-    Body: { "text": str, "metadata": dict (optional) }
+    Body: { "text": str, "metadata": dict (optional), "channel": str (optional) }
     """
     body = await request.json()
     text = body.get("text", "").strip()
     if not text:
         raise HTTPException(status_code=400, detail="text is required")
     metadata = body.get("metadata", {})
+
+    # --- Org channel write (optional) ---
+    channel = body.get("channel", "").strip() if body else ""
+    if channel:
+        from src.core.org_loader import org_loader as _org_loader
+        _active_sol = _get_active_solution()
+        _col_name = _org_loader.get_producer_channel_name(_active_sol, channel)
+        if _col_name is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"solution '{_active_sol}' is not a producer for channel '{channel}'",
+            )
+        _channel_db = _org_loader.get_channel_db_path()
+        if _channel_db:
+            import os as _os
+            _os.makedirs(_channel_db, exist_ok=True)
+            _write_to_channel_collection(_channel_db, _col_name, text, metadata)
+    # --- end channel write ---
+
     from src.core.proposal_store import RiskClass
     preview = text[:120] + ("..." if len(text) > 120 else "")
     store = _get_proposal_store()
