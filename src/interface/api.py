@@ -1336,6 +1336,28 @@ async def list_queue_tasks(
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.get("/tasks/{task_id}/subtasks")
+async def get_task_subtasks(task_id: str):
+    """Return all tasks that were spawned as subtasks of task_id."""
+    try:
+        qm = _get_task_queue()
+        all_tasks = qm.get_all_tasks()   # returns list of dicts
+        children = [
+            {
+                "task_id":    t["task_id"],
+                "task_type":  t["task_type"],
+                "status":     t["status"],
+                "wave":       (t.get("metadata") or {}).get("wave", 0),
+                "depends_on": t.get("depends_on", []),
+            }
+            for t in all_tasks
+            if (t.get("metadata") or {}).get("parent_task_id") == task_id
+        ]
+        return {"task_id": task_id, "subtasks": children}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @app.get("/queue/status")
 async def get_queue_status():
     """

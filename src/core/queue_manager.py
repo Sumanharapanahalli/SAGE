@@ -58,6 +58,46 @@ def _run_hooks(commands: list, cwd: str = None) -> None:
             logger.warning("Hook exception for '%s': %s", cmd, exc)
 
 
+def _fanout_subtasks(queue_manager, parent_task_id: str, subtasks: list) -> list:
+    """
+    Submit a list of subtask dicts to the queue, grouping by wave.
+    Each dict: {task_type, payload, wave (int, default 0), priority (optional)}.
+
+    Wave 0 tasks have no dependencies.
+    Wave N tasks depend on all task_ids from wave N-1.
+
+    Returns list of submitted task_ids in order.
+    """
+    from collections import defaultdict
+    waves: dict = defaultdict(list)
+    for st in subtasks:
+        waves[st.get("wave", 0)].append(st)
+
+    all_ids: list = []
+    prev_wave_ids: list = []
+
+    for wave_num in sorted(waves.keys()):
+        wave_ids = []
+        for st in waves[wave_num]:
+            task_id = queue_manager.submit(
+                st["task_type"],
+                st.get("payload", {}),
+                priority=st.get("priority", 5),
+                source="subagent",
+                depends_on=list(prev_wave_ids),
+                metadata={"parent_task_id": parent_task_id, "wave": wave_num},
+            )
+            wave_ids.append(task_id)
+        all_ids.extend(wave_ids)
+        prev_wave_ids = wave_ids
+
+    logger.info(
+        "Fanout: parent=%s spawned %d subtasks across %d waves",
+        parent_task_id, len(all_ids), len(waves),
+    )
+    return all_ids
+
+
 class TaskStatus:
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
@@ -528,6 +568,15 @@ class TaskWorker(threading.Thread):
             )
 
         _run_hooks(hooks["post"])
+
+        # After hook execution, check for subtask fanout
+        subtasks = task.payload.get("subtasks", [])
+        if subtasks:
+            try:
+                _fanout_subtasks(self._queue, task.task_id, subtasks)
+            except Exception as exc:
+                self.logger.warning("Subtask fanout failed for %s: %s", task.task_id, exc)
+
         return result
 
 
