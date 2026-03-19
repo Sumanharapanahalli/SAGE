@@ -113,7 +113,7 @@ export default function OrgGraph() {
   if (loading) return <div style={{ padding: 32, color: "#94a3b8" }}>Loading…</div>;
   if (error)   return <div style={{ padding: 32, color: "#f87171" }}>{error}</div>;
 
-  const isEmpty = !orgData.org?.name;
+  const isEmpty = !orgData.org;
 
   return (
     <div style={{ padding: "24px 32px" }}>
@@ -127,7 +127,14 @@ export default function OrgGraph() {
           )}
         </div>
         <button
-          onClick={async () => { await reloadOrg(); await loadOrg(); }}
+          onClick={async () => {
+            try {
+              await reloadOrg();
+              await loadOrg();
+            } catch {
+              setError("Failed to reload org configuration");
+            }
+          }}
           style={{
             padding: "8px 16px", borderRadius: 6,
             background: "#1e293b", color: "#94a3b8",

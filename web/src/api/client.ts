@@ -645,32 +645,3 @@ export async function reloadOrg(): Promise<{ status: string }> {
   return res.json();
 }
 
-export async function createOrgChannel(
-  name: string, producers: string[], consumers: string[]
-): Promise<void> {
-  await fetch(`${BASE}/org/channels`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, producers, consumers }),
-  });
-}
-
-export async function deleteOrgChannel(name: string): Promise<void> {
-  await fetch(`${BASE}/org/channels/${encodeURIComponent(name)}`, { method: "DELETE" });
-}
-
-export async function addOrgRoute(solution: string, target: string): Promise<void> {
-  await fetch(`${BASE}/org/routes`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ solution, target }),
-  });
-}
-
-export async function removeOrgRoute(solution: string, target: string): Promise<void> {
-  await fetch(`${BASE}/org/routes`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ solution, target }),
-  });
-}

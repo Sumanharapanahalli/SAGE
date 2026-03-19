@@ -52,7 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'AGENTS',
     items: [
       { to: '/agents',    icon: Bot,      label: 'Agents',      moduleId: 'agents' },
-      { to: '/org',       icon: Users,    label: 'Org Chart',   moduleId: 'agents' },
+      { to: '/org',       icon: Users,    label: 'Org Chart',   moduleId: 'org-chart' },
       { to: '/org-graph', icon: Network,  label: 'Organization',moduleId: 'org' },
       { to: '/analyst',   icon: Search,   label: 'Analyst',   moduleId: 'analyst' },
       { to: '/developer', icon: GitMerge, label: 'Developer', moduleId: 'developer' },
