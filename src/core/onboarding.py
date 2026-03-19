@@ -49,7 +49,8 @@ Compliance standards: {compliance_standards}
 Integrations: {integrations}
 Parent solution (if any): {parent_solution}
 
-Output VALID YAML only — no markdown fences, no explanation. Follow this exact structure:
+Output VALID YAML only — no markdown fences, no explanation. Follow this exact structure.
+For the "suggested_routes" field, provide 2-4 snake_case solution names this solution should route tasks to (real domain-appropriate names, not the placeholders shown).
 
 name: "<human-friendly project name>"
 version: "1.0.0"
@@ -81,11 +82,9 @@ settings:
   system:
     max_concurrent_tasks: 1
 
-# Suggest 2-4 other solution names (snake_case) this solution should route tasks to.
-# Include as a YAML list under the key "suggested_routes":
-#   suggested_routes:
-#     - other_solution_name
-#     - another_solution
+suggested_routes:
+  - solution_a
+  - solution_b
 
 ui_labels:
   analyst_page_title: "<domain-appropriate title>"
@@ -199,6 +198,16 @@ def _try_add_to_org(org_name: str, solution_name: str) -> None:
             return
         with open(org_yaml_path, "r", encoding="utf-8") as f:
             org_data = yaml.safe_load(f) or {}
+
+        # Validate that the org name in the file matches the requested org_name
+        existing_org_name = org_data.get("org", {}).get("name", "")
+        if existing_org_name and existing_org_name != org_name:
+            logger.debug(
+                "org.yaml name '%s' does not match requested org '%s' — skipping auto-add",
+                existing_org_name,
+                org_name,
+            )
+            return
 
         # Ensure org > solutions list exists
         org_block = org_data.setdefault("org", {})

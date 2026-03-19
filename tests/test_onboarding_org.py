@@ -1,5 +1,5 @@
 """Tests for onboarding enhancements: parent_solution, org_name, suggested_routes."""
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY
 
 
 def test_onboarding_accepts_parent_solution_field():
@@ -49,7 +49,7 @@ def test_onboarding_suggested_routes_present_in_response():
 
 
 def test_onboarding_passes_parent_solution_to_generate():
-    """Verify parent_solution is forwarded to generate_solution as a kwarg."""
+    """Verify parent_solution and org_name are forwarded to generate_solution."""
     from fastapi.testclient import TestClient
     from src.interface.api import app
     client = TestClient(app)
@@ -68,11 +68,34 @@ def test_onboarding_passes_parent_solution_to_generate():
             "parent_solution": "parent_base",
             "org_name": "acme",
         })
-    call_kwargs = mock_gen.call_args
-    assert call_kwargs is not None
-    # Check that parent_solution and org_name were passed
-    kwargs = call_kwargs.kwargs if call_kwargs.kwargs else {}
-    args = call_kwargs.args if call_kwargs.args else ()
-    # parent_solution passed as keyword arg
-    assert kwargs.get("parent_solution") == "parent_base" or "parent_base" in args
-    assert kwargs.get("org_name") == "acme" or "acme" in args
+    mock_gen.assert_called_once_with(
+        description=ANY,
+        solution_name=ANY,
+        compliance_standards=ANY,
+        integrations=ANY,
+        parent_solution="parent_base",
+        org_name="acme",
+    )
+
+
+def test_try_add_to_org_skips_when_org_name_mismatch(tmp_path):
+    """_try_add_to_org must not modify org.yaml when the name field doesn't match."""
+    import yaml
+    from src.core.onboarding import _try_add_to_org
+
+    # Write an org.yaml whose name is "other_org"
+    org_yaml = tmp_path / "org.yaml"
+    org_yaml.write_text(
+        "org:\n  name: other_org\n  solutions:\n    - existing_sol\n",
+        encoding="utf-8",
+    )
+
+    # Patch _SOLUTIONS_DIR so _try_add_to_org looks in tmp_path
+    with patch("src.core.onboarding._SOLUTIONS_DIR", str(tmp_path)):
+        _try_add_to_org(org_name="acme", solution_name="new_sol")
+
+    # org.yaml must be unchanged — new_sol must NOT have been added
+    with open(org_yaml, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    assert "new_sol" not in data["org"]["solutions"]
+    assert data["org"]["solutions"] == ["existing_sol"]
