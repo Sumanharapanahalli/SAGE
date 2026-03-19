@@ -50,6 +50,7 @@ const ROUTE_TO_AREA: Record<string, string> = {
   '/audit':         'Knowledge',
   '/costs':         'Knowledge',
   '/activity':      'Knowledge',
+  '/knowledge':     'Knowledge',
   '/issues':        'Knowledge',
   '/org-graph':     'Organization',
   '/onboarding':    'Organization',
