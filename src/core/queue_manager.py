@@ -847,3 +847,22 @@ parallel_config = ParallelConfig()
 task_queue = TaskQueue()
 task_worker = TaskWorker(task_queue)
 parallel_runner = ParallelTaskRunner(task_queue, parallel_config)
+
+# ---------------------------------------------------------------------------
+# Per-solution queue factory — for cross-team task routing
+# ---------------------------------------------------------------------------
+_queue_registry: dict = {}
+_queue_registry_lock = threading.Lock()
+
+
+def get_task_queue(solution_name: str) -> TaskQueue:
+    """
+    Return (or lazily create) a TaskQueue scoped to a specific solution.
+    The active solution continues to use the module-level `task_queue` singleton.
+    Other solutions get their own instances, lazily created and cached.
+    Thread-safe: uses a Lock to guard the registry.
+    """
+    with _queue_registry_lock:
+        if solution_name not in _queue_registry:
+            _queue_registry[solution_name] = TaskQueue()
+        return _queue_registry[solution_name]
