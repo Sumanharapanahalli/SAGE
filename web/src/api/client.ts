@@ -83,7 +83,7 @@ export const fetchFeatureRequests = (module_id?: string, status?: string, scope?
 }
 
 export const generatePlanForRequest = (req_id: string) =>
-  post<{ request_id: string; status: string; plan: unknown }>(
+  post<{ request_id: string; status: string; plan?: unknown; github_issue_url?: string; message?: string }>(
     `/feedback/feature-requests/${req_id}/plan`
   )
 
@@ -228,6 +228,9 @@ export const rejectProposalFull = (trace_id: string, _decided_by = 'human', feed
   post<{ status: string; trace_id: string; feedback_recorded: boolean; message: string }>(
     `/reject/${trace_id}`, { feedback }
   )
+
+export const undoProposal = (trace_id: string) =>
+  post<ActionResponse>(`/proposals/${trace_id}/undo`)
 
 // Live log stream — returns an EventSource URL (no fetch wrapper needed)
 export const logsStreamUrl = () => '/api/logs/stream'
