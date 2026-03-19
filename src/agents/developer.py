@@ -130,6 +130,16 @@ class DeveloperAgent:
             "  4. FinalAnswer must be strict JSON — no markdown fences."
         )
 
+        # Inject repo map for codebase-aware reviews
+        try:
+            from src.core.repo_map import generate_repo_map
+            import os as _os
+            _PROJECT_ROOT = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+            _repo_map = generate_repo_map(_PROJECT_ROOT, max_files=40)
+            system_prompt = system_prompt + "\n\n" + _repo_map
+        except Exception as _rme:
+            self.logger.debug("Repo map unavailable: %s", _rme)
+
         history: list[str] = [f"Task: {task}"]
 
         for step in range(max_steps):
@@ -369,6 +379,9 @@ class DeveloperAgent:
                     "Do not output markdown fences."
                 )
             )
+            _sol_ctx = project_config.solution_context
+            if _sol_ctx:
+                system_prompt = _sol_ctx + "\n\n" + system_prompt
             _skill = project_config.skill_content
             if _skill:
                 system_prompt = system_prompt + "\n\n## Domain Skills\n" + _skill

@@ -3833,3 +3833,18 @@ async def compliance_gap_assessment(request: Request):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Repo Map — codebase symbol graph for agent context and UI display
+# ---------------------------------------------------------------------------
+
+@app.get("/repo/map")
+async def get_repo_map(max_files: int = 50):
+    """Return a Markdown repo map of the active project for debugging/UI display."""
+    try:
+        from src.core.repo_map import generate_repo_map
+        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        return {"map": generate_repo_map(root, max_files=max_files)}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
