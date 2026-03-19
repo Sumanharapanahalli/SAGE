@@ -99,3 +99,18 @@ def test_try_add_to_org_skips_when_org_name_mismatch(tmp_path):
         data = yaml.safe_load(f)
     assert "new_sol" not in data["org"]["solutions"]
     assert data["org"]["solutions"] == ["existing_sol"]
+
+
+def test_try_add_to_org_exception_branch_is_nonfatal(tmp_path):
+    """_try_add_to_org must not raise when org.yaml contains invalid YAML."""
+    from unittest.mock import patch
+    from src.core.onboarding import _try_add_to_org
+
+    # Write a malformed org.yaml that will cause yaml.safe_load to raise
+    org_yaml = tmp_path / "org.yaml"
+    org_yaml.write_text("{invalid: [unclosed", encoding="utf-8")
+
+    # Patch _SOLUTIONS_DIR so the function finds the malformed file
+    with patch("src.core.onboarding._SOLUTIONS_DIR", str(tmp_path)):
+        # Must not raise — exception branch is non-fatal
+        _try_add_to_org(org_name="acme", solution_name="new_sol")

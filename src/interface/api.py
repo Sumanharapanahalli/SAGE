@@ -2679,10 +2679,12 @@ async def onboarding_generate(request: Request):
         "description": str,              — what the solution does (required)
         "solution_name": str,            — snake_case folder name (required)
         "compliance_standards": [str],   — optional list
-        "integrations": [str]            — optional list (default: ["gitlab"])
+        "integrations": [str],           — optional list (default: ["gitlab"])
+        "parent_solution": str,          — optional parent solution name
+        "org_name": str                  — optional org to register the solution under
     }
 
-    Returns: { solution_name, path, status, files, message }
+    Returns: { solution_name, path, status, files, message, suggested_routes }
     status = "created" | "exists"
     """
     body = await request.json()
