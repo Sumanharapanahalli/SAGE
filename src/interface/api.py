@@ -1358,6 +1358,66 @@ async def get_task_subtasks(task_id: str):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.post("/tasks/submit")
+async def submit_task(request: Request):
+    """
+    Submit a task to the active solution's queue, or route to another team's queue.
+    Requires cross_team_routes permission for cross-team routing.
+    """
+    body = await request.json()
+    task_type = body.get("task_type", "").strip()
+    if not task_type:
+        raise HTTPException(status_code=400, detail="task_type is required")
+
+    payload    = body.get("payload", {})
+    priority   = int(body.get("priority", 5))
+    target_sol = body.get("target_solution", "").strip() or None
+    source_sol = body.get("source_solution", "").strip() or None
+
+    from src.core.org_loader import org_loader as _org_loader
+    from src.core.queue_manager import get_task_queue, task_queue as _default_queue
+
+    if target_sol:
+        # Resolve solutions dir live so env-var overrides (e.g. in tests) are respected
+        from src.core.project_loader import _PROJECT_ROOT as _proj_root
+        _sols_dir = os.environ.get(
+            "SAGE_SOLUTIONS_DIR",
+            os.path.join(_proj_root, "solutions"),
+        )
+
+        # Resolve source identity (3-step per spec)
+        if not source_sol:
+            tenant = request.headers.get("X-SAGE-Tenant", "").strip()
+            if tenant and os.path.isdir(os.path.join(_sols_dir, tenant)):
+                source_sol = tenant
+            else:
+                source_sol = _get_active_solution()
+
+        # Validate target exists on disk
+        if not os.path.isdir(os.path.join(_sols_dir, target_sol)):
+            raise HTTPException(status_code=404, detail=f"target_solution '{target_sol}' not found")
+
+        # Validate routing permission
+        if _org_loader.org_name and not _org_loader.is_route_allowed(source_sol, target_sol):
+            raise HTTPException(
+                status_code=403,
+                detail=f"solution '{source_sol}' is not permitted to route tasks to '{target_sol}'",
+            )
+
+        queue = get_task_queue(target_sol)
+        task_id = queue.submit(
+            task_type, payload,
+            priority=priority,
+            source="cross_team_route",
+            metadata={"source_solution": source_sol, "target_solution": target_sol},
+        )
+        return {"task_id": task_id, "target_solution": target_sol, "status": "queued"}
+    else:
+        task_id = _default_queue.submit(task_type, payload, priority=priority, source="api")
+        from src.core.project_loader import project_config as _pc
+        return {"task_id": task_id, "target_solution": _pc.project_name, "status": "queued"}
+
+
 @app.get("/queue/status")
 async def get_queue_status():
     """
