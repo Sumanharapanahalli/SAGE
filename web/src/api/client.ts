@@ -612,3 +612,65 @@ export async function getOrgChart(): Promise<{ root_roles: OrgChartNode[]; total
     return { root_roles: [], total: 0 }
   }
 }
+
+// Org Graph — solution hierarchy, knowledge channels, task routing
+export interface OrgChannel {
+  producers: string[];
+  consumers: string[];
+}
+
+export interface OrgRoute {
+  source: string;
+  target: string;
+}
+
+export interface OrgData {
+  org?: {
+    name?: string;
+    root_solution?: string;
+    knowledge_channels?: Record<string, OrgChannel>;
+  };
+  routes?: OrgRoute[];
+}
+
+export async function fetchOrg(): Promise<OrgData> {
+  const res = await fetch(`${BASE}/org`);
+  if (!res.ok) throw new Error("Failed to fetch org");
+  return res.json();
+}
+
+export async function reloadOrg(): Promise<{ status: string }> {
+  const res = await fetch(`${BASE}/org/reload`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to reload org");
+  return res.json();
+}
+
+export async function createOrgChannel(
+  name: string, producers: string[], consumers: string[]
+): Promise<void> {
+  await fetch(`${BASE}/org/channels`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, producers, consumers }),
+  });
+}
+
+export async function deleteOrgChannel(name: string): Promise<void> {
+  await fetch(`${BASE}/org/channels/${encodeURIComponent(name)}`, { method: "DELETE" });
+}
+
+export async function addOrgRoute(solution: string, target: string): Promise<void> {
+  await fetch(`${BASE}/org/routes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ solution, target }),
+  });
+}
+
+export async function removeOrgRoute(solution: string, target: string): Promise<void> {
+  await fetch(`${BASE}/org/routes`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ solution, target }),
+  });
+}

@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Search, GitMerge, ClipboardList,
   Activity, Lightbulb, Cpu, Settings, FileCode2, Bot,
   Terminal, Wand2, Plug, ListOrdered, ShieldCheck, DollarSign,
-  Shield, GitBranch, CircleDot, Radio, Target, Users, Inbox, type LucideIcon,
+  Shield, GitBranch, CircleDot, Radio, Target, Users, Inbox, Network, type LucideIcon,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchFeatureRequests, fetchQueueTasks, fetchProjects, switchProject, fetchHealth, fetchPendingProposals } from '../../api/client'
@@ -51,8 +51,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'AGENTS',
     items: [
-      { to: '/agents',    icon: Bot,      label: 'Agents',    moduleId: 'agents' },
-      { to: '/org',       icon: Users,    label: 'Org Chart', moduleId: 'agents' },
+      { to: '/agents',    icon: Bot,      label: 'Agents',      moduleId: 'agents' },
+      { to: '/org',       icon: Users,    label: 'Org Chart',   moduleId: 'agents' },
+      { to: '/org-graph', icon: Network,  label: 'Organization',moduleId: 'org' },
       { to: '/analyst',   icon: Search,   label: 'Analyst',   moduleId: 'analyst' },
       { to: '/developer', icon: GitMerge, label: 'Developer', moduleId: 'developer' },
       { to: '/monitor',   icon: Activity, label: 'Monitor',   moduleId: 'monitor' },
@@ -229,19 +230,24 @@ export default function Sidebar() {
       >
         {/* Logo / brand */}
         <div
-          className="flex items-center gap-2 px-3 py-3.5"
+          className="flex flex-col px-3 py-3"
           style={{ borderBottom: '1px solid #27272a' }}
-          title="Smart Agentic-Guided Empowerment"
+          title={projectName || 'Smart Agentic-Guided Empowerment'}
         >
-          <span className="text-sm font-bold tracking-tight" style={{ color: '#f4f4f5' }}>
-            SAGE<span style={{ color: '#71717a' }}>[ai]</span>
-          </span>
-          <span
-            className="text-xs font-semibold ml-auto"
-            style={{ color: '#3f3f46' }}
-          >
-            {SAGE_VERSION}
-          </span>
+          {projectName ? (
+            <>
+              <span className="text-sm font-bold tracking-tight leading-tight truncate" style={{ color: '#f4f4f5' }}>
+                {projectName}
+              </span>
+              <span className="text-[9px] mt-0.5" style={{ color: '#3f3f46' }}>
+                powered by SAGE[ai]
+              </span>
+            </>
+          ) : (
+            <span className="text-sm font-bold tracking-tight" style={{ color: '#f4f4f5' }}>
+              SAGE<span style={{ color: '#71717a' }}>[ai]</span>
+            </span>
+          )}
         </div>
 
         {/* Navigation groups */}

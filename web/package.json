@@ -10,6 +10,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@tanstack/react-query": "^5.17.0",
+    "@xyflow/react": "^12.10.1",
     "clsx": "^2.1.0",
     "lucide-react": "^0.303.0",
     "mermaid": "^10.9.5",
