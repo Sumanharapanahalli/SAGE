@@ -23,6 +23,13 @@ from abc import ABC, abstractmethod
 # ---------------------------------------------------------------------------
 _langfuse_client = None
 
+# Module-level reference to project_config — allows patching in tests and
+# avoids repeated local imports inside the hot generate() path.
+try:
+    from src.core.project_loader import project_config
+except Exception:
+    project_config = None  # type: ignore[assignment]
+
 def _init_langfuse(cfg: dict) -> None:
     """Initialise Langfuse if enabled and credentials are available."""
     global _langfuse_client
@@ -681,7 +688,7 @@ class LLMGateway:
 
     def generate(self, prompt, system_prompt="You are a helpful AI assistant.",
                  trace_name: str = "llm_generate", metadata: dict = None,
-                 trace_id: str = ""):
+                 trace_id: str = "", agent_name: str = "") -> str:
         """Thread-safe generation. Only ONE call at a time.
 
         Args:
@@ -690,6 +697,7 @@ class LLMGateway:
             trace_name:    Langfuse trace name (e.g. agent class + method).
             metadata:      Extra key-value pairs attached to the Langfuse trace.
             trace_id:      Optional trace ID for cost tracking correlation.
+            agent_name:    Agent role name for per-agent budget enforcement.
         """
         if self.provider is None:
             return "Error: No LLM provider configured."
@@ -743,6 +751,26 @@ class LLMGateway:
                 raise
             except Exception:
                 pass  # cost_tracker import failure is non-fatal
+
+            # --- Per-agent budget ceiling check ---
+            if agent_name:
+                try:
+                    _agent_pc = project_config
+                    if _agent_pc is not None:
+                        _agent_budget = _agent_pc.get_agent_budget(agent_name)
+                        if _agent_budget is not None:
+                            _limit = _agent_budget.get("monthly_calls", 0)
+                            if _limit > 0:
+                                _agent_calls = self._usage.get(f"agent_{agent_name}_calls", 0)
+                                if _agent_calls >= _limit:
+                                    raise RuntimeError(
+                                        f"Agent '{agent_name}' monthly call budget ({_limit}) exceeded."
+                                    )
+                                self._usage[f"agent_{agent_name}_calls"] = _agent_calls + 1
+                except RuntimeError:
+                    raise
+                except Exception as _bexc:
+                    self.logger.warning("Agent budget check failed (non-fatal): %s", _bexc)
 
             # --- Langfuse trace (no-op if client not initialised) ---
             _lf_generation = None

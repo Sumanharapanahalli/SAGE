@@ -260,6 +260,33 @@ class ProjectConfig:
         return self._name
 
     # ------------------------------------------------------------------
+    # .sage/ data directory — one per solution, never inside the framework
+    # ------------------------------------------------------------------
+
+    @property
+    def sage_data_dir(self) -> str:
+        """
+        Return (and create) the .sage/ directory for the active solution.
+
+        This is the single source of truth for all runtime data paths:
+          <solution_dir>/.sage/audit_log.db   — compliance audit trail + proposals
+          <solution_dir>/.sage/chroma_db/     — vector knowledge store
+
+        When no solution is loaded (framework fallback), returns a .sage/
+        directory at the project root so the framework itself never pollutes
+        a solution's data directory.
+
+        The .sage/ folder should be gitignored in every solution repo.
+        It is never committed — it is runtime state, not configuration.
+        """
+        if self._name:
+            sage_dir = os.path.join(_SOLUTIONS_DIR, self._name, ".sage")
+        else:
+            sage_dir = os.path.join(_PROJECT_ROOT, ".sage")
+        os.makedirs(sage_dir, exist_ok=True)
+        return sage_dir
+
+    # ------------------------------------------------------------------
     # Metadata
     # ------------------------------------------------------------------
 
@@ -277,6 +304,7 @@ class ProjectConfig:
             "integrations":        self._project.get("integrations", []),
             "ui_labels":           self._project.get("ui_labels", {}),
             "dashboard":           self._project.get("dashboard", {}),
+            "theme":               self._project.get("theme", {}),
         }
 
     # ------------------------------------------------------------------
@@ -296,6 +324,29 @@ class ProjectConfig:
     def skill_md_path(self) -> str:
         """Absolute path to the active SKILL.md, or empty string if not in use."""
         return self._skill_md_path
+
+    @property
+    def solution_context(self) -> str:
+        """
+        Contents of <solution_dir>/solution_context.md, if it exists.
+
+        Analogous to CLAUDE.md in Claude Code — injected as a prefix to every
+        agent system prompt so domain-specific standing instructions are always
+        in context without being embedded in the solution's YAML files.
+
+        Returns empty string when the file is absent (no-op for agents).
+        """
+        if not self._name:
+            return ""
+        ctx_path = os.path.join(_SOLUTIONS_DIR, self._name, "solution_context.md")
+        if not os.path.isfile(ctx_path):
+            return ""
+        try:
+            with open(ctx_path, "r", encoding="utf-8") as fh:
+                return fh.read().strip()
+        except OSError as exc:
+            logger.warning("Could not read solution_context.md at %s: %s", ctx_path, exc)
+            return ""
 
     # ------------------------------------------------------------------
     # Prompt accessors — return project prompts or framework defaults
@@ -366,6 +417,11 @@ class ProjectConfig:
         """Override active_modules at runtime (not persisted to disk)."""
         self._project["active_modules"] = list(modules)
         logger.info("Active modules updated: %s", modules)
+
+    def get_agent_budget(self, agent_name: str) -> dict | None:
+        """Return budget config for agent_name from project.yaml agent_budgets, or None."""
+        budgets = self._project.get("agent_budgets", {})
+        return budgets.get(agent_name)
 
 
 # ---------------------------------------------------------------------------

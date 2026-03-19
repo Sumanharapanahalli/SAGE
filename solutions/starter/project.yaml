@@ -43,6 +43,13 @@ integrations:
   - gitlab
 # Add any of: teams | metabase | spira | slack | jira | confluence | database
 
+# Optional: per-agent monthly call ceilings (0 = unlimited)
+# agent_budgets:
+#   analyst:
+#     monthly_calls: 500
+#   developer:
+#     monthly_calls: 200
+
 # Project-specific settings (override base config keys here)
 settings:
   memory:
