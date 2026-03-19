@@ -317,6 +317,10 @@ export const fetchActiveAgents = () =>
 export const fetchRepoMap = (max_files = 50) =>
   get<{ map: string }>(`/repo/map?max_files=${max_files}`)
 
+// Knowledge Sync
+export const triggerKnowledgeSync = (directory = '') =>
+  post<{ status: string; chunks_imported: number }>('/knowledge/sync', { directory })
+
 // Task Queue
 export const fetchQueueTasks = (params?: { status?: string; source?: string }) =>
   get<import('../types/module').QueueTask[]>(
