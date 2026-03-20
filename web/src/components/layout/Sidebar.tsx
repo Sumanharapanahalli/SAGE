@@ -156,6 +156,7 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
           {pinnedToShow.map(id => {
             const sol = solutions.find(s => s.id === id)
             if (!sol) return null
+            const solAccent = (sol as any).theme?.accent ?? '#1e293b'
             return (
               <Tooltip key={id} text={sol.name}>
                 <button
@@ -163,7 +164,8 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
                   style={{
                     width: '28px', height: '28px', display: 'flex', alignItems: 'center',
                     justifyContent: 'center', fontSize: '10px', fontWeight: 700, flexShrink: 0,
-                    backgroundColor: '#1e293b', color: '#64748b', cursor: 'pointer', border: 'none',
+                    backgroundColor: solAccent, color: '#fff', cursor: 'pointer', border: 'none',
+                    opacity: 0.75,
                   }}
                 >
                   {initials(id)}

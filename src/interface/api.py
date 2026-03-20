@@ -480,10 +480,11 @@ async def list_projects():
                     "version": meta.get("version", "1.0.0"),
                     "description": str(meta.get("description", "")).strip(),
                     "active_modules": meta.get("active_modules", []),
+                    "theme": meta.get("theme", {}),
                 })
             except Exception:
                 projects.append({"id": name, "name": name, "domain": "general",
-                                  "version": "1.0.0", "description": "", "active_modules": []})
+                                  "version": "1.0.0", "description": "", "active_modules": [], "theme": {}})
     active = _get_project_config().metadata.get("project", "")
     return {"projects": projects, "active": active}
 
