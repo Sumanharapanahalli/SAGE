@@ -1,6 +1,6 @@
 # SAGE Framework — User Guide
 
-> Version 4.0.0 | Last updated: 2026-03-18 | Browser-verified ✅
+> Version 5.0.0 | Last updated: 2026-03-20 | Browser-verified ✅
 
 This guide covers everything needed to install, configure, run, and operate the SAGE Framework from day to day. It assumes no prior knowledge of the codebase.
 
@@ -20,6 +20,8 @@ This guide covers everything needed to install, configure, run, and operate the 
 10. [Solution Theming](#10-solution-theming)
 11. [Running Tests](#11-running-tests)
 12. [Troubleshooting](#12-troubleshooting)
+13. [Action-Aware Chat](#13-action-aware-chat)
+14. [SAGE 9 Framework Features](#14-sage-9-framework-features)
 
 ---
 
@@ -849,3 +851,158 @@ make run PROJECT=starter
 ### "J-Link DLL not found"
 
 Install J-Link Software Pack from SEGGER (segger.com/downloads/jlink). Verify: `python -c "import pylink; j = pylink.JLink(); print(j.product_name)"`
+
+---
+
+## 13. Action-Aware Chat
+
+The chat panel (bottom-right of the UI) is an **action-routing assistant** — not just a Q&A window. It understands page context and can execute actions on your behalf after confirmation.
+
+### How it works
+
+1. Type a message — the LLM classifies your intent.
+2. If it's a question, you get an inline answer.
+3. If it maps to an action, a **confirmation card** appears with an amber border, describing exactly what will happen.
+4. Click **Confirm** to execute, or **Cancel** to abort.
+5. Every interaction is logged in the chat history and the compliance audit trail.
+
+### Available actions (via natural language)
+
+| What you type | What happens |
+|---|---|
+| "approve it" / "approve the YAML edit" | `approve_proposal` — approves the pending proposal from page context |
+| "reject that" / "reject with reason X" | `reject_proposal` — rejects with your stated reason |
+| "undo that" | `undo_proposal` — reverts a code_diff proposal |
+| "queue a firmware review for MR !42" | `submit_task` — creates a REVIEW_MR task in the queue |
+| "change the analyst prompt to check HIPAA" | `propose_yaml_edit` — creates a yaml_edit proposal in the approvals inbox |
+| "what does PRECISERR mean?" | `answer` — inline answer, no confirmation needed |
+| "what's in the knowledge base about calibration?" | `query_knowledge` — searches vector store, returns inline |
+
+### Page context enrichment
+
+On the `/approvals` page, the chat automatically knows about pending proposals (trace IDs, descriptions) — so "approve it" refers to the right proposal without you needing to specify the ID.
+
+### Audit trail
+
+- **Every message** is stored in `chat_messages` with a `message_type`: `user`, `answer`, `action_proposed`, `action_confirmed`, `action_cancelled`, `action_executed`
+- **Every execution** writes to `compliance_audit_log` with `actor="human_via_chat"`
+- Clearing chat history never removes compliance log entries
+
+---
+
+## 14. SAGE 9 Framework Features
+
+Nine production-ready framework features shipped in the SAGE 9 release.
+
+### Feature D — Per-agent budget ceilings
+
+Declare monthly call limits per agent role in `project.yaml`:
+
+```yaml
+agent_budgets:
+  analyst:
+    monthly_calls: 500
+  developer:
+    monthly_calls: 200
+```
+
+When an agent exceeds its limit, `generate()` raises a `RuntimeError` rather than making an additional LLM call. Check usage via `GET /llm/status`.
+
+### Feature J — Undo button per proposal
+
+Approved `code_diff` proposals can be reverted:
+
+```bash
+POST /proposals/{trace_id}/undo
+```
+
+The UI shows an **Undo** button next to each approved code diff in the Approvals page. Only `code_diff` type supports undo (other types return 400).
+
+### Feature L — Live active-agents panel
+
+```bash
+GET /agents/active
+```
+
+Returns agents currently processing a task with their task type, start time, and progress. Embedded in the Dashboard as a live panel with 5-second polling.
+
+### Feature A — Pre/post action hooks
+
+Declare shell commands that run before and after any task type in `tasks.yaml`:
+
+```yaml
+task_types:
+  - name: ANALYZE_LOG
+    hooks:
+      pre: "echo 'Starting analysis'"
+      post: "curl -X POST https://webhook.site/... -d '{\"status\":\"done\"}'"
+```
+
+Hooks run in a subprocess. Failures are logged but do not block the task.
+
+### Feature B — Repo map fed to agents
+
+```bash
+GET /repo/map
+```
+
+Returns a markdown file tree with symbol extraction (functions, classes). The Developer agent injects this into its system prompt for multi-file coherence, similar to Aider's repo map.
+
+### Feature E — YAML-declared scheduled tasks
+
+Define recurring tasks in `tasks.yaml`:
+
+```yaml
+scheduled:
+  - task_type: ANALYZE_LOG
+    cron: "0 9 * * 1"         # Mondays at 9am
+    payload: {"log_source": "production"}
+    description: "Weekly production log review"
+```
+
+The scheduler starts automatically with the backend. Check schedules:
+
+```bash
+GET /scheduler/status
+```
+
+### Feature F — Git worktree per concurrent proposal
+
+When a `code_diff` proposal is created, SAGE automatically creates an isolated git worktree for it. The diff is applied and committed there. This allows multiple proposals to be in-flight simultaneously without branch conflicts.
+
+### Feature K — Knowledge sync
+
+Bulk-import all files matching a glob pattern into the vector knowledge base:
+
+```bash
+POST /knowledge/sync
+{"path": "/path/to/docs", "pattern": "*.md", "solution": "starter"}
+```
+
+Or queue it as a task:
+```yaml
+task_types:
+  - name: KNOWLEDGE_SYNC
+    # auto-registered — no config needed
+```
+
+### Feature G — Wave-scheduled subagent spawning
+
+Include `subtasks` in any task payload to run parallel sub-tasks:
+
+```json
+{
+  "task_type": "ANALYZE_LOG",
+  "payload": {
+    "subtasks": [
+      {"task_type": "ANALYZE_LOG", "input_data": {"log": "service-a.log"}},
+      {"task_type": "ANALYZE_LOG", "input_data": {"log": "service-b.log"}}
+    ]
+  }
+}
+```
+
+Sub-tasks run in parallel waves. Track them:
+```bash
+GET /tasks/{task_id}/subtasks
+```
