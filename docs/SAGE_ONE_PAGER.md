@@ -1,5 +1,6 @@
 # SAGE[ai] — Smart Agentic-Guided Empowerment
 ### *One framework. One founder. A billion-dollar operation.*
+### *2026-03-20*
 
 ---
 
@@ -242,3 +243,24 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 
 *SAGE Framework — Open Source · Self-Hosted · Agent-First*
 *github.com/your-org/sage*
+
+---
+
+## What's Shipped (SAGE 9 — March 2026)
+
+### Intelligence Layer v2 — Action-Aware Chat
+The chat panel routes natural language to framework actions. Say "approve it" on the approvals page — the system identifies the pending proposal, presents a confirmation card, and executes on your approval. Every step is auditable.
+
+### SAGE 9 Framework Features
+- **Agent budgets** — Monthly call ceilings per role, declared in YAML
+- **Undo** — Revert approved code diffs with one click
+- **Live agents panel** — Real-time active-agent visibility on the dashboard
+- **Task hooks** — Pre/post shell hooks per task type
+- **Repo map** — File tree + symbols fed to Developer agent context
+- **Scheduled tasks** — Cron-declared recurring tasks in `tasks.yaml`
+- **Git worktrees** — Isolated workspace per concurrent code proposal
+- **Knowledge sync** — Bulk-import docs into the vector store
+- **Wave execution** — Parallel subtask fan-out from a single queue entry
+
+### UX Redesign
+Complete navigation overhaul: 5-area accordion sidebar, 44px solution rail, live stats strip, resizable panels, per-solution accent colors, hover color previews, 6-stop onboarding tour.
