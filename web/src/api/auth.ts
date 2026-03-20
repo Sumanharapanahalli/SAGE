@@ -62,6 +62,14 @@ export interface UserRole {
   granted_at: string
 }
 
+export interface DevUser {
+  id:           string
+  name:         string
+  email:        string
+  role:         string
+  avatar_color: string
+}
+
 export interface CreateApiKeyBody {
   name:     string
   email:    string
@@ -96,3 +104,6 @@ export const listRoles = () =>
 
 export const assignRole = (body: AssignRoleBody) =>
   post<{ assigned: boolean; email: string; solution: string; role: string }>('/auth/roles', body)
+
+export const getDevUsers = () =>
+  get<{ users: DevUser[] }>('/config/dev-users')
