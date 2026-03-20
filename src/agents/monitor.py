@@ -73,6 +73,7 @@ class MonitorAgent:
         self._callbacks: Dict[str, List[Callable]] = {}
         self._seen_message_ids: set = set()
         self._seen_issue_ids: set = set()
+        self._seen_mr_ids: set = set()
         self._last_error_check: Optional[datetime] = None
 
         # Lazy singletons
@@ -138,6 +139,17 @@ class MonitorAgent:
             self._threads.append(t_gitlab)
             t_gitlab.start()
             self.logger.info("GitLab poller started (interval: %ds)", self._gitlab_poll_interval)
+
+            # GitLab MR poller — auto-triggers REVIEW_MR tasks for new open MRs
+            t_gitlab_mr = threading.Thread(
+                target=self._poll_gitlab_mrs,
+                args=(self._gitlab_poll_interval,),
+                name="MonitorAgent-GitLab-MR",
+                daemon=True,
+            )
+            self._threads.append(t_gitlab_mr)
+            t_gitlab_mr.start()
+            self.logger.info("GitLab MR poller started (interval: %ds)", self._gitlab_poll_interval)
         else:
             self.logger.warning("GitLab polling disabled: GITLAB_URL, GITLAB_TOKEN, or GITLAB_PROJECT_ID not set.")
 
@@ -307,6 +319,108 @@ class MonitorAgent:
             time.sleep(interval)
 
         self.logger.info("GitLab polling thread stopped.")
+
+    def _poll_gitlab_mrs(self, interval: int):
+        """
+        Polls GitLab for open merge requests that have not yet been queued for
+        review.  For each newly detected open MR, submits a REVIEW_MR task to
+        the task queue with ``source="monitor_auto"`` so it is distinguishable
+        from manually submitted reviews.
+
+        Deduplication is based on the GitLab MR global ID.  An MR is only
+        submitted once per process lifetime; if the process restarts, the queue
+        manager's SQLite persistence prevents duplicate execution because the
+        worker checks task history before processing.
+        """
+        self.logger.info("GitLab MR polling thread started.")
+        api_base = f"{self._gitlab_url}/api/v4"
+        headers = {"Private-Token": self._gitlab_token}
+
+        while self._running:
+            try:
+                resp = requests.get(
+                    f"{api_base}/projects/{self._gitlab_project_id}/merge_requests",
+                    headers=headers,
+                    params={"state": "opened", "per_page": 20},
+                    timeout=30,
+                )
+                resp.raise_for_status()
+                mrs = resp.json()
+
+                for mr in mrs:
+                    mr_id = mr.get("id")
+                    if mr_id in self._seen_mr_ids:
+                        continue
+
+                    # Within-process deduplication is handled by _seen_mr_ids above.
+                    # Cross-restart deduplication: scan the persisted task queue for any
+                    # pending/in-progress REVIEW_MR task whose metadata records this mr_id.
+                    already_queued = False
+                    try:
+                        from src.core.queue_manager import task_queue
+                        for existing in task_queue.get_all_tasks():
+                            if (
+                                existing.get("task_type") == "REVIEW_MR"
+                                and existing.get("status") in ("pending", "in_progress")
+                                and existing.get("metadata", {}).get("mr_id") == mr_id
+                            ):
+                                already_queued = True
+                                break
+                    except Exception as qe:
+                        self.logger.warning("Queue check failed for MR %s: %s", mr_id, qe)
+
+                    self._seen_mr_ids.add(mr_id)
+
+                    if already_queued:
+                        self.logger.debug("MR %s already has a REVIEW_MR task — skipping.", mr_id)
+                        continue
+
+                    # Submit a new REVIEW_MR task
+                    try:
+                        from src.core.queue_manager import task_queue
+                        task_id = task_queue.submit(
+                            task_type="REVIEW_MR",
+                            payload={
+                                "mr_id": mr_id,
+                                "mr_iid": mr.get("iid"),
+                                "title": mr.get("title", ""),
+                                "description": mr.get("description", ""),
+                                "source_branch": mr.get("source_branch", ""),
+                                "target_branch": mr.get("target_branch", ""),
+                                "author": mr.get("author", {}).get("username", ""),
+                                "web_url": mr.get("web_url", ""),
+                                "project_id": self._gitlab_project_id,
+                            },
+                            priority=5,
+                            source="monitor_auto",
+                            metadata={"mr_id": mr_id},
+                        )
+                        self.logger.info(
+                            "Auto-queued REVIEW_MR task %s for MR !%s: %s",
+                            task_id, mr.get("iid"), mr.get("title", "")[:60],
+                        )
+                        self._on_event("gitlab_mr_opened", {
+                            "type": "gitlab_mr_opened",
+                            "source": "gitlab",
+                            "content": f"MR !{mr.get('iid')}: {mr.get('title', '')}",
+                            "timestamp": mr.get("created_at", datetime.now(timezone.utc).isoformat()),
+                            "mr_id": mr_id,
+                            "mr_iid": mr.get("iid"),
+                            "title": mr.get("title", ""),
+                            "web_url": mr.get("web_url", ""),
+                            "task_id": task_id,
+                        })
+                    except Exception as submit_err:
+                        self.logger.error("Failed to queue REVIEW_MR for MR %s: %s", mr_id, submit_err)
+
+            except requests.RequestException as e:
+                self.logger.error("GitLab MR polling error: %s", e)
+            except Exception as e:
+                self.logger.error("Unexpected GitLab MR polling error: %s", e)
+
+            time.sleep(interval)
+
+        self.logger.info("GitLab MR polling thread stopped.")
 
     # -----------------------------------------------------------------------
     # Event Handler

@@ -47,7 +47,21 @@
       "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 8000 | Select-Object OwningProcess\" 2>/dev/null\ncurl -s http://localhost:8000/health | python -m json.tool)",
       "Bash(powershell.exe -Command \"\n\\\\$procs = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue\nforeach \\(\\\\$p in \\\\$procs\\) {\n    Write-Host 'Killing PID' \\\\$p.OwningProcess\n    Stop-Process -Id \\\\$p.OwningProcess -Force -ErrorAction SilentlyContinue\n}\nStart-Sleep -Seconds 2\n\\\\$check = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue\nif \\(\\\\$check\\) { Write-Host 'Still running on 8000!' } else { Write-Host 'Port 8000 is free' }\n\")",
       "Bash(gh api:*)",
-      "Bash(source:*)"
+      "Bash(source:*)",
+      "Bash(done)",
+      "Bash(scripts/start-server.sh --project-dir C:/sandbox/SAGE)",
+      "Bash(bash \"C:/Users/SumanHarapanahalli.AzureAD/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/skills/brainstorming/scripts/start-server.sh\" --project-dir \"C:/sandbox/SAGE\")",
+      "Bash(del \"web\\\\src\\\\test\\\\smoke.test.ts\")",
+      "Bash(powershell -Command \"Remove-Item 'C:\\\\sandbox\\\\SAGE\\\\web\\\\src\\\\test\\\\smoke.test.ts' -Force\" 2>&1)",
+      "Bash(git commit:*)",
+      "Bash(Guarantee\" sections. Restructure Features into compliance-first:*)",
+      "Bash(tasklist)",
+      "Bash(taskkill /PID 12632 /F)",
+      "Bash(curl -s -X POST http://localhost:8000/analyze -H 'Content-Type: application/json' -d '{\"\"\"\"log_entry\"\"\"\": \"\"\"\"test\"\"\"\"}')",
+      "Bash(cmd /c \"taskkill /PID 20980 /F\")",
+      "Bash(powershell -Command \"Stop-Process -Id 20980 -Force; Stop-Process -Id 22320 -Force; Stop-Process -Id 33316 -Force\")",
+      "Bash(powershell -Command \"Get-Process -Id 20980 | Select-Object Id, Name, Path, CPU, WorkingSet64\" 2>&1)",
+      "Bash(powershell -Command \"Stop-Process -Id 12632,33724,36724,36868 -Force -ErrorAction SilentlyContinue; Start-Sleep 2; Get-Process -Name python -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host Done\" 2>&1)"
     ]
   }
 }

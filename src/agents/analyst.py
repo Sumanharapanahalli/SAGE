@@ -26,6 +26,10 @@ class AnalystAgent:
 
         # 2. Construct Prompt — domain-specific via project_loader
         system_prompt, user_tmpl = project_config.get_analyst_prompts()
+        # Inject solution_context.md standing instructions (if present)
+        sol_ctx = project_config.solution_context
+        if sol_ctx:
+            system_prompt = sol_ctx + "\n\n" + system_prompt
         # Inject SKILL.md domain knowledge when available
         skill = project_config.skill_content
         if skill:

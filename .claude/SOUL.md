@@ -20,8 +20,8 @@ Agentic AI accelerates all three — but only when disciplined. SAGE is that dis
 
 ### The Five Laws
 
-**1. Agents propose. Humans decide. Always.**
-The approval gate is not bureaucracy — it is the product. SAGE exists to amplify human judgment, never to replace it. Compliance guarantees depend on this. The moment an agent acts without human confirmation, SAGE becomes a liability instead of an asset.
+**1. Agents propose. Humans decide. Always — for agent proposals.**
+The HITL approval gate is not bureaucracy — it is the product. SAGE exists to amplify human judgment, never to replace it. Compliance guarantees in regulated industries depend on this. Any solution-level agent proposal (`yaml_edit`, `implementation_plan`, `code_diff`, `knowledge_delete`, `agent_hire`) must have a human in the loop before execution. Framework control operations (`config_switch`, `llm_switch`, `config_modules`) are intentionally immediate — they are tool operation, not agent action. The distinction matters: agent proposals carry compliance risk; framework control is the operator's own action.
 
 **2. Eliminate waste at every layer.**
 No sprint ceremonies. No enterprise roleplay. No manual steps that an agent can do correctly. If a task can be automated without reducing visibility or compliance, it must be automated. If it cannot be automated correctly, it stays human.
@@ -175,7 +175,7 @@ A correction stored today makes tomorrow's analysis better without any model cha
 - Never break the audit log. It is the compliance record and the training signal.
 - Never remove the `threading.Lock` from `LLMGateway`. Single-lane inference is intentional.
 - Never add `print()` statements — use `self.logger` or `logging.getLogger()`.
-- Never bypass the approval gate. Not for demos. Not for "obvious" cases. Never.
+- Never bypass the HITL approval gate for solution-level agent proposals. Not for demos. Not for "obvious" cases. Never. (Framework control ops are a different tier — see Law 1.)
 - Never short-circuit Phase 5 (feedback ingestion). Every rejection is a learning opportunity.
 - Never hardcode a solution name in `src/`. The framework is domain-blind.
 
@@ -192,6 +192,9 @@ These are not dependencies — they are thinking influences:
 | **APM (Agent Package Manager)** | YAML-as-agent-manifest, declarative dependency model, versioned agent configs |
 | **Agent Lightning** | Non-invasive audit instrumentation, closed-loop improvement, selective agent optimization |
 | **Memento (arXiv 2508.16153)** | Behavioral optimization via memory retrieval (not retraining), decouple LLM from policy improvement |
+| **Paperclip (paperclipai/paperclip)** | Board-of-directors governance model, immutable audit log per company, agent-hire requiring explicit human approval, per-agent budget controls. *Key divergence:* Paperclip targets zero-human operation over time; SAGE mandates human approval always — the regulated-industry version of the same architecture. |
+| **Aider** | Every agent change is a reversible git commit; unified diff preview before apply; repo map for multi-file coherence |
+| **Claude Code** | Pre/post action hooks declarable per project; `.claude/` per-project runtime directory (directly inspired `.sage/`); persistent context injection via CLAUDE.md |
 
 ---
 
