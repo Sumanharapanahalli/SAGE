@@ -36,6 +36,10 @@ async function del<T>(path: string): Promise<T> {
 // Health
 export const fetchHealth = () => get<HealthResponse>('/health')
 
+// LLM heartbeat
+export const fetchLLMHealth = () =>
+  get<{ connected: boolean; provider: string; latency_ms: number; detail: string }>('/health/llm')
+
 // Analyze
 export const analyzeLog = (log_entry: string) =>
   post<AnalysisResponse>('/analyze', { log_entry })
@@ -67,6 +71,10 @@ export const fetchPipelineStatus = (project_id: number, mr_iid: number) =>
 // Monitor
 export const fetchMonitorStatus = () => get<MonitorStatus>('/monitor/status')
 
+// Scheduler
+export const fetchSchedulerStatus = () =>
+  get<{ running: boolean; scheduled_count: number }>('/scheduler/status')
+
 // Feature requests — module self-improvement loop
 export const submitFeatureRequest = (body: import('../types/module').FeatureRequestPayload) =>
   post<{ id: string; status: string; message: string }>('/feedback/feature-request', body)
@@ -83,7 +91,7 @@ export const fetchFeatureRequests = (module_id?: string, status?: string, scope?
 }
 
 export const generatePlanForRequest = (req_id: string) =>
-  post<{ request_id: string; status: string; plan: unknown }>(
+  post<{ request_id: string; status: string; plan?: unknown; github_issue_url?: string; message?: string }>(
     `/feedback/feature-requests/${req_id}/plan`
   )
 
@@ -146,6 +154,19 @@ export const hireAgent = (params: {
   role_id: string; name: string; description: string
   icon: string; system_prompt: string; task_types: string[]
 }) => post<ProposalResponse>('/agents/hire', params)
+
+export interface AgentRoleConfig {
+  role_key: string
+  name: string
+  description: string
+  system_prompt: string
+  task_types: Array<{ name: string; description: string }>
+  output_schema?: Record<string, unknown>
+  eval_case?: { input: string; expected_keywords: string[] }
+}
+
+export const analyzeJd = (params: { jd_text: string; solution_context?: string }) =>
+  post<AgentRoleConfig>('/agents/analyze-jd', params)
 
 // Org Structure Templates — onboarding chooser
 export interface OrgTemplateRole {
@@ -229,6 +250,9 @@ export const rejectProposalFull = (trace_id: string, _decided_by = 'human', feed
     `/reject/${trace_id}`, { feedback }
   )
 
+export const undoProposal = (trace_id: string) =>
+  post<ActionResponse>(`/proposals/${trace_id}/undo`)
+
 // Live log stream — returns an EventSource URL (no fetch wrapper needed)
 export const logsStreamUrl = () => '/api/logs/stream'
 
@@ -294,7 +318,34 @@ export const fetchWorkflowDiagrams = () =>
 export const fetchWorkflowDiagram = (solution: string, workflowName: string) =>
   get<WorkflowDiagram>(`/workflows/${solution}/${workflowName}`)
 
+// Active Agents — live panel on Dashboard
+export interface ActiveAgentEntry {
+  task_id: string
+  task_type: string
+  status: string
+  started_at: string | null
+  source: string
+}
+
+export const fetchActiveAgents = () =>
+  get<{ agents: ActiveAgentEntry[]; count: number }>('/agents/active')
+
+// Repo Map
+export const fetchRepoMap = (max_files = 50) =>
+  get<{ map: string }>(`/repo/map?max_files=${max_files}`)
+
+// Knowledge Sync
+export const triggerKnowledgeSync = (directory = '') =>
+  post<{ status: string; chunks_imported: number }>('/knowledge/sync', { directory })
+
+// OpenShell Sandbox
+export const fetchSandboxStatus = () =>
+  get<{ available: boolean; version?: string; install?: string }>('/sandbox/status')
+
 // Task Queue
+export const fetchTaskSubtasks = (task_id: string) =>
+  get<{ task_id: string; subtasks: unknown[] }>(`/tasks/${task_id}/subtasks`)
+
 export const fetchQueueTasks = (params?: { status?: string; source?: string }) =>
   get<import('../types/module').QueueTask[]>(
     `/queue/tasks${params && Object.keys(params).length > 0 ? '?' + new URLSearchParams(params as Record<string, string>) : ''}`
@@ -328,7 +379,7 @@ export const fetchProjectConfig = () =>
   }>('/config/project')
 
 export const fetchProjects = () =>
-  get<{ projects: Array<{ id: string; name: string; domain: string; version: string; description: string }>; active: string }>(
+  get<{ projects: Array<{ id: string; name: string; domain: string; version: string; description: string; theme?: Record<string, string> }>; active: string }>(
     '/config/projects'
   )
 
@@ -578,3 +629,99 @@ export async function getOrgChart(): Promise<{ root_roles: OrgChartNode[]; total
     return { root_roles: [], total: 0 }
   }
 }
+
+// Org Graph — solution hierarchy, knowledge channels, task routing
+export interface OrgChannel {
+  producers: string[];
+  consumers: string[];
+}
+
+export interface OrgRoute {
+  source: string;
+  target: string;
+}
+
+export interface OrgData {
+  org?: {
+    name?: string;
+    root_solution?: string;
+    knowledge_channels?: Record<string, OrgChannel>;
+  };
+  routes?: OrgRoute[];
+}
+
+export async function fetchOrg(): Promise<OrgData> {
+  const res = await fetch(`${BASE}/org`);
+  if (!res.ok) throw new Error("Failed to fetch org");
+  return res.json();
+}
+
+export async function reloadOrg(): Promise<{ status: string }> {
+  const res = await fetch(`${BASE}/org/reload`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to reload org");
+  return res.json();
+}
+
+// Dev users
+export const fetchDevUsers = () =>
+  get<{ users: import('./auth').DevUser[] }>('/config/dev-users')
+
+// Chat — contextual LLM conversation
+export interface ChatRequest {
+  message: string
+  user_id: string
+  session_id: string
+  page_context?: string
+  solution: string
+}
+
+export interface ChatResponse {
+  response_type: 'answer' | 'action'
+  reply?: string
+  action?: string
+  params?: Record<string, unknown>
+  confirmation_prompt?: string
+  session_id: string
+  message_id: string
+}
+
+export const postChat = (req: {
+  message: string; user_id: string; session_id: string
+  page_context?: string; solution: string
+}) => post<ChatResponse>('/chat', req)
+
+export interface ChatExecuteRequest {
+  action: string
+  params: Record<string, unknown>
+  user_id: string
+  session_id: string
+  solution: string
+}
+
+export interface ChatExecuteResponse {
+  status: 'success' | 'error'
+  message: string
+  result: Record<string, unknown>
+}
+
+export const executeChat = (req: ChatExecuteRequest) =>
+  post<ChatExecuteResponse>('/chat/execute', req)
+
+export const clearChatHistory = (user_id: string, solution: string) => {
+  const params = new URLSearchParams({ user_id, solution })
+  return fetch(`${BASE}/chat/history?${params}`, { method: 'DELETE' }).then(r => r.json())
+}
+
+// Solution branding
+export interface BrandingPayload {
+  display_name?: string
+  icon_name?:    string
+  accent?:       string
+  sidebar_bg?:   string
+  sidebar_text?: string
+  badge_bg?:     string
+  badge_text?:   string
+}
+export const patchProjectTheme = (payload: BrandingPayload) =>
+  patch<{ status: string; solution: string }>('/config/project/theme', payload)
+

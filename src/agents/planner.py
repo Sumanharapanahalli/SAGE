@@ -112,6 +112,10 @@ class PlannerAgent:
             system_prompt_base = project_config.get_planner_prompt().replace(
                 "VALID_TASK_TYPES", ", ".join(sorted(valid_types))
             )
+            # Inject solution_context.md standing instructions (if present)
+            _sol_ctx = project_config.solution_context
+            if _sol_ctx:
+                system_prompt_base = _sol_ctx + "\n\n" + system_prompt_base
             # Inject SKILL.md domain knowledge when available
             _skill = project_config.skill_content
             if _skill:

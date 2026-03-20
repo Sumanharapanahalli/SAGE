@@ -34,6 +34,7 @@ export type RequestStatus =
   | 'in_progress'
   | 'completed'
   | 'rejected'
+  | 'github_pr'
 
 /**
  * scope distinguishes WHO owns the backlog item:

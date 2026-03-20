@@ -4,6 +4,7 @@ import { fetchIssues, updateFeatureRequest, submitFeatureRequest, type Issue } f
 import ModuleWrapper from '../components/shared/ModuleWrapper'
 import { Loader2, Plus, X, AlertCircle } from 'lucide-react'
 import type { Priority, RequestScope } from '../types/module'
+import OtherSelect from '../components/ui/OtherSelect'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -171,41 +172,37 @@ function SlideOver({ issue, onClose, onUpdated }: SlideOverProps) {
           {/* Status */}
           <div>
             <div className="text-xs font-medium mb-1" style={{ color: '#71717a' }}>Status</div>
-            <select
+            <OtherSelect
               value={status}
-              onChange={e => setStatus(e.target.value as Issue['status'])}
+              onChange={v => setStatus(v as Issue['status'])}
+              options={[
+                { value: 'open',        label: 'Open' },
+                { value: 'in_progress', label: 'In Progress' },
+                { value: 'done',        label: 'Done' },
+                { value: 'cancelled',   label: 'Cancelled' },
+              ]}
               className="w-full text-sm px-2 py-1.5"
-              style={{
-                backgroundColor: '#27272a',
-                border: '1px solid #3f3f46',
-                color: '#f4f4f5',
-              }}
-            >
-              <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
-              <option value="done">Done</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+              style={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', color: '#f4f4f5' }}
+              inputStyle={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', color: '#f4f4f5' }}
+            />
           </div>
 
           {/* Priority */}
           <div>
             <div className="text-xs font-medium mb-1" style={{ color: '#71717a' }}>Priority</div>
-            <select
+            <OtherSelect
               value={priority}
-              onChange={e => setPriority(e.target.value as Issue['priority'])}
+              onChange={v => setPriority(v as Issue['priority'])}
+              options={[
+                { value: 'urgent', label: 'Urgent' },
+                { value: 'high',   label: 'High' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'low',    label: 'Low' },
+              ]}
               className="w-full text-sm px-2 py-1.5"
-              style={{
-                backgroundColor: '#27272a',
-                border: '1px solid #3f3f46',
-                color: '#f4f4f5',
-              }}
-            >
-              <option value="urgent">Urgent</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
+              style={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', color: '#f4f4f5' }}
+              inputStyle={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', color: '#f4f4f5' }}
+            />
           </div>
 
           {/* Scope */}
@@ -327,26 +324,30 @@ function NewIssueForm({ onClose }: { onClose: () => void }) {
       />
 
       <div className="flex gap-2">
-        <select
+        <OtherSelect
           value={priority}
-          onChange={e => setPriority(e.target.value as Priority)}
+          onChange={v => setPriority(v as Priority)}
+          options={[
+            { value: 'low',      label: 'Low' },
+            { value: 'medium',   label: 'Medium' },
+            { value: 'high',     label: 'High' },
+            { value: 'critical', label: 'Urgent' },
+          ]}
           className="flex-1 text-xs px-2 py-1.5"
           style={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', color: '#a1a1aa' }}
-        >
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="critical">Urgent</option>
-        </select>
-        <select
+          inputStyle={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', color: '#a1a1aa' }}
+        />
+        <OtherSelect
           value={scope}
-          onChange={e => setScope(e.target.value as RequestScope)}
+          onChange={v => setScope(v as RequestScope)}
+          options={[
+            { value: 'solution', label: 'Solution' },
+            { value: 'sage',     label: 'SAGE' },
+          ]}
           className="flex-1 text-xs px-2 py-1.5"
           style={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', color: '#a1a1aa' }}
-        >
-          <option value="solution">Solution</option>
-          <option value="sage">SAGE</option>
-        </select>
+          inputStyle={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', color: '#a1a1aa' }}
+        />
       </div>
 
       {error && (

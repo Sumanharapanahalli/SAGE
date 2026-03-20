@@ -8,7 +8,7 @@
 
 **Lean development methodology on steroids, powered by agentic AI.**
 
-Agents surface signals, search compounding memory, propose actions, wait for human approval, and learn from every correction. The loop compounds — each decision makes the next one better. Human judgment is always in the loop. This is not optional.
+Agents surface signals, search compounding memory, propose actions, wait for human approval, and learn from every correction. The loop compounds — each decision makes the next one better. Human judgment is always in the loop for agent proposals. This is not optional.
 
 ---
 
@@ -21,9 +21,11 @@ src/                    Framework Python source
     onboarding.py       LLM-powered solution generator from plain-language descriptions
     eval_runner.py      Eval suite runner — keyword scoring, SQLite history
     tenant.py           Multi-tenant context (X-SAGE-Tenant header, ContextVar)
+    proposal_store.py   Pending proposals — SQLite-backed, risk-classified, expiry-aware
+    proposal_executor.py Dispatch approved proposals to their side-effect handlers
   agents/               Analyst, Developer, Monitor, Planner, Universal
   interface/api.py      FastAPI — the only public interface
-  memory/               Audit logger, vector memory (CRUD + bulk import)
+  memory/               Audit logger, vector memory (CRUD + bulk import), long_term_memory.py
   modules/              Zero-dependency nano-modules
   integrations/         External framework connectors (all graceful degradation)
     mcp_registry.py     MCP tool discovery + invocation
@@ -32,11 +34,12 @@ src/                    Framework Python source
     slack_approver.py   Slack Block Kit proposals + /webhook/slack callbacks
     temporal_runner.py  Temporal durable workflows (LangGraph fallback)
     langchain_tools.py  LangChain tool loader per solution
-    long_term_memory.py mem0 multi-session memory (vector store fallback)
 
 web/src/                React 18 + TypeScript dashboard
   pages/                One file per route
   components/layout/    Sidebar, Header
+  components/theme/     ThemeProvider — reads theme: block from project.yaml → CSS vars
+  registry/modules.ts   MODULE_REGISTRY — all 16+ modules, visibility, access control
   api/client.ts         All fetch calls — typed
 
 solutions/              Solution configurations (NOT framework code)
@@ -50,10 +53,20 @@ solutions/              Solution configurations (NOT framework code)
   meditation_app/       Flutter + Node.js mobile app example
   four_in_a_line/       Casual game studio example
   medtech_team/         Regulated medical device team (embedded + web + devops)
-  <proprietary>/        Company-specific solutions — mount via SAGE_SOLUTIONS_DIR,
-                        NEVER stored in this repo
+  board_games/          Cross-platform board games platform (25+ games, AI opponents)
+  automotive/           Automotive infotainment & telematics
+  avionics/             Avionics software team
+  iot_medical/          IoT medical device monitoring
+  railways/             Railway systems engineering
+  + 7 more in solutions/  All follow the same 3-YAML pattern
+  <your-solution>/      Your solutions live in a SEPARATE private repo, mounted via
+                        SAGE_SOLUTIONS_DIR env var — never in this repo.
+                        Each solution auto-creates a .sage/ directory at first run:
+                          .sage/audit_log.db   ← proposals, approvals, audit trail
+                          .sage/chroma_db/     ← vector knowledge store
+                        .sage/ is runtime state — gitignored, never committed.
 
-config/config.yaml      Base LLM / memory / integration settings
+config/config.yaml      Base LLM / memory / integration / GitHub settings
 .venv/                  Python virtual environment (Windows: Scripts/, Unix: bin/)
 ```
 
@@ -66,8 +79,11 @@ make venv               # Create .venv and install all deps (first time)
 make venv-minimal       # Low-RAM machine — skips ChromaDB/embeddings
 make run PROJECT=xxx    # Start FastAPI backend on :8000
 make ui                 # Start Vite frontend on :5173
-make test               # Framework unit tests (383 passing)
+make test               # Framework unit tests
 make test-all           # Framework + all solution tests
+make test-api           # Only api.py endpoint tests
+make test-compliance    # IQ/OQ/PQ validation suite
+make test-solution PROJECT=xxx  # Single solution's tests
 ```
 
 ---
@@ -92,7 +108,7 @@ llm:
   ollama_model: "llama3.2"  # any model you've pulled
 ```
 
-Or switch at runtime: `POST /llm/switch {"provider": "ollama", "model": "llama3.2"}`
+Or switch at runtime (executes immediately, no approval): `POST /llm/switch {"provider": "ollama", "model": "llama3.2"}`
 
 ---
 
@@ -107,12 +123,18 @@ Or switch at runtime: `POST /llm/switch {"provider": "ollama", "model": "llama3.
 
 ---
 
-## The SAGE Lean Loop (commit this to memory)
+## Approval Gate — Two Tiers (Read This First)
 
-```
-SURFACE → CONTEXTUALIZE → PROPOSE → DECIDE → COMPOUND
-```
-Every agent task follows this five-phase cycle. Phase 5 (COMPOUND) feeds Phase 2 (CONTEXTUALIZE) for every future task. Never skip a phase.
+**Not all actions go through the approval queue. Framework control ops execute immediately. Only solution-level agent proposals require human sign-off.**
+
+| Tier | Operations | Behaviour |
+|---|---|---|
+| **Framework control** | `POST /config/switch`, `POST /llm/switch`, `POST /config/modules` | **Executes immediately.** No proposal created. Returns `{"status": "switched"}`. |
+| **Solution agent proposals** | `yaml_edit`, `implementation_plan`, `code_diff`, `knowledge_*`, `agent_hire` | **Requires HITL approval.** Creates a `Proposal` in the store. Human reviews at `/approvals`. Nothing executes until approved. |
+
+The approval inbox (`/approvals` page) should only contain **solution-level AI proposals** — never routine framework control operations. Keep them separate or user trust erodes.
+
+SAGE-scope feature requests (improvements to the framework itself) are routed to **GitHub Issues/PRs** — not the internal approval queue. Use the "Open GitHub Issue" button on the SAGE Framework Ideas tab.
 
 ---
 
@@ -121,7 +143,7 @@ Every agent task follows this five-phase cycle. Phase 5 (COMPOUND) feeds Phase 2
 | Phase | Feature | Key files | Config |
 |---|---|---|---|
 | 0 | Langfuse observability | `llm_gateway.py` | `observability.langfuse_enabled: true` |
-| 1 | LlamaIndex + LangChain + mem0 | `vector_store.py`, `langchain_tools.py`, `long_term_memory.py` | `memory.backend: llamaindex` |
+| 1 | LlamaIndex + LangChain + mem0 | `vector_store.py`, `langchain_tools.py`, `memory/long_term_memory.py` | `memory.backend: llamaindex` |
 | 1.5 | MCP tool registry | `mcp_registry.py` | `solutions/<name>/mcp_servers/` |
 | 2 | n8n webhook receiver | `api.py /webhook/n8n` | `N8N_WEBHOOK_SECRET` env var |
 | 3 | LangGraph orchestration | `langgraph_runner.py` | `orchestration.engine: langgraph` |
@@ -133,6 +155,66 @@ Every agent task follows this five-phase cycle. Phase 5 (COMPOUND) feeds Phase 2
 | 9 | Eval/benchmarking | `eval_runner.py` | `solutions/<name>/evals/*.yaml` |
 | 10 | Multi-tenant isolation | `tenant.py`, middleware | `X-SAGE-Tenant` header |
 | 11 | Temporal durable workflows | `temporal_runner.py` | `TEMPORAL_HOST` env var |
+
+---
+
+## The .sage/ Directory — Solution Runtime Isolation
+
+Every solution gets its own `.sage/` directory, auto-created at first run inside the solution folder. This is the **only place** SAGE writes runtime data. The framework itself writes nothing.
+
+```
+your-solutions-repo/
+  board_games/
+    project.yaml          ← committed to your private repo
+    prompts.yaml          ← committed
+    tasks.yaml            ← committed
+    .sage/                ← auto-created, NEVER committed
+      audit_log.db        ← all proposals, approvals, feature requests, audit trail
+      chroma_db/          ← vector knowledge store
+```
+
+**Why this matters:**
+- Two solutions on the same SAGE instance have zero data overlap
+- Moving or archiving a solution takes its entire history with it
+- The SAGE framework repo contains no user data, ever
+- Regulated industries: the `.sage/audit_log.db` is the per-solution compliance record
+
+**Setup for your private solutions repo:**
+```bash
+export SAGE_SOLUTIONS_DIR=/path/to/your-private-solutions-repo
+make run PROJECT=board_games   # .sage/ auto-created on first start
+```
+
+Add `.sage/` to your private solutions repo's root `.gitignore`. The `starter/` template ships with this pre-configured.
+
+---
+
+## Solution Branding & Incremental Module Adoption
+
+Each solution can control its **visual identity** and **which modules are active**.
+
+### Custom branding (project.yaml → ThemeProvider → CSS vars)
+
+Add a `theme:` block to any solution's `project.yaml`:
+```yaml
+theme:
+  sidebar_bg:     "#0f172a"   # --sage-sidebar-bg
+  sidebar_text:   "#94a3b8"   # --sage-sidebar-text
+  badge_bg:       "#1e293b"   # --sage-badge-bg
+  badge_text:     "#38bdf8"   # --sage-badge-text
+```
+The sidebar logo becomes the solution name. The browser tab title tracks the active solution. The fallback is `SAGE[ai]` when no theme is defined.
+
+### Incremental module adoption
+
+`active_modules` in `project.yaml` controls exactly what appears in the sidebar:
+```yaml
+active_modules:
+  - dashboard
+  - analyst
+  - improvements   # add modules one by one as the team is ready
+```
+Empty list (`[]`) means show all modules (framework default). Add more via **Settings → Modules** in the UI — no YAML edit needed. Each module a user enables persists immediately via `POST /config/modules` (no approval required).
 
 ---
 
@@ -148,7 +230,7 @@ curl -X POST http://localhost:8000/onboarding/generate \
        "integrations": ["gitlab", "slack"]}'
 ```
 This generates all three YAML files using the LLM, creates the directory structure,
-and returns immediately loadable YAML. Then: `POST /config/switch {"project": "surgical_robotics"}`.
+and returns immediately loadable YAML. Then switch instantly: `POST /config/switch {"project": "surgical_robotics"}`.
 
 **2. Manual (from starter template):**
 ```bash
@@ -165,6 +247,46 @@ make run PROJECT=my_domain
 2. Add task type(s) to `solutions/<name>/tasks.yaml` if needed
 3. Wire role in `UniversalAgent` if task routing requires it
 4. No new Python agent files for new roles — roles are YAML
+
+---
+
+## Sidebar Nav Architecture (post-redesign)
+
+The sidebar is a 3-column layout: `SolutionRail` (44px) + `Sidebar` (220px) + content.
+
+**SolutionRail** (`[data-tour="solution-rail"]`): 2-letter avatars per solution, "+" opens OnboardingWizard, Building2 icon links to /org-graph.
+
+**SolutionSwitcher**: shows active solution name + ChevronsUpDown. Dropdown lists all solutions. When `isToured(activeId)` is true, shows "Restart tour" option at the bottom.
+
+**StatsStrip** (`[data-tour="stats-strip"]`): 3 tiles (APPROVALS red, QUEUED amber, AGENTS green), 10s polling, side="bottom" tooltips.
+
+**5-area accordion** (one open at a time, auto-expands to match current route):
+| Area | Accent | data-tour | Routes |
+|---|---|---|---|
+| Work | `#ef4444` | `area-work` | `/`, `/approvals`, `/queue`, `/live-console` |
+| Intelligence | `#a78bfa` | `area-intelligence` | `/analyst`, `/developer`, `/monitor`, `/agents`, `/improvements`, `/workflows`, `/goals` |
+| Knowledge | `#10b981` | `area-knowledge` | `/knowledge`, `/activity`, `/audit`, `/costs` |
+| Organization | `#3b82f6` | `area-organization` | `/org-graph`, `/onboarding` |
+| Admin | `#475569` | `area-admin` | `/llm`, `/yaml-editor`, `/access-control`, `/integrations`, `/settings` |
+
+**TourContext** (`web/src/context/TourContext.tsx`): wraps the app in `App.tsx`, provides `useTourContext()` with `tourState`, `startTour`, `nextStop`, `prevStop`, `skipTour`, `isToured`, `restartTour`, `wizardOpen`, `openWizard`, `closeWizard`.
+
+**TourOverlay**: 6-stop spotlight using `getBoundingClientRect` + 4 overlay rects. Stops target `[data-tour="stats-strip"]`, `[data-tour="nav-approvals"]`, `[data-tour="nav-queue"]`, `[data-tour="area-intelligence"]`, `[data-tour="area-knowledge"]`, `[data-tour="solution-rail"]`. Stores toured solution IDs in localStorage key `sage_toured_solutions`.
+
+**Tooltip implementation**: Tooltip component uses `position: fixed` with coordinates computed from `getBoundingClientRect()` on the trigger element. This ensures tooltips always render above the nav's `overflow: auto` clipping boundary and are visible over any adjacent panel.
+
+## Adding a New UI Page
+
+All five changes together, nothing skipped:
+1. Create `web/src/pages/MyPage.tsx`
+2. Add the route in `web/src/App.tsx` (`<Route path="/my-page" element={<MyPage />} />`)
+3. Add the nav entry in `web/src/components/layout/Sidebar.tsx` (NAV_AREAS array — pick the correct area)
+4. Add the module entry to `web/src/registry/modules.ts` (MODULE_REGISTRY)
+5. Add `'/my-page': 'AreaName'` to `ROUTE_TO_AREA` in `web/src/components/layout/Header.tsx`
+
+**Path conflict rule**: every nav item's `to` must be unique across all areas. Two items with the same `to` will cause the first match to be highlighted as active for both routes.
+
+For solution-specific pages, follow the same pattern but put them in `web/src/pages/solutions/<name>/`. Note in CLAUDE.md that framework-agnostic pages go in `web/src/pages/`; solution-specific pages belong in a solution fork.
 
 ---
 
@@ -246,7 +368,8 @@ If someone asks "can you add X", first ask: is X for their solution, or for SAGE
 
 - Never commit proprietary solutions to this repo — mount them via `SAGE_SOLUTIONS_DIR` from a separate private repo
 - Never add solution-specific logic to `src/` — solutions plug in via YAML only
-- Never bypass the audit log or the human approval step
+- Never bypass the audit log
+- **Never bypass the HITL approval gate for solution-level agent proposals** — `yaml_edit`, `implementation_plan`, `code_diff`, `knowledge_delete`, `agent_hire` must always require human sign-off. Framework control ops (`config_switch`, `llm_switch`, `config_modules`) are intentionally immediate.
 - Never remove the `threading.Lock` from `LLMGateway`
 - Always use `self.logger` not `print()`
 - Never short-circuit feedback ingestion (Phase 5) — every rejection teaches

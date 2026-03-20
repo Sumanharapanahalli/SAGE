@@ -318,3 +318,77 @@ npm install -g @google/gemini-cli && gemini  # free Google login
 
 *SAGE Framework — Open Source · Self-Hosted · Agent-First*
 *397 tests passing · 22-page dashboard · 6 regulated domain solutions*
+
+---
+
+## Slide 8 — What's New: SAGE 9 Features
+
+Nine production-ready features shipped in SAGE 9:
+
+| Feature | What it does |
+|---|---|
+| **D — Agent Budgets** | Monthly call ceilings per agent role, declared in `project.yaml` |
+| **J — Undo** | Revert any approved `code_diff` proposal with one click |
+| **L — Live Agents Panel** | Real-time view of active agents and their current tasks |
+| **A — Task Hooks** | Pre/post shell hooks per task type in `tasks.yaml` |
+| **B — Repo Map** | File tree + symbol extraction fed to Developer agent context |
+| **E — Scheduled Tasks** | Cron-declared recurring tasks in `tasks.yaml`, auto-started |
+| **F — Git Worktrees** | Isolated worktree per `code_diff` proposal — concurrent proposals, no conflicts |
+| **K — Knowledge Sync** | Bulk-import docs/code into the vector store via `POST /knowledge/sync` |
+| **G — Wave Execution** | Parallel subtask waves — queue one task, it fans out to many |
+
+**Demo:** Open Dashboard → Active Agents panel → see live tasks in flight.
+
+---
+
+## Slide 9 — Action-Aware Chat
+
+**The chat panel is now an action-routing assistant.**
+
+Instead of just answering questions, the chat:
+1. Classifies your intent using an LLM router
+2. Shows a **confirmation card** for any mutating action
+3. Executes after you click **Confirm**
+4. Records every step in the compliance audit trail
+
+**Example flows:**
+
+```
+User: "approve it"
+→ Chat: "I'll approve the YAML edit for analyst.py threshold — proceed?"
+→ [Confirm] → Proposal approved → audit log entry created
+```
+
+```
+User: "queue a firmware review for MR !42"
+→ Chat: "I'll submit a REVIEW_MR task for MR !42 — proceed?"
+→ [Confirm] → Task queued
+```
+
+```
+User: "what does PRECISERR mean?"
+→ Chat: "PRECISERR is a calibration error indicating precision sensor drift..."
+(No confirmation needed — pure answer)
+```
+
+**Audit model:** Every message stored with `message_type` — `user`, `answer`, `action_proposed`, `action_confirmed`, `action_cancelled`, `action_executed`. Every execute call writes to `compliance_audit_log` with `actor="human_via_chat"`.
+
+**Demo:** Navigate to `/approvals` → open chat → type "approve the first proposal" → observe confirmation card → confirm → verify in audit log.
+
+---
+
+## Slide 10 — UX Intelligence Layer
+
+**A completely redesigned interface for operator-grade clarity.**
+
+| Improvement | What changed |
+|---|---|
+| **5-area accordion nav** | Work · Intelligence · Knowledge · Organization · Admin — one open at a time |
+| **Solution rail** | 44px icon column — jump between solutions instantly |
+| **Stats strip** | APPROVALS (red) · QUEUED (amber) · AGENTS (green) — live counts, 10s polling |
+| **Resizable panels** | Drag handle between Analyst and Developer panes |
+| **Per-solution themes** | Each solution has its own accent color — auto-applied from `project.yaml` |
+| **Color combo preview** | Hover any color scheme in Settings to preview before applying |
+| **Contextual chat** | Persistent chat panel in every page — knows your current page and live data |
+| **Onboarding tour** | 6-stop spotlight tour for new solutions — auto-triggers on first load |
+| **LLM heartbeat** | Amber disconnection popup if LLM provider drops — shows reconnect options |

@@ -1,79 +1,81 @@
 /**
  * SAGE AuthContext — provides current user identity throughout the app.
  *
- * When auth.enabled is false the backend returns an anonymous identity
- * with role="admin", so all UI features remain fully accessible.
- *
- * Usage:
- *   const { user, isAuthenticated, isLoading } = useAuth()
+ * Dev-mode extensions:
+ *   isDevMode    — true when GET /config/dev-users returns a non-empty list
+ *   devUsers     — full roster of switchable identities
+ *   switchDevUser(id) — sets active user from roster without an API call
  */
-
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { getMe, UserIdentity } from '../api/auth'
-
-// ---------------------------------------------------------------------------
-// Context shape
-// ---------------------------------------------------------------------------
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
+import { getMe, getDevUsers, UserIdentity, DevUser } from '../api/auth'
 
 interface AuthContextValue {
   user:            UserIdentity | null
   isAuthenticated: boolean
   isLoading:       boolean
-  /** Re-fetch the current user identity (call after login/logout flows). */
   refresh:         () => void
+  isDevMode:       boolean
+  devUsers:        DevUser[]
+  switchDevUser:   (id: string) => void
 }
 
-const AuthContext = createContext<AuthContextValue>({
+export const AuthContext = createContext<AuthContextValue>({
   user:            null,
   isAuthenticated: false,
   isLoading:       true,
   refresh:         () => {},
+  isDevMode:       false,
+  devUsers:        [],
+  switchDevUser:   () => {},
 })
-
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser]         = useState<UserIdentity | null>(null)
   const [isLoading, setLoading] = useState(true)
+  const [devUsers, setDevUsers] = useState<DevUser[]>([])
 
-  const fetchIdentity = () => {
+  const fetchIdentity = useCallback(() => {
     setLoading(true)
     getMe()
-      .then(identity => {
-        setUser(identity)
-      })
-      .catch(() => {
-        // 401 means not authenticated; any other error → treat as unauthenticated
-        setUser(null)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }
+      .then(identity => setUser(identity))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false))
+  }, [])
 
   useEffect(() => {
     fetchIdentity()
-  }, [])
+    getDevUsers()
+      .then(data => setDevUsers(data.users ?? []))
+      .catch(() => setDevUsers([]))
+  }, [fetchIdentity])
+
+  const switchDevUser = useCallback((id: string) => {
+    const found = devUsers.find(u => u.id === id)
+    if (!found) return
+    const identity: UserIdentity = {
+      sub:      found.id,
+      email:    found.email,
+      name:     found.name,
+      role:     found.role,
+      provider: 'dev',
+    }
+    setUser(identity)
+  }, [devUsers])
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: user !== null,
-        isLoading,
-        refresh: fetchIdentity,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated: user !== null,
+      isLoading,
+      refresh: fetchIdentity,
+      isDevMode: devUsers.length > 0,
+      devUsers,
+      switchDevUser,
+    }}>
       {children}
     </AuthContext.Provider>
   )
 }
-
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
 
 export function useAuth(): AuthContextValue {
   return useContext(AuthContext)

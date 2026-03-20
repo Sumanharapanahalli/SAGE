@@ -1,92 +1,169 @@
 # SAGE Framework
 ### *Smart Agentic-Guided Empowerment*
 
-> Generic autonomous AI agent framework — configure once per project, run anywhere.
+> **The agentic AI framework built for regulated industries.**
+> AI proposes. Humans approve. Every decision is auditable, traceable, and compliance-ready.
 
-**SAGE (Smart Agentic-Guided Empowerment)** is a modular, multi-project autonomous AI developer agent. It monitors systems, analyzes errors and metrics, reviews code, creates merge requests, and surfaces proposals for human approval — all with domain-specific intelligence loaded from a simple three-file project configuration.
+---
+
+## Why Regulated Industries Need SAGE
+
+Most AI agent frameworks hand the machine a task and let it execute. That works in low-stakes domains. It does not work when a wrong decision can:
+
+- Fail an FDA 21 CFR Part 11 audit
+- Violate IEC 62304 software lifecycle requirements
+- Trigger an ISO 13485 corrective action
+- Cause patient harm, aircraft incidents, or safety-critical failures
+
+**SAGE is built differently.** Every AI proposal — code change, YAML edit, knowledge deletion, agent hire — requires explicit human sign-off before execution. The approval gate is not optional, not configurable, and not bypassable. It is the product.
+
+### The Core Guarantee
+
+```
+Agent surfaces signal → Agent proposes action → Human reviews → Human approves → Action executes → Audit log records everything
+```
+
+No step is skipped. No action executes without human authorisation. The full chain is immutable and stored in a per-solution SQLite audit log that travels with the solution — not the framework.
+
+---
+
+## Who This Is For
+
+| Industry | Use Case | Key Standards |
+|---|---|---|
+| Medical devices | Embedded firmware + cloud backend oversight | IEC 62304, ISO 13485, FDA 21 CFR Part 11 |
+| Aviation & aerospace | Avionics software development lifecycle | DO-178C, ARP4754A |
+| Railways | Safety-critical signalling systems | EN 50128, CENELEC |
+| Industrial IoT | Connected device firmware + compliance tooling | ISO 14971, IEC 61508 |
+| Pharmaceuticals | Manufacturing execution + CAPA management | FDA 21 CFR Part 11, EU Annex 11 |
+| Any regulated domain | AI-assisted development with full audit trail | Your standard here |
+
+SAGE ships with production-quality example solutions for medical devices, avionics, railways, and industrial IoT — not toy demos. Each includes agent prompts tuned for that domain, compliance-aware task types, and a full regulatory document set.
+
+---
+
+## The Human-in-the-Loop Guarantee
+
+This is SAGE's defining principle. It is stated once here and does not change:
+
+**Solution-level agent proposals (`yaml_edit`, `implementation_plan`, `code_diff`, `knowledge_delete`, `agent_hire`) always require human sign-off. No exceptions. Not for demos. Not for "obvious" cases.**
+
+Framework control operations (`config_switch`, `llm_switch`, `module_toggle`) execute immediately — they are the operator's own action, not agent action. The distinction is deliberate and documented.
+
+The approval inbox is the compliance record. Every approval, rejection, and correction is written to `solutions/<name>/.sage/audit_log.db` with a `trace_id`, timestamp, and the human's feedback. This file is the IQ/OQ/PQ evidence trail in regulated deployments.
 
 ---
 
 ## Solutions
 
-Solutions are **separate from the framework** — each is a folder of 3 YAML files
-(`project.yaml`, `prompts.yaml`, `tasks.yaml`). No Python. No framework changes.
+Solutions are **separate from the framework** — each is a folder of 3 YAML files (`project.yaml`, `prompts.yaml`, `tasks.yaml`). No Python. No framework changes.
 
 ### Included example solutions
 
-| Solution | Domain | Roles / Focus |
+| Solution | Domain | Compliance Focus |
 |---|---|---|
-| `starter` | Generic template | All agent roles, no integrations — start here |
-| `meditation_app` | Flutter mobile + Node.js | Product advisor, QA analyst, release manager |
-| `four_in_a_line` | Casual game studio | Game designer, AI specialist, monetisation advisor |
-| `medtech_team` | Regulated medical device | Embedded developer, web developer, devops, quality engineer |
+| `starter` | Generic template | None — start here |
+| `iot_medical` | IoT medical device monitoring | IEC 62304 Class C, ISO 14971, FDA 21 CFR 820 |
+| `medtech_team` | Regulated medical device team | IEC 62304, ISO 13485, HIL testing |
+| `avionics` | Avionics software team | DO-178C, ARP4754A |
+| `railways` | Railway signalling systems | EN 50128, CENELEC |
+| `automotive` | Infotainment & telematics | ASPICE, ISO 26262 |
+| `meditation_app` | Flutter mobile app | None |
+| `four_in_a_line` | Casual game studio | None |
+| `board_games` | Cross-platform games platform | None |
 
 ### Proprietary solutions (NOT in this repo)
 
-Company-specific solutions live in their own **private repositories** and are
-mounted at runtime via `SAGE_SOLUTIONS_DIR`. They never touch this repo.
+Your solutions live in a **private repository**, mounted at runtime. They never touch this repo.
 
 ```bash
-SAGE_SOLUTIONS_DIR=/path/to/private-solutions make run PROJECT=my_company
+SAGE_SOLUTIONS_DIR=/path/to/private-solutions make run PROJECT=my_solution
 ```
 
 ### Add your own solution
 
 ```bash
-# From the starter template
 cp -r solutions/starter solutions/my_project
 # Edit the three YAML files, then:
 make run PROJECT=my_project
 ```
 
-Or let the LLM generate it for you — see [GETTING_STARTED.md](GETTING_STARTED.md).
+Or generate from a plain-language description in 30 seconds — see [GETTING_STARTED.md](GETTING_STARTED.md).
 
 ---
 
 ## Features
 
-- **Multi-Solution** — switch domain with a single flag; all agent prompts, task types, and UI labels adapt automatically
-- **4 LLM Providers** — Gemini CLI (browser OAuth), Claude Code CLI (existing auth), Claude API (Anthropic SDK), Local Llama (offline GGUF)
-- **UniversalAgent** — generic agent whose role, persona, and tools are defined entirely by solution YAML — no hardcoded domain logic
-- **Human-in-the-Loop** — AI proposes, humans approve or correct; corrections are learned for future use
-- **RAG Memory** — ChromaDB-backed vector search with in-memory fallback; project-isolated collections
-- **Immutable Audit Trail** — every AI decision logged to SQLite (`data/audit_log.db`)
-- **ReAct Loop** — multi-step Reason+Act reasoning for MR review (pipeline → diff → analysis)
-- **PlannerAgent** — Plan-and-Execute orchestration for complex multi-step tasks
-- **Persistent Task Queue** — SQLite-backed; pending tasks survive process restart
-- **Web UI** — React 18 + TypeScript dashboard with AI agents page, solution switcher, LLM switcher, and self-improvement system
-- **Nano-Modules** — zero-dependency utility library (`src/modules/`): severity, json_extractor, trace_id, payload_validator, event_bus
-- **MCP Servers** — Serial port, J-Link, Metabase, Spira, Teams, GitLab (medtech solution)
-- **Docker Ready** — single `docker-compose up` with `SAGE_PROJECT` env var
+**Compliance & Audit**
+- Immutable per-solution audit log (SQLite, travels with the solution, never in the framework repo)
+- Every proposal has a `trace_id`, risk classification, expiry, and full approval chain
+- IQ/OQ/PQ validation test suite (`make test-compliance`)
+- Per-solution regulatory document set (SRS, Risk Management, SOUP Inventory, V&V Plan, RTM, DHF)
+
+**Human-in-the-Loop**
+- Approval inbox with risk badges (DESTRUCTIVE, EPHEMERAL, STANDARD)
+- Rejection triggers learning — human feedback is stored in vector memory for future context
+- Batch approval, filter by type, expiry warnings
+- Slack two-way approval (Block Kit cards + webhook callbacks)
+
+**Agentic Intelligence**
+- 5 agent roles: Analyst, Developer, Monitor, Planner, Universal
+- Roles defined in `prompts.yaml` — no Python required for new roles
+- ReAct loop (Reason+Act) for multi-step MR review
+- Plan-and-Execute orchestration for complex tasks
+- Wave scheduling — independent tasks run in parallel, dependent tasks sequence automatically
+- Compounding memory — every correction improves future proposals without model retraining
+
+**Multi-Solution**
+- Switch domains with one click; all agent prompts, task types, and UI labels adapt
+- Per-solution knowledge base (ChromaDB vector store, isolated collections)
+- Multi-tenant support (`X-SAGE-Tenant` header scopes everything per team)
+- Org graph — visualise solution hierarchies, knowledge channels, cross-team task routing
+
+**Integrations**
+- GitLab (MR creation, review, pipeline status)
+- Slack (two-way approval via Block Kit)
+- LangGraph (interrupt → approve → resume workflows)
+- AutoGen (code planning + Docker sandboxed execution)
+- Temporal (durable workflows)
+- MCP servers (serial port, J-Link, Metabase, SpiraTeam, Teams, GitLab)
+- n8n webhook receiver
+
+**LLM Providers — No API Key Required**
+- Gemini CLI (browser OAuth, no key)
+- Claude Code CLI (existing auth, no key)
+- Ollama (fully offline, no key)
+- Local Llama GGUF (air-gapped, GPU-direct)
+- Claude API (Anthropic SDK — only option requiring a key)
 
 ---
 
 ## New Here? Start with the Getting Started Guide
 
-**[GETTING_STARTED.md](GETTING_STARTED.md)** — zero integrations, no API keys, running in 15 minutes. Uses the generic `starter` solution. Start here if you have never used SAGE before.
+**[GETTING_STARTED.md](GETTING_STARTED.md)** — zero integrations, no API keys, running in 15 minutes.
 
 ---
 
-## Quick Start (if you know what you are doing)
+## Quick Start
 
 ```bash
-make venv                   # Create .venv and install all deps (one-time)
-make run PROJECT=starter    # Generic starter — works with no integrations
-make ui                     # React web UI at http://localhost:5173
-make test                   # Run framework tests
+make venv                      # Create .venv and install all deps (one-time)
+make run PROJECT=starter       # Generic starter — no integrations required
+make ui                        # React web UI at http://localhost:5173
+make test                      # Framework unit tests
+make test-compliance           # IQ/OQ/PQ validation suite
 ```
 
-To run one of the included example solutions:
+To run a regulated domain solution:
 
 ```bash
-make run PROJECT=meditation_app   # Flutter mobile app example
-make run PROJECT=four_in_a_line   # Casual game studio example
-make run PROJECT=medtech_team     # Regulated medical device team example
+make run PROJECT=iot_medical   # IoT medical device — IEC 62304 Class C
+make run PROJECT=medtech_team  # Medical device team — ISO 13485
+make run PROJECT=avionics      # Avionics — DO-178C
+make run PROJECT=railways      # Railway signalling — EN 50128
 ```
 
-> `make venv` creates `.venv/` and installs all dependencies.
 > All `make` commands use `.venv/Scripts/python` (Windows) or `.venv/bin/python` (Linux/macOS) automatically.
-> Manual setup: `python -m venv .venv && .venv\Scripts\pip install -r requirements.txt`
 
 ### Authenticate Gemini CLI (first time only)
 
@@ -99,244 +176,78 @@ gemini
 
 ## Minimum Requirements
 
-SAGE runs on a standard development laptop with no GPU. The minimum configuration uses Gemini CLI (cloud) and skips the heavy ML dependencies.
-
-```bash
-# Create venv first (if not done already)
-make venv
-
-# Minimal install — no chromadb / sentence-transformers
-make install-minimal
-
-# Start backend
-make run PROJECT=kappture
-
-# Baseline RAM: ~200 MB (backend ~120 MB + Vite dev server ~80 MB)
-```
+SAGE runs on a standard development laptop. No GPU required for cloud providers.
 
 | Mode | CPU | RAM | GPU | Notes |
 |------|-----|-----|-----|-------|
-| Gemini CLI (default) | 4-core | 4 GB | Not required | Recommended for most teams |
-| Local Llama (Phi-3.5 Mini Q4) | 8-core | 8 GB | Optional (4 GB VRAM for 10x speed) | Offline / air-gapped |
+| Gemini CLI (default) | 4-core | 4 GB | Not required | Recommended — no key needed |
+| Claude Code CLI | 4-core | 4 GB | Not required | Uses existing `claude` auth |
+| Ollama (local) | 8-core | 8 GB | Optional | Fully offline, air-gapped |
+| Local GGUF | 8-core | 8 GB | Optional (4 GB VRAM = 10x) | Air-gapped, no network |
+
+```bash
+# Low-RAM machines — skip ChromaDB/embeddings
+make venv-minimal
+SAGE_MINIMAL=1 make run PROJECT=starter
+```
 
 ---
 
-## All CLI Commands
+## Architecture
 
-### Direct Python
+```
+solutions/<name>/          Three YAML files — fully replaceable per domain
+  project.yaml             What this domain IS
+  prompts.yaml             How agents THINK in this domain
+  tasks.yaml               What agents CAN DO
+  .sage/                   Runtime state — auto-created, never committed
+    audit_log.db           Immutable compliance record + training signal
+    chroma_db/             Per-solution vector knowledge store
 
-```bash
-# FastAPI backend (production-style)
-python src/main.py api --project medtech --host 0.0.0.0 --port 8000
-
-# Interactive CLI with human-in-the-loop prompts
-python src/main.py cli --project poseengine
-
-# Background monitor daemon
-python src/main.py monitor --project kappture
-
-# Quick integration demo
-python src/main.py demo --project medtech
+src/core/                  LLM gateway, project loader, queue manager, modules
+src/agents/                Analyst, Developer, Monitor, Planner, Universal
+src/interface/api.py       FastAPI — the only public interface
+src/memory/                Audit logger + vector memory
+web/src/                   React 18 + TypeScript dashboard
 ```
 
-### Make Shortcuts
-
-```bash
-make run                        # Backend: medtech (default), port 8000
-make run PROJECT=poseengine     # Backend: poseengine
-make run PROJECT=kappture       # Backend: kappture
-
-make ui                         # React web UI at http://localhost:5173
-make cli PROJECT=medtech        # Interactive CLI
-make monitor PROJECT=kappture   # Background monitor daemon
-make demo PROJECT=poseengine    # Quick demo
-
-make venv                       # Create .venv and install all Python deps (one-time)
-make install                    # Re-install Python deps into existing .venv
-make install-minimal            # Minimal install (no chromadb/sentence-transformers)
-make install-ui                 # Node.js dependencies for web UI
-make install-dev                # Full install + test dependencies
-
-make test                       # Framework unit tests
-make test-all                   # Framework + medtech solution tests
-make test-medtech               # medtech solution tests
-make test-solution PROJECT=...  # Any solution's tests
-make test-compliance            # Compliance/regulatory test suite
-make test-api                   # API endpoint tests
-
-make list-solutions             # Show all available solutions
-make docker-up PROJECT=kappture # Start via Docker Compose
-make docker-down                # Stop Docker stack
-```
-
-### Switch LLM Provider
-
-Switch from the web UI (LLM Settings page) or via config:
-
-```bash
-# config/config.yaml
-llm:
-  provider: "gemini"        # Gemini CLI — browser OAuth, no API key (default)
-  # provider: "claude-code" # Claude Code CLI — uses existing claude auth
-  # provider: "claude"      # Claude API — needs ANTHROPIC_API_KEY
-  # provider: "local"       # Local Llama GGUF — offline/air-gapped
-
-# Or override at runtime
-LLM_PROVIDER=claude-code python src/main.py api --project medtech
-```
-
-### Silent Launch (Windows)
-
-Double-click `sage.bat` — starts backend + frontend with zero visible terminal windows, then opens your browser. The web UI includes a **Stop SAGE** button to shut everything down.
+Full design: [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
 
 ## REST API
 
-Backend API at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+Backend at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/health` | Service status, active project, LLM provider, integration flags |
+| `GET` | `/health` | Service status, active project, LLM provider |
 | `GET` | `/config/project` | Active project metadata, task types, compliance standards |
-| `GET` | `/config/projects` | List all available solutions in the `solutions/` directory (`SAGE_SOLUTIONS_DIR`) |
-| `POST` | `/analyze` | Analyze a log/metric/error → AI proposal with `trace_id` |
+| `POST` | `/analyze` | Analyze log/metric/error → AI proposal |
 | `POST` | `/approve/{trace_id}` | Approve a pending proposal |
 | `POST` | `/reject/{trace_id}` | Reject with human feedback (triggers learning) |
-| `GET` | `/audit` | Query audit log (`?limit=50&offset=0`) |
-| `POST` | `/mr/create` | Create GitLab MR from issue |
-| `POST` | `/mr/review` | AI MR review via ReAct loop |
-| `GET` | `/mr/open` | List open MRs (`?project_id=…`) |
-| `GET` | `/mr/pipeline` | CI/CD pipeline status (`?project_id=…&mr_iid=…`) |
-| `GET` | `/monitor/status` | Monitor Agent polling status |
+| `GET` | `/proposals/pending` | List pending proposals with risk classifications |
+| `GET` | `/audit` | Query immutable audit log |
 | `POST` | `/config/switch` | Switch active solution |
-| `GET` | `/llm/status` | Current LLM provider, model, session usage |
-| `POST` | `/llm/switch` | Switch LLM provider (gemini/claude-code/claude/local) |
-| `GET` | `/agent/roles` | List available AI agent roles from solution prompts.yaml |
-| `POST` | `/agent/run` | Run a solution-defined agent role against a task |
-| `POST` | `/shutdown` | Stop backend and frontend processes |
-| `POST` | `/webhook/teams` | Teams adaptive card approval callback |
-| `POST` | `/feedback/feature-request` | Submit UI improvement request |
-| `GET` | `/feedback/feature-requests` | List feature requests |
-| `POST` | `/feedback/feature-requests/{id}/plan` | Auto-generate implementation plan |
-| `PATCH` | `/feedback/feature-requests/{id}` | Update request status |
+| `POST` | `/llm/switch` | Switch LLM provider |
+| `GET` | `/knowledge/search` | Semantic search across solution knowledge base |
+| `POST` | `/knowledge/add` | Add entry to solution knowledge base |
+| `POST` | `/onboarding/generate` | Generate solution YAML from plain-language description |
+| `GET` | `/org` | Get org structure |
+| `GET` | `/eval/run` | Run evaluation suite |
+| `POST` | `/shutdown` | Stop backend and frontend |
 
 ---
 
-## Adding a New Solution
+## Regulatory Documentation
 
-Create three files in a new `solutions/<name>/` directory:
-
-```
-solutions/
-└── myproject/
-    ├── project.yaml    ← name, domain, compliance_standards, active_modules, integrations
-    ├── prompts.yaml    ← analyst, developer, planner, monitor system prompts
-    └── tasks.yaml      ← task_types, task_descriptions, task_payloads
-```
-
-Then run:
+### Framework compliance test suite
 
 ```bash
-python src/main.py api --project myproject
-# Verify: GET http://localhost:8000/config/project
+make test-compliance   # IQ/OQ/PQ validation protocol
 ```
 
-To use solutions stored outside the framework root, set `SAGE_SOLUTIONS_DIR`:
-
-```bash
-SAGE_SOLUTIONS_DIR=/path/to/external/solutions make run PROJECT=myproject
-```
-
-See `docs/ADDING_A_PROJECT.md` for the complete step-by-step guide with examples from the kappture project configuration.
-
----
-
-## Docker Deployment
-
-```bash
-# Start full stack (backend + frontend)
-SAGE_PROJECT=kappture docker-compose up --build
-
-# Run in background
-SAGE_PROJECT=poseengine docker-compose up -d --build
-
-# Stop
-docker-compose down
-```
-
-Services:
-- Backend: `http://localhost:8000`
-- Frontend: `http://localhost:3000` (nginx-served production build)
-
----
-
-## Environment Variables
-
-Copy `.env.example` to `.env`. Only configure the integrations you use — all are optional for basic operation.
-
-| Variable | Service | Required for |
-|----------|---------|-------------|
-| `GITLAB_URL` | GitLab | MR operations |
-| `GITLAB_TOKEN` | GitLab | Personal Access Token |
-| `GITLAB_PROJECT_ID` | GitLab | Default project ID |
-| `TEAMS_TENANT_ID` | Azure AD | Reading Teams messages |
-| `TEAMS_CLIENT_ID` | Azure AD | Reading Teams messages |
-| `TEAMS_CLIENT_SECRET` | Azure AD | Reading Teams messages |
-| `TEAMS_TEAM_ID` | Teams | Channel monitoring |
-| `TEAMS_CHANNEL_ID` | Teams | Channel monitoring |
-| `TEAMS_INCOMING_WEBHOOK_URL` | Teams | Sending notifications |
-| `METABASE_URL` | Metabase | Error dashboard polling |
-| `METABASE_USERNAME` | Metabase | Service account |
-| `METABASE_PASSWORD` | Metabase | Service account |
-| `METABASE_ERROR_QUESTION_ID` | Metabase | Error query card ID |
-| `SPIRA_URL` | SpiraTeam | Incident management |
-| `SPIRA_USERNAME` | SpiraTeam | Login username |
-| `SPIRA_API_KEY` | SpiraTeam | API key |
-| `SPIRA_PROJECT_ID` | SpiraTeam | Default project ID |
-| `SERIAL_PORT` | Hardware | COM port (e.g. COM3) |
-| `JLINK_DEVICE` | Hardware | Target MCU name |
-| `LLM_PROVIDER` | LLM | Override config.yaml provider |
-| `SAGE_PROJECT` | Framework | Active project (overrides --project flag) |
-
----
-
-## MCP Servers
-
-SAGE exposes hardware and external systems as MCP tools for both Gemini CLI and Claude Code.
-
-| Server | Purpose | Key Tools |
-|--------|---------|-----------|
-| `sage-serial` | Serial port / COM port communication | list_ports, send_command, read_output |
-| `sage-jlink` | J-Link JTAG/SWD debugger | flash_firmware, read_memory, read_rtt |
-| `sage-metabase` | Metabase analytics | query_errors, list_dashboards |
-| `sage-spira` | SpiraTeam test management | create_incident, list_incidents, get_test_runs |
-| `sage-teams` | Microsoft Teams | read_messages, send_alert |
-| `gitlab` | GitLab (npm-based) | list_mrs, review_mr, create_issue |
-
-Configure for Gemini CLI:
-
-```bash
-python scripts/setup_gemini_mcp.py
-```
-
-Claude Code picks up `.mcp.json` from the project root automatically.
-
----
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Full system design, agent architecture, ReAct/Plan diagrams, roadmap |
-| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | End-user operational guide (installation → daily use) |
-| [docs/ADDING_A_PROJECT.md](docs/ADDING_A_PROJECT.md) | Step-by-step guide for adding a new project |
-| [docs/SETUP.md](docs/SETUP.md) | Detailed installation and integration setup |
-| [docs/MCP_SERVERS.md](docs/MCP_SERVERS.md) | MCP server reference |
-| [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) | External system integration guide |
-| [solutions/medtech/docs/COMPLIANCE.md](solutions/medtech/docs/COMPLIANCE.md) | ISO 13485 / FDA 21 CFR Part 11 compliance details |
-
-### Regulatory Documentation (`solutions/medtech/docs/regulatory/`) — medtech solution
+### Per-solution regulatory documents (`solutions/medtech/docs/regulatory/`)
 
 | Document | Standard |
 |----------|---------|
@@ -346,10 +257,21 @@ Claude Code picks up `.mcp.json` from the project root automatically.
 | [VV_PLAN.md](solutions/medtech/docs/regulatory/VV_PLAN.md) | Verification and Validation Plan |
 | [RTM.md](solutions/medtech/docs/regulatory/RTM.md) | Requirements Traceability Matrix |
 | [DHF_INDEX.md](solutions/medtech/docs/regulatory/DHF_INDEX.md) | Design History File Index |
-| [TEST_REPORT_TEMPLATE.md](solutions/medtech/docs/regulatory/TEST_REPORT_TEMPLATE.md) | Software Test Report Template |
 | [CHANGE_CONTROL.md](solutions/medtech/docs/regulatory/CHANGE_CONTROL.md) | Change Control Procedure |
-| [CONFIG_MGMT_PLAN.md](solutions/medtech/docs/regulatory/CONFIG_MGMT_PLAN.md) | Configuration Management Plan |
 | [SECURITY_PLAN.md](solutions/medtech/docs/regulatory/SECURITY_PLAN.md) | Cybersecurity Plan |
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [GETTING_STARTED.md](GETTING_STARTED.md) | Zero-to-running in 15 minutes |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Full system design, agent architecture, data flows |
+| [CLAUDE.md](CLAUDE.md) | Developer reference — codebase conventions, rules, patterns |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | End-user operational guide |
+| [docs/SETUP.md](docs/SETUP.md) | Detailed installation and integration setup |
+| [docs/MCP_SERVERS.md](docs/MCP_SERVERS.md) | MCP server reference |
 
 ---
 

@@ -1,18 +1,52 @@
 import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { setActiveModules } from '../api/client'
+import {
+  setActiveModules, patchProjectTheme,
+  type BrandingPayload,
+} from '../api/client'
 import { useProjectConfig } from '../hooks/useProjectConfig'
+import { MODULE_REGISTRY } from '../registry/modules'
+import {
+  Cpu, Bot, Activity, Search, GitMerge, Lightbulb, Target,
+  Database, Shield, Network, Zap, Settings as SettingsIcon,
+  BarChart2, FileCode2, Layers, Workflow,
+} from 'lucide-react'
 
-// All modules that can appear in the sidebar
-const ALL_MODULES = [
-  { id: 'dashboard',    label: 'Dashboard',    description: 'System health overview and active alerts' },
-  { id: 'analyst',      label: 'Analyst',      description: 'Log analysis, proposals, and approvals' },
-  { id: 'developer',    label: 'Developer',    description: 'MR creation, review, and pipeline status' },
-  { id: 'audit',        label: 'Audit Log',    description: 'Paginated compliance audit trail' },
-  { id: 'monitor',      label: 'Monitor',      description: 'Live integration poller status' },
-  { id: 'improvements', label: 'Improvements', description: 'Module self-improvement feature requests' },
-  { id: 'llm',          label: 'LLM',          description: 'LLM provider switcher and session usage' },
-  { id: 'yaml-editor',  label: 'Config Editor',description: 'Edit solution YAML configs directly in the browser' },
+// Derived from the full module registry so all modules are always toggleable
+const ALL_MODULES = Object.values(MODULE_REGISTRY).map(m => ({
+  id: m.id,
+  label: m.name,
+  description: m.description,
+}))
+
+const PRESET_ICONS: { name: string; Icon: any }[] = [
+  { name: 'Cpu',       Icon: Cpu },
+  { name: 'Bot',       Icon: Bot },
+  { name: 'Activity',  Icon: Activity },
+  { name: 'Search',    Icon: Search },
+  { name: 'GitMerge',  Icon: GitMerge },
+  { name: 'Lightbulb', Icon: Lightbulb },
+  { name: 'Target',    Icon: Target },
+  { name: 'Database',  Icon: Database },
+  { name: 'Shield',    Icon: Shield },
+  { name: 'Network',   Icon: Network },
+  { name: 'Zap',       Icon: Zap },
+  { name: 'Settings',  Icon: SettingsIcon },
+  { name: 'BarChart2', Icon: BarChart2 },
+  { name: 'FileCode2', Icon: FileCode2 },
+  { name: 'Layers',    Icon: Layers },
+  { name: 'Workflow',  Icon: Workflow },
+]
+
+const PRESET_ACCENTS = [
+  { label: 'Zinc',    value: '#71717a' },
+  { label: 'Blue',    value: '#3b82f6' },
+  { label: 'Violet',  value: '#7c3aed' },
+  { label: 'Emerald', value: '#10b981' },
+  { label: 'Rose',    value: '#e11d48' },
+  { label: 'Amber',   value: '#f59e0b' },
+  { label: 'Cyan',    value: '#06b6d4' },
+  { label: 'Orange',  value: '#f97316' },
 ]
 
 export default function Settings() {
@@ -67,7 +101,42 @@ export default function Settings() {
     setEnabled(new Set(ALL_MODULES.map(m => m.id)))
   }
 
-  if (isLoading) return <div className="p-6 text-gray-400 text-sm">Loading settings…</div>
+  // Branding state
+  const currentTheme = (projectData as any)?.theme ?? {}
+  const [brandName,   setBrandName]   = useState('')
+  const [brandIcon,   setBrandIcon]   = useState('')
+  const [brandAccent, setBrandAccent] = useState('')
+  const [brandSaved,  setBrandSaved]  = useState(false)
+
+  // Initialise from project config
+  useEffect(() => {
+    if (projectData) {
+      setBrandName((projectData as any).name ?? '')
+      setBrandIcon(currentTheme.icon_name ?? '')
+      setBrandAccent(currentTheme.accent ?? '#71717a')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectData])
+
+  const brandMutation = useMutation({
+    mutationFn: (payload: BrandingPayload) => patchProjectTheme(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-config'] })
+      queryClient.invalidateQueries({ queryKey: ['health'] })
+      setBrandSaved(true)
+      setTimeout(() => setBrandSaved(false), 2500)
+    },
+  })
+
+  const handleSaveBranding = () => {
+    brandMutation.mutate({
+      display_name: brandName || undefined,
+      icon_name:    brandIcon || undefined,
+      accent:       brandAccent || undefined,
+    })
+  }
+
+  if (isLoading) return <div className="p-6 text-gray-400 text-sm">Loading settings...</div>
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -138,7 +207,7 @@ export default function Settings() {
             className="flex-1 bg-gray-900 hover:bg-gray-700 disabled:opacity-40 text-white
                        text-sm font-medium py-2.5 rounded-lg transition-colors"
           >
-            {mutation.isPending ? 'Saving…' : saved ? 'Saved ✓' : 'Apply Changes'}
+            {mutation.isPending ? 'Saving...' : saved ? 'Saved' : 'Apply Changes'}
           </button>
           <button
             onClick={handleReset}
@@ -148,6 +217,121 @@ export default function Settings() {
             Show All
           </button>
         </div>
+      </div>
+
+      {/* Solution Branding */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700">Solution Branding</h3>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Customise the display name, icon, and accent color for this solution.
+            Changes are written directly to project.yaml.
+          </p>
+        </div>
+
+        {/* Live preview */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+          <div style={{
+            width: 36, height: 36, background: brandAccent || '#71717a',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            {(() => {
+              const found = PRESET_ICONS.find(i => i.name === brandIcon)
+              return found
+                ? <found.Icon size={18} color="#fff" />
+                : <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{(brandName || 'S').slice(0, 2).toUpperCase()}</span>
+            })()}
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>{brandName || 'Solution Name'}</div>
+            <div style={{ fontSize: '11px', color: '#64748b' }}>Preview</div>
+          </div>
+        </div>
+
+        {/* Display name */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Display Name</label>
+          <input
+            type="text"
+            value={brandName}
+            onChange={e => setBrandName(e.target.value)}
+            placeholder="My Solution"
+            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+          />
+        </div>
+
+        {/* Icon picker */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-2">Icon</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '6px' }}>
+            {PRESET_ICONS.map(({ name, Icon }) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setBrandIcon(name === brandIcon ? '' : name)}
+                title={name}
+                style={{
+                  padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: `2px solid ${brandIcon === name ? brandAccent || '#3b82f6' : '#e2e8f0'}`,
+                  background: brandIcon === name ? `${brandAccent || '#3b82f6'}15` : 'transparent',
+                  cursor: 'pointer',
+                }}
+              >
+                <Icon size={16} color={brandIcon === name ? brandAccent || '#3b82f6' : '#64748b'} />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Accent color */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-2">Accent Color</label>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+            {PRESET_ACCENTS.map(({ label, value }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setBrandAccent(value)}
+                title={label}
+                style={{
+                  width: 24, height: 24, background: value, cursor: 'pointer', border: 'none',
+                  outline: brandAccent === value ? '3px solid #0f172a' : '2px solid transparent',
+                  outlineOffset: 2,
+                }}
+              />
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="color"
+              value={brandAccent || '#71717a'}
+              onChange={e => setBrandAccent(e.target.value)}
+              style={{ width: 32, height: 32, padding: 0, border: '1px solid #e2e8f0', cursor: 'pointer' }}
+            />
+            <input
+              type="text"
+              value={brandAccent}
+              onChange={e => setBrandAccent(e.target.value)}
+              placeholder="#71717a"
+              style={{ border: '1px solid #e2e8f0', padding: '4px 8px', fontSize: '12px', fontFamily: 'monospace', width: '90px' }}
+            />
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Custom hex</span>
+          </div>
+        </div>
+
+        {brandMutation.isError && (
+          <p className="text-sm text-red-600 bg-red-50 px-3 py-2">
+            Failed: {(brandMutation.error as Error).message}
+          </p>
+        )}
+
+        <button
+          onClick={handleSaveBranding}
+          disabled={brandMutation.isPending}
+          className="w-full bg-gray-900 hover:bg-gray-700 disabled:opacity-40 text-white text-sm font-medium py-2.5 transition-colors"
+        >
+          {brandMutation.isPending ? 'Saving...' : brandSaved ? 'Saved' : 'Save Branding'}
+        </button>
       </div>
 
       {/* Info */}
