@@ -47,6 +47,37 @@ body {
   @apply bg-zinc-50 text-zinc-900 font-sans;
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   User Preference CSS Variables
+   Written at runtime by UserPrefsContext when user changes display settings.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --sage-user-accent:     #71717a;
+  --sage-content-bg:      #fafafa;
+  --sage-font-family:     'Inter', sans-serif;
+  --sage-font-size-base:  14px;
+  --sage-density:         1rem;
+}
+
+/* Apply font family and size globally */
+body {
+  font-family: var(--sage-font-family);
+  font-size:   var(--sage-font-size-base);
+}
+
+/* Dark mode — toggled by UserPrefsContext theme pref */
+html.dark body {
+  background-color: #09090b;
+  color: #f4f4f5;
+}
+html.dark .bg-zinc-50 { background-color: #09090b !important; }
+html.dark .bg-white   { background-color: #18181b !important; }
+html.dark .text-zinc-900 { color: #f4f4f5 !important; }
+html.dark .border-zinc-200 { border-color: #27272a !important; }
+html.dark .text-zinc-600 { color: #a1a1aa !important; }
+html.dark .text-zinc-500 { color: #71717a !important; }
+
 /* Nav item hover */
 .sage-nav-item {
   transition: background-color 0.1s, color 0.1s;
