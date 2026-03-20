@@ -11,6 +11,16 @@ interface ImportFlowProps {
 
 type Step = 'input' | 'scanning' | 'review'
 
+const spinnerStyle: React.CSSProperties = {
+  display: 'inline-block',
+  width: 12,
+  height: 12,
+  border: '2px solid #6366f1',
+  borderTopColor: 'transparent',
+  borderRadius: '50%',
+  animation: 'sage-spin 0.7s linear infinite',
+}
+
 export default function ImportFlow({ llmConnected }: ImportFlowProps) {
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -31,11 +41,11 @@ export default function ImportFlow({ llmConnected }: ImportFlowProps) {
       const messages: Record<string, string> = {
         folder_not_found: 'Folder not found. Check the path and try again.',
         folder_empty: 'No readable files found in this folder.',
-        llm_unavailable: 'Could not reach the LLM. Check Settings -> LLM.',
-        generation_failed: 'Generation failed. Try again or use Describe it instead.',
+        llm_unavailable: 'Could not reach the LLM. Check Settings \u2192 LLM and try again.',
+        generation_failed: 'Generation failed. Try again or describe the solution manually.',
       }
       setScanError(messages[code] ?? 'An error occurred. Please try again.')
-      setStep('input')
+      setStep('scanning')
     },
   })
 
@@ -72,28 +82,34 @@ export default function ImportFlow({ llmConnected }: ImportFlowProps) {
 
   return (
     <div style={{ maxWidth: 600, display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <style>{`@keyframes sage-spin { to { transform: rotate(360deg); } }`}</style>
 
       {step === 'scanning' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '20px 0' }}>
           {['Reading README files', 'Reading docs / specs', 'Reading source files', 'Generating solution YAML...'].map((label, i) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: i < 3 ? 'var(--sage-sidebar-text, #94a3b8)' : 'var(--sage-sidebar-active-text, #f1f5f9)' }}>
-              <span style={{ width: 16, textAlign: 'center', color: i < 3 ? '#10b981' : '#6366f1' }}>
-                {i < 3 ? '+' : '...'}
+              <span style={{ width: 16, textAlign: 'center', color: i < 3 ? '#10b981' : '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {i < 3 ? '\u2713' : (scanError ? '\u2715' : <span style={spinnerStyle} />)}
               </span>
               {label}
             </div>
           ))}
+          {scanError && (
+            <div style={{ marginTop: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '10px 14px', fontSize: 12, color: '#fca5a5' }}>
+              <div style={{ marginBottom: 8 }}>{scanError}</div>
+              <button
+                onClick={() => { setScanError(null); setStep('input') }}
+                style={{ background: 'rgba(239,68,68,0.15)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.3)', padding: '5px 12px', borderRadius: 5, fontSize: 12, cursor: 'pointer' }}
+              >
+                Try again
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {step === 'input' && (
         <>
-          {scanError && (
-            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '10px 14px', fontSize: 12, color: '#fca5a5' }}>
-              {scanError}
-            </div>
-          )}
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label style={{ fontSize: 11, color: 'var(--sage-sidebar-text, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Folder path</label>
             <input

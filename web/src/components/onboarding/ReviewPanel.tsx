@@ -158,7 +158,7 @@ export default function ReviewPanel({ result, onAccept, onStartOver }: ReviewPan
           onClick={() => onAccept(files)}
           style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '9px 22px', borderRadius: 6, fontSize: 13, cursor: 'pointer' }}
         >
-          Looks good — continue
+          Looks good — continue →
         </button>
         <button
           onClick={onStartOver}
