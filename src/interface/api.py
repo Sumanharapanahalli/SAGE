@@ -32,6 +32,13 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
+# Module-level import so tests can patch src.interface.api.reload_org_loader
+try:
+    from src.core.org_loader import reload_org_loader
+except Exception:  # pragma: no cover
+    def reload_org_loader():  # type: ignore
+        pass
+
 
 app = FastAPI(
     title="SAGE Framework REST API",
@@ -2825,6 +2832,24 @@ async def onboarding_generate(request: Request):
     if not solution_name:
         raise HTTPException(status_code=400, detail="solution_name is required")
 
+    # Load org context (mission/vision/values) to enrich the LLM prompt
+    try:
+        import yaml as _yaml_ctx
+        _op = _get_org_yaml_path()
+        _od = _yaml_ctx.safe_load(open(_op).read()) if os.path.exists(_op) else {}
+        _os_section = _od.get("org", {}) if isinstance(_od, dict) else {}
+        _org_context = ""
+        if _os_section.get("mission"):
+            _parts = [f"Mission: {_os_section['mission']}"]
+            if _os_section.get("vision"):
+                _parts.append(f"Vision: {_os_section['vision']}")
+            if _os_section.get("core_values"):
+                _vals = "\n  - ".join(_os_section["core_values"])
+                _parts.append(f"Core values:\n  - {_vals}")
+            _org_context = "\n".join(_parts)
+    except Exception:
+        _org_context = ""
+
     try:
         from src.core.onboarding import generate_solution
         result = generate_solution(
@@ -2834,6 +2859,7 @@ async def onboarding_generate(request: Request):
             integrations=integrations,
             parent_solution=parent_solution,
             org_name=org_name,
+            org_context=_org_context,
         )
         return result
     except ValueError as e:
@@ -4173,6 +4199,13 @@ def _write_org_yaml(data: dict) -> None:
         _yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
 
 
+class OrgUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    mission: Optional[str] = None
+    vision: Optional[str] = None
+    core_values: Optional[List[str]] = None
+
+
 @app.get("/org")
 async def org_get():
     """Return org.yaml content enriched with cross_team_routes from all solutions."""
@@ -4180,6 +4213,53 @@ async def org_get():
     data = _read_org_yaml()
     data["routes"] = _ol.get_all_routes()
     return data
+
+
+@app.put("/org")
+async def org_update(req: OrgUpdateRequest):
+    """Save mission/vision/core_values to org.yaml. Merges — does not overwrite unset fields."""
+    import yaml as _yaml
+
+    org_path = _get_org_yaml_path()
+
+    # Load existing or start fresh
+    existing: dict = {}
+    if os.path.exists(org_path):
+        try:
+            with open(org_path, encoding="utf-8") as f:
+                existing = _yaml.safe_load(f) or {}
+        except Exception:
+            existing = {}
+
+    # Merge only supplied fields
+    if not isinstance(existing.get("org"), dict):
+        existing["org"] = {}
+    org_section = existing["org"]
+
+    if req.name is not None:
+        org_section["name"] = req.name
+    if req.mission is not None:
+        org_section["mission"] = req.mission
+    if req.vision is not None:
+        org_section["vision"] = req.vision
+    if req.core_values is not None:
+        org_section["core_values"] = req.core_values
+
+    os.makedirs(os.path.dirname(org_path), exist_ok=True)
+    with open(org_path, "w", encoding="utf-8") as f:
+        _yaml.dump(existing, f, default_flow_style=False, allow_unicode=True)
+
+    reload_org_loader()
+
+    _get_audit_logger().log_event(
+        actor="human_via_settings",
+        action_type="ORG_SAVED",
+        input_context=f"name={req.name}, mission={req.mission}",
+        output_content=str(org_section),
+        metadata={"source": "PUT /org"},
+    )
+
+    return {"status": "saved", "org": org_section}
 
 
 @app.post("/org/reload")
