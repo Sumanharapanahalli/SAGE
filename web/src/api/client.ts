@@ -645,3 +645,7 @@ export async function reloadOrg(): Promise<{ status: string }> {
   return res.json();
 }
 
+// Dev users
+export const fetchDevUsers = () =>
+  get<{ users: import('./auth').DevUser[] }>('/config/dev-users')
+
