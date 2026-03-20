@@ -1,16 +1,22 @@
 # ==============================================================================
-# SAGE Framework — Docker Compose
+# SAGE Framework — Docker Compose (development / single-server)
 # ==============================================================================
 # Usage:
-#   SAGE_PROJECT=starter docker-compose up --build
-#   SAGE_PROJECT=meditation_app docker-compose up --build
-#   SAGE_PROJECT=medtech_team docker-compose up --build
+#   docker compose up --build
+#   SAGE_PROJECT=meditation_app docker compose up --build
+#
+# External solutions repo (optional):
+#   Set SAGE_SOLUTIONS_DIR to a host path — it is bind-mounted into the
+#   container at /solutions so org.yaml, .sage/ audit DBs, and vector stores
+#   persist across container restarts.
+#   If unset, the bundled solutions/ baked into the image is used (ephemeral).
+#
+# Example with external solutions:
+#   SAGE_SOLUTIONS_DIR=/home/user/my-solutions docker compose up --build
 #
 # Minimum hardware: 4-core CPU, 4 GB RAM, no GPU required (Gemini CLI mode)
 # Recommended:      8-core CPU, 16 GB RAM, NVIDIA GPU 4GB+ (local LLM mode)
 # ==============================================================================
-
-version: "3.9"
 
 services:
   # -----------------------------------------------------------------------
@@ -25,31 +31,43 @@ services:
       - "8000:8000"
     environment:
       SAGE_PROJECT: ${SAGE_PROJECT:-starter}
-      # LLM
+      # LLM provider — gemini | claude | ollama | local | generic-cli
       LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      # External solutions directory (optional — see header comment)
+      SAGE_SOLUTIONS_DIR: ${SAGE_SOLUTIONS_DIR:-}
+      # Anthropic API key (only needed when LLM_PROVIDER=claude)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       # GitLab
       GITLAB_URL:        ${GITLAB_URL:-}
       GITLAB_TOKEN:      ${GITLAB_TOKEN:-}
       GITLAB_PROJECT_ID: ${GITLAB_PROJECT_ID:-}
+      # Slack
+      SLACK_BOT_TOKEN:      ${SLACK_BOT_TOKEN:-}
+      SLACK_SIGNING_SECRET: ${SLACK_SIGNING_SECRET:-}
       # Teams
-      TEAMS_TENANT_ID:           ${TEAMS_TENANT_ID:-}
-      TEAMS_CLIENT_ID:           ${TEAMS_CLIENT_ID:-}
-      TEAMS_CLIENT_SECRET:       ${TEAMS_CLIENT_SECRET:-}
-      TEAMS_TEAM_ID:             ${TEAMS_TEAM_ID:-}
-      TEAMS_CHANNEL_ID:          ${TEAMS_CHANNEL_ID:-}
+      TEAMS_TENANT_ID:            ${TEAMS_TENANT_ID:-}
+      TEAMS_CLIENT_ID:            ${TEAMS_CLIENT_ID:-}
+      TEAMS_CLIENT_SECRET:        ${TEAMS_CLIENT_SECRET:-}
+      TEAMS_TEAM_ID:              ${TEAMS_TEAM_ID:-}
+      TEAMS_CHANNEL_ID:           ${TEAMS_CHANNEL_ID:-}
       TEAMS_INCOMING_WEBHOOK_URL: ${TEAMS_INCOMING_WEBHOOK_URL:-}
       # Metabase
-      METABASE_URL:              ${METABASE_URL:-}
-      METABASE_USERNAME:         ${METABASE_USERNAME:-}
-      METABASE_PASSWORD:         ${METABASE_PASSWORD:-}
+      METABASE_URL:               ${METABASE_URL:-}
+      METABASE_USERNAME:          ${METABASE_USERNAME:-}
+      METABASE_PASSWORD:          ${METABASE_PASSWORD:-}
       METABASE_ERROR_QUESTION_ID: ${METABASE_ERROR_QUESTION_ID:-}
       # Spira
-      SPIRA_URL:      ${SPIRA_URL:-}
-      SPIRA_USERNAME: ${SPIRA_USERNAME:-}
-      SPIRA_API_KEY:  ${SPIRA_API_KEY:-}
+      SPIRA_URL:        ${SPIRA_URL:-}
+      SPIRA_USERNAME:   ${SPIRA_USERNAME:-}
+      SPIRA_API_KEY:    ${SPIRA_API_KEY:-}
       SPIRA_PROJECT_ID: ${SPIRA_PROJECT_ID:-}
     volumes:
-      - sage-data:/app/data       # Persist audit DB, vector DB, models
+      # Persist audit DB, ChromaDB vector store, and downloaded models
+      - sage-data:/app/data
+      # Bind-mount external solutions directory when SAGE_SOLUTIONS_DIR is set.
+      # org.yaml and .sage/ directories are written here and survive restarts.
+      # When SAGE_SOLUTIONS_DIR is unset this entry is ignored.
+      - ${SAGE_SOLUTIONS_DIR:-sage-solutions-placeholder}:/solutions:rw
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -60,6 +78,9 @@ services:
 
   # -----------------------------------------------------------------------
   # Frontend — React 18 + Vite (production build served by nginx)
+  # The React app sends all API calls to /api/* which nginx proxies to the
+  # backend service. No runtime environment variables are needed here —
+  # Vite env vars are baked in at build time and the base URL is /api.
   # -----------------------------------------------------------------------
   frontend:
     build:
@@ -68,8 +89,6 @@ services:
     container_name: sage-frontend
     ports:
       - "3000:80"
-    environment:
-      VITE_API_BASE: http://backend:8000
     depends_on:
       backend:
         condition: service_healthy
@@ -77,4 +96,9 @@ services:
 
 volumes:
   sage-data:
+    driver: local
+  # Placeholder volume used when SAGE_SOLUTIONS_DIR is not set.
+  # When SAGE_SOLUTIONS_DIR is set, Docker uses the bind-mount instead
+  # and this named volume is never written to.
+  sage-solutions-placeholder:
     driver: local

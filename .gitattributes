@@ -1,0 +1,45 @@
+# ==============================================================================
+# Git line ending rules
+# ==============================================================================
+# Docker, shell, and nginx files must use LF on all platforms.
+# CRLF in nginx.conf causes nginx to fail on Linux.
+# CRLF in shell scripts inside containers causes "bad interpreter" errors.
+
+# Default: normalize line endings to LF in the repository
+* text=auto
+
+# Force LF for all Docker and infrastructure files regardless of OS
+Dockerfile*           text eol=lf
+*.dockerfile          text eol=lf
+docker-compose*.yml   text eol=lf
+*.sh                  text eol=lf
+*.bash                text eol=lf
+nginx.conf            text eol=lf
+*.conf                text eol=lf
+requirements*.txt     text eol=lf
+Makefile              text eol=lf
+
+# Python source — LF everywhere
+*.py                  text eol=lf
+
+# TypeScript/JavaScript — LF everywhere
+*.ts                  text eol=lf
+*.tsx                 text eol=lf
+*.js                  text eol=lf
+*.jsx                 text eol=lf
+*.json                text eol=lf
+
+# YAML — LF everywhere
+*.yaml                text eol=lf
+*.yml                 text eol=lf
+
+# Binary files — never touch line endings
+*.png                 binary
+*.jpg                 binary
+*.gif                 binary
+*.ico                 binary
+*.woff                binary
+*.woff2               binary
+*.ttf                 binary
+*.eot                 binary
+*.db                  binary
