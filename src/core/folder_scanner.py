@@ -45,13 +45,14 @@ class FolderScanner:
                 abs_path = os.path.join(root, fname)
                 try:
                     if os.path.getsize(abs_path) > _MAX_FILE_BYTES:
+                        logger.debug("Skipping %s — exceeds 500KB size limit", abs_path)
                         continue
                 except OSError:
                     continue
                 rel_path = os.path.relpath(abs_path, folder_path)
                 candidates.append((_priority(rel_path), abs_path))
 
-        candidates.sort(key=lambda x: x[0])
+        candidates.sort(key=lambda x: (x[0], os.path.relpath(x[1], folder_path)))
 
         budget = max_tokens * 4  # chars
         parts: list[str] = []
@@ -60,14 +61,18 @@ class FolderScanner:
             if budget <= 0:
                 break
             rel_path = os.path.relpath(abs_path, folder_path)
+            header = f"# --- {rel_path} ---\n"
+            remaining = budget - len(header)
+            if remaining <= 0:
+                break
             try:
                 with open(abs_path, encoding="utf-8", errors="replace") as f:
-                    content = f.read(budget)
+                    content = f.read(remaining)
             except OSError:
                 continue
             if not content.strip():
                 continue
-            chunk = f"# --- {rel_path} ---\n{content}\n"
+            chunk = header + content + "\n"
             parts.append(chunk)
             budget -= len(chunk)
 
