@@ -65,7 +65,7 @@ const localStorageAdapter: UserPrefsAdapter = {
   },
 }
 
-function applyPrefs(prefs: UserPrefs) {
+export function applyPrefs(prefs: UserPrefs) {
   const root = document.documentElement
 
   if (prefs.theme === 'dark') {

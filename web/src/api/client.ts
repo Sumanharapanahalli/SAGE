@@ -366,7 +366,7 @@ export const fetchProjectConfig = () =>
   }>('/config/project')
 
 export const fetchProjects = () =>
-  get<{ projects: Array<{ id: string; name: string; domain: string; version: string; description: string }>; active: string }>(
+  get<{ projects: Array<{ id: string; name: string; domain: string; version: string; description: string; theme?: Record<string, string> }>; active: string }>(
     '/config/projects'
   )
 

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { BookOpen, MessageCircle } from 'lucide-react'
 import { fetchHealth } from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
-import { useUserPrefs, COLOR_COMBOS, UserPrefs } from '../../context/UserPrefsContext'
+import { useUserPrefs, COLOR_COMBOS, UserPrefs, applyPrefs } from '../../context/UserPrefsContext'
 import { useProjectConfig } from '../../hooks/useProjectConfig'
 import { useChatContext } from '../../context/ChatContext'
 import KeyboardShortcutsModal from '../ui/KeyboardShortcutsModal'
@@ -19,13 +19,17 @@ function initials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-function ComboSwatch({ comboKey, active, onClick }: {
+function ComboSwatch({ comboKey, active, onClick, onPreview, onPreviewEnd }: {
   comboKey: UserPrefs['colorCombo']; active: boolean; onClick: () => void
+  onPreview: (key: UserPrefs['colorCombo']) => void
+  onPreviewEnd: () => void
 }) {
   const c = COLOR_COMBOS[comboKey]
   return (
     <button
       onClick={onClick}
+      onMouseEnter={() => onPreview(comboKey)}
+      onMouseLeave={onPreviewEnd}
       title={c.label}
       style={{
         width: 28, height: 28, cursor: 'pointer', padding: 0, border: 'none',
@@ -47,6 +51,7 @@ export default function UserMenu() {
   const [open, setOpen] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [confirmStop, setConfirmStop] = useState(false)
+  const [previewCombo, setPreviewCombo] = useState<UserPrefs['colorCombo'] | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [panelPos, setPanelPos] = useState({ top: 0, right: 0 })
@@ -55,6 +60,16 @@ export default function UserMenu() {
 
   const { user, devUsers, switchDevUser, isDevMode } = useAuth()
   const { prefs, updatePref, resetPrefs } = useUserPrefs()
+
+  const handlePreview = useCallback((key: UserPrefs['colorCombo']) => {
+    setPreviewCombo(key)
+    applyPrefs({ ...prefs, colorCombo: key })
+  }, [prefs])
+
+  const handlePreviewEnd = useCallback(() => {
+    setPreviewCombo(null)
+    applyPrefs(prefs)
+  }, [prefs])
   const { data: projectData } = useProjectConfig()
   const { data: healthData } = useQuery({ queryKey: ['health'], queryFn: fetchHealth, refetchInterval: 30_000 })
 
@@ -222,7 +237,7 @@ export default function UserMenu() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' }}>
                 {comboKeys.map(k => (
                   <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
-                    <ComboSwatch comboKey={k} active={prefs.colorCombo === k} onClick={() => updatePref('colorCombo', k)} />
+                    <ComboSwatch comboKey={k} active={(previewCombo ?? prefs.colorCombo) === k} onClick={() => updatePref('colorCombo', k)} onPreview={handlePreview} onPreviewEnd={handlePreviewEnd} />
                     <span style={{ fontSize: '9px', color: prefs.colorCombo === k ? '#e4e4e7' : '#52525b', textAlign: 'center', lineHeight: 1 }}>
                       {COLOR_COMBOS[k].label}
                     </span>
