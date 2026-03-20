@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
-import { X, Minus, MessageSquare, Send, Trash2 } from 'lucide-react'
+import { X, Minus, MessageSquare, Send, Trash2, CheckCircle, XCircle } from 'lucide-react'
 import { useChat } from '../../hooks/useChat'
 import { useChatContext } from '../../context/ChatContext'
 
 export default function ChatPanel() {
-  const { messages, isLoading, sendMessage, clearHistory, panelState, closeChat, minimiseChat } = useChat()
+  const {
+    messages, isLoading, sendMessage, clearHistory,
+    panelState, closeChat, minimiseChat,
+    pendingAction, confirmAction, cancelAction,
+  } = useChat()
   const { openChat, unreadCount, clearUnread } = useChatContext()
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -141,35 +145,49 @@ export default function ChatPanel() {
             Ask me anything about this solution, proposals, or the SAGE framework.
           </div>
         )}
-        {messages.map(msg => (
-          <div
-            key={msg.id}
-            style={{
-              display: 'flex',
-              flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-              alignItems: 'flex-start',
-              gap: '8px',
-            }}
-          >
-            <div style={{
-              maxWidth: '80%',
-              padding: '7px 11px',
-              fontSize: '12px', lineHeight: 1.5,
-              backgroundColor: msg.role === 'user' ? '#1d4ed8' : '#1e293b',
-              color: '#e2e8f0',
-              whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-            }}>
-              {msg.content}
-              {msg.streaming && (
-                <span style={{
-                  display: 'inline-block', width: '6px', height: '12px',
-                  backgroundColor: '#60a5fa', marginLeft: '2px',
-                  animation: 'sage-cursor-blink 1s step-end infinite',
-                }} />
-              )}
+        {messages.map(msg => {
+          // System message — slim centred muted line
+          if ((msg.role as string) === 'system') {
+            return (
+              <div key={msg.id} style={{
+                textAlign: 'center', fontSize: '11px', color: '#475569',
+                padding: '2px 8px', fontStyle: 'italic',
+              }}>
+                {msg.content}
+              </div>
+            )
+          }
+          // User / assistant bubble — same as before
+          return (
+            <div
+              key={msg.id}
+              style={{
+                display: 'flex',
+                flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
+                alignItems: 'flex-start',
+                gap: '8px',
+              }}
+            >
+              <div style={{
+                maxWidth: '80%',
+                padding: '7px 11px',
+                fontSize: '12px', lineHeight: 1.5,
+                backgroundColor: msg.role === 'user' ? '#1d4ed8' : '#1e293b',
+                color: '#e2e8f0',
+                whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+              }}>
+                {msg.content}
+                {msg.streaming && (
+                  <span style={{
+                    display: 'inline-block', width: '6px', height: '12px',
+                    backgroundColor: '#60a5fa', marginLeft: '2px',
+                    animation: 'sage-cursor-blink 1s step-end infinite',
+                  }} />
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
           <div style={{ display: 'flex', gap: '4px', padding: '8px 0', paddingLeft: '4px' }}>
             {[0, 1, 2].map(i => (
@@ -184,38 +202,83 @@ export default function ChatPanel() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div style={{
-        display: 'flex', gap: '8px', padding: '10px 12px',
-        borderTop: '1px solid #1e293b', flexShrink: 0,
-        backgroundColor: '#0f172a',
-      }}>
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          disabled={isLoading}
-          style={{
-            flex: 1, background: '#020617', border: '1px solid #1e293b',
-            color: '#e2e8f0', fontSize: '12px', padding: '6px 10px',
-            outline: 'none',
-          }}
-        />
-        <button
-          onClick={handleSend}
-          disabled={isLoading || !input.trim()}
-          style={{
-            backgroundColor: '#1d4ed8', border: 'none', color: '#fff',
-            cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-            opacity: isLoading || !input.trim() ? 0.5 : 1,
-            padding: '6px 10px', display: 'flex', alignItems: 'center',
-          }}
-        >
-          <Send size={13} />
-        </button>
-      </div>
+      {/* Confirmation card or input */}
+      {pendingAction ? (
+        <div style={{
+          borderTop: '2px solid #d97706', flexShrink: 0,
+          backgroundColor: '#0f172a', padding: '10px 12px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+            <span style={{
+              fontSize: '10px', fontWeight: 700, color: '#d97706',
+              backgroundColor: '#1c1003', padding: '2px 6px', letterSpacing: '0.04em',
+            }}>
+              {pendingAction.action.toUpperCase().replace(/_/g, ' ')}
+            </span>
+          </div>
+          <p style={{ fontSize: '12px', color: '#cbd5e1', margin: '0 0 10px', lineHeight: 1.5 }}>
+            {pendingAction.confirmation_prompt}
+          </p>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={confirmAction}
+              disabled={isLoading}
+              style={{
+                flex: 1, padding: '6px 0', fontSize: '12px', fontWeight: 600,
+                backgroundColor: '#166534', color: '#bbf7d0', border: 'none',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+              }}
+            >
+              <CheckCircle size={13} /> Confirm
+            </button>
+            <button
+              onClick={cancelAction}
+              disabled={isLoading}
+              style={{
+                flex: 1, padding: '6px 0', fontSize: '12px', fontWeight: 600,
+                backgroundColor: '#1e293b', color: '#64748b', border: 'none',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+              }}
+            >
+              <XCircle size={13} /> Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{
+          display: 'flex', gap: '8px', padding: '10px 12px',
+          borderTop: '1px solid #1e293b', flexShrink: 0,
+          backgroundColor: '#0f172a',
+        }}>
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message..."
+            disabled={isLoading}
+            style={{
+              flex: 1, background: '#020617', border: '1px solid #1e293b',
+              color: '#e2e8f0', fontSize: '12px', padding: '6px 10px',
+              outline: 'none',
+            }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={isLoading || !input.trim()}
+            style={{
+              backgroundColor: '#1d4ed8', border: 'none', color: '#fff',
+              cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+              opacity: isLoading || !input.trim() ? 0.5 : 1,
+              padding: '6px 10px', display: 'flex', alignItems: 'center',
+            }}
+          >
+            <Send size={13} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
