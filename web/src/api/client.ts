@@ -663,13 +663,36 @@ export interface ChatRequest {
 }
 
 export interface ChatResponse {
-  reply: string
+  response_type: 'answer' | 'action'
+  reply?: string
+  action?: string
+  params?: Record<string, unknown>
+  confirmation_prompt?: string
   session_id: string
   message_id: string
 }
 
-export const postChat = (req: ChatRequest) =>
-  post<ChatResponse>('/chat', req)
+export const postChat = (req: {
+  message: string; user_id: string; session_id: string
+  page_context?: string; solution: string
+}) => post<ChatResponse>('/chat', req)
+
+export interface ChatExecuteRequest {
+  action: string
+  params: Record<string, unknown>
+  user_id: string
+  session_id: string
+  solution: string
+}
+
+export interface ChatExecuteResponse {
+  status: 'success' | 'error'
+  message: string
+  result: Record<string, unknown>
+}
+
+export const executeChat = (req: ChatExecuteRequest) =>
+  post<ChatExecuteResponse>('/chat/execute', req)
 
 export const clearChatHistory = (user_id: string, solution: string) => {
   const params = new URLSearchParams({ user_id, solution })
