@@ -649,3 +649,16 @@ export async function reloadOrg(): Promise<{ status: string }> {
 export const fetchDevUsers = () =>
   get<{ users: import('./auth').DevUser[] }>('/config/dev-users')
 
+// Solution branding
+export interface BrandingPayload {
+  display_name?: string
+  icon_name?:    string
+  accent?:       string
+  sidebar_bg?:   string
+  sidebar_text?: string
+  badge_bg?:     string
+  badge_text?:   string
+}
+export const patchProjectTheme = (payload: BrandingPayload) =>
+  patch<{ status: string; solution: string }>('/config/project/theme', payload)
+
