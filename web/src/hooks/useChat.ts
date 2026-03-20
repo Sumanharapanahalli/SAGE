@@ -114,13 +114,13 @@ export function useChat() {
         user_id: userId, session_id: sessionId, solution,
       })
       addMessage({
-        id: crypto.randomUUID(), role: 'system' as any,
+        id: crypto.randomUUID(), role: 'system' as const,
         content: res.message,
       })
       if (panelState !== 'expanded') incrementUnread()
     } catch (err: any) {
       addMessage({
-        id: crypto.randomUUID(), role: 'system' as any,
+        id: crypto.randomUUID(), role: 'system' as const,
         content: `Error: ${err.message ?? 'Action failed'}`,
       })
     } finally {
@@ -133,7 +133,7 @@ export function useChat() {
     if (!pendingAction) return
     const action = pendingAction
     setPendingAction(null)
-    addMessage({ id: crypto.randomUUID(), role: 'system' as any, content: 'Cancelled.' })
+    addMessage({ id: crypto.randomUUID(), role: 'system' as const, content: 'Cancelled.' })
     // Log cancellation to backend for audit trail (fire-and-forget)
     fetch('/api/chat/cancel', {
       method: 'POST',
