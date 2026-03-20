@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchAgentRoles, runAgent, hireAgent, analyzeJd } from '../api/client'
 import { useProjectConfig } from '../hooks/useProjectConfig'
-import { Loader2, ChevronDown, ChevronUp, CheckCircle, Sparkles, UserPlus, X } from 'lucide-react'
+import { Loader2, ChevronDown, ChevronUp, CheckCircle, Sparkles, UserPlus, X, Bot } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -207,7 +207,7 @@ type TaskTemplate = { label: string; task: string; context?: string }
 // ---------------------------------------------------------------------------
 // Hire Agent Modal
 // ---------------------------------------------------------------------------
-const EMOJI_SUGGESTIONS = ['🤖','🔍','🧭','⚙️','🛡️','📊','🧪','🎯','💡','🔧','🚀','🧠','📋','🔐','🌐']
+const EMOJI_SUGGESTIONS = ['A','D','M','P','S','U','E','F','R','Q','T','G','L','C','W']
 
 function HireAgentModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient()
@@ -218,7 +218,7 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
   const [roleId, setRoleId]           = useState('')
   const [name, setName]               = useState('')
   const [description, setDescription] = useState('')
-  const [icon, setIcon]               = useState('🤖')
+  const [icon, setIcon]               = useState('A')
   const [systemPrompt, setSystemPrompt] = useState('')
   const [taskTypesStr, setTaskTypesStr] = useState('')
   const [submitted, setSubmitted]     = useState<{ trace_id: string; description: string } | null>(null)
@@ -264,8 +264,8 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
         setRoleId(config.role_key)
       }
       setTab('manual')
-    } catch (err: any) {
-      setAnalyseError(err.message ?? 'Analysis failed. Please try again.')
+    } catch (err: unknown) {
+      setAnalyseError(err instanceof Error ? err.message : 'Analysis failed. Please try again.')
     } finally {
       setIsAnalysing(false)
     }
@@ -554,7 +554,7 @@ export default function Agents() {
           className="p-12 text-center max-w-xl mx-auto"
           style={{ border: '1px dashed #3f3f46', backgroundColor: '#18181b' }}
         >
-          <div className="text-3xl mb-3">🤖</div>
+          <div className="flex justify-center mb-3"><Bot size={32} style={{ color: '#52525b' }} /></div>
           <div className="font-semibold mb-1 text-sm" style={{ color: '#a1a1aa' }}>No agent roles defined</div>
           <p className="text-xs" style={{ color: '#52525b' }}>
             Click <strong style={{ color: '#71717a' }}>Hire Agent</strong> above to define a new role on the fly — it writes

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from src.core.llm_gateway import llm_gateway
-except Exception:
+except ImportError:
     llm_gateway = None  # type: ignore[assignment]
 
 METAPROMPT = """You are an AI agent architect for the SAGE Framework.
@@ -52,7 +52,7 @@ Return ONLY the JSON object:"""
 def _strip_fences(raw: str) -> str:
     raw = raw.strip()
     if raw.startswith("```"):
-        lines = raw.split("\n")
+        lines = [l.rstrip() for l in raw.split("\n")]
         end = len(lines) - 1 if lines[-1].strip() == "```" else len(lines)
         raw = "\n".join(lines[1:end])
     return raw.strip()
