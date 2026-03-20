@@ -8,7 +8,10 @@ vi.mock('../components/onboarding/TourOverlay', () => ({ default: () => <div dat
 vi.mock('../pages/Dashboard', () => ({ default: () => <div>Dashboard</div> }))
 vi.mock('../components/CommandPalette', () => ({ default: () => null }))
 vi.mock('../components/theme/ThemeProvider', () => ({ default: ({ children }: any) => <>{children}</> }))
-vi.mock('../context/AuthContext', () => ({ AuthProvider: ({ children }: any) => <>{children}</> }))
+vi.mock('../context/AuthContext', () => ({
+  AuthProvider: ({ children }: any) => <>{children}</>,
+  useAuth: () => ({ user: null, isAuthenticated: false, isLoading: false, refresh: () => {}, isDevMode: false, devUsers: [], switchDevUser: () => {} }),
+}))
 vi.mock('../api/client', () => ({
   fetchHealth: vi.fn().mockResolvedValue({}),
   fetchProjects: vi.fn().mockResolvedValue({ projects: [], active: '' }),
