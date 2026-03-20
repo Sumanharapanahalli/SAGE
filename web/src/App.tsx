@@ -29,6 +29,7 @@ import { TourProvider } from './context/TourContext'
 import LLMDisconnectedBanner from './components/ui/LLMDisconnectedBanner'
 import Issues from './pages/Issues'
 import Activity from './pages/Activity'
+import Guide from './pages/Guide'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
 import { UserPrefsProvider } from './context/UserPrefsContext'
@@ -99,6 +100,7 @@ function AppShell() {
               <Route path="/issues"         element={<Issues />} />
               <Route path="/activity"       element={<Activity />} />
               <Route path="/knowledge"      element={<AuditLog />} />
+              <Route path="/guide"          element={<Guide />} />
             </Routes>
           </main>
         </div>

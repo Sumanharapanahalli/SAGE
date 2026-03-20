@@ -314,6 +314,25 @@ export const MODULE_REGISTRY: Record<string, ModuleMetadata> = {
     ],
   },
 
+  guide: {
+    id: 'guide',
+    name: 'User Guide',
+    description: 'Animated GIF walkthroughs for key SAGE features.',
+    version: '1.0.0',
+    route: '/guide',
+    features: [
+      'Six animated GIF walkthrough sections covering core SAGE workflows',
+      'Automatic fallback placeholder when a GIF recording is not yet available',
+      'Step-by-step instructions alongside each walkthrough',
+      'Instructions for adding new GIF recordings',
+    ],
+    improvementHints: [
+      'Add search across guide sections',
+      'Add a "mark as read" state per section stored in localStorage',
+      'Add video embed support as an alternative to GIFs',
+    ],
+  },
+
   'access-control': {
     id: 'access-control',
     name: 'Access Control',
