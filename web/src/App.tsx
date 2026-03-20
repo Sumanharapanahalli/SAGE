@@ -26,6 +26,7 @@ import Goals from './pages/Goals'
 import OrgGraph from './pages/OrgGraph'
 import TourOverlay from './components/onboarding/TourOverlay'
 import { TourProvider } from './context/TourContext'
+import LLMDisconnectedBanner from './components/ui/LLMDisconnectedBanner'
 import Issues from './pages/Issues'
 import Activity from './pages/Activity'
 import ThemeProvider from './components/theme/ThemeProvider'
@@ -104,6 +105,7 @@ function AppShell() {
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <TourOverlay />
+      <LLMDisconnectedBanner />
     </>
   )
 }
