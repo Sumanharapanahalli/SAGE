@@ -145,6 +145,14 @@ class ChatRequest(BaseModel):
     solution: str = ""
 
 
+class ChatExecuteRequest(BaseModel):
+    action: str
+    params: dict = {}
+    user_id: str = "anonymous"
+    session_id: str = ""
+    solution: str = ""
+
+
 # ---------------------------------------------------------------------------
 # Lazy singleton accessors
 # ---------------------------------------------------------------------------
@@ -4335,38 +4343,23 @@ async def get_sandbox_status():
 
 @app.post("/chat")
 async def chat(req: ChatRequest):
-    """Non-streaming contextual chat. Returns LLM reply and persists history."""
+    """Non-streaming contextual chat. Routes through LLM classifier, returns action or answer."""
     from src.core.project_loader import project_config
-    from src.core.llm_gateway import llm_gateway
+    from src.core.chat_router import route as chat_route
     from src.memory.audit_logger import audit_logger
+    import json as _json
 
     solution = req.solution or (project_config.project_name if project_config else "sage")
     session_id = req.session_id or str(uuid.uuid4())
 
-    # Build rolling history (last 10 messages)
-    history = audit_logger.get_chat_history(req.user_id, session_id, solution, limit=10)
-
-    # Build system prompt
     domain = ""
-    compliance = []
     try:
         domain = project_config.domain or ""
-        compliance = getattr(project_config, "compliance_standards", []) or []
     except Exception:
         pass
 
-    compliance_str = ", ".join(compliance) if compliance else "general"
-    system_prompt = (
-        f"You are SAGE's embedded assistant for the {solution} solution.\n"
-        f"Domain: {domain}\n"
-        f"Compliance: {compliance_str}\n"
-        f"Active page: {req.page_context or 'unknown'}\n\n"
-        "Answer concisely. If asked to make a change to a YAML file or proposal, describe "
-        "the change and offer to create a SAGE proposal for it (but do NOT execute it). "
-        "Always keep patient safety and compliance implications in mind for regulated solutions."
-    )
-
-    # Build conversation prompt with history
+    # Build rolling history for context
+    history = audit_logger.get_chat_history(req.user_id, session_id, solution, limit=10)
     history_text = ""
     for msg in history:
         prefix = "User" if msg["role"] == "user" else "Assistant"
@@ -4374,36 +4367,206 @@ async def chat(req: ChatRequest):
     if history_text:
         history_text += "\n"
 
-    full_prompt = f"{system_prompt}\n\n{history_text}User: {req.message}\nAssistant:"
-
     # Save user message
     audit_logger.save_chat_message(
-        user_id=req.user_id,
-        session_id=session_id,
-        solution=solution,
-        role="user",
-        content=req.message,
-        page_context=req.page_context,
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="user", content=req.message, page_context=req.page_context,
+        message_type="user",
     )
 
-    # Call LLM
-    try:
-        reply = llm_gateway.generate(full_prompt)
-    except Exception as exc:
-        logger.error("Chat LLM error: %s", exc)
-        raise HTTPException(status_code=503, detail=f"LLM unavailable: {exc}")
+    # Route through LLM classifier
+    result = chat_route(
+        message=req.message, solution=solution, domain=domain,
+        page_context=req.page_context or "", history_text=history_text,
+    )
 
-    # Save assistant response
+    response_type = result.get("type", "answer")
+
+    if response_type == "action":
+        action_name = result.get("action", "")
+        params = result.get("params", {})
+        confirmation_prompt = result.get("confirmation_prompt", "")
+
+        # query_knowledge executes server-side immediately (read-only)
+        if action_name == "query_knowledge":
+            try:
+                from src.memory.vector_store import vector_memory
+                hits = vector_memory.search(params.get("query", req.message), k=3)
+                knowledge_text = "\n".join(h.get("content", "") for h in hits) if hits else "No results found."
+                reply = f"From the knowledge base:\n\n{knowledge_text}"
+            except Exception as exc:
+                reply = f"Knowledge search unavailable: {exc}"
+            message_id = audit_logger.save_chat_message(
+                user_id=req.user_id, session_id=session_id, solution=solution,
+                role="assistant", content=reply, page_context=req.page_context,
+                message_type="answer",
+            )
+            return {"response_type": "answer", "reply": reply, "session_id": session_id, "message_id": message_id}
+
+        # All other actions: return as action_proposed
+        message_id = audit_logger.save_chat_message(
+            user_id=req.user_id, session_id=session_id, solution=solution,
+            role="assistant", content=confirmation_prompt, page_context=req.page_context,
+            message_type="action_proposed",
+            metadata={"action": action_name, "params": params},
+        )
+        return {
+            "response_type": "action",
+            "action": action_name,
+            "params": params,
+            "confirmation_prompt": confirmation_prompt,
+            "session_id": session_id,
+            "message_id": message_id,
+        }
+
+    # Plain answer
+    reply = result.get("reply", "")
     message_id = audit_logger.save_chat_message(
-        user_id=req.user_id,
-        session_id=session_id,
-        solution=solution,
-        role="assistant",
-        content=reply,
-        page_context=req.page_context,
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="assistant", content=reply, page_context=req.page_context,
+        message_type="answer",
+    )
+    return {"response_type": "answer", "reply": reply, "session_id": session_id, "message_id": message_id}
+
+
+@app.post("/chat/execute")
+async def chat_execute(req: ChatExecuteRequest):
+    """Execute a chat-proposed action after human confirmation."""
+    from src.core.project_loader import project_config
+    from src.memory.audit_logger import audit_logger
+
+    solution = req.solution or (project_config.project_name if project_config else "sage")
+    session_id = req.session_id or str(uuid.uuid4())
+    action = req.action
+    params = req.params
+
+    SUPPORTED_ACTIONS = {
+        "approve_proposal", "reject_proposal", "undo_proposal",
+        "submit_task", "propose_yaml_edit",
+    }
+    if action not in SUPPORTED_ACTIONS:
+        raise HTTPException(status_code=400, detail=f"Unsupported action: {action}")
+
+    # Log confirmation
+    audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="user", content=f"[Confirmed: {action}]", page_context=None,
+        message_type="action_confirmed",
+        metadata={"action": action, "params": params},
     )
 
-    return {"reply": reply, "session_id": session_id, "message_id": message_id}
+    result_msg = ""
+    result_data = {}
+
+    try:
+        if action == "approve_proposal":
+            trace_id = params.get("trace_id", "")
+            store = _get_proposal_store()
+            proposal = store.get(trace_id)
+            if proposal is None:
+                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+            store.approve(trace_id)
+            from src.core.proposal_executor import execute_approved_proposal
+            import asyncio
+            asyncio.ensure_future(execute_approved_proposal(proposal))
+            result_msg = f"Proposal {trace_id} approved."
+            result_data = {"trace_id": trace_id}
+
+        elif action == "reject_proposal":
+            trace_id = params.get("trace_id", "")
+            reason = params.get("reason", "Rejected via chat.")
+            store = _get_proposal_store()
+            proposal = store.get(trace_id)
+            if proposal is None:
+                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+            store.reject(trace_id, reason)
+            result_msg = f"Proposal {trace_id} rejected."
+            result_data = {"trace_id": trace_id}
+
+        elif action == "undo_proposal":
+            trace_id = params.get("trace_id", "")
+            store = _get_proposal_store()
+            proposal = store.get(trace_id)
+            if proposal is None:
+                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+            if proposal.action_type == "code_diff":
+                from src.core.proposal_executor import _revert_code_diff
+                import asyncio
+                asyncio.ensure_future(_revert_code_diff(proposal))
+            result_msg = f"Undo triggered for proposal {trace_id}."
+            result_data = {"trace_id": trace_id}
+
+        elif action == "submit_task":
+            from src.core.queue_manager import task_queue
+            task_type = params.get("task_type", "")
+            payload = params.get("payload", {})
+            task_id = task_queue.submit(task_type=task_type, payload=payload, source="chat")
+            result_msg = f"Task {task_id} ({task_type}) queued."
+            result_data = {"task_id": task_id}
+
+        elif action == "propose_yaml_edit":
+            file_name = params.get("file", "prompts")
+            change_desc = params.get("change_description", "")
+            store = _get_proposal_store()
+            from src.core.proposal_store import RiskClass
+            p = store.create(
+                action_type="yaml_edit",
+                risk_class=RiskClass.STATEFUL,
+                payload={"file": file_name, "change_description": change_desc},
+                description=f"YAML edit via chat: {change_desc[:80]}",
+                reversible=True,
+            )
+            result_msg = f"YAML edit proposal created (trace_id: {p.trace_id}). Review it in Approvals."
+            result_data = {"trace_id": p.trace_id}
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("chat/execute error for action %s: %s", action, exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    # Write execution result to chat history
+    audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="assistant", content=result_msg, page_context=None,
+        message_type="action_executed",
+        metadata={"action": action, **result_data},
+    )
+
+    # Write to compliance audit log
+    _get_audit_logger().log_event(
+        actor="human_via_chat",
+        action_type=f"CHAT_EXECUTE_{action.upper()}",
+        input_context=f"session={session_id} user={req.user_id}",
+        output_content=result_msg,
+        metadata={"action": action, "params": params, "session_id": session_id, **result_data},
+    )
+
+    return {"status": "success", "message": result_msg, "result": result_data}
+
+
+@app.post("/chat/cancel")
+async def chat_cancel(req: ChatExecuteRequest):
+    """Log a user-cancelled action proposal to the audit trail."""
+    from src.core.project_loader import project_config
+    from src.memory.audit_logger import audit_logger
+
+    solution = req.solution or (project_config.project_name if project_config else "sage")
+    session_id = req.session_id or str(uuid.uuid4())
+    audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="user", content=f"[Cancelled: {req.action}]", page_context=None,
+        message_type="action_cancelled",
+        metadata={"action": req.action, "params": req.params},
+    )
+    _get_audit_logger().log_event(
+        actor="human_via_chat",
+        action_type=f"CHAT_CANCEL_{req.action.upper()}",
+        input_context=f"session={session_id} user={req.user_id}",
+        output_content="Action cancelled by user",
+        metadata={"action": req.action, "params": req.params, "session_id": session_id},
+    )
+    return {"status": "logged"}
 
 
 @app.delete("/chat/history")
