@@ -746,6 +746,53 @@ export const clearChatHistory = (user_id: string, solution: string) => {
   return fetch(`${BASE}/chat/history?${params}`, { method: 'DELETE' }).then(r => r.json())
 }
 
+// Onboarding — scan folder, refine, save
+export interface ScanFolderRequest {
+  folder_path: string
+  intent: string
+  solution_name: string
+}
+
+export interface GeneratedFiles {
+  'project.yaml': string
+  'prompts.yaml': string
+  'tasks.yaml': string
+}
+
+export interface ScanSummary {
+  name: string
+  description: string
+  task_types: Array<{ name: string; description: string }>
+  compliance_standards: string[]
+  integrations: string[]
+}
+
+export interface ScanFolderResponse {
+  solution_name: string
+  files: GeneratedFiles
+  summary: ScanSummary
+}
+
+export interface RefineRequest {
+  solution_name: string
+  current_files: GeneratedFiles
+  feedback: string
+}
+
+export interface SaveSolutionRequest {
+  solution_name: string
+  files: GeneratedFiles
+}
+
+export const scanFolder = (req: ScanFolderRequest) =>
+  post<ScanFolderResponse>('/onboarding/scan-folder', req)
+
+export const refineGeneration = (req: RefineRequest) =>
+  post<ScanFolderResponse>('/onboarding/refine', req)
+
+export const saveSolution = (req: SaveSolutionRequest) =>
+  post<{ status: string; solution_name: string }>('/onboarding/save-solution', req)
+
 // Solution branding
 export interface BrandingPayload {
   display_name?: string
