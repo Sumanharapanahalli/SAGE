@@ -28,6 +28,7 @@
 | `web/src/components/onboarding/ImportFlow.tsx` | NEW | 3-step import: path+intent → scanning spinner → ReviewPanel |
 | `web/src/components/onboarding/ReviewPanel.tsx` | NEW | Summary tab (plain English) + YAML tab + amber refine box |
 | `tests/test_folder_scanner.py` | NEW | Unit tests for FolderScanner |
+| `web/src/pages/Settings.tsx` | MODIFY | Add Organization tab/link entry |
 | `tests/test_onboarding_import_endpoints.py` | NEW | Tests for PUT /org, scan-folder, refine |
 
 ---
@@ -345,8 +346,18 @@ async def org_update(req: OrgUpdateRequest):
 
     reload_org_loader()
 
+    audit_logger.log_event(
+        actor="human_via_settings",
+        action_type="ORG_SAVED",
+        input_context=f"name={req.name}, mission={req.mission}",
+        output_content=str(org_section),
+        metadata={"source": "PUT /org"},
+    )
+
     return {"status": "saved", "org": org_section}
 ```
+
+Note: `audit_logger` is already imported at the top of `api.py`. Add it if not present: `from src.memory.audit_logger import audit_logger`.
 
 - [ ] **Step 4: Run tests — verify they pass**
 
@@ -405,7 +416,7 @@ git commit -m "feat(onboarding): PUT /org endpoint + org context injection into 
 
 **Files:**
 - Modify: `src/interface/api.py`
-- Modify: `tests/test_onboarding_import_endpoints.py` (add more tests)
+- Modify: `tests/test_onboarding_import_endpoints.py` (add more tests — note: spec names this `test_onboarding_endpoints.py` but use `test_onboarding_import_endpoints.py` throughout this plan to avoid conflicts)
 
 - [ ] **Step 1: Write failing tests**
 
@@ -628,6 +639,15 @@ async def onboarding_scan_folder(req: ScanFolderRequest):
         raise HTTPException(503, detail={"error": "llm_unavailable", "message": "Could not reach the LLM."})
 
     files, summary = _parse_generated_files(raw)
+
+    audit_logger.log_event(
+        actor="human_via_onboarding",
+        action_type="ONBOARDING_SCAN",
+        input_context=req.intent,
+        output_content=str(files.get("project.yaml", ""))[:2000],
+        metadata={"solution_name": req.solution_name, "folder_path": req.folder_path},
+    )
+
     return {"solution_name": req.solution_name, "files": files, "summary": summary}
 
 
@@ -660,6 +680,15 @@ async def onboarding_refine(req: RefineRequest):
         raise HTTPException(503, detail={"error": "llm_unavailable", "message": "Could not reach the LLM."})
 
     files, summary = _parse_generated_files(raw)
+
+    audit_logger.log_event(
+        actor="human_via_onboarding",
+        action_type="ONBOARDING_REFINE",
+        input_context=req.feedback,
+        output_content=str(files.get("project.yaml", ""))[:2000],
+        metadata={"solution_name": req.solution_name},
+    )
+
     return {"solution_name": req.solution_name, "files": files, "summary": summary}
 ```
 
@@ -677,11 +706,68 @@ python -m pytest --tb=short -q
 ```
 Expected: all passing.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Add `POST /onboarding/save-solution` endpoint**
+
+This endpoint writes the accepted YAML files to disk so the solution is loadable after the user clicks "Looks good — continue".
+
+Add model and endpoint to `src/interface/api.py`:
+
+```python
+class SaveSolutionRequest(BaseModel):
+    solution_name: str
+    files: dict  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
+
+@app.post("/onboarding/save-solution")
+async def onboarding_save_solution(req: SaveSolutionRequest):
+    """Write generated YAML files to disk under SAGE_SOLUTIONS_DIR/<solution_name>/."""
+    from src.core.org_loader import _SOLUTIONS_DIR
+    solution_dir = os.path.join(_SOLUTIONS_DIR, req.solution_name)
+    os.makedirs(solution_dir, exist_ok=True)
+    for filename, content in req.files.items():
+        # Only allow the three known YAML files
+        if filename not in {"project.yaml", "prompts.yaml", "tasks.yaml"}:
+            continue
+        with open(os.path.join(solution_dir, filename), "w", encoding="utf-8") as f:
+            f.write(content)
+    audit_logger.log_event(
+        actor="human_via_onboarding",
+        action_type="ONBOARDING_COMPLETE",
+        input_context=req.solution_name,
+        output_content=str(req.files.get("project.yaml", ""))[:2000],
+        metadata={"solution_name": req.solution_name},
+    )
+    return {"status": "saved", "solution_name": req.solution_name}
+```
+
+Add a test to `tests/test_onboarding_import_endpoints.py`:
+
+```python
+def test_save_solution_writes_files(tmp_path, monkeypatch):
+    monkeypatch.setenv("SAGE_SOLUTIONS_DIR", str(tmp_path))
+    resp = client.post("/onboarding/save-solution", json={
+        "solution_name": "test_save",
+        "files": {
+            "project.yaml": "name: Test Save\ndomain: test-save",
+            "prompts.yaml": "roles: {}",
+            "tasks.yaml": "task_types: []",
+        },
+    })
+    assert resp.status_code == 200
+    assert (tmp_path / "test_save" / "project.yaml").exists()
+```
+
+- [ ] **Step 8: Run tests**
+
+```bash
+python -m pytest tests/test_onboarding_import_endpoints.py -v
+```
+Expected: all tests pass (including the new save-solution test).
+
+- [ ] **Step 9: Commit**
 
 ```bash
 git add src/interface/api.py tests/test_onboarding_import_endpoints.py
-git commit -m "feat(onboarding): POST /onboarding/scan-folder + /onboarding/refine with org context injection"
+git commit -m "feat(onboarding): POST /onboarding/scan-folder + /onboarding/refine + /onboarding/save-solution"
 ```
 
 ---
@@ -718,11 +804,9 @@ export interface OrgUpdateResponse {
   }
 }
 
-export const saveOrg = (req: OrgUpdateRequest) =>
-  post<OrgUpdateResponse>('/org', req)
 ```
 
-Note: the `post` helper uses method POST but we need PUT. Add a `put` helper alongside `post`:
+The `post` helper uses method POST but we need PUT. Add a `put` helper alongside `post`:
 
 ```typescript
 async function put<T>(path: string, body?: unknown): Promise<T> {
@@ -739,7 +823,9 @@ export const saveOrg = (req: OrgUpdateRequest) =>
   put<OrgUpdateResponse>('/org', req)
 ```
 
-- [ ] **Step 2: Create Organization.tsx**
+- [ ] **Step 2: Create the `web/src/pages/settings/` directory and Organization.tsx**
+
+The `web/src/pages/settings/` directory does not currently exist — create it as part of creating the file.
 
 ```tsx
 // web/src/pages/settings/Organization.tsx
@@ -963,17 +1049,28 @@ organization: {
 },
 ```
 
-- [ ] **Step 7: TypeScript check**
+- [ ] **Step 7: Add Organization link to Settings.tsx**
+
+Read `web/src/pages/Settings.tsx` first to understand its current structure, then add an entry linking to `/settings/organization`:
+
+```tsx
+// In the Settings page, add a nav item or card for Organization:
+// (exact placement depends on current structure — read the file first)
+// Example if Settings renders a list of setting areas:
+{ label: 'Organization', description: 'Mission, vision, and core values', route: '/settings/organization' }
+```
+
+- [ ] **Step 8: TypeScript check**
 
 ```bash
 cd C:\sandbox\SAGE\web && npx tsc --noEmit
 ```
 Expected: no errors.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add web/src/pages/settings/Organization.tsx web/src/App.tsx web/src/components/layout/Sidebar.tsx web/src/components/layout/Header.tsx web/src/registry/modules.ts web/src/api/client.ts
+git add web/src/pages/settings/Organization.tsx web/src/App.tsx web/src/components/layout/Sidebar.tsx web/src/components/layout/Header.tsx web/src/registry/modules.ts web/src/api/client.ts web/src/pages/Settings.tsx
 git commit -m "feat(org): Organization settings page — mission, vision, core values"
 ```
 
@@ -1102,20 +1199,23 @@ export default function EmptyState() {
 
 - [ ] **Step 2: Use EmptyState in Dashboard.tsx**
 
-In `web/src/pages/Dashboard.tsx`, find the main return statement. Add an early return when the projects list is empty:
+Read `web/src/pages/Dashboard.tsx` first to understand its current imports and query usage.
+
+Add the import and empty-state check. `fetchProjects` is not currently imported in Dashboard.tsx — add it explicitly:
 
 ```tsx
 import EmptyState from '../components/dashboard/EmptyState'
+import { fetchProjects } from '../api/client'  // add if not already present
 
-// In the Dashboard component, after the useQuery for projects:
+// In the Dashboard component, add (or reuse the existing projects query):
 const { data: projectsData } = useQuery({ queryKey: ['projects'], queryFn: fetchProjects })
 const hasProjects = (projectsData?.projects?.length ?? 0) > 0
 
-// In the JSX return, wrap the normal content:
+// Near the top of the JSX return (before the main dashboard layout):
 if (!hasProjects) return <EmptyState />
 ```
 
-If `fetchProjects` is already called in Dashboard.tsx, just add the `hasProjects` check and early return. Do not add a duplicate query.
+If `fetchProjects` is already called in Dashboard.tsx under a different query key, reuse that existing data — do not add a duplicate query.
 
 - [ ] **Step 3: TypeScript check**
 
@@ -1176,11 +1276,19 @@ export interface RefineRequest {
   feedback: string
 }
 
+export interface SaveSolutionRequest {
+  solution_name: string
+  files: GeneratedFiles
+}
+
 export const scanFolder = (req: ScanFolderRequest) =>
   post<ScanFolderResponse>('/onboarding/scan-folder', req)
 
 export const refineGeneration = (req: RefineRequest) =>
   post<ScanFolderResponse>('/onboarding/refine', req)
+
+export const saveSolution = (req: SaveSolutionRequest) =>
+  post<{ status: string; solution_name: string }>('/onboarding/save-solution', req)
 ```
 
 - [ ] **Step 2: Refactor Onboarding.tsx to full-screen page**
@@ -1301,14 +1409,24 @@ interface OnboardingWizardProps {
 
 When `inline` is true, render the wizard content directly without the modal overlay/backdrop. When `llmConnected` is false, disable the "Generate" button with a tooltip "LLM not connected".
 
-- [ ] **Step 3: TypeScript check**
+- [ ] **Step 3: Verify existing OnboardingWizard call sites still compile**
+
+The `inline` and `llmConnected` props added to `OnboardingWizard` are optional (`?`) so existing call sites that pass only `onClose` and `onTourStart` must still compile without changes. Grep for usages:
+
+```bash
+grep -rn "OnboardingWizard" web/src --include="*.tsx" --include="*.ts"
+```
+
+Confirm every call site either uses the new props or omits them (both are valid since they're optional). The TypeScript check in Step 4 will catch any failures.
+
+- [ ] **Step 4: TypeScript check**
 
 ```bash
 cd C:\sandbox\SAGE\web && npx tsc --noEmit
 ```
 Fix any type errors. Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add web/src/pages/Onboarding.tsx web/src/components/onboarding/OnboardingWizard.tsx web/src/api/client.ts
@@ -1363,7 +1481,6 @@ export default function ReviewPanel({ result, onAccept, onStartOver }: ReviewPan
       padding: '6px 16px',
       background: 'transparent',
       color: active ? '#a5b4fc' : '#64748b',
-      borderBottom: active ? '2px solid #6366f1' : '2px solid transparent',
       border: 'none',
       borderBottom: active ? '2px solid #6366f1' : '2px solid transparent',
       cursor: 'pointer',
@@ -1508,7 +1625,7 @@ export default function ReviewPanel({ result, onAccept, onStartOver }: ReviewPan
 // web/src/components/onboarding/ImportFlow.tsx
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { scanFolder, switchProject } from '../../api/client'
+import { scanFolder, saveSolution, switchProject } from '../../api/client'
 import type { GeneratedFiles, ScanFolderResponse } from '../../api/client'
 import ReviewPanel from './ReviewPanel'
 import { useNavigate } from 'react-router-dom'
@@ -1548,15 +1665,15 @@ export default function ImportFlow({ llmConnected }: ImportFlowProps) {
   })
 
   const handleAccept = async (files: GeneratedFiles) => {
-    // Write the accepted files to disk via existing onboarding/generate or a direct write
-    // For now: switch to the newly created solution (it was written by scan-folder)
+    // Write accepted files to disk, then switch to the new solution
     try {
+      await saveSolution({ solution_name: solutionName, files })
       await switchProject(solutionName)
       qc.invalidateQueries({ queryKey: ['projects'] })
-      navigate('/')
     } catch {
-      navigate('/')
+      // Even if switch fails, files are saved — navigate home
     }
+    navigate('/')
   }
 
   const fieldStyle: React.CSSProperties = {
