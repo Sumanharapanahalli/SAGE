@@ -57,7 +57,7 @@ def test_scan_respects_token_budget():
         scanner = FolderScanner()
         result = scanner.scan(tmp, max_tokens=50)  # ~200 chars
         # Result should be truncated
-        assert len(result) <= 300  # rough check
+        assert len(result) <= 230  # budget is max_tokens*4=200 chars, header ~24 chars max
 
 
 def test_scan_includes_file_headers():
