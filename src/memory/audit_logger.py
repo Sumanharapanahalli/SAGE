@@ -127,10 +127,9 @@ class AuditLogger:
         metadata: dict = None,
     ) -> str:
         """Persist a chat message (user or assistant turn)."""
-        import json as _json
         msg_id = str(uuid.uuid4())
         created_at = datetime.now(timezone.utc).isoformat()
-        meta_str = _json.dumps(metadata) if metadata else None
+        meta_str = json.dumps(metadata) if metadata else None
         try:
             conn = sqlite3.connect(self.db_path)
             conn.execute(
