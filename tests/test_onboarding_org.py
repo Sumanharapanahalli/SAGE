@@ -75,6 +75,7 @@ def test_onboarding_passes_parent_solution_to_generate():
         integrations=ANY,
         parent_solution="parent_base",
         org_name="acme",
+        org_context=ANY,
     )
 
 

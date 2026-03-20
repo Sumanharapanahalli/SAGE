@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes sage-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
    SAGE CSS Custom Properties — Solution Theming System
 

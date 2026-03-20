@@ -30,7 +30,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/org':            'Org Chart',
   '/approvals':      'Approvals',
   '/knowledge':      'Knowledge',
-  '/guide':          'User Guide',
+  '/guide':                  'User Guide',
+  '/settings/organization':  'Organization',
 }
 
 const ROUTE_TO_AREA: Record<string, string> = {
@@ -56,8 +57,9 @@ const ROUTE_TO_AREA: Record<string, string> = {
   '/yaml-editor':    'Admin',
   '/access-control': 'Admin',
   '/integrations':   'Admin',
-  '/settings':       'Admin',
-  '/guide':          'Admin',
+  '/settings':               'Admin',
+  '/guide':                  'Admin',
+  '/settings/organization':  'Admin',
 }
 
 interface HeaderProps {
