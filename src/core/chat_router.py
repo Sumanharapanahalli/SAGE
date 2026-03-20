@@ -95,6 +95,9 @@ def route(
     history_text: str = "",
 ) -> dict:
     """Send message through the LLM router and return a parsed response dict."""
+    if llm_gateway is None:
+        logger.error("chat_router: llm_gateway not available")
+        return {"type": "answer", "reply": "LLM gateway is not configured."}
     system_prompt = build_router_system_prompt(solution, domain, page_context)
     prompt = f"{history_text}User: {message}\nAssistant:"
     try:
@@ -102,4 +105,4 @@ def route(
         return parse_router_response(raw)
     except Exception as exc:
         logger.error("chat_router LLM error: %s", exc)
-        return {"type": "answer", "reply": f"Sorry, I could not reach the LLM: {exc}"}
+        return {"type": "answer", "reply": "Sorry, I could not process your message right now. Please try again."}

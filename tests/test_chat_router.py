@@ -50,3 +50,33 @@ def test_route_calls_llm_and_returns_parsed():
         result = route("Hello", solution="test", domain="", page_context="")
     assert result["type"] == "answer"
     assert mock_gw.generate.called
+
+
+def test_route_none_gateway_returns_fallback():
+    """route() returns answer fallback when gateway is None."""
+    from src.core import chat_router
+    original = chat_router.llm_gateway
+    try:
+        chat_router.llm_gateway = None
+        result = chat_router.route("Hello", solution="test", domain="", page_context="")
+        assert result["type"] == "answer"
+        assert "configured" in result["reply"] or "not" in result["reply"]
+    finally:
+        chat_router.llm_gateway = original
+
+
+def test_parse_fenced_json_stripped():
+    """parse_router_response strips markdown code fences."""
+    from src.core.chat_router import parse_router_response
+    raw = '```json\n{"type": "answer", "reply": "Fenced response"}\n```'
+    result = parse_router_response(raw)
+    assert result["type"] == "answer"
+    assert result["reply"] == "Fenced response"
+
+
+def test_parse_unexpected_json_shape_falls_back():
+    """Valid JSON with unexpected type field is treated as plain answer."""
+    from src.core.chat_router import parse_router_response
+    raw = '{"type": "unknown", "data": "something"}'
+    result = parse_router_response(raw)
+    assert result["type"] == "answer"
