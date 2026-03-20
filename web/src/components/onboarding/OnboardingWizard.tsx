@@ -54,13 +54,15 @@ function ProgressBar({ step }: { step: number }) {
 interface Props {
   onClose: () => void
   onTourStart: (solutionId: string) => void
+  inline?: boolean
+  llmConnected?: boolean
 }
 
 const YAML_FILES = ['project.yaml', 'prompts.yaml', 'tasks.yaml']
 const COMPLIANCE_OPTIONS = ['ISO 13485', 'IEC 62304', 'ISO 9001', 'FDA 21 CFR Part 11', 'None']
 const INTEGRATION_OPTIONS = ['GitLab', 'Slack', 'GitHub', 'None']
 
-export default function OnboardingWizard({ onClose, onTourStart }: Props) {
+export default function OnboardingWizard({ onClose, onTourStart, inline = false, llmConnected = true }: Props) {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({ description: '', solution_name: '', parent_solution: '', org_name: '' })
@@ -107,11 +109,9 @@ export default function OnboardingWizard({ onClose, onTourStart }: Props) {
     setList(list.includes(val) ? list.filter(x => x !== val) : [...list, val])
   }
 
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.75)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ maxWidth: '560px', width: '100%', background: '#0f172a', borderRadius: '12px',
-                    border: '1px solid #1e293b', overflow: 'hidden' }}>
+  const inner = (
+    <div style={{ maxWidth: '560px', width: '100%', background: '#0f172a', borderRadius: '12px',
+                  border: '1px solid #1e293b', overflow: 'hidden' }}>
         <ProgressBar step={step} />
 
         {step === 1 && (
@@ -213,9 +213,12 @@ export default function OnboardingWizard({ onClose, onTourStart }: Props) {
                 <button onClick={() => setStep(1)} style={{ padding: '8px 16px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px' }}>
                   Back
                 </button>
-                <button onClick={() => setStep(3)}
-                  style={{ padding: '8px 20px', background: '#3b82f6', color: '#fff', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
-                  Next
+                <button
+                  onClick={() => setStep(3)}
+                  disabled={!llmConnected}
+                  title={!llmConnected ? 'LLM not connected' : undefined}
+                  style={{ padding: '8px 20px', background: '#3b82f6', color: '#fff', borderRadius: '6px', fontSize: '13px', cursor: llmConnected ? 'pointer' : 'not-allowed', opacity: llmConnected ? 1 : 0.4 }}>
+                  Generate
                 </button>
               </div>
             </div>
@@ -325,7 +328,15 @@ export default function OnboardingWizard({ onClose, onTourStart }: Props) {
             )}
           </div>
         )}
-      </div>
+    </div>
+  )
+
+  if (inline) return inner
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.75)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {inner}
     </div>
   )
 }
