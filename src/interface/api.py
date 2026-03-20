@@ -2611,6 +2611,8 @@ import asyncio
 import queue as _queue
 import threading
 
+_ORG_YAML_LOCK = threading.Lock()
+
 
 class _SSELogHandler(logging.Handler):
     """
@@ -2834,17 +2836,15 @@ async def onboarding_generate(request: Request):
 
     # Load org context (mission/vision/values) to enrich the LLM prompt
     try:
-        import yaml as _yaml_ctx
-        _op = _get_org_yaml_path()
-        _od = _yaml_ctx.safe_load(open(_op).read()) if os.path.exists(_op) else {}
-        _os_section = _od.get("org", {}) if isinstance(_od, dict) else {}
+        _od = _read_org_yaml()
+        _org_section = _od.get("org", {}) if isinstance(_od, dict) else {}
         _org_context = ""
-        if _os_section.get("mission"):
-            _parts = [f"Mission: {_os_section['mission']}"]
-            if _os_section.get("vision"):
-                _parts.append(f"Vision: {_os_section['vision']}")
-            if _os_section.get("core_values"):
-                _vals = "\n  - ".join(_os_section["core_values"])
+        if _org_section.get("mission"):
+            _parts = [f"Mission: {_org_section['mission']}"]
+            if _org_section.get("vision"):
+                _parts.append(f"Vision: {_org_section['vision']}")
+            if _org_section.get("core_values"):
+                _vals = "\n  - ".join(_org_section["core_values"])
                 _parts.append(f"Core values:\n  - {_vals}")
             _org_context = "\n".join(_parts)
     except Exception:
@@ -4222,32 +4222,33 @@ async def org_update(req: OrgUpdateRequest):
 
     org_path = _get_org_yaml_path()
 
-    # Load existing or start fresh
-    existing: dict = {}
-    if os.path.exists(org_path):
-        try:
-            with open(org_path, encoding="utf-8") as f:
-                existing = _yaml.safe_load(f) or {}
-        except Exception:
-            existing = {}
+    with _ORG_YAML_LOCK:
+        # Load existing or start fresh
+        existing: dict = {}
+        if os.path.exists(org_path):
+            try:
+                with open(org_path, encoding="utf-8") as f:
+                    existing = _yaml.safe_load(f) or {}
+            except Exception:
+                existing = {}
 
-    # Merge only supplied fields
-    if not isinstance(existing.get("org"), dict):
-        existing["org"] = {}
-    org_section = existing["org"]
+        # Merge only supplied fields
+        if not isinstance(existing.get("org"), dict):
+            existing["org"] = {}
+        org_section = existing["org"]
 
-    if req.name is not None:
-        org_section["name"] = req.name
-    if req.mission is not None:
-        org_section["mission"] = req.mission
-    if req.vision is not None:
-        org_section["vision"] = req.vision
-    if req.core_values is not None:
-        org_section["core_values"] = req.core_values
+        if req.name is not None:
+            org_section["name"] = req.name
+        if req.mission is not None:
+            org_section["mission"] = req.mission
+        if req.vision is not None:
+            org_section["vision"] = req.vision
+        if req.core_values is not None:
+            org_section["core_values"] = req.core_values
 
-    os.makedirs(os.path.dirname(org_path), exist_ok=True)
-    with open(org_path, "w", encoding="utf-8") as f:
-        _yaml.dump(existing, f, default_flow_style=False, allow_unicode=True)
+        os.makedirs(os.path.dirname(org_path), exist_ok=True)
+        with open(org_path, "w", encoding="utf-8") as f:
+            _yaml.dump(existing, f, default_flow_style=False, allow_unicode=True)
 
     reload_org_loader()
 
