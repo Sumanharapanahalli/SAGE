@@ -31,6 +31,7 @@ import ChatPanel from './components/ui/ChatPanel'
 import Issues from './pages/Issues'
 import Activity from './pages/Activity'
 import Guide from './pages/Guide'
+import Organization from './pages/settings/Organization'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
 import { UserPrefsProvider } from './context/UserPrefsContext'
@@ -157,6 +158,7 @@ function AppShell() {
               <Route path="/activity"       element={<Activity />} />
               <Route path="/knowledge"      element={<AuditLog />} />
               <Route path="/guide"          element={<Guide />} />
+              <Route path="/settings/organization" element={<Organization />} />
             </Routes>
           </main>
         </div>

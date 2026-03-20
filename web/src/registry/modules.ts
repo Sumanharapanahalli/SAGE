@@ -333,6 +333,21 @@ export const MODULE_REGISTRY: Record<string, ModuleMetadata> = {
     ],
   },
 
+  organization: {
+    id: 'organization',
+    name: 'Organization',
+    description: 'Company mission, vision, and core values — the root context for all solutions.',
+    version: '1.0.0',
+    route: '/settings/organization',
+    features: [
+      'Define company mission statement',
+      'Set vision and core values',
+      'Context auto-injected into all solution generation',
+      'View linked solutions',
+    ],
+    improvementHints: [],
+  },
+
   'access-control': {
     id: 'access-control',
     name: 'Access Control',

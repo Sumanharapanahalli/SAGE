@@ -26,6 +26,16 @@ async function patch<T>(path: string, body?: unknown): Promise<T> {
   return res.json()
 }
 
+async function put<T>(path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  })
+  if (!res.ok) throw new Error(`PUT ${path} failed: ${res.statusText}`)
+  return res.json()
+}
+
 async function del<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.statusText}`)
@@ -661,6 +671,26 @@ export async function reloadOrg(): Promise<{ status: string }> {
   if (!res.ok) throw new Error("Failed to reload org");
   return res.json();
 }
+
+export interface OrgUpdateRequest {
+  name?: string
+  mission?: string
+  vision?: string
+  core_values?: string[]
+}
+
+export interface OrgUpdateResponse {
+  status: string
+  org: {
+    name?: string
+    mission?: string
+    vision?: string
+    core_values?: string[]
+  }
+}
+
+export const saveOrg = (req: OrgUpdateRequest) =>
+  put<OrgUpdateResponse>('/org', req)
 
 // Dev users
 export const fetchDevUsers = () =>
