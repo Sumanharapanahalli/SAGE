@@ -155,6 +155,19 @@ export const hireAgent = (params: {
   icon: string; system_prompt: string; task_types: string[]
 }) => post<ProposalResponse>('/agents/hire', params)
 
+export interface AgentRoleConfig {
+  role_key: string
+  name: string
+  description: string
+  system_prompt: string
+  task_types: Array<{ name: string; description: string }>
+  output_schema?: Record<string, unknown>
+  eval_case?: { input: string; expected_keywords: string[] }
+}
+
+export const analyzeJd = (params: { jd_text: string; solution_context?: string }) =>
+  post<AgentRoleConfig>('/agents/analyze-jd', params)
+
 // Org Structure Templates — onboarding chooser
 export interface OrgTemplateRole {
   key: string
