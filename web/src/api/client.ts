@@ -654,6 +654,10 @@ export interface OrgRoute {
 export interface OrgData {
   org?: {
     name?: string;
+    mission?: string;
+    vision?: string;
+    core_values?: string[];
+    solutions?: string[];
     root_solution?: string;
     knowledge_channels?: Record<string, OrgChannel>;
   };

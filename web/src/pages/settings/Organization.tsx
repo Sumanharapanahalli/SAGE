@@ -1,13 +1,11 @@
 // web/src/pages/settings/Organization.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchOrg, saveOrg } from '../../api/client'
 
 export default function Organization() {
   const qc = useQueryClient()
   const { data, isLoading } = useQuery({ queryKey: ['org'], queryFn: fetchOrg })
-
-  const org = (data as any)?.org ?? {}
 
   const [name, setName] = useState<string>('')
   const [mission, setMission] = useState<string>('')
@@ -17,13 +15,16 @@ export default function Organization() {
   const [saved, setSaved] = useState(false)
 
   // Populate fields once data loads
-  if (!isLoading && !initialised) {
-    setName(org.name ?? '')
-    setMission(org.mission ?? '')
-    setVision(org.vision ?? '')
-    setValues((org.core_values ?? []).join('\n'))
-    setInitialised(true)
-  }
+  useEffect(() => {
+    if (!isLoading && !initialised && data) {
+      const o = data?.org ?? {}
+      setName(o.name ?? '')
+      setMission(o.mission ?? '')
+      setVision(o.vision ?? '')
+      setValues((o.core_values ?? []).join('\n'))
+      setInitialised(true)
+    }
+  }, [isLoading, data, initialised])
 
   const mutation = useMutation({
     mutationFn: () => saveOrg({
@@ -39,7 +40,7 @@ export default function Organization() {
     },
   })
 
-  const linkedSolutions: string[] = (data as any)?.org?.solutions ?? []
+  const linkedSolutions: string[] = data?.org?.solutions ?? []
 
   const fieldStyle: React.CSSProperties = {
     width: '100%',
