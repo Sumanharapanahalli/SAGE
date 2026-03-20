@@ -112,6 +112,11 @@ class AgentHireRequest(BaseModel):
     task_types: List[str] = []   # Optional task type IDs to add to tasks.yaml
 
 
+class AgentAnalyzeJDRequest(BaseModel):
+    jd_text: str
+    solution_context: str = ""
+
+
 class FeatureRequestCreate(BaseModel):
     module_id: str
     module_name: str
@@ -761,6 +766,69 @@ async def agents_hire(req: AgentHireRequest):
         "description": proposal.description,
         "expires_at":  proposal.expires_at.isoformat() if proposal.expires_at else None,
         "message":     "POST /approve/{trace_id} to add this role to prompts.yaml + tasks.yaml.",
+    }
+
+
+@app.post("/agents/analyze-jd")
+async def agents_analyze_jd(req: AgentAnalyzeJDRequest):
+    """
+    Extract a structured agent role config from a job description using the LLM.
+    Returns a preview dict ready to be passed to POST /agents/hire.
+    """
+    if not req.jd_text.strip():
+        raise HTTPException(status_code=422, detail="jd_text must not be empty")
+    try:
+        from src.core.agent_factory import jd_to_role_config
+        ctx = req.solution_context or ""
+        if not ctx:
+            try:
+                pc = _get_project_config()
+                ctx = getattr(pc, "domain", None) or getattr(pc, "project_name", None) or ""
+            except Exception:
+                pass
+        config = jd_to_role_config(req.jd_text, solution_context=ctx)
+        return config
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except Exception as exc:
+        logger.error("analyze-jd error: %s", exc)
+        raise HTTPException(status_code=500, detail="JD analysis failed")
+
+
+@app.get("/agents/{role_key}/performance")
+async def agent_performance(role_key: str):
+    """
+    Return approval/rejection performance stats for a specific agent role.
+    Queries the compliance_audit_log for proposals associated with this role.
+    """
+    try:
+        audit = _get_audit_logger()
+        conn = sqlite3.connect(audit.db_path)
+        rows = conn.execute(
+            """SELECT action_type, output_content, metadata
+               FROM compliance_audit_log
+               WHERE actor != 'human_via_chat'
+                 AND (input_context LIKE ? OR metadata LIKE ?)
+               ORDER BY id DESC LIMIT 200""",
+            (f"%{role_key}%", f"%{role_key}%"),
+        ).fetchall()
+        conn.close()
+    except Exception as exc:
+        logger.warning("agent_performance query error: %s", exc)
+        rows = []
+
+    total = len(rows)
+    approved = sum(1 for r in rows if "APPROVE" in (r[0] or "").upper() or "approved" in (r[1] or "").lower())
+    rejected = sum(1 for r in rows if "REJECT" in (r[0] or "").upper() or "rejected" in (r[1] or "").lower())
+
+    return {
+        "role_key": role_key,
+        "total_proposals": total,
+        "approved": approved,
+        "rejected": rejected,
+        "approval_rate": round(approved / total * 100, 1) if total > 0 else None,
     }
 
 
