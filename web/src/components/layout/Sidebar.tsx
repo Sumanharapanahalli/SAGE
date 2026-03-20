@@ -6,7 +6,7 @@ import {
   Terminal, Wand2, Plug, ListOrdered, ShieldCheck, DollarSign,
   GitBranch, Target, Inbox, Network, Building2,
   CheckSquare, Zap, Database, BookOpen, Shield,
-  ChevronDown, ChevronsUpDown, type LucideIcon,
+  ChevronDown, ChevronsUpDown, LayoutGrid, type LucideIcon,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchProjects, fetchHealth, switchProject } from '../../api/client'
@@ -15,6 +15,7 @@ import Tooltip from './Tooltip'
 import StatsStrip from './StatsStrip'
 import { useTourContext } from '../../context/TourContext'
 import OnboardingWizard from '../onboarding/OnboardingWizard'
+import SolutionPicker from '../ui/SolutionPicker'
 
 // ---------------------------------------------------------------------------
 const SAGE_VERSION = 'v2.1'
@@ -79,7 +80,6 @@ const NAV_AREAS: NavArea[] = [
       { to: '/access-control', icon: ShieldCheck, label: 'Access Control', moduleId: 'access-control', tooltip: 'Manage API keys and user role assignments' },
       { to: '/integrations',   icon: Plug,        label: 'Integrations',   moduleId: 'integrations',   tooltip: 'Status and configuration for all connected integrations' },
       { to: '/settings',       icon: Settings,    label: 'Settings',       moduleId: 'settings',       tooltip: 'Framework-wide settings and display preferences' },
-      { to: '/guide',          icon: BookOpen,    label: 'User Guide',     moduleId: 'guide',          tooltip: 'Animated GIF walkthroughs for key SAGE features' },
     ],
   },
 ]
@@ -96,6 +96,10 @@ const RAIL_ICONS: Record<string, any> = {
 function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('sage_pinned_solutions') ?? '[]') } catch { return [] }
+  })
 
   const { data: healthData } = useQuery({ queryKey: ['health'], queryFn: fetchHealth, refetchInterval: 30_000 })
   const activeId = (healthData as any)?.project?.project ?? ''
@@ -112,57 +116,104 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
   const activeAccent  = activeTheme.accent ?? '#3b82f6'
 
   const solutions = projectsData?.projects ?? []
+  const pinnedToShow = pinnedIds.filter(id => id !== activeId && solutions.some(s => s.id === id))
+
+  const handlePin = (id: string) => {
+    if (id === activeId || pinnedIds.includes(id) || pinnedIds.length >= 5) return
+    const next = [...pinnedIds, id]
+    setPinnedIds(next)
+    try { localStorage.setItem('sage_pinned_solutions', JSON.stringify(next)) } catch {}
+  }
+
+  const activeSolution = solutions.find(s => s.id === activeId)
+  const ActiveIcon = activeIconName ? RAIL_ICONS[activeIconName] : null
 
   return (
-    <div
-      data-tour="solution-rail"
-      style={{ width: '44px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-               height: '100%', padding: '8px 0', backgroundColor: '#020617',
-               borderRight: '1px solid #0f172a', flexShrink: 0 }}
-    >
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-                    overflowY: 'auto', width: '100%', paddingTop: '4px' }}>
-        {solutions.map(sol => {
-          const isActive = sol.id === activeId
-          const RailIcon = isActive && activeIconName ? RAIL_ICONS[activeIconName] : null
-          return (
-            <Tooltip key={sol.id} text={sol.name}>
+    <>
+      <div
+        data-tour="solution-rail"
+        style={{ width: '44px', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                 height: '100%', padding: '8px 0', backgroundColor: '#020617',
+                 borderRight: '1px solid #0f172a', flexShrink: 0 }}
+      >
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                      overflowY: 'auto', width: '100%', paddingTop: '4px' }}>
+          {/* Active solution */}
+          {activeSolution && (
+            <Tooltip text={activeSolution.name}>
               <button
-                onClick={() => !isActive && switchMutation.mutate(sol.id)}
                 style={{
                   width: '28px', height: '28px', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', fontSize: '10px', fontWeight: 700, flexShrink: 0,
-                  backgroundColor: isActive ? activeAccent : '#1e293b',
-                  color: isActive ? '#fff' : '#64748b',
-                  cursor: isActive ? 'default' : 'pointer',
-                  border: 'none',
+                  backgroundColor: activeAccent, color: '#fff', cursor: 'default', border: 'none',
                 }}
               >
-                {RailIcon ? <RailIcon size={14} color="#fff" /> : initials(sol.id)}
+                {ActiveIcon ? <ActiveIcon size={14} color="#fff" /> : initials(activeId)}
               </button>
             </Tooltip>
-          )
-        })}
+          )}
+          {/* Pinned solutions */}
+          {pinnedToShow.map(id => {
+            const sol = solutions.find(s => s.id === id)
+            if (!sol) return null
+            return (
+              <Tooltip key={id} text={sol.name}>
+                <button
+                  onClick={() => switchMutation.mutate(id)}
+                  style={{
+                    width: '28px', height: '28px', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', fontSize: '10px', fontWeight: 700, flexShrink: 0,
+                    backgroundColor: '#1e293b', color: '#64748b', cursor: 'pointer', border: 'none',
+                  }}
+                >
+                  {initials(id)}
+                </button>
+              </Tooltip>
+            )
+          })}
+        </div>
+        {/* Grid/picker button */}
+        <Tooltip text="Browse all solutions">
+          <button
+            onClick={() => setPickerOpen(true)}
+            style={{ width: '28px', height: '28px', color: '#334155', background: 'none',
+                     border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                     justifyContent: 'center', marginBottom: '4px' }}
+          >
+            <LayoutGrid size={14} />
+          </button>
+        </Tooltip>
+        {/* + button */}
+        <Tooltip text="Create a new solution">
+          <button
+            onClick={onOpenWizard}
+            style={{ width: '28px', height: '28px', color: '#334155', fontSize: '18px',
+                     lineHeight: 1, marginBottom: '8px', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            +
+          </button>
+        </Tooltip>
+        <Tooltip text="View organization graph">
+          <button
+            onClick={() => navigate('/org-graph')}
+            style={{ width: '32px', height: '32px', color: '#334155', background: 'none',
+                     border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Building2 size={16} />
+          </button>
+        </Tooltip>
       </div>
-      <Tooltip text="Create a new solution">
-        <button
-          onClick={onOpenWizard}
-          style={{ width: '28px', height: '28px', color: '#334155', fontSize: '18px',
-                   lineHeight: 1, marginBottom: '8px', background: 'none', border: 'none', cursor: 'pointer' }}
-        >
-          +
-        </button>
-      </Tooltip>
-      <Tooltip text="View organization graph">
-        <button
-          onClick={() => navigate('/org-graph')}
-          style={{ width: '32px', height: '32px', color: '#334155', background: 'none',
-                   border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Building2 size={16} />
-        </button>
-      </Tooltip>
-    </div>
+      {pickerOpen && (
+        <SolutionPicker
+          solutions={solutions}
+          activeId={activeId}
+          pinnedIds={pinnedIds}
+          onPin={handlePin}
+          onSwitch={(id) => { switchMutation.mutate(id); setPickerOpen(false) }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
+    </>
   )
 }
 

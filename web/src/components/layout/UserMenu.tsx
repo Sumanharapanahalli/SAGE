@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { BookOpen, MessageCircle } from 'lucide-react'
 import { fetchHealth } from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
 import { useUserPrefs, COLOR_COMBOS, UserPrefs } from '../../context/UserPrefsContext'
 import { useProjectConfig } from '../../hooks/useProjectConfig'
+import { useChatContext } from '../../context/ChatContext'
 import KeyboardShortcutsModal from '../ui/KeyboardShortcutsModal'
 
 async function shutdownSage() {
@@ -49,6 +51,7 @@ export default function UserMenu() {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [panelPos, setPanelPos] = useState({ top: 0, right: 0 })
   const navigate = useNavigate()
+  const { openChat } = useChatContext()
 
   const { user, devUsers, switchDevUser, isDevMode } = useAuth()
   const { prefs, updatePref, resetPrefs } = useUserPrefs()
@@ -279,6 +282,28 @@ export default function UserMenu() {
           >
             <span style={{ fontSize: '13px' }}>K</span>
             <span>Keyboard shortcuts</span>
+          </div>
+
+          {/* User Guide */}
+          <div
+            style={act}
+            onClick={() => { navigate('/guide'); setOpen(false) }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#27272a')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            <BookOpen size={13} style={{ color: '#a1a1aa' }} />
+            <span>User Guide</span>
+          </div>
+
+          {/* Help & Ask SAGE */}
+          <div
+            style={act}
+            onClick={() => { openChat('I want to understand the SAGE framework — where do I start?'); setOpen(false) }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#27272a')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            <MessageCircle size={13} style={{ color: '#a1a1aa' }} />
+            <span>Help & Ask SAGE</span>
           </div>
 
           <div style={div} />
