@@ -28,6 +28,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/org':            'Org Chart',
   '/approvals':      'Approvals',
   '/knowledge':      'Knowledge',
+  '/guide':          'User Guide',
 }
 
 const ROUTE_TO_AREA: Record<string, string> = {
@@ -54,6 +55,7 @@ const ROUTE_TO_AREA: Record<string, string> = {
   '/access-control': 'Admin',
   '/integrations':   'Admin',
   '/settings':       'Admin',
+  '/guide':          'Admin',
 }
 
 interface HeaderProps {

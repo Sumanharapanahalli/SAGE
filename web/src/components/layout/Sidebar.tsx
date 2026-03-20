@@ -79,6 +79,7 @@ const NAV_AREAS: NavArea[] = [
       { to: '/access-control', icon: ShieldCheck, label: 'Access Control', moduleId: 'access-control', tooltip: 'Manage API keys and user role assignments' },
       { to: '/integrations',   icon: Plug,        label: 'Integrations',   moduleId: 'integrations',   tooltip: 'Status and configuration for all connected integrations' },
       { to: '/settings',       icon: Settings,    label: 'Settings',       moduleId: 'settings',       tooltip: 'Framework-wide settings and display preferences' },
+      { to: '/guide',          icon: BookOpen,    label: 'User Guide',     moduleId: 'guide',          tooltip: 'Animated GIF walkthroughs for key SAGE features' },
     ],
   },
 ]
