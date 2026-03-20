@@ -102,6 +102,17 @@ class AuditLogger:
         ''')
         conn.commit()
 
+        # chat_messages — add message_type and metadata columns (migration)
+        for col_def in [
+            "ALTER TABLE chat_messages ADD COLUMN message_type TEXT DEFAULT 'user'",
+            "ALTER TABLE chat_messages ADD COLUMN metadata TEXT",
+        ]:
+            try:
+                cursor.execute(col_def)
+            except Exception:
+                pass  # column already exists
+        conn.commit()
+
         conn.close()
 
     def save_chat_message(
@@ -112,17 +123,23 @@ class AuditLogger:
         role: str,
         content: str,
         page_context: str = None,
+        message_type: str = "user",
+        metadata: dict = None,
     ) -> str:
         """Persist a chat message (user or assistant turn)."""
+        import json as _json
         msg_id = str(uuid.uuid4())
         created_at = datetime.now(timezone.utc).isoformat()
+        meta_str = _json.dumps(metadata) if metadata else None
         try:
             conn = sqlite3.connect(self.db_path)
             conn.execute(
                 """INSERT INTO chat_messages
-                   (id, user_id, session_id, solution, role, content, page_context, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (msg_id, user_id, session_id, solution, role, content, page_context, created_at),
+                   (id, user_id, session_id, solution, role, content, page_context, created_at,
+                    message_type, metadata)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (msg_id, user_id, session_id, solution, role, content, page_context, created_at,
+                 message_type, meta_str),
             )
             conn.commit()
             conn.close()
