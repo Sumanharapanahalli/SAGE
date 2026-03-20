@@ -36,6 +36,10 @@ async function del<T>(path: string): Promise<T> {
 // Health
 export const fetchHealth = () => get<HealthResponse>('/health')
 
+// LLM heartbeat
+export const fetchLLMHealth = () =>
+  get<{ connected: boolean; provider: string; latency_ms: number; detail: string }>('/health/llm')
+
 // Analyze
 export const analyzeLog = (log_entry: string) =>
   post<AnalysisResponse>('/analyze', { log_entry })

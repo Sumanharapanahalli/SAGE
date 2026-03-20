@@ -395,6 +395,46 @@ async def health():
     }
 
 
+@app.get("/health/llm")
+async def health_llm():
+    """
+    Heartbeat — actually pings the configured LLM with a minimal test call.
+    Returns connected=True only when the LLM responds successfully.
+    This is the Paperclip-style heartbeat: proves the LLM is alive, not just configured.
+    """
+    import time
+    llm = _get_llm_gateway()
+    provider = "unknown"
+    try:
+        provider = llm.get_provider_name()
+    except Exception:
+        pass
+
+    start = time.monotonic()
+    try:
+        # Minimal test prompt — we just need any valid response
+        response = llm.generate(
+            prompt="Reply with the single word: ok",
+            system_prompt="You are a health check. Reply with exactly one word.",
+        )
+        latency_ms = int((time.monotonic() - start) * 1000)
+        connected = bool(response and len(response.strip()) > 0)
+        return {
+            "connected":   connected,
+            "provider":    provider,
+            "latency_ms":  latency_ms,
+            "detail":      "ok" if connected else "empty response",
+        }
+    except Exception as exc:
+        latency_ms = int((time.monotonic() - start) * 1000)
+        return {
+            "connected":  False,
+            "provider":   provider,
+            "latency_ms": latency_ms,
+            "detail":     str(exc)[:200],
+        }
+
+
 @app.get("/config/project")
 async def get_project_config():
     """
