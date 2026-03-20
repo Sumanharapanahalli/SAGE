@@ -653,6 +653,29 @@ export async function reloadOrg(): Promise<{ status: string }> {
 export const fetchDevUsers = () =>
   get<{ users: import('./auth').DevUser[] }>('/config/dev-users')
 
+// Chat — contextual LLM conversation
+export interface ChatRequest {
+  message: string
+  user_id: string
+  session_id: string
+  page_context?: string
+  solution: string
+}
+
+export interface ChatResponse {
+  reply: string
+  session_id: string
+  message_id: string
+}
+
+export const postChat = (req: ChatRequest) =>
+  post<ChatResponse>('/chat', req)
+
+export const clearChatHistory = (user_id: string, solution: string) => {
+  const params = new URLSearchParams({ user_id, solution })
+  return fetch(`${BASE}/chat/history?${params}`, { method: 'DELETE' }).then(r => r.json())
+}
+
 // Solution branding
 export interface BrandingPayload {
   display_name?: string

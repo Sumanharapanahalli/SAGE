@@ -157,3 +157,13 @@ html.dark .text-zinc-500 { color: #71717a !important; }
   background-color: #27272a;
   color: #f4f4f5;
 }
+
+@keyframes sage-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes sage-dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}

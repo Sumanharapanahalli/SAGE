@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Command } from 'lucide-react'
+import { Command, MessageSquare } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchHealth } from '../../api/client'
 import { useProjectConfig } from '../../hooks/useProjectConfig'
+import { useChatContext } from '../../context/ChatContext'
 import UserMenu from './UserMenu'
 
 const PAGE_TITLES: Record<string, string> = {
@@ -64,6 +66,20 @@ interface HeaderProps {
 
 export default function Header({ onOpenPalette }: HeaderProps) {
   const { pathname } = useLocation()
+  const { openChat, panelState } = useChatContext()
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
+        e.preventDefault()
+        if (panelState === 'closed' || panelState === 'minimised') {
+          openChat()
+        }
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [panelState, openChat])
 
   const { data: healthData, isError: healthError } = useQuery({
     queryKey: ['health'],
@@ -105,6 +121,18 @@ export default function Header({ onOpenPalette }: HeaderProps) {
       >
         <Command size={11} />
         <span>K</span>
+      </button>
+
+      <button
+        onClick={() => openChat()}
+        title="Open SAGE Chat (Ctrl+J)"
+        className="flex items-center gap-1.5 text-xs px-2.5 py-1 transition-colors shrink-0"
+        style={{
+          color: panelState !== 'closed' ? '#3b82f6' : '#52525b',
+          border: `1px solid ${panelState !== 'closed' ? '#1d4ed8' : '#3f3f46'}`,
+        }}
+      >
+        <MessageSquare size={11} />
       </button>
 
       <div className="flex items-center gap-1.5 text-xs shrink-0">
