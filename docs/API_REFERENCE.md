@@ -28,7 +28,9 @@ All endpoints are served at `http://localhost:8000`. Every response is JSON.
 | POST | `/agent/stream` | Run agent with SSE token streaming |
 | GET | `/agent/roles` | List available roles for active solution |
 | GET | `/agents/status` | Live status of all agents (active/idle, last task, daily counts) |
+| GET | `/agents/active` | List currently running agents with task info |
 | GET | `/audit` | Query audit log |
+| GET | `/repo/map` | Returns markdown file tree with symbol extraction for the active solution |
 
 ---
 
@@ -41,10 +43,57 @@ Every AI write action generates a proposal. Nothing executes without human appro
 | GET | `/proposals/pending` | List all pending proposals, sorted by risk |
 | POST | `/approve/{trace_id}` | Approve a pending proposal `{"feedback": "..."}` |
 | POST | `/reject/{trace_id}` | Reject with feedback `{"feedback": "reason"}` |
+| POST | `/proposals/{trace_id}/undo` | Revert an approved code_diff proposal |
 
 **Risk tiers (low → high):** `INFORMATIONAL` · `EPHEMERAL` · `STATEFUL` · `EXTERNAL` · `DESTRUCTIVE`
 
 Low-risk proposals can be batch-approved. DESTRUCTIVE proposals never expire and require an explicit human note.
+
+---
+
+## Action-Aware Chat
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/chat` | Send a message — returns plain answer OR action proposal |
+| POST | `/chat/execute` | Execute a confirmed chat action |
+| POST | `/chat/cancel` | Log a cancelled action to the audit trail |
+| GET | `/chat/history` | Retrieve chat history for a session |
+| DELETE | `/chat/history` | Clear display history (compliance_audit_log is never touched) |
+
+**`POST /chat` — response shape:**
+```json
+{
+  "response_type": "answer",
+  "reply": "...",
+  "session_id": "...",
+  "message_id": "..."
+}
+```
+or (when LLM routes to an action):
+```json
+{
+  "response_type": "action",
+  "action": "approve_proposal",
+  "params": {"trace_id": "abc123"},
+  "confirmation_prompt": "I'll approve the YAML edit for analyst.py — proceed?",
+  "session_id": "...",
+  "message_id": "..."
+}
+```
+
+**`POST /chat/execute` — execute confirmed action:**
+```json
+// Request
+{"action": "approve_proposal", "params": {"trace_id": "abc123"}, "user_id": "...", "session_id": "...", "solution": "..."}
+
+// Response
+{"status": "success", "message": "Proposal abc123 approved.", "result": {"trace_id": "abc123"}}
+```
+
+**Available actions:** `approve_proposal` · `reject_proposal` · `undo_proposal` · `submit_task` · `propose_yaml_edit`
+
+Every `/chat/execute` call writes to `compliance_audit_log` with `actor="human_via_chat"`.
 
 ---
 
@@ -57,6 +106,12 @@ Low-risk proposals can be batch-approved. DESTRUCTIVE proposals never expire and
 | DELETE | `/knowledge/entry/{id}` | Delete by entry ID |
 | POST | `/knowledge/import` | Bulk import `{"entries": [...]}` |
 | POST | `/knowledge/search` | Semantic/keyword search `{"query": "...", "k": 5}` |
+| POST | `/knowledge/sync` | Bulk sync files from a directory into the knowledge base |
+
+**`POST /knowledge/sync` body:**
+```json
+{"path": "/path/to/docs", "pattern": "*.md", "solution": "starter"}
+```
 
 ---
 
@@ -165,6 +220,28 @@ Mermaid diagrams are auto-generated from `StateGraph.draw_mermaid()` — always 
 | POST | `/task` | Submit task `{"task_type": "...", "input_data": {...}, "depends_on": []}` |
 | GET | `/tasks` | List tasks with optional status filter |
 | GET | `/tasks/{task_id}` | Get task details |
+| GET | `/tasks/{task_id}/subtasks` | List sub-tasks spawned by a wave-scheduled task |
+
+When a task payload includes `"subtasks": [...]`, the queue manager spawns them in parallel waves.
+
+---
+
+## Task Scheduler
+
+YAML-declared scheduled tasks — defined in `tasks.yaml` under `scheduled:`, executed via the task queue.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/scheduler/status` | Active schedules, next-run times, last-run results |
+
+**Example `tasks.yaml` scheduled block:**
+```yaml
+scheduled:
+  - task_type: ANALYZE_LOG
+    cron: "0 9 * * 1"        # every Monday 9am
+    payload: {"log_source": "production"}
+    description: "Weekly production log review"
+```
 
 ---
 
