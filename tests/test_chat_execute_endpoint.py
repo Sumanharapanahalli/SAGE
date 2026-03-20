@@ -53,3 +53,42 @@ def test_chat_query_knowledge_returns_answer_type():
             resp = client.post("/chat", json={"message": "what is SAGE?", "user_id": "u1"})
     data = resp.json()
     assert data.get("response_type") == "answer"
+
+
+def test_execute_writes_message_type_to_chat_store():
+    """chat/execute writes action_confirmed and action_executed message_type entries."""
+    from src.interface.api import app
+    from unittest.mock import patch, MagicMock
+    client = TestClient(app)
+
+    # Mock audit_logger.save_chat_message to capture calls
+    saved_types = []
+    original_save = None
+
+    def capture_save(*args, **kwargs):
+        mt = kwargs.get("message_type")
+        if mt:
+            saved_types.append(mt)
+        return "test-msg-id"
+
+    mock_proposal = MagicMock()
+    mock_proposal.action_type = "yaml_edit"
+    mock_store = MagicMock()
+    mock_store.get.return_value = mock_proposal
+
+    with patch("src.memory.audit_logger.audit_logger.save_chat_message", side_effect=capture_save):
+        with patch("src.core.proposal_store.ProposalStore.get", return_value=mock_proposal):
+            with patch("src.core.proposal_store.ProposalStore.approve"):
+                with patch("src.core.proposal_executor.execute_approved_proposal"):
+                    with patch("asyncio.ensure_future"):
+                        # Use an action that won't 404 — patch the store getter
+                        with patch("src.interface.api._get_proposal_store", return_value=mock_store):
+                            with patch("src.memory.audit_logger.audit_logger.log_event"):
+                                resp = client.post("/chat/execute", json={
+                                    "action": "approve_proposal",
+                                    "params": {"trace_id": "test-trace"},
+                                    "user_id": "u1", "session_id": "s1", "solution": "test"
+                                })
+    assert resp.status_code == 200
+    assert "action_confirmed" in saved_types
+    assert "action_executed" in saved_types

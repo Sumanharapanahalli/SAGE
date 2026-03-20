@@ -4493,8 +4493,13 @@ async def chat_execute(req: ChatExecuteRequest):
                 from src.core.proposal_executor import _revert_code_diff
                 import asyncio
                 asyncio.ensure_future(_revert_code_diff(proposal))
-            result_msg = f"Undo triggered for proposal {trace_id}."
-            result_data = {"trace_id": trace_id}
+                result_msg = f"Undo triggered for proposal {trace_id}."
+                result_data = {"trace_id": trace_id}
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Undo is only supported for code_diff proposals (got '{proposal.action_type}')."
+                )
 
         elif action == "submit_task":
             from src.core.queue_manager import task_queue
