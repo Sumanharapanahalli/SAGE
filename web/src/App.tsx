@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar'
 import Header from './components/layout/Header'
 import CommandPalette from './components/CommandPalette'
+import { useProjectConfig } from './hooks/useProjectConfig'
 import Dashboard from './pages/Dashboard'
 import Analyst from './pages/Analyst'
 import Developer from './pages/Developer'
@@ -22,11 +23,18 @@ import Costs from './pages/Costs'
 import Workflows from './pages/Workflows'
 import Approvals from './pages/Approvals'
 import Goals from './pages/Goals'
-import OrgChart from './pages/OrgChart'
+import OrgGraph from './pages/OrgGraph'
+import TourOverlay from './components/onboarding/TourOverlay'
+import { TourProvider } from './context/TourContext'
+import LLMDisconnectedBanner from './components/ui/LLMDisconnectedBanner'
+import ChatPanel from './components/ui/ChatPanel'
 import Issues from './pages/Issues'
 import Activity from './pages/Activity'
+import Guide from './pages/Guide'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
+import { UserPrefsProvider } from './context/UserPrefsContext'
+import { ChatProvider } from './context/ChatContext'
 
 // ---------------------------------------------------------------------------
 // Standard SAGE routes — solution-agnostic.
@@ -42,8 +50,67 @@ import { AuthProvider } from './context/AuthContext'
 // framework. The framework ships with universal pages only.
 // ---------------------------------------------------------------------------
 
+function SidebarDivider() {
+  const dragging = useRef(false)
+
+  const getWidth = (): number => {
+    try {
+      const s = localStorage.getItem('sage_panel_sidebar')
+      return s ? parseFloat(s) : 264
+    } catch { return 264 }
+  }
+
+  const [width, setWidth] = useState(getWidth)
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--sage-sidebar-width', `${width}px`)
+  }, [width])
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    dragging.current = true
+    const onMove = (ev: MouseEvent) => {
+      if (!dragging.current) return
+      const newW = Math.max(200, Math.min(500, ev.clientX))
+      setWidth(newW)
+      document.documentElement.style.setProperty('--sage-sidebar-width', `${newW}px`)
+    }
+    const onUp = (ev: MouseEvent) => {
+      dragging.current = false
+      const newW = Math.max(200, Math.min(500, ev.clientX))
+      try { localStorage.setItem('sage_panel_sidebar', newW.toString()) } catch { /* ignore */ }
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [])
+
+  return (
+    <div
+      onMouseDown={onMouseDown}
+      style={{
+        width: 4,
+        height: '100%',
+        flexShrink: 0,
+        background: '#0f172a',
+        cursor: 'col-resize',
+        zIndex: 20,
+      }}
+      onMouseEnter={e => (e.currentTarget.style.background = '#3b82f6')}
+      onMouseLeave={e => (e.currentTarget.style.background = '#0f172a')}
+    />
+  )
+}
+
 function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const { data: projectData } = useProjectConfig()
+
+  // Keep browser tab title in sync with active solution
+  useEffect(() => {
+    document.title = projectData?.name ? projectData.name : 'SAGE[ai]'
+  }, [projectData?.name])
 
   // Cmd+K / Ctrl+K opens the command palette
   useEffect(() => {
@@ -61,6 +128,7 @@ function AppShell() {
     <>
       <div className="flex h-screen overflow-hidden bg-zinc-50">
         <Sidebar />
+        <SidebarDivider />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header onOpenPalette={() => setPaletteOpen(true)} />
           <main className="flex-1 overflow-y-auto p-6">
@@ -84,14 +152,19 @@ function AppShell() {
               <Route path="/workflows"      element={<Workflows />} />
               <Route path="/approvals"      element={<Approvals />} />
               <Route path="/goals"          element={<Goals />} />
-              <Route path="/org"            element={<OrgChart />} />
+              <Route path="/org-graph"      element={<OrgGraph />} />
               <Route path="/issues"         element={<Issues />} />
               <Route path="/activity"       element={<Activity />} />
+              <Route path="/knowledge"      element={<AuditLog />} />
+              <Route path="/guide"          element={<Guide />} />
             </Routes>
           </main>
         </div>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <TourOverlay />
+      <LLMDisconnectedBanner />
+      <ChatPanel />
     </>
   )
 }
@@ -100,9 +173,15 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ThemeProvider>
-          <AppShell />
-        </ThemeProvider>
+        <UserPrefsProvider>
+          <ThemeProvider>
+            <TourProvider>
+              <ChatProvider>
+                <AppShell />
+              </ChatProvider>
+            </TourProvider>
+          </ThemeProvider>
+        </UserPrefsProvider>
       </AuthProvider>
     </BrowserRouter>
   )

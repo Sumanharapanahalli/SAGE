@@ -270,6 +270,14 @@ async def _execute_implementation_plan(proposal: Proposal):
             diff_proposals.append(diff_proposal.trace_id)
             logger.info("code_diff proposal created: %s", diff_proposal.trace_id)
 
+            # Create isolated worktree for this code_diff proposal
+            try:
+                from src.core.worktree_manager import WorktreeManager
+                _wt_mgr = WorktreeManager()
+                _wt_mgr.create(diff_proposal.trace_id)
+            except Exception as _wt_exc:
+                logger.warning("Worktree creation failed (non-fatal): %s", _wt_exc)
+
         else:
             # Determine source scope from feature_request if available
             task_source = "sage"
@@ -329,6 +337,17 @@ async def _execute_code_diff(proposal: Proposal):
         return {"committed": False, "reason": "No changes to commit — diff was empty."}
 
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    # Use isolated worktree if available
+    try:
+        from src.core.worktree_manager import WorktreeManager
+        _wt = WorktreeManager()
+        _wt_path = _wt.get_path(proposal.trace_id)
+        if _wt_path:
+            root = _wt_path
+            logger.info("code_diff executing in worktree: %s", root)
+    except Exception as _wt_exc:
+        logger.debug("Worktree lookup failed, using repo root: %s", _wt_exc)
 
     try:
         # Stage all changes

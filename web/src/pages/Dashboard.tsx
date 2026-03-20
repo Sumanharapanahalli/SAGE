@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { fetchHealth, fetchAudit, fetchPendingProposals, approveProposalFull, rejectProposal, approveBatchProposals, type Proposal } from '../api/client'
+import { ActiveAgentsPanel } from '../components/ActiveAgentsPanel'
 import { useProjectConfig } from '../hooks/useProjectConfig'
 import SystemHealthCard from '../components/dashboard/SystemHealthCard'
 import ActiveAlertsPanel from '../components/dashboard/ActiveAlertsPanel'
@@ -353,9 +354,10 @@ export default function Dashboard() {
                   {projectData?.name ?? 'SAGE Framework'}
                 </h3>
                 <span className="text-xs text-gray-500">
-                  {projectData?.description
-                    ? String(projectData.description).slice(0, 80)
-                    : projectData?.domain ?? 'General purpose AI agent framework'}
+                  {(projectData as any)?.ui_labels?.dashboard_subtitle
+                    ?? (projectData?.description
+                        ? String(projectData.description).slice(0, 80)
+                        : projectData?.domain ?? 'General purpose AI agent framework')}
                 </span>
               </div>
               {projectData?.version && (
@@ -410,6 +412,9 @@ export default function Dashboard() {
           <ActiveAlertsPanel entries={audit?.entries ?? []} />
           <ErrorTrendChart entries={audit?.entries ?? []} />
         </div>
+
+        {/* Live active agents panel — polls GET /agents/active every 3s */}
+        <ActiveAgentsPanel />
       </div>
     </ModuleWrapper>
   )

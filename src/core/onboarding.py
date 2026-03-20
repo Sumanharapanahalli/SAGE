@@ -47,8 +47,10 @@ Domain description: {description}
 Solution name (snake_case): {solution_name}
 Compliance standards: {compliance_standards}
 Integrations: {integrations}
+Parent solution (if any): {parent_solution}
 
-Output VALID YAML only — no markdown fences, no explanation. Follow this exact structure:
+Output VALID YAML only — no markdown fences, no explanation. Follow this exact structure.
+For the "suggested_routes" field, provide 2-4 snake_case solution names this solution should route tasks to (real domain-appropriate names, not the placeholders shown).
 
 name: "<human-friendly project name>"
 version: "1.0.0"
@@ -79,6 +81,10 @@ settings:
     collection_name: ""
   system:
     max_concurrent_tasks: 1
+
+suggested_routes:
+  - solution_a
+  - solution_b
 
 ui_labels:
   analyst_page_title: "<domain-appropriate title>"
@@ -175,6 +181,55 @@ task_types:
 
 
 # ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _try_add_to_org(org_name: str, solution_name: str) -> None:
+    """
+    Non-fatal: if org.yaml exists in SAGE_SOLUTIONS_DIR, add the solution under
+    the given org name.  Silently logs and continues on any error.
+    """
+    try:
+        org_yaml_path = os.path.join(_SOLUTIONS_DIR, "org.yaml")
+        if not os.path.exists(org_yaml_path):
+            logger.debug(
+                "org.yaml not found at %s — skipping org auto-add", org_yaml_path
+            )
+            return
+        with open(org_yaml_path, "r", encoding="utf-8") as f:
+            org_data = yaml.safe_load(f) or {}
+
+        # Validate that the org name in the file matches the requested org_name
+        existing_org_name = org_data.get("org", {}).get("name", "")
+        if existing_org_name and existing_org_name != org_name:
+            logger.debug(
+                "org.yaml name '%s' does not match requested org '%s' — skipping auto-add",
+                existing_org_name,
+                org_name,
+            )
+            return
+
+        # Ensure org > solutions list exists
+        org_block = org_data.setdefault("org", {})
+        solutions_list = org_block.setdefault("solutions", [])
+        if solution_name not in solutions_list:
+            solutions_list.append(solution_name)
+            with open(org_yaml_path, "w", encoding="utf-8") as f:
+                yaml.dump(org_data, f, default_flow_style=False, allow_unicode=True)
+            logger.info(
+                "Auto-added '%s' to org '%s' in org.yaml", solution_name, org_name
+            )
+        else:
+            logger.debug(
+                "Solution '%s' already listed in org.yaml — no change", solution_name
+            )
+    except Exception as exc:
+        logger.warning(
+            "Could not auto-add '%s' to org '%s': %s", solution_name, org_name, exc
+        )
+
+
+# ---------------------------------------------------------------------------
 # Generator
 # ---------------------------------------------------------------------------
 
@@ -210,6 +265,8 @@ def generate_solution(
     solution_name: str,
     compliance_standards: list = None,
     integrations: list = None,
+    parent_solution: str = "",
+    org_name: str = "",
 ) -> dict:
     """
     Generate a complete SAGE solution from a plain-language description.
@@ -219,10 +276,14 @@ def generate_solution(
         solution_name:        Desired folder name (will be sanitized).
         compliance_standards: List of compliance standards (e.g. ["ISO 9001"]).
         integrations:         List of integrations (e.g. ["gitlab", "slack"]).
+        parent_solution:      If provided, inject ``parent: <value>`` into project.yaml.
+        org_name:             If provided, auto-add this solution to that org in org.yaml.
 
     Returns:
         dict with keys: solution_name, path, files (dict of filename -> content),
-        and status ("created" | "exists" — never overwrites an existing solution).
+        status ("created" | "exists" — never overwrites an existing solution), and
+        suggested_routes (list of snake_case solution names the LLM recommends routing
+        tasks to — defaults to [] if the LLM does not provide them).
 
     Raises:
         ValueError if any generated YAML is invalid.
@@ -237,16 +298,18 @@ def generate_solution(
         "solution_name":        solution_name,
         "compliance_standards": compliance_str,
         "integrations":         integrations_str,
+        "parent_solution":      parent_solution or "none",
     }
 
     target_dir = os.path.join(_SOLUTIONS_DIR, solution_name)
     if os.path.exists(target_dir):
         return {
-            "solution_name": solution_name,
-            "path":          target_dir,
-            "status":        "exists",
-            "files":         {},
-            "message":       f"Solution '{solution_name}' already exists. Use /config/switch to load it.",
+            "solution_name":    solution_name,
+            "path":             target_dir,
+            "status":           "exists",
+            "files":            {},
+            "suggested_routes": [],
+            "message":          f"Solution '{solution_name}' already exists. Use /config/switch to load it.",
         }
 
     logger.info("Generating solution '%s' from description...", solution_name)
@@ -274,6 +337,28 @@ def generate_solution(
         files[filename] = cleaned
         logger.debug("Generated %s (%d chars)", filename, len(cleaned))
 
+    # --- Post-process project.yaml ---
+
+    # Extract suggested_routes from the generated project.yaml (LLM may include them)
+    proj_data = yaml.safe_load(files["project.yaml"]) or {}
+    suggested_routes = proj_data.pop("suggested_routes", None)
+    if not isinstance(suggested_routes, list):
+        suggested_routes = []
+    # Sanitize each entry to snake_case strings
+    suggested_routes = [
+        _sanitize_name(str(r)) for r in suggested_routes if r
+    ]
+
+    # Inject parent: field if requested
+    if parent_solution:
+        proj_data["parent"] = parent_solution
+        logger.debug("Injected parent '%s' into project.yaml", parent_solution)
+
+    # Re-serialize project.yaml after mutations
+    files["project.yaml"] = yaml.dump(
+        proj_data, default_flow_style=False, allow_unicode=True
+    )
+
     # Write to disk
     os.makedirs(target_dir, exist_ok=True)
     for filename, content in files.items():
@@ -289,14 +374,19 @@ def generate_solution(
         if not os.path.exists(init_path):
             open(init_path, "w").close()
 
+    # --- Auto-add to org.yaml if org_name provided ---
+    if org_name:
+        _try_add_to_org(org_name=org_name, solution_name=solution_name)
+
     logger.info("Solution '%s' created at %s", solution_name, target_dir)
 
     return {
-        "solution_name": solution_name,
-        "path":          target_dir,
-        "status":        "created",
-        "files":         files,
-        "message":       (
+        "solution_name":   solution_name,
+        "path":            target_dir,
+        "status":          "created",
+        "files":           files,
+        "suggested_routes": suggested_routes,
+        "message":         (
             f"Solution '{solution_name}' created. "
             f"Load it with: POST /config/switch {{\"project\": \"{solution_name}\"}}"
         ),

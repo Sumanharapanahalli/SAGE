@@ -14,6 +14,7 @@ import { Loader2, Zap, CheckCircle, XCircle, Clock, GitBranch, ChevronDown, Chev
 import { getModuleAccess } from '../registry/modules'
 import { useProjectConfig } from '../hooks/useProjectConfig'
 import { Tooltip } from '../components/shared/Tooltip'
+import OtherSelect from '../components/ui/OtherSelect'
 
 // ---------------------------------------------------------------------------
 // Status + Priority display helpers
@@ -26,6 +27,7 @@ const STATUS_STYLES: Record<RequestStatus, string> = {
   in_progress: 'bg-cyan-100  text-cyan-700   border-cyan-200',
   completed:   'bg-green-100 text-green-700  border-green-200',
   rejected:    'bg-red-100   text-red-600    border-red-200',
+  github_pr:   'bg-gray-100  text-gray-700   border-gray-300',
 }
 
 const STATUS_ICON: Record<RequestStatus, React.ReactNode> = {
@@ -35,6 +37,7 @@ const STATUS_ICON: Record<RequestStatus, React.ReactNode> = {
   in_progress: <Zap size={12} />,
   completed:   <CheckCircle size={12} />,
   rejected:    <XCircle size={12} />,
+  github_pr:   <ExternalLink size={12} />,
 }
 
 const STATUS_TOOLTIP: Record<RequestStatus, string> = {
@@ -44,6 +47,7 @@ const STATUS_TOOLTIP: Record<RequestStatus, string> = {
   in_progress: 'Plan approved — implementation tasks are queued and running.',
   completed:   'All implementation tasks have been completed.',
   rejected:    'This request was rejected. See reviewer note for details.',
+  github_pr:   'Routed to GitHub — open the link to create an issue or pull request on the SAGE repo.',
 }
 
 const PRIORITY_DOT: Record<Priority, string> = {
@@ -120,13 +124,20 @@ function RequestCard({ req }: { req: FeatureRequest }) {
 
   const { mutate: plan, isPending: planning } = useMutation({
     mutationFn: () => generatePlanForRequest(req.id),
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['feature-requests'] })
-      setSuccessMsg('✓ Plan generated — expand "View plan details" to review')
+      // Sage-scope requests return a GitHub URL instead of a plan
+      if (data && (data as { github_issue_url?: string }).github_issue_url) {
+        const url = (data as { github_issue_url: string }).github_issue_url
+        window.open(url, '_blank', 'noopener,noreferrer')
+        setSuccessMsg('✓ GitHub issue opened — contribute this idea to the SAGE repo')
+      } else {
+        setSuccessMsg('✓ Plan generated — expand "View plan details" to review')
+      }
       setTimeout(() => setSuccessMsg(''), 5000)
     },
     onError: (err: Error) => {
-      setErrorMsg(`Plan generation failed: ${err.message}`)
+      setErrorMsg(`Failed: ${err.message}`)
       setSuccessMsg('')
     },
   })
@@ -328,17 +339,30 @@ function RequestCard({ req }: { req: FeatureRequest }) {
           {/* Action buttons */}
           {access.canApprove && ['pending', 'approved'].includes(req.status) && (
             <div className="flex flex-wrap gap-2 pt-1">
-              {access.canGeneratePlan && req.status !== 'in_planning' && (
-                <Tooltip content="Ask the AI to decompose this feature into concrete implementation steps. You will review and approve the plan before anything is built." position="top">
-                  <button
-                    disabled={planning}
-                    onClick={() => plan()}
-                    className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    <Zap size={13} />
-                    {planning ? 'Generating plan…' : 'Generate AI Plan'}
-                  </button>
-                </Tooltip>
+              {access.canGeneratePlan && !['in_planning', 'github_pr'].includes(req.status) && (
+                isSage ? (
+                  <Tooltip content="SAGE framework improvements go through GitHub. This will open a pre-filled GitHub issue for the SAGE repo." position="top">
+                    <button
+                      disabled={planning}
+                      onClick={() => plan()}
+                      className="flex items-center gap-1.5 bg-gray-800 hover:bg-gray-900 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <ExternalLink size={13} />
+                      {planning ? 'Opening GitHub…' : 'Open GitHub Issue'}
+                    </button>
+                  </Tooltip>
+                ) : (
+                  <Tooltip content="Ask the AI to decompose this feature into concrete implementation steps. You will review and approve the plan before anything is built." position="top">
+                    <button
+                      disabled={planning}
+                      onClick={() => plan()}
+                      className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <Zap size={13} />
+                      {planning ? 'Generating plan…' : 'Generate AI Plan'}
+                    </button>
+                  </Tooltip>
+                )
               )}
 
               {req.status === 'pending' && (
@@ -520,16 +544,17 @@ function SubmitForm({ onClose, defaultScope }: { onClose: () => void; defaultSco
           </div>
           <div>
             <label className="text-xs font-medium text-gray-600 block mb-1">Priority</label>
-            <select
+            <OtherSelect
               value={priority}
-              onChange={e => setPriority(e.target.value as Priority)}
+              onChange={v => setPriority(v as Priority)}
+              options={[
+                { value: 'low',      label: 'Low' },
+                { value: 'medium',   label: 'Medium' },
+                { value: 'high',     label: 'High' },
+                { value: 'critical', label: 'Critical' },
+              ]}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
+            />
           </div>
           <div>
             <label className="text-xs font-medium text-gray-600 block mb-1">Your name</label>
@@ -570,7 +595,7 @@ function SubmitForm({ onClose, defaultScope }: { onClose: () => void; defaultSco
 // ---------------------------------------------------------------------------
 
 const ALL_STATUSES: RequestStatus[] = [
-  'pending', 'approved', 'in_planning', 'in_progress', 'completed', 'rejected',
+  'pending', 'approved', 'in_planning', 'in_progress', 'completed', 'rejected', 'github_pr',
 ]
 
 type TabId = 'solution' | 'sage'
@@ -716,16 +741,13 @@ export default function Improvements() {
 
         {/* Status filter */}
         <div>
-          <select
+          <OtherSelect
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as RequestStatus | '')}
+            onChange={v => setFilterStatus(v as RequestStatus | '')}
+            options={ALL_STATUSES.map(s => ({ value: s, label: s.replace('_', ' ') }))}
+            placeholder="All statuses"
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-          >
-            <option value="">All statuses</option>
-            {ALL_STATUSES.map((s) => (
-              <option key={s} value={s}>{s.replace('_', ' ')}</option>
-            ))}
-          </select>
+          />
         </div>
 
         {/* Request list */}

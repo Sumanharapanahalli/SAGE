@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchAgentRoles, runAgent, hireAgent } from '../api/client'
+import { fetchAgentRoles, runAgent, hireAgent, analyzeJd } from '../api/client'
 import { useProjectConfig } from '../hooks/useProjectConfig'
-import { Loader2, ChevronDown, ChevronUp, CheckCircle, Sparkles, UserPlus, X } from 'lucide-react'
+import { Loader2, ChevronDown, ChevronUp, CheckCircle, Sparkles, UserPlus, X, Bot } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -207,14 +207,18 @@ type TaskTemplate = { label: string; task: string; context?: string }
 // ---------------------------------------------------------------------------
 // Hire Agent Modal
 // ---------------------------------------------------------------------------
-const EMOJI_SUGGESTIONS = ['🤖','🔍','🧭','⚙️','🛡️','📊','🧪','🎯','💡','🔧','🚀','🧠','📋','🔐','🌐']
+const EMOJI_SUGGESTIONS = ['A','D','M','P','S','U','E','F','R','Q','T','G','L','C','W']
 
 function HireAgentModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient()
+  const [tab, setTab] = useState<'ai' | 'manual'>('ai')
+  const [jdText, setJdText] = useState('')
+  const [isAnalysing, setIsAnalysing] = useState(false)
+  const [analyseError, setAnalyseError] = useState('')
   const [roleId, setRoleId]           = useState('')
   const [name, setName]               = useState('')
   const [description, setDescription] = useState('')
-  const [icon, setIcon]               = useState('🤖')
+  const [icon, setIcon]               = useState('A')
   const [systemPrompt, setSystemPrompt] = useState('')
   const [taskTypesStr, setTaskTypesStr] = useState('')
   const [submitted, setSubmitted]     = useState<{ trace_id: string; description: string } | null>(null)
@@ -244,6 +248,27 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
     padding: '0.5rem 0.75rem',
     fontSize: '0.875rem',
     outline: 'none',
+  }
+
+  const handleAnalyse = async () => {
+    if (!jdText.trim()) return
+    setIsAnalysing(true)
+    setAnalyseError('')
+    try {
+      const config = await analyzeJd({ jd_text: jdText })
+      setName(config.name || '')
+      setDescription(config.description || '')
+      setSystemPrompt(config.system_prompt || '')
+      setTaskTypesStr(config.task_types.map(t => t.name).join(', '))
+      if (config.role_key) {
+        setRoleId(config.role_key)
+      }
+      setTab('manual')
+    } catch (err: unknown) {
+      setAnalyseError(err instanceof Error ? err.message : 'Analysis failed. Please try again.')
+    } finally {
+      setIsAnalysing(false)
+    }
   }
 
   if (submitted) {
@@ -291,119 +316,186 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="px-5 py-4 space-y-4">
-          {/* Icon picker */}
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>Icon</label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {EMOJI_SUGGESTIONS.map(e => (
-                <button
-                  key={e}
-                  onClick={() => setIcon(e)}
-                  className="text-lg w-8 h-8 flex items-center justify-center transition-all"
-                  style={{
-                    border: icon === e ? '1px solid #f4f4f5' : '1px solid #3f3f46',
-                    backgroundColor: icon === e ? '#27272a' : 'transparent',
-                  }}
-                >{e}</button>
-              ))}
-            </div>
-            <input
-              value={icon}
-              onChange={e => setIcon(e.target.value)}
-              placeholder="Or type any emoji"
-              style={{ ...inputStyle, width: '6rem', textAlign: 'center' }}
-            />
-          </div>
+        {/* Tabs */}
+        <div className="flex" style={{ borderBottom: '1px solid #27272a' }}>
+          {(['ai', 'manual'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className="px-5 py-2.5 text-xs font-medium transition-colors"
+              style={{
+                color: tab === t ? '#f4f4f5' : '#52525b',
+                borderBottom: tab === t ? '2px solid #f4f4f5' : '2px solid transparent',
+                backgroundColor: 'transparent',
+              }}
+            >
+              {t === 'ai' ? 'AI from JD' : 'Manual'}
+            </button>
+          ))}
+        </div>
 
-          {/* Name */}
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
-              Display Name <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-            <input
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="e.g. Security Reviewer"
-              style={inputStyle}
+        {tab === 'ai' ? (
+          <div className="px-5 py-4 space-y-4">
+            <p className="text-xs" style={{ color: '#71717a' }}>
+              Paste a job description — SAGE will extract the role config automatically.
+            </p>
+            <textarea
+              value={jdText}
+              onChange={e => setJdText(e.target.value)}
+              placeholder={"Senior QA Engineer — MedTech Platform\n\nResponsibilities:\n- Own end-to-end testing strategy...\n\nRequired skills:\n- 5+ years in QA for regulated medical devices..."}
+              rows={10}
+              className="font-mono resize-none focus:outline-none"
+              style={{
+                backgroundColor: '#09090b', border: '1px solid #3f3f46',
+                color: '#d4d4d8', width: '100%',
+                padding: '0.5rem 0.75rem', fontSize: '0.75rem', outline: 'none',
+              }}
             />
-            {name && (
-              <p className="text-xs mt-1" style={{ color: '#52525b' }}>
-                Role ID: <code style={{ backgroundColor: '#27272a', padding: '0 4px', color: '#a1a1aa' }}>{autoRoleId || '…'}</code>
+            {analyseError && (
+              <p className="text-xs px-3 py-2" style={{ backgroundColor: '#1a0000', border: '1px solid #7f1d1d', color: '#fca5a5' }}>
+                {analyseError}
+              </p>
+            )}
+            <button
+              onClick={handleAnalyse}
+              disabled={isAnalysing || !jdText.trim()}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium disabled:opacity-40"
+              style={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', color: '#f4f4f5' }}
+            >
+              {isAnalysing
+                ? <><Loader2 size={14} className="animate-spin" /> Analysing…</>
+                : <><Sparkles size={14} /> Analyse with AI</>
+              }
+            </button>
+          </div>
+        ) : (
+          <div className="px-5 py-4 space-y-4">
+            {/* Icon picker */}
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>Icon</label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {EMOJI_SUGGESTIONS.map(e => (
+                  <button
+                    key={e}
+                    onClick={() => setIcon(e)}
+                    className="text-lg w-8 h-8 flex items-center justify-center transition-all"
+                    style={{
+                      border: icon === e ? '1px solid #f4f4f5' : '1px solid #3f3f46',
+                      backgroundColor: icon === e ? '#27272a' : 'transparent',
+                    }}
+                  >{e}</button>
+                ))}
+              </div>
+              <input
+                value={icon}
+                onChange={e => setIcon(e.target.value)}
+                placeholder="Or type any emoji"
+                style={{ ...inputStyle, width: '6rem', textAlign: 'center' }}
+              />
+            </div>
+
+            {/* Name */}
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+                Display Name <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <input
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="e.g. Security Reviewer"
+                style={inputStyle}
+              />
+              {name && (
+                <p className="text-xs mt-1" style={{ color: '#52525b' }}>
+                  Role ID: <code style={{ backgroundColor: '#27272a', padding: '0 4px', color: '#a1a1aa' }}>{autoRoleId || '…'}</code>
+                </p>
+              )}
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+                Description <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <input
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="e.g. Reviews code and configs for security vulnerabilities"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* System prompt */}
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+                System Prompt <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <textarea
+                value={systemPrompt}
+                onChange={e => setSystemPrompt(e.target.value)}
+                placeholder={`You are a [role] expert.\nWhen given a task:\n1. Analyze carefully\n2. Provide actionable recommendations\n\nReturn JSON with: summary, analysis, recommendations, next_steps, severity, confidence`}
+                rows={7}
+                className="font-mono resize-none focus:outline-none"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Task types */}
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
+                Task Types <span style={{ color: '#52525b' }}>(optional, comma-separated)</span>
+              </label>
+              <input
+                value={taskTypesStr}
+                onChange={e => setTaskTypesStr(e.target.value)}
+                placeholder="e.g. SECURITY_REVIEW, VULN_SCAN"
+                style={inputStyle}
+              />
+              <p className="text-xs mt-1" style={{ color: '#52525b' }}>Will be added to this solution's tasks.yaml</p>
+            </div>
+
+            {error && (
+              <p className="text-xs px-3 py-2" style={{ backgroundColor: '#1a0000', border: '1px solid #7f1d1d', color: '#fca5a5' }}>
+                {(error as Error).message}
               </p>
             )}
           </div>
-
-          {/* Description */}
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
-              Description <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-            <input
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="e.g. Reviews code and configs for security vulnerabilities"
-              style={inputStyle}
-            />
-          </div>
-
-          {/* System prompt */}
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
-              System Prompt <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-            <textarea
-              value={systemPrompt}
-              onChange={e => setSystemPrompt(e.target.value)}
-              placeholder={`You are a [role] expert.\nWhen given a task:\n1. Analyze carefully\n2. Provide actionable recommendations\n\nReturn JSON with: summary, analysis, recommendations, next_steps, severity, confidence`}
-              rows={7}
-              className="font-mono resize-none focus:outline-none"
-              style={inputStyle}
-            />
-          </div>
-
-          {/* Task types */}
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#71717a' }}>
-              Task Types <span style={{ color: '#52525b' }}>(optional, comma-separated)</span>
-            </label>
-            <input
-              value={taskTypesStr}
-              onChange={e => setTaskTypesStr(e.target.value)}
-              placeholder="e.g. SECURITY_REVIEW, VULN_SCAN"
-              style={inputStyle}
-            />
-            <p className="text-xs mt-1" style={{ color: '#52525b' }}>Will be added to this solution's tasks.yaml</p>
-          </div>
-
-          {error && (
-            <p className="text-xs px-3 py-2" style={{ backgroundColor: '#1a0000', border: '1px solid #7f1d1d', color: '#fca5a5' }}>
-              {(error as Error).message}
-            </p>
-          )}
-        </div>
+        )}
 
         {/* Footer */}
-        <div className="flex gap-2 px-5 pb-5">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 text-sm font-medium transition-colors"
-            style={{ border: '1px solid #3f3f46', color: '#71717a', backgroundColor: 'transparent' }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => mutate()}
-            disabled={isPending || !name.trim() || !description.trim() || !systemPrompt.trim()}
-            className="flex-1 flex items-center justify-center gap-2 text-sm font-medium py-2.5 transition-colors disabled:opacity-40"
-            style={{ backgroundColor: '#f4f4f5', color: '#09090b' }}
-          >
-            {isPending
-              ? <><Loader2 size={14} className="animate-spin" /> Proposing…</>
-              : <><UserPlus size={14} /> Propose Role</>
-            }
-          </button>
-        </div>
+        {tab === 'manual' && (
+          <div className="flex gap-2 px-5 pb-5">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2.5 text-sm font-medium transition-colors"
+              style={{ border: '1px solid #3f3f46', color: '#71717a', backgroundColor: 'transparent' }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => mutate()}
+              disabled={isPending || !name.trim() || !description.trim() || !systemPrompt.trim()}
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium py-2.5 transition-colors disabled:opacity-40"
+              style={{ backgroundColor: '#f4f4f5', color: '#09090b' }}
+            >
+              {isPending
+                ? <><Loader2 size={14} className="animate-spin" /> Proposing…</>
+                : <><UserPlus size={14} /> Propose Role</>
+              }
+            </button>
+          </div>
+        )}
+        {tab === 'ai' && (
+          <div className="px-5 pb-5">
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 text-sm font-medium"
+              style={{ border: '1px solid #3f3f46', color: '#71717a', backgroundColor: 'transparent' }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -462,7 +554,7 @@ export default function Agents() {
           className="p-12 text-center max-w-xl mx-auto"
           style={{ border: '1px dashed #3f3f46', backgroundColor: '#18181b' }}
         >
-          <div className="text-3xl mb-3">🤖</div>
+          <div className="flex justify-center mb-3"><Bot size={32} style={{ color: '#52525b' }} /></div>
           <div className="font-semibold mb-1 text-sm" style={{ color: '#a1a1aa' }}>No agent roles defined</div>
           <p className="text-xs" style={{ color: '#52525b' }}>
             Click <strong style={{ color: '#71717a' }}>Hire Agent</strong> above to define a new role on the fly — it writes

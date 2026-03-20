@@ -112,6 +112,11 @@ class AgentHireRequest(BaseModel):
     task_types: List[str] = []   # Optional task type IDs to add to tasks.yaml
 
 
+class AgentAnalyzeJDRequest(BaseModel):
+    jd_text: str
+    solution_context: str = ""
+
+
 class FeatureRequestCreate(BaseModel):
     module_id: str
     module_name: str
@@ -135,6 +140,22 @@ class ApproveProposalRequest(BaseModel):
 class RejectProposalRequest(BaseModel):
     decided_by: str = "human"
     feedback: str = ""             # Required for DESTRUCTIVE proposals
+
+
+class ChatRequest(BaseModel):
+    message: str
+    user_id: str = "anonymous"
+    session_id: str = ""
+    page_context: Optional[str] = None
+    solution: str = ""
+
+
+class ChatExecuteRequest(BaseModel):
+    action: str
+    params: dict = {}
+    user_id: str = "anonymous"
+    session_id: str = ""
+    solution: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -196,6 +217,21 @@ def _get_active_solution() -> str:
         return _get_project_config().project_name
     except Exception:
         return os.environ.get("SAGE_PROJECT", "default")
+
+
+_task_scheduler = None
+
+def _get_task_scheduler():
+    global _task_scheduler
+    if _task_scheduler is None:
+        from src.core.task_scheduler import TaskScheduler
+        from src.core.project_loader import project_config
+        _task_scheduler = TaskScheduler(
+            queue_manager=_get_task_queue(),
+            project_config=project_config,
+        )
+        _task_scheduler.start()
+    return _task_scheduler
 
 
 # ---------------------------------------------------------------------------
@@ -380,6 +416,46 @@ async def health():
     }
 
 
+@app.get("/health/llm")
+async def health_llm():
+    """
+    Heartbeat — actually pings the configured LLM with a minimal test call.
+    Returns connected=True only when the LLM responds successfully.
+    This is the Paperclip-style heartbeat: proves the LLM is alive, not just configured.
+    """
+    import time
+    llm = _get_llm_gateway()
+    provider = "unknown"
+    try:
+        provider = llm.get_provider_name()
+    except Exception:
+        pass
+
+    start = time.monotonic()
+    try:
+        # Minimal test prompt — we just need any valid response
+        response = llm.generate(
+            prompt="Reply with the single word: ok",
+            system_prompt="You are a health check. Reply with exactly one word.",
+        )
+        latency_ms = int((time.monotonic() - start) * 1000)
+        connected = bool(response and len(response.strip()) > 0)
+        return {
+            "connected":   connected,
+            "provider":    provider,
+            "latency_ms":  latency_ms,
+            "detail":      "ok" if connected else "empty response",
+        }
+    except Exception as exc:
+        latency_ms = int((time.monotonic() - start) * 1000)
+        return {
+            "connected":  False,
+            "provider":   provider,
+            "latency_ms": latency_ms,
+            "detail":     str(exc)[:200],
+        }
+
+
 @app.get("/config/project")
 async def get_project_config():
     """
@@ -417,10 +493,11 @@ async def list_projects():
                     "version": meta.get("version", "1.0.0"),
                     "description": str(meta.get("description", "")).strip(),
                     "active_modules": meta.get("active_modules", []),
+                    "theme": meta.get("theme", {}),
                 })
             except Exception:
                 projects.append({"id": name, "name": name, "domain": "general",
-                                  "version": "1.0.0", "description": "", "active_modules": []})
+                                  "version": "1.0.0", "description": "", "active_modules": [], "theme": {}})
     active = _get_project_config().metadata.get("project", "")
     return {"projects": projects, "active": active}
 
@@ -436,31 +513,22 @@ class SetModulesRequest(BaseModel):
 @app.post("/config/switch")
 async def switch_project(req: SwitchProjectRequest):
     """
-    Propose switching the active solution at runtime.
-    Returns an EPHEMERAL proposal — actual switch on POST /approve/{trace_id}.
+    Switch the active solution at runtime. Executes immediately — no approval gate.
+    Framework-level control operations bypass the proposal queue; solution-level
+    agent proposals retain full HITL approval.
     """
-    from src.core.project_loader import _SOLUTIONS_DIR
-    from src.core.proposal_store import RiskClass
+    from src.core.project_loader import _SOLUTIONS_DIR, project_config as _pc
     import os as _os
     proj_dir = _os.path.join(_SOLUTIONS_DIR, req.project)
     if not _os.path.isdir(proj_dir):
         raise HTTPException(status_code=404, detail=f"Solution '{req.project}' not found in {_SOLUTIONS_DIR}")
     current_project = _get_project_config().project_name
-    store = _get_proposal_store()
-    proposal = store.create(
-        action_type   = "config_switch",
-        risk_class    = RiskClass.EPHEMERAL,
-        payload       = {"project": req.project, "previous_project": current_project},
-        description   = f"Switch active solution: {current_project} → {req.project}",
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("config_switch"),
-    )
+    _pc.reload(req.project)
+    logger.info("Solution switched: %s → %s", current_project, req.project)
     return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
-        "description": proposal.description,
-        "message":     "POST /approve/{trace_id} to switch.",
+        "status":           "switched",
+        "previous_project": current_project,
+        "project":          req.project,
     }
 
 
@@ -468,25 +536,17 @@ async def switch_project(req: SwitchProjectRequest):
 @app.post("/config/modules")
 async def set_modules(req: SetModulesRequest):
     """
-    Propose updating the active modules list for the current solution.
-    Returns an EPHEMERAL proposal — actual change on POST /approve/{trace_id}.
+    Update the active modules list for the current solution. Executes immediately.
+    Framework control operations bypass the proposal queue.
     """
-    from src.core.proposal_store import RiskClass
+    from src.core.project_loader import project_config as _pc
     current_modules = _get_project_config().metadata.get("active_modules", [])
-    store = _get_proposal_store()
-    proposal = store.create(
-        action_type   = "config_modules",
-        risk_class    = RiskClass.EPHEMERAL,
-        payload       = {"modules": req.modules, "previous_modules": current_modules},
-        description   = f"Update active modules: {current_modules} → {req.modules}",
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("config_modules"),
-    )
+    _pc.set_active_modules(req.modules)
+    logger.info("Modules updated: %s → %s", current_modules, req.modules)
     return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
-        "description": proposal.description,
+        "status":           "updated",
+        "previous_modules": current_modules,
+        "active_modules":   req.modules,
     }
 
 
@@ -706,6 +766,69 @@ async def agents_hire(req: AgentHireRequest):
         "description": proposal.description,
         "expires_at":  proposal.expires_at.isoformat() if proposal.expires_at else None,
         "message":     "POST /approve/{trace_id} to add this role to prompts.yaml + tasks.yaml.",
+    }
+
+
+@app.post("/agents/analyze-jd")
+async def agents_analyze_jd(req: AgentAnalyzeJDRequest):
+    """
+    Extract a structured agent role config from a job description using the LLM.
+    Returns a preview dict ready to be passed to POST /agents/hire.
+    """
+    if not req.jd_text.strip():
+        raise HTTPException(status_code=422, detail="jd_text must not be empty")
+    try:
+        from src.core.agent_factory import jd_to_role_config
+        ctx = req.solution_context or ""
+        if not ctx:
+            try:
+                pc = _get_project_config()
+                ctx = getattr(pc, "domain", None) or getattr(pc, "project_name", None) or ""
+            except Exception:
+                pass
+        config = jd_to_role_config(req.jd_text, solution_context=ctx)
+        return config
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except Exception as exc:
+        logger.error("analyze-jd error: %s", exc)
+        raise HTTPException(status_code=500, detail="JD analysis failed")
+
+
+@app.get("/agents/{role_key}/performance")
+async def agent_performance(role_key: str):
+    """
+    Return approval/rejection performance stats for a specific agent role.
+    Queries the compliance_audit_log for proposals associated with this role.
+    """
+    try:
+        audit = _get_audit_logger()
+        conn = sqlite3.connect(audit.db_path)
+        rows = conn.execute(
+            """SELECT action_type, output_content, metadata
+               FROM compliance_audit_log
+               WHERE actor != 'human_via_chat'
+                 AND (input_context LIKE ? OR metadata LIKE ?)
+               ORDER BY id DESC LIMIT 200""",
+            (f"%{role_key}%", f"%{role_key}%"),
+        ).fetchall()
+        conn.close()
+    except Exception as exc:
+        logger.warning("agent_performance query error: %s", exc)
+        rows = []
+
+    total = len(rows)
+    approved = sum(1 for r in rows if "APPROVE" in (r[0] or "").upper() or "approved" in (r[1] or "").lower())
+    rejected = sum(1 for r in rows if "REJECT" in (r[0] or "").upper() or "rejected" in (r[1] or "").lower())
+
+    return {
+        "role_key": role_key,
+        "total_proposals": total,
+        "approved": approved,
+        "rejected": rejected,
+        "approval_rate": round(approved / total * 100, 1) if total > 0 else None,
     }
 
 
@@ -1010,6 +1133,37 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
     }
 
 
+@app.post("/proposals/{trace_id}/undo")
+async def undo_proposal(trace_id: str):
+    """
+    Undo an approved proposal. Currently supports code_diff action type.
+    Returns 404 if not found, 409 if still pending (not yet approved).
+    """
+    store = _get_proposal_store()
+    proposal = store.get(trace_id)
+    if proposal is None:
+        raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+    if proposal.status == "pending":
+        raise HTTPException(status_code=409, detail="Cannot undo a pending proposal. Reject it instead.")
+    if proposal.action_type == "code_diff":
+        try:
+            from src.core.proposal_executor import _revert_code_diff
+            import asyncio
+            asyncio.ensure_future(_revert_code_diff(proposal))
+            _get_audit_logger().log_event(
+                actor="human",
+                action_type="PROPOSAL_UNDONE",
+                input_context=f"trace_id={trace_id} action={proposal.action_type}",
+                output_content="Undo requested for approved code_diff",
+                metadata={"trace_id": trace_id},
+            )
+            return {"status": "undo_triggered", "trace_id": trace_id, "action_type": proposal.action_type}
+        except Exception as exc:
+            logger.error("Undo failed: %s", exc)
+            raise HTTPException(status_code=500, detail=str(exc))
+    return {"status": "not_undoable", "trace_id": trace_id, "reason": f"{proposal.action_type} is not reversible via undo."}
+
+
 @app.get("/audit")
 async def get_audit(limit: int = 50, offset: int = 0):
     """
@@ -1112,6 +1266,16 @@ async def monitor_status():
     except Exception as e:
         logger.error("Monitor status endpoint error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/scheduler/status")
+async def get_scheduler_status():
+    """Returns task scheduler running state and schedule count."""
+    try:
+        sched = _get_task_scheduler()
+        return sched.status()
+    except Exception as exc:
+        return {"running": False, "error": str(exc)}
 
 
 @app.post("/webhook/teams")
@@ -1295,6 +1459,88 @@ async def list_queue_tasks(
     except Exception as exc:
         logger.error("list_queue_tasks error: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/tasks/{task_id}/subtasks")
+async def get_task_subtasks(task_id: str):
+    """Return all tasks that were spawned as subtasks of task_id."""
+    try:
+        qm = _get_task_queue()
+        all_tasks = qm.get_all_tasks()   # returns list of dicts
+        children = [
+            {
+                "task_id":    t["task_id"],
+                "task_type":  t["task_type"],
+                "status":     t["status"],
+                "wave":       (t.get("metadata") or {}).get("wave", 0),
+                "depends_on": t.get("depends_on", []),
+            }
+            for t in all_tasks
+            if (t.get("metadata") or {}).get("parent_task_id") == task_id
+        ]
+        return {"task_id": task_id, "subtasks": children}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/tasks/submit")
+async def submit_task(request: Request):
+    """
+    Submit a task to the active solution's queue, or route to another team's queue.
+    Requires cross_team_routes permission for cross-team routing.
+    """
+    body = await request.json()
+    task_type = body.get("task_type", "").strip()
+    if not task_type:
+        raise HTTPException(status_code=400, detail="task_type is required")
+
+    payload    = body.get("payload", {})
+    priority   = int(body.get("priority", 5))
+    target_sol = body.get("target_solution", "").strip() or None
+    source_sol = body.get("source_solution", "").strip() or None
+
+    from src.core.org_loader import org_loader as _org_loader
+    from src.core.queue_manager import get_task_queue, task_queue as _default_queue
+
+    if target_sol:
+        # Resolve solutions dir live so env-var overrides (e.g. in tests) are respected
+        from src.core.project_loader import _PROJECT_ROOT as _proj_root
+        _sols_dir = os.environ.get(
+            "SAGE_SOLUTIONS_DIR",
+            os.path.join(_proj_root, "solutions"),
+        )
+
+        # Resolve source identity (3-step per spec)
+        if not source_sol:
+            tenant = request.headers.get("X-SAGE-Tenant", "").strip()
+            if tenant and os.path.isdir(os.path.join(_sols_dir, tenant)):
+                source_sol = tenant
+            else:
+                source_sol = _get_active_solution()
+
+        # Validate target exists on disk
+        if not os.path.isdir(os.path.join(_sols_dir, target_sol)):
+            raise HTTPException(status_code=404, detail=f"target_solution '{target_sol}' not found")
+
+        # Validate routing permission
+        if _org_loader.org_name and not _org_loader.is_route_allowed(source_sol, target_sol):
+            raise HTTPException(
+                status_code=403,
+                detail=f"solution '{source_sol}' is not permitted to route tasks to '{target_sol}'",
+            )
+
+        queue = get_task_queue(target_sol)
+        task_id = queue.submit(
+            task_type, payload,
+            priority=priority,
+            source="cross_team_route",
+            metadata={"source_solution": source_sol, "target_solution": target_sol},
+        )
+        return {"task_id": task_id, "target_solution": target_sol, "status": "queued"}
+    else:
+        task_id = _default_queue.submit(task_type, payload, priority=priority, source="api")
+        from src.core.project_loader import project_config as _pc
+        return {"task_id": task_id, "target_solution": _pc.project_name, "status": "queued"}
 
 
 @app.get("/queue/status")
@@ -1516,14 +1762,45 @@ async def generate_plan_for_request(req_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
     scope = req.get('scope', 'solution')
-    scope_context = (
-        "This is a SAGE FRAMEWORK improvement — implement in src/ and web/src/. "
-        "Output concrete file-level implementation steps."
-        if scope == 'sage' else
-        "This is a SOLUTION feature — implement in the active solution's codebase."
-    )
+    now = datetime.now(timezone.utc).isoformat()
+
+    # SAGE framework improvements go through GitHub PRs, not the internal approval queue.
+    if scope == "sage":
+        import urllib.parse
+        from src.core.config_loader import load_config as _load_cfg
+        _cfg = _load_cfg()
+        github_repo = (
+            _cfg.get("github", {}).get("repo_url", "").rstrip("/")
+            or "https://github.com/Sumanharapanahalli/SAGE"
+        )
+        issue_title = urllib.parse.quote(req["title"])
+        issue_body = urllib.parse.quote(
+            f"## Description\n{req['description']}\n\n"
+            f"**Priority:** {req['priority']}\n\n"
+            f"---\n*Submitted via SAGE Improvements*"
+        )
+        github_url = f"{github_repo}/issues/new?title={issue_title}&body={issue_body}&labels=enhancement"
+        try:
+            db_path = _get_db_path()
+            conn = sqlite3.connect(db_path)
+            conn.execute(
+                "UPDATE feature_requests SET status='github_pr', updated_at=? WHERE id=?",
+                (now, req_id),
+            )
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logger.warning("DB update failed for github_pr status: %s", e)
+        return {
+            "request_id":       req_id,
+            "status":           "github_pr",
+            "github_issue_url": github_url,
+            "message":          "SAGE framework improvements are contributed via GitHub. Use the link to open an issue or PR.",
+        }
+
+    # Solution-scope: run planner and create a HITL approval proposal as normal.
     planner_task = (
-        f"{scope_context}\n"
+        "This is a SOLUTION feature — implement in the active solution's codebase.\n"
         f"Title: {req['title']}\n"
         f"Description: {req['description']}\n"
         f"Priority: {req['priority']}"
@@ -1531,9 +1808,7 @@ async def generate_plan_for_request(req_id: str):
 
     try:
         planner = _get_planner()
-        from src.agents.planner import PlannerAgent
-        task_types = PlannerAgent.FRAMEWORK_TASK_TYPES if scope == "sage" else None
-        steps = planner.create_plan(planner_task, override_task_types=task_types)
+        steps = planner.create_plan(planner_task)
     except Exception as e:
         logger.error("Planner failed for feature request %s: %s", req_id, e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1541,10 +1816,8 @@ async def generate_plan_for_request(req_id: str):
     if not steps:
         raise HTTPException(status_code=422, detail="LLM could not produce an executable plan. Try rephrasing the description.")
 
-    # Store as a ProposalStore entry (HITL — nothing executes until approved)
     from src.core.proposal_store import RiskClass
     store = _get_proposal_store()
-    required_role = _get_required_role("implementation_plan_sage") if scope == "sage" else None
     proposal = store.create(
         action_type="implementation_plan",
         risk_class=RiskClass.STATEFUL,
@@ -1557,10 +1830,9 @@ async def generate_plan_for_request(req_id: str):
         description=f"Implementation plan: {req['title']}",
         reversible=False,
         proposed_by="PlannerAgent",
-        required_role=required_role,
+        required_role=_get_required_role("implementation_plan"),
     )
 
-    now = datetime.now(timezone.utc).isoformat()
     try:
         db_path = _get_db_path()
         conn = sqlite3.connect(db_path)
@@ -1575,10 +1847,10 @@ async def generate_plan_for_request(req_id: str):
 
     return {
         "request_id": req_id,
-        "status": "in_planning",
-        "trace_id": proposal.trace_id,
+        "status":     "in_planning",
+        "trace_id":   proposal.trace_id,
         "step_count": len(steps),
-        "plan": steps,
+        "plan":       steps,
     }
 
 
@@ -1694,37 +1966,25 @@ class LLMSwitchRequest(BaseModel):
 @app.post("/llm/switch")
 async def llm_switch(req: LLMSwitchRequest):
     """
-    Propose switching the LLM provider at runtime.
-    Returns an EPHEMERAL proposal (5-min expiry) — actual switch on POST /approve/{trace_id}.
+    Switch the LLM provider at runtime. Executes immediately — no approval gate.
+    Framework control operations bypass the proposal queue.
     """
-    from src.core.proposal_store import RiskClass
+    from types import SimpleNamespace
+    from src.core.proposal_executor import _execute_llm_switch as _do_llm_switch
     allowed = ("gemini", "local", "claude-code", "claude", "ollama", "generic-cli")
     if req.provider not in allowed:
         raise HTTPException(status_code=400, detail=f"provider must be one of: {allowed}")
     current_provider = _get_llm_gateway().get_provider_name()
-    store = _get_proposal_store()
-    proposal = store.create(
-        action_type   = "llm_switch",
-        risk_class    = RiskClass.EPHEMERAL,
-        payload       = {
-            "provider":        req.provider,
-            "model":           req.model,
-            "api_key":         req.api_key,
-            "claude_path":     req.claude_path,
-            "save_as_default": req.save_as_default,
-        },
-        description   = f"Switch LLM provider: {current_provider} → {req.provider}" + (f" ({req.model})" if req.model else "") + (" [save as default]" if req.save_as_default else ""),
-        reversible    = True,
-        proposed_by   = "user",
-        required_role = _get_required_role("llm_switch"),
-    )
-    return {
-        "status":      "pending_approval",
-        "trace_id":    proposal.trace_id,
-        "description": proposal.description,
-        "expires_at":  proposal.expires_at,
-        "message":     "POST /approve/{trace_id} to apply. Expires in 5 minutes.",
-    }
+    fake = SimpleNamespace(payload={
+        "provider":        req.provider,
+        "model":           req.model,
+        "api_key":         req.api_key,
+        "claude_path":     req.claude_path,
+        "save_as_default": req.save_as_default,
+    })
+    result = await _do_llm_switch(fake)
+    logger.info("LLM switched: %s → %s", current_provider, req.provider)
+    return {"status": "switched", "previous_provider": current_provider, **result}
 
 
 # ---------------------------------------------------------------------------
@@ -2544,17 +2804,21 @@ async def onboarding_generate(request: Request):
         "description": str,              — what the solution does (required)
         "solution_name": str,            — snake_case folder name (required)
         "compliance_standards": [str],   — optional list
-        "integrations": [str]            — optional list (default: ["gitlab"])
+        "integrations": [str],           — optional list (default: ["gitlab"])
+        "parent_solution": str,          — optional parent solution name
+        "org_name": str                  — optional org to register the solution under
     }
 
-    Returns: { solution_name, path, status, files, message }
+    Returns: { solution_name, path, status, files, message, suggested_routes }
     status = "created" | "exists"
     """
     body = await request.json()
-    description   = body.get("description", "").strip()
-    solution_name = body.get("solution_name", "").strip()
-    compliance    = body.get("compliance_standards", [])
-    integrations  = body.get("integrations", ["gitlab"])
+    description      = body.get("description", "").strip()
+    solution_name    = body.get("solution_name", "").strip()
+    compliance       = body.get("compliance_standards", [])
+    integrations     = body.get("integrations", ["gitlab"])
+    parent_solution  = body.get("parent_solution", "").strip()
+    org_name         = body.get("org_name", "").strip()
 
     if not description:
         raise HTTPException(status_code=400, detail="description is required")
@@ -2568,6 +2832,8 @@ async def onboarding_generate(request: Request):
             solution_name=solution_name,
             compliance_standards=compliance,
             integrations=integrations,
+            parent_solution=parent_solution,
+            org_name=org_name,
         )
         return result
     except ValueError as e:
@@ -2679,18 +2945,53 @@ async def knowledge_list(limit: int = 50):
     return {"entries": vector_memory.list_entries(limit=limit), "count": limit}
 
 
+def _write_to_channel_collection(db_path: str, collection_name: str, text: str, metadata: dict):
+    """Write a knowledge entry to a shared channel chroma collection. Non-fatal on error."""
+    try:
+        import importlib.util
+        if importlib.util.find_spec("chromadb") is None:
+            return
+        import chromadb
+        import uuid as _uuid
+        _client = chromadb.PersistentClient(path=db_path)
+        _col = _client.get_or_create_collection(collection_name)
+        _col.add(documents=[text], metadatas=[metadata or {}], ids=[str(_uuid.uuid4())])
+        logger.info("Written to channel collection %s", collection_name)
+    except Exception as _exc:
+        logger.warning("Channel write failed (non-fatal): %s", _exc)
+
+
 @app.post("/knowledge/add")
 async def knowledge_add(request: Request):
     """
     Propose adding a knowledge entry to the vector store.
     Returns STATEFUL proposal — actual add on POST /approve/{trace_id}.
-    Body: { "text": str, "metadata": dict (optional) }
+    Body: { "text": str, "metadata": dict (optional), "channel": str (optional) }
     """
     body = await request.json()
     text = body.get("text", "").strip()
     if not text:
         raise HTTPException(status_code=400, detail="text is required")
     metadata = body.get("metadata", {})
+
+    # --- Org channel write (optional) ---
+    channel = body.get("channel", "").strip() if body else ""
+    if channel:
+        from src.core.org_loader import org_loader as _org_loader
+        _active_sol = _get_active_solution()
+        _col_name = _org_loader.get_producer_channel_name(_active_sol, channel)
+        if _col_name is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"solution '{_active_sol}' is not a producer for channel '{channel}'",
+            )
+        _channel_db = _org_loader.get_channel_db_path()
+        if _channel_db:
+            import os as _os
+            _os.makedirs(_channel_db, exist_ok=True)
+            _write_to_channel_collection(_channel_db, _col_name, text, metadata)
+    # --- end channel write ---
+
     from src.core.proposal_store import RiskClass
     preview = text[:120] + ("..." if len(text) > 120 else "")
     store = _get_proposal_store()
@@ -2788,6 +3089,30 @@ async def knowledge_search(request: Request):
     from src.memory.vector_store import vector_memory
     results = vector_memory.search(query, k=k)
     return {"results": results, "count": len(results), "query": query}
+
+
+class KnowledgeSyncRequest(BaseModel):
+    directory: str = ""   # default: active solution dir
+
+
+@app.post("/knowledge/sync")
+async def trigger_knowledge_sync(req: KnowledgeSyncRequest = KnowledgeSyncRequest()):
+    """
+    Walk the solution directory and import text files into the vector store.
+    Returns count of imported chunks.
+    """
+    from src.core.knowledge_syncer import sync_directory
+    from src.core.project_loader import project_config, _SOLUTIONS_DIR
+
+    root = req.directory or os.path.join(_SOLUTIONS_DIR, project_config.project_name)
+    if not os.path.isdir(root):
+        raise HTTPException(status_code=400, detail=f"Directory not found: {root}")
+    try:
+        count = sync_directory(root)
+        return {"status": "ok", "chunks_imported": count, "directory": root}
+    except Exception as exc:
+        logger.error("knowledge_sync failed: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 # ---------------------------------------------------------------------------
@@ -3528,6 +3853,32 @@ async def agents_status():
         ]
 
 
+@app.get("/agents/active")
+async def get_active_agents():
+    """
+    Returns currently active (in-progress) tasks from the queue manager.
+    Used by the Live Agents panel on the Dashboard.
+    """
+    try:
+        qm = _get_task_queue()
+        all_tasks = qm.get_all_tasks()   # returns list of dicts
+        active = [
+            {
+                "task_id":    t["task_id"],
+                "task_type":  t["task_type"],
+                "status":     t["status"],
+                "started_at": t.get("started_at"),
+                "source":     t.get("source", ""),
+            }
+            for t in all_tasks
+            if t["status"] in ("in_progress", "pending")
+        ]
+        return {"agents": active, "count": len(active)}
+    except Exception as exc:
+        logger.error("get_active_agents failed: %s", exc)
+        return {"agents": [], "count": 0}
+
+
 # ==============================================================================
 # HIL (Hardware-in-the-Loop) Testing Endpoints
 # ==============================================================================
@@ -3779,3 +4130,524 @@ async def compliance_gap_assessment(request: Request):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Repo Map — codebase symbol graph for agent context and UI display
+# ---------------------------------------------------------------------------
+
+@app.get("/repo/map")
+async def get_repo_map(max_files: int = 50):
+    """Return a Markdown repo map of the active project for debugging/UI display."""
+    try:
+        from src.core.repo_map import generate_repo_map
+        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        return {"map": generate_repo_map(root, max_files=max_files)}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ============================================================
+# Organization endpoints — org.yaml CRUD
+# ============================================================
+
+def _get_org_yaml_path() -> str:
+    """Path to org.yaml in SAGE_SOLUTIONS_DIR root."""
+    import os as _os
+    return _os.path.join(_get_solutions_dir(), "org.yaml")
+
+
+def _read_org_yaml() -> dict:
+    import yaml as _yaml
+    path = _get_org_yaml_path()
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        return _yaml.safe_load(f) or {}
+
+
+def _write_org_yaml(data: dict) -> None:
+    import yaml as _yaml
+    path = _get_org_yaml_path()
+    with open(path, "w", encoding="utf-8") as f:
+        _yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+
+
+@app.get("/org")
+async def org_get():
+    """Return org.yaml content enriched with cross_team_routes from all solutions."""
+    from src.core.org_loader import org_loader as _ol
+    data = _read_org_yaml()
+    data["routes"] = _ol.get_all_routes()
+    return data
+
+
+@app.post("/org/reload")
+async def org_reload():
+    """Re-read org.yaml and refresh the OrgLoader singleton."""
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "reloaded"}
+
+
+@app.post("/org/channels")
+async def org_channels_create(request: Request):
+    """Create a knowledge channel. Body: {name, producers, consumers}"""
+    body = await request.json()
+    name = body.get("name", "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="channel name is required")
+    data = _read_org_yaml()
+    data.setdefault("org", {}).setdefault("knowledge_channels", {})[name] = {
+        "producers": body.get("producers", []),
+        "consumers": body.get("consumers", []),
+    }
+    _write_org_yaml(data)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "created", "channel": name}
+
+
+@app.delete("/org/channels/{name}")
+async def org_channels_delete(name: str):
+    """Delete a knowledge channel from org.yaml."""
+    data = _read_org_yaml()
+    channels = data.get("org", {}).get("knowledge_channels", {})
+    if name not in channels:
+        raise HTTPException(status_code=404, detail=f"channel '{name}' not found")
+    del channels[name]
+    _write_org_yaml(data)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "deleted", "channel": name}
+
+
+@app.post("/org/solutions")
+async def org_solutions_add(request: Request):
+    """Add parent: to a solution's project.yaml. Body: {solution, parent}"""
+    import yaml as _yaml, os as _os
+    body = await request.json()
+    solution = body.get("solution", "").strip()
+    parent = body.get("parent", "").strip()
+    if not solution or not parent:
+        raise HTTPException(status_code=400, detail="solution and parent are required")
+    sols_dir = _get_solutions_dir()
+    proj_path = _os.path.join(sols_dir, solution, "project.yaml")
+    if not _os.path.exists(proj_path):
+        raise HTTPException(status_code=404, detail=f"solution '{solution}' not found")
+    with open(proj_path, "r", encoding="utf-8") as f:
+        proj = _yaml.safe_load(f) or {}
+    proj["parent"] = parent
+    with open(proj_path, "w", encoding="utf-8") as f:
+        _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "added", "solution": solution, "parent": parent}
+
+
+@app.delete("/org/solutions/{name}")
+async def org_solutions_remove(name: str):
+    """Remove parent: from a solution's project.yaml."""
+    import yaml as _yaml, os as _os
+    sols_dir = _get_solutions_dir()
+    proj_path = _os.path.join(sols_dir, name, "project.yaml")
+    if not _os.path.exists(proj_path):
+        raise HTTPException(status_code=404, detail=f"solution '{name}' not found")
+    with open(proj_path, "r", encoding="utf-8") as f:
+        proj = _yaml.safe_load(f) or {}
+    proj.pop("parent", None)
+    with open(proj_path, "w", encoding="utf-8") as f:
+        _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "removed", "solution": name}
+
+
+@app.post("/org/routes")
+async def org_routes_add(request: Request):
+    """Add cross_team_route to a solution's project.yaml. Body: {solution, target}"""
+    import yaml as _yaml, os as _os
+    body = await request.json()
+    solution = body.get("solution", "").strip()
+    target = body.get("target", "").strip()
+    if not solution or not target:
+        raise HTTPException(status_code=400, detail="solution and target are required")
+    sols_dir = _get_solutions_dir()
+    proj_path = _os.path.join(sols_dir, solution, "project.yaml")
+    if not _os.path.exists(proj_path):
+        raise HTTPException(status_code=404, detail=f"solution '{solution}' not found")
+    with open(proj_path, "r", encoding="utf-8") as f:
+        proj = _yaml.safe_load(f) or {}
+    routes = proj.get("cross_team_routes", [])
+    if not any(r.get("target") == target for r in routes):
+        routes.append({"target": target})
+    proj["cross_team_routes"] = routes
+    with open(proj_path, "w", encoding="utf-8") as f:
+        _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "added", "solution": solution, "target": target}
+
+
+@app.delete("/org/routes")
+async def org_routes_delete(request: Request):
+    """Remove cross_team_route. Body: {solution, target}"""
+    import yaml as _yaml, os as _os
+    body = await request.json()
+    solution = body.get("solution", "").strip()
+    target = body.get("target", "").strip()
+    if not solution or not target:
+        raise HTTPException(status_code=400, detail="solution and target are required")
+    sols_dir = _get_solutions_dir()
+    proj_path = _os.path.join(sols_dir, solution, "project.yaml")
+    if not _os.path.exists(proj_path):
+        raise HTTPException(status_code=404, detail=f"solution '{solution}' not found")
+    with open(proj_path, "r", encoding="utf-8") as f:
+        proj = _yaml.safe_load(f) or {}
+    proj["cross_team_routes"] = [
+        r for r in proj.get("cross_team_routes", []) if r.get("target") != target
+    ]
+    with open(proj_path, "w", encoding="utf-8") as f:
+        _yaml.dump(proj, f, default_flow_style=False, allow_unicode=True)
+    from src.core.org_loader import reload_org_loader
+    reload_org_loader()
+    return {"status": "removed", "solution": solution, "target": target}
+
+
+# ---------------------------------------------------------------------------
+# Solution branding (direct write — framework control operation, no approval)
+# ---------------------------------------------------------------------------
+
+class BrandingRequest(BaseModel):
+    display_name: Optional[str] = None
+    icon_name:    Optional[str] = None
+    accent:       Optional[str] = None
+    sidebar_bg:   Optional[str] = None
+    sidebar_text: Optional[str] = None
+    badge_bg:     Optional[str] = None
+    badge_text:   Optional[str] = None
+
+
+@app.patch("/config/project/theme")
+async def patch_project_theme(req: BrandingRequest):
+    """Directly update the active solution's theme block and optionally its display name.
+    This is a framework control operation (like /config/switch) — executes immediately.
+    """
+    import yaml as _yaml
+    from src.core.project_loader import project_config, _SOLUTIONS_DIR
+    path = os.path.join(_SOLUTIONS_DIR, project_config.project_name, "project.yaml")
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="project.yaml not found")
+
+    with open(path, "r", encoding="utf-8") as fh:
+        data = _yaml.safe_load(fh) or {}
+
+    # Update display name if provided
+    if req.display_name is not None:
+        data["name"] = req.display_name
+
+    # Build / update theme block
+    theme = data.get("theme") or {}
+    if req.icon_name    is not None: theme["icon_name"]    = req.icon_name
+    if req.accent       is not None: theme["accent"]       = req.accent
+    if req.sidebar_bg   is not None: theme["sidebar_bg"]   = req.sidebar_bg
+    if req.sidebar_text is not None: theme["sidebar_text"] = req.sidebar_text
+    if req.badge_bg     is not None: theme["badge_bg"]     = req.badge_bg
+    if req.badge_text   is not None: theme["badge_text"]   = req.badge_text
+    data["theme"] = theme
+
+    with open(path, "w", encoding="utf-8") as fh:
+        _yaml.dump(data, fh, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+    # Reload project config so the change is reflected immediately
+    try:
+        from src.core.project_loader import load_project
+        load_project(project_config.project_name)
+    except Exception:
+        pass  # not fatal — next reload will pick it up
+
+    return {"status": "updated", "solution": project_config.project_name}
+
+
+# ---------------------------------------------------------------------------
+# Dev users (dev-mode identity roster)
+# ---------------------------------------------------------------------------
+
+@app.get("/config/dev-users")
+async def get_dev_users():
+    """Return dev-mode user roster from config/dev_users.yaml.
+    Returns empty list if file does not exist — graceful degradation.
+    """
+    import yaml as _yaml
+    path = os.environ.get(
+        "SAGE_DEV_USERS_PATH",
+        os.path.join(os.path.dirname(__file__), "..", "..", "config", "dev_users.yaml")
+    )
+    path = os.path.normpath(path)
+    if not os.path.exists(path):
+        return {"users": []}
+    with open(path, "r", encoding="utf-8") as f:
+        data = _yaml.safe_load(f) or {}
+    return {"users": data.get("users", [])}
+
+
+# ---------------------------------------------------------------------------
+# OpenShell Sandbox — availability and version info
+# ---------------------------------------------------------------------------
+
+@app.get("/sandbox/status")
+async def get_sandbox_status():
+    """Returns OpenShell sandbox availability and version info."""
+    try:
+        from src.integrations.openshell_runner import get_openshell_runner
+        return get_openshell_runner().status()
+    except Exception as exc:
+        return {"available": False, "error": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# Chat — contextual LLM conversation per user session (P5-ChatPanel)
+# ---------------------------------------------------------------------------
+
+@app.post("/chat")
+async def chat(req: ChatRequest):
+    """Non-streaming contextual chat. Routes through LLM classifier, returns action or answer."""
+    from src.core.project_loader import project_config
+    from src.core.chat_router import route as chat_route
+    from src.memory.audit_logger import audit_logger
+    import json as _json
+
+    solution = req.solution or (project_config.project_name if project_config else "sage")
+    session_id = req.session_id or str(uuid.uuid4())
+
+    domain = ""
+    try:
+        domain = project_config.domain or ""
+    except Exception:
+        pass
+
+    # Build rolling history for context
+    history = audit_logger.get_chat_history(req.user_id, session_id, solution, limit=10)
+    history_text = ""
+    for msg in history:
+        prefix = "User" if msg["role"] == "user" else "Assistant"
+        history_text += f"{prefix}: {msg['content']}\n"
+    if history_text:
+        history_text += "\n"
+
+    # Save user message
+    audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="user", content=req.message, page_context=req.page_context,
+        message_type="user",
+    )
+
+    # Route through LLM classifier
+    result = chat_route(
+        message=req.message, solution=solution, domain=domain,
+        page_context=req.page_context or "", history_text=history_text,
+    )
+
+    response_type = result.get("type", "answer")
+
+    if response_type == "action":
+        action_name = result.get("action", "")
+        params = result.get("params", {})
+        confirmation_prompt = result.get("confirmation_prompt", "")
+
+        # query_knowledge executes server-side immediately (read-only)
+        if action_name == "query_knowledge":
+            try:
+                from src.memory.vector_store import vector_memory
+                hits = vector_memory.search(params.get("query", req.message), k=3)
+                knowledge_text = "\n".join(h.get("content", "") for h in hits) if hits else "No results found."
+                reply = f"From the knowledge base:\n\n{knowledge_text}"
+            except Exception as exc:
+                reply = f"Knowledge search unavailable: {exc}"
+            message_id = audit_logger.save_chat_message(
+                user_id=req.user_id, session_id=session_id, solution=solution,
+                role="assistant", content=reply, page_context=req.page_context,
+                message_type="answer",
+            )
+            return {"response_type": "answer", "reply": reply, "session_id": session_id, "message_id": message_id}
+
+        # All other actions: return as action_proposed
+        message_id = audit_logger.save_chat_message(
+            user_id=req.user_id, session_id=session_id, solution=solution,
+            role="assistant", content=confirmation_prompt, page_context=req.page_context,
+            message_type="action_proposed",
+            metadata={"action": action_name, "params": params},
+        )
+        return {
+            "response_type": "action",
+            "action": action_name,
+            "params": params,
+            "confirmation_prompt": confirmation_prompt,
+            "session_id": session_id,
+            "message_id": message_id,
+        }
+
+    # Plain answer
+    reply = result.get("reply", "")
+    message_id = audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="assistant", content=reply, page_context=req.page_context,
+        message_type="answer",
+    )
+    return {"response_type": "answer", "reply": reply, "session_id": session_id, "message_id": message_id}
+
+
+@app.post("/chat/execute")
+async def chat_execute(req: ChatExecuteRequest):
+    """Execute a chat-proposed action after human confirmation."""
+    from src.core.project_loader import project_config
+    from src.memory.audit_logger import audit_logger
+
+    solution = req.solution or (project_config.project_name if project_config else "sage")
+    session_id = req.session_id or str(uuid.uuid4())
+    action = req.action
+    params = req.params
+
+    SUPPORTED_ACTIONS = {
+        "approve_proposal", "reject_proposal", "undo_proposal",
+        "submit_task", "propose_yaml_edit",
+    }
+    if action not in SUPPORTED_ACTIONS:
+        raise HTTPException(status_code=400, detail=f"Unsupported action: {action}")
+
+    # Log confirmation
+    audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="user", content=f"[Confirmed: {action}]", page_context=None,
+        message_type="action_confirmed",
+        metadata={"action": action, "params": params},
+    )
+
+    result_msg = ""
+    result_data = {}
+
+    try:
+        if action == "approve_proposal":
+            trace_id = params.get("trace_id", "")
+            store = _get_proposal_store()
+            proposal = store.get(trace_id)
+            if proposal is None:
+                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+            store.approve(trace_id)
+            from src.core.proposal_executor import execute_approved_proposal
+            import asyncio
+            asyncio.ensure_future(execute_approved_proposal(proposal))
+            result_msg = f"Proposal {trace_id} approved."
+            result_data = {"trace_id": trace_id}
+
+        elif action == "reject_proposal":
+            trace_id = params.get("trace_id", "")
+            reason = params.get("reason", "Rejected via chat.")
+            store = _get_proposal_store()
+            proposal = store.get(trace_id)
+            if proposal is None:
+                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+            store.reject(trace_id, reason)
+            result_msg = f"Proposal {trace_id} rejected."
+            result_data = {"trace_id": trace_id}
+
+        elif action == "undo_proposal":
+            trace_id = params.get("trace_id", "")
+            store = _get_proposal_store()
+            proposal = store.get(trace_id)
+            if proposal is None:
+                raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
+            if proposal.action_type == "code_diff":
+                from src.core.proposal_executor import _revert_code_diff
+                import asyncio
+                asyncio.ensure_future(_revert_code_diff(proposal))
+                result_msg = f"Undo triggered for proposal {trace_id}."
+                result_data = {"trace_id": trace_id}
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Undo is only supported for code_diff proposals (got '{proposal.action_type}')."
+                )
+
+        elif action == "submit_task":
+            from src.core.queue_manager import task_queue
+            task_type = params.get("task_type", "")
+            payload = params.get("payload", {})
+            task_id = task_queue.submit(task_type=task_type, payload=payload, source="chat")
+            result_msg = f"Task {task_id} ({task_type}) queued."
+            result_data = {"task_id": task_id}
+
+        elif action == "propose_yaml_edit":
+            file_name = params.get("file", "prompts")
+            change_desc = params.get("change_description", "")
+            store = _get_proposal_store()
+            from src.core.proposal_store import RiskClass
+            p = store.create(
+                action_type="yaml_edit",
+                risk_class=RiskClass.STATEFUL,
+                payload={"file": file_name, "change_description": change_desc},
+                description=f"YAML edit via chat: {change_desc[:80]}",
+                reversible=True,
+            )
+            result_msg = f"YAML edit proposal created (trace_id: {p.trace_id}). Review it in Approvals."
+            result_data = {"trace_id": p.trace_id}
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("chat/execute error for action %s: %s", action, exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    # Write execution result to chat history
+    audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="assistant", content=result_msg, page_context=None,
+        message_type="action_executed",
+        metadata={"action": action, **result_data},
+    )
+
+    # Write to compliance audit log
+    _get_audit_logger().log_event(
+        actor="human_via_chat",
+        action_type=f"CHAT_EXECUTE_{action.upper()}",
+        input_context=f"session={session_id} user={req.user_id}",
+        output_content=result_msg,
+        metadata={"action": action, "params": params, "session_id": session_id, **result_data},
+    )
+
+    return {"status": "success", "message": result_msg, "result": result_data}
+
+
+@app.post("/chat/cancel")
+async def chat_cancel(req: ChatExecuteRequest):
+    """Log a user-cancelled action proposal to the audit trail."""
+    from src.core.project_loader import project_config
+    from src.memory.audit_logger import audit_logger
+
+    solution = req.solution or (project_config.project_name if project_config else "sage")
+    session_id = req.session_id or str(uuid.uuid4())
+    audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="user", content=f"[Cancelled: {req.action}]", page_context=None,
+        message_type="action_cancelled",
+        metadata={"action": req.action, "params": req.params},
+    )
+    _get_audit_logger().log_event(
+        actor="human_via_chat",
+        action_type=f"CHAT_CANCEL_{req.action.upper()}",
+        input_context=f"session={session_id} user={req.user_id}",
+        output_content="Action cancelled by user",
+        metadata={"action": req.action, "params": req.params, "session_id": session_id},
+    )
+    return {"status": "logged"}
+
+
+@app.delete("/chat/history")
+async def clear_chat_history(user_id: str, solution: str = ""):
+    """Clear chat history for a user+solution."""
+    from src.core.project_loader import project_config
+    from src.memory.audit_logger import audit_logger
+
+    sol = solution or (project_config.project_name if project_config else "sage")
+    count = audit_logger.clear_chat_history(user_id, sol)
+    return {"cleared": count, "user_id": user_id, "solution": sol}

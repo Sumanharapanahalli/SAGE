@@ -26,6 +26,17 @@ _CONFIG_PATH = os.path.join(
 )
 
 
+def _get_sage_solutions_dir() -> str:
+    """Return the solutions directory, honouring the SAGE_SOLUTIONS_DIR env var."""
+    return os.environ.get(
+        "SAGE_SOLUTIONS_DIR",
+        os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "solutions",
+        ),
+    )
+
+
 def _load_base_config() -> dict:
     try:
         with open(_CONFIG_PATH) as f:
@@ -91,7 +102,8 @@ class VectorMemory:
     The system NEVER crashes due to missing vector DB dependencies.
     """
 
-    def __init__(self):
+    def __init__(self, explicit_solution: str = None):
+        self._explicit_solution = explicit_solution  # MUST be set before _initialize_db()
         self._embedding_function  = None   # lazy-loaded on first use
         self._vector_store        = None
         self._llamaindex_index    = None   # set when backend == "llamaindex"
@@ -140,11 +152,26 @@ class VectorMemory:
 
     def _get_vector_db_path(self) -> str:
         """
-        Resolve vector DB path to the active solution's data directory.
-        Priority: solution project.yaml > default solutions/<name>/data/chroma_db
+        Resolve vector DB path to the active solution's .sage/ directory.
+
+        Priority:
+          1. explicit_solution override (factory-created instances)
+          2. solution project.yaml override
+          3. <solution_dir>/.sage/chroma_db (default)
+
+        Each solution's knowledge base is fully isolated in its own .sage/
+        directory — same convention as audit_log.db. The .sage/ folder travels
+        with the solution repository and is never committed to git.
         """
+        # Org-aware override: explicit solution name provided by factory
+        if getattr(self, "_explicit_solution", None):
+            solutions_dir = _get_sage_solutions_dir()
+            sage_dir = os.path.join(solutions_dir, self._explicit_solution, ".sage")
+            os.makedirs(sage_dir, exist_ok=True)
+            return os.path.join(sage_dir, "chroma_db")
+
         try:
-            from src.core.project_loader import project_config, _SOLUTIONS_DIR
+            from src.core.project_loader import project_config
             # Solution-level override (project.yaml settings.memory.vector_db_path)
             solution_path = (
                 project_config.get_project_setting("settings", {})
@@ -153,10 +180,13 @@ class VectorMemory:
             )
             if solution_path:
                 return solution_path
-            # Default: solution-local data dir — isolated per solution
-            return os.path.join(_SOLUTIONS_DIR, project_config.project_name, "data", "chroma_db")
+            # Default: solution's .sage/ dir — fully isolated per solution
+            return os.path.join(project_config.sage_data_dir, "chroma_db")
         except Exception:
-            return "./data/chroma_db"
+            return os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                ".sage", "chroma_db",
+            )
 
     def _lazy_load_embeddings(self):
         """Load the embedding model only on first use (saves startup RAM)."""
@@ -387,6 +417,48 @@ class VectorMemory:
     def mode(self) -> str:
         """Returns 'full', 'lite', or 'minimal'."""
         return self._mode
+
+
+def get_vector_memory(solution_name: str) -> "VectorMemory":
+    """Return a VectorMemory scoped to a specific solution's .sage/chroma_db/."""
+    return VectorMemory(explicit_solution=solution_name)
+
+
+def org_aware_query(
+    query_text: str,
+    solution_name: str,
+    loader,
+    n_results: int = 5,
+) -> list:
+    """
+    Query every store in the solution's parent chain and return merged, deduplicated results.
+
+    search() returns List[str] (plain strings). Results are deduplicated by exact content
+    and truncated to n_results. Falls back to [] on any unrecoverable error.
+    """
+    all_results: list = []
+    try:
+        chain = loader.get_parent_chain(solution_name)
+        for sol in chain:
+            vm = get_vector_memory(sol)
+            try:
+                results = vm.search(query_text, k=n_results)
+                all_results.extend(results)
+            except Exception as exc:
+                logger.debug("org_aware_query: search failed for %s: %s", sol, exc)
+
+        # Deduplicate while preserving order (first occurrence wins)
+        seen: set = set()
+        deduped: list = []
+        for item in all_results:
+            if item not in seen:
+                seen.add(item)
+                deduped.append(item)
+
+        return deduped[:n_results]
+    except Exception as exc:
+        logger.warning("org_aware_query failed (non-fatal): %s", exc)
+        return []
 
 
 # Global singleton
