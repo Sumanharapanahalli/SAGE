@@ -1,0 +1,12 @@
+# BlueDrop Medical — Solution Runtime State
+# This directory is NEVER committed — it contains PHI and compliance audit data
+.sage/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Local environment
+.env
+.env.local

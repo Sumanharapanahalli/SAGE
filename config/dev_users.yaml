@@ -22,3 +22,25 @@ users:
     email: viewer@example.com
     role: viewer
     avatar_color: '#64748b'
+
+  # BlueDrop Medical personas (for bluedrop_medical solution demo)
+  - id: gavin_corley
+    name: Gavin Corley
+    email: gavin.corley@bluedropmedical.com
+    role: admin
+    avatar_color: '#7c3aed'
+  - id: aoife_brennan
+    name: Aoife Brennan
+    email: aoife.brennan@bluedropmedical.com
+    role: approver
+    avatar_color: '#6366f1'
+  - id: dr_ron_scott
+    name: Dr. Ron Scott
+    email: ron.scott@bluedropmedical.com
+    role: approver
+    avatar_color: '#dc2626'
+  - id: jennifer_hayes
+    name: Jennifer Hayes
+    email: jennifer.hayes@bluedropmedical.com
+    role: viewer
+    avatar_color: '#be185d'

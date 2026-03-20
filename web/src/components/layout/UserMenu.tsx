@@ -26,17 +26,17 @@ function ComboSwatch({ comboKey, active, onClick }: {
       onClick={onClick}
       title={c.label}
       style={{
-        width: 22, height: 22, cursor: 'pointer', padding: 0, border: 'none',
-        outline: active ? `2px solid ${c.accent}` : '2px solid transparent',
-        outlineOffset: 2, overflow: 'hidden', display: 'inline-block',
-        background: 'none', flexShrink: 0,
+        width: 28, height: 28, cursor: 'pointer', padding: 0, border: 'none',
+        outline: active ? `2px solid ${c.accent}` : '2px solid #3f3f46',
+        outlineOffset: 2, overflow: 'hidden', display: 'inline-flex',
+        flexDirection: 'column', background: 'none', flexShrink: 0,
+        borderRadius: 4,
       }}
     >
-      <svg width="22" height="22" viewBox="0 0 22 22">
-        <path d="M11 0 A11 11 0 0 0 11 22 Z" fill={c.sidebarBg} />
-        <path d="M11 0 A11 11 0 0 1 11 22 Z" fill={c.contentBg} />
-        <circle cx="11" cy="11" r="10.5" fill="none" stroke="#3f3f46" strokeWidth="1" />
-      </svg>
+      {/* Top half: sidebar color */}
+      <div style={{ width: 28, height: 14, background: c.sidebarBg }} />
+      {/* Bottom half: accent color */}
+      <div style={{ width: 28, height: 14, background: c.accent }} />
     </button>
   )
 }
@@ -216,12 +216,16 @@ export default function UserMenu() {
             </div>
             <div style={{ marginBottom: '8px' }}>
               <span style={{ ...lbl, display: 'block', marginBottom: '6px' }}>Colors</span>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' }}>
                 {comboKeys.map(k => (
-                  <ComboSwatch key={k} comboKey={k} active={prefs.colorCombo === k} onClick={() => updatePref('colorCombo', k)} />
+                  <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                    <ComboSwatch comboKey={k} active={prefs.colorCombo === k} onClick={() => updatePref('colorCombo', k)} />
+                    <span style={{ fontSize: '9px', color: prefs.colorCombo === k ? '#e4e4e7' : '#52525b', textAlign: 'center', lineHeight: 1 }}>
+                      {COLOR_COMBOS[k].label}
+                    </span>
+                  </div>
                 ))}
               </div>
-              <div style={{ fontSize: '10px', color: '#3f3f46', marginTop: '4px' }}>{COLOR_COMBOS[prefs.colorCombo].label}</div>
             </div>
             <div style={row}>
               <span style={lbl}>Font</span>

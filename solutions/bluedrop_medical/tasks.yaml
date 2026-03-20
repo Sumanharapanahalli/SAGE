@@ -1,0 +1,104 @@
+# ==============================================================================
+# SAGE Tasks — BlueDrop Medical
+# OneStep Foot Scanner + EveryStep Monitoring Platform
+# ==============================================================================
+
+task_types:
+  - ANALYZE_DEVICE_FAULT
+  - ANALYZE_PLATFORM_ERROR
+  - ANALYZE_ML_SIGNAL
+  - ANALYZE_CLOUD_ALERT
+  - REVIEW_FIRMWARE_CODE
+  - REVIEW_PLATFORM_CODE
+  - REVIEW_ML_CODE
+  - REVIEW_INFRA_CODE
+  - CREATE_PR
+  - MONITOR_FLEET
+  - OPEN_CAPA
+  - PLAN_TASK
+
+task_descriptions:
+  ANALYZE_DEVICE_FAULT:    "Triage OneStep scanner firmware fault, sensor error, or connectivity failure"
+  ANALYZE_PLATFORM_ERROR:  "Analyze EveryStep platform backend API or frontend React error"
+  ANALYZE_ML_SIGNAL:       "Analyze SageMaker hotspot detection pipeline anomaly or model drift"
+  ANALYZE_CLOUD_ALERT:     "Analyze AWS IoT Core, ECS, or CloudWatch infrastructure alert"
+  REVIEW_FIRMWARE_CODE:    "IEC 62304 code review of OneStep scanner embedded C/C++ diff"
+  REVIEW_PLATFORM_CODE:    "Code review of EveryStep FastAPI backend or React dashboard diff"
+  REVIEW_ML_CODE:          "Review SageMaker pipeline, PyTorch model, or hotspot inference code"
+  REVIEW_INFRA_CODE:       "Review AWS CDK, Terraform, or GitHub Actions CI/CD diff"
+  CREATE_PR:               "Create GitHub PR with ISO 13485 change record and safety assessment"
+  MONITOR_FLEET:           "Check OneStep fleet connectivity and EveryStep platform health"
+  OPEN_CAPA:               "Initiate CAPA record — root cause analysis and corrective action plan"
+  PLAN_TASK:               "Decompose complex request into ordered subtasks"
+
+task_payloads:
+  ANALYZE_DEVICE_FAULT:
+    log_text:         "string — firmware fault log, exception trace, or RTOS task state dump"
+    device_id:        "string — scanner serial number (e.g. BD-0847) (optional)"
+    firmware_version: "string — e.g. FW-3.1.0 (optional)"
+    patient_id:       "string — de-identified patient reference (optional)"
+    last_scan_time:   "string — ISO 8601 timestamp of last successful scan (optional)"
+
+  ANALYZE_PLATFORM_ERROR:
+    log_text:         "string — API error log, stack trace, or CloudWatch log event"
+    endpoint:         "string — affected API endpoint, e.g. POST /api/v1/scans (optional)"
+    user_role:        "string — 'clinical_staff' | 'clinician' | 'patient' (optional)"
+    status_code:      "integer — HTTP status code (optional)"
+    phi_possibly_exposed: "bool — true if PHI may have been exposed in the error (optional)"
+
+  ANALYZE_ML_SIGNAL:
+    signal_text:      "string — SageMaker endpoint error, model drift alert, or inference anomaly"
+    model_version:    "string — e.g. hotspot-cnn-v2.3.1 (optional)"
+    scan_id:          "string — scan ID that triggered the anomaly (optional)"
+    hotspot_score:    "number — model output score 0–1 (optional)"
+
+  ANALYZE_CLOUD_ALERT:
+    alert_text:       "string — CloudWatch alarm, IoT Core error, or ECS task failure"
+    environment:      "string — 'dev' | 'staging' | 'production' (optional)"
+    service:          "string — affected AWS service or ECS task name (optional)"
+    devices_offline:  "integer — number of devices currently not heartbeating (optional)"
+
+  REVIEW_FIRMWARE_CODE:
+    diff_text:        "string — git diff of C/C++ firmware changes"
+    pr_url:           "string — GitHub PR URL (optional)"
+    subsystem:        "string — 'thermal' | 'camera' | 'nfc' | 'wifi' | 'lte' | 'storage' | 'rtos' (optional)"
+    affects_alert:    "bool — true if this change touches the alert generation path (optional)"
+
+  REVIEW_PLATFORM_CODE:
+    diff_text:        "string — git diff of FastAPI, React, or SQLAlchemy changes"
+    pr_url:           "string — GitHub PR URL (optional)"
+    touches_phi:      "bool — true if this change handles patient health information (optional)"
+    touches_alerts:   "bool — true if this change affects hotspot alert routing (optional)"
+
+  REVIEW_ML_CODE:
+    diff_text:        "string — git diff of PyTorch model, SageMaker pipeline, or threshold code"
+    pr_url:           "string — GitHub PR URL (optional)"
+    threshold_changed: "bool — true if the 2.2°C or hotspot score threshold is modified (optional)"
+    model_version:    "string — new model version being reviewed (optional)"
+
+  REVIEW_INFRA_CODE:
+    diff_text:        "string — git diff of AWS CDK, Terraform, or GitHub Actions YAML"
+    pr_url:           "string — GitHub PR URL (optional)"
+    environment:      "string — 'dev' | 'staging' | 'production' (optional)"
+    hipaa_service:    "bool — true if HIPAA-eligible AWS service configuration is changed (optional)"
+
+  CREATE_PR:
+    issue_description: "string — description of what to fix or implement"
+    layer:             "string — 'firmware' | 'platform' | 'ml' | 'infra' (optional)"
+    jira_ticket:       "string — Jira ticket ID, e.g. BD-412 (optional)"
+    target_branch:     "string — e.g. 'main' or 'develop' (optional)"
+
+  MONITOR_FLEET:
+    check_type:        "string — 'all' | 'devices' | 'platform' | 'ml' (default: 'all')"
+    device_id:         "string — specific scanner serial to check (optional)"
+    site_id:           "string — clinic or home-care site identifier (optional)"
+
+  OPEN_CAPA:
+    description:       "string — description of the non-conformance or patient safety event"
+    standard:          "string — applicable standard, e.g. 'ISO 13485 §8.5.2' (optional)"
+    severity:          "string — 'critical' | 'major' | 'minor' (optional)"
+    initial_root_cause: "string — preliminary root cause hypothesis (optional)"
+
+  PLAN_TASK:
+    description:       "string — natural language task description for the planner"
+    priority:          "integer — 1-10 (default 5)"
