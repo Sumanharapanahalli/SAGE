@@ -267,6 +267,7 @@ def generate_solution(
     integrations: list = None,
     parent_solution: str = "",
     org_name: str = "",
+    org_context: str = "",
 ) -> dict:
     """
     Generate a complete SAGE solution from a plain-language description.
@@ -278,6 +279,7 @@ def generate_solution(
         integrations:         List of integrations (e.g. ["gitlab", "slack"]).
         parent_solution:      If provided, inject ``parent: <value>`` into project.yaml.
         org_name:             If provided, auto-add this solution to that org in org.yaml.
+        org_context:          If provided, prepended to description before LLM generation.
 
     Returns:
         dict with keys: solution_name, path, files (dict of filename -> content),
@@ -289,6 +291,9 @@ def generate_solution(
         ValueError if any generated YAML is invalid.
         RuntimeError if the LLM is unavailable.
     """
+    if org_context:
+        description = f"Company context:\n{org_context}\n\n---\n\n{description}"
+
     solution_name = _sanitize_name(solution_name)
     compliance_str = "\n  - ".join(compliance_standards or []) or "[]"
     integrations_str = "\n  - ".join(integrations or ["gitlab"]) or "- gitlab"
