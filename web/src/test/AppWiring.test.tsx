@@ -7,6 +7,7 @@ vi.mock('../components/layout/Header', () => ({ default: () => <div>Header</div>
 vi.mock('../components/onboarding/TourOverlay', () => ({ default: () => <div data-testid="tour-overlay" /> }))
 vi.mock('../pages/Dashboard', () => ({ default: () => <div>Dashboard</div> }))
 vi.mock('../components/CommandPalette', () => ({ default: () => null }))
+vi.mock('../components/ui/LLMDisconnectedBanner', () => ({ default: () => null }))
 vi.mock('../components/theme/ThemeProvider', () => ({ default: ({ children }: any) => <>{children}</> }))
 vi.mock('../context/AuthContext', () => ({
   AuthProvider: ({ children }: any) => <>{children}</>,
@@ -15,6 +16,7 @@ vi.mock('../context/AuthContext', () => ({
 vi.mock('../api/client', () => ({
   fetchHealth: vi.fn().mockResolvedValue({}),
   fetchProjects: vi.fn().mockResolvedValue({ projects: [], active: '' }),
+  fetchLLMHealth: vi.fn().mockResolvedValue({ connected: true }),
 }))
 vi.mock('../hooks/useProjectConfig', () => ({ useProjectConfig: () => ({ data: null }) }))
 

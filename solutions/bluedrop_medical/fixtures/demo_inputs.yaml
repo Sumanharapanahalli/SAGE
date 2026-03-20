@@ -1,0 +1,385 @@
+# ==============================================================================
+# BlueDrop Medical — Demo Test Fixtures
+# ==============================================================================
+# Paste these into the SAGE interface to test each agent type.
+# All patient data is synthetic and HIPAA-safe (no real PHI).
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# ANALYST — Firmware Fault Traces
+# ------------------------------------------------------------------------------
+
+firmware_faults:
+
+  - id: FW-001
+    label: "FLIR Lepton CCI Bus Fault"
+    severity_expected: AMBER
+    task_type: ANALYZE_DEVICE_FAULT
+    device_id: BD-0847
+    firmware_version: FW-3.1.0
+    input: |
+      [FW-3.1.0] [2026-03-19 08:14:22.481] [THERMAL_ACQN_TASK] ERROR: LEPTON_CCI_TIMEOUT
+      -- CCI I2C transaction failed after 3 retries (addr=0x2A, reg=0x0002)
+      -- SPI VSYNC missed: last valid frame timestamp 08:14:17.003
+      -- Hardware Fault Handler: HF_TYPE=0x00000001 (BusFault)
+      -- CFSR=0x00000200 (PRECISERR), BFAR=0x60000000
+      -- Task stack HWM: THERMAL_ACQN=312B free (of 2048B)
+      -- Recovering: toggling LEPTON_RESET_PIN, re-initialising CCI...
+      -- Recovery attempt 1/3 FAILED: VSYNC not asserted within 2000ms
+      -- Recovery attempt 2/3 SUCCESS: first valid frame received at 08:14:28.882
+      -- Patient BD-P0341 scan session paused 6.4 seconds; session resumed
+      -- Total scan duration: 38.4s (vs 30s nominal)
+
+  - id: FW-002
+    label: "WiFi Upload Queue Overflow — Patient Scans Queued on eMMC"
+    severity_expected: AMBER
+    task_type: ANALYZE_DEVICE_FAULT
+    device_id: BD-1203
+    firmware_version: FW-3.0.8
+    input: |
+      [FW-3.0.8] [2026-03-19 14:00:00.000] [WIFI_UPLOAD_TASK] WARN: UPLOAD_QUEUE_NEAR_FULL
+      -- eMMC queue: 23/30 slots occupied (upload backlog 23 scans)
+      -- WiFi RSSI: -82 dBm (poor signal, packet loss ~40%)
+      -- Last successful upload: 2026-03-17 09:22:44 UTC (40+ hours ago)
+      -- AWS IoT Core MQTT: CONNACK timeout after 4 retries
+      -- Activating LTE_FAILOVER_TASK...
+      -- LTE modem: SIM present, APN=bluedrop.iot, signal RSSI=-71 dBm
+      -- LTE connection established, uploading queued scans...
+      -- WARN: scan BD-P0559-2026-03-17-0922 shows hotspot score=0.74 (above threshold 0.60)
+      -- This scan has not yet been reviewed by EveryStep clinical staff (upload delayed 40h)
+
+  - id: FW-003
+    label: "NFC Reader Failure — Patient Not Identified"
+    severity_expected: GREEN
+    task_type: ANALYZE_DEVICE_FAULT
+    device_id: BD-0612
+    firmware_version: FW-3.1.0
+    input: |
+      [FW-3.1.0] [2026-03-19 07:30:11.220] [PATIENT_ID_TASK] WARN: NFC_ANTICOLLISION_FAIL
+      -- ISO 14443-A REQA sent, no ATQA received within 20ms
+      -- Retry 1/5: no response
+      -- Retry 2/5: no response
+      -- Retry 3/5: partial frame (CRC error), uid_bytes=[]
+      -- Falling back to manual patient selection on local display
+      -- Patient selected manually: BD-P0101 (John D., DoB 1958-04-12 — display masked)
+      -- Scan session started without NFC confirmation
+      -- NFC reader driver: PN7150, firmware v6.02 — consider update to v6.04 (PN7150 errata E14)
+
+  - id: FW-004
+    label: "WATCHDOG Reset — Motor Stall During Scan"
+    severity_expected: RED
+    task_type: ANALYZE_DEVICE_FAULT
+    device_id: BD-0394
+    firmware_version: FW-2.9.2
+    input: |
+      [FW-2.9.2] [2026-03-18 21:04:37.001] [WATCHDOG_TASK] CRITICAL: HW_WATCHDOG_RESET
+      -- Last task to feed WDG: SCAN_COORD_TASK (feed at 21:04:34.880)
+      -- WDG timeout: 3000ms, reset triggered at 21:04:37.880
+      -- Pre-reset snapshot:
+      --   SCAN_COORD_TASK: state=ROTATING_MIRROR, step=14/32
+      --   MOTOR_DRV: phase_current=2.8A (limit=2.0A), velocity=0
+      --   THERMAL_ACQN_TASK: waiting on SCAN_COORD_TASK semaphore
+      -- POST-RESET: safe state entered, motor de-energised
+      -- Patient BD-P0088 scan session ABORTED (incomplete data, not uploaded)
+      -- CAPA candidate: motor overcurrent led to task stall and WDG reset
+      -- Device BD-0394 placed in QUARANTINE status — requires hardware inspection
+
+# ------------------------------------------------------------------------------
+# ANALYST — Platform Errors
+# ------------------------------------------------------------------------------
+
+platform_errors:
+
+  - id: PE-001
+    label: "Alert Routing Bug — Hotspot Alert Not Escalated to Prescriber"
+    severity_expected: RED
+    task_type: ANALYZE_PLATFORM_ERROR
+    input: |
+      [EveryStep Platform] [2026-03-19 10:45:22 UTC] [alert_service] ERROR: ESCALATION_SKIP
+      -- scan_id=SC-004821 patient_ref=PT-003341 site=memorial_wound_center_houston
+      -- hotspot_score=0.82 (threshold=0.60) consecutive_hotspot_scans=4
+      -- AlertEvent created: alert_id=AE-9832 status=PENDING_REVIEW
+      -- ClinicalReviewTask queued at 10:45:22 — reviewed at 10:52:18
+      -- Reviewer: jennifer.hayes action=CONFIRMED_HOTSPOT
+      -- Expected: ProviderNotification for DR_SHARMA (prescriber on file)
+      -- Actual: ProviderNotification NOT CREATED — KeyError: 'prescriber_fhir_id' in patient record
+      -- Root record: patient_ref=PT-003341 imported from Cerner FHIR on 2026-02-14
+      -- FHIR Patient.generalPractitioner array = [] (empty — Cerner returned no GP)
+      -- Result: patient at Grade 1 DFU risk for 7+ days without prescriber awareness
+      -- HIPAA note: no PHI exposed externally; failure is internal routing only
+
+  - id: PE-002
+    label: "EveryStep Dashboard — Thermal Image Render 403 Forbidden"
+    severity_expected: AMBER
+    task_type: ANALYZE_PLATFORM_ERROR
+    input: |
+      [EveryStep Platform] [2026-03-19 09:10:04 UTC] [scan_api] ERROR
+      GET /api/v1/scans/SC-004819/thermal-overlay
+      HTTP 403 Forbidden
+      user=jennifer.hayes role=clinical_staff
+      s3_key=scans/2026/03/19/PT-003340/SC-004819/thermal_overlay.png
+      s3_presign_error: AccessDenied — S3 bucket policy update deployed at 09:00:00 UTC
+      deploy_ref=liam.doyle/infra/fix-bucket-cors (merged 09:00:05 UTC)
+      Note: liam.doyle's IAM policy update incorrectly scoped s3:GetObject
+      to prefix "scans/2026/03/19/staging/*" instead of "scans/*"
+      Affected: all clinical_staff presigned URL fetches since 09:00 UTC
+      PHI risk: images not exposed — requests rejected; no data exfiltration
+
+  - id: PE-003
+    label: "FHIR Sync — Duplicate Patient Record Created"
+    severity_expected: AMBER
+    task_type: ANALYZE_PLATFORM_ERROR
+    input: |
+      [EveryStep Platform] [2026-03-19 06:00:01 UTC] [fhir_sync_job] WARN: DUPLICATE_PATIENT
+      -- Nightly FHIR sync job v2.1.0 started
+      -- Processing Epic FHIR Patient bundle: 12 new patients from Memorial Wound Center
+      -- Patient PT-NEW-0041: name hash match with existing PT-003289
+      --   Incoming: DoB 1962-07-08, MRN EPI-884412
+      --   Existing: DoB 1962-07-08, MRN EPI-884412 (created 2026-01-15)
+      --   Conflict resolution: UPSERT failed — unique constraint on mrn+source
+      --   Action taken: SKIPPED (existing record preserved)
+      -- WARNING: OneStep device BD-1044 already assigned to PT-003289
+      --   Incoming record attempted to assign same device BD-1044 to PT-NEW-0041
+      --   Device assignment skipped; no double-assignment
+      -- Scans for PT-003289 remain correctly attributed
+      -- Recommend: audit FHIR sync logic for all sites with Epic v10+ (changed MRN format)
+
+# ------------------------------------------------------------------------------
+# ANALYST — ML Pipeline Signals
+# ------------------------------------------------------------------------------
+
+ml_signals:
+
+  - id: ML-001
+    label: "Hotspot Model Confidence Drop — Potential Distribution Shift"
+    severity_expected: AMBER
+    task_type: ANALYZE_ML_SIGNAL
+    model_version: hotspot-cnn-v2.3.1
+    input: |
+      [SageMaker] [2026-03-19 08:00:00 UTC] [hotspot-cnn-v2.3.1] DRIFT_ALERT
+      -- Model: hotspot-cnn-v2.3.1 (deployed 2026-02-01)
+      -- Metric: mean_confidence_score rolling 7-day average
+      --   2026-03-05 to 2026-03-11: 0.791
+      --   2026-03-12 to 2026-03-18: 0.683 (delta: -0.108, threshold: -0.05)
+      -- High-uncertainty predictions (score 0.45–0.55) increased from 8% to 23% of daily volume
+      -- New site onboarded 2026-03-10: coastal_wound_care_miami (120 patients, FLIR firmware v1.2)
+      -- coastal_wound_care_miami thermal frames: mean pixel temp 2.4°C higher than training distribution
+      -- Hypothesis: Miami ambient temperature differential affecting Lepton AGC calibration
+      -- Clinical impact: 3 hotspot alerts auto-suppressed (score 0.47–0.52) that may warrant review
+      -- Recommend: retrain with Miami site data OR apply per-site temperature normalisation
+
+  - id: ML-002
+    label: "SageMaker Endpoint Timeout — Scans Queued Without Analysis"
+    severity_expected: AMBER
+    task_type: ANALYZE_ML_SIGNAL
+    model_version: hotspot-cnn-v2.3.1
+    input: |
+      [SageMaker] [2026-03-19 03:22:47 UTC] [hotspot-cnn-v2.3.1] ENDPOINT_TIMEOUT
+      -- Endpoint: bluedrop-hotspot-prod
+      -- Instance: ml.m5.large (single instance, no auto-scaling configured)
+      -- Invocation timeout: 29 consecutive timeouts (11:00 PM – 3:22 AM UTC)
+      -- Root cause: model warm-up latency after instance recycle (ECS container restart at 11:00 PM)
+      -- Scans pending ML analysis: 47 (overnight batch from East Coast patients)
+      -- Fallback: rule-based threshold only (2.2°C delta) applied to pending scans
+      -- Rule-based result: 2 hotspot alerts identified (conservative path)
+      -- ML result on replay (post-recovery): 5 hotspot alerts (3 additional marginal cases)
+      -- Clinical team notified: 3 marginal cases queued for manual visual review
+
+# ------------------------------------------------------------------------------
+# DEVELOPER — Code Review Diffs
+# ------------------------------------------------------------------------------
+
+code_diffs:
+
+  - id: CR-001
+    label: "Firmware — Dose Calculation Guard Clause Change"
+    severity_expected: AMBER
+    task_type: REVIEW_FIRMWARE_CODE
+    subsystem: thermal
+    input: |
+      diff --git a/fw/src/thermal/lepton_driver.c b/fw/src/thermal/lepton_driver.c
+      --- a/fw/src/thermal/lepton_driver.c
+      +++ b/fw/src/thermal/lepton_driver.c
+      @@ -142,10 +142,8 @@ lepton_status_t lepton_capture_frame(thermal_frame_t *frame) {
+           configASSERT(frame != NULL);
+
+           /* Wait for VSYNC with timeout */
+      -    if (xSemaphoreTake(g_vsync_sem, pdMS_TO_TICKS(LEPTON_VSYNC_TIMEOUT_MS)) != pdTRUE) {
+      -        LOG_ERROR("LEPTON: VSYNC timeout after %u ms", LEPTON_VSYNC_TIMEOUT_MS);
+      -        return LEPTON_ERR_TIMEOUT;
+      -    }
+      +    xSemaphoreTake(g_vsync_sem, pdMS_TO_TICKS(LEPTON_VSYNC_TIMEOUT_MS));
+
+           /* Transfer frame via SPI DMA */
+           HAL_SPI_Receive_DMA(&hspi1, (uint8_t *)frame->pixels,
+                               LEPTON_FRAME_BYTES);
+
+  - id: CR-002
+    label: "Platform — Alert Escalation Fix (missing prescriber fallback)"
+    severity_expected: GREEN
+    task_type: REVIEW_PLATFORM_CODE
+    touches_alerts: true
+    input: |
+      diff --git a/platform/app/services/alert_service.py b/platform/app/services/alert_service.py
+      --- a/platform/app/services/alert_service.py
+      +++ b/platform/app/services/alert_service.py
+      @@ -87,7 +87,14 @@ async def escalate_to_prescriber(alert_id: str, db: AsyncSession) -> None:
+           patient = await db.get(Patient, alert.patient_id)
+      -    prescriber_id = patient.prescriber_fhir_id
+      +    prescriber_id = patient.prescriber_fhir_id
+      +    if not prescriber_id:
+      +        # Fallback: route to clinic's default prescriber if patient record lacks one
+      +        site = await db.get(Site, patient.site_id)
+      +        prescriber_id = site.default_prescriber_fhir_id
+      +        logger.warning(
+      +            "Patient %s has no prescriber_fhir_id; falling back to site default %s",
+      +            patient.id, prescriber_id
+      +        )
+      +    if not prescriber_id:
+      +        raise AlertRoutingError(f"No prescriber found for patient {patient.id} or site {patient.site_id}")
+           notification = ProviderNotification(
+               alert_id=alert_id,
+
+  - id: CR-003
+    label: "ML — Hotspot Score Threshold Lowered from 0.60 to 0.50"
+    severity_expected: AMBER
+    task_type: REVIEW_ML_CODE
+    threshold_changed: true
+    model_version: hotspot-cnn-v2.3.2-candidate
+    input: |
+      diff --git a/ml/config/thresholds.yaml b/ml/config/thresholds.yaml
+      --- a/ml/config/thresholds.yaml
+      +++ b/ml/config/thresholds.yaml
+      @@ -3,7 +3,7 @@
+       hotspot_detection:
+      -  score_threshold: 0.60        # Validated: sensitivity 94%, specificity 88%
+      +  score_threshold: 0.50        # CANDIDATE: increases sensitivity, reduces missed DFUs
+         consecutive_scans_required: 3
+         temperature_delta_celsius: 2.2
+
+      diff --git a/ml/src/inference.py b/ml/src/inference.py
+      --- a/ml/src/inference.py
+      +++ b/ml/src/inference.py
+      @@ -31,6 +31,7 @@ def classify_scan(thermal_array, rgb_image) -> HotspotResult:
+           score = model(inputs)['hotspot_score']
+      +    logger.info("Hotspot score=%.3f threshold=%.2f", score, THRESHOLD)
+           if score >= THRESHOLD:
+               return HotspotResult(detected=True, score=score, ...)
+
+# ------------------------------------------------------------------------------
+# MONITOR — Fleet Health Events
+# ------------------------------------------------------------------------------
+
+monitor_events:
+
+  - id: MON-001
+    label: "12 Devices Offline > 48 Hours"
+    severity_expected: high
+    task_type: MONITOR_FLEET
+    input: |
+      [EveryStep Fleet Monitor] [2026-03-19 09:00:00 UTC]
+      Fleet summary: 1847 active devices
+      Heartbeat status (last 24h):
+        - Online (heartbeat < 1h ago):   1829
+        - Intermittent (1h–24h gap):        6
+        - OFFLINE (> 48h no heartbeat):    12
+      Offline devices:
+        BD-0394 (quarantined — WDG reset incident, see FW-004)
+        BD-0612, BD-0819, BD-0820, BD-0821 (all at coastal_wound_care_miami)
+        BD-1044, BD-1045 (memorial_wound_center_houston — DHCP lease expired?)
+        BD-0203, BD-0204, BD-0205, BD-0206, BD-0207 (home patients — power outage TX?)
+      Scans missed (estimated, based on avg 4/week):
+        12 devices × 2 days = ~34 missed scans
+        3 of offline patients have consecutive hotspot history — at-risk population
+
+  - id: MON-002
+    label: "EveryStep API Latency P99 > 5s"
+    severity_expected: medium
+    task_type: MONITOR_FLEET
+    input: |
+      [CloudWatch] [2026-03-19 11:30:00 UTC] ALARM: API_LATENCY_P99
+      Metric: EveryStep-prod/api-gateway/Latency P99
+      Current value: 5840ms (threshold: 5000ms, sustained 15 minutes)
+      Baseline (7-day avg): 420ms
+      Breakdown by endpoint:
+        POST /api/v1/scans/upload           P99=6200ms (+1380% vs baseline)
+        GET  /api/v1/patients/{id}/history  P99=4800ms
+        POST /api/v1/alerts/{id}/review     P99=390ms (normal)
+      RDS Aurora: CPU 78%, active connections 140/150 (near limit)
+      Hypothesis: scan upload endpoint triggers synchronous ML inference call (no queue)
+      Concurrent scan uploads: 23 (morning scan wave, 07:00–09:00 local time across US sites)
+
+# ------------------------------------------------------------------------------
+# KNOWLEDGE BASE — Seed Documents for Vector Store
+# ------------------------------------------------------------------------------
+
+knowledge_documents:
+
+  - id: KB-001
+    title: "BlueDrop Hotspot Alert Protocol — Clinical Standard Operating Procedure"
+    type: "SOP"
+    version: "SOP-CLIN-007 v2.1"
+    content: |
+      Single hotspot detection (consecutive_scans=1): Internal clinical review only.
+        Action: EveryStep clinical staff reviews thermal + HD images within 4 hours.
+        Documentation: AltertEvent logged with reviewer initials and timestamp.
+
+      Progressive hotspot (consecutive_scans >= 3): Prescriber notification required.
+        Action: EveryStep staff contacts prescriber via portal message + phone.
+        Documentation: ProviderNotification created, prescriber acknowledgement recorded.
+        Timeline: Notification must be sent within 2 hours of 3rd consecutive hotspot.
+
+      Temperature delta threshold: 2.2°C vs. contralateral foot (IWGDF 2023 guideline).
+      Visual deterioration: Any wound visible on HD image at Grade 1+ triggers RED alert.
+
+      Emergency escalation (patient-reported symptoms + hotspot):
+        - Advise patient to seek immediate wound care
+        - Contact prescriber within 30 minutes
+        - Log FDA MedWatch consideration if device failure contributed
+
+  - id: KB-002
+    title: "OneStep Scanner Connectivity Troubleshooting Guide"
+    type: "Technical Guide"
+    version: "TG-FW-003 v1.4"
+    content: |
+      WiFi upload failures:
+        1. Check eMMC queue: should be < 10 slots occupied for healthy device
+        2. If RSSI < -75 dBm: move device closer to WiFi access point
+        3. LTE failover activates automatically — verify SIM is active and APN correct
+        4. If both WiFi and LTE fail: device queues up to 30 scans locally (30-day buffer)
+
+      FLIR Lepton recovery:
+        1. Soft reset via CCI command (0x0002 = SYS_RUN) — typical recovery time < 3s
+        2. If soft reset fails: toggle LEPTON_RESET_PIN (GPIO PE5, active low, 100ms)
+        3. If hardware reset fails after 3 attempts: put device in degraded mode
+           (camera-only scan, no thermal data) and flag scan for manual clinical review
+        4. Log incident to EveryStep platform via error telemetry endpoint
+
+      NFC reader issues (PN7150):
+        1. Firmware v6.04+ required to resolve errata E14 (anticollision race condition)
+        2. Fallback: manual patient selection on local 2.4" display
+        3. All manual selections are audited in the EveryStep platform
+
+  - id: KB-003
+    title: "DFU University of Texas Classification — Quick Reference"
+    type: "Clinical Reference"
+    content: |
+      University of Texas Diabetic Foot Ulcer Classification System:
+
+      Grade 0: Pre- or post-ulcerative lesion, completely epithelialized
+        Stage A: No infection, no ischemia
+        Stage B: Infection only
+        Stage C: Ischemia only
+        Stage D: Infection + ischemia
+
+      Grade 1: Superficial wound, not involving tendon/capsule/bone
+      Grade 2: Wound penetrating to tendon or capsule
+      Grade 3: Wound penetrating to bone or joint
+
+      BlueDrop target: Detect all DFUs at Grade 0-1 (pre-ulcerative or superficial)
+
+      Cost comparison (internal BlueDrop data):
+        Stage 1 treatment: $8,200 average
+        Stage 2: $19,700 (57% more)
+        Stage 3: $54,800 (85% more)
+        Stage 4-5: $118,900 (93% more)
