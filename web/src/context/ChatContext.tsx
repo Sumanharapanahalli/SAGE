@@ -2,9 +2,16 @@ import { createContext, useContext, useState, useCallback, ReactNode } from 'rea
 
 export interface ChatMessage {
   id: string
-  role: 'user' | 'assistant'
+  role: 'user' | 'assistant' | 'system'
   content: string
   streaming?: boolean
+}
+
+export interface PendingAction {
+  action: string
+  params: Record<string, unknown>
+  confirmation_prompt: string
+  message_id: string
 }
 
 interface ChatContextValue {
@@ -23,6 +30,8 @@ interface ChatContextValue {
   setIsLoading: (v: boolean) => void
   clearUnread: () => void
   incrementUnread: () => void
+  pendingAction: PendingAction | null
+  setPendingAction: (a: PendingAction | null) => void
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -33,6 +42,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
 
   const openChat = useCallback((seed?: string) => {
     setSeedMessage(seed)
@@ -68,6 +78,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       openChat, closeChat, minimiseChat, seedMessage, clearSeedMessage,
       addMessage, updateLastAssistantMessage, setMessages, setIsLoading,
       clearUnread, incrementUnread,
+      pendingAction, setPendingAction,
     }}>
       {children}
     </ChatContext.Provider>
