@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   setActiveModules, patchProjectTheme,
@@ -50,6 +51,7 @@ const PRESET_ACCENTS = [
 ]
 
 export default function Settings() {
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: projectData, isLoading } = useProjectConfig()
 
@@ -332,6 +334,24 @@ export default function Settings() {
         >
           {brandMutation.isPending ? 'Saving...' : brandSaved ? 'Saved' : 'Save Branding'}
         </button>
+      </div>
+
+      {/* Organization */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700">Organization</h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Company mission, vision, and core values. All solution generation is shaped by this context.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/settings/organization')}
+            className="shrink-0 px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white text-xs font-medium transition-colors"
+          >
+            Configure
+          </button>
+        </div>
       </div>
 
       {/* Info */}

@@ -19,6 +19,7 @@ Endpoints:
 import json
 import logging
 import os
+import re
 import sqlite3
 import uuid
 from datetime import datetime, timezone
@@ -31,6 +32,15 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+
+_SAFE_SOLUTION_NAME = re.compile(r'^[a-zA-Z0-9_-]{1,64}$')
+
+# Module-level import so tests can patch src.interface.api.reload_org_loader
+try:
+    from src.core.org_loader import reload_org_loader
+except Exception:  # pragma: no cover
+    def reload_org_loader():  # type: ignore
+        pass
 
 
 app = FastAPI(
@@ -156,6 +166,23 @@ class ChatExecuteRequest(BaseModel):
     user_id: str = "anonymous"
     session_id: str = ""
     solution: str = ""
+
+
+class ScanFolderRequest(BaseModel):
+    folder_path: str
+    intent: str
+    solution_name: str
+
+
+class RefineRequest(BaseModel):
+    solution_name: str
+    current_files: dict[str, str]  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
+    feedback: str
+
+
+class SaveSolutionRequest(BaseModel):
+    solution_name: str
+    files: dict[str, str]  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
 
 
 # ---------------------------------------------------------------------------
@@ -2604,6 +2631,8 @@ import asyncio
 import queue as _queue
 import threading
 
+_ORG_YAML_LOCK = threading.Lock()
+
 
 class _SSELogHandler(logging.Handler):
     """
@@ -2825,6 +2854,22 @@ async def onboarding_generate(request: Request):
     if not solution_name:
         raise HTTPException(status_code=400, detail="solution_name is required")
 
+    # Load org context (mission/vision/values) to enrich the LLM prompt
+    try:
+        _od = _read_org_yaml()
+        _org_section = _od.get("org", {}) if isinstance(_od, dict) else {}
+        _org_context = ""
+        if _org_section.get("mission"):
+            _parts = [f"Mission: {_org_section['mission']}"]
+            if _org_section.get("vision"):
+                _parts.append(f"Vision: {_org_section['vision']}")
+            if _org_section.get("core_values"):
+                _vals = "\n  - ".join(_org_section["core_values"])
+                _parts.append(f"Core values:\n  - {_vals}")
+            _org_context = "\n".join(_parts)
+    except Exception:
+        _org_context = ""
+
     try:
         from src.core.onboarding import generate_solution
         result = generate_solution(
@@ -2834,6 +2879,7 @@ async def onboarding_generate(request: Request):
             integrations=integrations,
             parent_solution=parent_solution,
             org_name=org_name,
+            org_context=_org_context,
         )
         return result
     except ValueError as e:
@@ -2929,6 +2975,124 @@ async def onboarding_templates():
     except Exception as e:
         logger.warning("Could not list templates: %s", e)
     return {"templates": templates, "count": len(templates)}
+
+
+@app.post("/onboarding/scan-folder")
+async def onboarding_scan_folder(req: ScanFolderRequest):
+    """Scan a local folder and generate solution YAML using the LLM."""
+    from src.core.folder_scanner import FolderScanner
+
+    try:
+        scanner = FolderScanner()
+        folder_content = scanner.scan(req.folder_path)
+    except FileNotFoundError:
+        raise HTTPException(400, detail={"error": "folder_not_found", "message": f"Folder not found: {req.folder_path}"})
+
+    if not folder_content.strip():
+        raise HTTPException(400, detail={"error": "folder_empty", "message": "No readable files found in this folder."})
+
+    org_context = _load_org_context()
+
+    system_prompt = (
+        "You are a SAGE solution architect. Generate three YAML files for a SAGE solution: "
+        "project.yaml, prompts.yaml, and tasks.yaml. "
+        "Return ONLY a JSON object with keys 'project.yaml', 'prompts.yaml', 'tasks.yaml' — "
+        "each value is the full YAML content as a string. No other text."
+    )
+    user_prompt_parts = []
+    if org_context:
+        user_prompt_parts.append(f"Company context:\n{org_context}\n")
+    user_prompt_parts.append(f"Intent: {req.intent}")
+    user_prompt_parts.append(f"Solution name: {req.solution_name}")
+    user_prompt_parts.append(f"\nCodebase content:\n{folder_content}")
+    user_prompt = "\n\n".join(user_prompt_parts)
+
+    llm = _get_llm_gateway()
+    try:
+        raw = llm.generate(system_prompt=system_prompt, user_prompt=user_prompt)
+    except Exception as exc:
+        logger.error("LLM error in scan-folder: %s", exc)
+        raise HTTPException(503, detail={"error": "llm_unavailable", "message": "Could not reach the LLM."})
+
+    files, summary = _parse_generated_files(raw)
+
+    _get_audit_logger().log_event(
+        actor="human_via_onboarding",
+        action_type="ONBOARDING_SCAN",
+        input_context=req.intent,
+        output_content=str(files.get("project.yaml", ""))[:2000],
+        metadata={"solution_name": req.solution_name, "folder_path": req.folder_path},
+    )
+
+    return {"solution_name": req.solution_name, "files": files, "summary": summary}
+
+
+@app.post("/onboarding/refine")
+async def onboarding_refine(req: RefineRequest):
+    """Refine previously generated solution YAML based on user feedback."""
+    org_context = _load_org_context()
+
+    system_prompt = (
+        "You are a SAGE solution architect. Refine the provided YAML files based on the feedback. "
+        "Return ONLY a JSON object with keys 'project.yaml', 'prompts.yaml', 'tasks.yaml' — "
+        "each value is the full YAML content as a string. No other text."
+    )
+    user_prompt_parts = []
+    if org_context:
+        user_prompt_parts.append(f"Company context:\n{org_context}\n")
+    user_prompt_parts.append(f"Solution name: {req.solution_name}")
+    user_prompt_parts.append(f"Feedback: {req.feedback}")
+    user_prompt_parts.append(
+        f"\nCurrent YAML files:\n"
+        + "\n---\n".join(f"# {k}\n{v}" for k, v in req.current_files.items())
+    )
+    user_prompt = "\n\n".join(user_prompt_parts)
+
+    llm = _get_llm_gateway()
+    try:
+        raw = llm.generate(system_prompt=system_prompt, user_prompt=user_prompt)
+    except Exception as exc:
+        logger.error("LLM error in refine: %s", exc)
+        raise HTTPException(503, detail={"error": "llm_unavailable", "message": "Could not reach the LLM."})
+
+    files, summary = _parse_generated_files(raw)
+
+    _get_audit_logger().log_event(
+        actor="human_via_onboarding",
+        action_type="ONBOARDING_REFINE",
+        input_context=req.feedback,
+        output_content=str(files.get("project.yaml", ""))[:2000],
+        metadata={"solution_name": req.solution_name},
+    )
+
+    return {"solution_name": req.solution_name, "files": files, "summary": summary}
+
+
+@app.post("/onboarding/save-solution")
+async def onboarding_save_solution(req: SaveSolutionRequest):
+    """Write generated YAML files to disk under SAGE_SOLUTIONS_DIR/<solution_name>/."""
+    if not _SAFE_SOLUTION_NAME.match(req.solution_name):
+        raise HTTPException(400, detail={"error": "invalid_solution_name",
+                                         "message": "solution_name must be 1-64 alphanumeric characters, underscores, or hyphens."})
+    solution_dir = os.path.join(_get_solutions_dir(), req.solution_name)
+    solutions_root = os.path.realpath(_get_solutions_dir())
+    if not os.path.realpath(solution_dir).startswith(solutions_root + os.sep):
+        raise HTTPException(400, detail={"error": "invalid_solution_name",
+                                         "message": "Resolved path escapes solutions directory."})
+    os.makedirs(solution_dir, exist_ok=True)
+    for filename, content in req.files.items():
+        if filename not in {"project.yaml", "prompts.yaml", "tasks.yaml"}:
+            continue
+        with open(os.path.join(solution_dir, filename), "w", encoding="utf-8") as f:
+            f.write(content)
+    _get_audit_logger().log_event(
+        actor="human_via_onboarding",
+        action_type="ONBOARDING_COMPLETE",
+        input_context=req.solution_name,
+        output_content=str(req.files.get("project.yaml", ""))[:2000],
+        metadata={"solution_name": req.solution_name},
+    )
+    return {"status": "saved", "solution_name": req.solution_name}
 
 
 # ---------------------------------------------------------------------------
@@ -4173,6 +4337,65 @@ def _write_org_yaml(data: dict) -> None:
         _yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
 
 
+def _load_org_context() -> str:
+    """Load mission/vision/core_values from org.yaml for LLM injection."""
+    try:
+        data = _read_org_yaml()
+        org = data.get("org", {}) if isinstance(data, dict) else {}
+        if not org.get("mission"):
+            return ""
+        parts = [f"Mission: {org['mission']}"]
+        if org.get("vision"):
+            parts.append(f"Vision: {org['vision']}")
+        if org.get("core_values"):
+            vals = "\n  - ".join(org["core_values"])
+            parts.append(f"Core values:\n  - {vals}")
+        return "\n".join(parts)
+    except Exception:
+        return ""
+
+
+def _parse_generated_files(raw: str) -> tuple:
+    """Parse LLM output — expects JSON with project/prompts/tasks.yaml keys."""
+    import json as _json
+    import re as _re
+    import yaml as _yaml
+    text = raw.strip()
+    fence_match = _re.search(r"```(?:\w+)?\n([\s\S]*?)```", text)
+    if fence_match:
+        text = fence_match.group(1).strip()
+    try:
+        files = _json.loads(text)
+        if not isinstance(files, dict):
+            files = {"project.yaml": text, "prompts.yaml": "roles: {}", "tasks.yaml": "task_types: []"}
+    except Exception:
+        files = {"project.yaml": text, "prompts.yaml": "roles: {}", "tasks.yaml": "task_types: []"}
+    summary = {"name": "", "description": "", "task_types": [], "compliance_standards": [], "integrations": []}
+    try:
+        proj = _yaml.safe_load(files.get("project.yaml", "")) or {}
+        summary["name"] = proj.get("name", "")
+        summary["description"] = proj.get("description", "")
+        summary["compliance_standards"] = proj.get("compliance_standards", [])
+        summary["integrations"] = proj.get("integrations", [])
+        tasks_raw = _yaml.safe_load(files.get("tasks.yaml", "")) or {}
+        for tt in tasks_raw.get("task_types", []):
+            if isinstance(tt, dict):
+                summary["task_types"].append({
+                    "name": tt.get("name", ""),
+                    "description": tt.get("description", ""),
+                })
+    except Exception:
+        pass
+    return files, summary
+
+
+class OrgUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    mission: Optional[str] = None
+    vision: Optional[str] = None
+    core_values: Optional[List[str]] = None
+
+
 @app.get("/org")
 async def org_get():
     """Return org.yaml content enriched with cross_team_routes from all solutions."""
@@ -4180,6 +4403,54 @@ async def org_get():
     data = _read_org_yaml()
     data["routes"] = _ol.get_all_routes()
     return data
+
+
+@app.put("/org")
+async def org_update(req: OrgUpdateRequest):
+    """Save mission/vision/core_values to org.yaml. Merges — does not overwrite unset fields."""
+    import yaml as _yaml
+
+    org_path = _get_org_yaml_path()
+
+    with _ORG_YAML_LOCK:
+        # Load existing or start fresh
+        existing: dict = {}
+        if os.path.exists(org_path):
+            try:
+                with open(org_path, encoding="utf-8") as f:
+                    existing = _yaml.safe_load(f) or {}
+            except Exception:
+                existing = {}
+
+        # Merge only supplied fields
+        if not isinstance(existing.get("org"), dict):
+            existing["org"] = {}
+        org_section = existing["org"]
+
+        if req.name is not None:
+            org_section["name"] = req.name
+        if req.mission is not None:
+            org_section["mission"] = req.mission
+        if req.vision is not None:
+            org_section["vision"] = req.vision
+        if req.core_values is not None:
+            org_section["core_values"] = req.core_values
+
+        os.makedirs(os.path.dirname(org_path), exist_ok=True)
+        with open(org_path, "w", encoding="utf-8") as f:
+            _yaml.dump(existing, f, default_flow_style=False, allow_unicode=True)
+
+    reload_org_loader()
+
+    _get_audit_logger().log_event(
+        actor="human_via_settings",
+        action_type="ORG_SAVED",
+        input_context=f"name={req.name}, mission={req.mission}",
+        output_content=str(org_section),
+        metadata={"source": "PUT /org"},
+    )
+
+    return {"status": "saved", "org": org_section}
 
 
 @app.post("/org/reload")

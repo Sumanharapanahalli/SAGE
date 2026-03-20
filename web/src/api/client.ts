@@ -12,7 +12,16 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   })
-  if (!res.ok) throw new Error(`POST ${path} failed: ${res.statusText}`)
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    const apiError = new Error(
+      (data as Record<string, unknown>).detail as string
+      || (data as Record<string, unknown>).message as string
+      || `POST ${path} failed: ${res.statusText}`
+    ) as Error & { body: unknown }
+    apiError.body = data
+    throw apiError
+  }
   return res.json()
 }
 
@@ -23,6 +32,16 @@ async function patch<T>(path: string, body?: unknown): Promise<T> {
     body: body ? JSON.stringify(body) : undefined,
   })
   if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.statusText}`)
+  return res.json()
+}
+
+async function put<T>(path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  })
+  if (!res.ok) throw new Error(`PUT ${path} failed: ${res.statusText}`)
   return res.json()
 }
 
@@ -644,6 +663,10 @@ export interface OrgRoute {
 export interface OrgData {
   org?: {
     name?: string;
+    mission?: string;
+    vision?: string;
+    core_values?: string[];
+    solutions?: string[];
     root_solution?: string;
     knowledge_channels?: Record<string, OrgChannel>;
   };
@@ -661,6 +684,26 @@ export async function reloadOrg(): Promise<{ status: string }> {
   if (!res.ok) throw new Error("Failed to reload org");
   return res.json();
 }
+
+export interface OrgUpdateRequest {
+  name?: string
+  mission?: string
+  vision?: string
+  core_values?: string[]
+}
+
+export interface OrgUpdateResponse {
+  status: string
+  org: {
+    name?: string
+    mission?: string
+    vision?: string
+    core_values?: string[]
+  }
+}
+
+export const saveOrg = (req: OrgUpdateRequest) =>
+  put<OrgUpdateResponse>('/org', req)
 
 // Dev users
 export const fetchDevUsers = () =>
@@ -711,6 +754,53 @@ export const clearChatHistory = (user_id: string, solution: string) => {
   const params = new URLSearchParams({ user_id, solution })
   return fetch(`${BASE}/chat/history?${params}`, { method: 'DELETE' }).then(r => r.json())
 }
+
+// Onboarding — scan folder, refine, save
+export interface ScanFolderRequest {
+  folder_path: string
+  intent: string
+  solution_name: string
+}
+
+export interface GeneratedFiles {
+  'project.yaml': string
+  'prompts.yaml': string
+  'tasks.yaml': string
+}
+
+export interface ScanSummary {
+  name: string
+  description: string
+  task_types: Array<{ name: string; description: string }>
+  compliance_standards: string[]
+  integrations: string[]
+}
+
+export interface ScanFolderResponse {
+  solution_name: string
+  files: GeneratedFiles
+  summary: ScanSummary
+}
+
+export interface RefineRequest {
+  solution_name: string
+  current_files: GeneratedFiles
+  feedback: string
+}
+
+export interface SaveSolutionRequest {
+  solution_name: string
+  files: GeneratedFiles
+}
+
+export const scanFolder = (req: ScanFolderRequest) =>
+  post<ScanFolderResponse>('/onboarding/scan-folder', req)
+
+export const refineGeneration = (req: RefineRequest) =>
+  post<ScanFolderResponse>('/onboarding/refine', req)
+
+export const saveSolution = (req: SaveSolutionRequest) =>
+  post<{ status: string; solution_name: string }>('/onboarding/save-solution', req)
 
 // Solution branding
 export interface BrandingPayload {
