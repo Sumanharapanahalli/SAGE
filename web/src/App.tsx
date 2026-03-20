@@ -30,6 +30,7 @@ import Issues from './pages/Issues'
 import Activity from './pages/Activity'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
+import { UserPrefsProvider } from './context/UserPrefsContext'
 
 // ---------------------------------------------------------------------------
 // Standard SAGE routes — solution-agnostic.
@@ -111,11 +112,13 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ThemeProvider>
-          <TourProvider>
-            <AppShell />
-          </TourProvider>
-        </ThemeProvider>
+        <UserPrefsProvider>
+          <ThemeProvider>
+            <TourProvider>
+              <AppShell />
+            </TourProvider>
+          </ThemeProvider>
+        </UserPrefsProvider>
       </AuthProvider>
     </BrowserRouter>
   )
