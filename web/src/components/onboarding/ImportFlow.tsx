@@ -36,8 +36,7 @@ export default function ImportFlow({ llmConnected }: ImportFlowProps) {
     onMutate: () => { setStep('scanning'); setScanError(null) },
     onSuccess: (data) => { setScanResult(data); setStep('review') },
     onError: (err: unknown) => {
-      const detail = (err as any)?.detail ?? {}
-      const code = detail?.error ?? 'unknown'
+      const code: string = (err as any)?.body?.error ?? 'unknown'
       const messages: Record<string, string> = {
         folder_not_found: 'Folder not found. Check the path and try again.',
         folder_empty: 'No readable files found in this folder.',
@@ -82,7 +81,6 @@ export default function ImportFlow({ llmConnected }: ImportFlowProps) {
 
   return (
     <div style={{ maxWidth: 600, display: 'flex', flexDirection: 'column', gap: 18 }}>
-      <style>{`@keyframes sage-spin { to { transform: rotate(360deg); } }`}</style>
 
       {step === 'scanning' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '20px 0' }}>
@@ -134,7 +132,7 @@ export default function ImportFlow({ llmConnected }: ImportFlowProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label style={{ fontSize: 11, color: 'var(--sage-sidebar-text, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Solution name</label>
             <input
-              style={{ ...fieldStyle, width: 260 }}
+              style={{ ...fieldStyle, width: 260, boxSizing: 'border-box' as const }}
               value={solutionName}
               onChange={e => setSolutionName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))}
               placeholder="e.g. firmware_qa"

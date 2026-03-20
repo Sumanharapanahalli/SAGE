@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { refineGeneration } from '../../api/client'
 import type { ScanFolderResponse, GeneratedFiles, ScanSummary } from '../../api/client'
@@ -9,12 +9,42 @@ interface ReviewPanelProps {
   onStartOver: () => void
 }
 
+interface TabBtnProps {
+  label: string
+  active: boolean
+  onClick: () => void
+}
+
+function TabBtn({ label, active, onClick }: TabBtnProps) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '6px 16px',
+        background: 'transparent',
+        color: active ? '#a5b4fc' : '#64748b',
+        border: 'none',
+        borderBottom: active ? '2px solid #6366f1' : '2px solid transparent',
+        cursor: 'pointer',
+        fontSize: 12,
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
 export default function ReviewPanel({ result, onAccept, onStartOver }: ReviewPanelProps) {
   const [viewTab, setViewTab] = useState<'summary' | 'yaml'>('summary')
   const [yamlSubTab, setYamlSubTab] = useState<keyof GeneratedFiles>('project.yaml')
   const [files, setFiles] = useState<GeneratedFiles>(result.files)
   const [summary, setSummary] = useState<ScanSummary>(result.summary)
   const [feedback, setFeedback] = useState('')
+
+  useEffect(() => {
+    setFiles(result.files)
+    setSummary(result.summary)
+  }, [result])
 
   const refineMutation = useMutation({
     mutationFn: () => refineGeneration({
@@ -27,27 +57,18 @@ export default function ReviewPanel({ result, onAccept, onStartOver }: ReviewPan
       setSummary(data.summary)
       setFeedback('')
     },
+    onError: (_err: unknown) => {
+      // error displayed via refineMutation.isError in the render
+    },
   })
-
-  const tabBtn = (label: string, active: boolean, onClick: () => void) => (
-    <button onClick={onClick} style={{
-      padding: '6px 16px',
-      background: 'transparent',
-      color: active ? '#a5b4fc' : '#64748b',
-      border: 'none',
-      borderBottom: active ? '2px solid #6366f1' : '2px solid transparent',
-      cursor: 'pointer',
-      fontSize: 12,
-    }}>{label}</button>
-  )
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 700 }}>
 
       {/* Tab bar */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        {tabBtn('Summary', viewTab === 'summary', () => setViewTab('summary'))}
-        {tabBtn('YAML', viewTab === 'yaml', () => setViewTab('yaml'))}
+        <TabBtn label="Summary" active={viewTab === 'summary'} onClick={() => setViewTab('summary')} />
+        <TabBtn label="YAML" active={viewTab === 'yaml'} onClick={() => setViewTab('yaml')} />
       </div>
 
       {/* Summary tab */}
@@ -128,6 +149,7 @@ export default function ReviewPanel({ result, onAccept, onStartOver }: ReviewPan
               fontSize: 12,
               fontFamily: 'monospace',
               resize: 'vertical',
+              boxSizing: 'border-box' as const,
             }}
           />
         </div>
@@ -140,7 +162,7 @@ export default function ReviewPanel({ result, onAccept, onStartOver }: ReviewPan
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           placeholder="e.g. Focus only on the embedded C code, ignore Python tooling"
-          style={{ width: '100%', height: 52, background: 'rgba(255,255,255,0.05)', color: 'var(--sage-sidebar-active-text, #f1f5f9)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 10px', borderRadius: 6, fontSize: 12, resize: 'vertical', fontFamily: 'inherit' }}
+          style={{ width: '100%', height: 52, background: 'rgba(255,255,255,0.05)', color: 'var(--sage-sidebar-active-text, #f1f5f9)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 10px', borderRadius: 6, fontSize: 12, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' as const }}
         />
         <button
           onClick={() => refineMutation.mutate()}

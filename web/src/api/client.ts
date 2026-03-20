@@ -12,7 +12,16 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   })
-  if (!res.ok) throw new Error(`POST ${path} failed: ${res.statusText}`)
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    const apiError = new Error(
+      (data as Record<string, unknown>).detail as string
+      || (data as Record<string, unknown>).message as string
+      || `POST ${path} failed: ${res.statusText}`
+    ) as Error & { body: unknown }
+    apiError.body = data
+    throw apiError
+  }
   return res.json()
 }
 
