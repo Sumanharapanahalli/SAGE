@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar'
 import Header from './components/layout/Header'
@@ -48,6 +48,59 @@ import { UserPrefsProvider } from './context/UserPrefsContext'
 // framework. The framework ships with universal pages only.
 // ---------------------------------------------------------------------------
 
+function SidebarDivider() {
+  const dragging = useRef(false)
+
+  const getWidth = (): number => {
+    try {
+      const s = localStorage.getItem('sage_panel_sidebar')
+      return s ? parseFloat(s) : 264
+    } catch { return 264 }
+  }
+
+  const [width, setWidth] = useState(getWidth)
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--sage-sidebar-width', `${width}px`)
+  }, [width])
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    dragging.current = true
+    const onMove = (ev: MouseEvent) => {
+      if (!dragging.current) return
+      const newW = Math.max(200, Math.min(500, ev.clientX))
+      setWidth(newW)
+      document.documentElement.style.setProperty('--sage-sidebar-width', `${newW}px`)
+    }
+    const onUp = (ev: MouseEvent) => {
+      dragging.current = false
+      const newW = Math.max(200, Math.min(500, ev.clientX))
+      try { localStorage.setItem('sage_panel_sidebar', newW.toString()) } catch { /* ignore */ }
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [])
+
+  return (
+    <div
+      onMouseDown={onMouseDown}
+      style={{
+        width: 4,
+        height: '100%',
+        flexShrink: 0,
+        background: '#0f172a',
+        cursor: 'col-resize',
+        zIndex: 20,
+      }}
+      onMouseEnter={e => (e.currentTarget.style.background = '#3b82f6')}
+      onMouseLeave={e => (e.currentTarget.style.background = '#0f172a')}
+    />
+  )
+}
+
 function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const { data: projectData } = useProjectConfig()
@@ -73,6 +126,7 @@ function AppShell() {
     <>
       <div className="flex h-screen overflow-hidden bg-zinc-50">
         <Sidebar />
+        <SidebarDivider />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header onOpenPalette={() => setPaletteOpen(true)} />
           <main className="flex-1 overflow-y-auto p-6">
