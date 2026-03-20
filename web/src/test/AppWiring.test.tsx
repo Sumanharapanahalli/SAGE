@@ -19,6 +19,17 @@ vi.mock('../api/client', () => ({
   fetchLLMHealth: vi.fn().mockResolvedValue({ connected: true }),
 }))
 vi.mock('../hooks/useProjectConfig', () => ({ useProjectConfig: () => ({ data: null }) }))
+vi.mock('../context/ChatContext', () => ({
+  ChatProvider: ({ children }: any) => <>{children}</>,
+  useChatContext: () => ({
+    panelState: 'closed', openChat: () => {}, closeChat: () => {}, minimiseChat: () => {},
+    seedMessage: undefined, clearSeedMessage: () => {}, messages: [], isLoading: false,
+    unreadCount: 0, addMessage: () => {}, updateLastAssistantMessage: () => {},
+    setMessages: () => {}, setIsLoading: () => {}, clearUnread: () => {}, incrementUnread: () => {},
+  }),
+}))
+
+vi.mock('../components/ui/ChatPanel', () => ({ default: () => null }))
 
 describe('App wiring', () => {
   it('renders TourOverlay at root', () => {

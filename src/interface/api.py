@@ -137,6 +137,14 @@ class RejectProposalRequest(BaseModel):
     feedback: str = ""             # Required for DESTRUCTIVE proposals
 
 
+class ChatRequest(BaseModel):
+    message: str
+    user_id: str = "anonymous"
+    session_id: str = ""
+    page_context: Optional[str] = None
+    solution: str = ""
+
+
 # ---------------------------------------------------------------------------
 # Lazy singleton accessors
 # ---------------------------------------------------------------------------
@@ -4318,3 +4326,91 @@ async def get_sandbox_status():
         return get_openshell_runner().status()
     except Exception as exc:
         return {"available": False, "error": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# Chat — contextual LLM conversation per user session (P5-ChatPanel)
+# ---------------------------------------------------------------------------
+
+@app.post("/chat")
+async def chat(req: ChatRequest):
+    """Non-streaming contextual chat. Returns LLM reply and persists history."""
+    from src.core.project_loader import project_config
+    from src.core.llm_gateway import llm_gateway
+    from src.memory.audit_logger import audit_logger
+
+    solution = req.solution or (project_config.project_name if project_config else "sage")
+    session_id = req.session_id or str(uuid.uuid4())
+
+    # Build rolling history (last 10 messages)
+    history = audit_logger.get_chat_history(req.user_id, session_id, solution, limit=10)
+
+    # Build system prompt
+    domain = ""
+    compliance = []
+    try:
+        domain = project_config.domain or ""
+        compliance = getattr(project_config, "compliance_standards", []) or []
+    except Exception:
+        pass
+
+    compliance_str = ", ".join(compliance) if compliance else "general"
+    system_prompt = (
+        f"You are SAGE's embedded assistant for the {solution} solution.\n"
+        f"Domain: {domain}\n"
+        f"Compliance: {compliance_str}\n"
+        f"Active page: {req.page_context or 'unknown'}\n\n"
+        "Answer concisely. If asked to make a change to a YAML file or proposal, describe "
+        "the change and offer to create a SAGE proposal for it (but do NOT execute it). "
+        "Always keep patient safety and compliance implications in mind for regulated solutions."
+    )
+
+    # Build conversation prompt with history
+    history_text = ""
+    for msg in history:
+        prefix = "User" if msg["role"] == "user" else "Assistant"
+        history_text += f"{prefix}: {msg['content']}\n"
+    if history_text:
+        history_text += "\n"
+
+    full_prompt = f"{system_prompt}\n\n{history_text}User: {req.message}\nAssistant:"
+
+    # Save user message
+    audit_logger.save_chat_message(
+        user_id=req.user_id,
+        session_id=session_id,
+        solution=solution,
+        role="user",
+        content=req.message,
+        page_context=req.page_context,
+    )
+
+    # Call LLM
+    try:
+        reply = llm_gateway.generate(full_prompt)
+    except Exception as exc:
+        logger.error("Chat LLM error: %s", exc)
+        raise HTTPException(status_code=503, detail=f"LLM unavailable: {exc}")
+
+    # Save assistant response
+    message_id = audit_logger.save_chat_message(
+        user_id=req.user_id,
+        session_id=session_id,
+        solution=solution,
+        role="assistant",
+        content=reply,
+        page_context=req.page_context,
+    )
+
+    return {"reply": reply, "session_id": session_id, "message_id": message_id}
+
+
+@app.delete("/chat/history")
+async def clear_chat_history(user_id: str, solution: str = ""):
+    """Clear chat history for a user+solution."""
+    from src.core.project_loader import project_config
+    from src.memory.audit_logger import audit_logger
+
+    sol = solution or (project_config.project_name if project_config else "sage")
+    count = audit_logger.clear_chat_history(user_id, sol)
+    return {"cleared": count, "user_id": user_id, "solution": sol}

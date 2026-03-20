@@ -9,9 +9,18 @@ from datetime import datetime, timezone
 
 def _resolve_db_path() -> str:
     """
-    Resolve audit DB path to the active solution's data directory.
-    Path: solutions/<project>/data/audit_log.db
-    Falls back to framework-level data/ if no project is set.
+    Resolve the audit DB path to the active solution's .sage/ directory.
+
+    Path: <solution_dir>/.sage/audit_log.db
+
+    Each solution has its own completely isolated DB — proposals, audit trail,
+    feature requests, API keys, and cost records never mix between solutions.
+    Falls back to <framework_root>/.sage/audit_log.db when no project is set,
+    so the framework itself never writes into a solution's data directory.
+
+    The .sage/ directory mirrors the .claude/ convention: it is runtime state
+    that lives with the solution, is auto-created on first use, and must be
+    gitignored in every solution repository.
     """
     project = os.environ.get("SAGE_PROJECT", "").strip().lower()
     solutions_dir = os.environ.get(
@@ -19,11 +28,16 @@ def _resolve_db_path() -> str:
         os.path.join(os.path.dirname(__file__), "..", "..", "solutions"),
     )
     if project:
-        return os.path.join(os.path.abspath(solutions_dir), project, "data", "audit_log.db")
-    return os.path.join(
+        sage_dir = os.path.join(os.path.abspath(solutions_dir), project, ".sage")
+        os.makedirs(sage_dir, exist_ok=True)
+        return os.path.join(sage_dir, "audit_log.db")
+    # Framework fallback — no solution active
+    framework_sage = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "data", "audit_log.db",
+        ".sage",
     )
+    os.makedirs(framework_sage, exist_ok=True)
+    return os.path.join(framework_sage, "audit_log.db")
 
 
 DB_PATH = _resolve_db_path()
@@ -74,7 +88,85 @@ class AuditLogger:
             except Exception:
                 pass  # column already exists
 
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id         TEXT PRIMARY KEY,
+                user_id    TEXT NOT NULL,
+                session_id TEXT NOT NULL,
+                solution   TEXT NOT NULL,
+                role       TEXT NOT NULL CHECK(role IN ('user', 'assistant')),
+                content    TEXT NOT NULL,
+                page_context TEXT,
+                created_at TEXT NOT NULL
+            )
+        ''')
+        conn.commit()
+
         conn.close()
+
+    def save_chat_message(
+        self,
+        user_id: str,
+        session_id: str,
+        solution: str,
+        role: str,
+        content: str,
+        page_context: str = None,
+    ) -> str:
+        """Persist a chat message (user or assistant turn)."""
+        msg_id = str(uuid.uuid4())
+        created_at = datetime.now(timezone.utc).isoformat()
+        try:
+            conn = sqlite3.connect(self.db_path)
+            conn.execute(
+                """INSERT INTO chat_messages
+                   (id, user_id, session_id, solution, role, content, page_context, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (msg_id, user_id, session_id, solution, role, content, page_context, created_at),
+            )
+            conn.commit()
+            conn.close()
+        except Exception as exc:
+            self.logger.error("Failed to save chat message: %s", exc)
+        return msg_id
+
+    def get_chat_history(
+        self,
+        user_id: str,
+        session_id: str,
+        solution: str,
+        limit: int = 10,
+    ) -> list:
+        """Return the last N messages for a user+session+solution (oldest first)."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            rows = conn.execute(
+                """SELECT role, content FROM chat_messages
+                   WHERE user_id = ? AND session_id = ? AND solution = ?
+                   ORDER BY created_at DESC LIMIT ?""",
+                (user_id, session_id, solution, limit),
+            ).fetchall()
+            conn.close()
+            return [{"role": r[0], "content": r[1]} for r in reversed(rows)]
+        except Exception as exc:
+            self.logger.error("Failed to get chat history: %s", exc)
+            return []
+
+    def clear_chat_history(self, user_id: str, solution: str) -> int:
+        """Delete all chat messages for a user+solution. Returns rows deleted."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cur = conn.execute(
+                "DELETE FROM chat_messages WHERE user_id = ? AND solution = ?",
+                (user_id, solution),
+            )
+            count = cur.rowcount
+            conn.commit()
+            conn.close()
+            return count
+        except Exception as exc:
+            self.logger.error("Failed to clear chat history: %s", exc)
+            return 0
 
     def log_event(
         self,

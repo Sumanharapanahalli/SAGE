@@ -27,12 +27,14 @@ import OrgGraph from './pages/OrgGraph'
 import TourOverlay from './components/onboarding/TourOverlay'
 import { TourProvider } from './context/TourContext'
 import LLMDisconnectedBanner from './components/ui/LLMDisconnectedBanner'
+import ChatPanel from './components/ui/ChatPanel'
 import Issues from './pages/Issues'
 import Activity from './pages/Activity'
 import Guide from './pages/Guide'
 import ThemeProvider from './components/theme/ThemeProvider'
 import { AuthProvider } from './context/AuthContext'
 import { UserPrefsProvider } from './context/UserPrefsContext'
+import { ChatProvider } from './context/ChatContext'
 
 // ---------------------------------------------------------------------------
 // Standard SAGE routes — solution-agnostic.
@@ -162,6 +164,7 @@ function AppShell() {
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <TourOverlay />
       <LLMDisconnectedBanner />
+      <ChatPanel />
     </>
   )
 }
@@ -173,7 +176,9 @@ export default function App() {
         <UserPrefsProvider>
           <ThemeProvider>
             <TourProvider>
-              <AppShell />
+              <ChatProvider>
+                <AppShell />
+              </ChatProvider>
             </TourProvider>
           </ThemeProvider>
         </UserPrefsProvider>

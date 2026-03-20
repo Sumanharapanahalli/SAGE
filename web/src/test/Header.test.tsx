@@ -16,6 +16,16 @@ vi.mock('../hooks/useProjectConfig', () => ({
   }),
 }))
 
+vi.mock('../context/ChatContext', () => ({
+  ChatProvider: ({ children }: any) => <>{children}</>,
+  useChatContext: () => ({
+    panelState: 'closed', openChat: () => {}, closeChat: () => {}, minimiseChat: () => {},
+    seedMessage: undefined, clearSeedMessage: () => {}, messages: [], isLoading: false,
+    unreadCount: 0, addMessage: () => {}, updateLastAssistantMessage: () => {},
+    setMessages: () => {}, setIsLoading: () => {}, clearUnread: () => {}, incrementUnread: () => {},
+  }),
+}))
+
 function Wrapper({ path = '/', children }: { path?: string; children: React.ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return (
