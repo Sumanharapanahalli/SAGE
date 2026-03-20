@@ -19,6 +19,7 @@ Endpoints:
 import json
 import logging
 import os
+import re
 import sqlite3
 import uuid
 from datetime import datetime, timezone
@@ -31,6 +32,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+
+_SAFE_SOLUTION_NAME = re.compile(r'^[a-zA-Z0-9_-]{1,64}$')
 
 # Module-level import so tests can patch src.interface.api.reload_org_loader
 try:
@@ -173,13 +176,13 @@ class ScanFolderRequest(BaseModel):
 
 class RefineRequest(BaseModel):
     solution_name: str
-    current_files: dict  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
+    current_files: dict[str, str]  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
     feedback: str
 
 
 class SaveSolutionRequest(BaseModel):
     solution_name: str
-    files: dict  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
+    files: dict[str, str]  # {"project.yaml": str, "prompts.yaml": str, "tasks.yaml": str}
 
 
 # ---------------------------------------------------------------------------
@@ -3068,7 +3071,14 @@ async def onboarding_refine(req: RefineRequest):
 @app.post("/onboarding/save-solution")
 async def onboarding_save_solution(req: SaveSolutionRequest):
     """Write generated YAML files to disk under SAGE_SOLUTIONS_DIR/<solution_name>/."""
+    if not _SAFE_SOLUTION_NAME.match(req.solution_name):
+        raise HTTPException(400, detail={"error": "invalid_solution_name",
+                                         "message": "solution_name must be 1-64 alphanumeric characters, underscores, or hyphens."})
     solution_dir = os.path.join(_get_solutions_dir(), req.solution_name)
+    solutions_root = os.path.realpath(_get_solutions_dir())
+    if not os.path.realpath(solution_dir).startswith(solutions_root + os.sep):
+        raise HTTPException(400, detail={"error": "invalid_solution_name",
+                                         "message": "Resolved path escapes solutions directory."})
     os.makedirs(solution_dir, exist_ok=True)
     for filename, content in req.files.items():
         if filename not in {"project.yaml", "prompts.yaml", "tasks.yaml"}:
@@ -4348,13 +4358,16 @@ def _load_org_context() -> str:
 def _parse_generated_files(raw: str) -> tuple:
     """Parse LLM output — expects JSON with project/prompts/tasks.yaml keys."""
     import json as _json
+    import re as _re
     import yaml as _yaml
     text = raw.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        text = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+    fence_match = _re.search(r"```(?:\w+)?\n([\s\S]*?)```", text)
+    if fence_match:
+        text = fence_match.group(1).strip()
     try:
         files = _json.loads(text)
+        if not isinstance(files, dict):
+            files = {"project.yaml": text, "prompts.yaml": "roles: {}", "tasks.yaml": "task_types: []"}
     except Exception:
         files = {"project.yaml": text, "prompts.yaml": "roles: {}", "tasks.yaml": "task_types: []"}
     summary = {"name": "", "description": "", "task_types": [], "compliance_standards": [], "integrations": []}

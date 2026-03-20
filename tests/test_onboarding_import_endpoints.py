@@ -142,3 +142,34 @@ def test_save_solution_writes_files(tmp_path, monkeypatch):
     })
     assert resp.status_code == 200
     assert (tmp_path / "test_save" / "project.yaml").exists()
+
+
+def test_save_solution_rejects_path_traversal():
+    resp = client.post("/onboarding/save-solution", json={
+        "solution_name": "../../etc",
+        "files": {"project.yaml": "name: hack"},
+    })
+    assert resp.status_code == 400
+    assert resp.json()["detail"]["error"] == "invalid_solution_name"
+
+
+def test_scan_folder_llm_failure_returns_503():
+    with tempfile.TemporaryDirectory() as tmp:
+        with open(_os.path.join(tmp, "README.md"), "w") as f:
+            f.write("# Test")
+        with patch("src.interface.api._get_llm_gateway") as mock_gw:
+            mock_gw.return_value.generate.side_effect = Exception("LLM timeout")
+            resp = client.post("/onboarding/scan-folder", json={
+                "folder_path": tmp,
+                "intent": "Build a QA agent",
+                "solution_name": "test_qa",
+            })
+    assert resp.status_code == 503
+    assert resp.json()["detail"]["error"] == "llm_unavailable"
+
+
+def test_parse_generated_files_handles_non_dict_json():
+    from src.interface.api import _parse_generated_files
+    files, summary = _parse_generated_files('["not", "a", "dict"]')
+    assert isinstance(files, dict)
+    assert "project.yaml" in files
