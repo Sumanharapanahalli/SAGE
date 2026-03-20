@@ -342,7 +342,15 @@ export default function Dashboard() {
   )
 
   const hasProjects = (projectsData?.projects?.length ?? 0) > 0
-  if (!hasProjects) return <EmptyState />
+
+  useEffect(() => {
+    if (hasProjects) {
+      localStorage.removeItem('sage_skip_empty_state')
+    }
+  }, [hasProjects])
+
+  const skipped = localStorage.getItem('sage_skip_empty_state') === '1'
+  if (!hasProjects && !skipped) return <EmptyState />
 
   // All dashboard content comes from project.yaml's `dashboard:` section
   const dashboardConfig = (projectData as any)?.dashboard ?? {}

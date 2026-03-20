@@ -96,7 +96,10 @@ export default function EmptyState() {
               Create solution
             </button>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => {
+                localStorage.setItem('sage_skip_empty_state', '1')
+                navigate('/analyst')
+              }}
               style={{ background: 'transparent', color: 'var(--sage-sidebar-text, #94a3b8)', border: 'none', fontSize: 12, cursor: 'pointer' }}
             >
               Skip for now

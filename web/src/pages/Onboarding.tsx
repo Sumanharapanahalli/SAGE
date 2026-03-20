@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { fetchOrg, fetchHealth } from '../api/client'
+import { fetchOrg, fetchHealth, fetchLLMHealth } from '../api/client'
 import OnboardingWizard from '../components/onboarding/OnboardingWizard'
 import ImportFlow from '../components/onboarding/ImportFlow'
 import { useTourContext } from '../context/TourContext'
@@ -12,10 +12,15 @@ export default function Onboarding() {
   const [mode, setMode] = useState<'describe' | 'import'>('describe')
 
   const { data: orgData } = useQuery({ queryKey: ['org'], queryFn: fetchOrg })
-  const { data: health } = useQuery({ queryKey: ['health'], queryFn: fetchHealth, refetchInterval: 10_000 })
+  useQuery({ queryKey: ['health'], queryFn: fetchHealth, refetchInterval: 10_000 })
+  const { data: llmHealth } = useQuery({
+    queryKey: ['health', 'llm'],
+    queryFn: fetchLLMHealth,
+    refetchInterval: 10_000,
+  })
 
   const org = orgData?.org ?? {}
-  const llmConnected = (health as any)?.llm_connected ?? (health as any)?.status === 'ok'
+  const llmConnected = llmHealth?.connected ?? false
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--sage-sidebar-bg, #0f172a)', padding: '32px 24px' }}>
