@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { fetchHealth, fetchAudit, fetchPendingProposals, approveProposalFull, rejectProposal, approveBatchProposals, type Proposal } from '../api/client'
+import { fetchHealth, fetchAudit, fetchPendingProposals, approveProposalFull, rejectProposal, approveBatchProposals, fetchProjects, type Proposal } from '../api/client'
 import { ActiveAgentsPanel } from '../components/ActiveAgentsPanel'
 import { useProjectConfig } from '../hooks/useProjectConfig'
 import SystemHealthCard from '../components/dashboard/SystemHealthCard'
 import ActiveAlertsPanel from '../components/dashboard/ActiveAlertsPanel'
 import ErrorTrendChart from '../components/dashboard/ErrorTrendChart'
+import EmptyState from '../components/dashboard/EmptyState'
 import ModuleWrapper from '../components/shared/ModuleWrapper'
 import { Loader2, CheckCircle2, XCircle, Clock, AlertTriangle, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -328,6 +329,10 @@ export default function Dashboard() {
     refetchInterval: 30_000,
   })
   const { data: projectData } = useProjectConfig()
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: fetchProjects,
+  })
   const navigate = useNavigate()
 
   if (healthLoading) return (
@@ -335,6 +340,9 @@ export default function Dashboard() {
       <Loader2 className="animate-spin" size={20} /> Loading…
     </div>
   )
+
+  const hasProjects = (projectsData?.projects?.length ?? 0) > 0
+  if (!hasProjects) return <EmptyState />
 
   // All dashboard content comes from project.yaml's `dashboard:` section
   const dashboardConfig = (projectData as any)?.dashboard ?? {}
