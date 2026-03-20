@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Target, ChevronDown, ChevronUp, Plus, X, Check } from 'lucide-react'
+import OtherSelect from '../components/ui/OtherSelect'
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -329,15 +330,17 @@ function AddGoalForm({
           </div>
           <div>
             <label style={labelStyle}>Status</label>
-            <select
-              style={{ ...inputStyle }}
+            <OtherSelect
               value={status}
-              onChange={e => setStatus(e.target.value as Objective['status'])}
-            >
-              <option value="on_track">On Track</option>
-              <option value="at_risk">At Risk</option>
-              <option value="off_track">Off Track</option>
-            </select>
+              onChange={v => setStatus(v as Objective['status'])}
+              options={[
+                { value: 'on_track',  label: 'On Track' },
+                { value: 'at_risk',   label: 'At Risk' },
+                { value: 'off_track', label: 'Off Track' },
+              ]}
+              style={{ ...inputStyle }}
+              inputStyle={{ ...inputStyle }}
+            />
           </div>
         </div>
 
