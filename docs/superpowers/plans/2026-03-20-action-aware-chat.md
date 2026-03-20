@@ -232,7 +232,7 @@ git commit -m "feat(chat): chat_router — LLM-as-router with structured JSON re
 - [ ] **Step 1: Write the failing test**
 
 ```python
-# Add to tests/test_audit_logger.py (or create new file tests/test_chat_audit.py)
+# tests/test_chat_audit.py  (new file — do NOT add to test_audit_logger.py)
 
 def test_chat_message_type_and_metadata_columns():
     """save_chat_message accepts message_type and metadata without error."""
@@ -265,7 +265,7 @@ def test_chat_message_type_and_metadata_columns():
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd C:/sandbox/SAGE && .venv/Scripts/pytest tests/test_audit_logger.py::test_chat_message_type_and_metadata_columns -v 2>/dev/null || .venv/Scripts/pytest tests/test_chat_audit.py -v
+cd C:/sandbox/SAGE && .venv/Scripts/pytest tests/test_chat_audit.py -v
 ```
 Expected: FAIL — `TypeError: save_chat_message() got unexpected keyword argument 'message_type'`
 
@@ -385,10 +385,29 @@ def test_chat_response_has_response_type():
     from unittest.mock import patch
     client = TestClient(app)
     mock_result = {"type": "answer", "reply": "Hello"}
-    with patch("src.core.chat_router.route", return_value=mock_result):
-        resp = client.post("/chat", json={"message": "hi", "user_id": "u1"})
+    # Patch at point of use (api module's bound name), not definition
+    with patch("src.interface.api.chat_route", mock_result.__class__) as m:
+        m.return_value = mock_result
+        # Use direct module-level patch since chat_route is imported as a name
+        with patch("src.core.chat_router.route", return_value=mock_result):
+            resp = client.post("/chat", json={"message": "hi", "user_id": "u1"})
     assert resp.status_code == 200
     assert "response_type" in resp.json()
+
+
+def test_chat_query_knowledge_returns_answer_type():
+    """query_knowledge action is resolved inline — returns response_type 'answer'."""
+    from src.interface.api import app
+    from unittest.mock import patch
+    client = TestClient(app)
+    mock_result = {"type": "action", "action": "query_knowledge",
+                   "params": {"query": "what is SAGE?"}, "confirmation_prompt": ""}
+    with patch("src.core.chat_router.route", return_value=mock_result):
+        with patch("src.memory.vector_store.vector_store.search", return_value=[{"content": "SAGE is a framework."}]):
+            resp = client.post("/chat", json={"message": "what is SAGE?", "user_id": "u1"})
+    # Should get an answer back (not a confirmation card)
+    data = resp.json()
+    assert data.get("response_type") == "answer"
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -548,10 +567,10 @@ async def chat_execute(req: ChatExecuteRequest):
             proposal = store.get(trace_id)
             if proposal is None:
                 raise HTTPException(status_code=404, detail=f"Proposal '{trace_id}' not found.")
-            executor = _get_proposal_executor()
-            import asyncio
-            asyncio.ensure_future(executor.execute(proposal))
             store.approve(trace_id)
+            from src.core.proposal_executor import execute_approved_proposal
+            import asyncio
+            asyncio.ensure_future(execute_approved_proposal(proposal))
             result_msg = f"Proposal {trace_id} approved."
             result_data = {"trace_id": trace_id}
 
@@ -642,11 +661,40 @@ cd C:/sandbox/SAGE && .venv/Scripts/pytest tests/ -x -q
 ```
 Expected: 480+ passed
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 8: Add `POST /chat/cancel` endpoint** (needed for frontend `cancelAction` audit logging)
+
+Add after the `/chat/execute` handler:
+
+```python
+@app.post("/chat/cancel")
+async def chat_cancel(req: ChatExecuteRequest):
+    """Log a user-cancelled action proposal to the audit trail."""
+    from src.core.project_loader import project_config
+    from src.memory.audit_logger import audit_logger
+
+    solution = req.solution or (project_config.project_name if project_config else "sage")
+    session_id = req.session_id or str(uuid.uuid4())
+    audit_logger.save_chat_message(
+        user_id=req.user_id, session_id=session_id, solution=solution,
+        role="user", content=f"[Cancelled: {req.action}]", page_context=None,
+        message_type="action_cancelled",
+        metadata={"action": req.action, "params": req.params},
+    )
+    _get_audit_logger().log_event(
+        actor="human_via_chat",
+        action_type=f"CHAT_CANCEL_{req.action.upper()}",
+        input_context=f"session={session_id} user={req.user_id}",
+        output_content="Action cancelled by user",
+        metadata={"action": req.action, "params": req.params, "session_id": session_id},
+    )
+    return {"status": "logged"}
+```
+
+- [ ] **Step 9: Commit**
 
 ```bash
 git add src/interface/api.py tests/test_chat_execute_endpoint.py
-git commit -m "feat(chat): enhance /chat with action routing + add /chat/execute endpoint"
+git commit -m "feat(chat): enhance /chat with action routing + /chat/execute + /chat/cancel endpoints"
 ```
 
 ---
@@ -703,7 +751,7 @@ export const postChat = (req: {
 ```bash
 cd C:/sandbox/SAGE/web && npx tsc --noEmit 2>&1 | grep -v "global"
 ```
-Expected: no new errors
+Expected: **one new TS error** — `useChat.ts` line referencing `res.reply` as possibly `undefined`. This is correct and intentional — `reply` is now optional in `ChatResponse`. It will be fixed in Task 6 when `useChat.ts` is rewritten. Do not suppress or fix it here.
 
 - [ ] **Step 3: Commit**
 
@@ -911,9 +959,19 @@ export function useChat() {
 
   const cancelAction = useCallback(() => {
     if (!pendingAction) return
+    const action = pendingAction
     setPendingAction(null)
     addMessage({ id: crypto.randomUUID(), role: 'system' as any, content: 'Cancelled.' })
-  }, [pendingAction, addMessage, setPendingAction])
+    // Log cancellation to backend for audit trail (fire-and-forget)
+    fetch('/api/chat/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: action.action, params: action.params,
+        user_id: userId, session_id: sessionId, solution,
+      }),
+    }).catch(() => {})
+  }, [pendingAction, userId, sessionId, solution, addMessage, setPendingAction])
 
   const clearHistory = useCallback(() => {
     setMessages([])
