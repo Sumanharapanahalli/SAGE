@@ -4190,6 +4190,61 @@ async def org_routes_delete(request: Request):
 
 
 # ---------------------------------------------------------------------------
+# Solution branding (direct write — framework control operation, no approval)
+# ---------------------------------------------------------------------------
+
+class BrandingRequest(BaseModel):
+    display_name: Optional[str] = None
+    icon_name:    Optional[str] = None
+    accent:       Optional[str] = None
+    sidebar_bg:   Optional[str] = None
+    sidebar_text: Optional[str] = None
+    badge_bg:     Optional[str] = None
+    badge_text:   Optional[str] = None
+
+
+@app.patch("/config/project/theme")
+async def patch_project_theme(req: BrandingRequest):
+    """Directly update the active solution's theme block and optionally its display name.
+    This is a framework control operation (like /config/switch) — executes immediately.
+    """
+    import yaml as _yaml
+    from src.core.project_loader import project_config, _SOLUTIONS_DIR
+    path = os.path.join(_SOLUTIONS_DIR, project_config.project_name, "project.yaml")
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="project.yaml not found")
+
+    with open(path, "r", encoding="utf-8") as fh:
+        data = _yaml.safe_load(fh) or {}
+
+    # Update display name if provided
+    if req.display_name is not None:
+        data["name"] = req.display_name
+
+    # Build / update theme block
+    theme = data.get("theme") or {}
+    if req.icon_name    is not None: theme["icon_name"]    = req.icon_name
+    if req.accent       is not None: theme["accent"]       = req.accent
+    if req.sidebar_bg   is not None: theme["sidebar_bg"]   = req.sidebar_bg
+    if req.sidebar_text is not None: theme["sidebar_text"] = req.sidebar_text
+    if req.badge_bg     is not None: theme["badge_bg"]     = req.badge_bg
+    if req.badge_text   is not None: theme["badge_text"]   = req.badge_text
+    data["theme"] = theme
+
+    with open(path, "w", encoding="utf-8") as fh:
+        _yaml.dump(data, fh, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+    # Reload project config so the change is reflected immediately
+    try:
+        from src.core.project_loader import load_project
+        load_project(project_config.project_name)
+    except Exception:
+        pass  # not fatal — next reload will pick it up
+
+    return {"status": "updated", "solution": project_config.project_name}
+
+
+# ---------------------------------------------------------------------------
 # Dev users (dev-mode identity roster)
 # ---------------------------------------------------------------------------
 

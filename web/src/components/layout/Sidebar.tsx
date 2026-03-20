@@ -86,6 +86,12 @@ const NAV_AREAS: NavArea[] = [
 // ---------------------------------------------------------------------------
 // SolutionRail — 44px far-left column
 // ---------------------------------------------------------------------------
+// Icon lookup for SolutionRail — subset of PRESET_ICONS available in this file
+const RAIL_ICONS: Record<string, any> = {
+  Cpu, Bot, Activity, Search, GitMerge, Lightbulb, Target,
+  Database, Shield, Network, Zap,
+}
+
 function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -99,6 +105,11 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['health'] }),
   })
 
+  const { data: projectData } = useProjectConfig()
+  const activeTheme = (projectData as any)?.theme ?? {}
+  const activeIconName = activeTheme.icon_name ?? ''
+  const activeAccent  = activeTheme.accent ?? '#3b82f6'
+
   const solutions = projectsData?.projects ?? []
 
   return (
@@ -110,23 +121,27 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
     >
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
                     overflowY: 'auto', width: '100%', paddingTop: '4px' }}>
-        {solutions.map(sol => (
-          <Tooltip key={sol.id} text={sol.name}>
-            <button
-              onClick={() => sol.id !== activeId && switchMutation.mutate(sol.id)}
-              style={{
-                width: '28px', height: '28px', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: '10px', fontWeight: 700, flexShrink: 0,
-                backgroundColor: sol.id === activeId ? '#3b82f6' : '#1e293b',
-                color: sol.id === activeId ? '#fff' : '#64748b',
-                cursor: sol.id === activeId ? 'default' : 'pointer',
-                border: 'none',
-              }}
-            >
-              {initials(sol.id)}
-            </button>
-          </Tooltip>
-        ))}
+        {solutions.map(sol => {
+          const isActive = sol.id === activeId
+          const RailIcon = isActive && activeIconName ? RAIL_ICONS[activeIconName] : null
+          return (
+            <Tooltip key={sol.id} text={sol.name}>
+              <button
+                onClick={() => !isActive && switchMutation.mutate(sol.id)}
+                style={{
+                  width: '28px', height: '28px', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', fontSize: '10px', fontWeight: 700, flexShrink: 0,
+                  backgroundColor: isActive ? activeAccent : '#1e293b',
+                  color: isActive ? '#fff' : '#64748b',
+                  cursor: isActive ? 'default' : 'pointer',
+                  border: 'none',
+                }}
+              >
+                {RailIcon ? <RailIcon size={14} color="#fff" /> : initials(sol.id)}
+              </button>
+            </Tooltip>
+          )
+        })}
       </div>
       <Tooltip text="Create a new solution">
         <button
