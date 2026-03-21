@@ -377,6 +377,81 @@ User: "what does PRECISERR mean?"
 
 ---
 
+## Slide — Build Orchestrator (0→1→N)
+
+**Describe a product in plain language → get a working codebase.**
+
+```
+"A task management app with Kanban boards and team collaboration"
+     ↓
+Domain detection → saas_product (auto-detected from keywords)
+     ↓
+Decompose → 4 components, 32 task types, 19 agents from WORKFORCE_REGISTRY
+     ↓
+AdaptiveRouter assigns best agent per task (Q-learning scores)
+     ↓
+Critic reviews plan (score: 0.85)
+     ↓
+HITL gate: founder approves plan
+     ↓
+Wave 1: [backend_api, frontend_ui] ← parallel
+  → Anti-drift checkpoint ✓
+Wave 2: [api_client]               ← depends on backend
+  → Anti-drift checkpoint ✓
+     ↓
+Critic reviews code (score: 0.78)
+     ↓
+Integration + final review
+     ↓
+HITL gate: founder approves build
+     ↓
+Working codebase + tests + CI/CD + agentic patterns
+```
+
+**Three HITL levels:** `minimal` (final only) · `standard` (plan + final) · `strict` (plan + per-component + final)
+
+**Critic Agent:** Actor-critic loop — every phase scored on correctness, completeness, consistency. Below threshold → agents revise automatically.
+
+**3-tier degradation:** OpenSWE runner → LLM direct → template scaffold. Always produces a buildable output.
+
+```bash
+curl -X POST http://localhost:8000/build/start \
+  -d '{"product_description": "...", "solution_name": "taskflow", "hitl_level": "standard"}'
+```
+
+**Built products are not static** — they ship with monitor agents, analyst prompts, scheduled tasks, and a seeded knowledge base.
+
+---
+
+## Slide — Domain Detection + Workforce Teams
+
+**13 industry domains auto-detected. 19 agents in 5 teams. 32 task types.**
+
+| Domain | Auto-detected from | Compliance injected |
+|---|---|---|
+| Medical Device | "medical", "clinical", "FDA" | IEC 62304, ISO 13485 |
+| Automotive | "vehicle", "ADAS", "ECU" | ISO 26262, ASPICE |
+| Avionics | "aircraft", "flight", "DO-178C" | DO-178C, ARP4754A |
+| Robotics | "robot", "actuator", "ROS" | ISO 10218 |
+| FinTech | "payment", "banking", "KYC" | PCI DSS, SOX |
+| + 8 more | IoT, ML/AI, SaaS, Consumer, Enterprise, E-commerce, Healthcare SW, EdTech | Domain-specific |
+
+**5 Workforce Teams:**
+
+| Team | Lead | Members |
+|---|---|---|
+| Engineering | developer | qa_engineer, system_tester, devops_engineer, localization_engineer |
+| Analysis | analyst | business_analyst, financial_analyst, data_scientist |
+| Design | ux_designer | product_manager |
+| Compliance | regulatory_specialist | legal_advisor, safety_engineer |
+| Operations | operations_manager | technical_writer, marketing_strategist |
+
+**Adaptive Router:** Q-learning agent routing — learns which agent performs best for each task type. 3+ observations before overriding defaults. Every build makes the next one smarter.
+
+**Anti-Drift:** After each wave, outputs verified against plan. Drift logged as `BUILD_DRIFT_WARNING`. In strict mode, pauses for human review.
+
+---
+
 ## Slide 10 — UX Intelligence Layer
 
 **A completely redesigned interface for operator-grade clarity.**

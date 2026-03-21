@@ -29,7 +29,7 @@ from contextlib import asynccontextmanager
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +168,20 @@ class ChatExecuteRequest(BaseModel):
     solution: str = ""
 
 
+class BuildStartRequest(BaseModel):
+    product_description: str = Field(..., min_length=10, max_length=10000)
+    solution_name: str = Field("", max_length=64, pattern=r'^[a-zA-Z0-9_-]*$')
+    repo_url: str = ""
+    workspace_dir: str = ""
+    critic_threshold: int = Field(70, ge=0, le=100)
+    hitl_level: str = Field("standard", pattern=r'^(minimal|standard|strict)$')
+
+
+class BuildApproveRequest(BaseModel):
+    approved: bool = True
+    feedback: str = ""
+
+
 class ScanFolderRequest(BaseModel):
     folder_path: str
     intent: str
@@ -244,6 +258,11 @@ def _get_active_solution() -> str:
         return _get_project_config().project_name
     except Exception:
         return os.environ.get("SAGE_PROJECT", "default")
+
+
+def _get_build_orchestrator():
+    from src.integrations.build_orchestrator import build_orchestrator
+    return build_orchestrator
 
 
 _task_scheduler = None
@@ -2315,6 +2334,101 @@ async def workflow_status(run_id: str):
         raise HTTPException(status_code=404, detail=result["error"])
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# Build Orchestrator Endpoints — 0→1→N pipeline with Critic Agent
+# ---------------------------------------------------------------------------
+
+@app.post("/build/start")
+async def build_start(req: BuildStartRequest):
+    """
+    Start a new build pipeline. Decomposes a product description into tasks,
+    runs critic review, and returns a plan for human approval.
+
+    Body:
+      product_description : str  — plain-English description of what to build
+      solution_name       : str  — name for the solution (optional)
+      repo_url            : str  — git URL (optional)
+      workspace_dir       : str  — local workspace path (optional)
+      critic_threshold    : int  — minimum critic score to pass (default: 70)
+
+    Returns:
+      run_id, state, plan, critic_scores
+    """
+    orchestrator = _get_build_orchestrator()
+    result = orchestrator.start(
+        product_description=req.product_description,
+        solution_name=req.solution_name,
+        repo_url=req.repo_url,
+        workspace_dir=req.workspace_dir,
+        critic_threshold=req.critic_threshold,
+        hitl_level=req.hitl_level,
+    )
+    if result.get("error"):
+        raise HTTPException(status_code=500, detail=result["error"])
+    return result
+
+
+@app.get("/build/status/{run_id}")
+async def build_status(run_id: str):
+    """Get current status of a build run."""
+    orchestrator = _get_build_orchestrator()
+    result = orchestrator.get_status(run_id)
+    if result.get("error"):
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@app.post("/build/approve/{run_id}")
+async def build_approve(run_id: str, req: BuildApproveRequest):
+    """
+    Approve a build stage. Routes to approve_plan or approve_build
+    depending on the current state.
+    """
+    if not req.approved:
+        orchestrator = _get_build_orchestrator()
+        result = orchestrator.reject(run_id, req.feedback)
+        if result.get("error") and "not found" in result["error"].lower():
+            raise HTTPException(status_code=404, detail=result["error"])
+        return result
+
+    orchestrator = _get_build_orchestrator()
+    status = orchestrator.get_status(run_id)
+
+    if status.get("error"):
+        raise HTTPException(status_code=404, detail=status["error"])
+
+    state = status.get("state", "")
+    if state == "awaiting_plan":
+        result = orchestrator.approve_plan(run_id, feedback=req.feedback)
+    elif state == "awaiting_build":
+        result = orchestrator.approve_build(run_id, feedback=req.feedback)
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Run is not awaiting approval (state: {state})",
+        )
+
+    if result.get("error"):
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+@app.get("/build/runs")
+async def build_runs():
+    """List all build runs."""
+    orchestrator = _get_build_orchestrator()
+    runs = orchestrator.list_runs()
+    return {"runs": runs, "count": len(runs)}
+
+
+@app.get("/build/roles")
+async def build_roles():
+    """List all hireable agent roles with skills, tools, and MCP capabilities."""
+    from src.integrations.build_orchestrator import get_hireable_roles
+    roles = get_hireable_roles()
+    return {"roles": roles, "count": len(roles)}
 
 
 # ---------------------------------------------------------------------------

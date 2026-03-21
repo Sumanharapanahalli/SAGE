@@ -23,7 +23,11 @@ src/                    Framework Python source
     tenant.py           Multi-tenant context (X-SAGE-Tenant header, ContextVar)
     proposal_store.py   Pending proposals — SQLite-backed, risk-classified, expiry-aware
     proposal_executor.py Dispatch approved proposals to their side-effect handlers
-  agents/               Analyst, Developer, Monitor, Planner, Universal
+    build_orchestrator.py 0→1→N product build pipeline — domain detection (13 domains),
+                         DOMAIN_RULES, WORKFORCE_REGISTRY (19 agents, 5 teams),
+                         AdaptiveRouter (Q-learning), 32 task types, anti-drift checkpoints
+  agents/               Analyst, Developer, Monitor, Planner, Universal, Critic
+    critic.py           Actor-critic reviewer — scores plan, code, and integration quality
   interface/api.py      FastAPI — the only public interface
   memory/               Audit logger, vector memory (CRUD + bulk import), long_term_memory.py
   modules/              Zero-dependency nano-modules
@@ -34,6 +38,7 @@ src/                    Framework Python source
     slack_approver.py   Slack Block Kit proposals + /webhook/slack callbacks
     temporal_runner.py  Temporal durable workflows (LangGraph fallback)
     langchain_tools.py  LangChain tool loader per solution
+    openswe_runner.py   OpenSWE autonomous coding agent — repo explore, implement, test, PR
 
 web/src/                React 18 + TypeScript dashboard
   pages/                One file per route
@@ -155,6 +160,11 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 9 | Eval/benchmarking | `eval_runner.py` | `solutions/<name>/evals/*.yaml` |
 | 10 | Multi-tenant isolation | `tenant.py`, middleware | `X-SAGE-Tenant` header |
 | 11 | Temporal durable workflows | `temporal_runner.py` | `TEMPORAL_HOST` env var |
+| 12 | Build Orchestrator (0→1→N) | `build_orchestrator.py`, `critic.py`, `openswe_runner.py` | `POST /build/start` |
+| 12.1 | Domain-aware build detection | `build_orchestrator.py` (`DOMAIN_RULES` — 13 domains) | Auto-detected from description |
+| 12.2 | Workforce registry + 32 task types | `build_orchestrator.py` (`WORKFORCE_REGISTRY` — 19 agents, 5 teams) | — |
+| 12.3 | Adaptive router (Q-learning) | `build_orchestrator.py` (`AdaptiveRouter`) | `GET /build/router/stats` |
+| 12.4 | Anti-drift checkpoints | `build_orchestrator.py` | `BUILD_DRIFT_WARNING` audit events |
 
 ---
 

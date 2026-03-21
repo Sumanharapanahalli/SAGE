@@ -783,9 +783,199 @@ Never short-circuit any phase. Phase 5 is not optional — every rejection is a 
 
 ---
 
-## 18. Roadmap
+## 18. Build Orchestrator
+
+The Build Orchestrator is an end-to-end product construction pipeline that transforms a plain-language product description into a working codebase with tests, CI/CD, and documentation. It includes domain-aware build detection (13 domains), an adaptive agent router (Q-learning), 32 task types, 19 agent roles in 5 workforce teams, and anti-drift checkpoints.
+
+### 18.1 Components
+
+| Component | Location | Purpose |
+|---|---|---|
+| `BuildOrchestrator` | `src/core/build_orchestrator.py` | Pipeline coordinator — domain detection, decompose, schedule, integrate |
+| `CriticAgent` | `src/agents/critic.py` | Actor-critic reviewer — scores plan, code, and integration quality |
+| `OpenSWERunner` | `src/integrations/openswe_runner.py` | Autonomous coding agent — repo exploration, implementation, test execution |
+| `AdaptiveRouter` | `src/core/build_orchestrator.py` | Q-learning router — learns best agent per task type from success/quality scores |
+| `DOMAIN_RULES` | `src/core/build_orchestrator.py` | 13 domain rule sets — keywords, required tasks, compliance, HITL overrides |
+| `WORKFORCE_REGISTRY` | `src/core/build_orchestrator.py` | 19 agents in 5 functional teams — Engineering, Analysis, Design, Compliance, Operations |
+
+### 18.2 Domain-Aware Build Detection
+
+The orchestrator automatically classifies the product description against 13 industry domains using keyword matching in `DOMAIN_RULES`. Each domain rule specifies:
+
+- **Keywords** — terms that trigger domain detection (e.g., "medical", "clinical", "FDA" → `medical_device`)
+- **Required task types** — injected into the build plan (e.g., `SAFETY`, `COMPLIANCE`)
+- **Compliance standards** — propagated to the solution YAML
+- **HITL overrides** — regulated domains can force `strict` regardless of the requested level
+- **Extra acceptance criteria** — domain-specific checks for the Critic Agent
+
+**Supported domains:** `medical_device` · `automotive` · `avionics` · `robotics` · `iot` · `fintech` · `hardware_generic` · `ml_ai` · `saas_product` · `consumer_app` · `enterprise` · `ecommerce` · `healthcare_software` · `edtech`
+
+### 18.3 Workforce Registry and 32 Task Types
+
+**19 agent roles** are organised into **5 workforce teams**:
+
+| Team | Lead | Members |
+|---|---|---|
+| Engineering | developer | qa_engineer, system_tester, devops_engineer, localization_engineer |
+| Analysis | analyst | business_analyst, financial_analyst, data_scientist |
+| Design | ux_designer | product_manager |
+| Compliance | regulatory_specialist | legal_advisor, safety_engineer |
+| Operations | operations_manager | technical_writer, marketing_strategist |
+
+**32 task types** across four categories:
+- **Software (9):** BACKEND, FRONTEND, TESTS, INFRA, DOCS, DATABASE, API, CONFIG, AGENTIC
+- **Hardware/Embedded/Mechanical (7):** FIRMWARE, HARDWARE_SIM, PCB_DESIGN, MECHANICAL, SAFETY, COMPLIANCE, EMBEDDED_TEST
+- **Cross-cutting (3):** SECURITY, DATA, ML_MODEL
+- **Business/Operational (13):** QA, SYSTEM_TEST, REGULATORY, BUSINESS_ANALYSIS, MARKET_RESEARCH, FINANCIAL, UX_DESIGN, DEVOPS, PRODUCT_MGMT, LEGAL, OPERATIONS, TRAINING, LOCALIZATION
+
+### 18.4 Adaptive Router (Q-Learning)
+
+The `AdaptiveRouter` uses Q-learning inspired scoring to learn the best agent for each task type:
+
+```
+Task submitted → Router checks observation count for task type
+     │
+     ├─ < 3 observations → use static WORKFORCE_REGISTRY default
+     │
+     └─ ≥ 3 observations → select agent with highest EMA score
+                            (learning rate: 0.3)
+```
+
+After each agent execution, the router updates its score table:
+```
+new_score = (1 - α) × old_score + α × observed_quality
+```
+
+Where `α = 0.3` (learning rate). Over successive builds, the router shifts work toward higher-performing agents. Stats are exposed via `GET /build/router/stats`.
+
+### 18.5 Anti-Drift Checkpoints
+
+After each wave of agent execution, the orchestrator verifies that outputs align with the original task intent:
+
+1. Compare each component's output against the decomposed plan.
+2. If drift is detected, log a `BUILD_DRIFT_WARNING` audit event.
+3. In `strict` mode, pause for human review.
+4. The Critic Agent assesses drift severity and may trigger agent revision.
+
+### 18.6 Data Flow
+
+```
+Product Description (plain text)
+         │
+         ▼
+┌─────────────────────────────────┐
+│  DOMAIN DETECTION               │
+│  DOMAIN_RULES keyword match     │
+│  → inject required tasks,       │
+│    compliance, HITL overrides   │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  DECOMPOSE                      │
+│  LLM breaks product into        │
+│  components, 32 task types,     │
+│  agent assignments from         │
+│  WORKFORCE_REGISTRY             │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  ADAPTIVE ROUTER                │
+│  Q-learning selects best agent  │
+│  per task type (≥3 observations)│
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  CRITIC — PLAN REVIEW           │
+│  CriticAgent scores plan        │
+│  on completeness, feasibility   │
+│  Score < threshold → revise     │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  HITL GATE (standard/strict)    │
+│  Human reviews decomposed plan  │
+│  Approve / Reject with feedback │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  SCAFFOLD                       │
+│  Create directory structure,    │
+│  configs, CI/CD, package files  │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  EXECUTE AGENTS (wave-parallel) │
+│  Each component → ReAct agent   │
+│  Independent components in      │
+│  parallel waves                 │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  ANTI-DRIFT CHECKPOINT          │
+│  Verify outputs match plan      │
+│  Log BUILD_DRIFT_WARNING if not │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  CRITIC — CODE REVIEW           │
+│  Per-component (strict mode)    │
+│  or aggregate (standard mode)   │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  INTEGRATE                      │
+│  Cross-component wiring:        │
+│  shared types, API contracts,   │
+│  routing, environment config    │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  CRITIC — INTEGRATION REVIEW    │
+│  End-to-end consistency check   │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  HITL GATE (all levels)         │
+│  Human reviews final build      │
+└────────────┬────────────────────┘
+             ▼
+┌─────────────────────────────────┐
+│  FINALIZE                       │
+│  Tests, documentation,          │
+│  deployment config, agentic     │
+│  patterns (monitor, analyst,    │
+│  scheduled tasks)               │
+└─────────────────────────────────┘
+```
+
+### 18.7 3-Tier Code Generation Degradation
+
+The orchestrator tries three strategies in order for each component:
+
+| Tier | Strategy | When used |
+|---|---|---|
+| 1 | **OpenSWERunner** | Full autonomous agent — repo exploration, multi-file implementation, test execution. Used when `open-swe` integration is available. |
+| 2 | **LLM direct generation** | Sends component spec to the active LLM with structured output parsing. Fallback when OpenSWE is unavailable. |
+| 3 | **Template scaffolding** | Language-specific project templates with placeholder implementations. Fallback when LLM generation fails or times out. |
+
+Each tier produces a buildable output. The Critic Agent evaluates the result regardless of which tier generated it.
+
+### 18.8 Wave-Based Parallel Execution
+
+Components are grouped into waves based on their dependency graph. Independent components execute concurrently via the `ParallelTaskRunner`. Components with explicit dependencies (e.g., an API client depending on a backend schema) wait for their dependency wave to complete.
+
+```
+Wave 1: [backend_api, frontend_ui, docs]          ← concurrent
+Wave 2: [api_client (depends on backend_api)]      ← sequential after wave 1
+Wave 3: [integration_tests (depends on all)]       ← sequential after wave 2
+```
+
+---
+
+## 19. Roadmap
 
 ### Phases 0–4 — Core Framework (Complete)
+
 
 | Phase | Feature | Key files |
 |-------|---------|-----------|
@@ -834,6 +1024,16 @@ Full Paperclip-style founder command center. One human + AI agent team, everythi
 | **Workflows** | `/workflows` | Mermaid diagram viewer — one card per workflow, full-screen modal, copy button |
 
 **UI changes:** CompanyRail (far-left solution switcher), sharp zero-radius zinc aesthetic, Cmd+K command palette (all 16 routes), sidebar grouped WORK/AGENTS/INTELLIGENCE/SETTINGS.
+
+### Phase 12 — Build Orchestrator (Complete)
+
+| Phase | Feature | Key files |
+|-------|---------|-----------|
+| 12 | Build Orchestrator (0→1→N pipeline) | `build_orchestrator.py`, `critic.py`, `openswe_runner.py` |
+| 12.1 | Domain-aware build detection (13 domains) | `build_orchestrator.py` (`DOMAIN_RULES`) |
+| 12.2 | 32 task types, 19 agent roles, 5 workforce teams | `build_orchestrator.py` (`WORKFORCE_REGISTRY`) |
+| 12.3 | Adaptive router (Q-learning) | `build_orchestrator.py` (`AdaptiveRouter`) |
+| 12.4 | Anti-drift checkpoints | `build_orchestrator.py` (wave-level drift verification) |
 
 ### Next — Platform Expansion
 

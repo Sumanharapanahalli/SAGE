@@ -14,7 +14,7 @@ llm:
 
   # --- Gemini CLI Settings (provider = "gemini") ---
   gemini_model: "gemini-2.5-flash"      # Model hint (CLI may override)
-  timeout: 120                           # Max seconds to wait for CLI response
+  timeout: 500                           # Max seconds to wait for CLI response
 
   # --- Claude Code CLI Settings (provider = "claude-code") ---
   claude_model: "claude-sonnet-4-6"
