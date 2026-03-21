@@ -348,6 +348,31 @@ export const MODULE_REGISTRY: Record<string, ModuleMetadata> = {
     improvementHints: [],
   },
 
+  build: {
+    id: 'build',
+    name: 'Build Console',
+    description: 'End-to-end product builder: describe → decompose → critic review → build → approve.',
+    version: '1.0.0',
+    route: '/build',
+    features: [
+      'Plain-English product description input',
+      'AI-powered task decomposition via Planner Agent',
+      'Critic Agent adversarial review at every gate (plan, code, integration)',
+      'Builder↔Critic loop with score progression tracking',
+      'Two HITL approval gates: plan review + final build review',
+      'Wave-based parallel agent execution via OpenSWE (3-tier degradation)',
+      'Phase stepper showing pipeline progress',
+      'Build history with past runs',
+    ],
+    improvementHints: [
+      'Add GitHub PR creation on build approval',
+      'Add real-time log streaming per agent task',
+      'Add workspace file browser showing generated code',
+      'Add cost estimation per build run',
+      'Add template library for common product types',
+    ],
+  },
+
   'access-control': {
     id: 'access-control',
     name: 'Access Control',

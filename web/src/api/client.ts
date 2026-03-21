@@ -802,6 +802,91 @@ export const refineGeneration = (req: RefineRequest) =>
 export const saveSolution = (req: SaveSolutionRequest) =>
   post<{ status: string; solution_name: string }>('/onboarding/save-solution', req)
 
+// Build Orchestrator — 0→1→N pipeline
+export interface BuildCriticScore {
+  phase: string
+  score: number
+  passed: boolean
+  iterations: number
+}
+
+export interface BuildAgentResult {
+  task_type: string
+  description: string
+  status: string
+  tier: string
+  step: number
+}
+
+export interface BuildStatus {
+  run_id: string
+  solution_name: string
+  state: string
+  state_description: string
+  created_at: string
+  updated_at: string
+  product_description: string
+  hitl_level: string
+  hitl_gates: string[]
+  plan: Array<{
+    step: number; task_type: string; description: string
+    payload: Record<string, unknown>
+    acceptance_criteria?: string[]
+    depends_on?: number[]
+    agent_role?: string
+  }>
+  task_count: number
+  critic_scores: BuildCriticScore[]
+  critic_reports: Array<{ phase: string; result: Record<string, unknown> }>
+  agent_results: (BuildAgentResult & {
+    wave?: number; agent_role?: string; acceptance_criteria?: string[]
+  })[]
+  integration_result: Record<string, unknown> | null
+  error: string | null
+}
+
+export interface BuildRunSummary {
+  run_id: string
+  solution_name: string
+  state: string
+  created_at: string
+  task_count: number
+}
+
+export const startBuild = (params: {
+  product_description: string
+  solution_name?: string
+  repo_url?: string
+  workspace_dir?: string
+  critic_threshold?: number
+  hitl_level?: 'minimal' | 'standard' | 'strict'
+}) => post<BuildStatus>('/build/start', params)
+
+export const fetchBuildStatus = (runId: string) =>
+  get<BuildStatus>(`/build/status/${runId}`)
+
+export const approveBuild = (runId: string, approved = true, feedback = '') =>
+  post<BuildStatus>(`/build/approve/${runId}`, { approved, feedback })
+
+export const fetchBuildRuns = () =>
+  get<{ runs: BuildRunSummary[]; count: number }>('/build/runs')
+
+// Agent roles for "Hire an Agent"
+export interface AgentRole {
+  role: string
+  title: string
+  description: string
+  team: string
+  skills: string[]
+  tools: string[]
+  mcp_server: string | null
+  mcp_capabilities: string[]
+  hire_when: string
+}
+
+export const fetchBuildRoles = () =>
+  get<{ roles: AgentRole[]; count: number }>('/build/roles')
+
 // Solution branding
 export interface BrandingPayload {
   display_name?: string

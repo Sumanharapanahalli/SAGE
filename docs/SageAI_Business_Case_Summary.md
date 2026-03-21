@@ -101,6 +101,7 @@
 | 👁 | 24/7 Monitor | Teams, Metabase, GitLab event detection |
 | 📊 | Audit Trail | Every decision traceable, ISO 13485 compliant |
 | 🌐 | Web Dashboard | No CLI: Dashboard, Analyst, Developer, Audit, Monitor pages |
+| 🏗️ | Build Orchestrator | Plain-language → working codebase: 13 domain detection, 32 task types, 19 agents in 5 workforce teams, adaptive Q-learning routing, anti-drift checkpoints |
 
 ---
 

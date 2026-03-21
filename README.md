@@ -107,12 +107,13 @@ Or generate from a plain-language description in 30 seconds — see [GETTING_STA
 - Slack two-way approval (Block Kit cards + webhook callbacks)
 
 **Agentic Intelligence**
-- 5 agent roles: Analyst, Developer, Monitor, Planner, Universal
+- 5 core agent roles: Analyst, Developer, Monitor, Planner, Universal — plus 19 specialist roles in the Build Orchestrator workforce (Engineering, Analysis, Design, Compliance, Operations teams)
 - Roles defined in `prompts.yaml` — no Python required for new roles
 - ReAct loop (Reason+Act) for multi-step MR review
 - Plan-and-Execute orchestration for complex tasks
 - Wave scheduling — independent tasks run in parallel, dependent tasks sequence automatically
 - Compounding memory — every correction improves future proposals without model retraining
+- **Build Orchestrator** — end-to-end product construction from plain-language description (0→1→N pipeline), with Critic Agent review, configurable HITL gates, domain-aware build detection (13 industries), 32 task types, 19 agent roles in 5 workforce teams, adaptive Q-learning router, and anti-drift checkpoints
 
 **Multi-Solution**
 - Switch domains with one click; all agent prompts, task types, and UI labels adapt
@@ -152,6 +153,14 @@ make run PROJECT=starter       # Generic starter — no integrations required
 make ui                        # React web UI at http://localhost:5173
 make test                      # Framework unit tests
 make test-compliance           # IQ/OQ/PQ validation suite
+```
+
+To build a product from scratch (Build Orchestrator):
+
+```bash
+curl -X POST http://localhost:8000/build/start \
+  -H "Content-Type: application/json" \
+  -d '{"product_description": "A task management app with Kanban boards", "solution_name": "taskflow"}'
 ```
 
 To run a regulated domain solution:
@@ -233,6 +242,8 @@ Backend at `http://localhost:8000`. Interactive docs at `http://localhost:8000/d
 | `GET` | `/knowledge/search` | Semantic search across solution knowledge base |
 | `POST` | `/knowledge/add` | Add entry to solution knowledge base |
 | `POST` | `/onboarding/generate` | Generate solution YAML from plain-language description |
+| `POST` | `/build/start` | Start end-to-end product build from description |
+| `GET` | `/build/status/{run_id}` | Get build run status and progress |
 | `GET` | `/org` | Get org structure |
 | `GET` | `/eval/run` | Run evaluation suite |
 | `POST` | `/shutdown` | Stop backend and frontend |

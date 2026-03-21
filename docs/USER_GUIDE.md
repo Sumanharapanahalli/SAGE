@@ -22,6 +22,7 @@ This guide covers everything needed to install, configure, run, and operate the 
 12. [Troubleshooting](#12-troubleshooting)
 13. [Action-Aware Chat](#13-action-aware-chat)
 14. [SAGE 9 Framework Features](#14-sage-9-framework-features)
+15. [Build Orchestrator](#15-build-orchestrator)
 
 ---
 
@@ -1006,3 +1007,219 @@ Sub-tasks run in parallel waves. Track them:
 ```bash
 GET /tasks/{task_id}/subtasks
 ```
+
+---
+
+## 15. Build Orchestrator
+
+The Build Orchestrator is SAGE's end-to-end product construction pipeline. Given a plain-language description of what to build, it decomposes the product into components, assigns work to a workforce of 19 agent roles across 32 task types, and delivers a working codebase — all with human approval gates at critical checkpoints. Domain-aware build detection automatically tailors the pipeline for 13 industry domains.
+
+### 15.1 What It Does (0 to 1 to N)
+
+The Build Orchestrator implements the **0 to 1 to N** pipeline:
+
+- **0 to 1** — Takes a product idea (plain text) and produces a working, tested codebase with CI/CD, documentation, and deployment configuration.
+- **1 to N** — Built products come with agentic patterns (monitor agents, analyst agents, scheduled tasks) that continue operating after the initial build, compounding intelligence over time.
+
+### 15.2 Domain-Aware Build Detection
+
+The orchestrator automatically detects the product domain from the description using keyword matching against `DOMAIN_RULES`. Each domain injects required task types, compliance standards, HITL overrides, and extra acceptance criteria into the build plan — no manual domain selection needed.
+
+**13 supported domains:**
+
+| Domain | Keywords (sample) | Required Task Types | Compliance Standards |
+|---|---|---|---|
+| `medical_device` | medical, clinical, FDA, patient | SAFETY, COMPLIANCE, EMBEDDED_TEST | IEC 62304, ISO 13485, FDA 21 CFR 820 |
+| `automotive` | vehicle, ADAS, ECU, automotive | SAFETY, FIRMWARE, HARDWARE_SIM | ISO 26262, ASPICE, ISO/SAE 21434 |
+| `avionics` | aircraft, avionics, flight, DO-178C | SAFETY, COMPLIANCE, SYSTEM_TEST | DO-178C, DO-254, ARP4754A |
+| `robotics` | robot, actuator, ROS, kinematics | FIRMWARE, SAFETY, HARDWARE_SIM | ISO 10218, ISO/TS 15066 |
+| `iot` | IoT, sensor, embedded, gateway | FIRMWARE, SECURITY, EMBEDDED_TEST | IEC 62443, ETSI EN 303 645 |
+| `fintech` | payment, banking, trading, KYC | SECURITY, COMPLIANCE, REGULATORY | PCI DSS, SOX, PSD2 |
+| `hardware_generic` | PCB, schematic, FPGA, ASIC | PCB_DESIGN, MECHANICAL, HARDWARE_SIM | IPC standards |
+| `ml_ai` | machine learning, neural, training | ML_MODEL, DATA, TESTS | — |
+| `saas_product` | SaaS, subscription, multi-tenant | BACKEND, FRONTEND, API, INFRA | SOC 2, GDPR |
+| `consumer_app` | mobile app, iOS, Android | FRONTEND, BACKEND, UX_DESIGN | App Store, GDPR |
+| `enterprise` | enterprise, ERP, CRM, B2B | BACKEND, API, SECURITY | SOC 2, ISO 27001 |
+| `ecommerce` | shop, cart, checkout, catalog | FRONTEND, BACKEND, API | PCI DSS, GDPR |
+| `healthcare_software` | EHR, HIPAA, telehealth | BACKEND, SECURITY, COMPLIANCE | HIPAA, HL7, FHIR |
+| `edtech` | LMS, course, student, learning | FRONTEND, BACKEND, UX_DESIGN | FERPA, COPPA |
+
+Domain detection is automatic. Each domain can override the default HITL level (e.g., `medical_device` forces `strict`) and inject extra acceptance criteria that the Critic Agent checks.
+
+### 15.3 32 Task Types
+
+The orchestrator routes work across 32 task types organised into four categories:
+
+**Software (9):**
+`BACKEND` · `FRONTEND` · `TESTS` · `INFRA` · `DOCS` · `DATABASE` · `API` · `CONFIG` · `AGENTIC`
+
+**Hardware / Embedded / Mechanical (7):**
+`FIRMWARE` · `HARDWARE_SIM` · `PCB_DESIGN` · `MECHANICAL` · `SAFETY` · `COMPLIANCE` · `EMBEDDED_TEST`
+
+**Cross-cutting (3):**
+`SECURITY` · `DATA` · `ML_MODEL`
+
+**Business / Operational (13):**
+`QA` · `SYSTEM_TEST` · `REGULATORY` · `BUSINESS_ANALYSIS` · `MARKET_RESEARCH` · `FINANCIAL` · `UX_DESIGN` · `DEVOPS` · `PRODUCT_MGMT` · `LEGAL` · `OPERATIONS` · `TRAINING` · `LOCALIZATION`
+
+Task types are automatically selected based on the detected domain. Regulated domains inject their required task types (e.g., `medical_device` always includes `SAFETY` and `COMPLIANCE`).
+
+### 15.4 19 Agent Roles in 5 Workforce Teams
+
+The `WORKFORCE_REGISTRY` organises 19 agent roles into functional teams, each with a team lead, members, and declared capabilities:
+
+| Team | Lead | Members | Capabilities |
+|---|---|---|---|
+| **Engineering** | developer | qa_engineer, system_tester, devops_engineer, localization_engineer | Code, test, deploy, localise |
+| **Analysis** | analyst | business_analyst, financial_analyst, data_scientist | Research, model, analyse |
+| **Design** | ux_designer | product_manager | UX, product strategy |
+| **Compliance** | regulatory_specialist | legal_advisor, safety_engineer | Regulatory, legal, safety |
+| **Operations** | operations_manager | technical_writer, marketing_strategist | Ops, docs, go-to-market |
+
+The orchestrator assigns agents from the workforce registry based on task type. For example, `SAFETY` tasks route to `safety_engineer`; `UX_DESIGN` tasks route to `ux_designer`.
+
+### 15.5 Adaptive Router (Q-Learning)
+
+The `AdaptiveRouter` learns the best agent for each task type using Q-learning inspired scoring:
+
+- **Exponential moving average** with learning rate 0.3 tracks success/quality scores per agent per task type.
+- Requires **3+ observations** before overriding the default agent assignment.
+- Falls back to the static `WORKFORCE_REGISTRY` mapping when insufficient data exists.
+- Stats available via `GET /build/router/stats`.
+
+Over time, the router shifts work toward higher-performing agents. This is compounding intelligence at the task-routing level — every build makes the next one better.
+
+### 15.6 Anti-Drift Checkpoints
+
+After each wave of agent execution, the orchestrator runs **anti-drift verification** — comparing each component's output against the original task intent. If the output has drifted from the plan:
+
+- A `BUILD_DRIFT_WARNING` audit event is logged.
+- The Critic Agent is invoked to assess severity.
+- In `strict` HITL mode, the build pauses for human review.
+
+This prevents the common failure mode where autonomous agents gradually diverge from the original product specification.
+
+### 15.7 The ReAct Pattern for Agent Execution
+
+Each build agent uses the **ReAct (Reason + Act)** pattern during code generation. The agent iterates through Thought, Action, and Observation steps — reading existing files, planning changes, writing code, running tests — until the component is complete. This is the same pattern used by the Developer agent for MR review (see Section 6 of ARCHITECTURE.md), extended to multi-file code generation.
+
+### 15.8 The Critic Agent (Actor-Critic Loop)
+
+Every major phase of the build passes through a **Critic Agent** before proceeding. The Critic scores the output on correctness, completeness, and consistency:
+
+```
+Agent produces output → Critic reviews → Score ≥ threshold? → Proceed
+                                              ↓ (no)
+                                        Agent revises → Critic re-reviews
+```
+
+The `critic_threshold` parameter (default: 0.7) controls the minimum acceptable score. Scores are returned in `GET /build/status/{run_id}` under `critic_scores` for plan, code, and integration phases.
+
+### 15.9 HITL Gates
+
+The Build Orchestrator supports three levels of human oversight:
+
+| Level | Gates | Best for |
+|---|---|---|
+| `minimal` | Final build approval only | Trusted domains, prototyping, rapid iteration |
+| `standard` | Plan review + final build approval | Default — balanced human oversight |
+| `strict` | Plan review + per-component code review + final build approval | Regulated industries, safety-critical products |
+
+At each gate, the build pauses and waits for `POST /build/approve/{run_id}`. Rejection feedback is fed back to the agents for revision. Domain detection can override the HITL level (e.g., `medical_device` forces `strict` regardless of the requested level).
+
+### 15.10 Data Flow
+
+```
+Product description (plain text)
+     ↓
+Domain detection (DOMAIN_RULES keyword matching → 13 domains)
+     ↓
+Decompose → component list, 32 task types, agent assignments from WORKFORCE_REGISTRY
+     ↓
+AdaptiveRouter selects best agent per task (Q-learning scores)
+     ↓
+Critic reviews plan (actor-critic loop)
+     ↓
+HITL gate: human approves/rejects plan
+     ↓
+Scaffold → directory structure, configs, CI/CD
+     ↓
+Execute agents (wave-parallel per component)
+     ↓
+Anti-drift checkpoint (per wave)
+     ↓
+Critic reviews generated code (per component in strict mode)
+     ↓
+Integrate → cross-component wiring, shared types, routing
+     ↓
+Critic reviews integration
+     ↓
+HITL gate: human approves/rejects final build
+     ↓
+Finalize → tests, docs, deployment config
+```
+
+### 15.11 3-Tier Degradation for Code Generation
+
+The Build Orchestrator tries three code generation strategies in order:
+
+1. **Open SWE runner** — full autonomous coding agent with repo exploration, test execution, and PR creation (requires `open-swe` integration).
+2. **LLM direct generation** — sends component specs to the active LLM provider with structured output parsing.
+3. **Template scaffolding** — falls back to language-specific project templates with placeholder implementations.
+
+Each tier produces a working starting point. The Critic Agent evaluates the output regardless of which tier generated it.
+
+### 15.12 Wave-Based Parallel Execution
+
+Components without dependencies are built concurrently in waves, using the same parallel task scheduler as the rest of SAGE (see Section 14, Feature G). For example, a frontend and backend component with no shared code can be built simultaneously, while an API client that depends on the backend schema waits for its wave.
+
+### 15.13 Starting a Build from the Web UI
+
+1. Navigate to the **Build** page (Work area in the sidebar).
+2. Enter a product description in plain language.
+3. Optionally set the solution name, repo URL, critic threshold, and HITL level.
+4. Click **Start Build** — a `run_id` is returned and the build begins.
+5. The orchestrator auto-detects the domain and shows the detected domain, required task types, and assigned agents.
+6. When the build reaches a HITL gate, a notification appears in the Approvals inbox.
+7. Review the plan or code, then approve or reject with feedback.
+
+### 15.14 Starting a Build via the API
+
+```bash
+# Start a build
+curl -X POST http://localhost:8000/build/start \
+  -H "Content-Type: application/json" \
+  -d '{
+    "product_description": "A task management app with Kanban boards and team collaboration",
+    "solution_name": "taskflow",
+    "hitl_level": "standard"
+  }'
+# → {"run_id": "...", "status": "planning"}
+
+# Check status (includes detected_domain, router_stats)
+curl http://localhost:8000/build/status/{run_id}
+
+# Approve the plan
+curl -X POST http://localhost:8000/build/approve/{run_id} \
+  -d '{"approved": true, "feedback": "Plan looks good"}'
+
+# List all builds
+curl http://localhost:8000/build/runs
+
+# List supported domains
+curl http://localhost:8000/build/domains
+
+# View adaptive router performance
+curl http://localhost:8000/build/router/stats
+```
+
+### 15.15 Agentic Patterns for Built Products
+
+Products built by the orchestrator are not static codebases — they come pre-wired with SAGE agentic patterns:
+
+- **Monitor agent** — configured to watch logs, metrics, and CI/CD for the built product.
+- **Analyst agent** — tuned with domain-specific prompts for the product's error patterns.
+- **Scheduled tasks** — recurring health checks and log reviews declared in `tasks.yaml`.
+- **Knowledge base** — seeded with the product's architecture decisions and design rationale.
+
+These patterns mean the built product continues to improve through the standard SAGE lean loop after initial construction.

@@ -396,6 +396,98 @@ Add `X-SAGE-Tenant: <team_name>` header to any request to scope it to a team.
 
 ---
 
+## Build Orchestrator
+
+End-to-end product build pipeline — from plain-language description to working codebase. Includes domain-aware build detection, adaptive agent routing, and anti-drift checkpoints.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/build/start` | Start a new build run |
+| GET | `/build/status/{run_id}` | Get build run status, phase, and progress |
+| POST | `/build/approve/{run_id}` | Approve or reject a plan or build at a HITL gate |
+| GET | `/build/runs` | List all build runs |
+| GET | `/build/domains` | List all 13 supported domain rules |
+| GET | `/build/router/stats` | Adaptive router performance — per-task-type agent scores and observation counts |
+
+**`POST /build/start` body:**
+```json
+{
+  "product_description": "A SaaS invoicing platform with Stripe integration",
+  "solution_name": "invoicing_saas",
+  "repo_url": "https://github.com/org/invoicing",
+  "workspace_dir": "/tmp/builds/invoicing",
+  "critic_threshold": 0.7,
+  "hitl_level": "standard"
+}
+```
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `product_description` | Yes | — | Plain-language description of what to build |
+| `solution_name` | Yes | — | Solution name for YAML generation |
+| `repo_url` | No | — | Git repo to clone or work in |
+| `workspace_dir` | No | auto | Local directory for build artifacts |
+| `critic_threshold` | No | `0.7` | Minimum critic score to pass review (0.0–1.0) |
+| `hitl_level` | No | `"standard"` | `"minimal"` / `"standard"` / `"strict"` |
+
+**Returns:** `{"run_id": "...", "status": "planning"}`
+
+**Domain detection:** The orchestrator automatically detects the product domain from the description using keyword matching against `DOMAIN_RULES`. Each domain injects required task types, compliance standards, HITL overrides, and extra acceptance criteria into the build plan. No manual domain selection needed.
+
+**`POST /build/approve/{run_id}` body:**
+```json
+{"approved": true, "feedback": "Looks good, proceed with implementation"}
+```
+
+**`GET /build/status/{run_id}` response:**
+```json
+{
+  "run_id": "...",
+  "status": "awaiting_approval",
+  "phase": "plan_review",
+  "progress": 0.25,
+  "plan": { "components": [...], "agents": [...] },
+  "critic_scores": { "plan": 0.82, "code": null, "integration": null },
+  "detected_domain": "saas_product",
+  "router_stats": { "BACKEND": {"best_agent": "developer", "score": 0.87} }
+}
+```
+
+**`GET /build/domains` response:**
+```json
+{
+  "domains": [
+    {"id": "medical_device", "keywords": ["medical", "clinical", ...], "required_tasks": ["SAFETY", "COMPLIANCE", ...], "compliance": ["IEC 62304", "ISO 13485", ...]},
+    ...
+  ]
+}
+```
+
+**`GET /build/router/stats` response:**
+```json
+{
+  "task_scores": {
+    "BACKEND": {"developer": 0.87, "devops_engineer": 0.62},
+    "SAFETY": {"safety_engineer": 0.91}
+  },
+  "observation_counts": {"BACKEND": 12, "SAFETY": 5},
+  "learning_rate": 0.3,
+  "min_observations": 3
+}
+```
+
+**HITL levels:**
+
+| Level | Gates | Use case |
+|---|---|---|
+| `minimal` | Final build approval only | Trusted domains, rapid iteration |
+| `standard` | Plan review + final build | Default — balanced oversight |
+| `strict` | Plan review + per-component code review + final build | Regulated industries |
+
+**Supported domains (13):** `medical_device` · `automotive` · `avionics` · `robotics` · `iot` · `fintech` · `hardware_generic` · `ml_ai` · `saas_product` · `consumer_app` · `enterprise` · `ecommerce` · `healthcare_software` · `edtech`
+
+---
+
 ## Notes
 
 - All write endpoints that affect shared state go through the **Proposal Store** and require `POST /approve/{trace_id}` before executing.

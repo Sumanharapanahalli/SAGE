@@ -41,6 +41,7 @@ const NAV_AREAS: NavArea[] = [
       { to: '/approvals',    icon: Inbox,           label: 'Approvals',    moduleId: 'approvals',    tooltip: 'Agent proposals waiting for your review before execution' },
       { to: '/queue',        icon: ListOrdered,     label: 'Task Queue',   moduleId: 'queue',        tooltip: 'Tasks currently queued or running across all agents' },
       { to: '/',             icon: LayoutDashboard, label: 'Dashboard',    moduleId: 'dashboard',    tooltip: 'System health, recent activity, and integration status' },
+      { to: '/build',        icon: Wand2,           label: 'Build',        moduleId: 'build',        tooltip: 'End-to-end product builder: describe → decompose → build → approve' },
       { to: '/live-console', icon: Terminal,        label: 'Live Console', moduleId: 'live-console', tooltip: 'Real-time backend log stream' },
     ],
   },
