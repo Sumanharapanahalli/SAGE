@@ -1,0 +1,2262 @@
+openapi: "3.1.0"
+info:
+  title: "Elder Fall Detection System (EFDS) API"
+  version: "1.0.0"
+  description: |
+    ## Elder Fall Detection System — Public REST API
+
+    Covers three interface surfaces:
+    - **Caregiver Mobile App API** — device status, fall history, GPS location, alert acknowledgement
+    - **Web Admin API** — fleet management, user management, OTA firmware, analytics reports
+    - **NG911 Webhook API** — PSAP emergency dispatch integration via CAP 1.2
+
+    Device-to-Cloud communication uses MQTT 5.0 over TLS 1.3 with X.509 mutual TLS.
+    See `mqtt_schema.md` for the full MQTT topic hierarchy and payload schemas.
+    See `ng911_webhook.md` for CAP 1.2 integration guide and PSAP onboarding.
+
+    ### Versioning Strategy
+    - All endpoints are prefixed `/v1`.
+    - Breaking changes introduce a parallel `/v2` prefix; `/v1` continues in parallel.
+    - Deprecation is announced via `Deprecation` (RFC 9745) and `Sunset` (RFC 8594) headers.
+    - Minimum 12-month sunset window from deprecation date for all stable endpoints.
+    - Non-breaking additions (new optional fields, new query params) are made in-place without version bump.
+    - Clients MUST treat unknown JSON fields as ignorable to remain forward-compatible.
+
+    ### Authentication Overview
+    | Surface | Scheme | Notes |
+    |---|---|---|
+    | Devices | X.509 mTLS (MQTT layer) | Certificates provisioned at manufacturing |
+    | Users (caregiver/admin) | JWT RS256 + TOTP MFA | 15-min access token, 30-day refresh |
+    | NG911 callbacks | HMAC-SHA256 shared secret | Replay window: 5 minutes |
+
+  contact:
+    name: "EFDS Platform Engineering"
+    email: "api-support@efds.example.com"
+    url: "https://docs.efds.example.com"
+  license:
+    name: "Proprietary — All rights reserved"
+    url: "https://efds.example.com/legal"
+
+servers:
+  - url: "https://api.efds.example.com/v1"
+    description: "Production"
+  - url: "https://api.staging.efds.example.com/v1"
+    description: "Staging"
+  - url: "https://api.dev.efds.example.com/v1"
+    description: "Development"
+
+tags:
+  - name: auth
+    description: "Authentication, token management, MFA"
+  - name: devices
+    description: "Device status (caregiver-facing)"
+  - name: falls
+    description: "Fall event history and details"
+  - name: location
+    description: "Device GPS location tracking"
+  - name: alerts
+    description: "Alert management and acknowledgement"
+  - name: admin-fleet
+    description: "Fleet management (admin role required)"
+  - name: admin-users
+    description: "User and role management (admin role required)"
+  - name: admin-reports
+    description: "Analytics and compliance reports (admin role required)"
+  - name: admin-ota
+    description: "Over-the-air firmware deployment (admin role required)"
+  - name: webhooks
+    description: "NG911 PSAP emergency dispatch webhooks"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        RS256-signed JWT issued by `POST /auth/login` + `POST /auth/mfa/verify`.
+        Include as: `Authorization: Bearer <token>`
+        Access token lifetime: 15 minutes.
+        Refresh via `POST /auth/refresh` before expiry.
+        Claims: `sub` (user_id), `role`, `tenant_id`, `iat`, `exp`, `jti`.
+
+    AdminBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Same JWT format as BearerAuth but requires `role: admin` claim.
+        All admin endpoints additionally verify the `admin` role claim server-side.
+        TOTP MFA is mandatory for users with admin role.
+
+    DeviceMTLS:
+      type: mutualTLS
+      description: |
+        X.509 client certificate mutual TLS for MQTT device connections (not REST).
+        Certificate Authority: `efds-device-intermediate-ca` (2-year validity).
+        Leaf cert CN format: `device:{deviceId}`
+        Leaf cert SAN: `URI:urn:efds:device:{deviceId}`
+        Certificates provisioned at manufacturing. Rotation delivered via OTA workflow.
+
+  schemas:
+
+    # ── Common ──────────────────────────────────────────────────────────────
+
+    Error:
+      type: object
+      required: [code, message, request_id]
+      properties:
+        code:
+          type: string
+          example: "AUTH_TOKEN_EXPIRED"
+        message:
+          type: string
+          example: "The provided JWT has expired."
+        request_id:
+          type: string
+          format: uuid
+          description: "Correlates to server-side trace. Include when reporting issues."
+        details:
+          type: object
+          additionalProperties: true
+
+    Pagination:
+      type: object
+      required: [total, page, per_page, pages]
+      properties:
+        total:
+          type: integer
+          example: 142
+        page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 25
+        pages:
+          type: integer
+          example: 6
+
+    # ── Auth ────────────────────────────────────────────────────────────────
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "caregiver@example.com"
+        password:
+          type: string
+          format: password
+          minLength: 12
+
+    MFAVerifyRequest:
+      type: object
+      required: [session_token, totp_code]
+      properties:
+        session_token:
+          type: string
+          description: "Opaque pre-MFA session token returned by /auth/login"
+        totp_code:
+          type: string
+          pattern: "^[0-9]{6}$"
+          description: "6-digit TOTP code from authenticator app"
+
+    TokenResponse:
+      type: object
+      required: [token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+          description: "RS256-signed JWT. Present when requires_mfa=false or after MFA."
+        refresh_token:
+          type: string
+          description: "Opaque single-use refresh token. 30-day lifetime."
+        session_token:
+          type: string
+          description: "Pre-MFA session token. Present only when requires_mfa=true."
+        token_type:
+          type: string
+          enum: [Bearer]
+        expires_in:
+          type: integer
+          description: "Seconds until access_token expiry"
+          example: 900
+        requires_mfa:
+          type: boolean
+          default: false
+
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    # ── Device ──────────────────────────────────────────────────────────────
+
+    DeviceId:
+      type: string
+      format: uuid
+      description: "Device UUID assigned at provisioning"
+
+    DeviceModel:
+      type: string
+      enum: [EFDS-100, EFDS-200, EFDS-PRO]
+      description: |
+        EFDS-100: Basic wrist-worn fall detector.
+        EFDS-200: Advanced with GPS + cellular.
+        EFDS-PRO: Medical-grade with continuous vitals.
+
+    DeviceStatus:
+      type: object
+      required: [device_id, online, battery_pct, firmware_version, last_seen_at, alert_active]
+      properties:
+        device_id:
+          $ref: "#/components/schemas/DeviceId"
+        online:
+          type: boolean
+          description: "True if heartbeat received within 5 minutes"
+        battery_pct:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 82
+        firmware_version:
+          type: string
+          example: "2.4.1"
+        signal_strength_dbm:
+          type:
+            - integer
+            - "null"
+          description: "Cellular RSSI in dBm"
+          example: -72
+        last_seen_at:
+          type: string
+          format: date-time
+        alert_active:
+          type: boolean
+        alert_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+
+    DeviceRegistrationRequest:
+      type: object
+      required: [serial_number, model, tenant_id]
+      properties:
+        serial_number:
+          type: string
+          pattern: "^EFDS-[A-Z0-9]{8}$"
+          example: "EFDS-A1B2C3D4"
+        model:
+          $ref: "#/components/schemas/DeviceModel"
+        tenant_id:
+          type: string
+          format: uuid
+        assigned_user_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        location_description:
+          type: string
+          maxLength: 255
+          example: "Living room, 42 Maple St"
+
+    DeviceDetail:
+      allOf:
+        - $ref: "#/components/schemas/DeviceStatus"
+        - type: object
+          required: [serial_number, model, tenant_id, provisioned_at]
+          properties:
+            serial_number:
+              type: string
+              example: "EFDS-A1B2C3D4"
+            model:
+              $ref: "#/components/schemas/DeviceModel"
+            tenant_id:
+              type: string
+              format: uuid
+            assigned_user_id:
+              type:
+                - string
+                - "null"
+              format: uuid
+            location_description:
+              type:
+                - string
+                - "null"
+              maxLength: 255
+            provisioned_at:
+              type: string
+              format: date-time
+            certificate_thumbprint:
+              type: string
+              description: "SHA-256 of device X.509 leaf certificate (hex)"
+
+    DeviceList:
+      type: object
+      required: [devices, meta]
+      properties:
+        devices:
+          type: array
+          items:
+            $ref: "#/components/schemas/DeviceDetail"
+        meta:
+          $ref: "#/components/schemas/Pagination"
+
+    DeviceUpdateRequest:
+      type: object
+      properties:
+        assigned_user_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        location_description:
+          type:
+            - string
+            - "null"
+          maxLength: 255
+
+    # ── Fall Events ─────────────────────────────────────────────────────────
+
+    FallSeverity:
+      type: string
+      enum: [low, medium, high, critical]
+      description: |
+        ML-classified fall severity:
+        - low: Soft impact (<2g), patient responsive within 10s
+        - medium: Moderate impact (2-4g), brief stillness (10-30s)
+        - high: High impact (>4g), prolonged stillness (30-120s)
+        - critical: High impact + no motion >120s or SOS triggered
+
+    FallEvent:
+      type: object
+      required: [fall_id, device_id, detected_at, severity, acknowledged, ng911_dispatched]
+      properties:
+        fall_id:
+          type: string
+          format: uuid
+        device_id:
+          $ref: "#/components/schemas/DeviceId"
+        detected_at:
+          type: string
+          format: date-time
+        severity:
+          $ref: "#/components/schemas/FallSeverity"
+        impact_g_force:
+          type:
+            - number
+            - "null"
+          format: float
+          description: "Peak accelerometer reading (g) at impact"
+          example: 4.7
+        post_fall_stillness_seconds:
+          type:
+            - integer
+            - "null"
+          description: "Seconds of inactivity detected after impact"
+        location:
+          $ref: "#/components/schemas/GeoPoint"
+        acknowledged:
+          type: boolean
+        acknowledged_by_user_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        acknowledged_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        acknowledgement_notes:
+          type:
+            - string
+            - "null"
+          maxLength: 1000
+        ng911_dispatched:
+          type: boolean
+          description: "True if a CAP 1.2 alert was sent for this fall event"
+        ng911_incident_id:
+          type:
+            - string
+            - "null"
+          description: "PSAP incident reference number"
+
+    FallEventList:
+      type: object
+      required: [falls, meta]
+      properties:
+        falls:
+          type: array
+          items:
+            $ref: "#/components/schemas/FallEvent"
+        meta:
+          $ref: "#/components/schemas/Pagination"
+
+    # ── Location ────────────────────────────────────────────────────────────
+
+    GeoPoint:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 40.7128
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: -74.006
+        accuracy_meters:
+          type:
+            - number
+            - "null"
+          format: float
+          example: 8.5
+        altitude_meters:
+          type:
+            - number
+            - "null"
+          format: float
+
+    LocationFix:
+      type: object
+      required: [device_id, location, recorded_at, source]
+      properties:
+        device_id:
+          $ref: "#/components/schemas/DeviceId"
+        location:
+          $ref: "#/components/schemas/GeoPoint"
+        recorded_at:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [gps, cell_tower, wifi]
+
+    LocationHistory:
+      type: object
+      required: [device_id, from, to, points]
+      properties:
+        device_id:
+          $ref: "#/components/schemas/DeviceId"
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocationFix"
+
+    # ── Alerts ──────────────────────────────────────────────────────────────
+
+    AlertType:
+      type: string
+      enum: [fall_detected, battery_critical, device_offline, sos_button, geofence_breach]
+
+    AlertSummary:
+      type: object
+      required: [alert_id, device_id, type, created_at, acknowledged]
+      properties:
+        alert_id:
+          type: string
+          format: uuid
+        device_id:
+          $ref: "#/components/schemas/DeviceId"
+        type:
+          $ref: "#/components/schemas/AlertType"
+        severity:
+          $ref: "#/components/schemas/FallSeverity"
+        created_at:
+          type: string
+          format: date-time
+        acknowledged:
+          type: boolean
+        fall_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+          description: "Linked FallEvent UUID when type=fall_detected"
+
+    AlertList:
+      type: object
+      required: [alerts, meta]
+      properties:
+        alerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AlertSummary"
+        meta:
+          $ref: "#/components/schemas/Pagination"
+
+    AcknowledgeAlertRequest:
+      type: object
+      required: [notes]
+      properties:
+        notes:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          example: "Checked on patient — minor fall, no injury."
+        dispatch_911:
+          type: boolean
+          default: false
+          description: "If true, triggers NG911 CAP 1.2 dispatch"
+
+    # ── Admin — Users ───────────────────────────────────────────────────────
+
+    UserRole:
+      type: string
+      enum: [admin, caregiver, viewer, device_manager]
+      description: |
+        admin: Full access. caregiver: Assigned devices only.
+        viewer: Read-only, no location. device_manager: Fleet only, no patient data.
+
+    UserCreateRequest:
+      type: object
+      required: [email, first_name, last_name, role, tenant_id]
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        role:
+          $ref: "#/components/schemas/UserRole"
+        tenant_id:
+          type: string
+          format: uuid
+        phone:
+          type:
+            - string
+            - "null"
+          pattern: "^\\+[1-9]\\d{1,14}$"
+          description: "E.164 format for SMS alerts"
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        role:
+          $ref: "#/components/schemas/UserRole"
+        phone:
+          type:
+            - string
+            - "null"
+        active:
+          type: boolean
+
+    UserDetail:
+      type: object
+      required: [user_id, email, first_name, last_name, role, tenant_id, created_at, mfa_enabled, active]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+        tenant_id:
+          type: string
+          format: uuid
+        phone:
+          type:
+            - string
+            - "null"
+        created_at:
+          type: string
+          format: date-time
+        last_login_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        mfa_enabled:
+          type: boolean
+        active:
+          type: boolean
+
+    UserList:
+      type: object
+      required: [users, meta]
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserDetail"
+        meta:
+          $ref: "#/components/schemas/Pagination"
+
+    # ── Admin — Reports ─────────────────────────────────────────────────────
+
+    FallReportRow:
+      type: object
+      required: [period, fall_count, by_severity, ng911_dispatched_count]
+      properties:
+        period:
+          type: string
+          example: "2026-03-15"
+        fall_count:
+          type: integer
+        by_severity:
+          type: object
+          required: [low, medium, high, critical]
+          properties:
+            low:
+              type: integer
+            medium:
+              type: integer
+            high:
+              type: integer
+            critical:
+              type: integer
+        ng911_dispatched_count:
+          type: integer
+        avg_acknowledge_seconds:
+          type:
+            - number
+            - "null"
+          format: float
+
+    FallReport:
+      type: object
+      required: [period_start, period_end, total_falls, granularity, rows]
+      properties:
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        total_falls:
+          type: integer
+        granularity:
+          type: string
+          enum: [day, week, month]
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/FallReportRow"
+
+    DeviceHealthReport:
+      type: object
+      required: [total_devices, online_count, offline_count, low_battery_count, firmware_summary]
+      properties:
+        total_devices:
+          type: integer
+        online_count:
+          type: integer
+        offline_count:
+          type: integer
+        low_battery_count:
+          type: integer
+          description: "Devices with battery_pct < 20"
+        firmware_summary:
+          type: array
+          items:
+            type: object
+            required: [firmware_version, count, is_latest]
+            properties:
+              firmware_version:
+                type: string
+              count:
+                type: integer
+              is_latest:
+                type: boolean
+
+    AlertReport:
+      type: object
+      required: [period_start, period_end, total_alerts, by_type]
+      properties:
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        total_alerts:
+          type: integer
+        by_type:
+          type: object
+          properties:
+            fall_detected:
+              type: integer
+            battery_critical:
+              type: integer
+            device_offline:
+              type: integer
+            sos_button:
+              type: integer
+            geofence_breach:
+              type: integer
+        avg_acknowledge_seconds:
+          type:
+            - number
+            - "null"
+          format: float
+
+    # ── Admin — OTA ─────────────────────────────────────────────────────────
+
+    OTADeploymentStatus:
+      type: string
+      enum: [scheduled, in_progress, completed, failed, rolled_back]
+
+    OTADeploymentCreateRequest:
+      type: object
+      required: [firmware_version, target_model, firmware_url, firmware_sha256]
+      properties:
+        firmware_version:
+          type: string
+          pattern: "^\\d+\\.\\d+\\.\\d+$"
+          example: "2.5.0"
+        target_model:
+          type: string
+          enum: [EFDS-100, EFDS-200, EFDS-PRO, all]
+        target_device_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: "Targeted subset. Empty = all devices of target_model."
+        firmware_url:
+          type: string
+          format: uri
+          description: "Signed S3 pre-signed URL (valid 24h)"
+        firmware_sha256:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+          description: "SHA-256 of firmware binary (hex). Device verifies before applying."
+        rollout_percentage:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+          description: "Canary rollout percentage"
+        scheduled_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: "Null = immediate. Must be future-dated."
+        release_notes:
+          type:
+            - string
+            - "null"
+          maxLength: 2000
+
+    OTADeployment:
+      type: object
+      required: [deployment_id, firmware_version, target_model, status, rollout_percentage, created_at, firmware_sha256]
+      properties:
+        deployment_id:
+          type: string
+          format: uuid
+        firmware_version:
+          type: string
+        target_model:
+          type: string
+          enum: [EFDS-100, EFDS-200, EFDS-PRO, all]
+        target_device_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        status:
+          $ref: "#/components/schemas/OTADeploymentStatus"
+        rollout_percentage:
+          type: integer
+        total_targeted:
+          type: integer
+        updated_count:
+          type: integer
+        failed_count:
+          type: integer
+        firmware_url:
+          type:
+            - string
+            - "null"
+          format: uri
+        firmware_sha256:
+          type: string
+        release_notes:
+          type:
+            - string
+            - "null"
+        scheduled_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        started_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        completed_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    OTADeploymentList:
+      type: object
+      required: [deployments, meta]
+      properties:
+        deployments:
+          type: array
+          items:
+            $ref: "#/components/schemas/OTADeployment"
+        meta:
+          $ref: "#/components/schemas/Pagination"
+
+    # ── NG911 / CAP 1.2 ────────────────────────────────────────────────────
+
+    CAP12Alert:
+      type: object
+      required: [identifier, sender, sent, status, msgType, scope, info]
+      description: |
+        Common Alerting Protocol (CAP) 1.2 alert per OASIS standard.
+        Reference: https://docs.oasis-open.org/emergency/cap/v1.2/CAP-v1.2-os.html
+      properties:
+        identifier:
+          type: string
+          description: "Globally unique alert identifier"
+          example: "efds-fall-550e8400-e29b-41d4-a716-446655440000"
+        sender:
+          type: string
+          description: "Sending system identifier"
+          example: "efds@efds.example.com"
+        sent:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [Actual, Exercise, System, Test, Draft]
+        msgType:
+          type: string
+          enum: [Alert, Update, Cancel, Ack, Error]
+        scope:
+          type: string
+          enum: [Public, Restricted, Private]
+        restriction:
+          type:
+            - string
+            - "null"
+        addresses:
+          type: string
+          description: "Space-separated PSAP identifiers when scope=Private"
+          example: "psap-nyc-01 psap-nyc-02"
+        code:
+          type: array
+          items:
+            type: string
+          description: "Special handling codes"
+        note:
+          type:
+            - string
+            - "null"
+        references:
+          type:
+            - string
+            - "null"
+          description: "For Update/Cancel — sender,identifier,sent triples"
+        incidents:
+          type:
+            - string
+            - "null"
+        info:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CAP12Info"
+
+    CAP12Info:
+      type: object
+      required: [category, event, urgency, severity, certainty, description, area]
+      properties:
+        language:
+          type: string
+          default: "en-US"
+        category:
+          type: array
+          items:
+            type: string
+            enum: [Geo, Met, Safety, Security, Rescue, Fire, Health, Env, Transport, Infra, CBRNE, Other]
+          example: ["Safety", "Health"]
+        event:
+          type: string
+          example: "Fall Detected — Elderly Person"
+        responseType:
+          type: array
+          items:
+            type: string
+            enum: [Shelter, Evacuate, Prepare, Execute, Avoid, Monitor, Assess, AllClear, None]
+          example: ["Execute"]
+        urgency:
+          type: string
+          enum: [Immediate, Expected, Future, Past, Unknown]
+        severity:
+          type: string
+          enum: [Extreme, Severe, Moderate, Minor, Unknown]
+        certainty:
+          type: string
+          enum: [Observed, Likely, Possible, Unlikely, Unknown]
+        audience:
+          type: string
+          example: "Emergency Medical Services"
+        eventCode:
+          type: array
+          items:
+            type: object
+            required: [valueName, value]
+            properties:
+              valueName:
+                type: string
+                example: "SAME"
+              value:
+                type: string
+                example: "CEM"
+        effective:
+          type: string
+          format: date-time
+        onset:
+          type: string
+          format: date-time
+        expires:
+          type: string
+          format: date-time
+        senderName:
+          type: string
+          example: "EFDS Emergency Monitoring Platform"
+        headline:
+          type: string
+          maxLength: 160
+          example: "FALL ALERT: Jane Doe, 78F — 42 Maple St, New York, NY"
+        description:
+          type: string
+          maxLength: 2000
+        instruction:
+          type: string
+          example: "Dispatch EMS. Patient 78F. High-severity fall at 14:32 UTC. No manual check-in."
+        web:
+          type: string
+          format: uri
+        contact:
+          type: string
+          example: "Primary caregiver: Mary Doe +1-555-0199"
+        parameter:
+          type: array
+          items:
+            type: object
+            required: [valueName, value]
+            properties:
+              valueName:
+                type: string
+              value:
+                type: string
+          description: |
+            EFDS-specific parameters:
+            EFDSDeviceId, EFDSFallId, EFDSSeverity, EFDSPatientAge, EFDSPatientName, EFDSGForce
+        resource:
+          type: array
+          items:
+            $ref: "#/components/schemas/CAP12Resource"
+        area:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CAP12Area"
+
+    CAP12Area:
+      type: object
+      required: [areaDesc]
+      properties:
+        areaDesc:
+          type: string
+          example: "42 Maple St, New York, NY 10001"
+        polygon:
+          type:
+            - string
+            - "null"
+          description: "WGS84 polygon pairs, space-separated"
+        circle:
+          type: string
+          description: "lat,lon radius_km (WGS84)"
+          example: "40.7128,-74.006 0.05"
+        geocode:
+          type: array
+          items:
+            type: object
+            required: [valueName, value]
+            properties:
+              valueName:
+                type: string
+                example: "FIPS6"
+              value:
+                type: string
+                example: "036061"
+        altitude:
+          type:
+            - number
+            - "null"
+          format: float
+          description: "Altitude above WGS84 ellipsoid (feet)"
+        ceiling:
+          type:
+            - number
+            - "null"
+          format: float
+
+    CAP12Resource:
+      type: object
+      required: [resourceDesc, mimeType]
+      properties:
+        resourceDesc:
+          type: string
+        mimeType:
+          type: string
+          example: "image/jpeg"
+        size:
+          type:
+            - integer
+            - "null"
+        uri:
+          type: string
+          format: uri
+        derefUri:
+          type:
+            - string
+            - "null"
+          description: "Base64-encoded inline resource content"
+        digest:
+          type:
+            - string
+            - "null"
+          description: "SHA-1 digest of the resource"
+
+    NG911DispatchRequest:
+      type: object
+      required: [fall_id, override_reason]
+      properties:
+        fall_id:
+          type: string
+          format: uuid
+        override_reason:
+          type: string
+          minLength: 10
+          maxLength: 500
+          example: "Patient not responding to phone calls after high-severity fall."
+
+    NG911DispatchResponse:
+      type: object
+      required: [incident_id, cap_identifier, dispatched_at, psap_ids]
+      properties:
+        incident_id:
+          type: string
+          format: uuid
+        cap_identifier:
+          type: string
+          example: "efds-fall-550e8400-e29b-41d4-a716-446655440000"
+        dispatched_at:
+          type: string
+          format: date-time
+        psap_ids:
+          type: array
+          items:
+            type: string
+          example: ["psap-nyc-manh-01"]
+        already_dispatched:
+          type: boolean
+          default: false
+
+    NG911StatusCallback:
+      type: object
+      required: [cap_identifier, status, updated_at]
+      properties:
+        cap_identifier:
+          type: string
+        status:
+          type: string
+          enum: [received, dispatched, on_scene, closed, cancelled]
+        unit_id:
+          type:
+            - string
+            - "null"
+        updated_at:
+          type: string
+          format: date-time
+        notes:
+          type:
+            - string
+            - "null"
+          maxLength: 500
+
+paths:
+
+  # ── Authentication ────────────────────────────────────────────────────────
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: "Login (step 1 of 2 when MFA enabled)"
+      description: |
+        Authenticates email + password. When MFA is enabled, returns requires_mfa=true
+        with a session_token. Complete via POST /auth/mfa/verify.
+        Rate limit: 5 failures per 15-min window locks account.
+      operationId: authLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: "Authenticated or pre-MFA session"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          description: "Malformed request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "Invalid credentials"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: "Account locked"
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/mfa/verify:
+    post:
+      tags: [auth]
+      summary: "Complete TOTP MFA (step 2)"
+      operationId: authMfaVerify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MFAVerifyRequest"
+      responses:
+        "200":
+          description: "MFA verified — full tokens issued"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: "Invalid or expired TOTP code"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "410":
+          description: "Session token expired (10-minute window)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: "Refresh access token"
+      description: "Issues new token pair. Provided refresh token is invalidated (single-use)."
+      operationId: authRefresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: "New token pair"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: "Refresh token invalid, expired, or already used"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: "Revoke tokens"
+      operationId: authLogout
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "204":
+          description: "Tokens revoked"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Devices (Caregiver) ──────────────────────────────────────────────────
+
+  /devices/{deviceId}/status:
+    get:
+      tags: [devices]
+      summary: "Get device status"
+      operationId: getDeviceStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/DeviceId"
+      responses:
+        "200":
+          description: "Device status"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceStatus"
+        "403":
+          description: "Device not assigned to caller"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Falls (Caregiver) ────────────────────────────────────────────────────
+
+  /devices/{deviceId}/falls:
+    get:
+      tags: [falls]
+      summary: "List fall events"
+      operationId: listDeviceFalls
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/DeviceId"
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: severity
+          in: query
+          schema:
+            $ref: "#/components/schemas/FallSeverity"
+        - name: acknowledged
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 25
+            maximum: 100
+      responses:
+        "200":
+          description: "Paginated fall events"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FallEventList"
+        "403":
+          description: "Device not assigned to caller"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /devices/{deviceId}/falls/{fallId}:
+    get:
+      tags: [falls]
+      summary: "Get fall event detail"
+      operationId: getFallEvent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/DeviceId"
+        - name: fallId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "Fall event detail"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FallEvent"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "Fall event not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Location (Caregiver) ─────────────────────────────────────────────────
+
+  /devices/{deviceId}/location:
+    get:
+      tags: [location]
+      summary: "Get latest device location"
+      operationId: getDeviceLocation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/DeviceId"
+      responses:
+        "200":
+          description: "Most recent GPS fix"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationFix"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "Device not found or no fix acquired"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /devices/{deviceId}/location/history:
+    get:
+      tags: [location]
+      summary: "Get location history track"
+      description: "Max query window: 7 days."
+      operationId: getDeviceLocationHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/DeviceId"
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: resolution_minutes
+          in: query
+          schema:
+            type: integer
+            default: 5
+            minimum: 1
+            maximum: 60
+      responses:
+        "200":
+          description: "Location track"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationHistory"
+        "400":
+          description: "Invalid range (max 7 days)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Alerts (Caregiver) ───────────────────────────────────────────────────
+
+  /alerts:
+    get:
+      tags: [alerts]
+      summary: "List alerts for caller's devices"
+      operationId: listAlerts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: acknowledged
+          in: query
+          schema:
+            type: boolean
+        - name: type
+          in: query
+          schema:
+            $ref: "#/components/schemas/AlertType"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 25
+            maximum: 100
+      responses:
+        "200":
+          description: "Alert list"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertList"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /alerts/{alertId}/acknowledge:
+    post:
+      tags: [alerts]
+      summary: "Acknowledge alert"
+      description: "Marks alert acknowledged. dispatch_911=true also triggers NG911 CAP dispatch."
+      operationId: acknowledgeAlert
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcknowledgeAlertRequest"
+      responses:
+        "200":
+          description: "Alert acknowledged"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertSummary"
+        "403":
+          description: "Alert not assigned to caller"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "Alert not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /alerts/{alertId}/dispatch-911:
+    post:
+      tags: [alerts, webhooks]
+      summary: "Manually trigger NG911 dispatch"
+      description: |
+        Generates CAP 1.2 alert and forwards to NG911 PSAP gateway.
+        Idempotent — returns existing incident if already dispatched.
+      operationId: dispatchNG911
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NG911DispatchRequest"
+      responses:
+        "200":
+          description: "Dispatch sent or already sent (idempotent)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NG911DispatchResponse"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "Alert not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: "NG911 gateway unreachable"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Admin — Fleet ────────────────────────────────────────────────────────
+
+  /admin/fleet:
+    get:
+      tags: [admin-fleet]
+      summary: "Fleet health summary"
+      operationId: adminGetFleet
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "Aggregated fleet health"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceHealthReport"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/devices:
+    get:
+      tags: [admin-fleet]
+      summary: "List all devices"
+      operationId: adminListDevices
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: model
+          in: query
+          schema:
+            $ref: "#/components/schemas/DeviceModel"
+        - name: online
+          in: query
+          schema:
+            type: boolean
+        - name: firmware_version
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 25
+            maximum: 200
+      responses:
+        "200":
+          description: "Device list"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [admin-fleet]
+      summary: "Register new device"
+      description: "Registers device and provisions X.509 certificate in device CA."
+      operationId: adminCreateDevice
+      security:
+        - AdminBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceRegistrationRequest"
+      responses:
+        "201":
+          description: "Device registered"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceDetail"
+        "400":
+          description: "Validation error or duplicate serial"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/devices/{deviceId}:
+    get:
+      tags: [admin-fleet]
+      summary: "Get device detail"
+      operationId: adminGetDevice
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/DeviceId"
+      responses:
+        "200":
+          description: "Device detail"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceDetail"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags: [admin-fleet]
+      summary: "Update device metadata"
+      operationId: adminUpdateDevice
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/DeviceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceUpdateRequest"
+      responses:
+        "200":
+          description: "Device updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceDetail"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: [admin-fleet]
+      summary: "Decommission device"
+      description: "Soft-delete. Revokes X.509 cert, marks inactive. Audit data retained."
+      operationId: adminDeleteDevice
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/DeviceId"
+      responses:
+        "204":
+          description: "Device decommissioned"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Admin — Users ────────────────────────────────────────────────────────
+
+  /admin/users:
+    get:
+      tags: [admin-users]
+      summary: "List all users"
+      operationId: adminListUsers
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          schema:
+            $ref: "#/components/schemas/UserRole"
+        - name: tenant_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: active
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 25
+            maximum: 200
+      responses:
+        "200":
+          description: "User list"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [admin-users]
+      summary: "Create user"
+      description: "Creates account and sends welcome email with TOTP enrollment link."
+      operationId: adminCreateUser
+      security:
+        - AdminBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreateRequest"
+      responses:
+        "201":
+          description: "User created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+        "400":
+          description: "Validation error or duplicate email"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/users/{userId}:
+    get:
+      tags: [admin-users]
+      summary: "Get user detail"
+      operationId: adminGetUser
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "User detail"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags: [admin-users]
+      summary: "Update user"
+      operationId: adminUpdateUser
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "200":
+          description: "User updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: [admin-users]
+      summary: "Deactivate user"
+      description: "Soft-delete. Revokes tokens, disables login. Audit retained."
+      operationId: adminDeleteUser
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: "User deactivated"
+        "400":
+          description: "Cannot deactivate self or last tenant admin"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Admin — Reports ──────────────────────────────────────────────────────
+
+  /admin/reports/falls:
+    get:
+      tags: [admin-reports]
+      summary: "Fall incident report"
+      description: "JSON or CSV (Accept: text/csv). Max window: 365 days."
+      operationId: adminFallReport
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: tenant_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: granularity
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: day
+      responses:
+        "200":
+          description: "Fall report"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FallReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          description: "Invalid date range"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/reports/devices:
+    get:
+      tags: [admin-reports]
+      summary: "Device health report"
+      operationId: adminDeviceReport
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "Device health summary"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceHealthReport"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/reports/alerts:
+    get:
+      tags: [admin-reports]
+      summary: "Alert analytics report"
+      operationId: adminAlertReport
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: tenant_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "Alert report"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertReport"
+        "400":
+          description: "Invalid date range"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Admin — OTA ──────────────────────────────────────────────────────────
+
+  /admin/ota/deployments:
+    get:
+      tags: [admin-ota]
+      summary: "List OTA deployments"
+      operationId: adminListOTA
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/OTADeploymentStatus"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 25
+      responses:
+        "200":
+          description: "OTA deployment list"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OTADeploymentList"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [admin-ota]
+      summary: "Create OTA deployment"
+      description: "Stages firmware. Devices receive via MQTT ota/command topic."
+      operationId: adminCreateOTA
+      security:
+        - AdminBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OTADeploymentCreateRequest"
+      responses:
+        "201":
+          description: "OTA deployment staged"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OTADeployment"
+        "400":
+          description: "Validation error or version conflict"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Admin role required"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/ota/deployments/{deploymentId}:
+    get:
+      tags: [admin-ota]
+      summary: "Get OTA deployment detail"
+      operationId: adminGetOTA
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: deploymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "OTA deployment detail"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OTADeployment"
+        "404":
+          description: "Deployment not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ── Webhooks — NG911 PSAP Callback ───────────────────────────────────────
+
+  /webhooks/ng911/status:
+    post:
+      tags: [webhooks]
+      summary: "Receive NG911 PSAP status callback"
+      description: |
+        PSAP sends status updates back to EFDS. Secured by HMAC-SHA256
+        signature in X-NG911-Signature header (not JWT).
+        Replay protection: reject if X-NG911-Timestamp > 5 minutes old.
+      operationId: ng911StatusCallback
+      security: []
+      parameters:
+        - name: X-NG911-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "HMAC-SHA256 of request body (hex)"
+        - name: X-NG911-Timestamp
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "Unix epoch timestamp"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NG911StatusCallback"
+      responses:
+        "200":
+          description: "Status acknowledged"
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [acknowledged]
+                properties:
+                  acknowledged:
+                    type: boolean
+                    example: true
+        "400":
+          description: "Malformed payload"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "Invalid HMAC signature or replay detected"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
