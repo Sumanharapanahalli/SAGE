@@ -1,0 +1,320 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the B2B invoice factoring market: size, growth, key players
+      (Fundbox, BlueVine, Triumph Business Capital), pricing benchmarks, SMB pain
+      points, and institutional investor appetite for receivables assets.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Market size quantified with cited sources
+    - At least 8 direct competitors analyzed with differentiation gaps identified
+    - Go-to-market motion defined (SMB acquisition channel + investor onboarding funnel)
+    - Pricing model recommendation with margin analysis
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements and user stories for all three personas:
+      SMB seller (invoice submitter), institutional investor (invoice buyer), and
+      platform operator (admin). Map end-to-end process flows: invoice submission
+      → KYB → credit scoring → listing → bid → funding → repayment → fee collection.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All three persona journeys documented end-to-end
+    - At least 40 user stories written in standard format with acceptance criteria
+    - Invoice lifecycle state machine defined (draft → verified → listed → funded
+      → repaid → defaulted)
+    - ROI model showing platform unit economics at scale
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  FINANCIAL:
+    description: 'Build the financial model: discount rate engine, factoring fee structure
+      (advance rate 80-95%, fee 1-5%), investor yield calculation, platform take-rate,
+      default reserve modeling, and 5-year P&L projection. Include escrow float revenue
+      and late payment penalty economics.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Discount rate formula parameterized by credit score, invoice tenor, and buyer
+      concentration risk
+    - 'Advance rate tiers defined (Tier A: 90%, Tier B: 85%, Tier C: 80%)'
+    - Platform take-rate modeled at 0.5-2% of invoice face value
+    - 5-year P&L with break-even analysis at specified transaction volume
+    - Default reserve ratio calculated from industry loss data
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 2
+  LEGAL:
+    description: 'Draft legal framework: terms of service for SMBs and investors,
+      privacy policy (CCPA/GDPR), invoice purchase agreement, escrow agreement, investor
+      accreditation requirements (Reg D / Reg CF), money transmission licensing assessment,
+      and UCC-1 filing strategy for receivables perfection.'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Terms of service covers invoice representations, recourse vs non-recourse factoring,
+      and dispute resolution
+    - Privacy policy CCPA-compliant with data retention schedules
+    - Invoice purchase agreement includes UCC-1 perfection language
+    - Accredited investor verification process documented
+    - Money transmission licensing gap analysis completed per state
+    - Legal counsel sign-off checklist created
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'Build compliance framework for PCI DSS, SOC 2 Type II, and SOX controls.
+      Define KYB/AML/KYC obligations under FinCEN BSA. Create traceability matrix
+      mapping regulatory requirements to system controls. Produce audit evidence artifacts:
+      control inventory, risk matrix, data flow diagrams for PCI CDE scope.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - PCI DSS CDE scoped with network segmentation diagram
+    - SOC 2 Trust Service Criteria mapped to 47 controls minimum
+    - SOX ITGC controls defined for financial reporting data flows
+    - 'AML program documented: CDD, EDD, transaction monitoring thresholds, SAR procedures'
+    - Traceability matrix links each standard requirement to a specific technical
+      control
+    - Annual compliance calendar created
+    depends_on:
+    - 4
+  PRODUCT_MGMT:
+    description: 'Define product roadmap across 3 phases: MVP (KYB + invoice listing
+      + manual funding), v1 (automated credit scoring + auction marketplace), v2 (secondary
+      market + portfolio analytics + API for ERPs). Define success metrics, OKRs,
+      and feature prioritization using RICE scoring.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all three phases with clear scope boundaries
+    - Each feature RICE-scored with rationale
+    - North Star metric defined (GMV processed per month)
+    - MVP timeline feasible within 3 months of build start
+    - 'Success metrics include: time-to-fund, default rate, investor yield, NPS for
+      both personas'
+    depends_on:
+    - 2
+    - 3
+  UX_DESIGN:
+    description: 'Design UX for all three portals: SMB dashboard (invoice submission,
+      funding status, repayment schedule), Investor portal (deal flow, bidding interface,
+      portfolio analytics), and Admin console (underwriting queue, KYB review, escrow
+      management). Conduct accessibility audit to WCAG 2.1 AA.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes for all 3 portals covering critical paths
+    - 'Invoice upload wizard: drag-drop + CSV import, validation feedback inline'
+    - Bid auction view shows real-time countdown, current best bid, and investor capacity
+    - WCAG 2.1 AA audit passed with no critical violations
+    - Design system components documented (tokens, components, spacing)
+    - Usability tested with at least 3 representative users per persona
+    depends_on:
+    - 6
+  SECURITY:
+    description: Produce threat model (STRIDE) for the marketplace, PCI DSS penetration
+      test plan, application security requirements (OWASP ASVS Level 2), SBOM, and
+      secrets management architecture. Define data classification policy and encryption-at-rest/in-transit
+      requirements.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - 'STRIDE threat model covers all data flows: invoice upload, payment processing,
+      KYB data, investor wires'
+    - OWASP ASVS Level 2 requirements checklist complete (286 items)
+    - PCI DSS pen test scope and methodology documented
+    - SBOM generated for all third-party dependencies
+    - Secrets management via HashiCorp Vault or AWS Secrets Manager — no hardcoded
+      credentials
+    - 'Encryption requirements: AES-256 at rest, TLS 1.3 in transit, HSM for payment
+      keys'
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 5
+  DATABASE:
+    description: 'Design PostgreSQL schema for the core domain: entities (businesses,
+      invoices, investors, bids, escrow_accounts, transactions, kyb_records, credit_scores,
+      fraud_signals). Write migrations using Alembic. Seed reference data (industry
+      codes, document types, risk tiers). Define row-level security policies for multi-tenant
+      isolation.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables have primary keys, foreign key constraints, and created_at/updated_at
+    - PII fields (SSN, bank account numbers, tax IDs) encrypted at column level using
+      pgcrypto
+    - Row-level security enforces tenant isolation — businesses can only read their
+      own invoices
+    - Audit log table partitioned by month for query performance
+    - Invoice state machine enforced via CHECK constraints
+    - Migrations are idempotent and reversible (up/down)
+    - ERD diagram generated and reviewed
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 5
+    - 6
+  API:
+    description: 'Design OpenAPI 3.1 specification for all REST endpoints across four
+      service domains: Identity & KYB, Invoice Management, Marketplace (bidding/auction),
+      and Escrow & Payments. Define authentication (OAuth 2.0 + JWT), rate limiting,
+      webhook contracts for payment events, and versioning strategy.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec passes validation (no errors in Spectral lint)
+    - All endpoints have request/response schemas with examples
+    - 'Webhook payloads defined for: invoice.funded, payment.received, bid.accepted,
+      kyb.approved'
+    - 'Rate limits documented per endpoint tier (SMB: 100 req/min, investor: 500 req/min,
+      admin: unlimited)'
+    - 'API versioning strategy: URI versioning (/v1/, /v2/) with deprecation policy'
+    - Error response schema standardized (RFC 7807 Problem Details)
+    depends_on:
+    - 7
+    - 9
+  CONFIG:
+    description: 'Set up the agentic AI pattern configuration for the platform''s
+      internal intelligence layer. Configure a Multi-Agent Coordinator pattern (coordinator
+      + specialist agents) to orchestrate: credit scoring agent, fraud detection agent,
+      KYB verification agent, and underwriting recommendation agent. Set up HITL approval
+      gates for underwriting decisions.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator routes tasks to correct specialist based on task type
+    - Each specialist agent has defined tools, system prompt, and output schema
+    - 'HITL gates configured for: invoices > $500K, KYB risk score > 7, fraud signal
+      triggered'
+    - Agent proposals stored in proposal_store before execution
+    - ReAct loop configured with max 5 iterations per decision
+    - Audit trail captures every agent decision with trace_id
+    depends_on:
+    - 9
+    - 10
+  BACKEND:
+    description: 'Build the Identity & KYB microservice: business registration, document
+      upload (Articles of Incorporation, EIN letter, bank statements), automated KYB
+      verification via Persona or Middesk API, beneficial ownership verification,
+      OFAC/sanctions screening, and risk score calculation with manual review queue.'
+    agent_role: developer
+    acceptance_criteria:
+    - Business registration creates entity with EIN validation
+    - 'Document upload: PDF/image, virus scanned, stored encrypted in S3 with signed
+      URLs'
+    - Automated KYB completes in < 60 seconds for 80% of applicants
+    - 'Beneficial ownership CDD: captures all owners > 25% stake'
+    - OFAC screening runs on every applicant and all beneficial owners
+    - Manual review queue triggers for risk score > 7 or document verification failure
+    - 'KYB status webhooks fire on: initiated, documents_received, approved, rejected,
+      manual_review'
+    depends_on:
+    - 11
+  ML_MODEL:
+    description: 'Train and deploy the credit scoring ML model: feature engineering
+      from business financials and credit bureau data, XGBoost classifier for default
+      probability, model explainability with SHAP values, model registry with versioning,
+      A/B testing framework for model updates, and bias/fairness audit.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model trained on minimum 10K historical factoring transactions (synthetic data
+      acceptable for MVP)
+    - AUC-ROC > 0.78 on hold-out test set
+    - SHAP values computed per prediction for adverse action notice generation
+    - Model version registered in MLflow with performance metrics and training data
+      hash
+    - 'Fairness audit: disparate impact ratio > 0.8 across protected class proxies'
+    - Model serving latency < 200ms at p99
+    - 'Model drift monitoring configured: retrain trigger if PSI > 0.2'
+    depends_on:
+    - 13
+  FRONTEND:
+    description: 'Build the SMB Portal: React 18 + TypeScript application with invoice
+      submission wizard (multi-step form with PDF upload), dashboard (invoice pipeline
+      status board, funding history, repayment schedule calendar), KYB onboarding
+      stepper, document vault, and notification center.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'Invoice upload wizard: drag-drop PDF, OCR preview with field correction, submit'
+    - 'Dashboard shows invoice pipeline as Kanban: Draft → Under Review → Listed →
+      Funded → Repaid'
+    - Repayment schedule shows calendar view with upcoming payment dates highlighted
+    - Real-time status updates via WebSocket (no page refresh required for state changes)
+    - Mobile-responsive at 375px, 768px, 1280px breakpoints
+    - WCAG 2.1 AA compliance verified
+    - Lighthouse score > 85 on performance, accessibility, best practices
+    depends_on:
+    - 10
+    - 7
+  DATA:
+    description: 'Build the analytics data pipeline: event streaming from application
+      services to data warehouse (Snowflake or BigQuery), dbt transformation models
+      for platform metrics, investor reporting data marts, AML transaction monitoring
+      analytics, and regulatory reporting extracts (CTR, SAR thresholds).'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Events published to Kafka for all state transitions with schema registry validation
+    - Snowflake data warehouse loaded within 15 minutes of event emission
+    - 'dbt models tested with dbt-expectations: not_null, unique, referential integrity'
+    - Investor portfolio mart correctly calculates WAY, duration, default rate per
+      investor
+    - 'AML monitoring: flags transactions > $10K for CTR review, patterns for SAR
+      review'
+    - '1099-INT generation: accurate to penny, produced by Jan 15 annually'
+    - Data lineage documented from source event to BI dashboard field
+    depends_on:
+    - 16
+    - 17
+  DEVOPS:
+    description: Set up CI/CD pipelines, infrastructure as code (Terraform for AWS),
+      Kubernetes deployment manifests, secrets management (HashiCorp Vault), monitoring
+      stack (Prometheus + Grafana), distributed tracing (Jaeger/OpenTelemetry), log
+      aggregation (ELK), and PagerDuty alerting with runbooks.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform state managed in S3 with DynamoDB locking; all resources tagged
+    - 'CI pipeline: lint → test → security scan (Snyk) → build → push image → deploy
+      to staging'
+    - 'CD pipeline: manual approval gate before production deploy with canary rollout'
+    - 'Kubernetes: HPA configured, pod disruption budgets set, resource limits enforced'
+    - 'Secrets: zero secrets in environment variables; all via Vault agent sidecar
+      injection'
+    - 'Monitoring: SLA dashboards for payment success rate, KYB completion rate, auction
+      settlement time'
+    - 'Alerts: PagerDuty pages on: payment failure spike, fraud detection service
+      down, escrow balance anomaly'
+    - 'PCI DSS: CDE in isolated VPC with dedicated security groups, no public internet
+      access'
+    depends_on:
+    - 16
+    - 21
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for all service business
+      logic, integration tests for KYB/payment/auction flows, contract tests for API
+      consumers, load tests for auction settlement (1000 concurrent bids), and security
+      tests (OWASP ZAP automated scan, auth bypass attempts).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage > 85% for all service business logic
+    - Integration tests cover all happy paths and top 5 error scenarios per flow
+    - Contract tests validated against OpenAPI spec — no breaking changes undetected
+    - 'Load test: auction settlement handles 1000 concurrent bids in < 5 seconds'
+    - 'OWASP ZAP scan: zero high/critical findings in production build'
+    - 'IDOR tests: investor A cannot access investor B''s portfolio or bids'
+    - All tests run in CI pipeline; failing tests block merge
+    - Test data factory creates isolated fixtures per test run — no shared state
+    depends_on:
+    - 20
+    - 22
+  OPERATIONS:
+    description: 'Define operational runbooks: incident response playbooks (payment
+      failure, fraud surge, KYB provider outage, data breach), SLA definitions (funding
+      SLA: advance disbursed within 24h of auction close), capacity planning model,
+      on-call rotation, and AML escalation procedures.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Each runbook has: detection criteria, severity classification, step-by-step
+      remediation, escalation path, post-incident review template'
+    - Payment failure runbook tested with tabletop exercise
+    - SLAs defined for all customer-facing commitments with measurement methodology
+    - Capacity plan projects infrastructure cost at 10x, 100x current volume
+    - 'AML escalation: SAR filing procedure with 30-day FinCEN deadline tracking'
+    - Data breach runbook meets 72-hour GDPR notification requirement
+    - On-call rotation documented with PagerDuty schedule configuration
+    depends_on:
+    - 22
+    - 23

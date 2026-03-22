@@ -1,0 +1,317 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas (students, teachers,
+      admins), and process flows for the virtual science laboratory platform covering
+      physics, chemistry, and biology experiment domains.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 5 distinct user personas documented with goals and pain points
+    - Process flows cover all 3 science domains (physics, chemistry, biology)
+    - ROI analysis includes cost comparison vs physical lab infrastructure
+    - Business requirements traceable to product features
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Research competitor virtual lab platforms (Labster, PhET, Visible
+      Body), curriculum standards (NGSS, AP, IB), and go-to-market positioning for
+      K-12 and higher education segments.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covering at least 5 competitors with feature comparison
+    - Curriculum standards mapping for NGSS, AP, and IB documented
+    - Positioning statement and differentiation rationale written
+    - Go-to-market strategy with primary and secondary segments defined
+    depends_on: []
+  UX_DESIGN:
+    description: Conduct user research with students and educators, produce wireframes
+      for the experiment canvas, lab report editor, collaboration workspace, and curriculum
+      browser. Include WCAG 2.1 AA accessibility audit requirements.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research completed with at least 6 participants (mix of students and teachers)
+    - Wireframes produced for all key screens listed in payload
+    - Color contrast ratios meet WCAG 2.1 AA (4.5:1 normal text, 3:1 large text)
+    - Keyboard navigation flow documented for all interactive simulation controls
+    - Accessibility audit checklist completed and attached
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Produce the product requirements document (PRD), prioritized feature
+      roadmap across 3 releases, and success metrics (DAU, experiment completion rate,
+      lab report submission rate, curriculum coverage %).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved covering all 3 science domains with feature specifications
+    - Roadmap with v1/v2/v3 scope defined and rationale documented
+    - Success metrics with baseline targets and measurement methods specified
+    - Prioritization framework (MoSCoW or RICE) applied to v1 feature set
+    depends_on:
+    - 1
+    - 2
+    - 3
+  COMPLIANCE:
+    description: 'Produce COPPA and FERPA compliance evidence artifacts: data inventory,
+      parental consent flow design, PII handling policy, student record protection
+      controls, and data retention/deletion procedures.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Data inventory identifies all PII fields collected and their legal basis
+    - Parental consent flow compliant with COPPA for users under 13
+    - FERPA school official consent model documented with legitimate educational interest
+      criteria
+    - Data retention policy specifies maximum retention periods per data category
+    - COPPA safe harbor checklist completed with no outstanding gaps
+    depends_on:
+    - 4
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (COPPA/FERPA compliant), educator
+      license agreement, and student data processing addendum (DPA) for school district
+      contracts.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy explicitly addresses COPPA under-13 consent requirements
+    - DPA includes all FERPA-required provisions for school official relationship
+    - Terms of Service distinguishes educator and student account types
+    - All documents reviewed for compliance with US state student privacy laws (NY,
+      CA minimum)
+    - FERPA/COPPA compliance if minors involved
+    depends_on:
+    - 5
+  DATABASE:
+    description: Design the database schema for users (students, teachers, admins),
+      experiments, simulation sessions, lab reports, curriculum mappings, collaboration
+      sessions, and audit logs.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram produced covering all entities and relationships
+    - All Alembic migration files run cleanly from zero to current schema
+    - Student PII fields encrypted at rest (AES-256)
+    - Soft-delete implemented on users and lab_reports tables
+    - Indexes defined for common query patterns (user experiments, class assignments,
+      curriculum search)
+    depends_on:
+    - 5
+  API:
+    description: 'Design OpenAPI 3.1 specification for all backend endpoints: auth,
+      user management, experiment catalog, simulation sessions, lab reports, collaboration,
+      curriculum alignment, and admin APIs.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec file validates without errors
+    - All endpoints have request/response schemas with example payloads
+    - Authentication and authorization requirements documented per endpoint
+    - WebSocket protocol for real-time collaboration documented
+    - Error response shapes standardized (RFC 7807 Problem Details)
+    depends_on:
+    - 4
+    - 7
+  SECURITY:
+    description: Perform threat model (STRIDE) for the virtual lab platform, covering
+      student data exposure, simulation session hijacking, unauthorized lab report
+      access, and multi-tenant data leakage. Define security controls and penetration
+      test scope.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model document produced covering all 5 asset categories
+    - Risk matrix with likelihood and impact ratings for each identified threat
+    - Security controls mapped to each threat
+    - Penetration test scope document signed off
+    - OWASP Top 10 checklist completed with mitigations documented
+    depends_on:
+    - 5
+    - 8
+  CONFIG:
+    description: 'Set up the SAGE solution configuration for virtual_lab: project.yaml
+      (domain manifest, active modules, theme), prompts.yaml (agent roles: lab_tutor,
+      curriculum_mapper, collaboration_monitor), tasks.yaml (experiment task types).
+      Configure multi-agent coordinator pattern for adaptive lab assistance.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml validates and loads without errors via GET /config/yaml/project
+    - prompts.yaml defines system prompts for all 4 agent roles
+    - tasks.yaml registers experiment_guidance, lab_report_review, curriculum_alignment
+      task types
+    - Multi-agent coordinator pattern components (coordinator, specialist agents,
+      task router) documented in CONFIG
+    - make run PROJECT=virtual_lab starts backend cleanly
+    depends_on:
+    - 4
+  BACKEND:
+    description: 'Implement core FastAPI backend: auth service (JWT + refresh), user
+      and organization management (school districts, classes), role-based access control
+      middleware, and COPPA-compliant age verification with parental consent workflow.'
+    agent_role: developer
+    acceptance_criteria:
+    - POST /auth/register creates accounts with proper role assignment
+    - JWT access tokens expire in 15 minutes; refresh tokens rotate on use
+    - RBAC middleware rejects unauthorized role access with 403
+    - COPPA consent flow blocks under-13 account activation without parent approval
+    - All password fields hashed with bcrypt (cost factor ≥ 12)
+    - Unit tests cover auth, RBAC, and COPPA consent paths
+    depends_on:
+    - 7
+    - 8
+    - 9
+  FRONTEND:
+    description: Bootstrap the React 18 + TypeScript frontend with Vite, set up routing
+      (React Router v6), global state (Zustand), API client layer, and core layout
+      (authenticated shell, navigation, role-aware sidebar).
+    agent_role: developer
+    acceptance_criteria:
+    - Vite dev server starts with zero TypeScript errors
+    - All routes render correct page components without console errors
+    - Role-aware sidebar shows only routes accessible to the authenticated user's
+      role
+    - API client types generated from OpenAPI spec (openapi-typescript)
+    - Authentication guard redirects unauthenticated users to /login
+    - Responsive layout works at 1280px, 768px, and 390px viewport widths
+    depends_on:
+    - 3
+    - 8
+  AGENTIC:
+    description: 'Implement the multi-agent coordinator AI lab assistant using the
+      coordinator pattern: central coordinator decomposes student questions during
+      experiments, routes to domain specialist agents (physics, chemistry, biology),
+      generates Socratic hints, and logs interactions to SAGE audit trail.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly classifies experiment domain with ≥ 95% accuracy on test
+      set of 50 questions
+    - Specialist agent responses delivered via SSE within 3s of student query
+    - Socratic hint style verified — responses contain guiding question in ≥ 80% of
+      cases
+    - All interactions logged to audit log with student_id, experiment_id, trace_id,
+      timestamp
+    - Low-confidence responses (score < 0.6) routed to teacher review queue before
+      delivery
+    - Coordinator handles all 3 domains without cross-domain confusion
+    depends_on:
+    - 12
+    - 13
+  LOCALIZATION:
+    description: Set up i18n infrastructure (react-i18next + i18next-http-backend)
+      and produce translation configs for English (base), Spanish, French, and Mandarin.
+      Localize all UI strings, experiment labels, curriculum standard names, and lab
+      report templates.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - i18next configured and all hardcoded UI strings replaced with translation keys
+    - Translation files for en/es/fr/zh-CN cover 100% of translation keys
+    - Language switcher in UI settings changes locale without page reload
+    - Date, number, and unit formats localized per locale (e.g., comma vs period decimal)
+    - Email notification templates exist in all 4 locales
+    - Missing translation key fallback to 'en' works without console errors
+    depends_on:
+    - 15
+    - 20
+  DEVOPS:
+    description: Set up CI/CD pipeline (GitHub Actions), containerize backend and
+      frontend (Docker + docker-compose), configure staging and production environments,
+      set up monitoring (Sentry for errors, Prometheus + Grafana for API latency),
+      and define deployment runbook.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - GitHub Actions CI pipeline completes in under 8 minutes on PR
+    - docker-compose up starts all services (backend, frontend, postgres, redis) without
+      errors
+    - Staging environment auto-deploys within 5 minutes of merge to main
+    - Sentry captures backend and frontend errors with user context (anonymized for
+      FERPA)
+    - Grafana dashboard shows API p50/p95 latency and error rate
+    - Deployment runbook documents rollback procedure with step-by-step commands
+    depends_on:
+    - 11
+    - 15
+  QA:
+    description: Produce the QA test plan covering all experiment domains, collaboration
+      workflows, COPPA consent flows, FERPA data access controls, WCAG 2.1 accessibility,
+      and cross-browser compatibility. Define test cases, priority matrix, and defect
+      triage criteria.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - QA test plan document covers all 13 test areas listed
+    - At least 200 test cases written with steps, expected results, and priority
+    - COPPA and FERPA compliance test cases explicitly cover legal requirements
+    - WCAG 2.1 AA test cases cover keyboard navigation, screen reader compatibility,
+      color contrast
+    - Cross-browser matrix defined for Chrome, Firefox, Safari, and Edge (latest 2
+      versions)
+    - Defect severity and priority classification guide documented and agreed with
+      product
+    depends_on:
+    - 4
+    - 5
+    - 3
+  TESTS:
+    description: 'Write unit and integration tests for backend services: auth (JWT,
+      RBAC, COPPA consent), experiment catalog, simulation session state management,
+      lab report CRUD, curriculum alignment engine, and collaboration WebSocket relay.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All test suites listed pass with zero failures
+    - Coverage report shows ≥ 80% line coverage on backend src/
+    - COPPA consent flow tests verify under-13 accounts are blocked without parent
+      approval
+    - RBAC tests verify 403 response for all unauthorized role/endpoint combinations
+    - WebSocket collaboration tests verify message ordering and presence updates
+    - Curriculum alignment tests verify correct NGSS/AP standard matches for 20 experiment
+      fixtures
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+  SYSTEM_TEST:
+    description: 'Execute system-level integration and performance tests: simulation
+      rendering under load, WebSocket collaboration with 6 concurrent participants,
+      curriculum alignment query throughput, and end-to-end latency benchmarks.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Locust load test at 100 concurrent users shows all API endpoints p95 < 500ms
+    - k6 WebSocket test with 6 participants in one room shows sync delay < 200ms
+    - All 3D simulations maintain ≥ 60fps for 5 minutes of continuous interaction
+    - Database query explain plans show no sequential scans on tables > 10k rows
+    - System test report produced with pass/fail against all performance targets
+    - Any P0/P1 defects found are logged and triaged before production release
+    depends_on:
+    - 25
+    - 26
+    - 23
+  TRAINING:
+    description: Produce teacher onboarding guide, student quick-start guide, admin
+      setup guide, in-app tooltip walkthroughs for all simulation types, and video
+      scripts for 3 onboarding videos (student, teacher, admin roles).
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Teacher guide covers class creation, experiment assignment, grading, and FERPA
+      data export
+    - Student quick-start guide covers account creation (COPPA path), running first
+      experiment, and submitting lab report
+    - All 3 video scripts reviewed for accuracy against final product UI
+    - In-app Joyride walkthrough triggers on first login and can be re-triggered from
+      Help menu
+    - All documentation available in all 4 locales
+    - Troubleshooting FAQ covers top 10 anticipated support issues
+    depends_on:
+    - 20
+    - 22
+  DOCS:
+    description: 'Write developer documentation: API reference (auto-generated from
+      OpenAPI spec), architecture overview, solution configuration guide for virtual_lab,
+      local dev setup guide, and contribution guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from OpenAPI spec covers all endpoints with example
+      requests and responses
+    - Architecture overview includes sequence diagram for student experiment session
+      with AI assistant
+    - Local dev setup guide enables a new developer to run the full stack in under
+      30 minutes
+    - virtual_lab solution config guide explains all project.yaml, prompts.yaml, tasks.yaml
+      fields
+    - Docs site builds without broken links or missing assets
+    depends_on:
+    - 8
+    - 10
+    - 21

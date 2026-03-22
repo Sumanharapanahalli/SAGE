@@ -1,0 +1,64 @@
+project_name: chatbot_builder
+display_name: Chatbot Builder
+version: 1.0.0
+domain: ml_ai
+description: No-code chatbot builder with RAG pipeline, custom knowledge base, multi-LLM
+  support (GPT, Claude, Gemini), conversation analytics, and embeddable widget.
+detected_domains: []
+compliance_standards:
+- SOC 2
+- GDPR
+- ISO 27001
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- DATA
+- DATABASE
+- DEVOPS
+- FINANCIAL
+- FRONTEND
+- INFRA
+- LEGAL
+- MARKET_RESEARCH
+- ML_MODEL
+- OPERATIONS
+- PRODUCT_MGMT
+- SECURITY
+- TESTS
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- financial_analyst
+- legal_advisor
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

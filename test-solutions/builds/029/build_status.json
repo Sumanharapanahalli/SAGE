@@ -1,0 +1,1346 @@
+{
+  "run_id": "d5366808-d046-4627-af6f-1c29d21c78af",
+  "solution_name": "connected_car_platform",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T04:38:51.214899+00:00",
+  "updated_at": "2026-03-22T04:46:31.983515+00:00",
+  "product_description": "Connected car cloud platform with remote vehicle control, OTA firmware updates, usage-based insurance data, and dealer service integration.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "SAFETY",
+      "description": "Conduct ISO 26262 Hazard Analysis and Risk Assessment (HARA) for all safety-relevant functions: remote vehicle control (ASIL-C/D), OTA firmware update integrity (ASIL-B), telematics data pipeline, and dealer remote diagnostics. Produce HARA table, safety goals, Automotive Safety Integrity Level (ASIL) decomposition, and functional safety concept document.",
+      "payload": {
+        "standard": "ISO 26262",
+        "functions_in_scope": [
+          "Remote door lock/unlock",
+          "Remote engine start/stop",
+          "OTA firmware update execution",
+          "Telematics data transmission",
+          "Dealer remote diagnostics"
+        ],
+        "deliverables": [
+          "HARA table with hazard classification",
+          "Safety goals per ASIL",
+          "Functional Safety Concept (FSC)",
+          "Safety Case outline"
+        ],
+        "asil_targets": {
+          "remote_vehicle_control": "ASIL-C",
+          "ota_update": "ASIL-B",
+          "telematics": "QM"
+        }
+      },
+      "acceptance_criteria": [
+        "HARA table covers all 5 in-scope functions with severity, exposure, and controllability ratings",
+        "Safety goals defined and numbered (SG-001 through SG-N) per ISO 26262 Part 3",
+        "ASIL decomposition reviewed and signed off by safety engineer",
+        "Functional Safety Concept document version-controlled and traceable to safety goals",
+        "ASIL level determined for each function",
+        "Fault tree analysis complete"
+      ],
+      "depends_on": [],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 2,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the connected car cloud platform market: key players (Harman, Lear, Bosch), OEM adoption trends, UBI telematics pricing models, dealer DMS integration standards (CDK, Reynolds & Reynolds, Dealertrack), UNECE R155/R156 regulatory landscape across EU, US, and APAC markets, and competitive differentiation opportunities.",
+      "payload": {
+        "segments": [
+          "OEM telematics",
+          "usage-based insurance",
+          "dealer service integration",
+          "OTA update management"
+        ],
+        "regions": [
+          "EU",
+          "US",
+          "APAC"
+        ],
+        "competitors": [
+          "Harman Ignite",
+          "Aptiv Smart Vehicle Architecture",
+          "Bosch mGo",
+          "Vinli"
+        ],
+        "standards_landscape": [
+          "UNECE R155",
+          "UNECE R156",
+          "ISO 26262",
+          "AUTOSAR"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive matrix covering at least 5 platforms across 4 product dimensions",
+        "UBI pricing model comparison across 3+ insurance data providers",
+        "Dealer DMS integration API landscape documented with compatibility matrix",
+        "UNECE R155/R156 adoption timeline by region with compliance deadlines"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Design user experience for three distinct interfaces: (1) OEM/fleet operator web dashboard (vehicle health, remote control, OTA campaign management), (2) consumer mobile app (remote lock/unlock, engine start, trip history, insurance score), (3) dealer service portal (vehicle diagnostics, service scheduling, DTC code access). Include accessibility audit per WCAG 2.1 AA.",
+      "payload": {
+        "interfaces": [
+          {
+            "name": "Fleet Operations Dashboard",
+            "primary_users": "OEM fleet managers, platform operators",
+            "key_flows": [
+              "Vehicle status overview",
+              "OTA campaign creation",
+              "Remote control dispatch",
+              "Audit log review"
+            ]
+          },
+          {
+            "name": "Consumer Mobile App",
+            "platforms": [
+              "iOS",
+              "Android"
+            ],
+            "key_flows": [
+              "Remote lock/unlock",
+              "Engine start/stop",
+              "Trip replay",
+              "UBI score dashboard"
+            ]
+          },
+          {
+            "name": "Dealer Service Portal",
+            "primary_users": "Service advisors, technicians",
+            "key_flows": [
+              "DTC code pull",
+              "Service appointment scheduling",
+              "OTA readiness check",
+              "Recall status"
+            ]
+          }
+        ],
+        "deliverables": [
+          "User research synthesis",
+          "Information architecture",
+          "Wireframes (lo-fi + hi-fi)",
+          "Interaction prototypes",
+          "Accessibility audit report"
+        ]
+      },
+      "acceptance_criteria": [
+        "Lo-fi wireframes cover all primary user flows for all 3 interfaces",
+        "Hi-fi prototype validated with at least 5 user test sessions per interface",
+        "Accessibility audit passes WCAG 2.1 AA for all critical flows",
+        "Design system with component library (tokens, colors, typography) published"
+      ],
+      "depends_on": [],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "CONFIG",
+      "description": "Set up the full development environment and toolchain: AUTOSAR Classic/Adaptive toolchain (Vector CANoe, DaVinci Configurator or open-source equivalent), embedded cross-compilation (ARM GCC for Cortex-M/A), cloud project scaffolding (monorepo with backend, firmware, web, infra directories), linting/formatting, pre-commit hooks, and secrets management strategy.",
+      "payload": {
+        "toolchain": {
+          "embedded": "ARM GCC 12+, CMake 3.25+, OpenOCD",
+          "autosar": "ARXML schema validation tooling, can-isotp library",
+          "cloud": "Python 3.11+, Node 20+, Docker, Terraform",
+          "ci": "GitHub Actions with self-hosted ARM runner"
+        },
+        "repo_structure": [
+          "firmware/",
+          "backend/",
+          "web/",
+          "infra/",
+          "simulations/",
+          "compliance/",
+          "docs/"
+        ],
+        "secrets_management": "AWS Secrets Manager + SOPS for local dev",
+        "agentic_pattern": "coordinator"
+      },
+      "acceptance_criteria": [
+        "All developers can build firmware and run unit tests with single `make all` command",
+        "Cloud services start locally via `docker-compose up` with no manual config steps",
+        "Pre-commit hooks enforce code style and run static analysis for both C and Python",
+        "Secrets never appear in git history (verified by gitleaks scan)"
+      ],
+      "depends_on": [],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 5,
+      "task_type": "HARDWARE_SIM",
+      "description": "Build SystemC simulation models for the Telematics Control Unit (TCU) and gateway ECU. Simulate CAN bus traffic, LTE modem AT command interface, GPS/GNSS data feed, and OTA bootloader state machine. Provide Python test bench that drives the simulation and validates TCU response timing against ISO 26262 ASIL-B requirements from Step 1.",
+      "payload": {
+        "simulation_targets": [
+          "TCU CAN bus interface (ISO 15765-2 transport layer)",
+          "LTE modem (AT command set, PDN connectivity)",
+          "GPS/GNSS NMEA output simulation",
+          "Secure OTA bootloader state machine (A/B partition switching)"
+        ],
+        "tools": "SystemC 2.3.4, Python 3.11, can-isotp, pytest",
+        "test_vectors": "CAN frame injection library with fault injection capability",
+        "timing_constraints": "All safety-relevant CAN responses < 10ms per ASIL-B requirement"
+      },
+      "acceptance_criteria": [
+        "SystemC TCU model compiles and runs on Linux CI without hardware",
+        "CAN bus simulation handles ISO 15765-2 segmented frames correctly",
+        "OTA bootloader simulation covers A/B rollback on checksum failure",
+        "Python test bench achieves >90% branch coverage of simulated state machines",
+        "Timing analysis report confirms ASIL-B response constraints are met in simulation"
+      ],
+      "depends_on": [
+        1,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Design and implement the vehicle data platform schema: time-series vehicle telemetry (TimescaleDB/InfluxDB), relational vehicle registry and ownership (PostgreSQL), OTA campaign state machine tables, UBI trip and driving-behavior event tables, dealer service record schema, and audit log with immutable append-only design. Include partitioning strategy for multi-million-vehicle scale.",
+      "payload": {
+        "databases": {
+          "timeseries": "TimescaleDB \u2014 vehicle telemetry, GPS tracks, sensor readings",
+          "relational": "PostgreSQL 16 \u2014 VIN registry, ownership, OTA campaigns, dealer records",
+          "cache": "Redis 7 \u2014 vehicle connection state, active remote commands"
+        },
+        "key_tables": [
+          "vehicles (VIN, ECU fingerprint, owner_id, fleet_id)",
+          "telemetry_events (VIN, timestamp, signal_id, value)",
+          "ota_campaigns (campaign_id, firmware_version, target_criteria, rollout_pct)",
+          "ota_device_status (VIN, campaign_id, state, retry_count, applied_at)",
+          "ubi_trips (trip_id, VIN, start_ts, end_ts, distance_km, harsh_events_json)",
+          "dealer_service_records (record_id, VIN, dealer_id, dtc_codes, service_type, completed_at)",
+          "remote_commands (command_id, VIN, type, issued_by, issued_at, ack_at, result)"
+        ],
+        "partitioning": "telemetry_events partitioned by month, retention policy 24 months hot + S3 archive"
+      },
+      "acceptance_criteria": [
+        "All migrations run idempotently via Alembic with rollback support",
+        "TimescaleDB telemetry ingestion sustains 50,000 events/sec in load test",
+        "PostgreSQL schema passes normalization review (3NF minimum)",
+        "Row-level security policies enforce VIN-to-tenant isolation",
+        "GDPR deletion cascade tested: owner deletion anonymizes all PII within 72 hours"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "API",
+      "description": "Design the complete OpenAPI 3.1 specification for all platform APIs: Vehicle Data API (telemetry ingestion, vehicle registry), Remote Command API (lock, unlock, engine start/stop, with HITL approval gate for safety-critical commands), OTA Management API (campaign CRUD, rollout control, device status), UBI Data API (trip events, scoring), and Dealer Integration API (DTC pull, service scheduling).",
+      "payload": {
+        "apis": [
+          {
+            "name": "Vehicle Gateway API",
+            "base_path": "/v1/vehicles",
+            "auth": "mTLS (device cert) + JWT (cloud services)",
+            "endpoints": [
+              "POST /telemetry",
+              "GET /{vin}/status",
+              "POST /{vin}/commands",
+              "GET /{vin}/commands/{id}"
+            ]
+          },
+          {
+            "name": "OTA Management API",
+            "base_path": "/v1/ota",
+            "auth": "OAuth2 client credentials",
+            "endpoints": [
+              "POST /campaigns",
+              "GET /campaigns/{id}/status",
+              "POST /campaigns/{id}/rollout",
+              "GET /devices/{vin}/update-status"
+            ]
+          },
+          {
+            "name": "UBI Data API",
+            "base_path": "/v1/ubi",
+            "auth": "API key (insurance partner)",
+            "endpoints": [
+              "GET /trips/{vin}",
+              "GET /score/{vin}",
+              "POST /events/webhook"
+            ]
+          },
+          {
+            "name": "Dealer API",
+            "base_path": "/v1/dealer",
+            "auth": "OAuth2 + dealer JWT scopes",
+            "endpoints": [
+              "GET /vehicles/{vin}/dtc",
+              "POST /vehicles/{vin}/service-request",
+              "GET /vehicles/{vin}/recall-status"
+            ]
+          }
+        ],
+        "agentic_pattern": "human_in_the_loop",
+        "hitl_endpoints": [
+          "POST /v1/vehicles/{vin}/commands (engine-start, engine-stop require approval)"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 YAML validates without errors against spectral ruleset",
+        "All endpoints have request/response schemas with examples",
+        "Safety-critical commands (engine start/stop) documented with HITL approval flow",
+        "mTLS device authentication scheme documented with certificate lifecycle",
+        "Breaking-change policy and versioning strategy documented in API governance guide"
+      ],
+      "depends_on": [
+        1,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "FIRMWARE",
+      "description": "Implement TCU firmware in C (AUTOSAR-compatible layered architecture): HAL drivers for CAN transceiver (ISO 15765-2), LTE modem (AT commands over UART), GPS/GNSS parser (NMEA 0183), secure element interface for key storage, FreeRTOS tasks for telemetry publishing, remote command reception, and OTA bootloader with A/B partition management per UNECE R156. Implement signed firmware package format (SHA-256 + ECDSA P-256).",
+      "payload": {
+        "target_mcu": "NXP S32G2 (Cortex-A53/M7, automotive-grade)",
+        "rtos": "FreeRTOS 10.6 with MPU region protection",
+        "autosar_layers": [
+          "MCAL",
+          "ECU Abstraction Layer",
+          "Service Layer (ComStack, SecOC)"
+        ],
+        "rtos_tasks": [
+          "CAN_RX_Task (priority: high, 1ms period)",
+          "Telemetry_Publish_Task (priority: medium, configurable interval)",
+          "OTA_Monitor_Task (priority: medium, monitors update partition)",
+          "Remote_Command_Task (priority: high, processes cloud commands)",
+          "GPS_Parse_Task (priority: low, 1Hz)"
+        ],
+        "security_features": [
+          "SecOC MAC verification on all safety-relevant CAN messages",
+          "ECDSA-signed OTA packages (P-256)",
+          "Secure element (NXP SE050) for private key storage",
+          "Anti-rollback counter in OTP fuses"
+        ],
+        "ota_bootloader": "A/B partition with health check, automatic rollback on 3 consecutive boot failures"
+      },
+      "acceptance_criteria": [
+        "Firmware builds without warnings under -Wall -Wextra for ARM Cortex-M7",
+        "CAN RX task processes ISO 15765-2 multi-frame messages within 10ms",
+        "OTA bootloader successfully performs A/B switch and rollback in simulation (Step 5)",
+        "ECDSA signature verification rejects tampered firmware images 100% of test cases",
+        "Static analysis (PC-lint or Polyspace) passes with zero MISRA C:2012 mandatory violations",
+        "FreeRTOS stack watermark never below 20% in 72-hour soak test simulation",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        1,
+        4,
+        5
+      ],
+      "agent_role": "firmware_engineer"
+    },
+    {
+      "step": 9,
+      "task_type": "SECURITY",
+      "description": "Perform comprehensive threat modeling using STRIDE and TARA (Threat Analysis and Risk Assessment per ISO/SAE 21434) for all attack surfaces: TCU cloud channel (LTE), CAN bus internal, OTA update delivery, dealer API, UBI data pipeline, and mobile app Bluetooth pairing. Produce UNECE R155 cybersecurity management system artifacts: attack path analysis, risk treatment decisions, SBOM for firmware and cloud services.",
+      "payload": {
+        "methodology": "STRIDE + TARA (ISO/SAE 21434)",
+        "attack_surfaces": [
+          "TCU \u2194 Cloud LTE channel",
+          "OTA package delivery (man-in-the-middle)",
+          "Dealer API (privilege escalation)",
+          "CAN bus injection via OBD-II port",
+          "Mobile app BLE remote command spoofing",
+          "UBI data tampering"
+        ],
+        "deliverables": [
+          "Threat model document (STRIDE per component)",
+          "TARA risk matrix with CAL (Cybersecurity Assurance Level) ratings",
+          "SBOM (SPDX 2.3 format) for firmware and all cloud services",
+          "Penetration test plan",
+          "UNECE R155 cybersecurity management system (CSMS) documentation"
+        ],
+        "tools": "OWASP Threat Dragon, syft (SBOM), trivy (CVE scan)"
+      },
+      "acceptance_criteria": [
+        "TARA covers all 6 attack surfaces with impact and feasibility ratings",
+        "All CAL-3 and CAL-4 risks have documented treatment decisions (mitigate/accept/transfer)",
+        "SBOM generated for firmware binary and all backend Docker images",
+        "Penetration test plan covers OWASP API Top 10 and automotive-specific attack vectors",
+        "UNECE R155 CSMS documentation maps to all 7 regulation categories"
+      ],
+      "depends_on": [
+        1,
+        4,
+        7
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement the Vehicle Cloud Gateway: MQTT broker (EMQX or HiveMQ) for TCU connections with mTLS authentication, message validation and routing service (FastAPI), device registry service (VIN \u2192 connection state), real-time command dispatcher with ACK tracking and timeout handling, telemetry ingestion pipeline to TimescaleDB, and WebSocket push endpoint for dashboard live updates. Implement HITL approval gate for ASIL-C commands (engine start/stop) using the coordinator agentic pattern.",
+      "payload": {
+        "components": {
+          "mqtt_broker": "EMQX 5.x with mTLS, device cert pinning, per-VIN ACL",
+          "gateway_service": "FastAPI + asyncio, message schema validation (Pydantic)",
+          "device_registry": "PostgreSQL-backed, Redis cache for connection state",
+          "command_dispatcher": "Async queue with 30s ACK timeout, dead-letter queue",
+          "telemetry_pipeline": "Kafka \u2192 Faust stream processor \u2192 TimescaleDB"
+        },
+        "agentic_pattern": "coordinator",
+        "hitl_gate": {
+          "trigger": "Command type in [ENGINE_START, ENGINE_STOP]",
+          "approval_flow": "Proposal created \u2192 human approves in dashboard \u2192 command dispatched",
+          "timeout": "300 seconds, auto-expire unapproved commands"
+        },
+        "performance_targets": "10,000 concurrent vehicle connections, <500ms command RTT (p95)"
+      },
+      "acceptance_criteria": [
+        "MQTT broker handles 10,000 simultaneous mTLS device connections in load test",
+        "Command RTT (issued \u2192 TCU ACK) < 500ms at p95 under nominal load",
+        "ENGINE_START and ENGINE_STOP commands blocked until human approval in dashboard",
+        "Telemetry pipeline sustains 50,000 events/sec with < 1% loss in 30-min soak",
+        "Dead-letter queue captures all unACKed commands with full replay capability",
+        "Device certificate revocation propagated to MQTT broker within 60 seconds"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement the OTA Firmware Update Service per UNECE R156: campaign management (target criteria: VIN list, model year, region), staged rollout controller (canary \u2192 1% \u2192 10% \u2192 50% \u2192 100% with automatic halt on error-rate threshold), firmware package repository (S3 + CDN with signed URLs), delta update generation (bsdiff), device status tracking (FSM: pending \u2192 downloading \u2192 verifying \u2192 applying \u2192 success/failed/rolled-back), and rollback trigger API.",
+      "payload": {
+        "unece_r156_requirements": [
+          "Software update management system (SUMS) documentation",
+          "Rollback capability for all updates",
+          "Cryptographic integrity verification",
+          "Update history immutable audit log"
+        ],
+        "rollout_stages": [
+          "canary (0.1%)",
+          "early (1%)",
+          "partial (10%)",
+          "majority (50%)",
+          "full (100%)"
+        ],
+        "halt_criteria": "Error rate > 2% or rollback rate > 1% at any stage",
+        "delta_updates": "bsdiff algorithm, target < 30% of full image size",
+        "package_format": "Signed manifest (JSON) + compressed binary, ECDSA P-256 signature",
+        "storage": "S3 with versioning + CloudFront CDN, 7-day signed URL expiry"
+      },
+      "acceptance_criteria": [
+        "OTA campaign creates, targets, and delivers firmware to 100 simulated devices end-to-end",
+        "Staged rollout automatically halts when error rate exceeds 2% threshold",
+        "Delta update reduces payload size by at least 25% vs full image for 20% delta changes",
+        "Rollback successfully restores previous firmware version within 5 minutes in simulation",
+        "UNECE R156 SUMS documentation maps every requirement to a system capability",
+        "Immutable audit log records every OTA state transition with timestamp and actor"
+      ],
+      "depends_on": [
+        8,
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "COMPLIANCE",
+      "description": "Produce AUTOSAR-compliance artifacts for the TCU software architecture: ARXML component descriptions for all SWCs (Software Components), interface contracts, port definitions, and runnable scheduling. Generate ISO 26262 Part 6 software-level safety requirements derived from the functional safety concept (Step 1), software design specification, and traceability matrix linking safety requirements \u2192 design \u2192 implementation \u2192 test cases.",
+      "payload": {
+        "standards": [
+          "AUTOSAR Classic 4.4",
+          "ISO 26262 Part 6"
+        ],
+        "arxml_components": [
+          "TelematicsPublisher_SWC",
+          "RemoteCommandHandler_SWC",
+          "OTA_Manager_SWC",
+          "SecureComm_SWC",
+          "GPS_Provider_SWC"
+        ],
+        "iso_26262_artifacts": [
+          "Software Safety Requirements (SSR) specification",
+          "Software Architecture Description (SAD)",
+          "Software Design Specification (SDS)",
+          "Traceability matrix: SG \u2192 SSR \u2192 Design \u2192 Code \u2192 Test"
+        ],
+        "tool": "Eclipse AUTOSAR tooling or Artisan Studio"
+      },
+      "acceptance_criteria": [
+        "ARXML validates against AUTOSAR Schema 4.4 without errors",
+        "All ASIL-B SSRs traceable to safety goals from HARA (Step 1)",
+        "Traceability matrix covers 100% of SSRs with at least one test case each",
+        "Software Architecture Description reviewed and signed off by safety engineer",
+        "No orphan requirements (requirements with no downstream trace)"
+      ],
+      "depends_on": [
+        1,
+        7,
+        8
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 13,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Implement the hardware-in-the-loop (HIL) test harness and firmware unit test suite: HIL test bench using CANoe/CANalyzer or open-source alternatives (python-can + pytest) driving the TCU simulation from Step 5, firmware unit tests using Unity/CMock for all HAL drivers and RTOS task logic, integration test scenarios for OTA state machine (success, failure, rollback), remote command processing (lock, unlock, engine start with auth), and boundary/fault injection tests per ISO 26262 ASIL-B coverage requirements.",
+      "payload": {
+        "unit_test_framework": "Unity + CMock (C), target: >80% branch coverage per ASIL-B",
+        "hil_framework": "python-can + pytest driving SystemC simulation from Step 5",
+        "test_suites": [
+          {
+            "suite": "HAL Driver Tests",
+            "scope": "CAN driver, LTE modem driver, GPS parser, secure element interface",
+            "count": "120+ unit tests"
+          },
+          {
+            "suite": "OTA State Machine Tests",
+            "scope": "All 8 OTA states \u00d7 transition conditions including fault injection",
+            "count": "40+ integration tests"
+          },
+          {
+            "suite": "Remote Command HIL Tests",
+            "scope": "Command reception, ECDSA auth, execution, ACK \u2014 all 6 command types",
+            "count": "30+ HIL tests"
+          },
+          {
+            "suite": "Security Negative Tests",
+            "scope": "Tampered firmware rejection, replay attack detection, invalid cert rejection",
+            "count": "25+ tests"
+          }
+        ],
+        "coverage_target": "Branch coverage >= 80% for ASIL-B modules, >= 60% for QM modules"
+      },
+      "acceptance_criteria": [
+        "Firmware unit test suite runs on CI (no hardware) via SystemC simulation in <5 minutes",
+        "Branch coverage >= 80% achieved for all ASIL-B classified firmware modules",
+        "OTA state machine tests cover all 8 states and all documented transition conditions",
+        "Security negative tests: 100% pass rate (tampered/replayed packages always rejected)",
+        "HIL test results formatted as JUnit XML importable into CI pipeline",
+        "Coverage report linked to traceability matrix from Step 12"
+      ],
+      "depends_on": [
+        5,
+        8,
+        12
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement the Remote Vehicle Control Service: command authorization engine (vehicle ownership verification, user permission scopes, fleet access control), command state machine (queued \u2192 dispatched \u2192 ack \u2192 executed/expired), HITL approval workflow for ASIL-C commands (engine start/stop) using human-in-the-loop agentic pattern, Slack/email notification for pending approvals, rate limiting (max 5 commands/vehicle/hour), and full audit trail.",
+      "payload": {
+        "command_types": [
+          {
+            "cmd": "LOCK",
+            "asil": "QM",
+            "hitl": false,
+            "rate_limit": "5/hour"
+          },
+          {
+            "cmd": "UNLOCK",
+            "asil": "QM",
+            "hitl": false,
+            "rate_limit": "5/hour"
+          },
+          {
+            "cmd": "ENGINE_START",
+            "asil": "ASIL-C",
+            "hitl": true,
+            "rate_limit": "2/hour"
+          },
+          {
+            "cmd": "ENGINE_STOP",
+            "asil": "ASIL-C",
+            "hitl": true,
+            "rate_limit": "2/hour"
+          },
+          {
+            "cmd": "HONK",
+            "asil": "QM",
+            "hitl": false,
+            "rate_limit": "3/hour"
+          },
+          {
+            "cmd": "LOCATE",
+            "asil": "QM",
+            "hitl": false,
+            "rate_limit": "20/hour"
+          }
+        ],
+        "agentic_pattern": "human_in_the_loop",
+        "authorization": "JWT scopes + vehicle ownership check + fleet membership check",
+        "audit": "Immutable audit entry per command lifecycle event"
+      },
+      "acceptance_criteria": [
+        "LOCK/UNLOCK commands execute (TCU ACK) within 2 seconds end-to-end (p95)",
+        "ENGINE_START never dispatched without recorded human approval",
+        "Rate limiting rejects excess commands with HTTP 429 and retry-after header",
+        "Unauthorized user (no ownership claim) receives HTTP 403 \u2014 zero exceptions in penetration test",
+        "Every command has full audit trail: issued, approved/rejected, dispatched, acked, result",
+        "Approval notification sent within 5 seconds of command creation"
+      ],
+      "depends_on": [
+        10,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement the Usage-Based Insurance (UBI) data platform: trip detection service (ignition-on to ignition-off boundary detection from CAN signals), driving behavior scoring engine (harsh braking, rapid acceleration, cornering g-force, nighttime driving, distracted driving proxy from phone-to-car Bluetooth events), privacy-preserving data aggregation (k-anonymity on location data), insurance partner data export API, and GDPR-compliant consent management.",
+      "payload": {
+        "trip_detection": "Ignition CAN signal + GPS speed threshold, handles split trips on signal loss",
+        "scoring_signals": [
+          "Harsh braking (deceleration > 0.4g)",
+          "Rapid acceleration (> 0.3g sustained 2s)",
+          "Cornering (lateral g > 0.35g)",
+          "Speed over limit (GPS vs HERE Maps speed limit API)",
+          "Nighttime driving fraction (22:00\u201306:00)",
+          "Phone Bluetooth disconnect events as distraction proxy"
+        ],
+        "privacy": "GPS location quantized to 500m grid, k-anonymity k>=5 on exported datasets",
+        "data_export": "Daily SFTP or REST pull for insurance partners, CREST-format compliance",
+        "consent": "Per-signal opt-in consent stored in PostgreSQL, honored in all exports"
+      },
+      "acceptance_criteria": [
+        "Trip detection correctly segments 95%+ of trips in 1,000-trip validation dataset",
+        "Scoring engine produces consistent scores (\u00b12 points) for identical driving patterns",
+        "Location k-anonymity verified: no export record uniquely identifies a vehicle location",
+        "Insurance partner export passes CREST format validation",
+        "Consent withdrawal removes all future exports within 24 hours",
+        "GDPR right-to-erasure deletes all PII trip data within 72 hours of request"
+      ],
+      "depends_on": [
+        10,
+        6
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement the Dealer Service Integration platform: bi-directional DMS connector (CDK Global, Reynolds & Reynolds, Dealertrack via standardized adapter pattern), remote DTC code pull with live vehicle session, recall status lookup (NHTSA API integration), service appointment scheduling with dealer calendar sync (CalDAV/REST), parts availability check, and push notification to vehicle owner on service completion. Implement multi_agent_sequential agentic pattern for automated service triage (DTC \u2192 diagnosis suggestion \u2192 appointment recommendation).",
+      "payload": {
+        "dms_adapters": [
+          {
+            "dms": "CDK Global",
+            "protocol": "REST API (CDK Drive API)"
+          },
+          {
+            "dms": "Reynolds & Reynolds",
+            "protocol": "ERA-IGNITE REST"
+          },
+          {
+            "dms": "Dealertrack",
+            "protocol": "OpenTrack REST"
+          }
+        ],
+        "agentic_pattern": "multi_agent_sequential",
+        "service_triage_pipeline": [
+          "DTC_Analyzer_Agent: maps codes to fault descriptions",
+          "Diagnosis_Agent: suggests likely root causes from service bulletin database",
+          "Appointment_Recommender_Agent: checks dealer availability, proposes slot"
+        ],
+        "nhtsa_integration": "NHTSA vPIC API for recall lookup by VIN",
+        "notification": "FCM push to owner mobile app on service status change"
+      },
+      "acceptance_criteria": [
+        "DTC pull returns codes within 10 seconds of command for all 3 DMS adapters",
+        "Service triage pipeline produces appointment recommendation in <30 seconds",
+        "Recall lookup returns NHTSA data for 100% of valid VINs",
+        "Appointment booking syncs to dealer DMS calendar with zero double-bookings in 500-booking load test",
+        "DMS adapter failures degrade gracefully: partial data returned with error fields, never silent failure",
+        "Owner push notification delivered within 30 seconds of dealer status update"
+      ],
+      "depends_on": [
+        10,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "DATA",
+      "description": "Build the insurance analytics data pipeline: streaming event enrichment (Kafka \u2192 Faust \u2192 enriched trip events with speed limits, road type, weather), batch scoring pipeline (Spark or dbt), data warehouse schema (Redshift or BigQuery) for insurance partner reporting, anomaly detection for odometer fraud and data spoofing, and self-serve analytics API for insurance partners with parameterized queries and export throttling.",
+      "payload": {
+        "streaming": "Kafka + Faust stream processor, enrich with HERE Maps and OpenWeather APIs",
+        "batch": "dbt + Airflow, nightly scoring refresh, 90-day rolling window",
+        "warehouse": "BigQuery or Redshift, star schema: fact_trips + dim_vehicle + dim_time + dim_geography",
+        "fraud_detection": "Statistical anomaly model: Z-score on odometer increments, GPS speed vs CAN speed delta",
+        "export_api": "REST with cursor pagination, max 100k rows/request, rate limited per partner"
+      },
+      "acceptance_criteria": [
+        "Streaming pipeline enriches trip events with speed limit and weather within 5 seconds of ingestion",
+        "Batch scoring pipeline completes nightly refresh within 2-hour window for 1M vehicle dataset",
+        "Fraud detection flags >90% of synthetic odometer spoofing test cases with <5% false positive rate",
+        "Insurance partner export API returns first 100k rows in <10 seconds",
+        "Data warehouse schema passes dbt test suite (not-null, unique, referential integrity)"
+      ],
+      "depends_on": [
+        15
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the Fleet Operations Dashboard (React 18 + TypeScript): real-time vehicle map (Mapbox GL JS, 10s polling), vehicle detail panel (live telemetry, status, last-seen), OTA campaign management UI (create campaign, target criteria builder, staged rollout progress chart, halt button), remote command panel with HITL approval workflow (pending approvals queue, one-click approve/reject), and fleet-level analytics (online %, error rate, firmware version distribution).",
+      "payload": {
+        "tech_stack": "React 18, TypeScript, Vite, TanStack Query, Mapbox GL JS, Recharts",
+        "key_pages": [
+          "Fleet Map \u2014 live vehicle positions, clustering at scale",
+          "Vehicle Detail \u2014 telemetry stream, command history, OTA status",
+          "OTA Campaigns \u2014 CRUD, rollout progress, halt controls",
+          "Approvals \u2014 pending HITL commands, approve/reject with reason",
+          "Analytics \u2014 fleet health, firmware distribution, error trends"
+        ],
+        "real_time": "WebSocket for command ACK events, 10s polling for telemetry",
+        "accessibility": "WCAG 2.1 AA, keyboard navigable approval workflow"
+      },
+      "acceptance_criteria": [
+        "Fleet map renders 10,000 vehicle markers without jank (60fps, Mapbox clustering)",
+        "Approval queue shows pending ENGINE_START/STOP commands with approve/reject actions",
+        "OTA campaign creation flow validated end-to-end (create \u2192 target \u2192 launch \u2192 progress)",
+        "Lighthouse performance score >= 85 on Fleet Map page",
+        "All interactive elements keyboard-accessible (Tab order correct, focus visible)",
+        "WebSocket reconnects automatically after connection drop within 5 seconds"
+      ],
+      "depends_on": [
+        3,
+        10,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build the consumer mobile app (React Native or Flutter): remote vehicle control panel (lock, unlock, locate with map, engine start with biometric re-auth + HITL notification), vehicle health summary (DTCs, recall alerts), trip history with map replay, UBI driving score dashboard with coaching tips, and service appointment booking flow connected to dealer portal backend.",
+      "payload": {
+        "framework": "React Native (Expo SDK 51) or Flutter 3.22",
+        "platforms": [
+          "iOS 16+",
+          "Android 10+"
+        ],
+        "biometric_auth": "Face ID / Touch ID / Android Biometrics for ENGINE_START re-confirmation",
+        "key_screens": [
+          "Home \u2014 vehicle status card, quick actions",
+          "Control \u2014 remote command buttons with biometric gate",
+          "Health \u2014 DTC list, recall status, service due indicator",
+          "Trips \u2014 trip list with map replay, speed and event overlay",
+          "Insurance Score \u2014 composite score, weekly trend, coaching cards",
+          "Service \u2014 appointment booking, dealer locator, service history"
+        ],
+        "push_notifications": "FCM/APNs for command ACK, service updates, recall alerts"
+      },
+      "acceptance_criteria": [
+        "ENGINE_START button requires biometric authentication before command is submitted",
+        "App receives command ACK push notification within 5 seconds of TCU acknowledgment",
+        "Trip map replay renders correct polyline for 2-hour trip in <3 seconds",
+        "App passes App Store and Google Play privacy nutrition label requirements",
+        "Cold start time <3 seconds on mid-range devices (iPhone 12, Pixel 6)",
+        "Offline state handled gracefully: cached last-known vehicle status shown, no crashes"
+      ],
+      "depends_on": [
+        3,
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the Dealer Service Portal (React 18 + TypeScript): vehicle lookup (VIN or plate), live DTC code display with service bulletin cross-reference, recall status panel, service appointment scheduling calendar, OTA readiness check (current firmware version, pending updates), and customer notification trigger. Integrate multi_agent_sequential service triage output from Step 16 into the diagnosis suggestion UI.",
+      "payload": {
+        "tech_stack": "React 18, TypeScript, Vite, FullCalendar (appointment scheduler), TanStack Table",
+        "key_pages": [
+          "Vehicle Lookup \u2014 VIN/plate search with ownership verification",
+          "Diagnostics \u2014 live DTC pull with fault code descriptions and service bulletins",
+          "Recalls \u2014 NHTSA recall list, completion status, parts availability",
+          "Appointments \u2014 calendar view, slot selection, customer notification send",
+          "OTA Status \u2014 current firmware, pending campaign eligibility, readiness check"
+        ],
+        "dealer_auth": "OAuth2 PKCE flow, dealer_id scoped JWT, per-dealership data isolation"
+      },
+      "acceptance_criteria": [
+        "VIN lookup returns vehicle data and DTC codes within 10 seconds",
+        "Service bulletin cross-reference displays relevant TSBs for each DTC code",
+        "Appointment booking prevents double-booking (calendar shows real-time availability)",
+        "Dealer data isolation: technician at dealer A cannot access vehicles assigned to dealer B",
+        "Service triage AI suggestions displayed alongside DTC codes with confidence indicator",
+        "Lighthouse accessibility score >= 90 on all primary pages"
+      ],
+      "depends_on": [
+        3,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "API",
+      "description": "Finalize and publish external API contracts for insurance and dealer partners: UBI Data API with partner-specific data sharing agreements encoded as API scopes, Dealer DMS Integration API with OpenTrack compatibility layer, webhook specifications for event push (OTA complete, service status change, recall notification), SDK generation (Python and JavaScript clients from OpenAPI spec), and API developer portal with interactive documentation.",
+      "payload": {
+        "partner_apis": [
+          {
+            "name": "Insurance Partner API",
+            "auth": "OAuth2 client credentials with data sharing agreement scopes",
+            "rate_limits": "10,000 req/day per partner, burst 100/min",
+            "webhooks": [
+              "trip.completed",
+              "score.updated",
+              "consent.revoked"
+            ]
+          },
+          {
+            "name": "Dealer Integration API",
+            "auth": "OAuth2 PKCE + dealer JWT",
+            "opentrack": "OpenTrack 1.0 compatibility mode for legacy DMS systems",
+            "webhooks": [
+              "service.completed",
+              "recall.detected",
+              "ota.ready"
+            ]
+          }
+        ],
+        "sdk_generation": "openapi-generator: Python 3.11+ and TypeScript fetch clients",
+        "developer_portal": "Stoplight or Redocly, interactive Try-It console with sandbox environment"
+      },
+      "acceptance_criteria": [
+        "Generated Python and TypeScript SDKs pass their own generated test suites",
+        "Developer portal sandbox returns realistic mock data for all endpoints",
+        "Webhook delivery verified: events delivered within 10 seconds, with retry on HTTP non-2xx",
+        "Data sharing agreement scopes enforced: insurance partner cannot access dealer endpoints",
+        "API changelog published with semantic versioning for all breaking changes"
+      ],
+      "depends_on": [
+        7,
+        15,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "TESTS",
+      "description": "Write comprehensive unit and integration test suites for all backend services: vehicle gateway (MQTT connection handling, message routing, command dispatch), OTA service (campaign CRUD, staged rollout FSM, package verification), remote control service (auth, rate limiting, HITL gate), UBI scoring engine (trip segmentation, scoring algorithm regression tests), and dealer integration adapters (all 3 DMS adapters with recorded API responses).",
+      "payload": {
+        "frameworks": "pytest (Python), Jest (TypeScript React components)",
+        "mocking": "respx for HTTP, asynctest for async, recorded DMS API responses (VCR cassettes)",
+        "suites": [
+          "Gateway: 80+ unit + 20 integration tests",
+          "OTA Service: 60+ unit (FSM states) + 15 integration tests",
+          "Remote Control: 50+ unit tests (auth paths, rate limiting)",
+          "UBI Scoring: 100+ regression tests against golden dataset of 1,000 scored trips",
+          "Dealer Adapters: 40+ integration tests per adapter (120 total) with VCR cassettes"
+        ],
+        "coverage_target": ">85% line coverage for all backend services"
+      },
+      "acceptance_criteria": [
+        "Full test suite runs in <10 minutes on CI",
+        "Line coverage >= 85% for all backend services (enforced by coverage gate)",
+        "UBI scoring regression: zero score regressions > \u00b13 points on golden dataset",
+        "All 3 DMS adapter test suites pass with recorded cassettes (no real DMS calls in CI)",
+        "HITL gate tested: ENGINE_START dispatched if and only if approval record exists"
+      ],
+      "depends_on": [
+        14,
+        15,
+        16,
+        11
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system integration tests across the full stack: vehicle-to-cloud telemetry pipeline (TCU simulator \u2192 MQTT \u2192 gateway \u2192 TimescaleDB \u2192 dashboard), remote command round-trip (dashboard \u2192 API \u2192 MQTT \u2192 TCU sim \u2192 ACK \u2192 dashboard), OTA update campaign (create campaign \u2192 delta generation \u2192 TCU download \u2192 apply \u2192 status update \u2192 rollback scenario), dealer DTC flow (dealer portal \u2192 dealer API \u2192 vehicle gateway \u2192 TCU \u2192 DTC response), and UBI trip end-to-end (driving events \u2192 trip boundary \u2192 scoring \u2192 insurance export).",
+      "payload": {
+        "test_environment": "Docker Compose full stack + SystemC TCU simulator (from Step 5)",
+        "test_scenarios": [
+          {
+            "id": "SYS-001",
+            "name": "Telemetry Pipeline E2E",
+            "duration": "30 minutes soak, 1,000 simulated vehicles"
+          },
+          {
+            "id": "SYS-002",
+            "name": "Remote Command Round-trip",
+            "commands": "all 6 command types, including HITL approval for ENGINE_START"
+          },
+          {
+            "id": "SYS-003",
+            "name": "OTA Update Campaign E2E",
+            "scenarios": "success, partial failure, automatic rollback"
+          },
+          {
+            "id": "SYS-004",
+            "name": "Dealer DTC Flow E2E",
+            "dms_adapters": "all 3 (CDK, R&R, Dealertrack)"
+          },
+          {
+            "id": "SYS-005",
+            "name": "UBI Trip End-to-End",
+            "trips": "50 synthetic trips, score against golden dataset"
+          }
+        ],
+        "performance_targets": {
+          "telemetry_throughput": "50,000 events/sec sustained",
+          "command_rtt_p95": "500ms",
+          "ota_device_throughput": "1,000 simultaneous OTA downloads"
+        }
+      },
+      "acceptance_criteria": [
+        "All 5 system test scenarios pass without manual intervention",
+        "Telemetry soak: <0.1% event loss at 50,000 events/sec over 30 minutes",
+        "ENGINE_START never executed without HITL approval record in audit log",
+        "OTA rollback scenario: device returns to previous firmware version within 5 minutes",
+        "All 3 DMS adapter flows return DTC data within 10 second SLA",
+        "Performance targets met in load test with <2% error rate"
+      ],
+      "depends_on": [
+        18,
+        19,
+        20,
+        22,
+        13
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 24,
+      "task_type": "COMPLIANCE",
+      "description": "Produce the full ISO 26262 and UNECE R155/R156 compliance evidence package: Design History File (DHF) assembly linking all artifacts from Steps 1\u201323, V&V protocol document (verification methods and results for each safety requirement), ASIL-B evidence package (unit test results, coverage reports, static analysis reports, code review records), UNECE R155 cybersecurity case summary, and UNECE R156 software update management system (SUMS) completion report.",
+      "payload": {
+        "dhf_contents": [
+          "HARA and Safety Goals (Step 1)",
+          "Functional Safety Concept (Step 1)",
+          "AUTOSAR ARXML architecture (Step 12)",
+          "Software Safety Requirements (Step 12)",
+          "Traceability matrix (Step 12)",
+          "Firmware source and build records (Step 8)",
+          "Unit test results and coverage (Step 13)",
+          "HIL test results (Step 13)",
+          "System test results (Step 23)",
+          "TARA and cybersecurity case (Step 9)",
+          "SBOM (Step 9)"
+        ],
+        "v_and_v_protocol": "Per-SSR verification method (analysis/test/inspection), pass criteria, and result",
+        "unece_r155_case": "Maps 7 regulation categories to implemented controls",
+        "unece_r156_sums": "Maps SUMS requirements to OTA service capabilities (Step 11)"
+      },
+      "acceptance_criteria": [
+        "DHF index covers 100% of ISO 26262 Part 2 required work products",
+        "Traceability matrix has zero orphan safety requirements (every SSR has test evidence)",
+        "V&V protocol records pass/fail result for every SSR",
+        "UNECE R155 case maps all 7 categories to implemented controls with evidence references",
+        "UNECE R156 SUMS completion report signed off by regulatory specialist",
+        "Compliance package reviewed by independent safety assessor (internal or external)"
+      ],
+      "depends_on": [
+        12,
+        13,
+        23
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 25,
+      "task_type": "REGULATORY",
+      "description": "Prepare UNECE R155 and R156 type-approval submission artifacts for target markets (EU, key APAC jurisdictions): cybersecurity management system (CSMS) description document, software update management system (SUMS) description, completed assessment questionnaires per UNECE Working Party 29 requirements, OEM type-approval application checklist, and GDPR Data Protection Impact Assessment (DPIA) for UBI data processing.",
+      "payload": {
+        "target_markets": [
+          "EU (UNECE contracting parties)",
+          "Japan",
+          "South Korea"
+        ],
+        "submission_artifacts": [
+          "CSMS Description Document (UNECE R155 Annex 5)",
+          "SUMS Description Document (UNECE R156 Annex 5)",
+          "UNECE WP.29 self-assessment questionnaire",
+          "OEM type-approval application (per national authority)",
+          "GDPR DPIA for UBI telematics data"
+        ],
+        "legal_basis_ubi": "Legitimate interest and explicit consent (dual basis for UBI)",
+        "data_retention": "UBI raw data: 24 months hot, 5 years archive, then deletion"
+      },
+      "acceptance_criteria": [
+        "CSMS document covers all UNECE R155 Annex 5 mandatory sections",
+        "SUMS document covers all UNECE R156 Annex 5 mandatory sections",
+        "DPIA identifies all high-risk UBI processing activities with mitigation measures",
+        "Self-assessment questionnaire completed with evidence references for all questions",
+        "Legal review sign-off on DPIA and data retention policy"
+      ],
+      "depends_on": [
+        24
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 26,
+      "task_type": "SECURITY",
+      "description": "Execute penetration testing and security validation: API penetration test (OWASP API Top 10 against Vehicle Gateway, OTA, Dealer, UBI APIs), firmware binary analysis (extract and analyze signed OTA package, verify no hardcoded secrets, no debug interfaces exposed in production build), automotive-specific attack scenarios (CAN injection via OBD-II, OTA man-in-the-middle, dealer API privilege escalation), and SBOM vulnerability scan with CVE remediation tracking.",
+      "payload": {
+        "scope": [
+          "All 4 external APIs (Vehicle, OTA, Dealer, UBI)",
+          "MQTT broker (authentication bypass, topic authorization)",
+          "Mobile app (reverse engineering, traffic interception)",
+          "Firmware binary (static analysis, secret extraction)"
+        ],
+        "tools": "Burp Suite Pro, Frida (mobile), binwalk + strings (firmware), trivy (SBOM CVE scan)",
+        "automotive_scenarios": [
+          "OBD-II CAN injection to spoof remote command ACK",
+          "OTA package MITM with tampered binary",
+          "Dealer API IDOR: access another dealer's vehicles",
+          "UBI data exfiltration via overprivileged insurance API token"
+        ],
+        "cvss_remediation_sla": {
+          "critical": "7 days",
+          "high": "30 days",
+          "medium": "90 days"
+        }
+      },
+      "acceptance_criteria": [
+        "OWASP API Top 10 test pass rate: 100% (no critical or high findings unmitigated)",
+        "Firmware binary: zero hardcoded credentials or private keys found by static analysis",
+        "OTA MITM attack: tampered package rejected 100% of test cases",
+        "Dealer IDOR: no cross-dealer data access possible in any test scenario",
+        "All CVSS Critical findings remediated before production deployment",
+        "SBOM CVE scan: zero known Critical CVEs in production dependencies"
+      ],
+      "depends_on": [
+        23,
+        9
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 27,
+      "task_type": "DEVOPS",
+      "description": "Build the CI/CD pipelines and production monitoring infrastructure: GitHub Actions multi-stage pipeline (firmware build + static analysis + unit tests, backend tests + coverage gate, frontend build + Lighthouse, Docker image build + SBOM scan + Trivy CVE gate), OTA deployment pipeline with staged rollout automation and automatic halt, Prometheus + Grafana observability stack (vehicle connection count, command RTT, OTA success rate, telemetry ingestion rate), PagerDuty alerting, and SRE runbooks.",
+      "payload": {
+        "ci_stages": [
+          "lint-and-static (MISRA, ESLint, ruff)",
+          "firmware-test (Unity + SystemC sim)",
+          "backend-test (pytest, coverage >= 85% gate)",
+          "frontend-test (Jest, Playwright E2E)",
+          "security-scan (trivy, gitleaks)",
+          "build-and-push (Docker, firmware binary, signed OTA package)",
+          "integration-test (docker-compose system tests)"
+        ],
+        "ota_pipeline": "Staged rollout: canary \u2192 1% \u2192 10% \u2192 50% \u2192 100%, auto-halt on error rate > 2%",
+        "observability": {
+          "metrics": "Prometheus + Grafana: 15+ dashboards covering all system components",
+          "logs": "OpenTelemetry \u2192 Loki or CloudWatch Logs",
+          "traces": "OpenTelemetry \u2192 Jaeger or AWS X-Ray"
+        },
+        "alerting": "PagerDuty: P1 (vehicle gateway down), P2 (OTA error rate spike), P3 (UBI pipeline lag)"
+      },
+      "acceptance_criteria": [
+        "Full CI pipeline completes in <15 minutes for a typical code change",
+        "Coverage gate blocks merge if backend coverage drops below 85%",
+        "SBOM CVE gate blocks Docker push if Critical CVE found in new dependency",
+        "OTA staged rollout halts automatically in staging when injected error rate exceeds 2%",
+        "Grafana dashboard covers all 5 SLIs: availability, latency, error rate, throughput, OTA success",
+        "PagerDuty alerts tested: P1 fires within 2 minutes of vehicle gateway going down"
+      ],
+      "depends_on": [
+        23,
+        11
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "INFRA",
+      "description": "Provision production cloud infrastructure using Terraform: multi-region deployment (us-east-1 primary, eu-west-1 for GDPR data residency), EKS clusters for backend services, RDS PostgreSQL 16 Multi-AZ, ElastiCache Redis cluster, MSK (managed Kafka), CloudFront CDN for OTA firmware packages, VPC with private subnets for MQTT broker, WAF rules for all external API gateways, and disaster recovery runbook with RTO/RPO targets.",
+      "payload": {
+        "cloud_provider": "AWS",
+        "regions": [
+          "us-east-1 (primary)",
+          "eu-west-1 (GDPR residency for EU vehicle data)"
+        ],
+        "services": {
+          "compute": "EKS 1.30, node groups: general (m6i.2xlarge), high-mem for Kafka (r6i.2xlarge)",
+          "database": "RDS PostgreSQL 16 Multi-AZ (db.r6g.2xlarge), TimescaleDB on RDS",
+          "cache": "ElastiCache Redis 7 cluster mode (r6g.large \u00d7 6 shards)",
+          "messaging": "MSK (Kafka 3.7) 6-broker cluster",
+          "ota_cdn": "CloudFront + S3 with OAI, signed URL enforcement",
+          "mqtt": "EMQX on EKS, private subnet, NLB for TCP 8883"
+        },
+        "rto_rpo": {
+          "RTO": "1 hour",
+          "RPO": "5 minutes"
+        },
+        "iac": "Terraform 1.8 + Terragrunt for environment promotion"
+      },
+      "acceptance_criteria": [
+        "All infrastructure provisioned via Terraform with no manual console steps",
+        "EU vehicle telemetry data confirmed to stay in eu-west-1 (verified by VPC flow logs)",
+        "RDS Multi-AZ failover tested: automatic failover completes within 60 seconds",
+        "WAF rules block OWASP Top 10 attack patterns (verified by WAF test suite)",
+        "Disaster recovery drill: full system restored in us-east-1 from eu-west-1 backup within RTO",
+        "Terraform plan produces zero unexpected changes on second apply (idempotency)"
+      ],
+      "depends_on": [
+        27
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 29,
+      "task_type": "QA",
+      "description": "Execute final quality assurance validation: functional test execution against all acceptance criteria from Steps 10\u201323, regression test run on full automated suite, user acceptance testing (UAT) sessions with OEM fleet operator, insurance partner, and dealer personas, performance benchmark report (all SLAs vs targets), and sign-off checklist for production readiness review.",
+      "payload": {
+        "uat_personas": [
+          {
+            "persona": "OEM Fleet Operator",
+            "focus": "OTA campaign management, remote command HITL, dashboard"
+          },
+          {
+            "persona": "Insurance Partner",
+            "focus": "UBI data export accuracy, consent management, fraud detection"
+          },
+          {
+            "persona": "Dealer Service Advisor",
+            "focus": "DTC pull, appointment booking, recall status"
+          }
+        ],
+        "regression_suite": "Full automated suite: firmware (Unity + HIL) + backend (pytest) + frontend (Playwright)",
+        "performance_benchmarks": [
+          "Vehicle gateway: 10k connections, command RTT p95",
+          "Telemetry ingestion: 50k events/sec soak",
+          "OTA throughput: 1k simultaneous downloads",
+          "API response times: all endpoints p99 < 2s"
+        ],
+        "sign_off_criteria": "All P0 and P1 defects resolved, all acceptance criteria in plan met"
+      },
+      "acceptance_criteria": [
+        "Zero P0 or P1 defects open at production readiness review",
+        "All 3 UAT persona sign-offs obtained with no blocking feedback",
+        "Full regression suite passes with >99% pass rate",
+        "All performance SLA targets met in final benchmark run",
+        "Production readiness checklist (security, compliance, ops) signed off by all stakeholders"
+      ],
+      "depends_on": [
+        23,
+        24,
+        26
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 30,
+      "task_type": "DOCS",
+      "description": "Produce all technical and operational documentation: architecture decision records (ADRs) for key design choices (MQTT vs HTTPS for TCU, A/B OTA strategy, HITL gate scope), API developer documentation (auto-generated from OpenAPI + narrative guides), runbook library (vehicle gateway restart, OTA campaign rollback, DMS adapter failover, GDPR erasure procedure), security operations guide, and integration guide for new OEM and insurance partners.",
+      "payload": {
+        "adrs": [
+          "ADR-001: MQTT over mTLS vs HTTPS for vehicle connectivity",
+          "ADR-002: A/B OTA partition strategy vs in-place update",
+          "ADR-003: HITL approval scope (ASIL-C only vs all remote commands)",
+          "ADR-004: TimescaleDB vs InfluxDB for telemetry"
+        ],
+        "runbooks": [
+          "RB-001: Vehicle gateway capacity scaling",
+          "RB-002: OTA campaign emergency halt and rollback",
+          "RB-003: DMS adapter circuit breaker reset",
+          "RB-004: GDPR right-to-erasure execution",
+          "RB-005: Firmware signing key rotation"
+        ],
+        "partner_guides": [
+          "OEM Integration Guide (vehicle registration, fleet setup)",
+          "Insurance Partner Integration Guide (API auth, data schema, webhooks)",
+          "Dealer DMS Integration Guide (adapter configuration, OAuth setup)"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 4 ADRs written with context, decision, and consequences sections",
+        "All 5 runbooks tested by an engineer unfamiliar with the system (dry-run)",
+        "API developer docs include working curl examples for every endpoint",
+        "Partner integration guides peer-reviewed by one representative from each partner type",
+        "Documentation site deployed and searchable"
+      ],
+      "depends_on": [
+        29,
+        27
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 31,
+      "task_type": "TRAINING",
+      "description": "Develop training materials and onboarding programs for all user groups: OEM fleet operator training (dashboard walkthrough, OTA campaign management, HITL approval workflow), dealer technician training (DTC pull, service triage AI, appointment booking), insurance partner onboarding (API integration guide, data schema, consent management), and internal engineering onboarding (firmware dev environment setup, cloud architecture walkthrough, compliance process).",
+      "payload": {
+        "formats": {
+          "fleet_operator": "Interactive web-based training (SCORM), 45-minute module + certification quiz",
+          "dealer_technician": "Video walkthroughs (10 min each, 4 modules) + printed quick reference card",
+          "insurance_partner": "Developer sandbox access + guided API integration tutorial (self-paced)",
+          "engineering_onboarding": "Day 1\u20135 structured onboarding doc with hands-on exercises"
+        },
+        "topics": {
+          "hitl_training": "Mandatory module for any user with ENGINE_START/STOP approval authority",
+          "security_awareness": "UNECE R155 responsibilities for all users with vehicle data access"
+        }
+      },
+      "acceptance_criteria": [
+        "Fleet operator training module validated: 5 new users complete full workflow without assistance",
+        "HITL approval training completed by all users with approval authority before production access",
+        "Dealer technician training covers all 3 DMS adapters with adapter-specific steps",
+        "Insurance partner developer sandbox successfully used by 2 external partners in beta",
+        "Engineering onboarding: new hire reaches first code contribution within 5 business days"
+      ],
+      "depends_on": [
+        30
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 31,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "ASIL levels are pre-assigned in Step 1's payload BEFORE the HARA is conducted. ASIL emerges FROM the HARA (severity \u00d7 exposure \u00d7 controllability) \u2014 hardcoding ASIL-C for remote vehicle control before the analysis is circular and violates ISO 26262 Part 3 methodology. The safety engineer cannot sign off on a HARA whose conclusions were predetermined.",
+            "FreeRTOS 10.6 has no ASIL certification. Using it in an ASIL-B context (Step 8) requires either a qualified RTOS (e.g., INTEGRITY, QNX Neutrino, SAFERTOS) or explicit freedom-from-interference argument treating FreeRTOS as QM software with ASIL-B monitors layered above it. The plan never addresses this \u2014 it is a compliance blocker for ISO 26262 Part 6.",
+            "NXP S32G2 has a heterogeneous architecture: Cortex-A53 cores (AUTOSAR Adaptive domain) and Cortex-M7 cores (AUTOSAR Classic domain). Step 8 implements AUTOSAR Classic 4.4 ARXML (Step 12) and Step 12 lists Classic SWCs, yet the S32G2's A53 cluster runs Adaptive. The plan never partitions which SWCs run on which core cluster, making the ARXML artifacts architecturally incoherent.",
+            "The HITL approval gate for ENGINE_START/STOP with a 300-second timeout (Step 10, Step 14) is operationally unworkable for its stated safety purpose. If ENGINE_STOP is a safety intervention (runaway vehicle, theft), a 5-minute human-approval window inverts the safety benefit. If ENGINE_START is the concern, the threat model (stolen credentials) is better addressed by step-up auth, not human queuing. The HITL design conflates compliance theater with actual safety.",
+            "Step 11 (OTA Service) lists Step 9 (TARA security documentation) as a hard dependency, blocking implementation. Security *requirements* from Step 1/9 should inform design, but the TARA document artifact should not gate firmware delivery implementation. This creates a critical-path bottleneck with no engineering justification.",
+            "Step 8 firmware lists Step 5 (SystemC simulation) as a dependency. The causal direction is wrong: firmware is written first, then the simulation is built to model it. Making firmware wait for simulation completion delays the entire embedded track by one full phase.",
+            "bsdiff for OTA delta updates (Step 11) assumes the device is on a known exact binary version. If a device has a corrupted-but-bootable image, an unexpected variant build, or a mid-update state, the delta patch will fail or produce a corrupt target. No version resolution or fallback-to-full-image strategy is defined.",
+            "SystemC simulation timing (Step 5) does not constitute WCET (Worst-Case Execution Time) evidence for ISO 26262 ASIL-B. The acceptance criterion 'timing analysis confirms ASIL-B response constraints' requires cycle-accurate analysis on the actual target or qualified WCET tools (aiT, RapiTime). Simulation timing is informative, not compliance evidence.",
+            "CDK Global, Reynolds & Reynolds, and Dealertrack DMS APIs (Step 16) are not open APIs \u2014 access requires formal OEM partnership agreements that routinely take 6\u201318 months and involve legal data-sharing contracts. The plan treats these as pure integration engineering problems. No partnership/commercial track is modeled.",
+            "UBI scoring uses 'Phone Bluetooth disconnect events as distraction proxy' (Step 15). BT disconnect fires for antenna interference, passenger devices, OS background kills, and accessory pairing \u2014 not just driver phone use. Using this signal in an actuarial model creates insurer regulatory exposure in most jurisdictions and will be challenged in claims disputes.",
+            "k-anonymity k\u22655 on a 500m grid (Step 15) is known to be insufficient for vehicle location data. Vehicles follow deterministic routes (home, workplace, school). Sparse grids in rural/suburban areas trivially re-identify individuals. Differential privacy or significantly higher k with temporal aggregation is required for insurance data export compliance."
+          ],
+          "suggestions": [
+            "Reverse the ASIL assignment: run the HARA with blank ASIL fields and let the severity/exposure/controllability matrix produce the ASIL ratings. Then update the downstream steps. Accept that ASIL-D is possible for ENGINE_START in moving-vehicle scenarios.",
+            "Replace FreeRTOS with SAFERTOS (a qualified derivative) or add an explicit freedom-from-interference argument as a mandatory deliverable in Step 8, reviewed by the safety engineer from Step 1.",
+            "Add an explicit S32G2 partitioning architecture document as a Step 4 or Step 8 deliverable: which SWCs run on A53 (Adaptive), which on M7 (Classic), how IPC between the domains is implemented, and which AUTOSAR stack (Classic vs Adaptive) each SWC belongs to.",
+            "Replace the ENGINE_START HITL queue with a step-up authentication model: biometric + possession factor on the mobile app, time-limited token, with audit trail. Reserve HITL queue for fleet/operator bulk operations. This satisfies the audit requirement without the 300-second safety regression.",
+            "Add a dedicated PKI/Key Management step (between Steps 4 and 7): device certificate provisioning at manufacturing, HSM-backed CA hierarchy, CRL/OCSP strategy for embedded devices with intermittent connectivity, SecOC symmetric key provisioning via secure manufacturing toolchain, and firmware signing key rotation procedure. This is a 6-week workstream currently invisible in the plan.",
+            "Add a tool qualification register (ISO 26262 Part 8, TCL assessment) as a deliverable in Step 4: ARM GCC compiler (TCL-2 or TCL-3), Unity test framework, PC-lint/Polyspace. Without TCL assessment, the test results in Steps 13 and 24 cannot be used as ISO 26262 evidence.",
+            "Correct the infrastructure error in Step 28: TimescaleDB is not available as an RDS managed service. Options are EC2-hosted PostgreSQL + TimescaleDB extension, Timescale Cloud (managed), or RDS Aurora PostgreSQL with a hypertable-compatible schema. Choose one and update the Terraform plan.",
+            "Add a Coordinated Vulnerability Disclosure (CVD) program and incident response process as a Step 9 deliverable \u2014 both are mandatory UNECE R155 organizational requirements, not just documentation artifacts. CSMS covers organizational processes, supplier audits, and ongoing monitoring, not just a submission document.",
+            "Clarify the UBI score range in Step 15's acceptance criterion '\u00b12 points consistency' \u2014 state the full scale (e.g., 0\u2013100) so the criterion is testable and meaningful to actuarial reviewers.",
+            "For Step 17's fraud detection, the Z-score approach on odometer increments is vulnerable to slow-drift spoofing. Add a cross-validation signal: CAN-sourced odometer vs GPS-derived distance accumulation with Kalman filtering. Specify the detection threshold calibration methodology."
+          ],
+          "missing": [
+            "PKI infrastructure design and manufacturing key provisioning workstream \u2014 certificates for 10,000+ vehicles, revocation at scale, SecOC key injection at ECU programming time. Nowhere in 31 steps.",
+            "ISO 26262 Part 8 tool qualification assessment (TCL ratings for compiler, static analysis, test framework) \u2014 without this, the compliance package in Step 24 is incomplete and an assessor will reject it.",
+            "CSMS organizational process documentation (UNECE R155 requires process descriptions, roles, supplier TARA requirements, monitoring cadence, incident response SLAs) \u2014 the plan only produces documents, not the management system itself.",
+            "Hardware bring-up and ECU validation step \u2014 the plan jumps from SystemC simulation directly to system testing with no physical prototype bring-up phase. Simulation fidelity gaps will surface at first hardware integration.",
+            "Actual hardware target for HIL testing \u2014 Step 13 uses python-can driving the SystemC simulation, which is software-in-the-loop, not hardware-in-the-loop. True HIL requires physical ECU hardware on a test bench. The naming is misleading and the compliance evidence value differs.",
+            "Supplier management and TARA for third-party components (EMQX broker, NXP SE050, FreeRTOS, bsdiff library) \u2014 UNECE R155 and ISO 26262 require supplier evidence packages or independent assessment for safety/security-relevant COTS components.",
+            "OEM partnership and commercial track for DMS API access (CDK, R&R, Dealertrack) \u2014 these are business development dependencies with 6\u201318 month lead times that are not modeled in the plan's dependency graph.",
+            "Multi-region data synchronization and conflict resolution strategy \u2014 Step 28 provisions us-east-1 and eu-west-1 as separate regions for GDPR, but the plan never addresses how vehicle state (connection status, pending commands, OTA campaigns) is kept consistent across regions or what happens when a EU-registered vehicle roams to the US.",
+            "Firmware signing key ceremony and HSM procurement \u2014 ECDSA P-256 signing for OTA packages requires a hardware security module in the build pipeline. Key generation ceremony, key custodians, and key rotation are compliance requirements not covered in any step.",
+            "App Store and Google Play review timeline buffer \u2014 Step 19 lists 'passes App Store and Google Play privacy nutrition label requirements' as an acceptance criterion, but app store reviews for automotive safety apps frequently involve manual review and can take 2\u20134 weeks. Not modeled as a critical path dependency."
+          ],
+          "security_risks": [
+            "SecOC MAC key provisioning gap: Step 8 specifies SecOC MAC verification on safety-relevant CAN messages, but symmetric SecOC keys must be pre-provisioned per-vehicle during manufacturing. No step covers the secure key provisioning toolchain. If this is done insecurely (shared key, predictable derivation), SecOC provides no real protection.",
+            "MQTT broker ACL enforcement at scale: Step 10 specifies per-VIN ACL on EMQX, but at 10,000+ concurrent connections with dynamic VIN provisioning, ACL rule propagation latency can create windows where a newly revoked device still publishes. No ACL propagation SLA or immediate-disconnect-on-revocation mechanism is specified.",
+            "OTA signed URL 7-day expiry (Step 11) is too long: a 7-day signed S3 URL for a firmware binary allows a compromised URL to be used for replay delivery to any eligible device within the window. Signed URLs for firmware should be scoped to the requesting device's VIN and expire in hours, not days.",
+            "Dealer API IDOR risk is acknowledged but the mitigation is shallow: Step 20 requires 'dealer_id scoped JWT' but IDOR in dealer APIs typically bypasses JWT-level isolation via direct object references in request bodies (VIN, service_record_id). The penetration test in Step 26 covers this, but the API design in Step 7 and the backend in Step 16 need explicit VIN-to-dealer binding enforced at the data layer, not just the auth layer.",
+            "Mobile app biometric gate (Step 19) for ENGINE_START can be bypassed on rooted/jailbroken devices. The plan has no attestation check (Android SafetyNet/Play Integrity, iOS DeviceCheck) to detect compromised app environments before accepting biometric confirmation.",
+            "UBI data export via SFTP (Step 15) to insurance partners is a high-value exfiltration target. SFTP credential management, partner key rotation, and audit logging of all export operations are not specified. A compromised insurance partner credential gives access to behavioral data for potentially millions of vehicles."
+          ],
+          "summary": "This is an impressively broad plan that correctly identifies the regulatory landscape (ISO 26262, UNECE R155/R156), covers the right architectural components, and produces genuine compliance artifacts rather than checkbox documentation. However, it has several production-blocking flaws that prevent it from reaching the 85+ threshold required for a regulated automotive system. The most critical are: (1) ASIL levels are pre-assigned before the HARA, which invalidates the safety analysis methodology at its foundation; (2) FreeRTOS is used in an ASIL-B context without qualification, which is a hard compliance failure; (3) the NXP S32G2 heterogeneous architecture is never partitioned across its A53 (Adaptive) and M7 (Classic) cores, making the AUTOSAR artifacts architecturally incoherent; (4) no PKI/key management workstream exists despite the entire security model depending on device certificates and ECDSA signing keys; (5) TimescaleDB cannot run on AWS RDS, making the Step 28 infrastructure spec unbuildable as written. Secondary concerns include the operationally inverted HITL gate for ENGINE_STOP, the reversed firmware/simulation dependency, and the missing tool qualification register that will cause an ISO 26262 assessor to reject the V&V evidence package. The plan reads as written by engineers who understand the domain well but have not previously shipped a product through a type-approval process \u2014 the compliance artifacts are modeled as documents to produce rather than as evidence that emerges from a qualified engineering process. Rework the ASIL assignment methodology, RTOS qualification strategy, PKI workstream, and infrastructure layer before treating this as executable.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "ASIL levels are pre-assigned in Step 1's payload BEFORE the HARA is conducted. ASIL emerges FROM the HARA (severity \u00d7 exposure \u00d7 controllability) \u2014 hardcoding ASIL-C for remote vehicle control before the analysis is circular and violates ISO 26262 Part 3 methodology. The safety engineer cannot sign off on a HARA whose conclusions were predetermined.",
+              "FreeRTOS 10.6 has no ASIL certification. Using it in an ASIL-B context (Step 8) requires either a qualified RTOS (e.g., INTEGRITY, QNX Neutrino, SAFERTOS) or explicit freedom-from-interference argument treating FreeRTOS as QM software with ASIL-B monitors layered above it. The plan never addresses this \u2014 it is a compliance blocker for ISO 26262 Part 6.",
+              "NXP S32G2 has a heterogeneous architecture: Cortex-A53 cores (AUTOSAR Adaptive domain) and Cortex-M7 cores (AUTOSAR Classic domain). Step 8 implements AUTOSAR Classic 4.4 ARXML (Step 12) and Step 12 lists Classic SWCs, yet the S32G2's A53 cluster runs Adaptive. The plan never partitions which SWCs run on which core cluster, making the ARXML artifacts architecturally incoherent.",
+              "The HITL approval gate for ENGINE_START/STOP with a 300-second timeout (Step 10, Step 14) is operationally unworkable for its stated safety purpose. If ENGINE_STOP is a safety intervention (runaway vehicle, theft), a 5-minute human-approval window inverts the safety benefit. If ENGINE_START is the concern, the threat model (stolen credentials) is better addressed by step-up auth, not human queuing. The HITL design conflates compliance theater with actual safety.",
+              "Step 11 (OTA Service) lists Step 9 (TARA security documentation) as a hard dependency, blocking implementation. Security *requirements* from Step 1/9 should inform design, but the TARA document artifact should not gate firmware delivery implementation. This creates a critical-path bottleneck with no engineering justification.",
+              "Step 8 firmware lists Step 5 (SystemC simulation) as a dependency. The causal direction is wrong: firmware is written first, then the simulation is built to model it. Making firmware wait for simulation completion delays the entire embedded track by one full phase.",
+              "bsdiff for OTA delta updates (Step 11) assumes the device is on a known exact binary version. If a device has a corrupted-but-bootable image, an unexpected variant build, or a mid-update state, the delta patch will fail or produce a corrupt target. No version resolution or fallback-to-full-image strategy is defined.",
+              "SystemC simulation timing (Step 5) does not constitute WCET (Worst-Case Execution Time) evidence for ISO 26262 ASIL-B. The acceptance criterion 'timing analysis confirms ASIL-B response constraints' requires cycle-accurate analysis on the actual target or qualified WCET tools (aiT, RapiTime). Simulation timing is informative, not compliance evidence.",
+              "CDK Global, Reynolds & Reynolds, and Dealertrack DMS APIs (Step 16) are not open APIs \u2014 access requires formal OEM partnership agreements that routinely take 6\u201318 months and involve legal data-sharing contracts. The plan treats these as pure integration engineering problems. No partnership/commercial track is modeled.",
+              "UBI scoring uses 'Phone Bluetooth disconnect events as distraction proxy' (Step 15). BT disconnect fires for antenna interference, passenger devices, OS background kills, and accessory pairing \u2014 not just driver phone use. Using this signal in an actuarial model creates insurer regulatory exposure in most jurisdictions and will be challenged in claims disputes.",
+              "k-anonymity k\u22655 on a 500m grid (Step 15) is known to be insufficient for vehicle location data. Vehicles follow deterministic routes (home, workplace, school). Sparse grids in rural/suburban areas trivially re-identify individuals. Differential privacy or significantly higher k with temporal aggregation is required for insurance data export compliance."
+            ],
+            "suggestions": [
+              "Reverse the ASIL assignment: run the HARA with blank ASIL fields and let the severity/exposure/controllability matrix produce the ASIL ratings. Then update the downstream steps. Accept that ASIL-D is possible for ENGINE_START in moving-vehicle scenarios.",
+              "Replace FreeRTOS with SAFERTOS (a qualified derivative) or add an explicit freedom-from-interference argument as a mandatory deliverable in Step 8, reviewed by the safety engineer from Step 1.",
+              "Add an explicit S32G2 partitioning architecture document as a Step 4 or Step 8 deliverable: which SWCs run on A53 (Adaptive), which on M7 (Classic), how IPC between the domains is implemented, and which AUTOSAR stack (Classic vs Adaptive) each SWC belongs to.",
+              "Replace the ENGINE_START HITL queue with a step-up authentication model: biometric + possession factor on the mobile app, time-limited token, with audit trail. Reserve HITL queue for fleet/operator bulk operations. This satisfies the audit requirement without the 300-second safety regression.",
+              "Add a dedicated PKI/Key Management step (between Steps 4 and 7): device certificate provisioning at manufacturing, HSM-backed CA hierarchy, CRL/OCSP strategy for embedded devices with intermittent connectivity, SecOC symmetric key provisioning via secure manufacturing toolchain, and firmware signing key rotation procedure. This is a 6-week workstream currently invisible in the plan.",
+              "Add a tool qualification register (ISO 26262 Part 8, TCL assessment) as a deliverable in Step 4: ARM GCC compiler (TCL-2 or TCL-3), Unity test framework, PC-lint/Polyspace. Without TCL assessment, the test results in Steps 13 and 24 cannot be used as ISO 26262 evidence.",
+              "Correct the infrastructure error in Step 28: TimescaleDB is not available as an RDS managed service. Options are EC2-hosted PostgreSQL + TimescaleDB extension, Timescale Cloud (managed), or RDS Aurora PostgreSQL with a hypertable-compatible schema. Choose one and update the Terraform plan.",
+              "Add a Coordinated Vulnerability Disclosure (CVD) program and incident response process as a Step 9 deliverable \u2014 both are mandatory UNECE R155 organizational requirements, not just documentation artifacts. CSMS covers organizational processes, supplier audits, and ongoing monitoring, not just a submission document.",
+              "Clarify the UBI score range in Step 15's acceptance criterion '\u00b12 points consistency' \u2014 state the full scale (e.g., 0\u2013100) so the criterion is testable and meaningful to actuarial reviewers.",
+              "For Step 17's fraud detection, the Z-score approach on odometer increments is vulnerable to slow-drift spoofing. Add a cross-validation signal: CAN-sourced odometer vs GPS-derived distance accumulation with Kalman filtering. Specify the detection threshold calibration methodology."
+            ],
+            "missing": [
+              "PKI infrastructure design and manufacturing key provisioning workstream \u2014 certificates for 10,000+ vehicles, revocation at scale, SecOC key injection at ECU programming time. Nowhere in 31 steps.",
+              "ISO 26262 Part 8 tool qualification assessment (TCL ratings for compiler, static analysis, test framework) \u2014 without this, the compliance package in Step 24 is incomplete and an assessor will reject it.",
+              "CSMS organizational process documentation (UNECE R155 requires process descriptions, roles, supplier TARA requirements, monitoring cadence, incident response SLAs) \u2014 the plan only produces documents, not the management system itself.",
+              "Hardware bring-up and ECU validation step \u2014 the plan jumps from SystemC simulation directly to system testing with no physical prototype bring-up phase. Simulation fidelity gaps will surface at first hardware integration.",
+              "Actual hardware target for HIL testing \u2014 Step 13 uses python-can driving the SystemC simulation, which is software-in-the-loop, not hardware-in-the-loop. True HIL requires physical ECU hardware on a test bench. The naming is misleading and the compliance evidence value differs.",
+              "Supplier management and TARA for third-party components (EMQX broker, NXP SE050, FreeRTOS, bsdiff library) \u2014 UNECE R155 and ISO 26262 require supplier evidence packages or independent assessment for safety/security-relevant COTS components.",
+              "OEM partnership and commercial track for DMS API access (CDK, R&R, Dealertrack) \u2014 these are business development dependencies with 6\u201318 month lead times that are not modeled in the plan's dependency graph.",
+              "Multi-region data synchronization and conflict resolution strategy \u2014 Step 28 provisions us-east-1 and eu-west-1 as separate regions for GDPR, but the plan never addresses how vehicle state (connection status, pending commands, OTA campaigns) is kept consistent across regions or what happens when a EU-registered vehicle roams to the US.",
+              "Firmware signing key ceremony and HSM procurement \u2014 ECDSA P-256 signing for OTA packages requires a hardware security module in the build pipeline. Key generation ceremony, key custodians, and key rotation are compliance requirements not covered in any step.",
+              "App Store and Google Play review timeline buffer \u2014 Step 19 lists 'passes App Store and Google Play privacy nutrition label requirements' as an acceptance criterion, but app store reviews for automotive safety apps frequently involve manual review and can take 2\u20134 weeks. Not modeled as a critical path dependency."
+            ],
+            "security_risks": [
+              "SecOC MAC key provisioning gap: Step 8 specifies SecOC MAC verification on safety-relevant CAN messages, but symmetric SecOC keys must be pre-provisioned per-vehicle during manufacturing. No step covers the secure key provisioning toolchain. If this is done insecurely (shared key, predictable derivation), SecOC provides no real protection.",
+              "MQTT broker ACL enforcement at scale: Step 10 specifies per-VIN ACL on EMQX, but at 10,000+ concurrent connections with dynamic VIN provisioning, ACL rule propagation latency can create windows where a newly revoked device still publishes. No ACL propagation SLA or immediate-disconnect-on-revocation mechanism is specified.",
+              "OTA signed URL 7-day expiry (Step 11) is too long: a 7-day signed S3 URL for a firmware binary allows a compromised URL to be used for replay delivery to any eligible device within the window. Signed URLs for firmware should be scoped to the requesting device's VIN and expire in hours, not days.",
+              "Dealer API IDOR risk is acknowledged but the mitigation is shallow: Step 20 requires 'dealer_id scoped JWT' but IDOR in dealer APIs typically bypasses JWT-level isolation via direct object references in request bodies (VIN, service_record_id). The penetration test in Step 26 covers this, but the API design in Step 7 and the backend in Step 16 need explicit VIN-to-dealer binding enforced at the data layer, not just the auth layer.",
+              "Mobile app biometric gate (Step 19) for ENGINE_START can be bypassed on rooted/jailbroken devices. The plan has no attestation check (Android SafetyNet/Play Integrity, iOS DeviceCheck) to detect compromised app environments before accepting biometric confirmation.",
+              "UBI data export via SFTP (Step 15) to insurance partners is a high-value exfiltration target. SFTP credential management, partner key rotation, and audit logging of all export operations are not specified. A compromised insurance partner credential gives access to behavioral data for potentially millions of vehicles."
+            ],
+            "summary": "This is an impressively broad plan that correctly identifies the regulatory landscape (ISO 26262, UNECE R155/R156), covers the right architectural components, and produces genuine compliance artifacts rather than checkbox documentation. However, it has several production-blocking flaws that prevent it from reaching the 85+ threshold required for a regulated automotive system. The most critical are: (1) ASIL levels are pre-assigned before the HARA, which invalidates the safety analysis methodology at its foundation; (2) FreeRTOS is used in an ASIL-B context without qualification, which is a hard compliance failure; (3) the NXP S32G2 heterogeneous architecture is never partitioned across its A53 (Adaptive) and M7 (Classic) cores, making the AUTOSAR artifacts architecturally incoherent; (4) no PKI/key management workstream exists despite the entire security model depending on device certificates and ECDSA signing keys; (5) TimescaleDB cannot run on AWS RDS, making the Step 28 infrastructure spec unbuildable as written. Secondary concerns include the operationally inverted HITL gate for ENGINE_STOP, the reversed firmware/simulation dependency, and the missing tool qualification register that will cause an ISO 26262 assessor to reject the V&V evidence package. The plan reads as written by engineers who understand the domain well but have not previously shipped a product through a type-approval process \u2014 the compliance artifacts are modeled as documents to produce rather than as evidence that emerges from a qualified engineering process. Rework the ASIL assignment methodology, RTOS qualification strategy, PKI workstream, and infrastructure layer before treating this as executable.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T04:46:31.983502+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 330.64,
+    "critic_plan": 130.13
+  }
+}

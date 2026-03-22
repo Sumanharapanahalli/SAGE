@@ -1,0 +1,1349 @@
+{
+  "run_id": "7bc00f75-12b4-4436-b9ae-11e91ae104ce",
+  "solution_name": "hr_management",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T05:04:50.426592+00:00",
+  "updated_at": "2026-03-22T05:10:03.358578+00:00",
+  "product_description": "HR management system with employee onboarding, PTO tracking, performance reviews, payroll integration, org chart, and compliance reporting.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the HR management software market: key competitors (Workday, BambooHR, Rippling, Gusto), pricing models, feature gaps, target segments (SMB vs enterprise), and go-to-market positioning for hr_management.",
+      "payload": {
+        "competitors": [
+          "Workday",
+          "BambooHR",
+          "Rippling",
+          "Gusto",
+          "ADP Workforce Now"
+        ],
+        "focus_areas": [
+          "pricing",
+          "feature gaps",
+          "target_segment",
+          "switching_costs"
+        ],
+        "deliverable": "market_research_report.md"
+      },
+      "acceptance_criteria": [
+        "Competitor feature matrix covering all 6 core modules is complete",
+        "Pricing benchmarks for SMB and enterprise tiers documented",
+        "At least 3 differentiation opportunities identified",
+        "Target ICP (Ideal Customer Profile) defined with firmographic criteria"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Elicit and document business requirements for all six modules: employee onboarding, PTO tracking, performance reviews, payroll integration, org chart, and compliance reporting. Produce user stories with acceptance criteria and process flow diagrams.",
+      "payload": {
+        "modules": [
+          "onboarding",
+          "pto_tracking",
+          "performance_reviews",
+          "payroll_integration",
+          "org_chart",
+          "compliance_reporting"
+        ],
+        "artifact_types": [
+          "user_stories",
+          "process_flows",
+          "use_case_diagrams"
+        ],
+        "stakeholder_personas": [
+          "HR_manager",
+          "employee",
+          "payroll_admin",
+          "compliance_officer",
+          "executive"
+        ]
+      },
+      "acceptance_criteria": [
+        "User stories written for all 5 personas across all 6 modules (minimum 40 stories)",
+        "Process flow diagrams cover happy path and error paths for each module",
+        "Functional requirements document reviewed and sign-off obtained",
+        "Non-functional requirements (performance, availability, scale) specified",
+        "Pricing tiers defined",
+        "Churn risk factors identified"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, and Data Processing Agreement. Review employment law obligations (GDPR, CCPA, FLSA, ADA) as they apply to HR data handling, payroll processing, and employee record retention requirements.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "data_processing_agreement.md",
+          "employee_data_retention_policy.md"
+        ],
+        "regulations": [
+          "GDPR",
+          "CCPA",
+          "FLSA",
+          "ADA",
+          "HIPAA_light"
+        ],
+        "data_categories": [
+          "PII",
+          "payroll_data",
+          "health_data",
+          "performance_records"
+        ]
+      },
+      "acceptance_criteria": [
+        "Privacy policy covers all employee PII categories collected and processed",
+        "Data retention schedule defined per regulation (FLSA 3yr, tax records 7yr, etc.)",
+        "DPA template ready for enterprise customer agreements",
+        "Right-to-erasure workflow defined (with payroll record carve-out)",
+        "Subscription terms cover cancellation and refunds",
+        "Data processing agreement drafted"
+      ],
+      "depends_on": [],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 4,
+      "task_type": "FINANCIAL",
+      "description": "Build financial model covering SaaS pricing tiers (per-seat, per-company-size), COGS breakdown (infrastructure, support, compliance), customer acquisition cost, LTV, and 3-year revenue projection for hr_management.",
+      "payload": {
+        "pricing_models": [
+          "per_seat_monthly",
+          "per_seat_annual",
+          "tiered_by_headcount"
+        ],
+        "tiers": [
+          "starter_1_50",
+          "growth_51_250",
+          "enterprise_250plus"
+        ],
+        "model_horizon_years": 3,
+        "deliverable": "financial_model.xlsx"
+      },
+      "acceptance_criteria": [
+        "Pricing tiers defined with per-seat rates for all three bands",
+        "COGS per customer per tier calculated including infra, support, compliance costs",
+        "CAC and LTV modeled with payback period under 18 months for growth tier",
+        "Break-even analysis shows path to profitability with assumptions documented",
+        "MRR/ARR projections modeled",
+        "CAC and LTV estimated"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 5,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the Product Requirements Document (PRD), prioritized feature roadmap (MoSCoW), success metrics (OKRs), and MVP scope definition for hr_management. Define v1.0 as the deliverable scope for this build.",
+      "payload": {
+        "prioritization_method": "MoSCoW",
+        "mvp_modules": [
+          "employee_onboarding",
+          "pto_tracking",
+          "org_chart"
+        ],
+        "v1_modules": [
+          "performance_reviews",
+          "payroll_integration",
+          "compliance_reporting"
+        ],
+        "success_metrics": [
+          "time_to_onboard_employee",
+          "pto_request_resolution_time",
+          "payroll_accuracy_rate",
+          "compliance_report_generation_time"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all 6 modules with must-have vs nice-to-have distinction",
+        "MVP scope is achievable with defined team within build timeline",
+        "OKRs defined for 30/60/90 days post-launch",
+        "Roadmap beyond v1.0 documented with at least 2 future quarters planned"
+      ],
+      "depends_on": [
+        2,
+        4
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 6,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research synthesis (from business requirements), produce information architecture, wireframes for all 6 modules, interactive prototype for onboarding and PTO flows, and accessibility audit checklist (WCAG 2.1 AA).",
+      "payload": {
+        "deliverables": [
+          "ia_sitemap",
+          "low_fi_wireframes",
+          "hi_fi_prototype",
+          "design_system_tokens",
+          "accessibility_checklist"
+        ],
+        "modules_to_prototype": [
+          "onboarding_wizard",
+          "pto_request_flow",
+          "performance_review_form"
+        ],
+        "accessibility_standard": "WCAG_2.1_AA",
+        "tool": "Figma"
+      },
+      "acceptance_criteria": [
+        "Information architecture covers all pages and navigation paths",
+        "Wireframes reviewed with at least 2 representative users from each persona",
+        "Hi-fi prototype covers complete employee onboarding flow end-to-end",
+        "Accessibility checklist passes for color contrast, keyboard nav, ARIA labels",
+        "Design tokens defined for colors, typography, spacing"
+      ],
+      "depends_on": [
+        2,
+        5
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 7,
+      "task_type": "COMPLIANCE",
+      "description": "Map SOC 2 Type II controls to the hr_management system. Identify applicable Trust Service Criteria (Security, Availability, Confidentiality, Privacy). Produce control inventory, evidence collection plan, and gap analysis against current architecture.",
+      "payload": {
+        "standard": "SOC_2_Type_II",
+        "trust_service_criteria": [
+          "CC_Security",
+          "A_Availability",
+          "C_Confidentiality",
+          "P_Privacy"
+        ],
+        "deliverables": [
+          "control_inventory.xlsx",
+          "evidence_collection_plan.md",
+          "gap_analysis.md"
+        ],
+        "sensitive_data_scope": [
+          "employee_PII",
+          "payroll_records",
+          "performance_data",
+          "health_data"
+        ]
+      },
+      "acceptance_criteria": [
+        "All applicable SOC 2 CC controls mapped with control owner and evidence type",
+        "Evidence collection plan specifies automated vs manual evidence sources",
+        "Gap analysis identifies all controls requiring implementation before audit",
+        "Data classification matrix covers all data types in the system"
+      ],
+      "depends_on": [
+        3,
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "DATABASE",
+      "description": "Design the PostgreSQL database schema for hr_management covering all 6 modules. Include entity-relationship diagram, indexing strategy, row-level security (RLS) for multi-tenant isolation, audit trail tables, and migration scripts.",
+      "payload": {
+        "engine": "PostgreSQL_15",
+        "orm": "SQLAlchemy",
+        "core_entities": [
+          "employees",
+          "departments",
+          "positions",
+          "pto_requests",
+          "pto_balances",
+          "performance_cycles",
+          "performance_reviews",
+          "payroll_runs",
+          "payroll_line_items",
+          "org_nodes",
+          "compliance_reports",
+          "audit_logs"
+        ],
+        "features": [
+          "row_level_security",
+          "soft_deletes",
+          "audit_triggers",
+          "multi_tenant_schema"
+        ],
+        "migration_tool": "Alembic"
+      },
+      "acceptance_criteria": [
+        "ERD covers all 6 modules with foreign key relationships documented",
+        "RLS policies enforce tenant isolation \u2014 cross-tenant query returns zero rows",
+        "Audit trigger fires on INSERT/UPDATE/DELETE for all PII-containing tables",
+        "All Alembic migrations run cleanly from empty DB to full schema",
+        "Indexes defined for all foreign keys and common query predicates"
+      ],
+      "depends_on": [
+        5,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "API",
+      "description": "Design the OpenAPI 3.1 specification for all hr_management REST endpoints covering employee CRUD, onboarding workflow, PTO request lifecycle, performance review cycle, payroll integration hooks, org chart queries, and compliance report generation.",
+      "payload": {
+        "spec_format": "OpenAPI_3.1",
+        "auth": "JWT_with_RBAC",
+        "roles": [
+          "hr_admin",
+          "manager",
+          "employee",
+          "payroll_admin",
+          "compliance_officer",
+          "system_admin"
+        ],
+        "versioning": "URI_v1",
+        "endpoint_groups": [
+          "employees",
+          "onboarding",
+          "pto",
+          "performance",
+          "payroll",
+          "org",
+          "compliance",
+          "auth",
+          "audit"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates without errors via openapi-validator",
+        "All endpoints specify auth requirements and role permissions",
+        "Request/response schemas defined for all 6 module endpoint groups",
+        "Error response schemas standardized (RFC 7807 Problem Details)",
+        "Payroll integration endpoints document webhook contract for external providers"
+      ],
+      "depends_on": [
+        5,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "CONFIG",
+      "description": "Initialize the hr_management project repository: monorepo structure (backend/frontend/infra), Python FastAPI backend scaffold, React + TypeScript frontend scaffold, Docker Compose for local dev (Postgres, Redis, LocalStack), pre-commit hooks, linting, and environment variable management.",
+      "payload": {
+        "repo_structure": "monorepo",
+        "backend_framework": "FastAPI",
+        "frontend_framework": "React_18_TypeScript",
+        "local_services": [
+          "postgres:15",
+          "redis:7",
+          "localstack"
+        ],
+        "tooling": [
+          "ruff",
+          "mypy",
+          "eslint",
+          "prettier",
+          "pre-commit",
+          "dotenv-vault"
+        ],
+        "agentic_pattern": "multi_agent_coordinator",
+        "pattern_components": [
+          "coordinator_agent",
+          "specialist_agents",
+          "task_router",
+          "approval_queue"
+        ]
+      },
+      "acceptance_criteria": [
+        "docker compose up starts all services with zero manual steps",
+        "Backend server starts and returns 200 on GET /health",
+        "Frontend dev server starts and renders root page",
+        "Pre-commit hooks run linting and type-check on staged files",
+        "Environment variable template (.env.example) covers all required secrets"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "SECURITY",
+      "description": "Produce threat model (STRIDE) for hr_management, covering authentication, payroll data access, PII at rest and in transit, multi-tenant isolation, and API security. Define security controls required for SOC 2 CC6 (Logical Access) and CC7 (System Operations).",
+      "payload": {
+        "methodology": "STRIDE",
+        "threat_surfaces": [
+          "authentication_flow",
+          "payroll_webhook",
+          "PII_storage",
+          "tenant_isolation",
+          "admin_API",
+          "report_export"
+        ],
+        "soc2_controls": [
+          "CC6.1_access_controls",
+          "CC6.2_authentication",
+          "CC6.6_encryption",
+          "CC7.1_monitoring"
+        ],
+        "deliverables": [
+          "threat_model.md",
+          "security_controls_matrix.xlsx",
+          "pen_test_plan.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis covers all 6 threat surfaces with mitigations defined",
+        "Encryption requirements specified: AES-256 at rest, TLS 1.3 in transit",
+        "MFA requirement documented for HR admin and payroll admin roles",
+        "Penetration test scope and methodology documented",
+        "SOC 2 CC6/CC7 controls mapped to implemented security measures"
+      ],
+      "depends_on": [
+        7,
+        9
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement the employee onboarding module: new hire workflow engine (multi-step wizard state machine), document collection tracking, checklist assignment engine, equipment request integration, IT provisioning webhooks, and e-signature placeholder.",
+      "payload": {
+        "module": "onboarding",
+        "workflow_engine": "state_machine",
+        "states": [
+          "invited",
+          "docs_pending",
+          "docs_complete",
+          "equipment_requested",
+          "it_provisioned",
+          "orientation_complete",
+          "active"
+        ],
+        "integrations": [
+          "email_notifications",
+          "it_provisioning_webhook",
+          "document_storage_S3"
+        ],
+        "endpoints": [
+          "POST /onboarding/start",
+          "GET /onboarding/{id}/status",
+          "PATCH /onboarding/{id}/step",
+          "POST /onboarding/{id}/complete"
+        ]
+      },
+      "acceptance_criteria": [
+        "State machine transitions are valid \u2014 invalid transitions return 422",
+        "New hire invitation sends email with secure onboarding link",
+        "Checklist completion tracked per step with timestamp and actor",
+        "IT provisioning webhook fires on state transition to it_provisioned",
+        "All onboarding data persists to audit log for SOC 2 evidence"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement the PTO tracking module: accrual engine (configurable rules per policy), request/approval workflow, balance ledger, calendar integration, manager approval routing, and out-of-office notification webhooks.",
+      "payload": {
+        "module": "pto_tracking",
+        "accrual_types": [
+          "hourly_accrual",
+          "front_loaded",
+          "unlimited"
+        ],
+        "request_workflow": [
+          "submitted",
+          "pending_manager",
+          "approved",
+          "denied",
+          "cancelled"
+        ],
+        "balance_types": [
+          "vacation",
+          "sick",
+          "personal",
+          "bereavement",
+          "parental"
+        ],
+        "integrations": [
+          "calendar_ical_feed",
+          "slack_notification",
+          "payroll_sync"
+        ],
+        "endpoints": [
+          "POST /pto/request",
+          "GET /pto/balance/{employee_id}",
+          "PATCH /pto/request/{id}/approve",
+          "GET /pto/team-calendar"
+        ]
+      },
+      "acceptance_criteria": [
+        "Accrual engine correctly computes balance for all 3 accrual types with edge cases (hire mid-period, termination)",
+        "Balance ledger is immutable append-only (no balance can decrease without a debit entry)",
+        "Manager approval workflow enforces delegation chain from org chart",
+        "Team calendar returns correct availability with no cross-tenant data leakage",
+        "PTO approvals sync balance to payroll integration within 5 minutes"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement the performance review module: review cycle management, 360-degree feedback collection, self-assessment forms, manager rating rubrics, calibration session support, goal tracking (OKR-style), and automated cycle scheduling.",
+      "payload": {
+        "module": "performance_reviews",
+        "review_types": [
+          "annual",
+          "mid_year",
+          "quarterly",
+          "pip",
+          "probationary"
+        ],
+        "feedback_sources": [
+          "self",
+          "manager",
+          "peer_upward",
+          "peer_lateral",
+          "direct_report"
+        ],
+        "rating_scales": [
+          "5_point_likert",
+          "custom_rubric"
+        ],
+        "goal_framework": "OKR",
+        "endpoints": [
+          "POST /performance/cycles",
+          "POST /performance/reviews/{cycle_id}/submit",
+          "GET /performance/employee/{id}/history",
+          "POST /performance/goals"
+        ]
+      },
+      "acceptance_criteria": [
+        "Review cycle can be launched, run, and closed with full audit trail",
+        "360 feedback anonymized for peer responses (reviewer identity hidden from reviewee)",
+        "Calibration view shows all reports' ratings for a manager with normalization stats",
+        "Goal progress updates propagate to manager dashboard in real-time",
+        "Historical review data exportable as PDF per employee"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement the payroll integration module: abstracted payroll provider adapter (Gusto, ADP, Rippling), employee compensation records, pay period management, deduction/benefit management, payroll run approval workflow, and webhook-based sync.",
+      "payload": {
+        "module": "payroll_integration",
+        "adapter_pattern": "provider_abstraction_layer",
+        "supported_providers": [
+          "Gusto",
+          "ADP",
+          "generic_webhook"
+        ],
+        "data_model": [
+          "compensation_records",
+          "pay_periods",
+          "deductions",
+          "benefits",
+          "payroll_runs"
+        ],
+        "sync_strategy": "webhook_push_with_polling_fallback",
+        "endpoints": [
+          "POST /payroll/run/initiate",
+          "GET /payroll/employee/{id}/compensation",
+          "POST /payroll/sync",
+          "GET /payroll/run/{id}/status"
+        ]
+      },
+      "acceptance_criteria": [
+        "Provider adapter abstraction allows switching providers with config change only",
+        "Payroll run initiates approval workflow before any data leaves the system",
+        "Compensation records encrypted at field level (salary, bonus fields)",
+        "Webhook signature verification implemented for all inbound payroll provider events",
+        "Payroll accuracy: test payroll run with known inputs produces correct gross/net output"
+      ],
+      "depends_on": [
+        10,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement the org chart module: hierarchical employee tree (adjacency list + closure table), department management, position/role management, reporting relationship CRUD, bulk import via CSV, and org chart snapshot history.",
+      "payload": {
+        "module": "org_chart",
+        "data_structure": "adjacency_list_plus_closure_table",
+        "features": [
+          "hierarchy_traversal",
+          "department_management",
+          "bulk_csv_import",
+          "snapshot_versioning",
+          "reporting_chain_query"
+        ],
+        "endpoints": [
+          "GET /org/chart",
+          "GET /org/employee/{id}/reports",
+          "GET /org/employee/{id}/chain",
+          "POST /org/bulk-import",
+          "GET /org/snapshots"
+        ]
+      },
+      "acceptance_criteria": [
+        "Org chart query returns full tree with O(1) depth queries using closure table",
+        "Circular reporting relationship rejected with descriptive error",
+        "Bulk CSV import handles 10,000 employees within 30 seconds",
+        "Org chart snapshot taken automatically on any structural change",
+        "Reporting chain traversal correctly resolves skip-level relationships"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "BACKEND",
+      "description": "Implement the compliance reporting module: pre-built report templates (EEO-1, OSHA 300, FLSA audit, SOC 2 access review), custom report builder, scheduled report delivery, data export (CSV/PDF/XLSX), and immutable report archive.",
+      "payload": {
+        "module": "compliance_reporting",
+        "built_in_reports": [
+          "EEO_1",
+          "OSHA_300",
+          "FLSA_audit",
+          "SOC2_access_review",
+          "headcount_by_department",
+          "compensation_equity_analysis"
+        ],
+        "custom_builder": true,
+        "export_formats": [
+          "CSV",
+          "PDF",
+          "XLSX"
+        ],
+        "scheduling": "cron_based",
+        "endpoints": [
+          "GET /compliance/reports/templates",
+          "POST /compliance/reports/run",
+          "GET /compliance/reports/{id}/download",
+          "POST /compliance/reports/schedule"
+        ]
+      },
+      "acceptance_criteria": [
+        "EEO-1 report output matches EEOC format specification exactly",
+        "Custom report builder supports filtering by department, date range, employment type",
+        "Scheduled reports deliver via email and persist to immutable S3 archive",
+        "Report archive is append-only \u2014 no report can be deleted (SOC 2 evidence)",
+        "PDF export renders correctly for reports up to 10,000 rows"
+      ],
+      "depends_on": [
+        10,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the React frontend shell: app router (React Router v6), authenticated layout (sidebar nav, header, breadcrumbs), RBAC-aware navigation (menu items gated by role), global state management (Zustand), API client with auth interceptor, and design system implementation from UX tokens.",
+      "payload": {
+        "framework": "React_18_TypeScript",
+        "routing": "React_Router_v6",
+        "state": "Zustand",
+        "ui_library": "Radix_UI_plus_Tailwind",
+        "auth_flow": "JWT_with_refresh_token_rotation",
+        "design_system": "tokens_from_UX_step_6"
+      },
+      "acceptance_criteria": [
+        "Auth flow: login \u2192 JWT stored in httpOnly cookie \u2192 refresh on expiry",
+        "Navigation items hidden/shown based on user role (RBAC enforced client-side AND server-side)",
+        "API client automatically attaches auth header and refreshes on 401",
+        "Design tokens applied \u2014 all colors, spacing, typography from UX spec",
+        "App loads and renders within 2 seconds on standard connection (Lighthouse performance > 85)"
+      ],
+      "depends_on": [
+        6,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build the employee onboarding UI: new hire wizard (multi-step form with progress indicator), document upload interface, checklist completion UI, HR admin onboarding dashboard (all active onboardings, status kanban), and onboarding task assignment interface.",
+      "payload": {
+        "module": "onboarding_ui",
+        "components": [
+          "OnboardingWizard",
+          "DocumentUploader",
+          "ChecklistTracker",
+          "OnboardingKanban",
+          "TaskAssigner"
+        ],
+        "new_hire_flow_steps": [
+          "welcome",
+          "personal_info",
+          "documents",
+          "equipment",
+          "policies_acknowledgement",
+          "complete"
+        ],
+        "admin_view": "kanban_by_status"
+      },
+      "acceptance_criteria": [
+        "Wizard saves progress on each step \u2014 browser refresh does not lose data",
+        "Document upload shows real-time upload progress and validation (file type, size)",
+        "Checklist items check off with optimistic UI update",
+        "Admin kanban shows all active onboardings with days-elapsed indicator",
+        "Mobile responsive \u2014 wizard usable on phone screen"
+      ],
+      "depends_on": [
+        12,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the PTO tracking UI: employee PTO request form, balance summary widget (balances by type with accrual projection), team calendar view, manager approval inbox, and HR admin PTO policy configuration interface.",
+      "payload": {
+        "module": "pto_ui",
+        "components": [
+          "PTORequestForm",
+          "BalanceSummaryWidget",
+          "TeamCalendar",
+          "ApprovalInbox",
+          "PTOPolicyEditor"
+        ],
+        "calendar_library": "react-big-calendar",
+        "balance_visualization": "progress_bars_with_accrual_projection"
+      },
+      "acceptance_criteria": [
+        "Balance summary shows current balance, pending requests, and projected balance at year-end",
+        "Team calendar blocks out approved PTO for all team members with conflict highlighting",
+        "Request form validates against balance (cannot request more than available)",
+        "Manager approval inbox shows request context (team coverage, consecutive days)",
+        "Policy editor allows accrual rule configuration without code changes"
+      ],
+      "depends_on": [
+        13,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build the performance review UI: review cycle dashboard, employee self-assessment form, manager rating form with rubric display, 360 feedback collection forms, calibration session view (matrix of reports vs ratings), and goal tracking interface.",
+      "payload": {
+        "module": "performance_ui",
+        "components": [
+          "CycleDashboard",
+          "SelfAssessmentForm",
+          "ManagerRatingForm",
+          "FeedbackCollectionForm",
+          "CalibrationMatrix",
+          "GoalTracker"
+        ],
+        "calibration_view": "2D_matrix_rating_vs_potential",
+        "goal_visualization": "OKR_progress_bars"
+      },
+      "acceptance_criteria": [
+        "Self-assessment form auto-saves on field blur \u2014 no data lost on navigation",
+        "360 feedback forms do not reveal reviewer identity for peer responses",
+        "Calibration matrix renders correctly for managers with up to 50 direct/indirect reports",
+        "Goal tracker shows key results with progress percentage and health indicator",
+        "Review history timeline shows all past cycles with final ratings"
+      ],
+      "depends_on": [
+        14,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "FRONTEND",
+      "description": "Build the payroll integration UI: compensation record view (employee-facing and admin-facing), payroll run initiation and approval workflow, pay stub history, benefits/deductions summary, and payroll provider connection settings.",
+      "payload": {
+        "module": "payroll_ui",
+        "components": [
+          "CompensationView",
+          "PayrollRunWorkflow",
+          "PayStubHistory",
+          "BenefitsSummary",
+          "ProviderSettings"
+        ],
+        "sensitive_data_masking": true,
+        "export_formats": [
+          "PDF_pay_stub"
+        ]
+      },
+      "acceptance_criteria": [
+        "Salary figures masked by default with click-to-reveal requiring re-authentication",
+        "Payroll run workflow shows approval steps with current approver and deadline",
+        "Pay stub renders as pixel-perfect PDF matching legal requirements",
+        "Benefits summary shows employee vs employer contribution split",
+        "Provider settings page allows API credential entry with masked display"
+      ],
+      "depends_on": [
+        15,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 23,
+      "task_type": "FRONTEND",
+      "description": "Build the org chart UI: interactive zoomable org chart visualization, department tree view, employee profile cards with quick actions, position/role management interface, and bulk import wizard with validation feedback.",
+      "payload": {
+        "module": "org_chart_ui",
+        "components": [
+          "OrgChartCanvas",
+          "DepartmentTree",
+          "EmployeeProfileCard",
+          "PositionManager",
+          "BulkImportWizard"
+        ],
+        "visualization_library": "d3_hierarchy_or_react-organizational-chart",
+        "zoom_levels": [
+          "company",
+          "department",
+          "team"
+        ]
+      },
+      "acceptance_criteria": [
+        "Org chart renders 1,000 node company within 3 seconds with smooth pan/zoom",
+        "Employee profile card shows photo, title, contact, direct reports count",
+        "Department tree view collapses/expands nodes with animation",
+        "Bulk import wizard shows row-by-row validation errors with line numbers",
+        "Clicking employee node navigates to their full profile page"
+      ],
+      "depends_on": [
+        16,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 24,
+      "task_type": "FRONTEND",
+      "description": "Build the compliance reporting UI: report template browser, report run configuration form, report viewer (inline table + chart), scheduled report management, and immutable report archive with download history.",
+      "payload": {
+        "module": "compliance_ui",
+        "components": [
+          "ReportTemplateBrowser",
+          "ReportConfigForm",
+          "ReportViewer",
+          "ScheduleManager",
+          "ReportArchive"
+        ],
+        "inline_charts": "recharts",
+        "table_virtualization": "tanstack-virtual"
+      },
+      "acceptance_criteria": [
+        "Report template browser shows description, required fields, and sample output",
+        "Report viewer renders 10,000 row tables without UI freezing (virtualized)",
+        "Scheduled reports show next run time, last run status, and delivery log",
+        "Archive table is read-only \u2014 no delete button rendered regardless of role",
+        "EEO-1 report view highlights cells that differ from prior period"
+      ],
+      "depends_on": [
+        17,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 25,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all backend modules: onboarding state machine, PTO accrual engine, payroll adapter, org chart hierarchy queries, compliance report generators. Include property-based tests for accrual and payroll calculations.",
+      "payload": {
+        "test_framework": "pytest",
+        "coverage_target": 85,
+        "test_types": [
+          "unit",
+          "integration",
+          "property_based"
+        ],
+        "property_based_library": "hypothesis",
+        "modules_covered": [
+          "onboarding",
+          "pto_tracking",
+          "performance_reviews",
+          "payroll_integration",
+          "org_chart",
+          "compliance_reporting"
+        ],
+        "database": "test_postgres_with_transactions_rollback"
+      },
+      "acceptance_criteria": [
+        "Overall backend test coverage >= 85%",
+        "PTO accrual engine has 100% branch coverage with property-based tests",
+        "Payroll calculation tests verify gross/net/deduction math with known fixtures",
+        "All state machine transitions tested including invalid transition rejection",
+        "Integration tests run against real Postgres (no mocking the DB)"
+      ],
+      "depends_on": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "TESTS",
+      "description": "Write frontend component tests and E2E tests: React Testing Library unit tests for critical components, Playwright E2E tests covering the onboarding wizard flow, PTO request flow, payroll run approval, and org chart bulk import.",
+      "payload": {
+        "component_test_framework": "React_Testing_Library_plus_Vitest",
+        "e2e_framework": "Playwright",
+        "e2e_flows": [
+          "employee_onboarding_complete",
+          "pto_request_and_approval",
+          "performance_review_cycle",
+          "payroll_run_approval",
+          "org_chart_bulk_import"
+        ],
+        "browser_targets": [
+          "chromium",
+          "firefox",
+          "webkit"
+        ]
+      },
+      "acceptance_criteria": [
+        "All critical form components have unit tests covering validation logic",
+        "E2E onboarding flow test completes wizard from invite to active status",
+        "E2E PTO test covers request \u2192 manager approval \u2192 balance update",
+        "All E2E tests pass on Chromium, Firefox, and WebKit",
+        "Accessibility tests (axe-playwright) pass for all major pages"
+      ],
+      "depends_on": [
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "QA",
+      "description": "Design and execute QA test plan: test case inventory for all 6 modules, regression test suite, negative testing (boundary conditions, invalid inputs), role-based access control verification matrix, and data isolation testing between tenants.",
+      "payload": {
+        "test_plan_scope": [
+          "functional",
+          "regression",
+          "security_boundary",
+          "RBAC",
+          "tenant_isolation"
+        ],
+        "test_case_count_estimate": 200,
+        "rbac_roles": [
+          "hr_admin",
+          "manager",
+          "employee",
+          "payroll_admin",
+          "compliance_officer"
+        ],
+        "negative_test_scenarios": [
+          "cross_tenant_data_access",
+          "privilege_escalation",
+          "invalid_state_transitions",
+          "boundary_value_payroll"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test case inventory covers all 6 modules with positive and negative cases",
+        "RBAC matrix tested \u2014 each role can access only permitted endpoints",
+        "Tenant isolation verified \u2014 no API returns data from another tenant",
+        "All P0/P1 defects resolved before system test phase",
+        "QA sign-off document produced with pass/fail summary per module"
+      ],
+      "depends_on": [
+        25,
+        26
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions), containerized deployment (Docker + Kubernetes), environment promotion (dev \u2192 staging \u2192 prod), database migration automation, secret management (Vault/AWS Secrets Manager), and SOC 2 CC7 monitoring and alerting.",
+      "payload": {
+        "ci_platform": "GitHub_Actions",
+        "container_runtime": "Docker",
+        "orchestration": "Kubernetes",
+        "environments": [
+          "dev",
+          "staging",
+          "production"
+        ],
+        "secret_management": "AWS_Secrets_Manager",
+        "monitoring_stack": [
+          "Prometheus",
+          "Grafana",
+          "Loki"
+        ],
+        "alerting": "PagerDuty",
+        "soc2_controls": [
+          "CC7.1_change_management",
+          "CC7.2_monitoring",
+          "CC8.1_change_detection"
+        ]
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs lint, type-check, unit tests, and E2E tests on every PR",
+        "Deployment to staging is automated on merge to main",
+        "Production deployment requires manual approval gate in GitHub Actions",
+        "Alembic migrations run automatically as Kubernetes job pre-deploy",
+        "Alerts fire within 5 minutes for p99 latency > 2s or error rate > 1%",
+        "All deployment events logged with actor, timestamp, and changeset (SOC 2 CC7)"
+      ],
+      "depends_on": [
+        27
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 29,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute system-level integration and performance testing: full E2E scenario testing across all 6 modules in staging, load test (500 concurrent users, 10,000 employee dataset), payroll provider webhook integration test, and data migration test from CSV.",
+      "payload": {
+        "test_environment": "staging",
+        "load_test_tool": "k6",
+        "load_profile": {
+          "concurrent_users": 500,
+          "ramp_up_minutes": 10,
+          "duration_minutes": 30
+        },
+        "dataset_size": {
+          "employees": 10000,
+          "pto_records": 50000,
+          "reviews": 20000
+        },
+        "integration_tests": [
+          "payroll_webhook_roundtrip",
+          "calendar_feed_sync",
+          "bulk_org_import"
+        ]
+      },
+      "acceptance_criteria": [
+        "All E2E scenarios pass in staging with production-equivalent data volume",
+        "p95 API response time < 500ms under 500 concurrent users",
+        "Org chart renders 10,000 node dataset without timeout",
+        "Payroll webhook roundtrip completes in under 30 seconds end-to-end",
+        "Bulk CSV import of 10,000 employees completes within 60 seconds"
+      ],
+      "depends_on": [
+        27,
+        28
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 30,
+      "task_type": "COMPLIANCE",
+      "description": "Produce SOC 2 Type II audit evidence package: access control evidence (RBAC logs, user provisioning records), change management evidence (CI/CD deployment logs), monitoring evidence (alert history, incident log), and vendor management documentation for payroll providers.",
+      "payload": {
+        "standard": "SOC_2_Type_II",
+        "evidence_artifacts": [
+          "access_review_report",
+          "user_provisioning_log",
+          "deployment_change_log",
+          "incident_response_log",
+          "vendor_risk_assessment",
+          "penetration_test_report",
+          "encryption_config_screenshots",
+          "backup_and_recovery_test_log"
+        ],
+        "observation_period": "90_days_continuous_monitoring_setup",
+        "deliverable": "soc2_evidence_package.zip"
+      },
+      "acceptance_criteria": [
+        "Evidence package covers all 5 Trust Service Criteria with artifacts",
+        "Access review report shows quarterly review cadence with approver signatures",
+        "Change management evidence links every production deployment to approved PR",
+        "Vendor risk assessment completed for all payroll provider integrations",
+        "SOC 2 readiness score from automated tool (Drata/Vanta) >= 90%"
+      ],
+      "depends_on": [
+        28,
+        29
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 31,
+      "task_type": "OPERATIONS",
+      "description": "Produce operational runbooks: incident response playbook, on-call rotation setup, SLA definitions (99.9% uptime SLA, RTO/RPO targets), database backup and recovery procedures, payroll provider failover runbook, and capacity planning model.",
+      "payload": {
+        "runbooks": [
+          "incident_response",
+          "on_call_rotation",
+          "database_backup_restore",
+          "payroll_provider_failover",
+          "tenant_offboarding",
+          "data_export_GDPR_request"
+        ],
+        "sla_targets": {
+          "uptime": "99.9%",
+          "rto_hours": 4,
+          "rpo_hours": 1
+        },
+        "backup_strategy": "continuous_WAL_archiving_plus_daily_snapshots",
+        "capacity_model": "12_month_forecast"
+      },
+      "acceptance_criteria": [
+        "Incident response runbook covers P0/P1/P2 severity with escalation paths",
+        "Database restore procedure tested \u2014 recovery verified within RTO target",
+        "SLA definitions include measurement methodology and credit terms",
+        "Payroll failover runbook covers all 3 supported providers",
+        "GDPR data export runbook produces compliant export within 30 days SLA"
+      ],
+      "depends_on": [
+        28
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 32,
+      "task_type": "DOCS",
+      "description": "Produce developer and administrator documentation: API reference (auto-generated from OpenAPI spec), architecture decision records (ADRs) for key design choices, deployment guide, integration guide for payroll providers, and data model reference.",
+      "payload": {
+        "doc_types": [
+          "api_reference",
+          "architecture_ADRs",
+          "deployment_guide",
+          "payroll_integration_guide",
+          "data_model_reference",
+          "changelog"
+        ],
+        "api_doc_tool": "Scalar_or_Redoc",
+        "adr_topics": [
+          "multi_tenant_RLS",
+          "payroll_adapter_pattern",
+          "audit_log_immutability",
+          "SOC2_controls_implementation"
+        ]
+      },
+      "acceptance_criteria": [
+        "API reference published at /docs with interactive try-it-out for all endpoints",
+        "ADRs written for all 4 key architectural decisions with context/decision/consequences",
+        "Deployment guide tested \u2014 fresh environment deployment succeeds following docs only",
+        "Payroll integration guide provides working curl examples for all webhook contracts",
+        "Data model reference includes ERD and field-level descriptions for all tables"
+      ],
+      "depends_on": [
+        29,
+        30
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 33,
+      "task_type": "TRAINING",
+      "description": "Produce end-user training materials: HR admin guide, manager guide, employee self-service guide, payroll admin guide, and compliance officer reporting guide. Include video script outlines for onboarding and PTO flows.",
+      "payload": {
+        "guides": [
+          "hr_admin_guide",
+          "manager_guide",
+          "employee_self_service_guide",
+          "payroll_admin_guide",
+          "compliance_officer_guide"
+        ],
+        "video_scripts": [
+          "employee_onboarding_walkthrough",
+          "pto_request_and_approval",
+          "running_your_first_payroll"
+        ],
+        "format": "Markdown_plus_PDF_export",
+        "in_app_help": true
+      },
+      "acceptance_criteria": [
+        "Each guide covers all relevant features for that persona with step-by-step screenshots",
+        "Video scripts are self-contained \u2014 presenter can record without additional context",
+        "In-app help tooltips added for all non-obvious form fields",
+        "Training materials reviewed by a representative user from each persona",
+        "All guides available in the product under Help menu on launch day"
+      ],
+      "depends_on": [
+        29
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 33,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 58,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 58,
+        "final_review": {
+          "score": 58,
+          "flaws": [
+            "CI/CD pipeline (Step 28) depends on QA completion (Step 27), meaning no automated pipeline exists during all of Steps 10\u201327. Every developer is pushing blind without test gates for the entire build phase. This is a fundamental sequencing error.",
+            "Security threat model (Step 11) is designed but NO backend implementation step (12\u201317) lists Step 11 as a dependency. Security controls modeled in STRIDE are not guaranteed to land in the code. This is a critical gap for a system handling payroll and health data.",
+            "There is no dedicated backend step for authentication/authorization implementation. JWT+RBAC is mentioned in the API spec (Step 9) and frontend (Step 18), but the actual auth middleware, token issuance, refresh rotation, and RBAC enforcement layer is never assigned to a build step.",
+            "Field-level encryption for salary/bonus fields (Step 15 acceptance criteria) is not reflected in the database schema design (Step 8). Retrofitting field-level encryption after the ORM and schema are built is a major rework, and key management is never addressed anywhere in the plan.",
+            "PostgreSQL RLS for multi-tenancy and field-level encryption create a key management architecture problem that is entirely unaddressed. RLS uses session-level tenant context; field-level encryption requires per-tenant keys. Where are these keys stored, rotated, and revoked?",
+            "SOC 2 Type II audit observation period listed as '90_days_continuous_monitoring_setup'. SOC 2 Type II requires a minimum 6-month observation period; most auditors require 12 months for a first-time report. Shipping a 'SOC 2 Type II evidence package' at the end of a build sprint is not how this works.",
+            "Penetration test plan is produced (Step 11) and a penetration test report appears in the SOC 2 evidence package (Step 30), but there is no step in the plan that actually EXECUTES the penetration test. The report cannot exist without the test.",
+            "Payroll provider abstraction layer covering Gusto, ADP, and a generic webhook in a single backend step is wildly underestimated. Gusto, ADP, and Rippling each have multi-hundred-page API docs with different auth flows (OAuth2, API key, SFTP batch), different data models, and different webhook signature schemes. This is 3\u20136 sprints minimum, not one task.",
+            "Step 13 requires 'PTO approvals sync balance to payroll integration within 5 minutes' but no background job infrastructure is explicitly planned. Step 10 starts Redis but never wires a task queue (Celery, ARQ, or equivalent). Scheduled compliance reports, accrual runs, and payroll sync all require this and it falls into a gap.",
+            "Step 3 lists 'HIPAA_light' as a regulation. There is no HIPAA-light. If the system handles health data (FSA, HSA, disability, EAP), it requires a full BAA with every subprocessor (AWS, payroll providers, email), a Security Rule implementation, and a Breach Notification policy. Underestimating this is a legal liability.",
+            "The 360-degree feedback anonymization (Step 14/21) has no minimum respondent threshold. In a team of 3, one peer response is de-anonymizable by exclusion. No de-anonymization workflow for HR investigations (e.g., harassment complaints) is defined.",
+            "EEO-1 report 'matches EEOC format specification exactly' \u2014 this is a federal filing. There is no legal review step for generated output. Getting EEO-1 race/ethnicity categorization wrong is a regulatory violation, not a UX bug.",
+            "Pay stub PDF 'matching legal requirements' (Step 22) is undefined. California requires 9 mandatory fields; New York, Texas, and other states each have different requirements. Multi-state employees are unaddressed. This acceptance criterion cannot be tested without specifying which jurisdictions are in scope.",
+            "No rate limiting is mentioned anywhere. An API serving payroll data and PII with no rate limiting is an obvious brute-force and enumeration target, particularly on auth endpoints and employee search."
+          ],
+          "suggestions": [
+            "Move CI/CD setup (currently Step 28) to immediately after Step 10 (project scaffold). At minimum, lint, type-check, and unit test gates must run from day one of backend implementation.",
+            "Add a dedicated backend step for auth implementation between Steps 10 and 12: JWT issuance, refresh token rotation, RBAC middleware, session management (timeout, concurrent session limits, forced logout). Make Steps 12\u201317 depend on it.",
+            "Add Step 11 as a dependency for all backend implementation steps (12\u201317) so security controls from the STRIDE model are actually implemented.",
+            "Resolve the field-level encryption architecture before Step 8: choose application-layer encryption (e.g., SQLAlchemy-utils EncryptedType with per-tenant keys in AWS KMS) or column-level encryption at Postgres (pg_crypto), then design the schema around that choice. Key rotation and key derivation must be in the schema step.",
+            "Split payroll integration into at least 3 steps: (a) abstraction layer + Gusto adapter, (b) ADP adapter, (c) generic webhook + retry/dead-letter queue. Each needs its own test fixtures and sandbox credentials.",
+            "Add a background job worker step after Step 10: choose and configure a task queue (Celery+Redis or ARQ), define job types (accrual_run, payroll_sync, report_generation, email_notification), and deploy the worker alongside the API. Make Steps 13, 17 depend on it.",
+            "Replace 'HIPAA_light' in Step 3 with a concrete decision: either commit to full HIPAA compliance (BAA chain, Security Rule, audit controls) or explicitly scope out health data and document what health data categories are prohibited from the system.",
+            "Add minimum peer count enforcement (\u22653 reviewers) to the 360-degree feedback design, and define the HR exception workflow for accessing reviewer identity under a documented legal/investigation policy.",
+            "Add a jurisdiction scope document as a deliverable in Step 3: list which US states and countries are in scope for v1. This decision gates pay stub requirements, PTO law compliance, tax withholding, and GDPR applicability.",
+            "Add an explicit penetration test execution step between Steps 27 and 30, with scope defined by Step 11's pen_test_plan.md. Deliverable is the actual report, not just the plan."
+          ],
+          "missing": [
+            "Auth implementation as a standalone backend step \u2014 JWT issuance, RBAC enforcement, session lifecycle, MFA enforcement for privileged roles",
+            "Background job worker infrastructure \u2014 the accrual engine, payroll sync, report scheduling, and notification system all require this and it's never built",
+            "Encryption key management design \u2014 per-tenant key derivation, AWS KMS integration, key rotation procedure, and key revocation on tenant offboarding",
+            "Penetration test execution step \u2014 the plan has the plan document and the evidence package but not the actual test",
+            "Data residency and geographic deployment decision \u2014 required for GDPR compliance and affects the entire infrastructure architecture",
+            "Jurisdiction scope definition \u2014 which US states and international markets are supported in v1, directly impacts payroll, PTO law, and pay stub compliance",
+            "Audit log tamper-proofing mechanism \u2014 append-only SQL tables are not sufficient; need write-once S3 archival, separate audit DB with no DELETE grants, or a blockchain anchor. SOC 2 auditors will ask for evidence of immutability.",
+            "Tenant offboarding / data deletion workflow \u2014 GDPR right-to-erasure with payroll record carve-out is mentioned in Step 3 but never implemented anywhere",
+            "Disaster recovery drill \u2014 Step 31 defines RTO/RPO targets and Step 29 is system testing, but an actual DR test (fail over to replica, restore from backup, verify within RTO) is never executed",
+            "Multi-state employee handling \u2014 tax withholding, PTO accrual laws (e.g., California mandatory sick leave), and pay stub requirements vary by work-location state",
+            "Sandbox/test credentials strategy for payroll providers \u2014 Gusto, ADP, and Rippling all require sandbox enrollment; this must be obtained before Step 15 begins",
+            "Dependency tracking between Step 11 (security design) and Steps 12\u201317 (implementation) \u2014 currently zero dependencies, meaning security controls are designed but not enforced in the build"
+          ],
+          "security_risks": [
+            "No auth implementation step: the entire system could be built without a working authentication layer if developers assume 'someone else' is doing it",
+            "JWT stored in httpOnly cookie (Step 18) is correct, but without explicit CSRF protection (SameSite=Strict or CSRF tokens), the system is vulnerable to cross-site request forgery, particularly dangerous for payroll run initiation",
+            "Payroll webhook inbound signature verification is listed as an acceptance criterion (Step 15) but there is no test step that specifically validates this. A missing or incorrect HMAC check allows webhook spoofing to trigger fraudulent payroll runs",
+            "Field-level encryption key storage is undefined \u2014 if salary data is encrypted with a key stored in the same database, the encryption provides no protection against a database breach",
+            "Cross-tenant data leakage in team calendar and org chart endpoints: both are flagged as risks in acceptance criteria but without Step 11 as a dependency for Steps 13 and 16, the RLS policies may not be correctly applied at implementation time",
+            "No mention of secrets scanning in CI/CD \u2014 payroll provider API keys and AWS credentials committed to the repo is the single most common source of payroll system breaches",
+            "Payroll run approval workflow (Step 15) does not address the insider threat case: a payroll_admin who is also the approver. Segregation of duties requires at least two distinct approvers for payroll runs above a threshold",
+            "Bulk CSV import (Step 16) with 10,000 employees and no mention of input sanitization or injection prevention \u2014 CSV injection (formula injection) in exported compliance reports is a known attack vector in HR systems",
+            "No mention of Kubernetes network policies or service mesh \u2014 in a multi-tenant deployment, lateral movement between pods could allow cross-tenant data access even if RLS is correctly implemented at the DB layer",
+            "Report archive download (Step 17/24) must enforce re-authentication or short-lived signed URLs \u2014 a direct S3 link in the archive table would be an unauthenticated data leak if the URL is shared"
+          ],
+          "summary": "This plan demonstrates serious breadth and domain awareness \u2014 the 33-step structure covers the full product lifecycle, the compliance thinking is more thorough than typical SaaS plans, and the acceptance criteria in the implementation steps are unusually specific. However, it has four critical architectural gaps that would cause production failures or audit failures regardless of execution quality: (1) CI/CD is set up after all development completes, meaning the entire build runs without automated gates; (2) the security threat model (Step 11) has no dependency relationship with any implementation step, making security controls paper artifacts rather than enforced constraints; (3) there is no dedicated auth implementation step, so JWT+RBAC exists in the spec and the frontend but may never land as working backend middleware; and (4) field-level encryption for payroll data is required by the acceptance criteria but its architecture, key management, and schema implications are never resolved. The plan also materially underestimates payroll provider integration complexity (one step for three providers with fundamentally different APIs), mischaracterizes SOC 2 Type II timelines (90 days vs the real 6\u201312 month observation requirement), and references 'HIPAA-light' which does not exist as a legal concept. Scored 58: the domain coverage and acceptance criteria quality are real strengths, but the sequencing errors and architectural gaps require rework before implementation begins, not during it.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 58,
+            "flaws": [
+              "CI/CD pipeline (Step 28) depends on QA completion (Step 27), meaning no automated pipeline exists during all of Steps 10\u201327. Every developer is pushing blind without test gates for the entire build phase. This is a fundamental sequencing error.",
+              "Security threat model (Step 11) is designed but NO backend implementation step (12\u201317) lists Step 11 as a dependency. Security controls modeled in STRIDE are not guaranteed to land in the code. This is a critical gap for a system handling payroll and health data.",
+              "There is no dedicated backend step for authentication/authorization implementation. JWT+RBAC is mentioned in the API spec (Step 9) and frontend (Step 18), but the actual auth middleware, token issuance, refresh rotation, and RBAC enforcement layer is never assigned to a build step.",
+              "Field-level encryption for salary/bonus fields (Step 15 acceptance criteria) is not reflected in the database schema design (Step 8). Retrofitting field-level encryption after the ORM and schema are built is a major rework, and key management is never addressed anywhere in the plan.",
+              "PostgreSQL RLS for multi-tenancy and field-level encryption create a key management architecture problem that is entirely unaddressed. RLS uses session-level tenant context; field-level encryption requires per-tenant keys. Where are these keys stored, rotated, and revoked?",
+              "SOC 2 Type II audit observation period listed as '90_days_continuous_monitoring_setup'. SOC 2 Type II requires a minimum 6-month observation period; most auditors require 12 months for a first-time report. Shipping a 'SOC 2 Type II evidence package' at the end of a build sprint is not how this works.",
+              "Penetration test plan is produced (Step 11) and a penetration test report appears in the SOC 2 evidence package (Step 30), but there is no step in the plan that actually EXECUTES the penetration test. The report cannot exist without the test.",
+              "Payroll provider abstraction layer covering Gusto, ADP, and a generic webhook in a single backend step is wildly underestimated. Gusto, ADP, and Rippling each have multi-hundred-page API docs with different auth flows (OAuth2, API key, SFTP batch), different data models, and different webhook signature schemes. This is 3\u20136 sprints minimum, not one task.",
+              "Step 13 requires 'PTO approvals sync balance to payroll integration within 5 minutes' but no background job infrastructure is explicitly planned. Step 10 starts Redis but never wires a task queue (Celery, ARQ, or equivalent). Scheduled compliance reports, accrual runs, and payroll sync all require this and it falls into a gap.",
+              "Step 3 lists 'HIPAA_light' as a regulation. There is no HIPAA-light. If the system handles health data (FSA, HSA, disability, EAP), it requires a full BAA with every subprocessor (AWS, payroll providers, email), a Security Rule implementation, and a Breach Notification policy. Underestimating this is a legal liability.",
+              "The 360-degree feedback anonymization (Step 14/21) has no minimum respondent threshold. In a team of 3, one peer response is de-anonymizable by exclusion. No de-anonymization workflow for HR investigations (e.g., harassment complaints) is defined.",
+              "EEO-1 report 'matches EEOC format specification exactly' \u2014 this is a federal filing. There is no legal review step for generated output. Getting EEO-1 race/ethnicity categorization wrong is a regulatory violation, not a UX bug.",
+              "Pay stub PDF 'matching legal requirements' (Step 22) is undefined. California requires 9 mandatory fields; New York, Texas, and other states each have different requirements. Multi-state employees are unaddressed. This acceptance criterion cannot be tested without specifying which jurisdictions are in scope.",
+              "No rate limiting is mentioned anywhere. An API serving payroll data and PII with no rate limiting is an obvious brute-force and enumeration target, particularly on auth endpoints and employee search."
+            ],
+            "suggestions": [
+              "Move CI/CD setup (currently Step 28) to immediately after Step 10 (project scaffold). At minimum, lint, type-check, and unit test gates must run from day one of backend implementation.",
+              "Add a dedicated backend step for auth implementation between Steps 10 and 12: JWT issuance, refresh token rotation, RBAC middleware, session management (timeout, concurrent session limits, forced logout). Make Steps 12\u201317 depend on it.",
+              "Add Step 11 as a dependency for all backend implementation steps (12\u201317) so security controls from the STRIDE model are actually implemented.",
+              "Resolve the field-level encryption architecture before Step 8: choose application-layer encryption (e.g., SQLAlchemy-utils EncryptedType with per-tenant keys in AWS KMS) or column-level encryption at Postgres (pg_crypto), then design the schema around that choice. Key rotation and key derivation must be in the schema step.",
+              "Split payroll integration into at least 3 steps: (a) abstraction layer + Gusto adapter, (b) ADP adapter, (c) generic webhook + retry/dead-letter queue. Each needs its own test fixtures and sandbox credentials.",
+              "Add a background job worker step after Step 10: choose and configure a task queue (Celery+Redis or ARQ), define job types (accrual_run, payroll_sync, report_generation, email_notification), and deploy the worker alongside the API. Make Steps 13, 17 depend on it.",
+              "Replace 'HIPAA_light' in Step 3 with a concrete decision: either commit to full HIPAA compliance (BAA chain, Security Rule, audit controls) or explicitly scope out health data and document what health data categories are prohibited from the system.",
+              "Add minimum peer count enforcement (\u22653 reviewers) to the 360-degree feedback design, and define the HR exception workflow for accessing reviewer identity under a documented legal/investigation policy.",
+              "Add a jurisdiction scope document as a deliverable in Step 3: list which US states and countries are in scope for v1. This decision gates pay stub requirements, PTO law compliance, tax withholding, and GDPR applicability.",
+              "Add an explicit penetration test execution step between Steps 27 and 30, with scope defined by Step 11's pen_test_plan.md. Deliverable is the actual report, not just the plan."
+            ],
+            "missing": [
+              "Auth implementation as a standalone backend step \u2014 JWT issuance, RBAC enforcement, session lifecycle, MFA enforcement for privileged roles",
+              "Background job worker infrastructure \u2014 the accrual engine, payroll sync, report scheduling, and notification system all require this and it's never built",
+              "Encryption key management design \u2014 per-tenant key derivation, AWS KMS integration, key rotation procedure, and key revocation on tenant offboarding",
+              "Penetration test execution step \u2014 the plan has the plan document and the evidence package but not the actual test",
+              "Data residency and geographic deployment decision \u2014 required for GDPR compliance and affects the entire infrastructure architecture",
+              "Jurisdiction scope definition \u2014 which US states and international markets are supported in v1, directly impacts payroll, PTO law, and pay stub compliance",
+              "Audit log tamper-proofing mechanism \u2014 append-only SQL tables are not sufficient; need write-once S3 archival, separate audit DB with no DELETE grants, or a blockchain anchor. SOC 2 auditors will ask for evidence of immutability.",
+              "Tenant offboarding / data deletion workflow \u2014 GDPR right-to-erasure with payroll record carve-out is mentioned in Step 3 but never implemented anywhere",
+              "Disaster recovery drill \u2014 Step 31 defines RTO/RPO targets and Step 29 is system testing, but an actual DR test (fail over to replica, restore from backup, verify within RTO) is never executed",
+              "Multi-state employee handling \u2014 tax withholding, PTO accrual laws (e.g., California mandatory sick leave), and pay stub requirements vary by work-location state",
+              "Sandbox/test credentials strategy for payroll providers \u2014 Gusto, ADP, and Rippling all require sandbox enrollment; this must be obtained before Step 15 begins",
+              "Dependency tracking between Step 11 (security design) and Steps 12\u201317 (implementation) \u2014 currently zero dependencies, meaning security controls are designed but not enforced in the build"
+            ],
+            "security_risks": [
+              "No auth implementation step: the entire system could be built without a working authentication layer if developers assume 'someone else' is doing it",
+              "JWT stored in httpOnly cookie (Step 18) is correct, but without explicit CSRF protection (SameSite=Strict or CSRF tokens), the system is vulnerable to cross-site request forgery, particularly dangerous for payroll run initiation",
+              "Payroll webhook inbound signature verification is listed as an acceptance criterion (Step 15) but there is no test step that specifically validates this. A missing or incorrect HMAC check allows webhook spoofing to trigger fraudulent payroll runs",
+              "Field-level encryption key storage is undefined \u2014 if salary data is encrypted with a key stored in the same database, the encryption provides no protection against a database breach",
+              "Cross-tenant data leakage in team calendar and org chart endpoints: both are flagged as risks in acceptance criteria but without Step 11 as a dependency for Steps 13 and 16, the RLS policies may not be correctly applied at implementation time",
+              "No mention of secrets scanning in CI/CD \u2014 payroll provider API keys and AWS credentials committed to the repo is the single most common source of payroll system breaches",
+              "Payroll run approval workflow (Step 15) does not address the insider threat case: a payroll_admin who is also the approver. Segregation of duties requires at least two distinct approvers for payroll runs above a threshold",
+              "Bulk CSV import (Step 16) with 10,000 employees and no mention of input sanitization or injection prevention \u2014 CSV injection (formula injection) in exported compliance reports is a known attack vector in HR systems",
+              "No mention of Kubernetes network policies or service mesh \u2014 in a multi-tenant deployment, lateral movement between pods could allow cross-tenant data access even if RLS is correctly implemented at the DB layer",
+              "Report archive download (Step 17/24) must enforce re-authentication or short-lived signed URLs \u2014 a direct S3 link in the archive table would be an unauthenticated data leak if the URL is shared"
+            ],
+            "summary": "This plan demonstrates serious breadth and domain awareness \u2014 the 33-step structure covers the full product lifecycle, the compliance thinking is more thorough than typical SaaS plans, and the acceptance criteria in the implementation steps are unusually specific. However, it has four critical architectural gaps that would cause production failures or audit failures regardless of execution quality: (1) CI/CD is set up after all development completes, meaning the entire build runs without automated gates; (2) the security threat model (Step 11) has no dependency relationship with any implementation step, making security controls paper artifacts rather than enforced constraints; (3) there is no dedicated auth implementation step, so JWT+RBAC exists in the spec and the frontend but may never land as working backend middleware; and (4) field-level encryption for payroll data is required by the acceptance criteria but its architecture, key management, and schema implications are never resolved. The plan also materially underestimates payroll provider integration complexity (one step for three providers with fundamentally different APIs), mischaracterizes SOC 2 Type II timelines (90 days vs the real 6\u201312 month observation requirement), and references 'HIPAA-light' which does not exist as a legal concept. Scored 58: the domain coverage and acceptance criteria quality are real strengths, but the sequencing errors and architectural gaps require rework before implementation begins, not during it.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T05:10:03.358551+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 188.56,
+    "critic_plan": 124.36
+  }
+}

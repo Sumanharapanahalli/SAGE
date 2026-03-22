@@ -1,0 +1,993 @@
+{
+  "run_id": "dc9058f5-c8c5-4fde-8813-894edbcd0ba2",
+  "status": {
+    "run_id": "dc9058f5-c8c5-4fde-8813-894edbcd0ba2",
+    "solution_name": "telehealth_platform",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T01:00:10.067774+00:00",
+    "updated_at": "2026-03-22T01:05:07.575841+00:00",
+    "product_description": "HIPAA-compliant telehealth platform with video consultations, e-prescriptions, electronic health records integration, and AI-powered symptom checker.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define product requirements: user personas (patient, provider, admin), core workflows (booking, consultation, prescribing, EHR access), regulatory scope, and HIPAA-covered entity classification.",
+        "payload": {
+          "solution_name": "telehealth_platform",
+          "outputs": [
+            "PRD",
+            "user_stories",
+            "process_flow_diagrams",
+            "stakeholder_map"
+          ],
+          "compliance_scope": [
+            "HIPAA",
+            "HITECH",
+            "HL7_FHIR"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all three personas with at least 10 user stories each",
+          "Process flows documented for: registration, scheduling, video consult, e-prescription, EHR pull",
+          "HIPAA covered entity vs business associate roles clearly defined",
+          "PHI data elements enumerated and mapped to workflows"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "SECURITY",
+        "description": "Produce HIPAA Security Rule threat model: PHI data flow diagram, threat catalog, encryption-at-rest and in-transit requirements, access control matrix, audit logging requirements, breach notification plan, and Software Bill of Materials (SBOM).",
+        "payload": {
+          "standards": [
+            "HIPAA Security Rule 45 CFR \u00a7164.312",
+            "NIST SP 800-66",
+            "HITECH"
+          ],
+          "outputs": [
+            "threat_model.md",
+            "data_flow_diagram",
+            "access_control_matrix",
+            "sbom.json"
+          ],
+          "phi_categories": [
+            "patient_demographics",
+            "medical_history",
+            "prescriptions",
+            "video_recordings",
+            "chat_logs"
+          ]
+        },
+        "acceptance_criteria": [
+          "Data flow diagram covers all PHI touch points including third-party integrations",
+          "STRIDE threat model completed for each PHI boundary crossing",
+          "Encryption requirements specified: AES-256 at rest, TLS 1.3 in transit, E2E for video",
+          "RBAC matrix covers patient, provider, admin, billing roles with least-privilege",
+          "SBOM generated with all dependencies and known CVE scan",
+          "Breach notification SLA defined: \u226460 days per HIPAA, \u226472 hours for HITECH",
+          "PHI encryption at rest and in transit",
+          "Access audit logging enabled"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 3,
+        "task_type": "LEGAL",
+        "description": "Draft legal documents: Terms of Service, Privacy Policy (HIPAA Notice of Privacy Practices), Business Associate Agreements (BAA) templates for vendors, consent forms for video recording and AI analysis, e-prescription legal compliance (DEA for controlled substances), and software licensing review.",
+        "payload": {
+          "documents": [
+            "terms_of_service",
+            "notice_of_privacy_practices",
+            "baa_template",
+            "video_consent",
+            "ai_consent",
+            "dea_eprescribe_compliance"
+          ],
+          "jurisdictions": [
+            "US_federal",
+            "state_level_telemedicine_laws"
+          ]
+        },
+        "acceptance_criteria": [
+          "Notice of Privacy Practices meets 45 CFR \u00a7164.520 requirements",
+          "BAA template covers all HIPAA-required provisions per 45 CFR \u00a7164.308(b)",
+          "Consent forms are plain-language, versioned, and auditable",
+          "DEA requirements for e-prescribing controlled substances documented (EPCS compliance)",
+          "State-by-state telemedicine prescribing restrictions documented for 50 states"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 4,
+        "task_type": "COMPLIANCE",
+        "description": "Build HIPAA compliance framework: risk assessment (per 45 CFR \u00a7164.308(a)(1)), policies and procedures library, PHI inventory register, BAA tracker, workforce training plan, contingency plan, and audit control design. Map all artifacts to HIPAA Administrative, Physical, and Technical Safeguards.",
+        "payload": {
+          "standards": [
+            "HIPAA",
+            "HITECH",
+            "HL7_FHIR_R4"
+          ],
+          "outputs": [
+            "risk_assessment.xlsx",
+            "policies_procedures/",
+            "phi_inventory.xlsx",
+            "baa_tracker.xlsx",
+            "safeguards_matrix.xlsx"
+          ],
+          "framework": "NIST_CSF"
+        },
+        "acceptance_criteria": [
+          "Risk assessment covers all 18 PHI identifiers with likelihood/impact scoring",
+          "Policies library covers all 9 HIPAA administrative safeguard standards",
+          "Physical safeguard controls documented for cloud infrastructure",
+          "Technical safeguard controls mapped to implementation tasks",
+          "Traceability matrix links each HIPAA requirement to a control and an artifact",
+          "Contingency/disaster recovery plan with RPO \u22644h, RTO \u226424h targets"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Design end-to-end UX: patient portal (registration, scheduling, waiting room, consultation, health records view), provider portal (schedule management, patient queue, prescription pad, EHR view), and admin portal. Include accessibility audit targeting WCAG 2.1 AA. Design AI symptom checker conversation flow.",
+        "payload": {
+          "personas": [
+            "patient",
+            "provider",
+            "admin"
+          ],
+          "deliverables": [
+            "wireframes",
+            "hi_fi_mockups",
+            "design_system",
+            "accessibility_audit",
+            "symptom_checker_conversation_map"
+          ],
+          "tools": [
+            "Figma"
+          ]
+        },
+        "acceptance_criteria": [
+          "All critical flows have hi-fi mockups: registration, booking, waiting room, video call, prescription, EHR view",
+          "Design system defined: color tokens, typography, spacing, component library",
+          "WCAG 2.1 AA checklist completed for all pages",
+          "Symptom checker conversation map covers \u226550 chief complaint entry points",
+          "Provider prescription pad UX reviewed for DEA EPCS compliance",
+          "Mobile-responsive breakpoints defined for all patient-facing screens"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "DATABASE",
+        "description": "Design HIPAA-compliant database schema: patients, providers, appointments, encounters, prescriptions, EHR records (FHIR R4 resources), audit logs, consent records, AI symptom sessions. Implement field-level encryption for PHI columns, row-level security, and partition strategy for audit tables.",
+        "payload": {
+          "engine": "PostgreSQL",
+          "fhir_resources": [
+            "Patient",
+            "Practitioner",
+            "Encounter",
+            "MedicationRequest",
+            "Observation",
+            "Condition",
+            "AllergyIntolerance",
+            "DocumentReference"
+          ],
+          "phi_encryption": "pgcrypto_AES256",
+          "audit_table": "hipaa_audit_log",
+          "migrations_tool": "Alembic"
+        },
+        "acceptance_criteria": [
+          "ERD covers all entities with FHIR R4 resource alignment documented",
+          "PHI columns (DOB, SSN, diagnosis codes, prescriptions) encrypted at field level",
+          "Row-level security policies prevent cross-patient data access",
+          "Audit log table captures: user_id, action, resource_type, resource_id, timestamp, ip_address, phi_accessed",
+          "Alembic migrations run cleanly from empty DB to full schema",
+          "Indexes defined for appointment scheduling, patient search, and FHIR queries"
+        ],
+        "depends_on": [
+          2,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "INFRA",
+        "description": "Provision HIPAA-eligible cloud infrastructure: HIPAA-BAA-covered AWS services (ECS Fargate, RDS PostgreSQL with encryption, ElastiCache, S3 with server-side encryption, CloudTrail, KMS, WAF, VPC with private subnets, ALB, Secrets Manager). Set up environments: dev, staging, prod. Configure VPN for provider access.",
+        "payload": {
+          "cloud": "AWS",
+          "hipaa_eligible_services": [
+            "ECS_Fargate",
+            "RDS",
+            "ElastiCache",
+            "S3",
+            "CloudTrail",
+            "KMS",
+            "WAF",
+            "Secrets_Manager",
+            "CloudWatch"
+          ],
+          "iac_tool": "Terraform",
+          "environments": [
+            "dev",
+            "staging",
+            "prod"
+          ],
+          "network": "VPC_private_subnets_NAT_gateway"
+        },
+        "acceptance_criteria": [
+          "AWS BAA signed and documented for all HIPAA-eligible services used",
+          "All PHI stored only in HIPAA-eligible services with encryption enabled",
+          "VPC configured with private subnets, no direct internet access to databases",
+          "CloudTrail enabled in all regions with log integrity validation",
+          "KMS CMK created for PHI encryption with key rotation enabled",
+          "WAF rules deployed: SQL injection, XSS, rate limiting, geo-restriction as needed",
+          "Terraform state stored in encrypted S3 with state locking",
+          "Secrets Manager used for all credentials \u2014 zero hardcoded secrets"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 8,
+        "task_type": "CONFIG",
+        "description": "Configure the AI agentic pattern for the symptom checker: Multi-Agent Coordinator pattern with a triage coordinator routing to specialist agents (cardiology, respiratory, general medicine). Set up LLM integration with prompt templates, medical safety guardrails, and human-escalation fallback. Configure SAGE solution YAML for telehealth_platform.",
+        "payload": {
+          "agentic_pattern": "coordinator",
+          "coordinator_agent": "triage_coordinator",
+          "specialist_agents": [
+            "general_medicine_agent",
+            "cardiology_agent",
+            "respiratory_agent",
+            "mental_health_agent"
+          ],
+          "safety_guardrails": [
+            "no_diagnosis_disclaimer",
+            "emergency_escalation_trigger",
+            "red_flag_symptom_detection"
+          ],
+          "llm_provider": "claude",
+          "solution_yamls": [
+            "project.yaml",
+            "prompts.yaml",
+            "tasks.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "project.yaml defines telehealth_platform with HIPAA compliance tier and active modules",
+          "prompts.yaml defines system prompts for each specialist agent with medical safety disclaimers",
+          "tasks.yaml registers symptom_check, triage_escalate, provider_handoff task types",
+          "Coordinator routes to correct specialist based on symptom category with \u226590% accuracy on test set",
+          "Emergency keyword detection triggers immediate 911/ER escalation message",
+          "No agent response contains a definitive diagnosis \u2014 all outputs are informational",
+          "Agentic pattern config tested end-to-end in dev environment"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Build authentication and authorization service: OAuth 2.0 / OIDC with MFA, session management with configurable timeout (HIPAA \u00a7164.312(a)(2)(iii)), RBAC enforcement middleware, PHI access audit logging, rate limiting, and brute-force protection.",
+        "payload": {
+          "framework": "FastAPI",
+          "auth_provider": "AWS_Cognito",
+          "mfa": [
+            "TOTP",
+            "SMS"
+          ],
+          "session_timeout_minutes": 15,
+          "roles": [
+            "patient",
+            "provider",
+            "admin",
+            "billing"
+          ],
+          "audit_every_phi_access": true
+        },
+        "acceptance_criteria": [
+          "MFA enforced for all provider and admin accounts",
+          "Session auto-timeout at 15 minutes of inactivity per HIPAA guidance",
+          "Every PHI access generates an audit log entry with user, resource, timestamp",
+          "RBAC middleware prevents cross-role data access with 403 responses",
+          "Account lockout after 5 failed login attempts with notification",
+          "Password policy enforces complexity, history (last 12), and 90-day rotation for providers",
+          "JWT tokens signed with RS256, short expiry (15min access, 8h refresh)"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build core telehealth API: patient registration and profile management, provider onboarding and credential verification, appointment scheduling engine, waiting room queue management, encounter notes CRUD, and FHIR R4-compliant RESTful API endpoints for all clinical resources.",
+        "payload": {
+          "framework": "FastAPI",
+          "fhir_version": "R4",
+          "fhir_endpoints": [
+            "/Patient",
+            "/Practitioner",
+            "/Encounter",
+            "/Appointment",
+            "/Condition",
+            "/Observation"
+          ],
+          "scheduling": "time_slot_with_buffer",
+          "phi_audit": true
+        },
+        "acceptance_criteria": [
+          "FHIR R4 CRUD endpoints pass HL7 FHIR validation (use HAPI FHIR validator)",
+          "Appointment scheduling handles: booking, cancellation, rescheduling, no-show",
+          "Waiting room queue returns real-time position and estimated wait time",
+          "Provider credential verification workflow (NPI lookup, state license validation) implemented",
+          "All endpoints return PHI only to authorized roles verified by auth middleware",
+          "OpenAPI spec auto-generated and matches FHIR resource schemas",
+          "Response time \u2264200ms p95 for non-PHI endpoints, \u2264500ms for PHI reads"
+        ],
+        "depends_on": [
+          6,
+          7,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build video consultation service: WebRTC signaling server with HIPAA-compliant encrypted peer-to-peer video, fallback TURN server configuration, session recording with consent gating, waiting room with provider ready notification, and consultation metadata storage.",
+        "payload": {
+          "video_provider": "Twilio_Video",
+          "encryption": "E2E_SRTP",
+          "recording": "consent_gated_S3_encrypted",
+          "signaling": "WebSocket",
+          "fallback": "TURN_server",
+          "hipaa_baa": "Twilio_BAA_required"
+        },
+        "acceptance_criteria": [
+          "Twilio BAA in place before any PHI transmitted via video service",
+          "Video streams encrypted E2E with SRTP \u2014 not routed through unencrypted relay",
+          "Recording only initiates after explicit patient consent captured and logged",
+          "Recordings stored in S3 with KMS encryption, access controlled by encounter ID",
+          "WebSocket signaling uses WSS (TLS 1.3)",
+          "Video quality degrades gracefully on low bandwidth without dropping connection",
+          "Session metadata (start time, duration, provider, patient) written to encounter record"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Build e-prescription service: medication database integration (RxNorm, NDC), drug interaction checking, provider prescription creation and signing, pharmacy routing via Surescripts network, EPCS (Electronic Prescribing of Controlled Substances) DEA compliance, prescription history, and refill management.",
+        "payload": {
+          "rx_network": "Surescripts",
+          "drug_db": "RxNorm_NDC",
+          "interaction_check": "First_Databank",
+          "epcs_compliance": "DEA_21_CFR_1311",
+          "controlled_substances": "Schedule_II_V",
+          "signing": "PKI_provider_certificate"
+        },
+        "acceptance_criteria": [
+          "Surescripts BAA signed and network certification obtained",
+          "Drug interaction check fires before every prescription with severity classification",
+          "EPCS workflow implements DEA two-factor authentication for controlled substance signing",
+          "Prescription transmitted to pharmacy within 5 seconds of provider signing",
+          "Allergy contraindication check prevents prescriptions with documented allergies",
+          "Prescription audit trail captures: prescriber NPI, drug, dose, quantity, pharmacy, timestamp",
+          "Refill requests routed back to prescribing provider for approval"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build EHR integration layer: HL7 FHIR R4 patient data import/export, SMART on FHIR OAuth 2.0 app launch, bi-directional sync with Epic/Cerner/Athena via FHIR APIs, CCD/CCDA document parsing, lab result ingestion, and care gap identification.",
+        "payload": {
+          "fhir_version": "R4",
+          "smart_on_fhir": true,
+          "ehr_targets": [
+            "Epic_MyChart",
+            "Cerner_Millennium",
+            "Athenahealth"
+          ],
+          "document_standards": [
+            "CCD",
+            "CCDA",
+            "C32"
+          ],
+          "sync_strategy": "delta_sync_with_conflict_resolution"
+        },
+        "acceptance_criteria": [
+          "SMART on FHIR launch sequence works with at least one EHR sandbox (Epic or Cerner)",
+          "Patient demographics, medications, allergies, conditions sync correctly in both directions",
+          "CCDA documents parsed and mapped to FHIR R4 resources without data loss",
+          "Conflict resolution policy documented and implemented (EHR source of truth for historical)",
+          "EHR sync errors logged and surfaced to admin without exposing PHI in error messages",
+          "Data mapping tested against HL7 FHIR conformance test suite"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "ML_MODEL",
+        "description": "Build AI symptom checker model pipeline: train/fine-tune clinical NLP model on symptom-condition datasets (MIMIC-III, Symptom2Disease), implement the Multi-Agent Coordinator agentic pattern with specialist agents, output structured triage recommendations with confidence scores and evidence citations, and integrate emergency escalation detection.",
+        "payload": {
+          "agentic_pattern": "coordinator",
+          "base_model": "Claude_claude-sonnet-4-6",
+          "datasets": [
+            "Symptom2Disease",
+            "clinical_symptom_kb"
+          ],
+          "output_schema": {
+            "possible_conditions": "list_with_confidence",
+            "triage_level": "emergency|urgent|routine",
+            "recommended_action": "string",
+            "red_flags": "list",
+            "disclaimer": "required"
+          },
+          "safety_layer": "emergency_keyword_detector"
+        },
+        "acceptance_criteria": [
+          "Triage accuracy \u226585% on held-out clinical vignette test set",
+          "Emergency conditions (MI, stroke, sepsis) detected with recall \u226598%",
+          "All outputs include mandatory medical disclaimer \u2014 enforced at API level",
+          "Confidence scores calibrated (Platt scaling or isotonic regression)",
+          "Model never returns a single definitive diagnosis \u2014 always a differential",
+          "Latency \u22643 seconds for 95th percentile symptom checker response",
+          "PHI inputs to LLM anonymized before transmission, re-identified in response mapping"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build patient portal: registration and onboarding flow with consent capture, appointment booking with provider search and availability calendar, video waiting room and consultation UI (WebRTC), health records viewer (FHIR resources rendered), prescription history, and AI symptom checker chat interface.",
+        "payload": {
+          "framework": "React_18_TypeScript",
+          "video_sdk": "Twilio_Video_JS",
+          "fhir_renderer": "react-fhir-components",
+          "design_system": "from_step_5",
+          "mobile_responsive": true,
+          "accessibility": "WCAG_2.1_AA"
+        },
+        "acceptance_criteria": [
+          "Patient registration captures: demographics, insurance, consent (NPP, video, AI), emergency contact",
+          "Appointment booking shows real-time provider availability with specialty filter",
+          "Video consultation UI shows: local video preview, remote video, mute/camera toggle, leave button, chat",
+          "FHIR health records viewer renders: medications, allergies, conditions, lab results, visit notes",
+          "Symptom checker chat UI streams responses with typing indicator",
+          "All pages pass axe accessibility scan with zero critical violations",
+          "Lighthouse performance score \u226585 on mobile for all patient pages"
+        ],
+        "depends_on": [
+          5,
+          11,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build provider portal: schedule and availability management, patient queue dashboard with waiting room status, clinical encounter notes editor with ICD-10/CPT code lookup, e-prescription pad with drug search and interaction warnings, EHR record review panel, and billing code suggestion.",
+        "payload": {
+          "framework": "React_18_TypeScript",
+          "code_lookup": [
+            "ICD10",
+            "CPT",
+            "RxNorm"
+          ],
+          "note_editor": "rich_text_with_templates",
+          "design_system": "from_step_5"
+        },
+        "acceptance_criteria": [
+          "Schedule management supports: availability blocks, buffer time, vacation hold",
+          "Patient queue shows real-time status: checked-in, in waiting room, in consultation, completed",
+          "Encounter note editor has SOAP note template, auto-save every 30s, ICD-10 code type-ahead",
+          "Prescription pad shows drug interaction alert inline before provider signs",
+          "EHR panel loads patient summary within 3 seconds including FHIR sync data",
+          "Provider can launch video consultation from patient queue with one click",
+          "All PHI displayed only after successful authentication check"
+        ],
+        "depends_on": [
+          5,
+          11,
+          12,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build admin portal: user management (patients, providers, staff), audit log viewer with PHI access reporting, system health monitoring dashboard, BAA tracker, compliance report generation, billing and claims management, and platform configuration.",
+        "payload": {
+          "framework": "React_18_TypeScript",
+          "audit_viewer": "filterable_paginated_table",
+          "reports": [
+            "HIPAA_access_report",
+            "provider_utilization",
+            "appointment_metrics"
+          ]
+        },
+        "acceptance_criteria": [
+          "Audit log viewer supports filtering by: user, resource type, date range, PHI access flag",
+          "HIPAA access report exportable as CSV for breach investigation workflow",
+          "User management supports: create, deactivate, role change with audit trail for each",
+          "BAA tracker shows: vendor, signed date, expiry date, covered services, status",
+          "System health dashboard shows: uptime, error rates, video session success rate, sync status",
+          "Admin cannot view raw PHI \u2014 masked except for authorized compliance investigations"
+        ],
+        "depends_on": [
+          5,
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines: GitHub Actions with SAST (Semgrep), DAST (OWASP ZAP), dependency vulnerability scanning (Snyk), container image scanning (Trivy), automated HIPAA control validation, test gates (unit + integration), blue/green deployment to ECS, automated rollback, and PagerDuty alerting.",
+        "payload": {
+          "ci_platform": "GitHub_Actions",
+          "sast": "Semgrep",
+          "dast": "OWASP_ZAP",
+          "dependency_scan": "Snyk",
+          "container_scan": "Trivy",
+          "deployment": "blue_green_ECS",
+          "monitoring": [
+            "CloudWatch",
+            "PagerDuty"
+          ]
+        },
+        "acceptance_criteria": [
+          "Pipeline blocks merge on: SAST critical findings, dependency CVE high/critical, failing tests",
+          "Container images scanned for CVEs before push to ECR \u2014 pipeline fails on critical CVEs",
+          "Blue/green deployment achieves zero-downtime releases with health check gate",
+          "Automated rollback triggers within 5 minutes if health check fails post-deploy",
+          "PagerDuty alerts fire for: error rate >1%, latency p95 >1s, database connection failures",
+          "HIPAA control check verifies: CloudTrail enabled, S3 encryption on, KMS rotation active",
+          "Pipeline run time \u226415 minutes for full build, test, scan, deploy cycle"
+        ],
+        "depends_on": [
+          7,
+          9,
+          10
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "REGULATORY",
+        "description": "Prepare HIPAA compliance evidence package: completed risk assessment, policies and procedures sign-off, workforce training completion records, BAA inventory, penetration test report, vulnerability management records, access review certification, and incident response test results. Map to OCR audit protocol.",
+        "payload": {
+          "framework": "OCR_HIPAA_Audit_Protocol_2016",
+          "evidence_artifacts": [
+            "risk_assessment_signed",
+            "policies_procedures_approved",
+            "training_completion_records",
+            "baa_inventory_current",
+            "pentest_report",
+            "vuln_management_log",
+            "access_review_certification",
+            "ir_tabletop_results"
+          ],
+          "standards": [
+            "HIPAA",
+            "HITECH"
+          ]
+        },
+        "acceptance_criteria": [
+          "Risk assessment signed by covered entity Privacy/Security Officer",
+          "All 75 OCR audit protocol items have evidence artifact linked",
+          "BAA inventory covers 100% of vendors processing PHI",
+          "Penetration test conducted by qualified third party with findings remediated",
+          "Access review certification completed within last 90 days",
+          "Incident response tabletop exercise completed with results documented",
+          "Evidence package organized per OCR audit categories: Administrative, Physical, Technical",
+          "HIPAA risk assessment complete",
+          "BAA template prepared"
+        ],
+        "depends_on": [
+          4,
+          7,
+          9,
+          18
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 20,
+        "task_type": "QA",
+        "description": "Develop comprehensive QA test plan: test strategy, test cases for all critical clinical workflows (booking, video, e-prescribe, EHR sync, symptom checker), PHI access control validation matrix, FHIR compliance test cases, negative testing (unauthorized access attempts), and UAT acceptance criteria with provider and patient test groups.",
+        "payload": {
+          "test_types": [
+            "functional",
+            "integration",
+            "security",
+            "accessibility",
+            "performance",
+            "UAT"
+          ],
+          "critical_workflows": [
+            "patient_registration",
+            "appointment_booking",
+            "video_consultation",
+            "e_prescription",
+            "ehr_sync",
+            "symptom_checker"
+          ],
+          "phi_access_matrix_validation": true,
+          "fhir_validator": "HAPI_FHIR"
+        },
+        "acceptance_criteria": [
+          "Test plan covers all critical workflows with happy path and at least 3 negative scenarios each",
+          "PHI access control matrix validated: each role tested to confirm it cannot access other roles' PHI",
+          "FHIR resource validation tests run against HAPI FHIR validator with zero critical errors",
+          "Security test cases include: SQL injection, XSS, IDOR, session hijacking, broken auth attempts",
+          "UAT test script written for provider and patient personas with pass/fail criteria",
+          "Performance test scenarios defined: 100 concurrent video sessions, 500 concurrent API calls"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "TESTS",
+        "description": "Implement automated test suite: unit tests for all backend services (auth, scheduling, prescription, FHIR, symptom checker), integration tests for video session lifecycle, EHR sync, and e-prescription flow, contract tests for FHIR API compliance, and security regression tests.",
+        "payload": {
+          "test_framework": "pytest",
+          "coverage_target": 85,
+          "contract_testing": "Pact_FHIR",
+          "mocking": [
+            "Twilio_mock",
+            "Surescripts_mock",
+            "EHR_FHIR_sandbox"
+          ],
+          "phi_in_tests": "synthetic_data_only"
+        },
+        "acceptance_criteria": [
+          "Unit test coverage \u226585% for all backend service modules",
+          "Integration tests cover complete flows: registration\u2192book\u2192video\u2192note\u2192prescribe",
+          "All tests use synthetic PHI \u2014 zero real patient data in test fixtures",
+          "FHIR contract tests pass against HAPI FHIR R4 validator",
+          "Auth tests verify: token expiry, MFA bypass attempts fail, role escalation attempts fail",
+          "CI pipeline runs full suite and fails build on any test regression",
+          "Test execution time \u226410 minutes for unit suite, \u226420 minutes for integration suite"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          20
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test suite: full patient journey (register\u2192symptom check\u2192book appointment\u2192video consult\u2192receive prescription\u2192view EHR update), load test with 100 concurrent video sessions, failover test (RDS failover, ECS task failure), disaster recovery drill, and security penetration test.",
+        "payload": {
+          "e2e_framework": "Playwright",
+          "load_test_tool": "k6",
+          "concurrent_video_sessions": 100,
+          "pentest_scope": [
+            "API",
+            "web_app",
+            "auth_flow",
+            "PHI_access_controls"
+          ],
+          "dr_rto_target_hours": 24,
+          "dr_rpo_target_hours": 4
+        },
+        "acceptance_criteria": [
+          "Full patient journey E2E test passes in staging environment end-to-end",
+          "100 concurrent video sessions maintain \u226595% call quality score (MOS \u22653.5)",
+          "Load test shows API p95 latency \u2264500ms at 500 concurrent users",
+          "RDS failover completes within 60 seconds with zero data loss",
+          "Disaster recovery drill achieves RTO \u226424h and RPO \u22644h",
+          "Penetration test finds zero critical or high severity vulnerabilities unmitigated",
+          "All HIPAA access control tests pass: no cross-patient data leakage detected"
+        ],
+        "depends_on": [
+          15,
+          16,
+          17,
+          18,
+          21
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 23,
+        "task_type": "OPERATIONS",
+        "description": "Create operational runbooks: incident response playbook (PHI breach, service outage, video degradation), SLA definitions (99.9% uptime, \u22642h PHI breach notification response), on-call rotation setup, capacity planning model, database backup and restore procedures, and HIPAA breach investigation checklist.",
+        "payload": {
+          "sla_uptime": "99.9%",
+          "phi_breach_response_sla_hours": 2,
+          "runbooks": [
+            "phi_breach_response",
+            "service_outage_response",
+            "video_quality_degradation",
+            "database_failover",
+            "security_incident",
+            "backup_restore_procedure"
+          ],
+          "on_call_tool": "PagerDuty",
+          "capacity_review_cadence": "monthly"
+        },
+        "acceptance_criteria": [
+          "PHI breach runbook covers: detection, containment, assessment, notification (patients + OCR within 60 days), documentation",
+          "Service outage runbook includes: severity classification, escalation tree, communication templates, rollback steps",
+          "SLAs defined and documented: 99.9% uptime (8.7h/year downtime budget), \u22642h incident acknowledgment",
+          "Backup restore procedure tested \u2014 RTO and RPO targets verified by drill",
+          "On-call rotation configured in PagerDuty with escalation policies",
+          "Capacity model projects resource needs at 10x, 50x, 100x current patient volume"
+        ],
+        "depends_on": [
+          18,
+          19,
+          22
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 24,
+        "task_type": "TRAINING",
+        "description": "Produce HIPAA workforce training and user onboarding materials: mandatory HIPAA training course for all staff (Privacy Rule, Security Rule, breach reporting), provider onboarding guide (platform workflow, e-prescribing, video best practices), patient help center, admin operations guide, and video walkthrough scripts.",
+        "payload": {
+          "audiences": [
+            "clinical_staff",
+            "providers",
+            "patients",
+            "admins",
+            "it_staff"
+          ],
+          "formats": [
+            "interactive_course",
+            "PDF_guide",
+            "video_script",
+            "help_center_articles"
+          ],
+          "hipaa_training_frequency": "annual_plus_onboarding",
+          "tracking": "completion_certificate_with_date"
+        },
+        "acceptance_criteria": [
+          "HIPAA training course covers: PHI definition, minimum necessary standard, breach reporting, patient rights",
+          "Training completion tracked per employee with signed attestation and date",
+          "Provider onboarding guide covers all platform workflows with annotated screenshots",
+          "Patient help center has articles for: account setup, booking, video troubleshooting, records access, privacy rights",
+          "Video walkthrough scripts reviewed by clinical advisor for accuracy",
+          "All training materials reviewed by legal advisor for HIPAA compliance accuracy"
+        ],
+        "depends_on": [
+          3,
+          4,
+          15,
+          16,
+          17
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 25,
+        "task_type": "DOCS",
+        "description": "Produce technical documentation: API reference (OpenAPI with FHIR resource schemas), architecture decision records (ADRs) for key design choices, HIPAA technical safeguards implementation guide, developer onboarding README, EHR integration guide, and deployment runbook.",
+        "payload": {
+          "api_spec": "OpenAPI_3.1",
+          "adrs": [
+            "FHIR_R4_adoption",
+            "E2E_video_encryption",
+            "field_level_PHI_encryption",
+            "multi_agent_symptom_checker"
+          ],
+          "formats": [
+            "Markdown",
+            "OpenAPI_YAML"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec covers all endpoints with request/response schemas and auth requirements",
+          "ADR written for each major architecture decision with context, decision, and consequences",
+          "HIPAA technical safeguards guide maps each control to implementation location in codebase",
+          "Developer README enables new engineer to run full stack locally in \u226430 minutes",
+          "EHR integration guide documents SMART on FHIR launch, scopes, and error handling",
+          "All documentation reviewed and approved before production go-live"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 25,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "MIMIC-III is listed as a training dataset in Step 14 \u2014 this dataset contains real PHI and requires PhysioNet credentialing, a signed Data Use Agreement, and likely IRB approval. A model trained on it may itself be considered PHI-derived under HIPAA. This is not a data science task you can put in a sprint.",
+              "FDA Software as a Medical Device (SaMD) classification is entirely absent. An AI triage system returning 'emergency|urgent|routine' recommendations is almost certainly a Class II medical device requiring 510(k) clearance or De Novo classification under FDA 21 CFR Part 820. Launching without this is a federal enforcement risk, not just a compliance gap.",
+              "Twilio Video Group Rooms route media through Twilio's infrastructure \u2014 media is decrypted on their servers. Calling this 'E2E SRTP' in the acceptance criteria is technically false. True E2E requires Twilio Peer-to-Peer Rooms (limited to 2 participants, no recording) or a different architecture. The BAA covers this legally but the 'E2E' claim in your security model is wrong.",
+              "pgcrypto AES-256 field-level encryption on PostgreSQL (Step 6) makes encrypted PHI columns unsearchable and non-indexable. Patient search, appointment lookups, and FHIR queries that join across encrypted fields will be catastrophically slow at scale. The plan has no mitigation (envelope encryption with separate search tokens, deterministic encryption for lookup fields, or a KMS-managed approach).",
+              "Surescripts network certification takes 6\u201318 months minimum, requires extensive conformance testing, a separate legal agreement, and Surescripts must approve your use case. Step 12 treats this as a backend sprint task. This single dependency could block the entire e-prescription feature for over a year.",
+              "Epic and Cerner production API access (not sandbox) requires going through Epic App Orchard or Cerner Code programs \u2014 multi-month review, legal agreements, and technical certification. Step 13 acceptance criteria only require one sandbox to work. The gap between sandbox and production EHR access is where the feature actually breaks.",
+              "Sending patient-described symptoms to Claude (Anthropic) via API requires Anthropic to sign a Business Associate Agreement. Anthropic offers BAAs for Enterprise tier only. This is not mentioned anywhere in the plan. Without a signed BAA, transmitting symptom descriptions that could constitute PHI to the LLM is a HIPAA violation.",
+              "Step 14's de-identification before LLM transmission ('PHI inputs anonymized') is described as if it is a solved problem. De-identification to HIPAA Safe Harbor standard (18 identifiers removed) or Expert Determination is technically non-trivial \u2014 age >89, rare conditions, geographic data at zip-code level, and combinations of quasi-identifiers all fail naive scrubbing. A flawed de-identification layer is worse than no de-identification because it creates false compliance confidence.",
+              "The plan has no Master Patient Index (MPI) or patient matching strategy. When syncing from multiple EHRs (Epic, Cerner, Athena), you will inevitably receive duplicate patient records. Without a probabilistic matching layer, you will create duplicate charts, merge PHI incorrectly, or route prescriptions to the wrong patient.",
+              "Provider licensing validation at the point of care is mentioned only as 'NPI lookup and state license validation' in Step 10. In US telehealth law, the provider must be licensed in the state where the PATIENT is physically located at the time of the visit \u2014 not where the provider is licensed. Real-time license verification against 50 state medical board databases (most of which have no public API) is a separate engineering problem that is not scoped."
+            ],
+            "suggestions": [
+              "Add a Step 0 (pre-build): FDA SaMD risk classification workshop. Get an FDA regulatory consultant to classify the symptom checker before writing a line of ML code. If it needs 510(k), that process runs in parallel with development and takes 6\u201312 months minimum.",
+              "Replace MIMIC-III with the publicly available Symptom2Disease dataset, NHANES public-use files, or proprietary clinical NLP datasets (Infermedica API, Isabel DDx) that come with commercial licenses and no PHI. If fine-tuning is required, use a HIPAA-eligible ML platform (AWS SageMaker with BAA) and synthetic clinical data.",
+              "For field-level encryption, adopt envelope encryption: store an encrypted data key per row in the database, use AWS KMS to decrypt the data key at application layer, and keep plaintext only in application memory. This preserves indexability for non-sensitive fields while protecting PHI. Do not use pgcrypto for queryable columns.",
+              "Replace SMS MFA with TOTP-only or hardware security keys (FIDO2/WebAuthn) for provider and admin accounts. SMS OTP is deprecated in NIST SP 800-63B for AAL2 and higher \u2014 HIPAA auditors increasingly flag it. Keep SMS as a fallback for patients only.",
+              "Scope the Surescripts integration as a Phase 2 feature with a realistic 12-month runway. For MVP launch, implement e-prescribing for non-controlled substances only via a simpler path (DrFirst or DoseSpot, which offer faster certification than direct Surescripts integration), then upgrade.",
+              "Add a patient matching service (Step 6.5): implement a probabilistic MPI using a library like Splink or a commercial service (Verato, MPI from CommonWell) before building the EHR sync layer. This prevents chart fragmentation at scale.",
+              "Step 9 should remove the 90-day mandatory password rotation requirement \u2014 NIST SP 800-63B explicitly recommends against periodic rotation without evidence of compromise. Replace with breach-detection-triggered rotation and long minimum length (16+ chars) with no complexity rules.",
+              "Add a legal step to obtain Anthropic Enterprise BAA before any PHI touches the LLM layer. Build the symptom checker's prompt pipeline to work with any HIPAA-BAA-covered LLM provider (AWS Bedrock Claude, Azure OpenAI) as primary, with Anthropic direct as secondary only after BAA is in place.",
+              "For EHR integrations, explicitly split acceptance criteria into sandbox acceptance (Step 13) and production go-live (post-launch backlog). Do not put Epic/Cerner production API access on the critical path for launch \u2014 it will slip.",
+              "Add a Step 3.5: state telehealth prescribing restrictions enforcement layer. The legal document (Step 3) identifies restrictions \u2014 but someone has to build the runtime enforcement that blocks a Florida-licensed provider from prescribing to a patient in Texas if that combination is prohibited. This needs a maintained policy rules database, not just a legal doc."
+            ],
+            "missing": [
+              "FDA SaMD classification and regulatory strategy for the AI symptom checker \u2014 not optional, not deferrable after launch.",
+              "Anthropic (or equivalent LLM provider) BAA procurement step before any symptom checker development begins.",
+              "PCI-DSS scoping and compliance path \u2014 Step 17 mentions billing and claims management. If the platform processes copayments or subscription fees directly, PCI-DSS applies and is not in the compliance scope at all.",
+              "Patient right of access implementation (HIPAA 45 CFR \u00a7164.524) \u2014 patients have a right to receive their PHI within 30 days of request. The plan has a health records viewer but no formal 'patient data export / portability' workflow with the defined SLA.",
+              "Minimum necessary enforcement at the API response layer \u2014 RBAC prevents wrong-role access, but minimum necessary requires that even authorized users get only the PHI fields required for their task. No plan for this at the API design level.",
+              "HIPAA Notice of Privacy Practices delivery acknowledgment tracking \u2014 the NPP must be provided at first service delivery and acknowledgment tracked. This is a data model and workflow gap.",
+              "Business continuity plan distinct from DR runbook \u2014 HIPAA \u00a7164.308(a)(7) requires a documented contingency plan covering emergency mode operations, not just RTO/RPO targets.",
+              "Cross-region disaster recovery architecture \u2014 Step 7 provisions a single-region VPC. If the entire AWS region goes down, there is no failover. For 99.9% uptime SLA and 24h RTO, a warm standby in a second region is required.",
+              "Workforce HIPAA training delivery platform and completion tracking system \u2014 Step 24 says 'completion certificate with date' but no platform is specified. LMS selection and integration with HR systems is not scoped.",
+              "Legal review of AI-generated medical recommendations liability \u2014 the plan has AI consent forms but no framework for limiting liability when the symptom checker output contributes to an adverse event. This is a product liability question that needs legal opinion before launch, not after."
+            ],
+            "security_risks": [
+              "INDIRECT OBJECT REFERENCE on FHIR endpoints: FHIR resource IDs (Patient/123, Encounter/456) are typically sequential or guessable. Without per-request RBAC verification at the resource ID level (not just at the route level), a patient who discovers another patient's encounter ID can request their PHI. Step 10 mentions auth middleware but does not specify IDOR-specific controls on FHIR resource access.",
+              "LLM prompt injection in symptom checker: Patient-supplied symptom descriptions are used directly in LLM prompts. A malicious user can attempt to exfiltrate system prompts, override safety guardrails, or extract other users' session data if sessions share context. The safety guardrails in Step 8 do not mention prompt injection defenses.",
+              "WebSocket signaling server (Step 11) is a high-value attack target: if an attacker can inject a malicious SDP offer into the signaling channel, they can redirect video streams or conduct a man-in-the-middle on video calls. WSS alone is insufficient \u2014 the signaling messages must be authenticated and bound to the session tokens of the specific patient-provider pair.",
+              "Terraform state file contains all infrastructure secrets and resource IDs \u2014 storing it in S3 with state locking is correct, but the plan does not specify IAM policies restricting who can read the state file. A developer with S3 read access to the state bucket can extract KMS key ARNs, RDS connection strings, and Cognito pool IDs.",
+              "KMS key policy misconfiguration is the most common cause of HIPAA breaches in AWS environments \u2014 the plan specifies KMS CMK creation but does not define key policy: who can administer the key, who can use it, and critically, whether key deletion is protected. An admin with kms:ScheduleKeyDeletion can destroy all encrypted PHI irreversibly.",
+              "Surescripts network integration creates a direct pharmaceutical supply chain attack surface \u2014 a compromised provider account that can submit prescriptions to Surescripts is a high-value target for drug diversion. The DEA EPCS two-factor requirement is noted, but the audit trail for detecting anomalous prescribing patterns (same provider, many controlled substances, many patients in short time) is not specified.",
+              "EHR SMART on FHIR OAuth token storage in the patient portal: SMART launch tokens with offline_access scope can be used to continuously pull PHI from the EHR. If these tokens are stored in browser localStorage (common React pattern), XSS vulnerabilities become PHI exfiltration vulnerabilities. Token storage strategy is not specified."
+            ],
+            "summary": "This plan is impressively detailed in scope and correctly identifies most of the HIPAA compliance surface area \u2014 the threat model, BAA tracking, audit logging, RBAC design, and operational runbooks are all well-conceived. However, it has two critical showstoppers that would block a legal launch: (1) the AI symptom checker is almost certainly an FDA-regulated SaMD and no regulatory pathway is planned, and (2) the MIMIC-III training dataset cannot be legally used without IRB approval and a PhysioNet DUA, and the trained model may inherit PHI restrictions. Beyond the legal blockers, several technical decisions will cause serious production failures: pgcrypto field-level encryption on queryable PHI columns will make the database unusable at scale, the Twilio 'E2E' video claim is architecturally false, and Surescripts certification is a 6\u201318 month external dependency being treated as a sprint task. The plan also has no Anthropic BAA for LLM usage, no FDA SaMD pathway, no patient identity matching strategy for multi-EHR sync, and no PCI-DSS scoping for billing. For a regulated medical domain, I would not approve this plan for build without resolving the FDA SaMD question, replacing MIMIC-III, redesigning the PHI encryption layer, and adding the LLM provider BAA. Fundamental rework is needed on 4\u20135 critical items before this is production-credible.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "MIMIC-III is listed as a training dataset in Step 14 \u2014 this dataset contains real PHI and requires PhysioNet credentialing, a signed Data Use Agreement, and likely IRB approval. A model trained on it may itself be considered PHI-derived under HIPAA. This is not a data science task you can put in a sprint.",
+                "FDA Software as a Medical Device (SaMD) classification is entirely absent. An AI triage system returning 'emergency|urgent|routine' recommendations is almost certainly a Class II medical device requiring 510(k) clearance or De Novo classification under FDA 21 CFR Part 820. Launching without this is a federal enforcement risk, not just a compliance gap.",
+                "Twilio Video Group Rooms route media through Twilio's infrastructure \u2014 media is decrypted on their servers. Calling this 'E2E SRTP' in the acceptance criteria is technically false. True E2E requires Twilio Peer-to-Peer Rooms (limited to 2 participants, no recording) or a different architecture. The BAA covers this legally but the 'E2E' claim in your security model is wrong.",
+                "pgcrypto AES-256 field-level encryption on PostgreSQL (Step 6) makes encrypted PHI columns unsearchable and non-indexable. Patient search, appointment lookups, and FHIR queries that join across encrypted fields will be catastrophically slow at scale. The plan has no mitigation (envelope encryption with separate search tokens, deterministic encryption for lookup fields, or a KMS-managed approach).",
+                "Surescripts network certification takes 6\u201318 months minimum, requires extensive conformance testing, a separate legal agreement, and Surescripts must approve your use case. Step 12 treats this as a backend sprint task. This single dependency could block the entire e-prescription feature for over a year.",
+                "Epic and Cerner production API access (not sandbox) requires going through Epic App Orchard or Cerner Code programs \u2014 multi-month review, legal agreements, and technical certification. Step 13 acceptance criteria only require one sandbox to work. The gap between sandbox and production EHR access is where the feature actually breaks.",
+                "Sending patient-described symptoms to Claude (Anthropic) via API requires Anthropic to sign a Business Associate Agreement. Anthropic offers BAAs for Enterprise tier only. This is not mentioned anywhere in the plan. Without a signed BAA, transmitting symptom descriptions that could constitute PHI to the LLM is a HIPAA violation.",
+                "Step 14's de-identification before LLM transmission ('PHI inputs anonymized') is described as if it is a solved problem. De-identification to HIPAA Safe Harbor standard (18 identifiers removed) or Expert Determination is technically non-trivial \u2014 age >89, rare conditions, geographic data at zip-code level, and combinations of quasi-identifiers all fail naive scrubbing. A flawed de-identification layer is worse than no de-identification because it creates false compliance confidence.",
+                "The plan has no Master Patient Index (MPI) or patient matching strategy. When syncing from multiple EHRs (Epic, Cerner, Athena), you will inevitably receive duplicate patient records. Without a probabilistic matching layer, you will create duplicate charts, merge PHI incorrectly, or route prescriptions to the wrong patient.",
+                "Provider licensing validation at the point of care is mentioned only as 'NPI lookup and state license validation' in Step 10. In US telehealth law, the provider must be licensed in the state where the PATIENT is physically located at the time of the visit \u2014 not where the provider is licensed. Real-time license verification against 50 state medical board databases (most of which have no public API) is a separate engineering problem that is not scoped."
+              ],
+              "suggestions": [
+                "Add a Step 0 (pre-build): FDA SaMD risk classification workshop. Get an FDA regulatory consultant to classify the symptom checker before writing a line of ML code. If it needs 510(k), that process runs in parallel with development and takes 6\u201312 months minimum.",
+                "Replace MIMIC-III with the publicly available Symptom2Disease dataset, NHANES public-use files, or proprietary clinical NLP datasets (Infermedica API, Isabel DDx) that come with commercial licenses and no PHI. If fine-tuning is required, use a HIPAA-eligible ML platform (AWS SageMaker with BAA) and synthetic clinical data.",
+                "For field-level encryption, adopt envelope encryption: store an encrypted data key per row in the database, use AWS KMS to decrypt the data key at application layer, and keep plaintext only in application memory. This preserves indexability for non-sensitive fields while protecting PHI. Do not use pgcrypto for queryable columns.",
+                "Replace SMS MFA with TOTP-only or hardware security keys (FIDO2/WebAuthn) for provider and admin accounts. SMS OTP is deprecated in NIST SP 800-63B for AAL2 and higher \u2014 HIPAA auditors increasingly flag it. Keep SMS as a fallback for patients only.",
+                "Scope the Surescripts integration as a Phase 2 feature with a realistic 12-month runway. For MVP launch, implement e-prescribing for non-controlled substances only via a simpler path (DrFirst or DoseSpot, which offer faster certification than direct Surescripts integration), then upgrade.",
+                "Add a patient matching service (Step 6.5): implement a probabilistic MPI using a library like Splink or a commercial service (Verato, MPI from CommonWell) before building the EHR sync layer. This prevents chart fragmentation at scale.",
+                "Step 9 should remove the 90-day mandatory password rotation requirement \u2014 NIST SP 800-63B explicitly recommends against periodic rotation without evidence of compromise. Replace with breach-detection-triggered rotation and long minimum length (16+ chars) with no complexity rules.",
+                "Add a legal step to obtain Anthropic Enterprise BAA before any PHI touches the LLM layer. Build the symptom checker's prompt pipeline to work with any HIPAA-BAA-covered LLM provider (AWS Bedrock Claude, Azure OpenAI) as primary, with Anthropic direct as secondary only after BAA is in place.",
+                "For EHR integrations, explicitly split acceptance criteria into sandbox acceptance (Step 13) and production go-live (post-launch backlog). Do not put Epic/Cerner production API access on the critical path for launch \u2014 it will slip.",
+                "Add a Step 3.5: state telehealth prescribing restrictions enforcement layer. The legal document (Step 3) identifies restrictions \u2014 but someone has to build the runtime enforcement that blocks a Florida-licensed provider from prescribing to a patient in Texas if that combination is prohibited. This needs a maintained policy rules database, not just a legal doc."
+              ],
+              "missing": [
+                "FDA SaMD classification and regulatory strategy for the AI symptom checker \u2014 not optional, not deferrable after launch.",
+                "Anthropic (or equivalent LLM provider) BAA procurement step before any symptom checker development begins.",
+                "PCI-DSS scoping and compliance path \u2014 Step 17 mentions billing and claims management. If the platform processes copayments or subscription fees directly, PCI-DSS applies and is not in the compliance scope at all.",
+                "Patient right of access implementation (HIPAA 45 CFR \u00a7164.524) \u2014 patients have a right to receive their PHI within 30 days of request. The plan has a health records viewer but no formal 'patient data export / portability' workflow with the defined SLA.",
+                "Minimum necessary enforcement at the API response layer \u2014 RBAC prevents wrong-role access, but minimum necessary requires that even authorized users get only the PHI fields required for their task. No plan for this at the API design level.",
+                "HIPAA Notice of Privacy Practices delivery acknowledgment tracking \u2014 the NPP must be provided at first service delivery and acknowledgment tracked. This is a data model and workflow gap.",
+                "Business continuity plan distinct from DR runbook \u2014 HIPAA \u00a7164.308(a)(7) requires a documented contingency plan covering emergency mode operations, not just RTO/RPO targets.",
+                "Cross-region disaster recovery architecture \u2014 Step 7 provisions a single-region VPC. If the entire AWS region goes down, there is no failover. For 99.9% uptime SLA and 24h RTO, a warm standby in a second region is required.",
+                "Workforce HIPAA training delivery platform and completion tracking system \u2014 Step 24 says 'completion certificate with date' but no platform is specified. LMS selection and integration with HR systems is not scoped.",
+                "Legal review of AI-generated medical recommendations liability \u2014 the plan has AI consent forms but no framework for limiting liability when the symptom checker output contributes to an adverse event. This is a product liability question that needs legal opinion before launch, not after."
+              ],
+              "security_risks": [
+                "INDIRECT OBJECT REFERENCE on FHIR endpoints: FHIR resource IDs (Patient/123, Encounter/456) are typically sequential or guessable. Without per-request RBAC verification at the resource ID level (not just at the route level), a patient who discovers another patient's encounter ID can request their PHI. Step 10 mentions auth middleware but does not specify IDOR-specific controls on FHIR resource access.",
+                "LLM prompt injection in symptom checker: Patient-supplied symptom descriptions are used directly in LLM prompts. A malicious user can attempt to exfiltrate system prompts, override safety guardrails, or extract other users' session data if sessions share context. The safety guardrails in Step 8 do not mention prompt injection defenses.",
+                "WebSocket signaling server (Step 11) is a high-value attack target: if an attacker can inject a malicious SDP offer into the signaling channel, they can redirect video streams or conduct a man-in-the-middle on video calls. WSS alone is insufficient \u2014 the signaling messages must be authenticated and bound to the session tokens of the specific patient-provider pair.",
+                "Terraform state file contains all infrastructure secrets and resource IDs \u2014 storing it in S3 with state locking is correct, but the plan does not specify IAM policies restricting who can read the state file. A developer with S3 read access to the state bucket can extract KMS key ARNs, RDS connection strings, and Cognito pool IDs.",
+                "KMS key policy misconfiguration is the most common cause of HIPAA breaches in AWS environments \u2014 the plan specifies KMS CMK creation but does not define key policy: who can administer the key, who can use it, and critically, whether key deletion is protected. An admin with kms:ScheduleKeyDeletion can destroy all encrypted PHI irreversibly.",
+                "Surescripts network integration creates a direct pharmaceutical supply chain attack surface \u2014 a compromised provider account that can submit prescriptions to Surescripts is a high-value target for drug diversion. The DEA EPCS two-factor requirement is noted, but the audit trail for detecting anomalous prescribing patterns (same provider, many controlled substances, many patients in short time) is not specified.",
+                "EHR SMART on FHIR OAuth token storage in the patient portal: SMART launch tokens with offline_access scope can be used to continuously pull PHI from the EHR. If these tokens are stored in browser localStorage (common React pattern), XSS vulnerabilities become PHI exfiltration vulnerabilities. Token storage strategy is not specified."
+              ],
+              "summary": "This plan is impressively detailed in scope and correctly identifies most of the HIPAA compliance surface area \u2014 the threat model, BAA tracking, audit logging, RBAC design, and operational runbooks are all well-conceived. However, it has two critical showstoppers that would block a legal launch: (1) the AI symptom checker is almost certainly an FDA-regulated SaMD and no regulatory pathway is planned, and (2) the MIMIC-III training dataset cannot be legally used without IRB approval and a PhysioNet DUA, and the trained model may inherit PHI restrictions. Beyond the legal blockers, several technical decisions will cause serious production failures: pgcrypto field-level encryption on queryable PHI columns will make the database unusable at scale, the Twilio 'E2E' video claim is architecturally false, and Surescripts certification is a 6\u201318 month external dependency being treated as a sprint task. The plan also has no Anthropic BAA for LLM usage, no FDA SaMD pathway, no patient identity matching strategy for multi-EHR sync, and no PCI-DSS scoping for billing. For a regulated medical domain, I would not approve this plan for build without resolving the FDA SaMD question, replacing MIMIC-III, redesigning the PHI encryption layer, and adding the LLM provider BAA. Fundamental rework is needed on 4\u20135 critical items before this is production-credible.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T01:05:07.575801+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 171.9,
+      "critic_plan": 125.6
+    }
+  }
+}

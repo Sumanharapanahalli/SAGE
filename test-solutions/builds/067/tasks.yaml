@@ -1,0 +1,194 @@
+task_types:
+  DATA:
+    description: 'Design the core data model: image generation jobs, asset metadata
+      schema (prompt, seed, model version, style, dimensions, tags), generation history,
+      and asset library collections.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - ERD diagram covers all entities with cardinality annotations
+    - Asset metadata schema includes prompt, negative_prompt, seed, model_id, steps,
+      cfg_scale, width, height, style_id
+    - GenerationJob tracks status (queued/running/complete/failed), progress %, output
+      asset references
+    - Schema supports soft-delete for asset library management
+    depends_on: []
+  ML_MODEL:
+    description: 'Set up Stable Diffusion model pipeline: download and configure SDXL
+      base + refiner, build inference wrapper supporting txt2img, img2img, inpainting
+      (with mask), and ControlNet for style transfer. Integrate ESRGAN/Real-ESRGAN
+      for upscaling.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - txt2img generates 1024x1024 image in under 12s on A10G GPU
+    - Inpainting pipeline accepts image + binary mask and produces coherent fill
+    - Style transfer via ControlNet (canny/depth/openpose) preserves structure with
+      style applied
+    - ESRGAN upscales 512px to 2048px with PSNR > 30dB on validation set
+    - All pipelines serialize/deserialize model state correctly for warm-start
+    - Bias evaluation performed
+    - Model card generated
+    depends_on: []
+  INFRA:
+    description: 'Scaffold Docker Compose and Kubernetes manifests: GPU-enabled worker
+      containers (nvidia-docker), Redis task queue, PostgreSQL, MinIO (S3-compatible
+      object store), and reverse proxy. Include GPU resource limits and CUDA version
+      pinning.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up starts all services with GPU workers available
+    - CUDA device visible inside worker container via nvidia-smi
+    - MinIO bucket auto-created on startup with versioning enabled
+    - Health check endpoints respond within 5s for all services
+    - Worker scales horizontally — adding a second worker doubles throughput
+    depends_on: []
+  API:
+    description: 'Define OpenAPI 3.1 spec for all generation, asset library, and management
+      endpoints: POST /generate, POST /inpaint, POST /style-transfer, POST /upscale,
+      GET/POST/DELETE /assets, GET/POST /collections, GET /jobs/{id}, GET /jobs/{id}/stream
+      (SSE progress), POST /prompts/enhance.'
+    agent_role: analyst
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against openapi-generator
+    - Every endpoint has request schema, response schema, and error codes documented
+    - SSE /jobs/{id}/stream emits progress events with percent and stage fields
+    - POST /generate schema includes all SD parameters with min/max validation
+    - /prompts/enhance endpoint contract specifies input prompt → enriched prompt
+      + negative prompt
+    depends_on: []
+  UX_DESIGN:
+    description: 'Design wireframes and interaction flows for: prompt engineering
+      workspace (live parameter controls, prompt history), canvas-based inpainting
+      editor (brush mask drawing), style transfer panel, upscaling controls, and asset
+      library grid with collections and tagging.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 6 pages at desktop and tablet breakpoints
+    - Inpainting canvas interaction flow documented with brush size, eraser, undo/redo
+    - Prompt engineering workspace shows parameter sliders (CFG, steps, seed) with
+      real-time token count
+    - Asset library supports multi-select, bulk tag, bulk delete, drag-to-collection
+    - User flow from prompt entry to downloaded asset is under 5 clicks
+    depends_on: []
+  DATABASE:
+    description: 'Implement PostgreSQL schema migrations using Alembic: tables for
+      generation_jobs, assets, asset_collections, style_presets, prompt_templates,
+      users. Add indexes, foreign keys, and soft-delete columns. Seed default style
+      presets and prompt templates.'
+    agent_role: developer
+    acceptance_criteria:
+    - alembic upgrade head runs without errors on clean Postgres instance
+    - alembic downgrade base fully reverts all migrations
+    - All foreign keys enforced with ON DELETE CASCADE or RESTRICT as appropriate
+    - Query for asset library with tag filter runs in < 50ms on 100K asset dataset
+    - Seed script populates 10 style presets and 20 prompt templates
+    depends_on:
+    - 1
+  BACKEND:
+    description: 'Build the FastAPI application skeleton: authentication middleware
+      (JWT), job submission endpoints, Redis Streams task queue producer, MinIO storage
+      client, database session factory, structured logging, and health/readiness probes.'
+    agent_role: developer
+    acceptance_criteria:
+    - POST /generate returns job_id within 200ms (before GPU processing starts)
+    - JWT middleware rejects invalid/expired tokens with 401
+    - Job submitted to Redis Stream visible via XREAD within 50ms
+    - GET /health returns 200 with db, redis, minio status flags
+    - Structured logs include trace_id, user_id, job_id on every request
+    depends_on:
+    - 3
+    - 4
+    - 6
+  CONFIG:
+    description: 'Set up model configuration system: YAML-based model registry (model
+      ID, HuggingFace path, VRAM requirement, supported pipelines), environment variable
+      schema (.env.example), and runtime config loader with validation via Pydantic
+      Settings.'
+    agent_role: developer
+    acceptance_criteria:
+    - models.yaml lists all 4+ models with VRAM requirements
+    - App startup fails fast with clear error if required env vars missing
+    - .env.example documents every variable with description and example value
+    - Model registry loads and validates on startup, logs available models
+    - Switching active model requires only config change, no code change
+    depends_on:
+    - 2
+    - 3
+  FRONTEND:
+    description: 'Build the prompt engineering workspace UI: parameter sidebar (CFG
+      scale, steps, scheduler, seed sliders), prompt/negative prompt text areas with
+      token counter, prompt history panel, template gallery, enhance button, and real-time
+      generation progress with SSE.'
+    agent_role: developer
+    acceptance_criteria:
+    - Parameter sliders update preview of generation settings in real-time
+    - Token counter updates on every keystroke, turns red when > 77 tokens
+    - SSE progress bar updates smoothly from 0-100% during generation
+    - Generated image displayed inline with download and add-to-library buttons
+    - Prompt history shows last 20 prompts, clicking restores all parameters
+    depends_on:
+    - 5
+    - 14
+  TESTS:
+    description: 'Write unit tests for all backend services: generation job queue
+      producer/consumer, inpainting mask validation, upscaling pipeline wrapper, style
+      preset CRUD, prompt enhancement service, and asset library search/filter logic.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest runs with no GPU required (all ML calls mocked)
+    - Coverage report shows >= 80% on service layer modules
+    - Job queue producer/consumer round-trip tested end-to-end with Redis test container
+    - Mask validation rejects all-black, all-white, and dimension-mismatch masks
+    - Prompt token counter tested against known CLIP tokenizer outputs
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+  SECURITY:
+    description: 'Security review: input validation for uploaded images (file type,
+      size, magic bytes), prompt injection sanitization, signed URL expiry for MinIO
+      assets, rate limiting per user, authentication token rotation, and OWASP Top
+      10 review of API endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - Uploading a disguised executable as PNG returns 400
+    - Prompt with null bytes or control characters sanitized before LLM/SD processing
+    - MinIO signed URLs expire after 1 hour
+    - Rate limiter returns 429 with Retry-After header when exceeded
+    - OWASP checklist completed with no critical findings
+    depends_on:
+    - 7
+    - 11
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): lint + type-check on PR,
+      unit tests with coverage gate, Docker image build and push, GPU integration
+      test job (self-hosted runner), and staging deployment with smoke tests.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR opens trigger lint + unit test jobs automatically
+    - Coverage below 80% blocks merge
+    - Docker images tagged with git SHA and pushed to ghcr.io
+    - GPU integration test job runs on self-hosted runner with real model inference
+    - Staging deploy runs smoke test hitting /health and POST /generate
+    depends_on:
+    - 3
+    - 19
+  DOCS:
+    description: Write API reference documentation (auto-generated from OpenAPI spec
+      + hand-written guides), developer quickstart (Docker setup, first generation
+      in 5 minutes), model configuration guide, and user guide for each feature (prompt
+      engineering, inpainting, style transfer, asset library).
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Quickstart guide takes a new developer from zero to first generated image in
+      < 15 minutes
+    - All API endpoints documented with example request/response
+    - Model configuration guide covers adding a new model to models.yaml
+    - User guides include screenshots from the built UI
+    - Docs served at /docs with working search
+    depends_on:
+    - 4
+    - 7
+    - 23

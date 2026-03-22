@@ -1,0 +1,194 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements, success metrics, and scope for the semantic
+      search engine including vector embeddings, hybrid search, query understanding,
+      auto-complete, faceted filtering, and relevance tuning console.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD document lists all features with acceptance criteria
+    - Success metrics defined (latency p99 < 200ms, recall@10 > 0.85)
+    - Embedding model candidates shortlisted with trade-off matrix
+    - Vector DB options evaluated (Qdrant vs Weaviate vs Pinecone)
+    depends_on: []
+  DATA:
+    description: 'Design the data model and document ingestion pipeline: chunking
+      strategy, metadata schema, embedding generation pipeline, BM25 index construction,
+      and incremental update support.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - 'Document schema defined with fields: id, content, chunks, metadata, embeddings,
+      facet_fields'
+    - Chunking pipeline handles PDF, HTML, plain text inputs
+    - Embedding pipeline generates 384-dim vectors for each chunk
+    - BM25 inverted index built and serializable to disk
+    - Incremental index update adds documents without full rebuild
+    - Pipeline processes 1000 docs/min on standard hardware
+    depends_on:
+    - 1
+  ML_MODEL:
+    description: 'Set up the embedding model pipeline: select and fine-tune sentence
+      transformer, build query encoder, implement query understanding module (intent
+      classification, query expansion, spell correction), and design relevance scoring.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Embedding model loads and encodes query in < 50ms
+    - Query expansion generates 3-5 semantically related terms
+    - Spell correction handles common typos with > 90% accuracy
+    - Intent classifier distinguishes navigational/informational/transactional queries
+    - Hybrid RRF score combines BM25 + vector scores with configurable alpha weight
+    - Model evaluation script outputs NDCG@10 and MRR metrics
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 2
+  DATABASE:
+    description: Provision and configure the vector database (Qdrant), BM25 index
+      store, metadata/facets store (PostgreSQL), and auto-complete trie/prefix index.
+    agent_role: developer
+    acceptance_criteria:
+    - Qdrant collection created with correct vector dimensions and HNSW params
+    - PostgreSQL schema includes documents, facets, and query_logs tables with migrations
+    - Redis sorted set populated for prefix-based auto-complete lookups
+    - GIN index on facets JSONB column enables sub-10ms facet aggregation
+    - All DB schemas version-controlled as migration files
+    depends_on:
+    - 2
+  BACKEND:
+    description: 'Build the core search backend service: hybrid search orchestrator
+      (BM25 + vector fusion), query processing pipeline, faceted filtering engine,
+      and indexing API.'
+    agent_role: developer
+    acceptance_criteria:
+    - POST /index accepts documents, chunks, embeds, and stores in Qdrant + BM25
+    - POST /search returns hybrid-ranked results with scores and metadata
+    - Facet filters applied as pre-filter to vector search and BM25 simultaneously
+    - RRF fusion configurable via alpha weight parameter
+    - Search latency p95 < 150ms for corpus of 100k documents
+    - Indexing throughput > 500 docs/min end-to-end
+    depends_on:
+    - 3
+    - 4
+  API:
+    description: 'Design and document the full OpenAPI spec for all search_engine
+      endpoints: /index, /search, /autocomplete, /query/understand, /facets, /relevance/config,
+      /relevance/experiment, /analytics.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec covers all endpoints with request/response schemas
+    - All query parameters, filters, and pagination fields documented
+    - Error response codes and formats specified for each endpoint
+    - Spec validates with openapi-validator with zero errors
+    - Example requests/responses included for every endpoint
+    depends_on:
+    - 5
+    - 6
+    - 7
+  UX_DESIGN:
+    description: Design the search UI (search bar with auto-complete, results page
+      with facets) and the relevance tuning console (boost rules editor, experiment
+      dashboard, query analytics).
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes for all 5 pages reviewed and approved
+    - Auto-complete dropdown shows suggestions with keyboard navigation
+    - Facet sidebar supports multi-select, range filters, and result counts
+    - Boost rule editor supports drag-and-drop field weight sliders
+    - Experiment dashboard shows side-by-side NDCG comparison for A/B variants
+    - WCAG 2.1 AA accessibility checklist passed for all components
+    depends_on:
+    - 1
+  FRONTEND:
+    description: 'Build the search frontend: search bar with live auto-complete, results
+      page with highlighted snippets, faceted filter sidebar, pagination, and result
+      card components.'
+    agent_role: developer
+    acceptance_criteria:
+    - SearchBar fires autocomplete requests with 150ms debounce
+    - Auto-complete dropdown renders top-10 suggestions with keyboard nav (arrow keys
+      + enter)
+    - Results page displays highlighted matched terms in snippets
+    - Facet sidebar updates result count on each filter selection without full page
+      reload
+    - Pagination supports cursor-based navigation
+    - Search results render in < 300ms from API response
+    depends_on:
+    - 8
+    - 9
+  INFRA:
+    description: 'Containerize all services with Docker Compose for local development
+      and Kubernetes manifests for production: search API, Qdrant, PostgreSQL, Redis,
+      and frontend. Set up CI/CD pipeline.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up --build starts full stack with zero manual steps
+    - All services pass health checks within 60s of startup
+    - Kubernetes manifests include resource limits, liveness/readiness probes
+    - 'CI pipeline runs on every PR: lint → test → build in < 10 min'
+    - Staging deployment automatically triggered on merge to main
+    - Secrets managed via Kubernetes secrets, not hardcoded in manifests
+    depends_on:
+    - 5
+    - 6
+    - 7
+    - 10
+    - 11
+  TESTS:
+    description: 'Write unit tests for all backend modules: hybrid search orchestrator,
+      BM25 retriever, vector retriever, RRF fusion, facet filter engine, query understanding
+      pipeline, and relevance tuning engine.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage >= 85% across all backend modules
+    - RRF fusion tested with known score inputs and expected rank outputs
+    - Facet filter tests verify correct AND/OR filter logic across multiple facets
+    - Query understanding tests cover spell correction, expansion, and intent cases
+    - All tests run in < 60s with mocked external dependencies
+    - CI pipeline fails on any test regression
+    depends_on:
+    - 5
+    - 6
+    - 7
+  SECURITY:
+    description: 'Security review: input sanitization for search queries and index
+      payloads, rate limiting, authentication for tuning console, and threat model
+      for the search API.'
+    agent_role: developer
+    acceptance_criteria:
+    - Search query inputs sanitized against injection patterns before processing
+    - 'Rate limiting enforced: 100 req/min per IP for search, 10 req/min for index'
+    - Relevance tuning console requires JWT authentication
+    - Payload size limit of 10MB enforced on /index endpoint
+    - Threat model document covers vector poisoning, data exfiltration, and DoS vectors
+    - OWASP Top 10 checklist completed with findings addressed
+    depends_on:
+    - 8
+  DEVOPS:
+    description: 'Set up monitoring and observability: search latency histograms,
+      index throughput metrics, zero-result query rate, Qdrant health metrics, and
+      alerting rules.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Grafana dashboard shows all key metrics with 15s refresh
+    - Prometheus scrapes search API metrics endpoint
+    - Alert fires within 2 minutes of p99 latency exceeding 500ms
+    - Zero-result query rate alert enables proactive tuning interventions
+    - Runbook linked from each alert with investigation steps
+    - Dashboard exported as JSON and committed to repo
+    depends_on:
+    - 12
+  DOCS:
+    description: 'Write technical documentation: architecture overview, API reference,
+      indexing guide, relevance tuning guide, and operator runbook.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Architecture doc includes system diagram showing all components and data flows
+    - API reference auto-generated from OpenAPI spec with examples
+    - Indexing guide covers document schema, chunking config, and incremental updates
+    - Relevance tuning guide explains boost rules, field weights, and A/B experiments
+      with examples
+    - Operator runbook covers scaling Qdrant, reindexing, and backup/restore procedures
+    - Quickstart gets a developer to first search result in < 15 minutes
+    depends_on:
+    - 14
+    - 15
+    - 17

@@ -1,0 +1,54 @@
+project_name: search_engine
+display_name: Search Engine
+version: 1.0.0
+domain: ml_ai
+description: Semantic search engine with vector embeddings, hybrid search (BM25 +
+  vector), query understanding, auto-complete, faceted filtering, and relevance tuning
+  console.
+detected_domains: []
+compliance_standards:
+- GDPR
+- SOC 2
+- Accessibility Standards
+task_types:
+- API
+- BACKEND
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- ML_MODEL
+- PRODUCT_MGMT
+- SECURITY
+- TESTS
+- UX_DESIGN
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- product_manager
+- qa_engineer
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

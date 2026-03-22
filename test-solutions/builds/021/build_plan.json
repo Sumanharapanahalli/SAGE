@@ -1,0 +1,1063 @@
+{
+  "run_id": "0fc5a67d-a58b-4ca7-b553-94f386cf8a47",
+  "status": {
+    "run_id": "0fc5a67d-a58b-4ca7-b553-94f386cf8a47",
+    "solution_name": "adas_perception",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T00:11:04.702398+00:00",
+    "updated_at": "2026-03-22T00:15:49.502079+00:00",
+    "product_description": "Advanced Driver Assistance System (ADAS) perception module with camera, LiDAR, and radar sensor fusion for object detection, lane keeping, and adaptive cruise control. ASIL D, ISO 26262.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "SAFETY",
+        "description": "Conduct Hazard Analysis and Risk Assessment (HARA) per ISO 26262 Part 3. Identify hazardous events for object detection failure, lane-keeping loss, and ACC malfunction. Assign ASIL levels (target: ASIL D for all safety goals). Define Safe States and Safety Goals.",
+        "payload": {
+          "standard": "ISO 26262 Part 3",
+          "target_asil": "ASIL D",
+          "hazard_scenarios": [
+            "undetected pedestrian",
+            "false positive braking",
+            "lane departure under sensor occlusion",
+            "ACC target loss at high speed"
+          ],
+          "artifacts": [
+            "HARA_document.xlsx",
+            "safety_goals.md",
+            "ASIL_decomposition_matrix.xlsx"
+          ]
+        },
+        "acceptance_criteria": [
+          "All hazardous events enumerated with severity, controllability, and exposure ratings",
+          "ASIL D assigned and justified for all top-level safety goals",
+          "Safe States defined for each hazard",
+          "Document peer-reviewed and signed off by safety engineer",
+          "ASIL level determined for each function",
+          "Fault tree analysis complete"
+        ],
+        "depends_on": [],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define System Requirements Specification (SRS) for the adas_perception module. Capture functional requirements for camera, LiDAR, and radar inputs, fusion outputs, lane-keeping commands, and ACC target tracking. Include non-functional requirements: latency (<50ms end-to-end), availability (>99.9%), ASIL D integrity.",
+        "payload": {
+          "solution_name": "adas_perception",
+          "requirement_categories": [
+            "sensor_input",
+            "fusion_output",
+            "lane_keeping",
+            "adaptive_cruise_control",
+            "diagnostic",
+            "safety_mechanisms"
+          ],
+          "artifacts": [
+            "SRS_adas_perception_v1.0.docx"
+          ]
+        },
+        "acceptance_criteria": [
+          "All functional requirements tagged with unique IDs (ADAS-SYS-xxx)",
+          "Each requirement linked to a safety goal from Step 1",
+          "Non-functional latency and availability budgets defined",
+          "Requirements reviewed by product_manager and safety_engineer"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "HARDWARE_SIM",
+        "description": "Build sensor simulation models for camera (synthetic image generator), LiDAR (point-cloud emulator), and radar (range-doppler emulator) using SystemC/Python. Models must inject nominal, degraded (fog, rain, occlusion), and fault-injection scenarios for HIL testing.",
+        "payload": {
+          "sensor_types": [
+            "camera_1280x960_30fps",
+            "lidar_64ch_360deg",
+            "radar_77GHz_FMCW"
+          ],
+          "simulation_framework": "SystemC + OpenCV",
+          "scenarios": [
+            "clear_highway",
+            "urban_intersection",
+            "fog_degraded",
+            "sensor_blockage",
+            "concurrent_failure"
+          ],
+          "artifacts": [
+            "camera_sim.cpp",
+            "lidar_sim.cpp",
+            "radar_sim.cpp",
+            "sim_testbench.hpp"
+          ]
+        },
+        "acceptance_criteria": [
+          "All three sensor simulators produce output matching hardware data-sheet specs",
+          "Fault-injection API implemented (block, noise, delay per sensor)",
+          "Simulation runs at \u22652x real-time on reference workstation",
+          "Unit tests pass for all scenario types"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 4,
+        "task_type": "CONFIG",
+        "description": "Set up AUTOSAR Classic/Adaptive Platform configuration for adas_perception ECU. Define SWC (Software Component) architecture, port interfaces, I-PDU routing, and OS configuration (OSEK/VDX, ASIL D partition). Configure build toolchain (LLVM/GCC cross-compiler for ARM Cortex-R52).",
+        "payload": {
+          "autosar_profile": "AUTOSAR Adaptive R22-11",
+          "mcu_target": "ARM Cortex-R52",
+          "os": "OSEK_VDX_ASIL_D",
+          "swc_list": [
+            "CameraHAL_SWC",
+            "LidarHAL_SWC",
+            "RadarHAL_SWC",
+            "FusionCore_SWC",
+            "LaneKeep_SWC",
+            "ACC_SWC",
+            "SafetyMonitor_SWC"
+          ],
+          "artifacts": [
+            "autosar_config.arxml",
+            "os_config.oil",
+            "toolchain_cmake.cmake",
+            ".claude/settings_adas.json"
+          ]
+        },
+        "acceptance_criteria": [
+          "AUTOSAR ARXML validates against official schema (no errors)",
+          "Build toolchain produces cross-compiled binary for ARM Cortex-R52",
+          "Memory partitioning isolates ASIL D and QM partitions",
+          "CI pipeline compiles clean on first run"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 5,
+        "task_type": "SAFETY",
+        "description": "Perform Failure Mode and Effects Analysis (FMEA) and Fault Tree Analysis (FTA) for each sensor channel and the fusion pipeline. Map failure modes to safety mechanisms (plausibility checks, watchdogs, redundancy). Define diagnostic coverage targets per ASIL D (\u226599% for safety-critical paths).",
+        "payload": {
+          "analysis_methods": [
+            "FMEA_IEC_60812",
+            "FTA_IEC_61025"
+          ],
+          "scope": [
+            "camera_pipeline",
+            "lidar_pipeline",
+            "radar_pipeline",
+            "fusion_core",
+            "lane_keeping_actuator",
+            "acc_actuator"
+          ],
+          "safety_mechanisms": [
+            "sensor_cross_plausibility",
+            "end_to_end_protection_E2E_Profile_4",
+            "watchdog_timer",
+            "dual_channel_redundancy"
+          ],
+          "artifacts": [
+            "FMEA_adas_perception.xlsx",
+            "FTA_fusion_pipeline.pdf",
+            "safety_mechanism_catalogue.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "All failure modes enumerated with severity, occurrence, and detection ratings",
+          "Diagnostic coverage \u226599% demonstrated for each ASIL D path",
+          "Residual risk below ISO 26262 acceptable threshold",
+          "FTA cut sets documented with probability estimates",
+          "ASIL level determined for each function",
+          "Fault tree analysis complete"
+        ],
+        "depends_on": [
+          1,
+          3
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 6,
+        "task_type": "FIRMWARE",
+        "description": "Implement Camera HAL driver: V4L2-compatible capture pipeline, ISP tuning interface, exposure/gain control, DMA ring buffer, and E2E frame integrity check. Runs in ASIL D partition. Outputs raw YUV420 frames to CameraHAL_SWC port.",
+        "payload": {
+          "language": "C (C99 MISRA-C:2012)",
+          "interface": "AUTOSAR CameraHAL_SWC",
+          "features": [
+            "dma_ring_buffer_4frames",
+            "isp_exposure_control",
+            "frame_crc_e2e",
+            "fault_notification_DEM"
+          ],
+          "artifacts": [
+            "src/firmware/camera_hal.c",
+            "src/firmware/camera_hal.h",
+            "src/firmware/isp_config.h"
+          ]
+        },
+        "acceptance_criteria": [
+          "Driver delivers 30 fps at 1280x960 with <2ms jitter",
+          "E2E frame CRC catches all injected bit-flip faults in HIL sim",
+          "MISRA-C:2012 static analysis passes (zero required violations)",
+          "DEM fault notification fires within 1 frame of hardware fault injection",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          4,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "FIRMWARE",
+        "description": "Implement LiDAR HAL driver: Ethernet/PCIe packet receiver, point-cloud DMA assembly, rotation sync pulse handling, and per-return intensity/range validation. Delivers structured PointCloud2 message to LidarHAL_SWC port at 10 Hz.",
+        "payload": {
+          "language": "C (C99 MISRA-C:2012)",
+          "protocol": "Ethernet UDP + PCAP",
+          "features": [
+            "dma_packet_assembly",
+            "rotation_sync_isr",
+            "range_validity_check",
+            "fault_notification_DEM"
+          ],
+          "artifacts": [
+            "src/firmware/lidar_hal.c",
+            "src/firmware/lidar_hal.h"
+          ]
+        },
+        "acceptance_criteria": [
+          "Full 64-channel point cloud assembled at 10 Hz with <1ms latency after sync pulse",
+          "Out-of-range returns flagged and excluded from output",
+          "Thread-safe DMA buffer handoff verified under concurrent read/write",
+          "MISRA-C:2012 static analysis passes",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          4,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "FIRMWARE",
+        "description": "Implement Radar HAL driver: SPI/CAN-FD interface for 77 GHz FMCW radar, range-doppler FFT result parsing, CFAR detection output, and antenna cross-check for ghost target rejection. Delivers DetectionList to RadarHAL_SWC port at 25 Hz.",
+        "payload": {
+          "language": "C (C99 MISRA-C:2012)",
+          "interface": "CAN-FD + SPI",
+          "features": [
+            "cfar_detection_parser",
+            "doppler_validity_check",
+            "ghost_target_filter",
+            "fault_notification_DEM"
+          ],
+          "artifacts": [
+            "src/firmware/radar_hal.c",
+            "src/firmware/radar_hal.h"
+          ]
+        },
+        "acceptance_criteria": [
+          "Detection list delivered at 25 Hz with <500\u00b5s parse latency",
+          "Ghost target rejection verified against recorded highway dataset (>95% precision)",
+          "CAN-FD bus-off recovery handled within 10ms",
+          "MISRA-C:2012 static analysis passes",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          4,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "ML_MODEL",
+        "description": "Train and optimize camera-based object detection model (YOLO-v8 or equivalent) for pedestrian, vehicle, cyclist, and obstacle classes. Export to TensorRT INT8 for inference on embedded GPU (NVIDIA Orin / equivalent). Target: >95% mAP on KITTI benchmark, <15ms inference.",
+        "payload": {
+          "model_architecture": "YOLOv8-m",
+          "training_dataset": [
+            "KITTI",
+            "nuScenes",
+            "synthetic_augmented"
+          ],
+          "target_classes": [
+            "pedestrian",
+            "vehicle",
+            "cyclist",
+            "static_obstacle",
+            "traffic_sign"
+          ],
+          "export_format": "TensorRT INT8",
+          "performance_targets": {
+            "mAP_50": 0.95,
+            "inference_ms": 15,
+            "false_negative_rate_pedestrian": 0.001
+          },
+          "artifacts": [
+            "models/camera_det_v1.onnx",
+            "models/camera_det_v1.trt",
+            "training/train_camera_det.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "mAP@0.5 \u2265 0.95 on held-out KITTI validation split",
+          "Inference latency \u2264 15ms on target hardware",
+          "False negative rate for pedestrians < 0.1% at operating speed",
+          "Model card documented with dataset provenance and known failure modes"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 10,
+        "task_type": "ML_MODEL",
+        "description": "Implement LiDAR-based 3D object detection using PointPillars or VoxelNet. Fuse with radar detections via extended Kalman filter (EKF) track management. Produces unified object list (position, velocity, class, confidence) at 25 Hz.",
+        "payload": {
+          "lidar_model": "PointPillars",
+          "fusion_algorithm": "Extended_Kalman_Filter",
+          "radar_association": "nearest_neighbor_with_Mahalanobis_gating",
+          "output_schema": {
+            "object_id": "uint32",
+            "position_xyz": "float32[3]",
+            "velocity_xyz": "float32[3]",
+            "class": "enum",
+            "confidence": "float32"
+          },
+          "artifacts": [
+            "src/perception/lidar_det.cpp",
+            "src/perception/ekf_tracker.cpp",
+            "src/perception/sensor_fusion.cpp"
+          ]
+        },
+        "acceptance_criteria": [
+          "3D bounding box IoU \u2265 0.7 on nuScenes LiDAR benchmark",
+          "EKF track latency \u2264 40ms end-to-end from sensor input",
+          "Fusion output stable under single-sensor dropout (camera or radar failure)",
+          "Unit tests cover track init, update, and deletion paths"
+        ],
+        "depends_on": [
+          7,
+          8,
+          9
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 11,
+        "task_type": "FIRMWARE",
+        "description": "Implement FusionCore RTOS task: consumes camera detections, LiDAR 3D detections, and radar detections via AUTOSAR ports; runs cross-sensor plausibility checks (ASIL D safety mechanism); outputs fused ObjectList and DiagnosticStatus at 25 Hz. Executes in ASIL D OS partition.",
+        "payload": {
+          "rtos_priority": "highest",
+          "period_ms": 40,
+          "safety_mechanisms": [
+            "cross_sensor_plausibility_ISO26262",
+            "E2E_profile4_output_protection",
+            "execution_time_watchdog"
+          ],
+          "artifacts": [
+            "src/firmware/fusion_core_task.c",
+            "src/firmware/plausibility_checks.c"
+          ]
+        },
+        "acceptance_criteria": [
+          "Worst-case execution time (WCET) measured \u2264 30ms (margin \u226510ms)",
+          "Plausibility check triggers DEM fault within 1 cycle of injected disagreement",
+          "E2E CRC on output ObjectList verified in HIL",
+          "No stack overflow under 100h soak test in simulation",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          6,
+          7,
+          8,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "FIRMWARE",
+        "description": "Implement LaneKeeping RTOS task: processes camera lane-line detections (polynomial fit), computes lateral error and heading error, runs PID + model-predictive controller for steering torque demand. Includes driver override detection and safe-state transition to zero-torque. ASIL D.",
+        "payload": {
+          "control_algorithm": "PID + MPC_horizon_10",
+          "lane_model": "cubic_polynomial",
+          "safe_state": "zero_torque_with_DEM_fault",
+          "override_detection": "steering_torque_threshold",
+          "artifacts": [
+            "src/firmware/lane_keeping_task.c",
+            "src/firmware/lane_mpc.c",
+            "src/firmware/lane_keeping_task.h"
+          ]
+        },
+        "acceptance_criteria": [
+          "Lateral error maintained < 0.1m RMS on standard highway scenario",
+          "Driver override detected within 100ms and system transitions to safe state",
+          "WCET \u2264 20ms at 50Hz task rate",
+          "Steering demand saturated at hardware limits \u2014 no unbounded output",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          9,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "FIRMWARE",
+        "description": "Implement Adaptive Cruise Control (ACC) RTOS task: selects lead vehicle from fused ObjectList, maintains time-headway using proportional-integral controller on throttle/brake demand, handles cut-in/cut-out scenarios and target loss (safe deceleration). ASIL D.",
+        "payload": {
+          "target_selection": "closest_in_lane_from_fused_ObjectList",
+          "control_law": "PI_time_headway",
+          "time_headway_range_s": [
+            1.5,
+            3.5
+          ],
+          "target_loss_behavior": "safe_deceleration_0.3g_then_driver_alert",
+          "artifacts": [
+            "src/firmware/acc_task.c",
+            "src/firmware/acc_controller.c"
+          ]
+        },
+        "acceptance_criteria": [
+          "Time-headway tracking error < 0.1s RMS under highway follow scenario",
+          "Target-loss deceleration engages within 200ms and holds \u2264 0.3g",
+          "Cut-in scenario (vehicle inserts at 1.5s THW) handled without false emergency brake",
+          "No throttle/brake demand when ACC not engaged \u2014 verified by output gating logic",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "FIRMWARE",
+        "description": "Implement SafetyMonitor RTOS task: supervises FusionCore, LaneKeeping, and ACC tasks via E2E deadline monitoring and output plausibility watchdogs. On fault detection, commands system-wide safe state via Safety_SW_Cluster DEM interface. Implements two independent monitoring channels (ASIL D dual-channel architecture).",
+        "payload": {
+          "monitoring_targets": [
+            "FusionCore_deadline",
+            "LaneKeep_output_range",
+            "ACC_output_range",
+            "sensor_DEM_faults"
+          ],
+          "dual_channel": true,
+          "safe_state_command": "disengage_all_actuators_via_DEM",
+          "artifacts": [
+            "src/firmware/safety_monitor_task.c",
+            "src/firmware/safety_monitor_ch2.c"
+          ]
+        },
+        "acceptance_criteria": [
+          "Deadline miss on FusionCore triggers safe state within 2 task cycles",
+          "Out-of-range actuator demand detected and blocked 100% of injected cases",
+          "Dual-channel agreement verified \u2014 disagreement itself triggers fault",
+          "SafetyMonitor itself has WCET \u2264 5ms at 200Hz supervision rate",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 15,
+        "task_type": "HARDWARE_SIM",
+        "description": "Build Hardware-in-the-Loop (HIL) test bench integrating the sensor simulators (Step 3) with the compiled AUTOSAR image running on dSPACE/ETAS HIL rack. Wire simulated I/O (CAN-FD, Ethernet, SPI) to firmware HAL ports. Enable automated scenario replay and fault injection.",
+        "payload": {
+          "hil_platform": "dSPACE SCALEXIO",
+          "interfaces": [
+            "CAN_FD_2ch",
+            "100BASE-T1_Ethernet",
+            "SPI_2ch",
+            "GPIO_fault_inject"
+          ],
+          "scenario_library": "scenarios/hil/",
+          "artifacts": [
+            "hil/hil_bench_config.xml",
+            "hil/scenario_runner.py",
+            "hil/fault_injection_api.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "All three sensor simulators communicate with firmware HAL at rated frequency with <1% packet loss",
+          "Scenario replay achieves deterministic timing (jitter < 1ms)",
+          "Fault injection API can trigger any DEM fault within 1 cycle",
+          "HIL bench boots and runs nominal scenario without intervention"
+        ],
+        "depends_on": [
+          3,
+          6,
+          7,
+          8
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write firmware unit tests for all HAL drivers and RTOS tasks using Unity + CMock framework targeting host (x86) and target (ARM). Cover nominal operation, boundary conditions, and safety-mechanism activation. Achieve MC/DC coverage \u2265 100% for ASIL D code paths.",
+        "payload": {
+          "framework": "Unity + CMock",
+          "coverage_tool": "LDRA Testbed",
+          "coverage_target": "MC/DC 100% for ASIL D paths",
+          "test_suites": [
+            "camera_hal_tests",
+            "lidar_hal_tests",
+            "radar_hal_tests",
+            "fusion_core_tests",
+            "lane_keeping_tests",
+            "acc_tests",
+            "safety_monitor_tests"
+          ],
+          "artifacts": [
+            "tests/unit/",
+            "coverage/mcdc_report.html"
+          ]
+        },
+        "acceptance_criteria": [
+          "100% MC/DC coverage on all ASIL D source files (verified by LDRA)",
+          "All unit tests pass on x86 host and ARM cross-compiled target",
+          "Each safety mechanism (plausibility check, watchdog, E2E) has at least 3 dedicated negative test cases",
+          "Test results exported in JUnit XML for CI integration"
+        ],
+        "depends_on": [
+          6,
+          7,
+          8,
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Execute HIL integration test suite on test bench (Step 15). Run all defined scenarios: nominal highway, urban, fog degraded, sensor-dropout, simultaneous dual-sensor failure, and emergency brake. Log all outputs and compare against expected safe-state transitions.",
+        "payload": {
+          "test_bench": "hil/hil_bench_config.xml",
+          "scenarios": [
+            "nominal_highway_100kph",
+            "urban_intersection_50kph",
+            "fog_0.1vis",
+            "camera_dropout",
+            "lidar_radar_dual_dropout",
+            "pedestrian_crossing_emergency_brake"
+          ],
+          "pass_criteria_source": "SRS_adas_perception_v1.0.docx",
+          "artifacts": [
+            "tests/hil/hil_test_results.xml",
+            "tests/hil/hil_test_report.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "All nominal scenario tests pass with actuator outputs within spec",
+          "Dual-sensor dropout triggers safe state in < 200ms \u2014 verified in all dropout scenarios",
+          "Emergency brake scenario stops vehicle within calculated stopping distance",
+          "Zero unhandled exceptions or watchdog resets during 4-hour soak run"
+        ],
+        "depends_on": [
+          15,
+          16
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 18,
+        "task_type": "SECURITY",
+        "description": "Perform threat analysis and risk assessment (TARA) per ISO/SAE 21434 and UNECE R155. Identify attack surfaces (OBD-II, OTA update, CAN-FD injection, sensor spoofing). Define cybersecurity goals and implement mitigations: secure boot, authenticated firmware update, bus message authentication (AUTOSAR SecOC).",
+        "payload": {
+          "standard": "ISO/SAE 21434 + UNECE R155",
+          "attack_surfaces": [
+            "OBD2_diagnostic_port",
+            "OTA_update_channel",
+            "CAN_FD_bus",
+            "radar_spoofing",
+            "camera_blinding"
+          ],
+          "mitigations": [
+            "secure_boot_ECDSA_P256",
+            "authenticated_OTA_TLS1.3",
+            "AUTOSAR_SecOC_CMAC",
+            "sensor_liveness_checks"
+          ],
+          "artifacts": [
+            "security/TARA_adas_perception.xlsx",
+            "security/cybersecurity_plan.md",
+            "src/firmware/secoc_config.arxml"
+          ]
+        },
+        "acceptance_criteria": [
+          "TARA document covers all identified attack surfaces with CAL (Cybersecurity Assurance Level) assignments",
+          "Secure boot prevents unsigned firmware from executing \u2014 verified by HIL test",
+          "AUTOSAR SecOC CMAC rejects injected CAN frames without valid MAC \u2014 100% in HIL",
+          "OTA update rejects tampered packages in all test cases"
+        ],
+        "depends_on": [
+          4,
+          14
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 19,
+        "task_type": "BACKEND",
+        "description": "Build the adas_perception diagnostic and telemetry backend service: collects DEM fault logs, perception quality metrics (object count, lane confidence), and system health via CAN-FD \u2192 ETH gateway. Stores to time-series DB (InfluxDB). Exposes REST API for fleet monitoring and data export for post-processing.",
+        "payload": {
+          "language": "Python 3.12",
+          "framework": "FastAPI",
+          "database": "InfluxDB 2.x",
+          "ingestion": "CAN_log_parser + UDP_telemetry_receiver",
+          "endpoints": [
+            "GET /health",
+            "GET /faults",
+            "GET /metrics/perception",
+            "GET /metrics/control",
+            "POST /export"
+          ],
+          "artifacts": [
+            "backend/main.py",
+            "backend/ingestion/can_parser.py",
+            "backend/api/routes.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Telemetry ingestion handles 1000 msg/s without data loss",
+          "All API endpoints return correct data with <100ms p99 latency",
+          "InfluxDB retention policy configured for 90-day rolling window",
+          "OpenAPI spec auto-generated and matches implementation"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build adas_perception monitoring dashboard (React 18 + TypeScript) as a SAGE solution frontend page. Display real-time object detection overlay on camera feed, sensor health status tiles, active fault list, ACC target tracking strip, and lane confidence gauge. Connects to diagnostic backend (Step 19).",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "components": [
+            "SensorHealthTiles",
+            "ObjectDetectionOverlay",
+            "FaultListPanel",
+            "ACCTargetStrip",
+            "LaneConfidenceGauge",
+            "TelemetryChart"
+          ],
+          "data_source": "backend REST API + SSE stream",
+          "artifacts": [
+            "web/src/pages/solutions/adas_perception/Dashboard.tsx",
+            "web/src/pages/solutions/adas_perception/components/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Dashboard renders all components without TypeScript errors",
+          "Object overlay updates at \u2265 10 fps from SSE stream",
+          "Fault list shows new DEM faults within 500ms of backend receipt",
+          "Responsive layout works at 1920x1080 and 1280x720"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "COMPLIANCE",
+        "description": "Produce the Design History File (DHF) traceability matrix linking: SRS requirements \u2192 safety goals \u2192 design elements \u2192 firmware modules \u2192 unit tests \u2192 HIL test cases \u2192 FMEA failure modes. Tooling: DOORS / Excel with auto-generated coverage report.",
+        "payload": {
+          "standard": "ISO 26262 Parts 4-6",
+          "traceability_links": [
+            "SRS_req \u2192 safety_goal",
+            "safety_goal \u2192 design_element",
+            "design_element \u2192 source_file",
+            "source_file \u2192 unit_test",
+            "unit_test \u2192 HIL_test",
+            "FMEA_failure_mode \u2192 safety_mechanism \u2192 test_case"
+          ],
+          "artifacts": [
+            "compliance/DHF_traceability_matrix.xlsx",
+            "compliance/coverage_report.html"
+          ]
+        },
+        "acceptance_criteria": [
+          "100% of SRS requirements traced to at least one test case",
+          "100% of ASIL D safety mechanisms traced to at least one negative test case",
+          "Zero orphan requirements (requirements with no design or test link)",
+          "Coverage report generated automatically from linked IDs"
+        ],
+        "depends_on": [
+          16,
+          17
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "COMPLIANCE",
+        "description": "Produce ISO 26262 Safety Case and Functional Safety Assessment (FSA) package. Includes: Software Safety Analysis (SSA), Dependent Failure Analysis (DFA), Safety Validation Report, and confirmation measures (audit, assessment, review) records. Targets T\u00dcV/BSI certification submission.",
+        "payload": {
+          "standard": "ISO 26262 Part 2, 4, 6, 8",
+          "documents": [
+            "Safety_Case_adas_perception.docx",
+            "SSA_report.docx",
+            "DFA_report.docx",
+            "Safety_Validation_Report.docx",
+            "Confirmation_Measures_Records.docx"
+          ],
+          "confirmation_measures": [
+            "independent_safety_audit",
+            "functional_safety_assessment",
+            "safety_review_records"
+          ]
+        },
+        "acceptance_criteria": [
+          "Safety Case structured per ISO 26262-2 Annex D (Goal Structuring Notation)",
+          "DFA addresses all identified common-cause and cascading failures from FMEA",
+          "Safety Validation Report references all HIL test results from Step 17",
+          "Document package passes internal pre-assessment checklist before external submission"
+        ],
+        "depends_on": [
+          21,
+          5
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 23,
+        "task_type": "COMPLIANCE",
+        "description": "Produce UNECE R155/R156 cybersecurity and software update management compliance artifacts: Cybersecurity Management System (CSMS) evidence, Vehicle Type Approval documentation, Software Update Management System (SUMS) process record, and OTA update audit trail.",
+        "payload": {
+          "standards": [
+            "UNECE_R155",
+            "UNECE_R156"
+          ],
+          "artifacts": [
+            "compliance/CSMS_evidence_package.docx",
+            "compliance/vehicle_type_approval_R155.docx",
+            "compliance/SUMS_process_record.docx",
+            "compliance/OTA_audit_trail_template.xlsx"
+          ]
+        },
+        "acceptance_criteria": [
+          "CSMS evidence maps each R155 requirement to an implemented control",
+          "OTA audit trail template captures version, hash, timestamp, and authorization for each update",
+          "SUMS process document covers rollback procedure and version compatibility matrix",
+          "Package reviewed and approved by legal_advisor and regulatory_specialist"
+        ],
+        "depends_on": [
+          18,
+          22
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 24,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute full system-level validation: deploy adas_perception firmware + backend + dashboard in integrated test environment. Run 50-scenario regression suite covering all operational design domain (ODD) boundaries. Measure end-to-end latency, safe-state response time, and perception quality KPIs.",
+        "payload": {
+          "environment": "HIL + diagnostic backend + dashboard",
+          "scenario_count": 50,
+          "kpis": [
+            "e2e_latency_p99_ms",
+            "safe_state_response_ms",
+            "object_detection_recall",
+            "lane_keeping_rms_error_m",
+            "acc_headway_rms_s"
+          ],
+          "pass_thresholds": {
+            "e2e_latency_p99_ms": 50,
+            "safe_state_response_ms": 200,
+            "object_detection_recall": 0.99,
+            "lane_keeping_rms_error_m": 0.1,
+            "acc_headway_rms_s": 0.1
+          },
+          "artifacts": [
+            "tests/system/system_test_results.xml",
+            "tests/system/system_validation_report.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 50 scenarios pass KPI thresholds",
+          "Zero safety violations (unhandled faults, actuator runaway) across full suite",
+          "System validation report signed off by qa_engineer, safety_engineer, and system_tester",
+          "Regression baseline established for future releases"
+        ],
+        "depends_on": [
+          17,
+          19,
+          20
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 25,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline (GitHub Actions / Jenkins) for adas_perception: static analysis (MISRA-C via PC-lint+), unit test execution with MC/DC coverage gate, cross-compilation, HIL smoke test on merge to main, and nightly full regression. Enforce AUTOSAR schema validation and compliance artifact version bump check.",
+        "payload": {
+          "ci_tool": "GitHub Actions + Jenkins HIL node",
+          "pipeline_stages": [
+            "misra_static_analysis",
+            "unit_tests_mcdc_gate",
+            "cross_compile_arm",
+            "autosar_schema_validation",
+            "hil_smoke_test",
+            "nightly_full_regression",
+            "compliance_version_check"
+          ],
+          "gates": {
+            "mcdc_coverage_min": 100,
+            "misra_required_violations": 0,
+            "hil_smoke_pass_rate": 1.0
+          },
+          "artifacts": [
+            ".github/workflows/ci_adas.yml",
+            "jenkins/Jenkinsfile_nightly"
+          ]
+        },
+        "acceptance_criteria": [
+          "PR build completes in < 20 minutes including HIL smoke test",
+          "MISRA violation or MC/DC drop below 100% fails the build and blocks merge",
+          "Nightly regression sends pass/fail report to team Slack channel",
+          "All pipeline stages documented in CI runbook"
+        ],
+        "depends_on": [
+          16,
+          17
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "QA",
+        "description": "Produce Software Verification Plan (SVP) and Software Verification Report (SVR) per ISO 26262 Part 6. Consolidate all unit test, HIL, and system test results. Map each test case to its SRS requirement. Issue final software release qualification decision.",
+        "payload": {
+          "standard": "ISO 26262 Part 6",
+          "documents": [
+            "QA/SVP_adas_perception_v1.0.docx",
+            "QA/SVR_adas_perception_v1.0.docx"
+          ],
+          "input_artifacts": [
+            "tests/unit/",
+            "tests/hil/hil_test_results.xml",
+            "tests/system/system_test_results.xml",
+            "coverage/mcdc_report.html"
+          ]
+        },
+        "acceptance_criteria": [
+          "SVP defines pass/fail criteria for every test level (unit, HIL, system)",
+          "SVR confirms all criteria met with traceability to test result artifacts",
+          "100% of SRS requirements covered by at least one passed test in SVR",
+          "Release qualification signed by qa_engineer and safety_engineer"
+        ],
+        "depends_on": [
+          24,
+          21
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 27,
+        "task_type": "DOCS",
+        "description": "Write technical documentation set: Software Architecture Description (SAD), Interface Control Document (ICD) for sensor HAL ports and AUTOSAR SWC interfaces, Operator Manual for HIL test bench, and SAGE solution README with startup instructions.",
+        "payload": {
+          "documents": [
+            "docs/SAD_adas_perception.md",
+            "docs/ICD_sensor_hal_ports.md",
+            "docs/HIL_operator_manual.md",
+            "solutions/adas_perception/README.md"
+          ],
+          "audience": [
+            "embedded_engineers",
+            "safety_assessors",
+            "hil_operators"
+          ]
+        },
+        "acceptance_criteria": [
+          "SAD includes component diagram, data-flow diagram, and timing budget table",
+          "ICD specifies all AUTOSAR port types, data rates, and E2E protection parameters",
+          "HIL operator manual covers bench setup, scenario execution, and fault injection procedures",
+          "README includes make commands, config steps, and quick-start verification test"
+        ],
+        "depends_on": [
+          22,
+          24
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 27,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "AUTOSAR Classic/Adaptive architecture is fatally ambiguous: Step 4 specifies 'AUTOSAR Adaptive R22-11' in the payload but lists an OIL file (os_config.oil) as an artifact \u2014 OIL files are AUTOSAR Classic/OSEK only. Adaptive AUTOSAR uses POSIX, ara::com, and Manifest XML, not OIL. This is a fundamental platform decision that must be resolved before any firmware work begins.",
+              "ML inference (YOLOv8, PointPillars) is assigned to the ASIL D functional chain with no ASIL decomposition strategy. Deep learning models cannot be certified to ASIL D under current ISO 26262 Part 6 methodology. The standard requires deterministic, analyzable software. The plan must define explicit ASIL decomposition (e.g., ML outputs tagged QM/ASIL B, wrapped by ASIL D safety monitors) and document Freedom from Interference (FFI) per ISO 26262-9.",
+              "Compute platform heterogeneity is undefined. ADAS perception systems require two distinct compute domains: a real-time safety MCU (ARM Cortex-R52, running AUTOSAR RTOS, ASIL D) for control tasks and a high-compute SoC/GPU (NVIDIA Orin or equivalent) for neural network inference. The plan conflates these \u2014 Steps 6-14 run RTOS tasks on Cortex-R52 while Step 9 targets Orin for TensorRT. Running PointPillars (Step 10) on a Cortex-R52 is computationally impossible. This dual-domain boundary is never defined as a design decision.",
+              "FTA listed as acceptance criterion in Step 1 (HARA) \u2014 FTA cannot be completed before system architecture and software design are available. FTA at HARA stage produces only top-level hazard trees; complete FTA with cut sets requires knowledge of design elements defined in Steps 3-14. This is a sequencing error that will cause the Step 1 artifact to be either incomplete or require expensive rework.",
+              "Secure boot architecture (Step 18) is designed after firmware implementation (Steps 6-14). Secure boot affects flash layout, memory map, startup vector, and bootloader \u2014 all of which must be established in Step 4 (AUTOSAR/toolchain config). Retrofitting secure boot onto an existing firmware image is a known project failure mode.",
+              "TensorRT INT8 quantization validation is absent. INT8 quantization changes model numerical behavior vs FP32/FP16 training. Step 9 has no post-quantization accuracy regression test, no INT8 vs FP32 delta analysis, and no qualification evidence for the TensorRT runtime library itself (which must be qualified per ISO 26262-8 Clause 11 as a software tool).",
+              "HIL smoke test as a per-PR gate in < 20 minutes (Step 25) is operationally unrealistic. dSPACE SCALEXIO racks are expensive shared physical infrastructure. Queue wait time alone on a shared HIL rack will routinely exceed 20 minutes. This gate will either stall all development or be disabled within weeks of going live.",
+              "Ghost target rejection acceptance criterion in Step 8 references an undefined 'recorded highway dataset.' Without a controlled, versioned, ground-truth-labeled dataset with known provenance, this criterion cannot be evaluated objectively or reproduced for audit.",
+              "No AUTOSAR Watchdog Manager (WdgM) SWC is defined. Step 14 mentions watchdog timers as safety mechanisms, but WdgM is the AUTOSAR component that provides supervised entity management, alive supervision, deadline supervision, and logical supervision for ASIL D. Its absence from the AUTOSAR SWC list in Step 4 means the supervision architecture has no AUTOSAR-compliant implementation path.",
+              "Step 5 FMEA/FTA depends on Steps 1 and 3 (sensor simulators) but not on Steps 4 (AUTOSAR SWC architecture). FMEA for the fusion pipeline requires knowledge of the software architecture and inter-component interfaces to enumerate failure modes correctly. Without Step 4 as a dependency, the FMEA will miss SWC boundary failure modes.",
+              "Driver override detection (Step 12) uses only steering torque threshold. This is insufficient for ASIL D: a single-threshold detection on a single signal is a single-point failure. ISO 26262 requires redundant detection paths or ASIL decomposition for driver override \u2014 e.g., torque + rate-of-change + driver monitoring camera input."
+            ],
+            "suggestions": [
+              "Add Step 0: Define the system architecture \u2014 explicitly state dual-domain compute (safety MCU vs inference SoC), choose Classic OR Adaptive AUTOSAR (not both), define the inter-domain communication channel (Ethernet AVB, PCIe, or shared memory), and specify hardware qualification status. Everything else in the plan depends on this.",
+              "Add SOTIF (ISO 21448) analysis as a parallel track to ISO 26262. SOTIF covers performance insufficiencies (sensor limitations, edge cases, ODD boundary failures) that ISO 26262 explicitly excludes. For a perception system, a T\u00dcV assessor will demand SOTIF coverage \u2014 its absence will block certification.",
+              "Add Operational Design Domain (ODD) specification as a prerequisite to Step 1 HARA. Severity and exposure ratings in HARA are undefined without ODD boundaries (speed range, weather conditions, road type, lighting conditions). HARA signed off without ODD is not valid.",
+              "Add toolchain qualification artifacts (ISO 26262-8 Clause 11) for LDRA, PC-lint+, the LLVM/GCC cross-compiler, and TensorRT. All tools used to produce or verify ASIL D software must be qualified. This is a mandatory work product for T\u00dcV submission.",
+              "Insert SIL (Software-in-the-Loop) and PIL (Processor-in-the-Loop) test stages between unit tests (Step 16) and HIL (Step 17). SIL catches algorithmic bugs on a workstation before consuming expensive HIL rack time. PIL catches timing and target-specific issues on actual ARM hardware in a non-real environment. This is standard automotive V-model practice.",
+              "Add Automotive SPICE (A-SPICE) process capability artifacts as a parallel compliance track. For any Tier-1 supplier or OEM-facing delivery, A-SPICE CL2 is contractually required. No A-SPICE process work products means this plan cannot be delivered to a major OEM regardless of ISO 26262 status.",
+              "Add key management infrastructure to Step 18: HSM (Hardware Security Module) provisioning, key hierarchy definition (root CA, intermediate, device keys), key injection process for manufacturing, and key rotation procedure. AUTOSAR SecOC CMAC is meaningless without a defined key management system.",
+              "Reference ISO 11270 (Lane-Keeping Assistance) in Step 12 and ISO 15622 (Adaptive Cruise Control) in Step 13. These domain-specific ADAS standards define performance requirements, test procedures, and HMI requirements that supplement ISO 26262. Their absence means the plan may produce an ASIL D certified system that fails domain-standard homologation.",
+              "Add a Change Impact Analysis procedure (ISO 26262-8 Clause 8). Any post-release software change requires a documented CIA to determine if ASIL re-analysis is required. Without this procedure, the first OTA update will create a compliance gap.",
+              "Split Step 4 into two steps: 4a (architecture decision record \u2014 Classic vs Adaptive, dual-domain definition, secure boot memory map) and 4b (AUTOSAR configuration). Step 4a should depend on Step 1 HARA and precede all firmware steps. The current single step is doing too much and has the wrong dependencies."
+            ],
+            "missing": [
+              "SOTIF (ISO 21448) analysis \u2014 mandatory for perception-based ADAS, explicitly out of scope for ISO 26262",
+              "Operational Design Domain (ODD) specification document",
+              "Dual-domain compute architecture definition (safety MCU vs inference SoC with inter-domain communication spec)",
+              "Toolchain qualification plan and qualification reports (ISO 26262-8 Clause 11) for all ASIL D tools",
+              "A-SPICE process capability work products (SWE.1\u2013SWE.6, SYS.2\u2013SYS.5 at minimum)",
+              "HSM configuration and key management infrastructure (manufacturing key injection, rotation, revocation)",
+              "AUTOSAR WdgM (Watchdog Manager) SWC configuration and supervised entity definitions",
+              "Hardware qualification evidence for ARM Cortex-R52 MCU (IEC 61508 SIL 3 certified silicon or equivalent)",
+              "SIL (Software-in-the-Loop) and PIL (Processor-in-the-Loop) test phases",
+              "Freedom from Interference (FFI) analysis for ML QM components co-located with ASIL D partitions",
+              "Change Impact Analysis (CIA) procedure for post-release modifications",
+              "ML model ASIL decomposition strategy document (QM inference wrapped by ASIL D monitors)",
+              "INT8 quantization validation test suite comparing TensorRT INT8 vs FP32 accuracy delta",
+              "Domain-standard references: ISO 11270 (LKA), ISO 15622 (ACC), ISO 17361 (LDWS)",
+              "Bootloader design and secure boot memory map (must precede firmware implementation)",
+              "Vehicle-level integration / proving ground validation plan (HIL alone is insufficient for system-level sign-off)",
+              "OBD-II UDS Security Access service configuration (authentication for diagnostic sessions)"
+            ],
+            "security_risks": [
+              "No PKI infrastructure defined for OTA TLS 1.3 certificates. Who issues device certificates? What is the certificate lifetime? How are revoked certificates handled across a deployed fleet? Without a PKI plan, the OTA secure channel is a design intent with no implementation path.",
+              "AUTOSAR SecOC CMAC requires symmetric key pre-provisioning. The plan has no manufacturing key injection process and no HSM integration. If keys are hardcoded or provisioned insecurely at the factory, the entire SecOC architecture is compromised regardless of cryptographic correctness.",
+              "Diagnostic backend (Step 19) exposes fleet DEM fault data and perception metrics via unauthenticated REST API. The acceptance criteria have no mention of authentication, authorization, or TLS for the backend endpoints. Fleet fault data is operationally sensitive and can be used for targeted attacks.",
+              "Radar spoofing mitigation ('sensor_liveness_checks') is undefined. FMCW radar spoofing via signal replay or waveform injection is a demonstrated attack. The plan names the mitigation but never specifies the mechanism \u2014 there is no implementable design here.",
+              "Camera blinding countermeasure is listed as an attack surface in Step 18 but no mitigation is specified in the payload. Laser dazzling and IR flooding are known physical attacks on camera-based ADAS. The plan acknowledges the risk but proposes no defense.",
+              "No mention of UDS Security Access service (ISO 14229-1) configuration for OBD-II. Without SecurityAccess (service 0x27) properly gated, the diagnostic port allows unrestricted ECU reprogramming and memory read/write by any connected tool on the OBD-II port."
+            ],
+            "summary": "This plan demonstrates solid high-level coverage of ISO 26262 process steps and shows genuine domain knowledge \u2014 the HARA\u2192SRS\u2192FMEA\u2192firmware\u2192HIL\u2192compliance V-model structure is correct in outline. However, it fails on several architectural decisions that will require fundamental rework before T\u00dcV submission is viable. The most critical failure is the undefined dual-compute-domain architecture: the plan treats an ARM Cortex-R52 safety MCU and an NVIDIA Orin inference SoC as a single undifferentiated platform, which makes the ASIL decomposition strategy for the ML pipeline impossible to evaluate. The complete absence of SOTIF (ISO 21448) is a certification blocker \u2014 no assessor reviewing a camera+LiDAR+radar perception system in 2024 will accept ISO 26262 alone. The AUTOSAR Classic/Adaptive contradiction in Step 4 will produce an invalid configuration from day one. Security PKI and key management are named but have no implementation content. On the positive side, the acceptance criteria are specific and measurable, the HIL test scenarios cover meaningful edge cases, and the compliance artifact chain (HARA\u2192FMEA\u2192DHF\u2192Safety Case\u2192SVR) is structurally correct. With the architectural issues resolved, an ODD definition added, SOTIF integrated as a parallel track, and toolchain qualification addressed, this plan could reach a certifiable state \u2014 but that represents 20-30% additional scoping work before a line of production code should be written.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "AUTOSAR Classic/Adaptive architecture is fatally ambiguous: Step 4 specifies 'AUTOSAR Adaptive R22-11' in the payload but lists an OIL file (os_config.oil) as an artifact \u2014 OIL files are AUTOSAR Classic/OSEK only. Adaptive AUTOSAR uses POSIX, ara::com, and Manifest XML, not OIL. This is a fundamental platform decision that must be resolved before any firmware work begins.",
+                "ML inference (YOLOv8, PointPillars) is assigned to the ASIL D functional chain with no ASIL decomposition strategy. Deep learning models cannot be certified to ASIL D under current ISO 26262 Part 6 methodology. The standard requires deterministic, analyzable software. The plan must define explicit ASIL decomposition (e.g., ML outputs tagged QM/ASIL B, wrapped by ASIL D safety monitors) and document Freedom from Interference (FFI) per ISO 26262-9.",
+                "Compute platform heterogeneity is undefined. ADAS perception systems require two distinct compute domains: a real-time safety MCU (ARM Cortex-R52, running AUTOSAR RTOS, ASIL D) for control tasks and a high-compute SoC/GPU (NVIDIA Orin or equivalent) for neural network inference. The plan conflates these \u2014 Steps 6-14 run RTOS tasks on Cortex-R52 while Step 9 targets Orin for TensorRT. Running PointPillars (Step 10) on a Cortex-R52 is computationally impossible. This dual-domain boundary is never defined as a design decision.",
+                "FTA listed as acceptance criterion in Step 1 (HARA) \u2014 FTA cannot be completed before system architecture and software design are available. FTA at HARA stage produces only top-level hazard trees; complete FTA with cut sets requires knowledge of design elements defined in Steps 3-14. This is a sequencing error that will cause the Step 1 artifact to be either incomplete or require expensive rework.",
+                "Secure boot architecture (Step 18) is designed after firmware implementation (Steps 6-14). Secure boot affects flash layout, memory map, startup vector, and bootloader \u2014 all of which must be established in Step 4 (AUTOSAR/toolchain config). Retrofitting secure boot onto an existing firmware image is a known project failure mode.",
+                "TensorRT INT8 quantization validation is absent. INT8 quantization changes model numerical behavior vs FP32/FP16 training. Step 9 has no post-quantization accuracy regression test, no INT8 vs FP32 delta analysis, and no qualification evidence for the TensorRT runtime library itself (which must be qualified per ISO 26262-8 Clause 11 as a software tool).",
+                "HIL smoke test as a per-PR gate in < 20 minutes (Step 25) is operationally unrealistic. dSPACE SCALEXIO racks are expensive shared physical infrastructure. Queue wait time alone on a shared HIL rack will routinely exceed 20 minutes. This gate will either stall all development or be disabled within weeks of going live.",
+                "Ghost target rejection acceptance criterion in Step 8 references an undefined 'recorded highway dataset.' Without a controlled, versioned, ground-truth-labeled dataset with known provenance, this criterion cannot be evaluated objectively or reproduced for audit.",
+                "No AUTOSAR Watchdog Manager (WdgM) SWC is defined. Step 14 mentions watchdog timers as safety mechanisms, but WdgM is the AUTOSAR component that provides supervised entity management, alive supervision, deadline supervision, and logical supervision for ASIL D. Its absence from the AUTOSAR SWC list in Step 4 means the supervision architecture has no AUTOSAR-compliant implementation path.",
+                "Step 5 FMEA/FTA depends on Steps 1 and 3 (sensor simulators) but not on Steps 4 (AUTOSAR SWC architecture). FMEA for the fusion pipeline requires knowledge of the software architecture and inter-component interfaces to enumerate failure modes correctly. Without Step 4 as a dependency, the FMEA will miss SWC boundary failure modes.",
+                "Driver override detection (Step 12) uses only steering torque threshold. This is insufficient for ASIL D: a single-threshold detection on a single signal is a single-point failure. ISO 26262 requires redundant detection paths or ASIL decomposition for driver override \u2014 e.g., torque + rate-of-change + driver monitoring camera input."
+              ],
+              "suggestions": [
+                "Add Step 0: Define the system architecture \u2014 explicitly state dual-domain compute (safety MCU vs inference SoC), choose Classic OR Adaptive AUTOSAR (not both), define the inter-domain communication channel (Ethernet AVB, PCIe, or shared memory), and specify hardware qualification status. Everything else in the plan depends on this.",
+                "Add SOTIF (ISO 21448) analysis as a parallel track to ISO 26262. SOTIF covers performance insufficiencies (sensor limitations, edge cases, ODD boundary failures) that ISO 26262 explicitly excludes. For a perception system, a T\u00dcV assessor will demand SOTIF coverage \u2014 its absence will block certification.",
+                "Add Operational Design Domain (ODD) specification as a prerequisite to Step 1 HARA. Severity and exposure ratings in HARA are undefined without ODD boundaries (speed range, weather conditions, road type, lighting conditions). HARA signed off without ODD is not valid.",
+                "Add toolchain qualification artifacts (ISO 26262-8 Clause 11) for LDRA, PC-lint+, the LLVM/GCC cross-compiler, and TensorRT. All tools used to produce or verify ASIL D software must be qualified. This is a mandatory work product for T\u00dcV submission.",
+                "Insert SIL (Software-in-the-Loop) and PIL (Processor-in-the-Loop) test stages between unit tests (Step 16) and HIL (Step 17). SIL catches algorithmic bugs on a workstation before consuming expensive HIL rack time. PIL catches timing and target-specific issues on actual ARM hardware in a non-real environment. This is standard automotive V-model practice.",
+                "Add Automotive SPICE (A-SPICE) process capability artifacts as a parallel compliance track. For any Tier-1 supplier or OEM-facing delivery, A-SPICE CL2 is contractually required. No A-SPICE process work products means this plan cannot be delivered to a major OEM regardless of ISO 26262 status.",
+                "Add key management infrastructure to Step 18: HSM (Hardware Security Module) provisioning, key hierarchy definition (root CA, intermediate, device keys), key injection process for manufacturing, and key rotation procedure. AUTOSAR SecOC CMAC is meaningless without a defined key management system.",
+                "Reference ISO 11270 (Lane-Keeping Assistance) in Step 12 and ISO 15622 (Adaptive Cruise Control) in Step 13. These domain-specific ADAS standards define performance requirements, test procedures, and HMI requirements that supplement ISO 26262. Their absence means the plan may produce an ASIL D certified system that fails domain-standard homologation.",
+                "Add a Change Impact Analysis procedure (ISO 26262-8 Clause 8). Any post-release software change requires a documented CIA to determine if ASIL re-analysis is required. Without this procedure, the first OTA update will create a compliance gap.",
+                "Split Step 4 into two steps: 4a (architecture decision record \u2014 Classic vs Adaptive, dual-domain definition, secure boot memory map) and 4b (AUTOSAR configuration). Step 4a should depend on Step 1 HARA and precede all firmware steps. The current single step is doing too much and has the wrong dependencies."
+              ],
+              "missing": [
+                "SOTIF (ISO 21448) analysis \u2014 mandatory for perception-based ADAS, explicitly out of scope for ISO 26262",
+                "Operational Design Domain (ODD) specification document",
+                "Dual-domain compute architecture definition (safety MCU vs inference SoC with inter-domain communication spec)",
+                "Toolchain qualification plan and qualification reports (ISO 26262-8 Clause 11) for all ASIL D tools",
+                "A-SPICE process capability work products (SWE.1\u2013SWE.6, SYS.2\u2013SYS.5 at minimum)",
+                "HSM configuration and key management infrastructure (manufacturing key injection, rotation, revocation)",
+                "AUTOSAR WdgM (Watchdog Manager) SWC configuration and supervised entity definitions",
+                "Hardware qualification evidence for ARM Cortex-R52 MCU (IEC 61508 SIL 3 certified silicon or equivalent)",
+                "SIL (Software-in-the-Loop) and PIL (Processor-in-the-Loop) test phases",
+                "Freedom from Interference (FFI) analysis for ML QM components co-located with ASIL D partitions",
+                "Change Impact Analysis (CIA) procedure for post-release modifications",
+                "ML model ASIL decomposition strategy document (QM inference wrapped by ASIL D monitors)",
+                "INT8 quantization validation test suite comparing TensorRT INT8 vs FP32 accuracy delta",
+                "Domain-standard references: ISO 11270 (LKA), ISO 15622 (ACC), ISO 17361 (LDWS)",
+                "Bootloader design and secure boot memory map (must precede firmware implementation)",
+                "Vehicle-level integration / proving ground validation plan (HIL alone is insufficient for system-level sign-off)",
+                "OBD-II UDS Security Access service configuration (authentication for diagnostic sessions)"
+              ],
+              "security_risks": [
+                "No PKI infrastructure defined for OTA TLS 1.3 certificates. Who issues device certificates? What is the certificate lifetime? How are revoked certificates handled across a deployed fleet? Without a PKI plan, the OTA secure channel is a design intent with no implementation path.",
+                "AUTOSAR SecOC CMAC requires symmetric key pre-provisioning. The plan has no manufacturing key injection process and no HSM integration. If keys are hardcoded or provisioned insecurely at the factory, the entire SecOC architecture is compromised regardless of cryptographic correctness.",
+                "Diagnostic backend (Step 19) exposes fleet DEM fault data and perception metrics via unauthenticated REST API. The acceptance criteria have no mention of authentication, authorization, or TLS for the backend endpoints. Fleet fault data is operationally sensitive and can be used for targeted attacks.",
+                "Radar spoofing mitigation ('sensor_liveness_checks') is undefined. FMCW radar spoofing via signal replay or waveform injection is a demonstrated attack. The plan names the mitigation but never specifies the mechanism \u2014 there is no implementable design here.",
+                "Camera blinding countermeasure is listed as an attack surface in Step 18 but no mitigation is specified in the payload. Laser dazzling and IR flooding are known physical attacks on camera-based ADAS. The plan acknowledges the risk but proposes no defense.",
+                "No mention of UDS Security Access service (ISO 14229-1) configuration for OBD-II. Without SecurityAccess (service 0x27) properly gated, the diagnostic port allows unrestricted ECU reprogramming and memory read/write by any connected tool on the OBD-II port."
+              ],
+              "summary": "This plan demonstrates solid high-level coverage of ISO 26262 process steps and shows genuine domain knowledge \u2014 the HARA\u2192SRS\u2192FMEA\u2192firmware\u2192HIL\u2192compliance V-model structure is correct in outline. However, it fails on several architectural decisions that will require fundamental rework before T\u00dcV submission is viable. The most critical failure is the undefined dual-compute-domain architecture: the plan treats an ARM Cortex-R52 safety MCU and an NVIDIA Orin inference SoC as a single undifferentiated platform, which makes the ASIL decomposition strategy for the ML pipeline impossible to evaluate. The complete absence of SOTIF (ISO 21448) is a certification blocker \u2014 no assessor reviewing a camera+LiDAR+radar perception system in 2024 will accept ISO 26262 alone. The AUTOSAR Classic/Adaptive contradiction in Step 4 will produce an invalid configuration from day one. Security PKI and key management are named but have no implementation content. On the positive side, the acceptance criteria are specific and measurable, the HIL test scenarios cover meaningful edge cases, and the compliance artifact chain (HARA\u2192FMEA\u2192DHF\u2192Safety Case\u2192SVR) is structurally correct. With the architectural issues resolved, an ODD definition added, SOTIF integrated as a parallel track, and toolchain qualification addressed, this plan could reach a certifiable state \u2014 but that represents 20-30% additional scoping work before a line of production code should be written.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T00:15:49.502061+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 156.7,
+      "critic_plan": 128.1
+    }
+  }
+}

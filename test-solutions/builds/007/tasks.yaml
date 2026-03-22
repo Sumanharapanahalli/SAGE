@@ -1,0 +1,431 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define product requirements, user personas (patient, therapist, clinic
+      admin), and core workflows. Map out exercise library scope, session flow, and
+      therapist reporting needs. Produce a PRD and user story backlog.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - PRD documents all three user personas with goals and pain points
+    - At least 20 prioritized user stories with acceptance criteria
+    - Core session workflow (assign → perform → review → report) is fully mapped
+    - Exercise library scope defined with ≥ 30 initial exercises
+    - Therapist reporting requirements captured including export formats
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Analyze competing rehab exercise apps (Kaia Health, Reflexion Health,
+      MedBridge Go), FDA Class I device landscape, reimbursement codes (CPT 97110/97530),
+      and therapist adoption barriers.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers ≥ 5 competitors across pose accuracy, pricing, therapist
+      workflow
+    - FDA Class I wellness device exemption pathway documented with rationale
+    - Reimbursement landscape analyzed with 3 viable billing models
+    - Go-to-market strategy identifies initial clinic partnerships and distribution
+      channels
+    depends_on: []
+  UX_DESIGN:
+    description: Design the full UX for patient mobile app and therapist web portal.
+      Include exercise demo screens, real-time pose feedback UI, session history,
+      progress charts, and therapist report builder. WCAG 2.1 AA compliance required
+      for accessibility.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes complete for all patient app screens (≥ 15 screens)
+    - Therapist web portal wireframes cover patient management, assignment, and report
+      builder
+    - Real-time pose feedback visualization designed (skeleton overlay, rep counter,
+      form alerts)
+    - Usability tested with ≥ 3 physical therapists and ≥ 3 patients — critical issues
+      resolved
+    - Accessibility audit passes WCAG 2.1 AA for all primary flows
+    depends_on:
+    - 1
+  SAFETY:
+    description: 'Conduct ISO 14971 hazard analysis and FMEA for the pose estimation
+      system. Identify hazards: incorrect exercise guidance leading to patient injury,
+      false confidence from inaccurate pose scoring, data loss corrupting therapy
+      records. Define risk controls and residual risk acceptability criteria.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All identified hazards categorized by severity (S1-S4) and probability (P1-P5)
+    - FMEA table covers ≥ 25 failure modes across pose engine, data storage, and UI
+    - Risk controls defined for every unacceptable risk (above ALARP threshold)
+    - Residual risk report demonstrates all risks reduced to acceptable level
+    - Safety requirements derived and traceable to hazard controls
+    - ISO 14971 risk management file structure established
+    - ISO 14971 risk management file complete
+    - Residual risk acceptable
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Establish the Design History File (DHF) framework, quality management
+      plan per ISO 13485, and IEC 62304 software lifecycle plan. Define software safety
+      classification (Class B — non-life-supporting), V&V strategy, and traceability
+      matrix structure.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF framework covers all 7 required sections per 21 CFR Part 820.30
+    - IEC 62304 software development plan documents lifecycle phases with entry/exit
+      criteria
+    - ISO 13485 QMS plan identifies all required procedures and document controls
+    - 'Traceability matrix template links: requirements → design → implementation
+      → test'
+    - V&V strategy distinguishes verification (unit/integration) from validation (clinical
+      usability)
+    - Software safety class B justification documented and approved
+    - DHF (Design History File) structure created
+    - V&V protocol drafted
+    depends_on:
+    - 4
+  LEGAL:
+    description: Draft HIPAA Business Associate Agreement templates, Terms of Service,
+      Privacy Policy, and software license. Review FDA General Wellness Policy applicability
+      for Class I exemption. Assess GDPR implications for EU expansion.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - HIPAA BAA template reviewed by legal counsel and covers all required elements
+    - Privacy policy explicitly addresses PHI collection, use, and disclosure
+    - FDA General Wellness Policy memo documents low-risk determination rationale
+    - Terms of Service include liability limitations appropriate for wellness device
+    - GDPR data subject rights procedures documented for EU readiness
+    depends_on:
+    - 1
+  DATABASE:
+    description: Design HIPAA-compliant database schema for users, therapists, exercise
+      library, sessions, pose keypoint time-series, rep counts, progress metrics,
+      and therapist reports. Include audit log tables for PHI access tracking. Use
+      PostgreSQL with row-level encryption for PHI fields.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all tables with FK relationships and cardinality documented
+    - PHI fields (name, DOB, diagnosis, session video) use column-level encryption
+    - phi_audit_log table records every SELECT/UPDATE/DELETE on PHI with user_id and
+      timestamp
+    - Alembic migration scripts produce schema without errors on clean PostgreSQL
+      instance
+    - Row-level security policies prevent cross-tenant PHI access
+    - 'Pose keypoints time-series table benchmarked: insert 30fps × 33 keypoints for
+      60s session < 500ms'
+    depends_on:
+    - 1
+    - 5
+  API:
+    description: 'Design OpenAPI 3.1 specification for all backend services: auth
+      (OAuth2/SMART on FHIR), exercise library CRUD, session management, pose data
+      ingestion, progress analytics, and therapist reporting endpoints. Define FHIR
+      R4 Observation resources for session data interoperability.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec validates without errors in Swagger Validator
+    - All endpoints have request/response schemas with example payloads
+    - SMART on FHIR authorization flow documented with launch sequence
+    - FHIR R4 Observation resource mapping for session rep data is complete
+    - Rate limiting and pagination defined for all list endpoints
+    - Error response schemas standardized across all endpoints (RFC 7807 Problem Details)
+    depends_on:
+    - 7
+  ML_MODEL:
+    description: Integrate and fine-tune a pose estimation model (MoveNet Thunder
+      or MediaPipe Pose Landmarker) for rehab-specific exercises. Build rep counting
+      algorithm using joint angle time-series, form quality scorer, and exercise-specific
+      range-of-motion thresholds. Export as TFLite for on-device inference.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - MoveNet Thunder integrated and producing 17 keypoints at ≥ 30fps on target devices
+    - Rep counting algorithm validated on ≥ 10 exercise types with < 5% error rate
+      vs ground truth
+    - Form quality scorer outputs normalized score 0–100 with exercise-specific joint
+      angle checks
+    - Range-of-motion measurement validated against goniometer readings within ±5
+      degrees
+    - TFLite model file ≤ 15MB, inference latency < 33ms on iPhone 12
+    - Model card documents training data, known limitations, and accuracy by exercise
+      type
+    depends_on:
+    - 4
+  FIRMWARE:
+    description: Implement native mobile camera pipeline and hardware acceleration
+      layer for real-time pose inference. This covers the native iOS (AVFoundation)
+      and Android (Camera2 API) camera capture modules, GPU/NPU delegate configuration
+      for TFLite, frame preprocessing pipeline (resize, normalize, YUV→RGB), and device
+      capability detection (Neural Engine, NNAPI).
+    agent_role: developer
+    acceptance_criteria:
+    - Camera pipeline delivers frames at ≥ 30fps on iPhone 12 and Pixel 6 without
+      dropping > 5% frames
+    - GPU/Neural Engine delegate enabled by default with CPU fallback on unsupported
+      devices
+    - YUV→RGB conversion and resize completes in < 3ms per frame
+    - TFLite inference wrapper exposes unified API callable from Flutter/React Native
+    - Device capability probe correctly identifies Neural Engine availability on iOS
+      A12+
+    - Memory footprint of camera pipeline < 150MB RAM during active session
+    - IEC 62304 software class documented
+    - SOUP components listed
+    depends_on:
+    - 9
+  BACKEND:
+    description: 'Implement FastAPI backend services: authentication (OAuth2/SMART
+      on FHIR), exercise library management, session lifecycle, pose data ingestion
+      API with time-series storage, progress analytics engine, and therapist report
+      generation (PDF via WeasyPrint). Implement HIPAA audit logging middleware.'
+    agent_role: developer
+    acceptance_criteria:
+    - All OpenAPI endpoints from step 8 implemented and passing contract tests
+    - HIPAA audit middleware logs every PHI access to phi_audit_log table with < 1ms
+      overhead
+    - Session pose data ingestion handles 30fps × 33 keypoints sustained for 60 minutes
+      without OOM
+    - Progress analytics engine computes trend charts (7d, 30d, 90d) in < 200ms
+    - PDF report generation produces formatted therapist report in < 5s
+    - 'Actor-Critic pattern: AI report drafts reviewed by critic agent before therapist
+      delivery'
+    - All endpoints return proper HTTP status codes and RFC 7807 error bodies
+    - OAuth2 PKCE flow tested end-to-end with token refresh
+    depends_on:
+    - 7
+    - 8
+    - 9
+  FRONTEND:
+    description: 'Build the patient mobile app (React Native + Expo) and therapist
+      web portal (React 18 + TypeScript). Patient app: onboarding, exercise assignment
+      view, live camera session with skeleton overlay, rep counter, form feedback
+      alerts, session history, progress charts. Therapist portal: patient roster,
+      program builder, session review, report generation UI.'
+    agent_role: developer
+    acceptance_criteria:
+    - Patient app runs on iOS 16+ and Android 10+ without crashes on target device
+      matrix
+    - Live session camera view renders skeleton overlay at ≥ 30fps with rep counter
+      and form score
+    - Form feedback alerts appear within 200ms of pose quality threshold violation
+    - Progress charts render 90-day trend data in < 300ms
+    - Therapist portal loads patient roster of 100 patients in < 1s
+    - Program builder allows drag-and-drop exercise assignment with sets/reps/rest
+      configuration
+    - All screens pass WCAG 2.1 AA accessibility audit (axe-core)
+    - Lighthouse performance score ≥ 85 for therapist portal
+    depends_on:
+    - 3
+    - 10
+    - 11
+  SECURITY:
+    description: 'Conduct threat modeling (STRIDE) for the full system, penetration
+      test plan, HIPAA Security Rule gap analysis, and SBOM generation. Focus on:
+      PHI data at rest/in transit, camera feed privacy, OAuth2 token security, and
+      injection attacks in session data pipeline.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 categories for each component in system diagram
+    - HIPAA Security Rule gap analysis identifies all 45 implementation specifications
+      with status
+    - All PHI verified encrypted in transit (TLS 1.3 minimum) and at rest (AES-256)
+    - Penetration test plan covers OWASP Mobile Top 10 and OWASP Top 10 Web
+    - SBOM generated for all dependencies with known CVE scan showing 0 critical vulnerabilities
+    - OAuth2 token storage uses device Keychain/Keystore — never plaintext storage
+      verified
+    depends_on:
+    - 11
+    - 12
+  DATA:
+    description: 'Build the progress analytics data pipeline: session metrics aggregation
+      (rep counts, form scores, ROM measurements), longitudinal trend computation,
+      therapist report data model, and de-identified research data export pipeline
+      for outcomes analysis.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Aggregation pipeline processes session data within 30s of session completion
+    - All 6 core metrics computed correctly on 1000-session test dataset (validated
+      against manual calc)
+    - Longitudinal trend charts accurate to within 1% across 90-day windows
+    - FHIR R4 Observation resources generated for each session validate against FHIR
+      validator
+    - De-identified export pipeline removes all 18 HIPAA Safe Harbor identifiers with
+      automated verification
+    - Dashboard cache refresh latency < 5s for therapist portal on 100-patient roster
+    depends_on:
+    - 7
+    - 11
+  CONFIG:
+    description: 'Set up the agentic AI pattern for the product: Human-in-the-Loop
+      (HITL) for therapist-reviewed AI session reports, and Actor-Critic pattern for
+      pose form quality analysis. Configure SAGE solution YAML files (project.yaml,
+      prompts.yaml, tasks.yaml) for the rehab_exercise_tracker solution with appropriate
+      agent roles.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml defines solution identity, active modules, and compliance standards
+    - prompts.yaml defines all 4 agent roles with domain-specific system prompts
+    - tasks.yaml registers all task types with routing rules
+    - HITL approval gate configured for AI report delivery — no report sent without
+      therapist approval
+    - Actor-Critic loop configured for pose scoring with critic threshold ≥ 0.8 before
+      patient feedback
+    - 'SAGE solution loads without errors: make run PROJECT=rehab_exercise_tracker'
+    depends_on:
+    - 1
+    - 5
+  DEVOPS:
+    description: Set up CI/CD pipeline (GitHub Actions), containerized deployment
+      (Docker + Kubernetes), monitoring (Prometheus + Grafana), HIPAA-compliant cloud
+      infrastructure on AWS (VPC, KMS, CloudTrail, S3 with SSE), and automated security
+      scanning in pipeline.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs unit tests, SAST scan, and container build on every PR — fails
+      on critical CVE
+    - CD pipeline deploys to staging automatically on main merge, production requires
+      manual approval
+    - AWS infrastructure uses HIPAA-eligible services with encryption at rest enabled
+      on all storage
+    - CloudTrail captures all API calls — audit logs retained ≥ 6 years per HIPAA
+      requirement
+    - 'Prometheus metrics cover: API latency p95/p99, error rates, pose inference
+      latency, session throughput'
+    - 'PagerDuty alerts fire within 2 minutes for: API error rate > 1%, database connection
+      failures'
+    - AWS BAA signed and documented in compliance records
+    depends_on:
+    - 11
+    - 12
+    - 13
+  EMBEDDED_TEST:
+    description: Create device testing harness for the native camera pipeline and
+      on-device ML inference layer. Test across iOS and Android device matrix covering
+      different Neural Engine/NPU generations, memory profiles, and camera hardware
+      variations. Include stress tests for extended session use.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Camera pipeline maintains ≥ 28fps average across all 6 devices in matrix for
+      60-minute session
+    - TFLite inference latency < 33ms p95 on all devices (with GPU/NPU delegate enabled)
+    - Zero memory leaks detected after 10 sequential 60-minute sessions (Instruments
+      / LeakCanary)
+    - App recovers correctly from background/foreground transition without pose engine
+      crash
+    - 'Thermal throttling test: if device throttles to 20fps, app shows degraded-mode
+      warning'
+    - 'Low-light test (< 100 lux): app shows insufficient lighting alert rather than
+      producing wrong pose'
+    depends_on:
+    - 10
+    - 12
+  QA:
+    description: Design and execute the quality assurance test plan covering functional
+      testing, usability testing with physical therapists and patients, pose accuracy
+      validation against clinical ground truth, and regression test suite. Produce
+      QA test report for DHF.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - QA test plan covers all user stories from step 1 with traceability links
+    - 'Clinical validation study: ROM measurements within ±5 degrees of goniometer
+      on all 15 exercises'
+    - 'Usability testing with ≥ 5 PTs: SUS score ≥ 75 (above ''Good'' threshold)'
+    - 'Usability testing with ≥ 5 patients: task completion rate ≥ 90% for core session
+      flow'
+    - Regression test suite achieves ≥ 90% code coverage on backend and ML pipeline
+    - All P1/P2 defects resolved before sign-off; defect log included in DHF
+    - HIPAA access control tests verify zero cross-patient data access in all test
+      cases
+    depends_on:
+    - 11
+    - 12
+    - 14
+    - 17
+  SYSTEM_TEST:
+    description: 'Execute full end-to-end system integration tests: therapist assigns
+      program → patient completes session → pose data processed → progress updated
+      → therapist reviews report. Include load testing (500 concurrent sessions),
+      failover testing, and FHIR interoperability testing with EHR sandbox.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 'Full lifecycle E2E test passes: program assignment → session → pose analysis
+      → report → therapist approval'
+    - 'Load test: 500 concurrent sessions sustain with API p95 latency < 500ms, zero
+      data loss'
+    - 'Database failover: RDS failover completes in < 60s with zero data corruption'
+    - FHIR R4 Observation resources successfully written to Epic FHIR sandbox and
+      readable by EHR
+    - Push notifications delivered within 30s of scheduled session reminder trigger
+    - All system test results documented in test execution report for DHF traceability
+    depends_on:
+    - 16
+    - 18
+  REGULATORY:
+    description: Prepare FDA 510(k) Substantial Equivalence analysis (if pursuing
+      clearance) or confirm General Wellness Policy exemption pathway. Draft FDA submission
+      package including device description, intended use, predicate device comparison,
+      performance testing summary, and software documentation per FDA guidance on
+      Software as Medical Device (SaMD).
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Intended use statement clearly scoped to wellness/exercise tracking without
+      therapeutic claims
+    - General Wellness Policy determination memo documents all 5 criteria for low-risk
+      device
+    - SaMD documentation covers software description, hazard analysis reference, and
+      V&V summary
+    - 'Cybersecurity submission section addresses FDA 2023 guidance: SBOM, patch management,
+      security testing'
+    - Legal review confirms intended use language does not trigger 510(k) requirement
+    - Submission package reviewed by regulatory consultant and ready for FDA submission
+      if needed
+    depends_on:
+    - 20
+  DOCS:
+    description: 'Produce complete technical and user documentation: backend API reference
+      (auto-generated from OpenAPI), architecture decision records (ADRs), system
+      architecture diagram, ML model card, iOS/Android integration guide for native
+      modules, therapist portal user guide, and patient app user guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from OpenAPI spec with examples for all endpoints
+    - C4 architecture diagrams cover Context, Container, and Component levels
+    - ML model card documents accuracy, limitations, training data, and known failure
+      modes
+    - Therapist portal user guide covers all workflows with annotated screenshots
+    - Patient app user guide covers onboarding through session completion with plain
+      language
+    - ADRs document ≥ 10 key architectural decisions (ML model choice, FHIR adoption,
+      encryption strategy, etc.)
+    - All docs reviewed by non-technical stakeholder (therapist) for clarity
+    depends_on:
+    - 11
+    - 12
+    - 20
+  TRAINING:
+    description: Create onboarding and training materials for physical therapists
+      and clinic administrators. Include video walkthroughs of therapist portal, exercise
+      program builder guide, patient onboarding checklist, and HIPAA privacy training
+      for clinical staff using the platform.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Therapist onboarding video covers full workflow in ≤ 10 minutes
+    - HIPAA privacy training module includes quiz with ≥ 80% pass threshold for account
+      activation
+    - Quick start guide enables a new therapist to assign their first program within
+      15 minutes
+    - Patient app onboarding flow (in-app) achieves ≥ 90% completion rate in usability
+      test
+    - All training materials reviewed by ≥ 2 physical therapists for accuracy and
+      clarity
+    depends_on:
+    - 22
+  OPERATIONS:
+    description: 'Define operational runbooks for production operations: incident
+      response procedures, PHI breach response plan (HIPAA Breach Notification Rule
+      — 60-day notification requirement), database backup and recovery procedures,
+      on-call escalation matrix, and SLA definitions for clinic customers.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - HIPAA breach response procedure documents all steps within 60-day notification
+      window with HHS template
+    - Incident response runbook covers P1–P3 with escalation paths and war room procedures
+    - 'RDS restore procedure tested: recovery from snapshot completes in < 30 minutes
+      with zero data loss'
+    - SLA definitions documented and reviewed by legal for customer contract inclusion
+    - On-call schedule and escalation matrix covers 24/7 for production incidents
+    depends_on:
+    - 16
+    - 22

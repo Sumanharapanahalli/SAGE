@@ -1,0 +1,1282 @@
+{
+  "run_id": "d7a7ac04-aa26-497e-8fd5-df89efdc9a8e",
+  "solution_name": "neobank_mobile_app",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-21T23:21:16.966066+00:00",
+  "updated_at": "2026-03-21T23:26:34.423642+00:00",
+  "product_description": "Mobile-first neobank app with checking/savings accounts, P2P transfers, virtual debit cards, spending insights, and round-up investing. PCI DSS, KYC/AML compliance.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define product requirements: user stories for checking/savings accounts, P2P transfers, virtual debit cards, spending insights, round-up investing. Map regulatory constraints (PCI DSS, KYC/AML) to functional requirements. Produce BRD and process flows.",
+      "payload": {
+        "solution_name": "neobank_mobile_app",
+        "deliverables": [
+          "BRD",
+          "user_story_map",
+          "process_flows",
+          "regulatory_requirement_matrix"
+        ],
+        "features": [
+          "checking_account",
+          "savings_account",
+          "p2p_transfers",
+          "virtual_debit_card",
+          "spending_insights",
+          "round_up_investing"
+        ],
+        "compliance_inputs": [
+          "PCI DSS",
+          "KYC",
+          "AML",
+          "SOC 2",
+          "SOX"
+        ]
+      },
+      "acceptance_criteria": [
+        "BRD covers all six product features with acceptance criteria per feature",
+        "Every regulatory constraint mapped to at least one functional requirement",
+        "Process flows include KYC onboarding, transaction approval, and dispute resolution paths",
+        "Stakeholder sign-off recorded"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Competitive analysis of neobank landscape (Chime, Revolut, Cash App). Identify differentiators, pricing model, target demographics, and go-to-market positioning.",
+      "payload": {
+        "competitors": [
+          "Chime",
+          "Revolut",
+          "Cash App",
+          "Monzo",
+          "Current"
+        ],
+        "focus_areas": [
+          "fee_structure",
+          "onboarding_ux",
+          "investing_features",
+          "international_support"
+        ],
+        "output_format": "positioning_matrix_and_gtm_brief"
+      },
+      "acceptance_criteria": [
+        "At least 5 competitors analyzed across pricing, features, and UX",
+        "Differentiation statement produced and validated against BRD",
+        "GTM brief includes target persona and acquisition channel recommendations"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 3,
+      "task_type": "COMPLIANCE",
+      "description": "Produce compliance framework document mapping PCI DSS v4.0 requirements, KYC/AML obligations (FinCEN, FATF), SOC 2 Type II controls, and SOX financial reporting controls to product features. Define data retention, audit trail, and SAR filing procedures.",
+      "payload": {
+        "standards": [
+          "PCI DSS v4.0",
+          "KYC",
+          "AML",
+          "BSA",
+          "SOC 2 Type II",
+          "SOX"
+        ],
+        "artifacts": [
+          "compliance_traceability_matrix",
+          "data_retention_policy",
+          "SAR_filing_procedure",
+          "PCI_scoping_document"
+        ],
+        "hitl_level": "strict"
+      },
+      "acceptance_criteria": [
+        "Every PCI DSS requirement (all 12 domains) mapped to a control owner and technical control",
+        "KYC identity verification flow defined with CDD and EDD procedures",
+        "AML transaction monitoring thresholds and SAR trigger rules documented",
+        "SOC 2 trust criteria mapped to system components",
+        "Data retention schedule compliant with BSA 5-year minimum"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 4,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy (CCPA/GDPR-ready), Electronic Funds Transfer Act disclosures, Regulation E compliance language, and money transmitter licensing requirements by state.",
+      "payload": {
+        "documents": [
+          "terms_of_service",
+          "privacy_policy",
+          "reg_e_disclosures",
+          "eft_agreement",
+          "money_transmitter_licensing_map"
+        ],
+        "jurisdictions": [
+          "US_federal",
+          "US_state_by_state",
+          "GDPR_for_EU_users"
+        ]
+      },
+      "acceptance_criteria": [
+        "ToS covers account ownership, dispute resolution, liability limits, and arbitration clause",
+        "Privacy Policy addresses data collection, sharing, retention, and user rights under CCPA and GDPR",
+        "Reg E error resolution timeframes and consumer liability limits stated correctly",
+        "Money transmitter license requirements identified for all 50 states"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 5,
+      "task_type": "SECURITY",
+      "description": "Conduct threat modeling (STRIDE) for all product surfaces: mobile app, API gateway, card processing, P2P transfer engine, and investing module. Produce penetration test plan, SBOM, and security architecture blueprint. Define secrets management and key rotation policy.",
+      "payload": {
+        "methodology": "STRIDE",
+        "surfaces": [
+          "mobile_client",
+          "api_gateway",
+          "card_vault",
+          "p2p_engine",
+          "investing_service",
+          "admin_portal"
+        ],
+        "deliverables": [
+          "threat_model",
+          "pentest_plan",
+          "SBOM",
+          "security_architecture",
+          "key_rotation_policy"
+        ],
+        "pci_dss_controls": [
+          "network_segmentation",
+          "tokenization",
+          "TLS_1_3",
+          "HSM_for_card_keys"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE model covers all six product surfaces with risk ratings",
+        "All OWASP Mobile Top 10 threats addressed with mitigations",
+        "PCI DSS cardholder data environment (CDE) scoped and network diagram produced",
+        "SBOM lists all third-party dependencies with CVE scan results",
+        "Key rotation policy defines rotation frequency per key type with automated enforcement",
+        "PCI DSS SAQ completed",
+        "Encryption at rest and in transit"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "UX_DESIGN",
+      "description": "User research, information architecture, and high-fidelity wireframes for all core flows: onboarding/KYC, dashboard, account management, P2P transfer, virtual card management, spending insights, and round-up investing. Accessibility audit (WCAG 2.1 AA).",
+      "payload": {
+        "flows": [
+          "onboarding_kyc",
+          "dashboard",
+          "account_management",
+          "p2p_transfer",
+          "virtual_card",
+          "spending_insights",
+          "round_up_investing"
+        ],
+        "deliverables": [
+          "user_research_report",
+          "information_architecture",
+          "wireframes_hifi",
+          "design_system",
+          "accessibility_audit"
+        ],
+        "accessibility_standard": "WCAG 2.1 AA"
+      },
+      "acceptance_criteria": [
+        "High-fidelity wireframes for all 7 flows reviewed and approved",
+        "KYC onboarding flow completes in under 5 minutes per usability benchmark",
+        "Design system includes color tokens, typography, spacing, and component library",
+        "Accessibility audit passes WCAG 2.1 AA for contrast, touch targets, and screen reader support"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 7,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product roadmap, release phases (MVP \u2192 v1.0 \u2192 v1.5), feature prioritization using MoSCoW, success metrics (MAU, activation rate, NPS, transaction volume), and OKRs for first 12 months.",
+      "payload": {
+        "phases": {
+          "MVP": [
+            "checking_account",
+            "p2p_transfers",
+            "kyc_onboarding",
+            "virtual_debit_card"
+          ],
+          "v1.0": [
+            "savings_account",
+            "spending_insights",
+            "push_notifications"
+          ],
+          "v1.5": [
+            "round_up_investing",
+            "international_transfers"
+          ]
+        },
+        "success_metrics": [
+          "MAU",
+          "activation_rate",
+          "NPS",
+          "P2P_transaction_volume",
+          "CAC",
+          "LTV"
+        ]
+      },
+      "acceptance_criteria": [
+        "MoSCoW prioritization completed and agreed with business stakeholders",
+        "MVP scope defined with measurable launch criteria",
+        "OKRs set for 3, 6, and 12 months post-launch",
+        "Success metric baselines and targets documented"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 8,
+      "task_type": "FINANCIAL",
+      "description": "Build unit economics model: interchange revenue, subscription tiers, round-up investing fee structure, operational cost model (banking-as-a-service partner fees, KYC vendor costs, card issuance). Project 3-year P&L and break-even analysis.",
+      "payload": {
+        "revenue_streams": [
+          "interchange_fees",
+          "premium_subscription",
+          "investing_management_fee",
+          "interest_income"
+        ],
+        "cost_drivers": [
+          "BaaS_partner_fees",
+          "KYC_vendor_per_verification",
+          "card_issuance_cost",
+          "AWS_infrastructure",
+          "customer_support"
+        ],
+        "model_horizon_years": 3
+      },
+      "acceptance_criteria": [
+        "Unit economics model shows revenue and cost per active user per month",
+        "Break-even analysis completed under 3 scenarios (conservative, base, optimistic)",
+        "Interchange revenue assumptions benchmarked against published Visa/Mastercard rates",
+        "3-year P&L with monthly granularity for year 1"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 9,
+      "task_type": "CONFIG",
+      "description": "Set up development environment, repository structure (monorepo: api/, mobile/, infra/, compliance/), configure BaaS partner SDK (e.g., Synapse/Unit/Column Bank), set up secrets manager (AWS Secrets Manager), and configure agentic AI pattern: coordinator + human_in_the_loop for compliance-gated operations.",
+      "payload": {
+        "repo_structure": "monorepo",
+        "baas_partner": "Unit (unit.co)",
+        "secrets_manager": "AWS Secrets Manager",
+        "agentic_patterns": [
+          "coordinator",
+          "human_in_the_loop"
+        ],
+        "hitl_gates": [
+          "large_p2p_transfer",
+          "account_closure",
+          "suspicious_transaction_flag",
+          "KYC_manual_review"
+        ],
+        "tools": [
+          "Node.js 20",
+          "React Native 0.74",
+          "PostgreSQL 16",
+          "Redis 7",
+          "Kafka",
+          "Terraform",
+          "GitHub Actions"
+        ]
+      },
+      "acceptance_criteria": [
+        "Monorepo initialized with Nx or Turborepo workspace configuration",
+        "BaaS partner sandbox credentials provisioned and SDK installed",
+        "Secrets Manager configured with rotation enabled for all credentials",
+        "HITL approval queue configured for the 4 defined gate points",
+        "All team members can clone, install deps, and run local stack within 30 minutes"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "DATABASE",
+      "description": "Design and implement the core database schema: users, kyc_verifications, accounts (checking/savings), transactions, p2p_transfers, virtual_cards, spending_categories, round_up_rules, investment_accounts. PCI DSS-compliant tokenization of card data. Write migrations and seed data for testing.",
+      "payload": {
+        "entities": [
+          "users",
+          "kyc_verifications",
+          "accounts",
+          "transactions",
+          "p2p_transfers",
+          "virtual_cards",
+          "spending_categories",
+          "category_rules",
+          "round_up_rules",
+          "investment_accounts",
+          "investment_transactions",
+          "audit_log"
+        ],
+        "pci_controls": [
+          "card_number_tokenized_not_stored",
+          "pan_masked_in_logs",
+          "cvv_never_persisted"
+        ],
+        "database": "PostgreSQL 16",
+        "migration_tool": "Flyway",
+        "encryption": "AES-256 at rest for PII fields"
+      },
+      "acceptance_criteria": [
+        "All PII fields (SSN, DOB, card PAN) encrypted at rest with column-level encryption",
+        "Card PAN never stored \u2014 only tokenized reference via BaaS vault",
+        "Audit log table captures all writes to accounts and transactions with actor and timestamp",
+        "Flyway migrations run idempotently from schema version 0 to current",
+        "Seed data covers at least 5 test users across KYC states (pending, approved, rejected, EDD)",
+        "Database ERD reviewed and approved",
+        "Transaction isolation level documented",
+        "Audit trail on all writes"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build authentication and identity service: email/phone registration, OTP verification, biometric auth handshake (mobile), JWT + refresh token management, device fingerprinting, session revocation, and rate limiting. Implement OAuth 2.0 + PKCE for mobile.",
+      "payload": {
+        "service": "auth-service",
+        "auth_flows": [
+          "email_otp",
+          "phone_otp",
+          "biometric_token_refresh",
+          "device_fingerprint"
+        ],
+        "token_standard": "JWT RS256 + rotating refresh tokens",
+        "oauth": "OAuth 2.0 + PKCE",
+        "rate_limiting": "50 OTP requests per phone per hour",
+        "mfa": "required for high-risk actions"
+      },
+      "acceptance_criteria": [
+        "OTP delivery via SMS and email with 6-digit code, 10-minute expiry",
+        "JWT signed with RS256, 15-minute access token TTL, 30-day refresh token with rotation",
+        "Device fingerprint stored and used to flag new device logins",
+        "Brute force protection: account locked after 5 failed OTP attempts with exponential backoff",
+        "OAuth 2.0 PKCE flow tested end-to-end from mobile client",
+        "Session revocation propagates within 60 seconds via Redis blocklist"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build KYC/AML service: integrate identity verification provider (Persona or Alloy), implement CDD/EDD workflows, sanctions screening (OFAC, PEP lists), ongoing transaction monitoring, suspicious activity detection, and SAR generation pipeline.",
+      "payload": {
+        "service": "kyc-aml-service",
+        "kyc_provider": "Persona or Alloy",
+        "checks": [
+          "government_id_verification",
+          "liveness_check",
+          "address_verification",
+          "SSN_verification"
+        ],
+        "aml_controls": [
+          "OFAC_screening",
+          "PEP_screening",
+          "transaction_velocity_rules",
+          "structuring_detection",
+          "SAR_generation"
+        ],
+        "agentic_pattern": "human_in_the_loop",
+        "hitl_trigger": "EDD_required or manual_review_flag"
+      },
+      "acceptance_criteria": [
+        "CDD flow completes automated KYC in under 2 minutes for clean applicants",
+        "EDD workflow triggers HITL approval gate for high-risk profiles",
+        "OFAC and PEP list screening runs on every new user and on transaction submission",
+        "Transaction velocity rules flag structuring attempts (sub-$10K deposits within 24h)",
+        "SAR generation produces FinCEN-compliant XML report",
+        "All KYC decisions and screening results persisted to audit log with immutable timestamps"
+      ],
+      "depends_on": [
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Build accounts service: create/manage checking and savings accounts via BaaS API, balance inquiry, account statements, interest calculation for savings, account limits enforcement, and account lifecycle management (open, freeze, close).",
+      "payload": {
+        "service": "accounts-service",
+        "baas_integration": "Unit API",
+        "account_types": [
+          "checking",
+          "savings"
+        ],
+        "features": [
+          "balance_inquiry",
+          "statement_generation_pdf",
+          "interest_accrual_savings",
+          "account_limits",
+          "freeze_unfreeze",
+          "closure_workflow"
+        ],
+        "interest_calc": "daily_accrual_monthly_credit"
+      },
+      "acceptance_criteria": [
+        "Checking and savings accounts created via BaaS API within 5 seconds of KYC approval",
+        "Balance always reflects BaaS ledger as source of truth, not local DB cache",
+        "PDF statements generated on-demand and on monthly schedule",
+        "Savings interest accrual matches APY disclosed in account agreement to 4 decimal places",
+        "Account freeze halts all debits within 30 seconds of trigger",
+        "Account closure workflow requires HITL approval and zero balance confirmation"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Build P2P transfer service: instant transfers between neobank users, external ACH push/pull (same-day and standard), Zelle or RTP integration, transfer limits, fraud scoring per transfer, AML re-screening on large transfers, and dispute management.",
+      "payload": {
+        "service": "p2p-transfer-service",
+        "rails": [
+          "internal_ledger",
+          "ACH_same_day",
+          "ACH_standard",
+          "RTP_FedNow"
+        ],
+        "limits": {
+          "daily_p2p": 2500,
+          "daily_ach_push": 10000,
+          "single_transfer_max": 5000
+        },
+        "fraud_scoring": "rule_based + ML_model",
+        "aml_gate": "transfers_over_3000_USD_rescreened",
+        "agentic_pattern": "human_in_the_loop",
+        "hitl_trigger": "fraud_score_above_threshold or AML_flag"
+      },
+      "acceptance_criteria": [
+        "Internal P2P transfers settle within 5 seconds",
+        "Same-day ACH submitted by 2:30 PM ET cutoff",
+        "Transfer limits enforced server-side and cannot be bypassed by API manipulation",
+        "Fraud score computed and logged for every transfer before funds move",
+        "Transfers flagged by fraud model or AML trigger HITL approval queue",
+        "Dispute workflow initiated within 24 hours of user report, Reg E timeline tracked"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Build virtual debit card service: issue virtual Visa/Mastercard via BaaS card issuing API, card controls (freeze, spend limits by category/merchant, single-use cards), 3DS authentication, tokenization for Apple Pay/Google Pay, and card lifecycle management.",
+      "payload": {
+        "service": "card-service",
+        "network": "Visa via Unit card issuing",
+        "features": [
+          "virtual_card_issuance",
+          "card_controls",
+          "single_use_cards",
+          "3DS_authentication",
+          "apple_pay_google_pay_tokenization",
+          "PAN_tokenization"
+        ],
+        "pci_controls": [
+          "PAN_never_in_logs",
+          "CVV_display_once_then_purge",
+          "HSM_for_signing"
+        ]
+      },
+      "acceptance_criteria": [
+        "Virtual card issued within 10 seconds of request",
+        "Card PAN displayed once in-app using secure element render, never logged",
+        "Category spend limits enforced at authorization time, not post-transaction",
+        "3DS 2.x authentication integrated and tested with issuer simulator",
+        "Apple Pay and Google Pay provisioning tested on physical devices",
+        "Frozen card declines 100% of authorization attempts within 5 seconds of freeze"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Build spending insights service: real-time transaction categorization using merchant category codes (MCC) + ML classifier, budget creation and tracking, monthly spending summaries, merchant enrichment (logo, location, website), anomaly detection for unusual spend.",
+      "payload": {
+        "service": "insights-service",
+        "categorization": [
+          "MCC_based_rules",
+          "ML_text_classifier"
+        ],
+        "features": [
+          "budget_creation",
+          "budget_tracking",
+          "monthly_summary",
+          "merchant_enrichment",
+          "anomaly_detection",
+          "spending_trends_api"
+        ],
+        "agentic_pattern": "react",
+        "ml_model": "transaction_text_classifier"
+      },
+      "acceptance_criteria": [
+        "Transaction categorized within 2 seconds of posting",
+        "Categorization accuracy \u2265 85% on held-out test set of 10,000 real transactions",
+        "Budget alerts push notification sent when 80% and 100% of budget reached",
+        "Merchant enrichment returns logo and name for top 1,000 merchants",
+        "Anomaly alerts generated for transactions >3x user's 90-day average in a category",
+        "Monthly summary API returns category breakdown with MoM delta"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "ML_MODEL",
+      "description": "Train and deploy transaction categorization ML model: data pipeline from historical transactions, feature engineering (merchant name, MCC, amount, time), fine-tune a text classifier, evaluate accuracy, and deploy as a microservice with A/B testing capability.",
+      "payload": {
+        "model_type": "text_classification",
+        "base_model": "DistilBERT or fastText",
+        "features": [
+          "merchant_name",
+          "merchant_description",
+          "MCC_code",
+          "transaction_amount",
+          "time_of_day",
+          "day_of_week"
+        ],
+        "categories": [
+          "food_dining",
+          "transport",
+          "entertainment",
+          "groceries",
+          "healthcare",
+          "utilities",
+          "shopping",
+          "travel",
+          "other"
+        ],
+        "evaluation_metric": "macro_F1",
+        "target_accuracy": 0.85,
+        "deployment": "FastAPI microservice with model versioning"
+      },
+      "acceptance_criteria": [
+        "Training pipeline reproducible with pinned dependency versions",
+        "Macro F1 \u2265 0.85 on held-out test set",
+        "Model served as REST endpoint with p95 latency < 100ms",
+        "A/B testing framework routes X% of traffic to challenger model",
+        "Model card documenting training data, limitations, and bias evaluation published"
+      ],
+      "depends_on": [
+        16
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 18,
+      "task_type": "BACKEND",
+      "description": "Build round-up investing service: configure round-up rules per account (nearest $1/$5/$10), accumulate round-ups until threshold met, execute fractional share purchases via brokerage API (Alpaca or DriveWealth), portfolio view, and Regulation Best Interest (Reg BI) disclosures.",
+      "payload": {
+        "service": "investing-service",
+        "brokerage_partner": "Alpaca or DriveWealth",
+        "round_up_rules": [
+          "nearest_dollar",
+          "nearest_five",
+          "nearest_ten",
+          "2x_multiplier"
+        ],
+        "sweep_threshold_usd": 5.0,
+        "portfolio_options": [
+          "diversified_ETF",
+          "ESG_ETF",
+          "custom_stock_picks"
+        ],
+        "compliance": [
+          "Reg_BI_disclosure",
+          "FINRA_reporting",
+          "1099_tax_forms"
+        ],
+        "agentic_pattern": "human_in_the_loop",
+        "hitl_gate": "first_investment_per_user_requires_suitability_acknowledgment"
+      },
+      "acceptance_criteria": [
+        "Round-up calculated correctly for all rule types on 100 test transactions",
+        "Accumulated round-ups swept to investing account when threshold crossed",
+        "Fractional share purchase executed via brokerage API within 1 business day",
+        "Reg BI suitability disclosure presented and acknowledged before first investment",
+        "Portfolio value updates reflected within 15 minutes of market close",
+        "1099 tax form generation pipeline tested with mock year-end data"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "BACKEND",
+      "description": "Build notification service: push notifications (FCM/APNs), in-app notifications, SMS, and email. Event-driven via Kafka: transaction alerts, transfer confirmations, fraud flags, budget alerts, investing updates. User notification preferences and opt-out management (CAN-SPAM compliant).",
+      "payload": {
+        "service": "notification-service",
+        "channels": [
+          "push_FCM_APNS",
+          "in_app",
+          "SMS_Twilio",
+          "email_SendGrid"
+        ],
+        "event_bus": "Kafka",
+        "events": [
+          "transaction_posted",
+          "p2p_received",
+          "fraud_alert",
+          "budget_threshold",
+          "kyc_status_change",
+          "investment_executed",
+          "card_declined"
+        ],
+        "compliance": [
+          "CAN-SPAM_opt_out",
+          "TCPA_SMS_consent"
+        ]
+      },
+      "acceptance_criteria": [
+        "Push notification delivered within 5 seconds of triggering event",
+        "All notification channels tested with actual delivery confirmation",
+        "Opt-out from SMS and email processed within 10 business days (CAN-SPAM)",
+        "TCPA consent recorded with timestamp before first SMS sent",
+        "Notification preference center allows channel and event-type granularity",
+        "Kafka consumer lag monitored with alert if lag > 1000 messages"
+      ],
+      "depends_on": [
+        14,
+        15,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build React Native mobile app: onboarding and KYC flow, biometric authentication, dashboard with account balances, transaction history, P2P transfer screens, virtual card management UI (reveal PAN with biometric), spending insights charts, and round-up investing screens.",
+      "payload": {
+        "framework": "React Native 0.74",
+        "state_management": "Zustand + React Query",
+        "navigation": "React Navigation v7",
+        "screens": [
+          "splash_onboarding",
+          "registration_kyc",
+          "biometric_setup",
+          "dashboard",
+          "transaction_list_detail",
+          "p2p_transfer_send_receive",
+          "virtual_card_manage",
+          "spending_insights_budgets",
+          "round_up_investing",
+          "settings_notifications_security"
+        ],
+        "security": [
+          "certificate_pinning",
+          "jailbreak_root_detection",
+          "screenshot_prevention_on_card_screen"
+        ],
+        "design_system": "from UX step 6"
+      },
+      "acceptance_criteria": [
+        "All screens match approved high-fidelity designs within 95% pixel accuracy",
+        "KYC flow completes end-to-end with live Persona SDK integration",
+        "Biometric auth (Face ID, Touch ID, Android Biometric) tested on iOS and Android",
+        "Virtual card PAN reveal requires biometric and shows for maximum 30 seconds",
+        "Certificate pinning prevents proxy interception in release build",
+        "Jailbroken/rooted device detection prompts security warning at app launch",
+        "Accessibility: all interactive elements have accessibilityLabel, minimum 44pt touch targets"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "INFRA",
+      "description": "Provision AWS infrastructure using Terraform: VPC with network segmentation (CDE subnet isolated per PCI DSS), EKS cluster for microservices, RDS PostgreSQL multi-AZ, ElastiCache Redis, MSK Kafka, WAF + API Gateway, CloudTrail logging, and GuardDuty for threat detection.",
+      "payload": {
+        "cloud": "AWS",
+        "iac_tool": "Terraform",
+        "components": {
+          "networking": "VPC, 3-tier subnets, CDE_isolated_subnet, NAT_gateway, VPN",
+          "compute": "EKS_1.29, node_groups_per_service_tier",
+          "database": "RDS_PostgreSQL_16_multi_AZ, read_replica",
+          "cache": "ElastiCache_Redis_7_cluster_mode",
+          "messaging": "MSK_Kafka_3.6",
+          "security": "WAF, Shield_Standard, GuardDuty, SecurityHub, CloudTrail, Config",
+          "secrets": "AWS_Secrets_Manager, KMS_CMK"
+        },
+        "pci_controls": [
+          "CDE_network_isolation",
+          "no_internet_ingress_to_CDE",
+          "all_logs_to_S3_encrypted"
+        ]
+      },
+      "acceptance_criteria": [
+        "Terraform plan applies cleanly with no manual steps",
+        "CDE subnet has no direct internet ingress, all traffic via WAF and API Gateway",
+        "RDS automated backups enabled with 35-day retention, multi-AZ failover tested",
+        "GuardDuty findings routed to Security Hub with PagerDuty alert for HIGH/CRITICAL",
+        "CloudTrail logs all API calls to encrypted S3 bucket with 7-year retention",
+        "EKS cluster passes CIS Kubernetes Benchmark Level 1"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 22,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipelines (GitHub Actions): build, test, SAST (Semgrep), SCA (Snyk), container scanning (Trivy), image signing (Cosign), deployment to staging and production with blue-green strategy, automated rollback on health check failure, and DAST scan on staging.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "pipeline_stages": [
+          "lint",
+          "unit_test",
+          "SAST_semgrep",
+          "SCA_snyk",
+          "container_build",
+          "image_scan_trivy",
+          "image_sign_cosign",
+          "deploy_staging",
+          "DAST_OWASP_ZAP",
+          "deploy_prod_blue_green"
+        ],
+        "deployment_strategy": "blue_green",
+        "rollback_trigger": "health_check_failure_or_error_rate_above_1_percent",
+        "pci_requirement": "change_control_process_documented"
+      },
+      "acceptance_criteria": [
+        "All pipeline stages run on every PR and block merge on failure",
+        "SAST scan reports uploaded to Security Hub and block deploy on HIGH severity",
+        "Container images signed with Cosign and verified on deployment",
+        "Blue-green deployment switches traffic with zero downtime (0 dropped requests in load test)",
+        "Automated rollback triggers within 5 minutes of health check failure",
+        "DAST scan runs against staging after each deploy with results archived"
+      ],
+      "depends_on": [
+        21
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "COMPLIANCE",
+      "description": "Produce PCI DSS v4.0 evidence artifacts: network diagram, data flow diagram, CDE scoping worksheet, system inventory, quarterly ASV scan reports, annual penetration test scope, patch management policy, and access control policy. Prepare SOC 2 Type II control evidence.",
+      "payload": {
+        "pci_artifacts": [
+          "network_diagram_with_CDE_boundary",
+          "cardholder_data_flow_diagram",
+          "CDE_system_inventory",
+          "ASV_scan_scope_and_schedule",
+          "pentest_scope_and_methodology",
+          "patch_management_policy",
+          "access_control_policy",
+          "incident_response_plan"
+        ],
+        "soc2_evidence": [
+          "security_policy",
+          "change_management_procedure",
+          "vendor_management_policy",
+          "business_continuity_plan"
+        ],
+        "review_cycle": "annual_with_quarterly_reviews"
+      },
+      "acceptance_criteria": [
+        "Network diagram accurately reflects deployed infrastructure with CDE boundary marked",
+        "Cardholder data flow diagram shows every system that touches PAN",
+        "All 12 PCI DSS requirement domains have at least one evidence artifact",
+        "SOC 2 trust service criteria mapped to controls with evidence owner assigned",
+        "Incident response plan defines RTO/RPO and includes card breach notification procedure",
+        "Artifacts version-controlled and accessible to QSA"
+      ],
+      "depends_on": [
+        21,
+        22
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 24,
+      "task_type": "TESTS",
+      "description": "Write comprehensive test suite: unit tests for all services (\u226580% coverage), integration tests for BaaS API, KYC provider, and brokerage API, contract tests (Pact) for inter-service APIs, and regression suite for critical financial calculations (round-up math, interest accrual, transfer limits).",
+      "payload": {
+        "test_types": [
+          "unit",
+          "integration",
+          "contract_pact",
+          "regression_financial"
+        ],
+        "coverage_target": 80,
+        "critical_paths": [
+          "kyc_happy_path_and_rejection",
+          "p2p_transfer_with_fraud_flag",
+          "round_up_calculation_all_rule_types",
+          "interest_accrual_edge_cases",
+          "card_freeze_and_unfreeze",
+          "account_closure_workflow"
+        ],
+        "frameworks": [
+          "Jest (Node.js)",
+          "Pytest (ML service)",
+          "Detox (React Native E2E)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test coverage \u2265 80% across all backend services",
+        "Integration tests run against BaaS sandbox, not mocks, for all financial operations",
+        "Pact contract tests published to Pact Broker and verified on every CI run",
+        "Round-up math tested for all rule types across 1,000 randomized transaction amounts",
+        "Interest accrual tested for leap years, month-end edge cases, and APY changes",
+        "All tests run in under 15 minutes in CI"
+      ],
+      "depends_on": [
+        14,
+        15,
+        16,
+        18
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "QA",
+      "description": "Design and execute QA test plan: exploratory testing of all user flows on iOS and Android, edge case testing (insufficient funds, expired cards, failed KYC), regression suite for each release, and performance testing (API response times under load).",
+      "payload": {
+        "platforms": [
+          "iOS 17+",
+          "Android 14+"
+        ],
+        "test_areas": [
+          "onboarding_kyc_all_outcomes",
+          "account_operations_edge_cases",
+          "p2p_transfer_error_states",
+          "card_controls_boundary_testing",
+          "spending_insights_data_accuracy",
+          "round_up_investing_end_to_end",
+          "notification_delivery_all_channels"
+        ],
+        "performance_targets": {
+          "api_p95_latency_ms": 500,
+          "app_launch_cold_start_ms": 2000,
+          "transaction_list_render_ms": 300
+        }
+      },
+      "acceptance_criteria": [
+        "All critical user flows pass on iPhone 15 and Pixel 8 without crashes",
+        "Insufficient funds scenario shows correct error without partially completing transaction",
+        "All API endpoints meet p95 < 500ms under 500 concurrent users",
+        "App cold start time < 2 seconds on mid-range Android device",
+        "Zero P0/P1 bugs open at launch gate",
+        "QA sign-off report produced for each release candidate"
+      ],
+      "depends_on": [
+        20,
+        24
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "SYSTEM_TEST",
+      "description": "End-to-end system integration tests: full user journey from registration through first transaction, P2P transfer to external bank account, round-up investment execution, and KYC failure + recovery. Disaster recovery test (RDS failover, EKS node failure). Chaos engineering with Chaos Monkey.",
+      "payload": {
+        "e2e_journeys": [
+          "new_user_kyc_approved_first_deposit",
+          "p2p_transfer_internal_and_external_ACH",
+          "virtual_card_online_purchase_3DS",
+          "round_up_investing_first_purchase",
+          "kyc_failed_resubmission_approved",
+          "account_closure_full_flow"
+        ],
+        "resilience_tests": [
+          "RDS_failover",
+          "EKS_node_drain",
+          "Kafka_broker_failure",
+          "BaaS_API_timeout_handling"
+        ],
+        "chaos_tool": "AWS Fault Injection Simulator"
+      },
+      "acceptance_criteria": [
+        "All 6 E2E journeys pass in staging environment against BaaS sandbox",
+        "RDS failover completes within 60 seconds with no data loss",
+        "Application degrades gracefully when BaaS API returns 503 (queues requests, no data loss)",
+        "Kafka broker failure recovers automatically with no message loss",
+        "Chaos test results documented with MTTR for each failure scenario",
+        "System test sign-off required before production deployment"
+      ],
+      "depends_on": [
+        22,
+        24,
+        25
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 27,
+      "task_type": "SECURITY",
+      "description": "Execute pre-launch security assessment: penetration test of mobile app (static + dynamic analysis), API penetration test, and BaaS integration security review. Test for OWASP Mobile Top 10 and OWASP API Security Top 10. Remediate all HIGH/CRITICAL findings before launch.",
+      "payload": {
+        "scope": [
+          "mobile_app_iOS_Android",
+          "API_gateway_all_endpoints",
+          "BaaS_integration_layer",
+          "admin_portal"
+        ],
+        "methodology": [
+          "OWASP_Mobile_Top_10",
+          "OWASP_API_Security_Top_10",
+          "manual_pentest"
+        ],
+        "tools": [
+          "MobSF",
+          "Frida",
+          "Burp_Suite_Pro",
+          "OWASP_ZAP"
+        ],
+        "sla": {
+          "CRITICAL": "fix_before_launch",
+          "HIGH": "fix_before_launch",
+          "MEDIUM": "fix_within_30_days",
+          "LOW": "backlog"
+        }
+      },
+      "acceptance_criteria": [
+        "Zero CRITICAL or HIGH findings open at launch",
+        "MobSF static analysis report clean for release build",
+        "All API endpoints tested for IDOR, authentication bypass, and injection",
+        "Certificate pinning verified to resist MitM with Frida bypass attempts",
+        "Pentest report produced and stored for PCI DSS compliance record",
+        "All findings tracked in security backlog with owner and SLA",
+        "PCI DSS SAQ completed",
+        "Encryption at rest and in transit"
+      ],
+      "depends_on": [
+        22,
+        25
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 28,
+      "task_type": "OPERATIONS",
+      "description": "Define operational runbooks: incident response (P0/P1/P2 severity matrix), on-call rotation, SLA definitions (99.9% uptime), fraud incident response, card breach notification procedure (PCI DSS 10.7), capacity planning model, and runbook for BaaS partner outage.",
+      "payload": {
+        "runbooks": [
+          "incident_response_severity_matrix",
+          "fraud_alert_investigation_procedure",
+          "card_breach_notification_PCI_DSS",
+          "BaaS_partner_outage_degraded_mode",
+          "AML_SAR_filing_procedure",
+          "database_failover_procedure",
+          "on_call_escalation_path"
+        ],
+        "sla": {
+          "uptime": "99.9%",
+          "transaction_processing": "99.95%",
+          "p2p_settlement_internal": "5_seconds"
+        },
+        "monitoring": "Datadog with PagerDuty alerting"
+      },
+      "acceptance_criteria": [
+        "All 7 runbooks reviewed and approved by engineering lead and compliance officer",
+        "Severity matrix defines P0-P3 with response time SLAs and escalation paths",
+        "Card breach notification procedure meets PCI DSS 72-hour notification requirement",
+        "BaaS outage runbook tested with tabletop exercise",
+        "On-call rotation configured in PagerDuty with escalation policy",
+        "Monitoring dashboards cover all critical service health indicators"
+      ],
+      "depends_on": [
+        22,
+        23
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 29,
+      "task_type": "TRAINING",
+      "description": "Produce user-facing help content and internal operational training: in-app help articles for all features, FAQ for KYC/identity verification, video walkthroughs for key flows, and internal training for support team on fraud investigation and dispute resolution.",
+      "payload": {
+        "user_content": [
+          "in_app_help_articles_all_features",
+          "KYC_FAQ",
+          "dispute_resolution_guide",
+          "investing_risk_disclosure_plain_language"
+        ],
+        "internal_training": [
+          "fraud_investigation_procedure",
+          "dispute_resolution_Reg_E_workflow",
+          "AML_red_flags_training",
+          "data_privacy_handling"
+        ],
+        "formats": [
+          "written_articles",
+          "video_walkthroughs",
+          "interactive_training_modules"
+        ]
+      },
+      "acceptance_criteria": [
+        "Help articles cover all 6 product features with search functionality in-app",
+        "KYC FAQ addresses top 10 rejection scenarios with resolution steps",
+        "Support team training completed by all agents before launch with assessment score \u2265 80%",
+        "Risk disclosure reviewed by legal and meets Reg BI plain language requirement",
+        "Video walkthroughs cover onboarding, P2P transfer, and investing setup"
+      ],
+      "depends_on": [
+        20,
+        4
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 30,
+      "task_type": "DOCS",
+      "description": "Produce technical documentation: API reference (OpenAPI 3.1 spec), system architecture document, data dictionary, integration guide for BaaS and brokerage partners, disaster recovery plan, and developer onboarding guide.",
+      "payload": {
+        "documents": [
+          "openapi_3_1_spec_all_services",
+          "system_architecture_document",
+          "data_dictionary_all_entities",
+          "BaaS_integration_guide",
+          "brokerage_integration_guide",
+          "disaster_recovery_plan",
+          "developer_onboarding_guide"
+        ],
+        "format": "Markdown in repo + Swagger UI for API docs"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec covers 100% of public API endpoints with request/response schemas",
+        "Architecture document includes component diagram, data flow, and technology decisions",
+        "DR plan defines RPO \u2264 1 hour and RTO \u2264 4 hours with tested recovery procedures",
+        "Developer onboarding guide tested: new engineer runs local stack within 30 minutes",
+        "All docs version-controlled alongside code and updated on each release"
+      ],
+      "depends_on": [
+        26
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 30,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 55,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 55,
+        "final_review": {
+          "score": 55,
+          "flaws": [
+            "Step 17 (ML categorization model) requires 'historical transactions' for training, but this is a greenfield product with zero transaction history. There is no step to acquire labeled training data \u2014 synthetic generation, third-party purchase, or open dataset sourcing. The 85% F1 acceptance criterion is untestable at build time.",
+            "Synapse Financial \u2014 listed as a candidate BaaS partner in Step 9 \u2014 filed for bankruptcy in April 2024 and collapsed spectacularly, stranding 100,000+ end users. Naming it as an option without a risk note is a due-diligence failure.",
+            "Step 4 identifies money transmitter license (MTL) requirements across all 50 states but there is no step to actually OBTAIN them. MTL procurement takes 18\u201336 months and costs $1M\u2013$5M in fees and surety bonds. The plan treats a multi-year regulatory bottleneck as a documentation artifact.",
+            "Round-up investing (Step 18) requires the app to either be a registered broker-dealer (FINRA) or operate under a registered BD partner's umbrella (DriveWealth/Alpaca). Reg BI disclosure alone does not satisfy this \u2014 unregistered investment advice is a federal violation. No step addresses broker-dealer registration or RIA determination.",
+            "FDIC pass-through deposit insurance is not mentioned anywhere. Customers need to be disclosed which FDIC-insured bank holds their deposits and under what conditions the pass-through applies. This is a Reg E / FDIC disclosure requirement and a core marketing claim.",
+            "Step 20 (mobile app) depends on Step 16 (spending insights), but Step 16's acceptance criteria requires an ML model at \u226585% accuracy. That model lives in Step 17, which Step 20 does NOT list as a dependency. The mobile UI will be built against a categorization service that has no validated model.",
+            "ACH origination (Step 14) requires the app to operate as an ODFI or route through the BaaS partner's ODFI relationship. The plan doesn't specify who owns ACH origination risk, what happens on ACH returns (R02/R10/R29 codes), or how NACHA Operating Rules compliance is met.",
+            "RTP and FedNow participation (Step 14) requires separate network certifications and contractual relationships with The Clearing House and the Federal Reserve. These are not development tasks; they are regulatory onboarding processes that can take 6\u201312 months.",
+            "Apple Pay and Google Pay provisioning (Step 15) requires certification under Apple's VAS/NFC program and Google's Token Service Provider program respectively. These are not achievable through API integration alone \u2014 they require card network and OEM approval cycles.",
+            "PCI DSS Requirement 12.8 (vendor risk management) is not addressed. The KYC provider, BaaS partner, brokerage API, and ML training data vendor are all in-scope third parties requiring documented assessments. Skipping this blocks QSA sign-off.",
+            "SOX is listed as a compliance input in Steps 1 and 3 but SOX applies exclusively to SEC-registered public companies. If this entity is private, SOX is inapplicable and its inclusion is misleading. If it will go public, the plan needs a full SOX 404 internal controls program \u2014 not a checkbox.",
+            "Step 12 mandates 'structuring detection' with 'sub-$10K deposits within 24h' as the rule. This naive threshold violates FinCEN guidance: structuring detection requires pattern analysis across multiple days and accounts, not a single-day threshold. A rule this simple will generate massive false-positive SARs and miss sophisticated actors.",
+            "No phased or soft launch strategy. The plan goes from QA sign-off directly to production. A regulated fintech needs a closed beta, limited geographic rollout, or invite-only launch to manage AML risk concentration and operational load. Regulators and BaaS partners expect this.",
+            "Step 26 (chaos engineering) depends on Step 22 (CI/CD), but the 'BaaS API timeout handling' resilience test requires a simulated BaaS outage. There is no step to negotiate sandbox chaos capabilities with the BaaS partner or implement a circuit-breaker/queue pattern in the accounts/transfer services.",
+            "The OTP brute-force control (Step 11) locks after 5 failed attempts but uses 'exponential backoff' rather than hard lockout with HITL recovery. For a financial app, SIM-swap and SS7 attack vectors against SMS OTP are not addressed \u2014 no step mandates TOTP or hardware key as a fallback for high-risk operations.",
+            "Interest accrual for savings (Step 13) must comply with Regulation DD (Truth in Savings Act), which mandates specific APY disclosure format, change notification timelines, and fee disclosure. Reg DD is not listed in any compliance step."
+          ],
+          "suggestions": [
+            "Insert a Step 0: BaaS Partner Selection & Contracting. Define evaluation criteria (regulatory standing, FDIC charter type, API maturity, pricing), execute NDA + due diligence, and sign the Program Agreement. BaaS onboarding alone is 3\u20136 months and gates everything else.",
+            "Insert a Step 0b: Regulatory Licensing Roadmap. Engage outside fintech counsel to produce a state-by-state MTL matrix with a phased acquisition plan. Launch in the 10\u201315 states where licensing is fastest; expand as licenses are granted. Do not plan a 50-state launch Day 1.",
+            "Add a Training Data Acquisition sub-step to Step 17. Options: license a transaction dataset (e.g., Yodlee/Plaid enriched feeds), use synthetic generation with domain rules, or partner with an established fintech for anonymized data under a data sharing agreement. Without this, Step 17 cannot start.",
+            "Replace 'Synapse' with a vetted shortlist: Unit, Column Bank, Grasshopper, or Piermont Bank. Require financial due diligence (audited financials, charter type, FDIC insured bank behind the BaaS) as a gating criterion before Step 9 begins.",
+            "Split Step 18 into 18a (brokerage partner due diligence + BD registration confirmation) and 18b (investing service implementation). The broker-dealer regulatory determination must be resolved before a single line of investing code is written.",
+            "Add circuit-breaker patterns to all BaaS-dependent services (accounts, transfers, cards) as an explicit acceptance criterion in Steps 13\u201315. The Step 26 chaos test will otherwise be testing an architectural gap, not validating resilience.",
+            "In Step 12, replace the single-threshold structuring rule with a multi-day velocity matrix (e.g., cumulative deposits across 3, 7, and 30 days) and link to a tunable rules engine. Hard-code the $10K CTR filing threshold separately from structuring detection.",
+            "Add a Regulation DD compliance artifact to Step 3 and map it to the savings account interest disclosure in Step 13's acceptance criteria.",
+            "Add explicit dependency: Step 20 depends on Step 17. Do not let mobile development begin against an unvalidated categorization service.",
+            "In Step 11, add TOTP (e.g., TOTP RFC 6238) as an MFA option alongside SMS OTP, and document SIM-swap attack mitigation (SS7 protection via SMS provider, number lock, binding MFA to device not phone number).",
+            "Add a tabletop exercise for the card breach notification procedure (Step 28) as an acceptance criterion, not just documentation review. PCI DSS 12.10.2 requires annual testing of the IR plan.",
+            "Add app store submission and review as a formal step between Step 20 and Step 25. Apple's enhanced financial app review process adds 1\u20134 weeks of unknown delay. Budget for it."
+          ],
+          "missing": [
+            "FDIC pass-through deposit insurance disclosure and bank partner charter documentation",
+            "Money transmitter license acquisition roadmap with state prioritization and timeline",
+            "Broker-dealer / RIA regulatory determination for the investing feature",
+            "Regulation DD (Truth in Savings Act) compliance for savings account APY disclosures",
+            "ACH return code handling and NACHA Operating Rules compliance mapping",
+            "Training data sourcing strategy for the ML categorization model",
+            "BaaS partner financial due diligence and contract negotiation step",
+            "Card network certification timeline (Visa \u2014 Unit handles this but it must be in the plan as a dependency)",
+            "Apple VAS / Google Token Service Provider certification process",
+            "Soft launch / limited rollout strategy and criteria for full launch graduation",
+            "Customer support infrastructure (CRM, ticketing, call center tooling)",
+            "PCI DSS Requirement 12.8 third-party vendor risk management assessments",
+            "Staffing plan and hiring roadmap \u2014 this plan requires 20+ specialized roles",
+            "Budget / cost estimate \u2014 no financial envelope defined for the build itself",
+            "Timeline \u2014 30 steps with no dates; realistic horizon is 24\u201336 months minimum",
+            "Regulation E Requirement 1005.6 consumer liability caps and error resolution acknowledgment in the dispute workflow",
+            "CAN-SPAM opt-out processing deadline is 10 business days (correctly stated) but the 30-second push delivery SLA conflicts with the Kafka consumer lag model \u2014 need explicit SLA reconciliation"
+          ],
+          "security_risks": [
+            "JWT signing keys stored in AWS Secrets Manager (Step 11) rather than AWS KMS with asymmetric key pair. If Secrets Manager is compromised, all tokens can be forged. RS256 private keys must live in KMS or an HSM with no export path.",
+            "Redis session blocklist (Step 11) is a single point of failure for auth revocation. If Redis is unavailable, revoked tokens remain valid indefinitely. The plan specifies ElastiCache in cluster mode (Step 21) but the auth service acceptance criteria does not mandate graceful degradation behavior when Redis is unreachable.",
+            "ML fraud scoring model (Step 14) has no adversarial robustness requirement. A rule-based + ML hybrid is vulnerable to adversarial crafting \u2014 small transaction mutations that flip the fraud score below threshold. No red-teaming of the model is in scope.",
+            "Step 20 mandates jailbreak/root detection but does not specify what happens next \u2014 a warning prompt can be dismissed. For PAN display and biometric auth, the app must refuse to operate on compromised devices, not just warn. The acceptance criterion is insufficient.",
+            "Admin portal is included in the Step 5 threat model surface list but has no dedicated access control requirements, MFA enforcement, or network restriction (IP allowlist, VPN-only) in any subsequent step. Admin portal breaches are the highest-severity risk vector in fintech.",
+            "The SAR generation pipeline (Step 12) produces FinCEN-compliant XML reports \u2014 but there is no step addressing secure transmission of SARs to FinCEN's BSA E-Filing System. SAR data in transit is extremely sensitive and the transmission channel must be validated.",
+            "Certificate pinning (Step 20) is listed as a security control, but Step 27 validates it only via Frida bypass attempts. Frida requires a jailbroken device; the test does not cover non-jailbroken bypass techniques (e.g., SSLUnpinning Xposed module on Android). The test scope understates the attack surface.",
+            "Column-level AES-256 encryption for PII (Step 10) uses application-layer encryption, which means the encryption keys must be in application memory during queries. Key management for column-level encryption is not addressed \u2014 if keys live alongside the encrypted data, the encryption provides no protection against a DB dump."
+          ],
+          "summary": "This is an impressively detailed technical plan with strong coverage of backend services, security controls, and compliance artifacts \u2014 but it confuses documentation deliverables with regulatory prerequisites and contains fundamental business blockers that no amount of code can resolve. The three launch-blocking gaps are: (1) money transmitter licenses, which take 18\u201336 months and are not in any step; (2) broker-dealer registration or formal BD partnership for the investing feature, which is a federal requirement treated here as a disclosure exercise; and (3) no training data strategy for the ML model, which means the spending insights and categorization features cannot ship as specified. The BaaS partner selection also carries existential risk given Synapse's bankruptcy is unacknowledged. At current state, this plan would produce a technically competent application that cannot legally operate in most US states, cannot offer investing without a securities violation, and will miss its 85% categorization accuracy target with no data to train on. Score of 55 reflects solid engineering intent undermined by regulatory naivety and missing prerequisites that must be resolved before sprint 1 begins.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 55,
+            "flaws": [
+              "Step 17 (ML categorization model) requires 'historical transactions' for training, but this is a greenfield product with zero transaction history. There is no step to acquire labeled training data \u2014 synthetic generation, third-party purchase, or open dataset sourcing. The 85% F1 acceptance criterion is untestable at build time.",
+              "Synapse Financial \u2014 listed as a candidate BaaS partner in Step 9 \u2014 filed for bankruptcy in April 2024 and collapsed spectacularly, stranding 100,000+ end users. Naming it as an option without a risk note is a due-diligence failure.",
+              "Step 4 identifies money transmitter license (MTL) requirements across all 50 states but there is no step to actually OBTAIN them. MTL procurement takes 18\u201336 months and costs $1M\u2013$5M in fees and surety bonds. The plan treats a multi-year regulatory bottleneck as a documentation artifact.",
+              "Round-up investing (Step 18) requires the app to either be a registered broker-dealer (FINRA) or operate under a registered BD partner's umbrella (DriveWealth/Alpaca). Reg BI disclosure alone does not satisfy this \u2014 unregistered investment advice is a federal violation. No step addresses broker-dealer registration or RIA determination.",
+              "FDIC pass-through deposit insurance is not mentioned anywhere. Customers need to be disclosed which FDIC-insured bank holds their deposits and under what conditions the pass-through applies. This is a Reg E / FDIC disclosure requirement and a core marketing claim.",
+              "Step 20 (mobile app) depends on Step 16 (spending insights), but Step 16's acceptance criteria requires an ML model at \u226585% accuracy. That model lives in Step 17, which Step 20 does NOT list as a dependency. The mobile UI will be built against a categorization service that has no validated model.",
+              "ACH origination (Step 14) requires the app to operate as an ODFI or route through the BaaS partner's ODFI relationship. The plan doesn't specify who owns ACH origination risk, what happens on ACH returns (R02/R10/R29 codes), or how NACHA Operating Rules compliance is met.",
+              "RTP and FedNow participation (Step 14) requires separate network certifications and contractual relationships with The Clearing House and the Federal Reserve. These are not development tasks; they are regulatory onboarding processes that can take 6\u201312 months.",
+              "Apple Pay and Google Pay provisioning (Step 15) requires certification under Apple's VAS/NFC program and Google's Token Service Provider program respectively. These are not achievable through API integration alone \u2014 they require card network and OEM approval cycles.",
+              "PCI DSS Requirement 12.8 (vendor risk management) is not addressed. The KYC provider, BaaS partner, brokerage API, and ML training data vendor are all in-scope third parties requiring documented assessments. Skipping this blocks QSA sign-off.",
+              "SOX is listed as a compliance input in Steps 1 and 3 but SOX applies exclusively to SEC-registered public companies. If this entity is private, SOX is inapplicable and its inclusion is misleading. If it will go public, the plan needs a full SOX 404 internal controls program \u2014 not a checkbox.",
+              "Step 12 mandates 'structuring detection' with 'sub-$10K deposits within 24h' as the rule. This naive threshold violates FinCEN guidance: structuring detection requires pattern analysis across multiple days and accounts, not a single-day threshold. A rule this simple will generate massive false-positive SARs and miss sophisticated actors.",
+              "No phased or soft launch strategy. The plan goes from QA sign-off directly to production. A regulated fintech needs a closed beta, limited geographic rollout, or invite-only launch to manage AML risk concentration and operational load. Regulators and BaaS partners expect this.",
+              "Step 26 (chaos engineering) depends on Step 22 (CI/CD), but the 'BaaS API timeout handling' resilience test requires a simulated BaaS outage. There is no step to negotiate sandbox chaos capabilities with the BaaS partner or implement a circuit-breaker/queue pattern in the accounts/transfer services.",
+              "The OTP brute-force control (Step 11) locks after 5 failed attempts but uses 'exponential backoff' rather than hard lockout with HITL recovery. For a financial app, SIM-swap and SS7 attack vectors against SMS OTP are not addressed \u2014 no step mandates TOTP or hardware key as a fallback for high-risk operations.",
+              "Interest accrual for savings (Step 13) must comply with Regulation DD (Truth in Savings Act), which mandates specific APY disclosure format, change notification timelines, and fee disclosure. Reg DD is not listed in any compliance step."
+            ],
+            "suggestions": [
+              "Insert a Step 0: BaaS Partner Selection & Contracting. Define evaluation criteria (regulatory standing, FDIC charter type, API maturity, pricing), execute NDA + due diligence, and sign the Program Agreement. BaaS onboarding alone is 3\u20136 months and gates everything else.",
+              "Insert a Step 0b: Regulatory Licensing Roadmap. Engage outside fintech counsel to produce a state-by-state MTL matrix with a phased acquisition plan. Launch in the 10\u201315 states where licensing is fastest; expand as licenses are granted. Do not plan a 50-state launch Day 1.",
+              "Add a Training Data Acquisition sub-step to Step 17. Options: license a transaction dataset (e.g., Yodlee/Plaid enriched feeds), use synthetic generation with domain rules, or partner with an established fintech for anonymized data under a data sharing agreement. Without this, Step 17 cannot start.",
+              "Replace 'Synapse' with a vetted shortlist: Unit, Column Bank, Grasshopper, or Piermont Bank. Require financial due diligence (audited financials, charter type, FDIC insured bank behind the BaaS) as a gating criterion before Step 9 begins.",
+              "Split Step 18 into 18a (brokerage partner due diligence + BD registration confirmation) and 18b (investing service implementation). The broker-dealer regulatory determination must be resolved before a single line of investing code is written.",
+              "Add circuit-breaker patterns to all BaaS-dependent services (accounts, transfers, cards) as an explicit acceptance criterion in Steps 13\u201315. The Step 26 chaos test will otherwise be testing an architectural gap, not validating resilience.",
+              "In Step 12, replace the single-threshold structuring rule with a multi-day velocity matrix (e.g., cumulative deposits across 3, 7, and 30 days) and link to a tunable rules engine. Hard-code the $10K CTR filing threshold separately from structuring detection.",
+              "Add a Regulation DD compliance artifact to Step 3 and map it to the savings account interest disclosure in Step 13's acceptance criteria.",
+              "Add explicit dependency: Step 20 depends on Step 17. Do not let mobile development begin against an unvalidated categorization service.",
+              "In Step 11, add TOTP (e.g., TOTP RFC 6238) as an MFA option alongside SMS OTP, and document SIM-swap attack mitigation (SS7 protection via SMS provider, number lock, binding MFA to device not phone number).",
+              "Add a tabletop exercise for the card breach notification procedure (Step 28) as an acceptance criterion, not just documentation review. PCI DSS 12.10.2 requires annual testing of the IR plan.",
+              "Add app store submission and review as a formal step between Step 20 and Step 25. Apple's enhanced financial app review process adds 1\u20134 weeks of unknown delay. Budget for it."
+            ],
+            "missing": [
+              "FDIC pass-through deposit insurance disclosure and bank partner charter documentation",
+              "Money transmitter license acquisition roadmap with state prioritization and timeline",
+              "Broker-dealer / RIA regulatory determination for the investing feature",
+              "Regulation DD (Truth in Savings Act) compliance for savings account APY disclosures",
+              "ACH return code handling and NACHA Operating Rules compliance mapping",
+              "Training data sourcing strategy for the ML categorization model",
+              "BaaS partner financial due diligence and contract negotiation step",
+              "Card network certification timeline (Visa \u2014 Unit handles this but it must be in the plan as a dependency)",
+              "Apple VAS / Google Token Service Provider certification process",
+              "Soft launch / limited rollout strategy and criteria for full launch graduation",
+              "Customer support infrastructure (CRM, ticketing, call center tooling)",
+              "PCI DSS Requirement 12.8 third-party vendor risk management assessments",
+              "Staffing plan and hiring roadmap \u2014 this plan requires 20+ specialized roles",
+              "Budget / cost estimate \u2014 no financial envelope defined for the build itself",
+              "Timeline \u2014 30 steps with no dates; realistic horizon is 24\u201336 months minimum",
+              "Regulation E Requirement 1005.6 consumer liability caps and error resolution acknowledgment in the dispute workflow",
+              "CAN-SPAM opt-out processing deadline is 10 business days (correctly stated) but the 30-second push delivery SLA conflicts with the Kafka consumer lag model \u2014 need explicit SLA reconciliation"
+            ],
+            "security_risks": [
+              "JWT signing keys stored in AWS Secrets Manager (Step 11) rather than AWS KMS with asymmetric key pair. If Secrets Manager is compromised, all tokens can be forged. RS256 private keys must live in KMS or an HSM with no export path.",
+              "Redis session blocklist (Step 11) is a single point of failure for auth revocation. If Redis is unavailable, revoked tokens remain valid indefinitely. The plan specifies ElastiCache in cluster mode (Step 21) but the auth service acceptance criteria does not mandate graceful degradation behavior when Redis is unreachable.",
+              "ML fraud scoring model (Step 14) has no adversarial robustness requirement. A rule-based + ML hybrid is vulnerable to adversarial crafting \u2014 small transaction mutations that flip the fraud score below threshold. No red-teaming of the model is in scope.",
+              "Step 20 mandates jailbreak/root detection but does not specify what happens next \u2014 a warning prompt can be dismissed. For PAN display and biometric auth, the app must refuse to operate on compromised devices, not just warn. The acceptance criterion is insufficient.",
+              "Admin portal is included in the Step 5 threat model surface list but has no dedicated access control requirements, MFA enforcement, or network restriction (IP allowlist, VPN-only) in any subsequent step. Admin portal breaches are the highest-severity risk vector in fintech.",
+              "The SAR generation pipeline (Step 12) produces FinCEN-compliant XML reports \u2014 but there is no step addressing secure transmission of SARs to FinCEN's BSA E-Filing System. SAR data in transit is extremely sensitive and the transmission channel must be validated.",
+              "Certificate pinning (Step 20) is listed as a security control, but Step 27 validates it only via Frida bypass attempts. Frida requires a jailbroken device; the test does not cover non-jailbroken bypass techniques (e.g., SSLUnpinning Xposed module on Android). The test scope understates the attack surface.",
+              "Column-level AES-256 encryption for PII (Step 10) uses application-layer encryption, which means the encryption keys must be in application memory during queries. Key management for column-level encryption is not addressed \u2014 if keys live alongside the encrypted data, the encryption provides no protection against a DB dump."
+            ],
+            "summary": "This is an impressively detailed technical plan with strong coverage of backend services, security controls, and compliance artifacts \u2014 but it confuses documentation deliverables with regulatory prerequisites and contains fundamental business blockers that no amount of code can resolve. The three launch-blocking gaps are: (1) money transmitter licenses, which take 18\u201336 months and are not in any step; (2) broker-dealer registration or formal BD partnership for the investing feature, which is a federal requirement treated here as a disclosure exercise; and (3) no training data strategy for the ML model, which means the spending insights and categorization features cannot ship as specified. The BaaS partner selection also carries existential risk given Synapse's bankruptcy is unacknowledged. At current state, this plan would produce a technically competent application that cannot legally operate in most US states, cannot offer investing without a securities violation, and will miss its 85% categorization accuracy target with no data to train on. Score of 55 reflects solid engineering intent undermined by regulatory naivety and missing prerequisites that must be resolved before sprint 1 begins.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-21T23:26:34.423618+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 179.5,
+    "critic_plan": 137.96
+  }
+}

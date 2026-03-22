@@ -1,0 +1,67 @@
+project_name: connected_car_platform
+display_name: Connected Car Platform
+version: 1.0.0
+domain: automotive
+description: Connected car cloud platform with remote vehicle control, OTA firmware
+  updates, usage-based insurance data, and dealer service integration.
+detected_domains: []
+compliance_standards:
+- UNECE R155/R156
+- ISO 21434
+- GDPR
+- SOC 2
+task_types:
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- INFRA
+- MARKET_RESEARCH
+- QA
+- REGULATORY
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- firmware_engineer
+- marketing_strategist
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

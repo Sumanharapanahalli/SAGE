@@ -1,0 +1,217 @@
+task_types:
+  SAFETY:
+    description: 'Conduct Hazard Analysis and Risk Assessment (HARA) per ISO 26262
+      Part 3. Identify hazardous events for object detection failure, lane-keeping
+      loss, and ACC malfunction. Assign ASIL levels (target: ASIL D for all safety
+      goals). Define Safe States and Safety Goals.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All hazardous events enumerated with severity, controllability, and exposure
+      ratings
+    - ASIL D assigned and justified for all top-level safety goals
+    - Safe States defined for each hazard
+    - Document peer-reviewed and signed off by safety engineer
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Define System Requirements Specification (SRS) for the adas_perception
+      module. Capture functional requirements for camera, LiDAR, and radar inputs,
+      fusion outputs, lane-keeping commands, and ACC target tracking. Include non-functional
+      requirements: latency (<50ms end-to-end), availability (>99.9%), ASIL D integrity.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - All functional requirements tagged with unique IDs (ADAS-SYS-xxx)
+    - Each requirement linked to a safety goal from Step 1
+    - Non-functional latency and availability budgets defined
+    - Requirements reviewed by product_manager and safety_engineer
+    depends_on:
+    - 1
+  HARDWARE_SIM:
+    description: Build sensor simulation models for camera (synthetic image generator),
+      LiDAR (point-cloud emulator), and radar (range-doppler emulator) using SystemC/Python.
+      Models must inject nominal, degraded (fog, rain, occlusion), and fault-injection
+      scenarios for HIL testing.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All three sensor simulators produce output matching hardware data-sheet specs
+    - Fault-injection API implemented (block, noise, delay per sensor)
+    - Simulation runs at ≥2x real-time on reference workstation
+    - Unit tests pass for all scenario types
+    depends_on:
+    - 2
+  CONFIG:
+    description: Set up AUTOSAR Classic/Adaptive Platform configuration for adas_perception
+      ECU. Define SWC (Software Component) architecture, port interfaces, I-PDU routing,
+      and OS configuration (OSEK/VDX, ASIL D partition). Configure build toolchain
+      (LLVM/GCC cross-compiler for ARM Cortex-R52).
+    agent_role: developer
+    acceptance_criteria:
+    - AUTOSAR ARXML validates against official schema (no errors)
+    - Build toolchain produces cross-compiled binary for ARM Cortex-R52
+    - Memory partitioning isolates ASIL D and QM partitions
+    - CI pipeline compiles clean on first run
+    depends_on:
+    - 2
+  FIRMWARE:
+    description: 'Implement Camera HAL driver: V4L2-compatible capture pipeline, ISP
+      tuning interface, exposure/gain control, DMA ring buffer, and E2E frame integrity
+      check. Runs in ASIL D partition. Outputs raw YUV420 frames to CameraHAL_SWC
+      port.'
+    agent_role: developer
+    acceptance_criteria:
+    - Driver delivers 30 fps at 1280x960 with <2ms jitter
+    - E2E frame CRC catches all injected bit-flip faults in HIL sim
+    - MISRA-C:2012 static analysis passes (zero required violations)
+    - DEM fault notification fires within 1 frame of hardware fault injection
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 4
+    - 5
+  ML_MODEL:
+    description: 'Train and optimize camera-based object detection model (YOLO-v8
+      or equivalent) for pedestrian, vehicle, cyclist, and obstacle classes. Export
+      to TensorRT INT8 for inference on embedded GPU (NVIDIA Orin / equivalent). Target:
+      >95% mAP on KITTI benchmark, <15ms inference.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - mAP@0.5 ≥ 0.95 on held-out KITTI validation split
+    - Inference latency ≤ 15ms on target hardware
+    - False negative rate for pedestrians < 0.1% at operating speed
+    - Model card documented with dataset provenance and known failure modes
+    depends_on:
+    - 2
+  EMBEDDED_TEST:
+    description: Write firmware unit tests for all HAL drivers and RTOS tasks using
+      Unity + CMock framework targeting host (x86) and target (ARM). Cover nominal
+      operation, boundary conditions, and safety-mechanism activation. Achieve MC/DC
+      coverage ≥ 100% for ASIL D code paths.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - 100% MC/DC coverage on all ASIL D source files (verified by LDRA)
+    - All unit tests pass on x86 host and ARM cross-compiled target
+    - Each safety mechanism (plausibility check, watchdog, E2E) has at least 3 dedicated
+      negative test cases
+    - Test results exported in JUnit XML for CI integration
+    depends_on:
+    - 6
+    - 7
+    - 8
+    - 11
+    - 12
+    - 13
+    - 14
+  SECURITY:
+    description: 'Perform threat analysis and risk assessment (TARA) per ISO/SAE 21434
+      and UNECE R155. Identify attack surfaces (OBD-II, OTA update, CAN-FD injection,
+      sensor spoofing). Define cybersecurity goals and implement mitigations: secure
+      boot, authenticated firmware update, bus message authentication (AUTOSAR SecOC).'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - TARA document covers all identified attack surfaces with CAL (Cybersecurity
+      Assurance Level) assignments
+    - Secure boot prevents unsigned firmware from executing — verified by HIL test
+    - AUTOSAR SecOC CMAC rejects injected CAN frames without valid MAC — 100% in HIL
+    - OTA update rejects tampered packages in all test cases
+    depends_on:
+    - 4
+    - 14
+  BACKEND:
+    description: 'Build the adas_perception diagnostic and telemetry backend service:
+      collects DEM fault logs, perception quality metrics (object count, lane confidence),
+      and system health via CAN-FD → ETH gateway. Stores to time-series DB (InfluxDB).
+      Exposes REST API for fleet monitoring and data export for post-processing.'
+    agent_role: developer
+    acceptance_criteria:
+    - Telemetry ingestion handles 1000 msg/s without data loss
+    - All API endpoints return correct data with <100ms p99 latency
+    - InfluxDB retention policy configured for 90-day rolling window
+    - OpenAPI spec auto-generated and matches implementation
+    depends_on:
+    - 14
+  FRONTEND:
+    description: Build adas_perception monitoring dashboard (React 18 + TypeScript)
+      as a SAGE solution frontend page. Display real-time object detection overlay
+      on camera feed, sensor health status tiles, active fault list, ACC target tracking
+      strip, and lane confidence gauge. Connects to diagnostic backend (Step 19).
+    agent_role: developer
+    acceptance_criteria:
+    - Dashboard renders all components without TypeScript errors
+    - Object overlay updates at ≥ 10 fps from SSE stream
+    - Fault list shows new DEM faults within 500ms of backend receipt
+    - Responsive layout works at 1920x1080 and 1280x720
+    depends_on:
+    - 19
+  COMPLIANCE:
+    description: 'Produce the Design History File (DHF) traceability matrix linking:
+      SRS requirements → safety goals → design elements → firmware modules → unit
+      tests → HIL test cases → FMEA failure modes. Tooling: DOORS / Excel with auto-generated
+      coverage report.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - 100% of SRS requirements traced to at least one test case
+    - 100% of ASIL D safety mechanisms traced to at least one negative test case
+    - Zero orphan requirements (requirements with no design or test link)
+    - Coverage report generated automatically from linked IDs
+    depends_on:
+    - 16
+    - 17
+  SYSTEM_TEST:
+    description: 'Execute full system-level validation: deploy adas_perception firmware
+      + backend + dashboard in integrated test environment. Run 50-scenario regression
+      suite covering all operational design domain (ODD) boundaries. Measure end-to-end
+      latency, safe-state response time, and perception quality KPIs.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 50 scenarios pass KPI thresholds
+    - Zero safety violations (unhandled faults, actuator runaway) across full suite
+    - System validation report signed off by qa_engineer, safety_engineer, and system_tester
+    - Regression baseline established for future releases
+    depends_on:
+    - 17
+    - 19
+    - 20
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions / Jenkins) for adas_perception:
+      static analysis (MISRA-C via PC-lint+), unit test execution with MC/DC coverage
+      gate, cross-compilation, HIL smoke test on merge to main, and nightly full regression.
+      Enforce AUTOSAR schema validation and compliance artifact version bump check.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR build completes in < 20 minutes including HIL smoke test
+    - MISRA violation or MC/DC drop below 100% fails the build and blocks merge
+    - Nightly regression sends pass/fail report to team Slack channel
+    - All pipeline stages documented in CI runbook
+    depends_on:
+    - 16
+    - 17
+  QA:
+    description: Produce Software Verification Plan (SVP) and Software Verification
+      Report (SVR) per ISO 26262 Part 6. Consolidate all unit test, HIL, and system
+      test results. Map each test case to its SRS requirement. Issue final software
+      release qualification decision.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - SVP defines pass/fail criteria for every test level (unit, HIL, system)
+    - SVR confirms all criteria met with traceability to test result artifacts
+    - 100% of SRS requirements covered by at least one passed test in SVR
+    - Release qualification signed by qa_engineer and safety_engineer
+    depends_on:
+    - 24
+    - 21
+  DOCS:
+    description: 'Write technical documentation set: Software Architecture Description
+      (SAD), Interface Control Document (ICD) for sensor HAL ports and AUTOSAR SWC
+      interfaces, Operator Manual for HIL test bench, and SAGE solution README with
+      startup instructions.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - SAD includes component diagram, data-flow diagram, and timing budget table
+    - ICD specifies all AUTOSAR port types, data rates, and E2E protection parameters
+    - HIL operator manual covers bench setup, scenario execution, and fault injection
+      procedures
+    - README includes make commands, config steps, and quick-start verification test
+    depends_on:
+    - 22
+    - 24

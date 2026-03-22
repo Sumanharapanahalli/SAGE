@@ -1,0 +1,61 @@
+project_name: dating_app
+display_name: Dating App
+version: 1.0.0
+domain: consumer_app
+description: Dating app with profile creation, photo verification, matching algorithm,
+  chat with video calls, safety features (block/report), and premium subscription.
+detected_domains: []
+compliance_standards:
+- GDPR
+- CCPA
+- Age Verification Laws
+- SOC 2
+task_types:
+- BACKEND
+- CONFIG
+- DATABASE
+- DEVOPS
+- FRONTEND
+- INFRA
+- LEGAL
+- LOCALIZATION
+- MARKET_RESEARCH
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- developer
+- devops_engineer
+- legal_advisor
+- localization_engineer
+- marketing_strategist
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

@@ -1,0 +1,263 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements document for cold chain monitoring system
+      covering sensor specs, GPS tracking, excursion alerting thresholds, audit trail
+      requirements, and GDP compliance scope.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved by stakeholder covering all sensor, GPS, alerting, and compliance
+      requirements
+    - Temperature range -25°C to +25°C with ±0.5°C accuracy documented
+    - GDP (Good Distribution Practice) compliance requirements mapped to system features
+    - Audit trail retention period (minimum 5 years) specified
+    - Excursion alert thresholds defined per product type (frozen, refrigerated, controlled
+      room temperature)
+    depends_on: []
+  SAFETY:
+    description: Perform hazard analysis and risk assessment for cold chain monitoring
+      device per ISO 14971, covering sensor failure modes, GPS outages, network disconnection,
+      and data integrity risks that could lead to patient harm from compromised pharmaceuticals.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - FMEA completed for all sensor and hardware failure modes
+    - Risk matrix with severity/probability scoring for each hazard
+    - Mitigations identified for all high-severity risks
+    - Residual risk deemed acceptable per ISO 14971 criteria
+    - GPS outage fallback behavior documented and risk-assessed
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Produce GDP compliance framework mapping: WHO Technical Report 961
+      Annex 9, EU GDP Guidelines 2013/C 343/01, and IEC 62443 cybersecurity controls.
+      Generate traceability matrix linking requirements to implementation tasks.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All GDP requirements mapped to specific system features and test cases
+    - IEC 62443 security levels defined per zone (sensor, gateway, cloud)
+    - Traceability matrix covers requirements → design → implementation → test
+    - Audit readiness checklist approved by regulatory specialist
+    - Data integrity (ALCOA+) requirements documented for audit trail
+    depends_on:
+    - 1
+    - 2
+  CONFIG:
+    description: 'Set up cold_chain_monitor solution scaffold: SAGE YAML configuration
+      (project.yaml, prompts.yaml, tasks.yaml), development toolchain (cross-compiler
+      for target MCU, RTOS SDK, GPS library), and CI/CD pipeline configuration.'
+    agent_role: developer
+    acceptance_criteria:
+    - Solution scaffold created under solutions/cold_chain_monitor/
+    - Cross-compilation toolchain builds a hello-world firmware binary without errors
+    - FreeRTOS kernel compiles for target MCU (STM32 or equivalent)
+    - CI pipeline triggers on push and runs firmware lint + unit tests
+    - SAGE project.yaml active_modules configured for compliance-heavy workflow
+    depends_on:
+    - 1
+  SECURITY:
+    description: Perform threat model (STRIDE) for the cold chain system per IEC 62443.
+      Cover device-to-cloud communication, firmware update integrity, sensor data
+      tampering, GPS spoofing, and unauthorized access to audit trail.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis completed for all four trust zones
+    - SBOM generated listing all firmware and backend dependencies with CVE scan
+    - GPS spoofing detection countermeasure specified
+    - Firmware signing and secure boot requirements documented
+    - TLS 1.3 minimum enforced for all device-to-cloud communication
+    - Penetration test plan covers OWASP IoT Top 10
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 3
+    - 4
+  HARDWARE_SIM:
+    description: Create hardware simulation models for SHT41 temperature/humidity
+      sensor, u-blox GPS module, and battery management IC. Build SPICE/SystemC test
+      bench to validate sensor reading accuracy and power consumption budget.
+    agent_role: developer
+    acceptance_criteria:
+    - SHT41 simulation produces readings within ±0.2°C and ±1.5% RH of datasheet spec
+    - GPS simulation produces NMEA sentences at 1 Hz with configurable fix/no-fix
+      states
+    - Power budget model shows >7-day battery life at 1-minute logging interval
+    - Excursion event simulation triggers within 500ms of threshold breach
+    - All simulation models pass DRC/sanity checks
+    depends_on:
+    - 2
+    - 4
+  FIRMWARE:
+    description: 'Implement sensor node firmware: HAL drivers for SHT41 (I2C) and
+      u-blox GPS (UART), FreeRTOS task scheduler, circular buffer for offline data
+      storage, excursion detection FSM, and BLE/LoRaWAN radio stack for gateway communication.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - SHT41 driver reads temperature and humidity at configurable interval (1s–60min)
+    - GPS driver acquires fix within 60s cold start and maintains TTFF <10s warm start
+    - Excursion detection FSM triggers alert within 1 sample period of threshold breach
+    - Offline buffer stores minimum 72 hours of data at 1-minute interval without
+      data loss
+    - Firmware compiles with zero warnings at -Wall -Wextra
+    - Secure boot validates firmware signature before execution
+    - OTA update validates hash and rolls back on failed verification
+    - All FreeRTOS tasks pass stack high-watermark check (>20% headroom)
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 4
+    - 6
+  DATABASE:
+    description: 'Design and implement PostgreSQL schema for cold chain data: shipments,
+      sensor readings (time-series partitioned), GPS tracks, excursion events, audit
+      trail (immutable append-only), users, and GDP compliance records.'
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations run cleanly from empty database
+    - sensor_readings hypertable partitioned by 1-week chunks with compression after
+      30 days
+    - audit_log table has INSERT-only trigger — no UPDATE/DELETE permitted
+    - Row-level security policies enforced per organization/shipment
+    - ALCOA+ metadata columns (who, what, when, original_value) on all mutable tables
+    - Database schema reviewed and approved by regulatory specialist for GDP compliance
+    depends_on:
+    - 3
+  BACKEND:
+    description: 'Build FastAPI backend: device ingestion endpoint (MQTT/HTTP), real-time
+      excursion alerting engine, GPS track aggregation, audit trail API, GDP compliance
+      report generation, and JWT-authenticated REST API for dashboard and mobile.'
+    agent_role: developer
+    acceptance_criteria:
+    - Device ingestion endpoint handles 1000 concurrent device connections without
+      data loss
+    - Excursion engine detects breach and dispatches alert within 5 seconds of receipt
+    - All API endpoints protected by JWT authentication with role-based access control
+    - GDP compliance report PDF generated with full chain-of-custody and excursion
+      summary
+    - Audit trail API returns immutable, tamper-evident logs with cryptographic hash
+      chain
+    - API passes OWASP API Security Top 10 review
+    - OpenAPI spec auto-generated and accurate for all endpoints
+    depends_on:
+    - 5
+    - 8
+  AGENTIC:
+    description: 'Implement Review and Critique (Actor-Critic) agentic pattern for
+      GDP compliance checking: ExcursionAnalystAgent evaluates each shipment''s temperature/humidity
+      profile, ComplianceCriticAgent scores against GDP thresholds, iterates until
+      compliance verdict is confidence-scored above 95%.'
+    agent_role: developer
+    acceptance_criteria:
+    - Actor-Critic loop converges within 3 iterations for 90% of shipments in test
+      dataset
+    - Compliance verdict confidence score ≥ 0.95 before marking shipment compliant
+    - HITL approval gate fires before any GDP non-compliance record is finalized
+    - Critic agent correctly identifies missing data periods as excursions
+    - Agent reasoning trace stored in audit log with full thought→action→observation
+      chain
+    - Pattern integrated with SAGE proposal store for HITL verdicts
+    depends_on:
+    - 9
+  FRONTEND:
+    description: 'Build React 18 + TypeScript dashboard: live shipment map with GPS
+      tracks, real-time sensor charts, excursion alert inbox, audit trail viewer,
+      GDP compliance report download, and admin panel for alert threshold configuration.'
+    agent_role: developer
+    acceptance_criteria:
+    - Live GPS track renders on map with <2s latency from device transmission
+    - Temperature and humidity charts display real-time data with 1-minute resolution
+    - Excursion alert inbox shows active/resolved alerts with severity color coding
+    - Audit trail viewer is read-only and shows full ALCOA+ metadata per entry
+    - GDP compliance report downloadable as PDF directly from UI
+    - All pages responsive and accessible (WCAG 2.1 AA)
+    - Dashboard loads in <3s on standard 4G connection
+    depends_on:
+    - 9
+  EMBEDDED_TEST:
+    description: 'Write HIL (Hardware-in-the-Loop) test suite for sensor node firmware:
+      sensor driver accuracy tests, GPS fix acquisition tests, excursion FSM state
+      transition tests, offline buffer overflow handling, OTA update rollback, and
+      watchdog recovery.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All unit tests pass on target MCU via JTAG/SWD debug probe
+    - Excursion FSM tested for all 8 state transitions including boundary conditions
+    - Buffer overflow test confirms oldest data evicted and new data preserved
+    - GPS fix lost → regained test confirms no data gap in stored records
+    - OTA rollback test confirms device boots to previous firmware after failed update
+    - Branch coverage ≥ 90% measured by gcov/lcov
+    - HIL test results exported as JUnit XML for CI pipeline integration
+    depends_on:
+    - 7
+  TESTS:
+    description: 'Write backend unit and integration tests: sensor ingestion pipeline,
+      excursion detection logic, audit trail immutability, JWT auth, GDP report generation,
+      and actor-critic compliance agent loop.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All tests pass in CI with isolated test database
+    - Audit trail immutability test confirms DELETE/UPDATE operations raise exception
+    - Excursion engine test confirms alert fires within 1 processing cycle of threshold
+      breach
+    - GDP report generation test produces valid PDF with correct excursion summary
+    - Actor-critic loop test confirms convergence within 5 iterations on synthetic
+      dataset
+    - Code coverage ≥ 85% for src/ backend modules
+    depends_on:
+    - 9
+    - 10
+  DEVOPS:
+    description: 'Set up production infrastructure: Docker Compose for local dev,
+      Kubernetes manifests for cloud deployment, GitHub Actions CI/CD pipeline with
+      firmware build + backend tests + frontend build, MQTT broker (EMQX), monitoring
+      (Prometheus + Grafana), and alerting.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up starts full stack (backend, DB, MQTT, frontend) in <60s
+    - GitHub Actions pipeline passes on main branch for firmware and backend
+    - Kubernetes deployment rolls out without downtime (RollingUpdate strategy)
+    - Prometheus scrapes backend metrics; Grafana dashboard shows device count, ingestion
+      rate, excursion count
+    - Alert fires to PagerDuty when excursion_alert_queue depth exceeds 100
+    - All secrets stored in Vault — zero secrets in repository or environment variables
+      in plain text
+    depends_on:
+    - 9
+    - 11
+    - 13
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test: real firmware on sensor node transmitting
+      to backend, GPS track appearing on dashboard, excursion event triggering alert
+      email/SMS, audit trail capturing full chain-of-custody, and GDP compliance report
+      generation.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full shipment lifecycle test passes end-to-end from device power-on to compliance
+      report
+    - Excursion event detected and alert email received within 30 seconds of threshold
+      breach
+    - GPS track displayed on dashboard within 10 seconds of device transmission
+    - Offline buffer sync delivers all buffered readings with correct timestamps after
+      reconnect
+    - GDP report PDF contains correct excursion summary, device calibration records,
+      and chain-of-custody
+    - Audit trail shows all events in correct chronological order with no gaps
+    - 500-device load test completes with <1% data loss and <5s P99 ingestion latency
+    depends_on:
+    - 12
+    - 13
+    - 14
+  DOCS:
+    description: 'Write technical documentation: firmware integration guide, API reference
+      (OpenAPI), device onboarding guide, GDP compliance user guide, system architecture
+      document, and operator runbook.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference accurately reflects all endpoints with request/response examples
+    - Device onboarding guide allows new engineer to provision device in <30 minutes
+    - GDP compliance guide explains excursion workflow, audit trail access, and report
+      generation
+    - Architecture document includes data flow diagram from sensor to compliance report
+    - Operator runbook covers alert escalation, device replacement, and backup procedures
+    - All docs reviewed and approved by technical writer and regulatory specialist
+    depends_on:
+    - 15
+    - 16

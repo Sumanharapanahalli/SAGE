@@ -1,0 +1,4 @@
+Build start failed:
+{
+  "error": "Remote end closed connection without response"
+}

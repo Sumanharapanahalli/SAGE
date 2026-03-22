@@ -1,0 +1,326 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the multi-channel inventory management market: competitor
+      landscape (Linnworks, Brightpearl, Cin7, Fishbowl), SMB vs enterprise segments,
+      Amazon/eBay/Shopify seller pain points, pricing benchmarks, and go-to-market
+      positioning.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covering ≥6 tools across ≥10 dimensions
+    - Identified top 3 underserved pain points in multi-channel inventory
+    - Go-to-market strategy document with target ICP and acquisition channels
+    - Pricing model recommendation with tiered SaaS pricing benchmarks
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements: user personas (warehouse operator,
+      purchasing manager, e-commerce seller, finance team), core user stories, process
+      flows for receiving, picking, stock replenishment, and PO lifecycle. Produce
+      a prioritized product backlog.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - ≥20 user stories with acceptance criteria in Given/When/Then format
+    - Process flow diagrams for all 5 core flows reviewed and signed off
+    - Backlog prioritized with MoSCoW (Must/Should/Could/Won't) labels
+    - ROI analysis showing time savings vs manual inventory management
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research interviews with 5+ warehouse/e-commerce operators,
+      then produce wireframes and interaction designs for: dashboard, warehouse map,
+      barcode scan flow, PO creation wizard, stock forecasting view, and marketplace
+      sync panel. Accessibility audit (WCAG 2.1 AA).'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Research report with ≥5 user interviews synthesized into themes
+    - Wireframes for all 8 screens at mid-fidelity, reviewed by product stakeholder
+    - Barcode scan flow validated as operable with one hand on mobile
+    - Accessibility audit showing 0 critical WCAG 2.1 AA violations in wireframes
+    - Interaction spec covering error states, empty states, and loading states
+    depends_on:
+    - 2
+  FINANCIAL:
+    description: Build a financial model covering SaaS pricing tiers (Starter/Growth/Enterprise),
+      cost of goods (hosting, marketplace API fees, ML compute), unit economics (CAC,
+      LTV, payback period), and 3-year P&L projection for inventory_management.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Pricing tiers defined with feature gates and monthly/annual rates
+    - Unit economics model showing LTV:CAC ratio ≥3x at scale
+    - 3-year P&L with break-even month identified
+    - Sensitivity analysis on churn rate (5%, 10%, 20%) included
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (GDPR/CCPA), and marketplace integration licensing review (Amazon SP-API, eBay
+      API, Shopify API ToS compliance). Review data residency requirements for PCI
+      DSS cardholder data environment.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers data retention, SLA, acceptable use, and termination
+    - Privacy Policy compliant with GDPR Article 13 and CCPA § 1798.100
+    - DPA includes sub-processor list and SCCs for EU data transfers
+    - Marketplace API licensing review confirms compliant usage for all 3 platforms
+    - PCI DSS scope defined — cardholder data environment boundary documented
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 1
+  SECURITY:
+    description: 'Produce threat model (STRIDE) for the inventory platform covering:
+      multi-tenant data isolation, marketplace OAuth tokens, barcode scanner endpoints,
+      purchase order approval workflows, and payment/billing data. Define SBOM and
+      penetration test plan aligned with PCI DSS Requirement 11.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 5 scope areas with risk ratings
+    - SBOM generated in CycloneDX format listing all direct and transitive dependencies
+    - Penetration test plan covers OWASP Top 10 + PCI DSS Req 11.3 scope
+    - Security controls mapped to PCI DSS requirements 1–12
+    - OAuth token storage design reviewed — tokens stored encrypted at rest
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 5
+  COMPLIANCE:
+    description: 'Produce PCI DSS v4.0 compliance artifacts: network segmentation
+      diagram, data flow diagram for cardholder data, Requirement 6 (secure development)
+      evidence, Requirement 7 (access control) policy, and SAQ-A or SAQ-D applicability
+      assessment for the billing integration.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Network segmentation diagram distinguishes CDE from out-of-scope systems
+    - Data flow diagram traces cardholder data from billing UI to payment processor
+    - Secure development policy covers code review, SAST, dependency scanning
+    - Access control policy enforces least-privilege and MFA for admin roles
+    - SAQ applicability assessment determines correct SAQ type with rationale
+    depends_on:
+    - 6
+  API:
+    description: 'Design OpenAPI 3.1 specification for all inventory_management REST
+      endpoints: inventory CRUD, warehouse zones/locations, barcode lookup, purchase
+      orders, stock forecasts, marketplace sync jobs, webhook receivers, and multi-tenant
+      auth (JWT + API keys). Define versioning strategy (v1/).'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec passes validation with 0 errors via `openapi-generator validate`
+    - All endpoints have request/response schemas, status codes, and error formats
+    - Auth schemes documented with example JWT claims and API key header
+    - Pagination defined consistently (cursor-based) across all list endpoints
+    - Webhook payload schemas defined for inventory_low, po_approved, sync_complete
+      events
+    depends_on:
+    - 2
+    - 6
+  DATABASE:
+    description: 'Design and implement the PostgreSQL schema for inventory_management:
+      products, SKUs, variants, warehouses, locations (zone/aisle/bin), stock_levels,
+      stock_movements, purchase_orders, po_line_items, suppliers, marketplace_listings,
+      sync_jobs, forecasts, tenants, users, audit_log. Add migrations via Alembic.'
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations apply cleanly on a fresh PostgreSQL 16 instance
+    - Row-level security policies enforce tenant isolation on all data tables
+    - stock_movements table partitioned by month for query performance
+    - Foreign key constraints and indexes documented in schema diagram
+    - Seed data provides 3 tenants, 50 products, 2 warehouses for local dev
+    depends_on:
+    - 8
+  CONFIG:
+    description: 'Set up the inventory_management solution scaffold: copy starter
+      template, configure project.yaml (active_modules, theme), prompts.yaml (analyst,
+      developer, planner roles), tasks.yaml (task types for inventory domain). Configure
+      environment: .env.example, Docker Compose for Postgres + Redis + backend, pre-commit
+      hooks, SAST (Bandit, Semgrep).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`docker compose up` starts all services with 0 errors'
+    - project.yaml passes SAGE YAML validation endpoint
+    - Pre-commit hooks run Bandit and Semgrep on every commit
+    - .env.example documents all required environment variables with descriptions
+    - SAGE backend starts with PROJECT=inventory_management and health check returns
+      200
+    depends_on:
+    - 9
+  BACKEND:
+    description: 'Implement core inventory service: product/SKU/variant CRUD, stock
+      level tracking, stock movement recording (receive, transfer, adjust, write-off),
+      multi-location warehouse model (zone → aisle → bin), multi-tenant isolation
+      via PostgreSQL RLS. FastAPI routers, Pydantic v2 schemas, SQLAlchemy 2.0 async
+      ORM.'
+    agent_role: developer
+    acceptance_criteria:
+    - CRUD endpoints for products/SKUs return correct HTTP status codes per OpenAPI
+      spec
+    - Stock movement creates an immutable audit record with before/after quantities
+    - 'Multi-tenant isolation verified: tenant A cannot read tenant B''s inventory'
+    - Warehouse location tree (zone→aisle→bin) supports CRUD and stock assignment
+    - All endpoints respond in <200ms at p95 for 1000 products (local benchmark)
+    depends_on:
+    - 10
+  ML_MODEL:
+    description: 'Build stock forecasting pipeline: feature engineering from stock_movements
+      history (seasonality, trend, velocity), train Prophet + LightGBM ensemble model
+      per SKU, generate 30/60/90-day demand forecasts, compute reorder points and
+      safety stock levels. Serve via async forecast job with results stored in forecasts
+      table.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Forecast pipeline trains on ≥90 days of movement history per SKU
+    - MAPE (Mean Absolute Percentage Error) ≤20% on held-out 30-day test set
+    - Reorder point calculation accounts for lead time and desired service level (95%)
+    - Forecast job completes for 1000 SKUs within 10 minutes on 4-core CPU
+    - Model evaluation report documents MAPE, RMSE, and coverage per product category
+    depends_on:
+    - 11
+  FRONTEND:
+    description: 'Build the inventory management dashboard: real-time stock level
+      overview, low-stock alerts panel, recent movements feed, marketplace sync status
+      indicators, pending PO count, and forecast accuracy widget. React 18 + TypeScript,
+      Recharts for graphs, Tailwind CSS, responsive for tablet (warehouse floor use).'
+    agent_role: developer
+    acceptance_criteria:
+    - Dashboard loads in <2 seconds on tablet (simulated 4G throttle in DevTools)
+    - Low-stock alerts panel updates in real-time via 30s polling or SSE
+    - Sync status shows last sync time and error count per marketplace
+    - All 6 dashboard components render correctly at 1024px and 1440px breakpoints
+    - Lighthouse performance score ≥85 on dashboard page
+    depends_on:
+    - 11
+    - 3
+  QA:
+    description: 'Produce QA test plan: define test scope, entry/exit criteria, risk-based
+      test prioritization, test case design for all 5 functional areas (inventory,
+      warehouse, barcodes, POs, marketplace sync). Includes PCI DSS control verification
+      test cases and multi-tenant isolation test cases.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 8 test areas with ≥5 test cases each
+    - PCI DSS test cases cover Req 6, 7, 8, 10 controls
+    - Multi-tenant isolation test cases attempt cross-tenant data access via all API
+      endpoints
+    - Risk matrix identifies top 10 highest-risk test scenarios
+    - Entry/exit criteria defined with measurable pass/fail thresholds
+    depends_on:
+    - 8
+    - 7
+  TESTS:
+    description: 'Write unit and integration tests: ≥80% line coverage on backend
+      services (inventory, barcode, PO, sync). Unit tests for stock movement calculations,
+      reorder point logic, and forecast model inputs. Integration tests for database
+      layer using testcontainers (real PostgreSQL). Pytest with async support.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest reports ≥80% line coverage on all backend service modules
+    - Integration tests use real PostgreSQL via testcontainers (no mocked DB)
+    - Stock movement tests verify immutability (no UPDATE/DELETE on movements table)
+    - Multi-tenant isolation tests assert 403 on cross-tenant access attempts
+    - All tests pass in CI under 5 minutes
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 22
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite: full flow from barcode scan
+      → stock receive → inventory update → marketplace sync → PO auto-generation →
+      approval → supplier notification. Performance test: 1000 concurrent users on
+      inventory endpoints. Chaos test: simulate marketplace API downtime and verify
+      graceful degradation.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 5 E2E scenarios pass on staging environment with real marketplace sandbox
+      APIs
+    - p95 latency ≤500ms for inventory read endpoints under 1000 concurrent users
+    - Amazon API timeout causes graceful queue-and-retry, not data loss
+    - System recovers automatically from all 3 chaos scenarios within 10 minutes
+    - Zero cross-tenant data leakage detected across all E2E test runs
+    depends_on:
+    - 23
+    - 16
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): lint → SAST (Bandit/Semgrep)
+      → unit tests → integration tests → Docker build → push to ECR → deploy to staging
+      → E2E smoke test → manual gate → deploy to production. Add monitoring: Prometheus
+      metrics, Grafana dashboards for sync lag, stock movement rate, PO processing
+      time. PagerDuty alerting for P1 incidents.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - 'Pipeline runs end-to-end on PR merge: lint → test → build → deploy to staging
+      in <15 min'
+    - Manual approval gate required before production deployment
+    - SAST failures block merge (pipeline fails on any High severity finding)
+    - Grafana dashboard displays all 5 key metrics with appropriate alert thresholds
+    - PagerDuty alert fires within 2 minutes of sync_lag exceeding 30 minutes
+    depends_on:
+    - 24
+    - 10
+  INFRA:
+    description: 'Provision AWS infrastructure via Terraform: VPC with public/private
+      subnets, ECS Fargate cluster, RDS PostgreSQL 16 Multi-AZ, ElastiCache Redis,
+      Application Load Balancer with WAF, S3 for exports/reports, Secrets Manager
+      for marketplace OAuth tokens and DB credentials, CloudWatch Logs. PCI DSS network
+      segmentation enforced in VPC.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan applies cleanly for both staging and production workspaces
+    - RDS and ElastiCache are in private subnets, not internet-accessible
+    - WAF rules block OWASP Top 10 patterns on ALB
+    - All data encrypted at rest (RDS, S3, ElastiCache) and in transit (TLS 1.2+)
+    - VPC flow logs enabled and shipping to CloudWatch for PCI Req 10 compliance
+    depends_on:
+    - 25
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response playbook (P1/P2/P3
+      classification), marketplace sync outage runbook, database failover procedure,
+      PO approval backlog clearance SOP, capacity planning guidelines (storage growth,
+      Celery worker scaling), and SLA definitions (99.5% uptime, 15-min sync SLA).'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Incident response playbook defines P1/P2/P3 with escalation paths and response
+      SLAs
+    - Marketplace sync outage runbook covers all 3 channels with step-by-step recovery
+    - Database failover procedure tested in staging with documented RTO ≤15 minutes
+    - SLA document signed off by product stakeholder
+    - Capacity planning model projects infrastructure costs at 1k, 10k, 100k SKUs
+    depends_on:
+    - 26
+  DOCS:
+    description: 'Write technical documentation: API reference (auto-generated from
+      OpenAPI spec + enriched examples), architecture decision records (ADRs) for
+      key choices (PostgreSQL RLS for multi-tenancy, Prophet+LightGBM ensemble, coordinator
+      agent pattern), developer onboarding guide, and marketplace integration setup
+      guides (Amazon SP-API, eBay, Shopify).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from OpenAPI spec with ≥1 request/response example per
+      endpoint
+    - 3 ADRs written with Context/Decision/Consequences format
+    - Developer onboarding guide enables new dev to run full stack locally in <30
+      minutes
+    - Each marketplace setup guide covers OAuth app creation, required scopes, and
+      test mode setup
+    - All docs reviewed for technical accuracy by developer who implemented each area
+    depends_on:
+    - 24
+    - 15
+  TRAINING:
+    description: 'Create user training materials: warehouse operator quick-start guide
+      (barcode scanning, receiving, stock counts), purchasing manager guide (PO creation,
+      approval workflow, supplier setup), e-commerce seller guide (marketplace connection,
+      sync settings, conflict resolution), and in-app onboarding tooltips/walkthroughs.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Each guide covers the user's core workflow end-to-end in ≤10 pages
+    - In-app onboarding tour covers ≥5 key UI elements with actionable tooltip text
+    - Warehouse operator guide usable by non-technical staff (validated with 1 test
+      reader)
+    - PDF exports render correctly with page numbers, cover page, and table of contents
+    - Guides reviewed for accuracy against final shipped UI
+    depends_on:
+    - 18
+    - 19
+    - 21
+    - 28

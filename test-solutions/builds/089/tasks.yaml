@@ -1,0 +1,372 @@
+task_types:
+  MARKET_RESEARCH:
+    description: Competitive analysis of habit tracking apps (Habitica, Streaks, Finch,
+      Loop, Fabulous). Map feature gaps, monetization models, Apple Health/Google
+      Fit integration patterns, and social accountability mechanics.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers ≥6 direct competitors across iOS and Android
+    - Identifies ≥3 unmet user needs in the current market
+    - Documents Apple Health and Google Fit integration approach for top 3 competitors
+    - 'Includes monetization analysis: freemium vs subscription vs one-time'
+    - Defines target market segment and positioning statement
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Author PRD for habit_tracker: define MVP scope, user personas, MoSCoW
+      feature prioritization, success metrics (DAU, streak retention, D7/D30 retention),
+      and phased roadmap across MVP → Social Layer → Health Integration → AI Coaching.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD defines ≥3 user personas with jobs-to-be-done
+    - MoSCoW feature list with clear MVP boundary documented
+    - 'Success metrics defined: DAU, D7 retention, D30 retention, streak completion
+      rate'
+    - Phased roadmap with milestones per phase approved by stakeholders
+    - API integration requirements documented for Apple Health (HealthKit) and Google
+      Fit (Health Connect)
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'User research (5 interviews), affinity mapping, information architecture,
+      and high-fidelity wireframes for all core screens: onboarding, habit list, streak
+      calendar heatmap, reminder config, statistics, social group feed, health sync
+      settings. WCAG 2.1 AA audit.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - ≥5 user research interviews completed with affinity map
+    - Complete information architecture diagram approved
+    - High-fidelity Figma prototype covering all core screens
+    - Usability test with ≥5 participants, ≥80% task completion rate
+    - 'WCAG 2.1 AA audit passed: color contrast, touch targets ≥44px, screen reader
+      labels'
+    - Streak calendar heatmap visualisation validated with users
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design PostgreSQL 16 schema: users, habits, habit_completions, streaks,
+      reminders, social_groups, group_memberships, group_posts, health_sync_configs,
+      audit_log. Define indexes, FK constraints, soft-delete patterns, and Alembic
+      migration scripts.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD reviewed and approved by engineering lead
+    - All FK constraints and indexes defined
+    - Soft-delete (deleted_at/archived_at) applied to user-facing entities
+    - Alembic migration scripts generate clean schema from empty DB
+    - Streak query (last 30 days completions) executes in <10ms on 100k rows
+    - Health sync tokens encrypted at rest (column-level AES-256)
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 REST API contract for all habit_tracker endpoints:
+      auth, habits CRUD, completions, streaks, reminders, social groups, health sync.
+      Define JWT RS256 auth strategy, rate limits, RFC 7807 error schema, and cursor-based
+      pagination.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec passes spectral lint with zero errors
+    - All endpoints have request/response schemas with examples
+    - Error responses follow RFC 7807 Problem Details format
+    - 'Auth flow documented: register → login → JWT → refresh → logout'
+    - Health sync OAuth2 PKCE callback flow documented for HealthKit and Health Connect
+    - Contract signed off by frontend and backend leads
+    depends_on:
+    - 2
+  SECURITY:
+    description: 'STRIDE threat model on auth, social group access control, and health
+      data handling. Define controls: HTTPS enforcement, JWT validation, RBAC for
+      group roles, rate limiting, input sanitization, OWASP Top 10 checklist. Health
+      data compliance review vs HealthKit and Health Connect policies.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model completed for all 5 API surface areas
+    - OWASP Top 10 checklist completed with mitigations
+    - Health data handling complies with Apple HealthKit and Google Health Connect
+      privacy policies
+    - 'RBAC matrix defined: group owner, member, admin roles with permission matrix'
+    - Data retention and deletion policy documented (GDPR right to erasure)
+    - Health OAuth tokens stored encrypted; refresh tokens in httpOnly cookies
+    depends_on:
+    - 5
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, and Data Processing Agreement
+      covering health data (HealthKit, Health Connect), social features, UGC in groups,
+      and account deletion. Ensure GDPR Article 17, CCPA, and Apple/Google platform
+      policies compliance.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all data types collected including health data
+    - ToS includes acceptable use policy for social groups
+    - 'GDPR data subject rights described: access, erasure, portability'
+    - HealthKit and Health Connect data usage restrictions clearly stated
+    - Data Processing Agreement template available for B2B use
+    - Reviewed by legal counsel before publishing
+    depends_on:
+    - 6
+  COMPLIANCE:
+    description: Build compliance traceability matrix mapping PRD requirements to
+      implementation tasks and test cases. Define health data handling procedures
+      aligned with Apple HealthKit guidelines and Google Health Connect policy. Establish
+      audit log specification.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Every PRD requirement traces to ≥1 implementation task and ≥1 test case
+    - Health data flow diagram shows complete path from HealthKit/Health Connect to
+      DB
+    - 'Audit log captures: user ID, action, resource, timestamp for all data mutations'
+    - Data retention schedule defined per data type
+    - Health data never stored in cleartext logs or analytics events
+    depends_on:
+    - 7
+  INFRA:
+    description: 'Provision AWS cloud infrastructure via Terraform: EKS cluster, RDS
+      PostgreSQL 16 Multi-AZ, ElastiCache Redis 7, S3+CloudFront for media assets,
+      SES for email, SNS/FCM bridge for push notifications, Secrets Manager, VPC with
+      private subnets. Three environments: dev/staging/prod.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform modules pass `terraform plan` with zero errors for all 3 environments
+    - RDS in private subnet, accessible only from EKS worker nodes
+    - Redis TLS enabled with AUTH required
+    - S3 blocks public access; CloudFront uses signed URLs for private assets
+    - Secrets Manager rotation configured for DB credentials and JWT signing keys
+    - 'RDS automated backups: 7-day retention, point-in-time restore tested'
+    depends_on:
+    - 5
+  CONFIG:
+    description: 'Configure SAGE habit_tracker solution using Multi-Agent Coordinator
+      pattern. Set up three specialist agents: reminder-intelligence (optimal send-time
+      via ReAct), streak-coach (motivational nudges at risk points), social-engagement
+      (group activity summarization). Author project.yaml, prompts.yaml, tasks.yaml.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml defines solution name, active_modules, theme, and coordinator config
+    - prompts.yaml contains system prompts for all 3 specialist agents
+    - 'tasks.yaml defines task types: reminder_optimization, streak_coaching, group_engagement'
+    - 'SAGE loads habit_tracker solution without errors: `make run PROJECT=habit_tracker`'
+    - Coordinator routes tasks to correct specialist agent by task_type
+    depends_on:
+    - 2
+  BACKEND:
+    description: 'Implement FastAPI backend: auth service (JWT RS256 + refresh rotation),
+      habits CRUD, streak calculation engine (daily/weekly/custom frequencies, freeze
+      logic), reminder scheduler (APScheduler + Redis), social groups service, push
+      notification dispatcher (FCM + APNs), Celery async workers.'
+    agent_role: developer
+    acceptance_criteria:
+    - All OpenAPI spec endpoints implemented with correct response schemas
+    - 'StreakCalculator handles: daily habits, weekly habits, custom days, freeze/forgiveness,
+      longest streak'
+    - Reminder scheduler fires within ±60 seconds of scheduled time
+    - Group invitation codes are cryptographically random (secrets.token_urlsafe)
+    - Health sync OAuth2 PKCE flow completes end-to-end for both HealthKit and Health
+      Connect
+    - Push notifications delivered via FCM (Android) and APNs (iOS) with delivery
+      receipts logged
+    - '`make test` passes with ≥80% line coverage on streak and auth modules'
+    depends_on:
+    - 4
+    - 5
+    - 9
+    - 10
+  FIRMWARE:
+    description: 'Implement BLE companion firmware for optional wearable habit-tracker
+      band: STM32L4 MCU, FreeRTOS 10.6, Nordic SoftDevice BLE, haptic feedback driver
+      (DRV2605L) for reminder alerts and streak milestones, accelerometer (LIS2DH12)
+      step detection, GATT server for habit completion offload.'
+    agent_role: developer
+    acceptance_criteria:
+    - Firmware compiles clean (zero warnings -Wall -Wextra) for STM32L4 target
+    - 'BLE GATT profile exposes: habit_completion write characteristic, reminder_alert
+      notify characteristic'
+    - 'Haptic patterns: short pulse 100ms (reminder), long pulse 500ms (streak milestone)'
+    - Sleep current <15µA measured with multimeter in series
+    - Step detection accuracy ≥90% vs pedometer ground truth over 1000-step test
+    - OTA firmware update via nRF DFU functional on physical hardware
+    depends_on:
+    - 5
+  PCB_DESIGN:
+    description: 'Design PCB schematic and layout for habit-tracker wearable band
+      in KiCad 8: STM32L4 + nRF52840, BQ25185 LiPo charger, DRV2605L haptic driver,
+      LIS2DH12 accelerometer, USB-C charging. 4-layer stackup, 38×18mm wrist-form-factor.
+      Generate Gerbers and BOM.'
+    agent_role: developer
+    acceptance_criteria:
+    - Schematic ERC passes with zero errors in KiCad
+    - PCB layout DRC passes with zero errors at 0.1mm minimum clearance
+    - BOM generated with LCSC part numbers for all components
+    - Gerbers pass JLCPCB DFM check
+    - Power trace width ≥0.5mm for charging path, ≥0.25mm for logic signals
+    - BLE antenna clearance meets Nordic reference design keep-out zone guidelines
+    depends_on:
+    - 12
+  HARDWARE_SIM:
+    description: LTspice SPICE model of BQ25185 CC/CV charging circuit and SystemC
+      power model of FreeRTOS task duty cycle to validate battery life (≥5 days),
+      charge time (≤1 hour), and sleep current (<15µA) before PCB fabrication.
+    agent_role: developer
+    acceptance_criteria:
+    - SPICE charge simulation completes CC/CV within ≤1.0 hours for 150mAh cell
+    - SystemC model estimates ≥5 days battery life under normal usage (6 reminders/day)
+    - Sleep current simulation confirms <15µA in deep sleep
+    - LDO output ripple <50mV under peak BLE TX current
+    - Results documented in power_budget_analysis.pdf
+    - Simulation values within 10% of prototype measurements post-fabrication
+    depends_on:
+    - 13
+  FRONTEND:
+    description: 'Implement cross-platform mobile app in React Native 0.74 + Expo
+      SDK 51: onboarding, habit list, streak calendar heatmap (52-week), habit creation
+      wizard, statistics charts (Victory Native), social group feed, reminder configuration,
+      Apple Health (react-native-health) and Google Fit (react-native-google-fit)
+      sync screens.'
+    agent_role: developer
+    acceptance_criteria:
+    - App builds and runs on iOS 16+ and Android 12+ without crashes
+    - Habit list loads within 300ms on Pixel 6
+    - Calendar heatmap renders 52 weeks of completions with correct color gradient
+    - Reminder notifications fire at scheduled time (±60s) when app is backgrounded
+    - HealthKit sync reads step count and writes habit completions as mindful sessions
+    - Health Connect sync reads steps and writes habit completion events
+    - Social group feed loads with infinite scroll, <500ms initial paint
+    - All screens match Figma designs within ±2px / ±2% color tolerance
+    depends_on:
+    - 3
+    - 11
+  DEVOPS:
+    description: 'CI/CD pipelines via GitHub Actions: backend (ruff → mypy → pytest
+      → Docker → EKS rolling deploy) and mobile (tsc → Jest → Expo EAS Build → TestFlight
+      + Play Internal). Monitoring: Datadog APM, Sentry crash reporting, PagerDuty
+      alerting on P95 > 200ms or error rate > 1%.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Backend pipeline completes in <8 minutes for a standard PR
+    - EAS Build produces signed IPA and APK in <15 minutes
+    - 'Zero-downtime rolling deployment to EKS (maxSurge: 1, maxUnavailable: 0)'
+    - Sentry alerts fire within 2 minutes of a new crash
+    - Datadog dashboard shows API latency, error rate, active users
+    - 'Rollback procedure documented and tested: manual tag rollback <5 minutes'
+    depends_on:
+    - 9
+    - 11
+    - 15
+  TESTS:
+    description: 'Write pytest unit and integration test suite for backend: auth flows,
+      streak calculator edge cases (timezone boundaries, freeze logic, longest streak),
+      reminder scheduler, social group RBAC, health sync OAuth PKCE flow, push notification
+      dispatch. Target ≥85% line coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - ≥85% line coverage across src/ (excluding migrations and fixtures)
+    - 'Streak tests cover: 30-day daily streak, weekly habit, timezone midnight boundary,
+      freeze, longest streak'
+    - 'Auth tests cover: JWT expiry, refresh token rotation, concurrent session limit'
+    - All tests pass in <120 seconds in CI
+    - Zero flaky tests (no sleep() calls, all async properly awaited)
+    - Integration tests hit real PostgreSQL — no DB mocks
+    depends_on:
+    - 11
+  EMBEDDED_TEST:
+    description: 'Firmware unit tests (Unity + CMock) and HIL test specification for
+      wearable: BLE GATT write/notify validation, haptic pattern timing (oscilloscope),
+      accelerometer step detection accuracy (1000-step walk), RTC alarm accuracy (24hr
+      soak), sleep current measurement, OTA DFU flow.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unity unit test suite passes 100% on target hardware
+    - HIL test report documents pass/fail for all 7 test categories
+    - BLE GATT notify latency P95 <100ms measured over 100 trials
+    - Step detection accuracy ≥90% in 3 independent 1000-step walks
+    - RTC alarm accuracy ±5s confirmed over 24-hour soak
+    - Sleep current ≤15µA confirmed on 3 prototype units
+    - OTA DFU succeeds on 10 consecutive update cycles
+    depends_on:
+    - 12
+    - 14
+  QA:
+    description: 'QA test plan for habit_tracker mobile app: smoke (20 cases), regression
+      (150 cases), health sync (30 cases), social (40 cases), and exploratory charter
+      for edge cases (streak midnight boundary, timezone change mid-streak, concurrent
+      group actions). Device matrix: 8 devices across iOS 16/17/18 and Android 12/13/14.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan reviewed and approved before any release candidate
+    - Smoke suite passes 100% on all 8 devices before beta release
+    - Regression suite passes ≥98% before production release
+    - Health sync tested on physical iPhone (TestFlight) and Pixel (real Health Connect)
+    - Zero P1 (crash/data loss) bugs open at release gate
+    - 'Bug severity classification documented: P1=crash/data loss, P2=feature broken,
+      P3=cosmetic'
+    depends_on:
+    - 15
+    - 17
+  SYSTEM_TEST:
+    description: 'End-to-end system tests: full user journeys via Detox (React Native
+      E2E on iOS Simulator + Android Emulator), load testing at 10k concurrent users
+      via k6, and health sync integration against live HealthKit/Health Connect sandboxes
+      on physical devices.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 5 E2E scenarios pass on iOS Simulator (iPhone 15 Pro, iOS 17) and Android
+      Emulator (Pixel 6, API 33)
+    - 'Load test: P95 <200ms, P99 <500ms, error rate <0.1% at 10k concurrent users'
+    - Streak recalculation for 5,000 simultaneous completions completes in <30 seconds
+    - Health sync E2E verified on physical device (TestFlight) against real HealthKit
+      sandbox
+    - Account deletion E2E confirms zero DB rows for deleted user after purge job
+    depends_on:
+    - 17
+    - 19
+  LOCALIZATION:
+    description: 'Set up i18n infrastructure (i18n-js + expo-localization for mobile,
+      Babel for backend email/push templates). Implement locale-aware date formatting
+      for streak heatmap, 12h/24h reminder display, week start day. Initial translations:
+      English, Spanish, French, Portuguese (BR).'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All user-visible strings extracted to translation files (zero hardcoded strings)
+    - Spanish, French, Portuguese (BR) translations complete and reviewed by native
+      speakers
+    - Date and time display respects device locale on iOS and Android
+    - Week start day uses locale default and is user-overridable in settings
+    - Push notification copy delivered in user's app language
+    - Pluralization rules correct for all 4 locales
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 15
+  TRAINING:
+    description: 'Create user-facing documentation and onboarding materials: 5-step
+      in-app interactive tutorial, 20-article help center (Notion/Zendesk), App Store
+      product page copy (iOS + Android), and 3-minute onboarding video script. All
+      materials localized for 4 supported locales.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - In-app tutorial completes without errors on iOS and Android
+    - Help center covers all 20 feature areas with search working
+    - App Store description within 4,000 character limit and passes review guidelines
+    - Onboarding video reviewed and approved by product manager
+    - All materials pass Flesch-Kincaid readability test at ≤8th grade level
+    - Training materials localized for all 4 supported locales
+    depends_on:
+    - 15
+    - 21
+  DOCS:
+    description: 'Write technical documentation: Redoc API reference (auto-generated
+      from OpenAPI 3.1), backend architecture README with system diagram, deployment
+      runbook, schemaspy-generated database ERD, health sync integration guide for
+      partners, and CHANGELOG in kept-a-changelog format.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Redoc API reference renders all endpoints with request/response examples
+    - Architecture diagram reviewed by all team leads
+    - Deployment runbook validated by running prod deploy from scratch following only
+      the doc
+    - Database ERD reflects current migration state (auto-generated, not hand-drawn)
+    - Health sync guide enables a developer to implement integration in <4 hours
+    - CHANGELOG update enforced as CI check on release PRs
+    depends_on:
+    - 16
+    - 20

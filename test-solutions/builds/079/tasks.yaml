@@ -1,0 +1,300 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user stories, and process flows for
+      the skill assessment platform covering hiring managers, candidates, and admins.
+      Include ROI analysis for adaptive testing vs. static assessments.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All user stories follow INVEST criteria and are prioritized by MoSCoW
+    - Process flow diagrams exist for all 6 core flows
+    - ROI model includes measurable KPIs and baseline assumptions
+    - Stakeholder sign-off document produced
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Analyze competitors (HackerRank, Codility, HireVue, Vervoe) and identify
+      differentiation opportunities around bias detection and adaptive testing accuracy.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covering at least 5 competitors across 10+ dimensions
+    - Differentiation opportunities ranked by feasibility and market impact
+    - Pricing benchmark report with 3 recommended pricing tiers
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce the product requirements document (PRD), feature roadmap
+      (MVP vs. v1.1+), and success metrics (completion rate, pass rate calibration,
+      bias score delta, candidate NPS).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved by business_analyst and ux_designer
+    - Roadmap has clear MVP cutline with rationale for deferred features
+    - Each success metric has a target value, measurement method, and review cadence
+    - Feature prioritization matrix documented
+    depends_on:
+    - 1
+    - 2
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all candidate-facing
+      and recruiter-facing flows: assessment UI, coding sandbox, video interview room,
+      results dashboard, and bias detection panel. Accessibility audit per WCAG 2.1
+      AA.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 8 defined screen types
+    - Interactive prototype validated with at least 5 user sessions
+    - WCAG 2.1 AA audit report with zero P0 violations
+    - Keyboard-navigation and screen-reader flows documented
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on:
+    - 3
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreements,
+      and candidate consent forms. Review FERPA (candidate education records) and
+      COPPA (under-13 safeguards) compliance obligations.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - All 5 legal documents drafted and reviewed by legal_advisor
+    - FERPA obligations mapped to specific data handling procedures
+    - COPPA age-gate mechanism specified in candidate consent flow
+    - DPA template approved for use with enterprise customers
+    - FERPA/COPPA compliance if minors involved
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Produce compliance evidence artifacts for COPPA, FERPA, and WCAG
+      2.1. Build a requirements traceability matrix linking legal obligations to implemented
+      controls. Define V&V protocols for bias detection.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Traceability matrix maps every legal obligation to an implemented control
+    - Privacy Impact Assessment completed and filed
+    - WCAG 2.1 AA conformance statement template produced
+    - Bias V&V protocol specifies statistical thresholds and test dataset requirements
+    depends_on:
+    - 5
+  SECURITY:
+    description: Threat model the platform covering proctoring data, video streams,
+      coding sandbox execution, and candidate PII. Define OWASP Top 10 mitigations,
+      SBOM, and penetration test plan.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis covers all 5 threat model scope areas
+    - SBOM generated for all runtime dependencies
+    - Penetration test plan approved with defined scope, methodology, and success
+      criteria
+    - Code execution sandbox isolation requirements specified (gVisor or Firecracker)
+    depends_on:
+    - 5
+  DATABASE:
+    description: Design the database schema for candidates, assessments, questions
+      (IRT parameters), responses, video sessions, anti-cheat events, scores, and
+      bias metrics. Define migrations and seed data strategy.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD reviewed and approved by developer lead
+    - All PII columns flagged and encrypted at rest
+    - IRT parameter schema supports 3PL model with discrimination, difficulty, and
+      guessing fields
+    - Migration scripts idempotent and tested on fresh schema
+    - Seed data covers 50+ sample questions across 5 skill categories
+    depends_on:
+    - 3
+  CONFIG:
+    description: 'Set up the agentic AI pattern for adaptive testing: Multi-Agent
+      Coordinator (coordinator) with specialist agents for IRT scoring, bias detection,
+      and question selection. Configure SAGE solution YAML for skill_assessment domain.'
+    agent_role: developer
+    acceptance_criteria:
+    - skill_assessment solution directory scaffolded from starter template
+    - All 4 specialist agent roles defined in prompts.yaml with system prompts
+    - Coordinator routing logic defined in tasks.yaml
+    - HITL gates configured for bias_flag_review and candidate_disqualification
+    - make run PROJECT=skill_assessment starts without errors
+    depends_on:
+    - 3
+  BACKEND:
+    description: Build the adaptive testing engine using Item Response Theory (3PL
+      model). Implement question selection algorithm (maximum information), ability
+      estimation (EAP), and stopping criteria (SE threshold or max items).
+    agent_role: developer
+    acceptance_criteria:
+    - IRT 3PL likelihood function implemented and unit-tested against known parameters
+    - Ability estimation converges within 5 iterations for simulated response vectors
+    - Question selection selects item maximizing Fisher information at current theta
+    - Stopping criteria halt test when SE < 0.3 or item count bounds reached
+    - CAT engine processes 1000 simulated sessions/minute without degradation
+    depends_on:
+    - 8
+    - 9
+  ML_MODEL:
+    description: 'Build the bias detection pipeline: demographic parity and equalized
+      odds analysis across protected attributes (gender, race, age proxy), adverse
+      impact ratio computation, and flagging assessments that violate 4/5ths rule.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Pipeline computes all 3 fairness metrics for each protected attribute group
+    - 4/5ths rule violation triggers HITL flag routed to recruiter approval queue
+    - SHAP explainability report generated per flagged assessment
+    - Bias metrics stored with assessment_id and versioned for audit trail
+    - Pipeline processes 10,000 candidate scores in < 60 seconds
+    depends_on:
+    - 10
+    - 8
+  API:
+    description: 'Design and implement the REST + WebSocket API surface: OpenAPI spec
+      for all endpoints covering assessments, coding submissions, video sessions,
+      proctoring events, scores, rankings, and bias reports.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec validates with no errors via spectral lint
+    - All endpoints documented with request/response schemas and error codes
+    - JWT auth enforced on all protected endpoints — unauthenticated requests return
+      401
+    - WebSocket endpoint streams proctoring events with < 500ms latency
+    - API versioning strategy documented (v1 prefix)
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  FRONTEND:
+    description: 'Build the candidate assessment UI: adaptive MCQ test runner, coding
+      sandbox (Monaco editor, multi-language, run/submit), video interview room (WebRTC),
+      and anti-cheat enforcement layer (fullscreen lock, tab monitoring).'
+    agent_role: developer
+    acceptance_criteria:
+    - MCQ adaptive test renders questions, records responses, and submits on completion
+    - Monaco editor supports all 5 languages with syntax highlighting and run output
+      panel
+    - Video interview room shows candidate camera, question prompt, and countdown
+      timer
+    - Fullscreen enforced on test start — exit attempt logs event and shows warning
+      modal
+    - All interactive elements pass WCAG 2.1 AA automated scan (axe-core zero violations)
+    depends_on:
+    - 4
+    - 16
+  INFRA:
+    description: Set up Kubernetes deployment manifests, Docker images for all services
+      (API, sandbox executor, video signaling, ML bias pipeline), CI/CD pipeline (GitHub
+      Actions), and environment configs for dev/staging/prod.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All services containerized with minimal base images (distroless where possible)
+    - gVisor RuntimeClass applied to sandbox executor pods — verified via runsc audit
+    - CI/CD pipeline runs lint + tests on every PR and deploys to staging on merge
+      to main
+    - Secrets never in environment variables — all injected via secrets manager
+    - Staging environment mirrors prod topology with < 5% cost difference
+    depends_on:
+    - 16
+  DEVOPS:
+    description: 'Configure observability stack: structured logging (ELK), metrics
+      (Prometheus + Grafana), distributed tracing (OpenTelemetry), alerting for SLA
+      breaches, and SIEM integration for security events.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Every API request emits structured log with trace_id, tenant_id, latency, status
+    - Grafana dashboard covers API latency, error rate, active sessions, bias flag
+      backlog
+    - OpenTelemetry traces visible end-to-end from API gateway to ML pipeline
+    - All 4 defined alerts fire in staging when thresholds are breached
+    - Security events forwarded to SIEM within 30 seconds of occurrence
+    depends_on:
+    - 19
+  LOCALIZATION:
+    description: Set up i18n infrastructure (react-i18next + i18next-http-backend)
+      and produce initial locale configs for en-US, es-ES, fr-FR, de-DE, ja-JP. Localize
+      all candidate-facing UI strings and assessment instructions.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - i18next configured with namespace separation (common, assessment, video, legal)
+    - All candidate-facing strings externalized — zero hardcoded English in JSX
+    - es-ES, fr-FR, de-DE translations complete for MVP scope
+    - ja-JP translation complete with CJK font fallback verified
+    - RTL layout toggles correctly in LTR/RTL test harness
+    - Missing translation keys flagged in CI with non-zero exit code
+    depends_on:
+    - 17
+  TESTS:
+    description: 'Write unit and integration tests for: IRT scoring engine, bias detection
+      pipeline, code sandbox execution, anti-cheat event scoring, ranking aggregation,
+      and all API endpoints.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - IRT 3PL scoring correct for 20 parameterized test vectors against reference
+      implementation
+    - Bias pipeline correctly flags 4/5ths violations in 10 synthetic datasets
+    - Sandbox execution tests cover TLE, MLE, correct, wrong answer, and compile error
+      verdicts
+    - API contract tests cover all endpoints with valid and invalid inputs
+    - Overall backend coverage >= 80%, frontend coverage >= 75%
+    - All tests pass in CI in < 10 minutes
+    depends_on:
+    - 10
+    - 11
+    - 13
+    - 14
+    - 15
+    - 16
+  QA:
+    description: Develop QA test plan covering manual test cases for adaptive testing
+      accuracy, video interview flows, anti-cheat UX, bias dashboard, and accessibility.
+      Define test execution reports and defect severity matrix.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 6 scope areas with at least 10 test cases each
+    - Cross-browser matrix executed on all 4 browsers x 3 device types
+    - WCAG 2.1 AA manual test checklist completed with zero P0/P1 findings
+    - Defect severity matrix agreed with product_manager before test execution
+    - Test execution report produced with pass/fail counts and open defects
+    depends_on:
+    - 17
+    - 18
+    - 22
+  SYSTEM_TEST:
+    description: 'End-to-end system test suite: full candidate journey (invite → adaptive
+      test → coding → video → ranking), recruiter review journey, and bias flag HITL
+      approval flow. Load test with 500 concurrent candidates.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 5 E2E scenarios pass on staging environment
+    - Load test sustains 500 concurrent candidates with p99 latency < 2 seconds
+    - p99 latency for code submission verdict < 6 seconds under load
+    - Chaos scenarios recover gracefully — candidate session resumable after pod crash
+    - No data loss or score corruption observed across 1000 simulated sessions
+    depends_on:
+    - 22
+    - 23
+    - 19
+  TRAINING:
+    description: Produce user guides, recruiter onboarding docs, candidate help center,
+      admin runbooks, and video walkthrough scripts. Cover bias dashboard interpretation
+      and anti-cheat review workflows.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Candidate help center covers test-taking, technical requirements, and anti-cheat
+      policy
+    - Recruiter guide covers assessment creation, review, bias panel, and shortlist
+      export
+    - Bias dashboard guide explains each metric with worked examples and action recommendations
+    - Admin runbook covers question bank import, user management, and audit log access
+    - Video walkthrough scripts reviewed and approved before recording
+    depends_on:
+    - 18
+    - 14
+  DOCS:
+    description: Write API reference documentation (auto-generated from OpenAPI spec),
+      architecture decision records (ADRs) for IRT engine, sandbox isolation, and
+      bias detection, and developer onboarding README.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Swagger UI renders all API endpoints with try-it-out functional in dev environment
+    - All 4 ADRs include context, decision, consequences, and rejected alternatives
+    - README enables a new developer to run the full stack locally in < 30 minutes
+    - API docs auto-regenerate in CI on spec change
+    depends_on:
+    - 16
+    - 19

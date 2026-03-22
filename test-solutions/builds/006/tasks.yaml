@@ -1,0 +1,342 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define clinical trial management system requirements: patient enrollment
+      workflows, randomization algorithms, adverse event (AE) capture forms, regulatory
+      submission pipelines, and 21 CFR Part 11 electronic signature requirements.
+      Produce a Business Requirements Document (BRD) with user stories for each stakeholder
+      role: Principal Investigator, Study Coordinator, Regulatory Affairs, Data Manager,
+      Sponsor.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - 'BRD covers all five core modules: enrollment, randomization, AE tracking, regulatory
+      submissions, e-signatures'
+    - User stories written for each stakeholder role with acceptance criteria
+    - Process flow diagrams produced for enrollment and AE reporting workflows
+    - 21 CFR Part 11 requirements mapped to specific system features (audit trail,
+      e-signature, access controls)
+    - HIPAA data elements identified and tagged in data dictionary
+    depends_on: []
+  REGULATORY:
+    description: Produce a regulatory standards mapping document for 21 CFR Part 11,
+      ICH E6 GCP, HIPAA, HITECH, and HL7 FHIR R4. Map each standard's requirements
+      to system controls. Identify predicate rule applicability. Create a Regulatory
+      Impact Assessment for the system as a software-as-a-medical-device (SaMD) candidate
+      and determine FDA 510(k) / De Novo pathway applicability.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Each 21 CFR Part 11 sub-requirement (11.10, 11.30, 11.50, 11.70, 11.100, 11.200,
+      11.300) mapped to a system control
+    - HIPAA Technical Safeguards (access control, audit controls, integrity, transmission
+      security) mapped to architecture decisions
+    - HL7 FHIR R4 resource types identified for each clinical data entity (Patient,
+      Encounter, AdverseEvent, ResearchStudy)
+    - Regulatory impact assessment signed off by regulatory_specialist
+    - De Novo / 510(k) pathway decision documented with rationale
+    - HIPAA risk assessment complete
+    - BAA template prepared
+    depends_on:
+    - 1
+  SECURITY:
+    description: Produce a threat model (STRIDE) and security architecture plan for
+      the clinical trial management system. Cover PHI data flows, e-signature integrity,
+      session management, role-based access control (RBAC), audit trail immutability,
+      and HL7 FHIR API security. Generate a Software Bill of Materials (SBOM) template
+      and penetration test plan.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - STRIDE threat model covers all six threat categories for each system component
+    - PHI data flow diagram produced and all PHI-at-rest and PHI-in-transit controls
+      documented
+    - 'RBAC matrix defined: roles (PI, Coordinator, Regulatory, DM, Sponsor, Admin)
+      × permissions (read, write, approve, delete, sign)'
+    - Audit trail immutability mechanism specified (append-only log, cryptographic
+      chaining)
+    - SBOM template populated with all third-party dependencies and license classifications
+    - Penetration test plan covers OWASP Top 10 + HIPAA-specific attack vectors
+    - PHI encryption at rest and in transit
+    - Access audit logging enabled
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: Create the Design History File (DHF) skeleton, risk matrix (ISO 14971-style
+      adapted for SaMD), V&V protocol templates, and a traceability matrix linking
+      BRD requirements → design controls → test cases. Produce a 21 CFR Part 11 compliance
+      checklist as a living document updated with each implementation step.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - 'DHF skeleton includes all required sections: design inputs, design outputs,
+      design review records, design verification, design validation, design transfer,
+      design changes'
+    - Risk matrix covers at least 20 identified hazards with severity × probability
+      ratings and mitigation controls
+    - Traceability matrix links every BRD user story to at least one design control
+      and one test case
+    - V&V protocol templates cover IQ (Installation Qualification), OQ (Operational
+      Qualification), PQ (Performance Qualification)
+    - 21 CFR Part 11 checklist is structured as a pass/fail audit artifact
+    depends_on:
+    - 2
+    - 3
+  LEGAL:
+    description: Draft terms of service, data processing agreements (DPA), privacy
+      policy (HIPAA Notice of Privacy Practices), BAA template for sponsor/site relationships,
+      and software license audit. Classify all open-source dependencies for GPL/LGPL/MIT
+      compatibility with commercial clinical software distribution.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy satisfies HIPAA Notice of Privacy Practices requirements (45
+      CFR 164.520)
+    - BAA template covers all 18 HIPAA identifiers and includes breach notification
+      obligations
+    - DPA template complies with HITECH amendments to HIPAA
+    - License audit clears all dependencies — no GPL-licensed code in proprietary
+      modules
+    - Terms of service include acceptable use, data retention, liability limitation,
+      and dispute resolution clauses
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: 'Design wireframes and interaction flows for all five core modules:
+      (1) Patient Enrollment dashboard with eligibility screening, (2) Randomization
+      workflow UI with blinding controls, (3) Adverse Event reporting form (MedDRA-coded,
+      FDA-3500A format), (4) Regulatory submission tracker, (5) 21 CFR Part 11 electronic
+      signature dialog. Conduct accessibility audit per WCAG 2.1 AA.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all five modules with mobile-responsive layouts
+    - E-signature dialog clearly presents signer identity, meaning of signature, and
+      date/time per 21 CFR 11.50
+    - AE reporting form maps to FDA-3500A fields and includes MedDRA code lookup
+    - Accessibility audit shows zero WCAG 2.1 AA violations in core patient-facing
+      flows
+    - Design system defined with consistent component library (forms, tables, status
+      badges, approval widgets)
+    depends_on:
+    - 1
+    - 3
+  DATABASE:
+    description: 'Design the PostgreSQL database schema for: patients (PHI-compliant,
+      encrypted PII columns), trials (protocol, arms, sites), randomization (allocation
+      table, blinding keys, stratification factors), adverse events (MedDRA hierarchy,
+      causality, severity), regulatory submissions (submission type, status, attachments),
+      audit_log (append-only, cryptographic hash chain), and electronic_signatures
+      (signer, timestamp, signature_meaning, certificate). Include FHIR R4 resource
+      mapping views.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all six core entity groups with proper normalization (3NF minimum)
+    - PHI columns (name, DOB, SSN, MRN) use column-level encryption — plaintext never
+      stored
+    - audit_log table has no UPDATE/DELETE permissions at database level; triggers
+      enforce append-only
+    - 'Audit log records include: event_type, user_id, timestamp, entity_type, entity_id,
+      old_value_hash, new_value_hash, chain_hash'
+    - 'Electronic signature table stores: signer_id, signed_at (UTC), signature_meaning,
+      record_hash, certificate_thumbprint'
+    - Alembic migration scripts run cleanly on fresh PostgreSQL 16 instance
+    depends_on:
+    - 4
+    - 6
+  CONFIG:
+    description: 'Set up the project scaffold: Python FastAPI backend with SQLAlchemy
+      ORM, React 18 + TypeScript frontend, Docker Compose for local dev (PostgreSQL,
+      Redis for session management, MinIO for document storage), environment configuration
+      for dev/staging/prod, pre-commit hooks (bandit security scan, mypy type checking,
+      ruff linting), and CI/CD pipeline skeleton (GitHub Actions).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up brings all services healthy within 60 seconds
+    - Pre-commit hooks pass on initial commit (bandit, mypy, ruff all green)
+    - 'GitHub Actions workflow runs on PR: lint → type-check → test → security-scan'
+    - Environment variable schema documented with required vs optional for each environment
+      tier
+    - MinIO bucket policies enforce HIPAA-compliant access controls for document storage
+    depends_on:
+    - 7
+  BACKEND:
+    description: 'Implement the Patient Enrollment service: REST API endpoints for
+      subject screening (eligibility criteria evaluation), enrollment confirmation,
+      site assignment, and protocol arm assignment. Implement FHIR R4 ResearchSubject
+      resource endpoints. All PHI access writes to audit_log. Implement pagination,
+      filtering, and export (CSV/PDF) for enrollment reports.'
+    agent_role: developer
+    acceptance_criteria:
+    - POST /screen returns eligibility pass/fail with per-criterion breakdown
+    - POST /enroll validates all required fields, creates audit_log entry, returns
+      201 with subject ID
+    - All PHI fields returned from GET endpoints are role-filtered (Sponsor cannot
+      see PII)
+    - FHIR ResearchSubject endpoint validates against FHIR R4 schema and returns proper
+      OperationOutcome on error
+    - Enrollment report export produces audit-ready CSV with all required fields
+    - 100% of PHI-touching endpoints have audit log coverage verified by integration
+      test
+    depends_on:
+    - 8
+  AGENTIC:
+    description: Implement a Human-in-the-Loop (HITL) agentic pattern for automated
+      signal detection and regulatory action proposals. The agent monitors AE streams,
+      applies CIOMS/ICH E2E signal detection rules, proposes expedited reporting actions
+      or protocol amendments, and routes proposals to the approval queue requiring
+      e-signed approval from the Principal Investigator and Regulatory Affairs roles
+      before any action executes.
+    agent_role: developer
+    acceptance_criteria:
+    - 'Signal detection agent runs on configurable schedule (default: hourly) and
+      on AE submission events'
+    - Proposals appear in approval queue with full reasoning trace (ReAct Thought→Action→Observation
+      log)
+    - No regulatory action executes without e-signed approval from both required roles
+    - Approval and rejection events write to audit_log with approver ID, timestamp,
+      and rationale
+    - Agent proposal includes reference to triggering data, relevant ICH guideline,
+      and recommended action with risk classification
+    - Rejected proposals feed back into agent context to refine future signal thresholds
+    depends_on:
+    - 11
+    - 12
+    - 13
+  FRONTEND:
+    description: 'Build the Patient Enrollment dashboard: subject list with enrollment
+      status, eligibility screening wizard (step-by-step form with real-time criterion
+      evaluation), enrollment confirmation flow with e-signature step, site-level
+      enrollment progress charts (Chart.js), and FHIR ResearchSubject viewer. Implement
+      role-based field masking (Sponsor view hides PII).'
+    agent_role: developer
+    acceptance_criteria:
+    - Eligibility screening wizard shows per-criterion pass/fail with explanatory
+      text
+    - E-signature dialog appears before final enrollment confirmation — cannot be
+      bypassed
+    - Enrollment progress chart updates in real-time via polling (30s interval)
+    - Sponsor role sees subject IDs only — name, DOB, MRN fields are masked with '***'
+    - WCAG 2.1 AA compliance verified by axe-core automated scan
+    - All API calls use TanStack Query with optimistic updates and error retry
+    depends_on:
+    - 9
+    - 12
+    - 6
+  QA:
+    description: 'Design and execute the quality assurance test plan: unit test coverage
+      targets, integration test matrix, regression test suite, data integrity test
+      cases (PHI encryption verification, audit log completeness, e-signature tamper
+      detection), and user acceptance testing (UAT) scripts for each clinical role.
+      Define entry/exit criteria for each test phase.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all five core modules with entry/exit criteria for each phase
+    - PHI encryption test verifies ciphertext stored in DB is non-reversible without
+      key
+    - Audit log completeness test confirms 100% of PHI-touching API calls produce
+      log entries
+    - E-signature tamper detection test modifies a signed record and verifies INVALID
+      status returned by /verify
+    - UAT scripts written as step-by-step instructions executable by non-technical
+      clinical staff
+    - 'Defect severity matrix defined: Critical (data integrity, HIPAA breach) → High
+      → Medium → Low'
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  TESTS:
+    description: 'Implement automated test suite: pytest unit tests for all backend
+      services (enrollment, randomization, AE, e-signature, submissions), integration
+      tests against a real PostgreSQL test instance, Playwright E2E tests for all
+      five UI modules covering happy paths and critical error scenarios, and property-based
+      tests for randomization algorithm balance using Hypothesis.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest --cov reports >= 90% line coverage across src/
+    - Integration tests run against real PostgreSQL — no mocks for DB layer
+    - 'Playwright tests cover all five core modules: enrollment, randomization, AE,
+      submissions, e-signature'
+    - Hypothesis property tests confirm stratified block randomization never exceeds
+      ±10% arm imbalance across 10,000 simulated trials
+    - Test suite completes in under 8 minutes in CI
+    - All tests pass in clean Docker environment without any local dependencies
+    depends_on:
+    - 19
+  SYSTEM_TEST:
+    description: 'Execute system-level integration testing: end-to-end clinical trial
+      lifecycle simulation (create trial → enroll subjects → randomize → capture AEs
+      → submit SAE → regulatory submission → unblind), performance testing (load test
+      with 500 concurrent users across all API endpoints), HL7 FHIR conformance testing
+      (validate all FHIR resources against R4 profiles), and disaster recovery test
+      (backup restore + audit log integrity verification post-restore).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full trial lifecycle scenario completes without errors from trial creation to
+      final submission
+    - '500 concurrent user load test: p95 < 2000ms, p99 < 5000ms, error rate < 0.1%'
+    - All FHIR resources validate against HAPI FHIR R4 validator with zero conformance
+      errors
+    - 'Disaster recovery test: system restored within RTO of 4 hours with zero audit
+      log records lost'
+    - Emergency unblinding E2E test completes in under 2 minutes with both e-signatures
+      captured
+    - Performance test report submitted as evidence artifact in V&V protocol
+    depends_on:
+    - 20
+  DEVOPS:
+    description: 'Configure production infrastructure: Kubernetes deployment manifests
+      (multi-zone HA), Helm charts for all services, HashiCorp Vault for secrets management
+      (encryption keys, PKI certificates), PostgreSQL streaming replication (primary
+      + 2 replicas), automated backup to encrypted S3-compatible storage, CloudWatch/Prometheus
+      + Grafana monitoring dashboards, and PagerDuty alerting for SLA breaches and
+      security events.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Kubernetes deployment achieves 99.9% uptime SLA in staging over 7-day soak test
+    - Vault manages all secrets — zero secrets in environment variables or config
+      files
+    - PostgreSQL replication lag < 10ms in steady state; verified by replication monitoring
+    - Automated backup runs nightly; restore tested weekly in CI pipeline
+    - 'Grafana dashboards cover: API latency percentiles, error rates, audit log write
+      throughput, e-signature volume, DB replication health'
+    - PagerDuty fires within 2 minutes of simulated HIPAA security event (unauthorized
+      PHI access attempt)
+    depends_on:
+    - 21
+  OPERATIONS:
+    description: 'Author operational runbooks: system startup/shutdown procedures,
+      database failover procedure, backup and restore runbook (with tested RTO/RPO),
+      HIPAA breach response procedure (72-hour notification SLA), SAE deadline escalation
+      runbook, PKI certificate rotation procedure, and on-call escalation matrix.
+      Define SLA tiers for different user roles (Sponsor vs. Site staff).'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Each runbook has a step-by-step format with expected outputs and rollback steps
+    - 'HIPAA breach response runbook covers: detection → containment → assessment
+      → notification (HHS within 60 days, individuals within 60 days, media if > 500
+      affected)'
+    - 'Database failover runbook tested in staging: failover completes within 15 minutes'
+    - SAE deadline escalation runbook defines automated escalation at T+10 days and
+      manual escalation at T+13 days
+    - SLA definitions formally reviewed and signed by operations_manager
+    - 'On-call escalation matrix includes contact details for: DB admin, security
+      officer, regulatory affairs, legal'
+    depends_on:
+    - 22
+  TRAINING:
+    description: 'Create user training materials for all five stakeholder roles: role-specific
+      user guides (PI, Study Coordinator, Regulatory Affairs, Data Manager, Sponsor),
+      21 CFR Part 11 e-signature training module (with competency assessment), HIPAA
+      data handling training, system administrator guide (user management, access
+      control, certificate rotation), and video script library for onboarding workflows.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Each role-specific guide covers all functions accessible to that role
+    - 21 CFR Part 11 training module includes 10-question competency assessment; passing
+      score 80%
+    - 'HIPAA training covers: what constitutes PHI, minimum necessary rule, breach
+      recognition and reporting'
+    - 'System administrator guide covers: user onboarding, role assignment, password
+      policy enforcement, certificate rotation'
+    - Video scripts reviewed by clinical subject matter expert for accuracy
+    - Training completion tracking built into the system (user training records stored
+      with e-signature attestation)
+    depends_on:
+    - 25

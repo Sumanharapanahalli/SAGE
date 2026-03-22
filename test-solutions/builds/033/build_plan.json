@@ -1,0 +1,1335 @@
+{
+  "run_id": "5bcc265a-a4c8-47ca-8cb0-f83593a85953",
+  "status": {
+    "run_id": "5bcc265a-a4c8-47ca-8cb0-f83593a85953",
+    "solution_name": "helpdesk_platform",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T07:25:32.644205+00:00",
+    "updated_at": "2026-03-22T07:34:31.367657+00:00",
+    "product_description": "Customer support helpdesk with ticket management, knowledge base, live chat, AI auto-response, SLA tracking, and multi-channel inbox (email, social, WhatsApp).",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze competitor helpdesk platforms (Zendesk, Freshdesk, Intercom, HubSpot Service Hub). Identify pricing tiers, feature gaps, ICP personas (SMB vs enterprise), and WhatsApp/social channel maturity. Produce positioning matrix and differentiation report.",
+        "payload": {
+          "competitors": [
+            "Zendesk",
+            "Freshdesk",
+            "Intercom",
+            "HubSpot Service Hub",
+            "Gorgias"
+          ],
+          "channels": [
+            "email",
+            "WhatsApp Business API",
+            "Instagram DM",
+            "Twitter/X",
+            "Facebook Messenger"
+          ],
+          "deliverables": [
+            "competitor_matrix.md",
+            "positioning_report.md",
+            "icp_personas.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitor matrix covers >=5 platforms with pricing, feature, and channel columns",
+          "At least 3 ICP personas defined with jobs-to-be-done",
+          "Positioning statement differentiating helpdesk_platform from top 2 competitors",
+          "WhatsApp Business API integration complexity documented"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user stories, and process flows for all six product pillars: ticket management, knowledge base, live chat, AI auto-response, SLA tracking, and multi-channel inbox. Produce BPMN process diagrams for escalation, routing, and SLA breach workflows.",
+        "payload": {
+          "pillars": [
+            "ticket_management",
+            "knowledge_base",
+            "live_chat",
+            "ai_auto_response",
+            "sla_tracking",
+            "multi_channel_inbox"
+          ],
+          "user_roles": [
+            "customer",
+            "support_agent",
+            "team_lead",
+            "admin"
+          ],
+          "deliverables": [
+            "business_requirements.md",
+            "user_stories.md",
+            "process_flows.bpmn"
+          ]
+        },
+        "acceptance_criteria": [
+          ">=40 user stories covering all six pillars, each with acceptance criteria",
+          "BPMN diagrams for ticket lifecycle, escalation, and SLA breach",
+          "Role-permission matrix covering all 4 user roles",
+          "ROI analysis with customer effort score and first-contact resolution KPIs defined",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "User research sessions with 8-10 support agents and team leads. Produce wireframes for agent inbox, ticket detail view, live chat panel, knowledge base editor, SLA dashboard, and admin multi-channel setup. Accessibility audit to WCAG 2.1 AA.",
+        "payload": {
+          "research_methods": [
+            "contextual_inquiry",
+            "usability_testing",
+            "card_sorting"
+          ],
+          "screens": [
+            "agent_inbox",
+            "ticket_detail",
+            "live_chat_panel",
+            "kb_editor",
+            "sla_dashboard",
+            "admin_channels"
+          ],
+          "tools": [
+            "Figma"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "8 research sessions completed with documented findings",
+          "Hi-fi wireframes for all 6 core screens in Figma",
+          "Component library with 20+ reusable UI components",
+          "WCAG 2.1 AA audit report with 0 critical violations",
+          "Mobile-responsive layout defined for agent inbox and live chat",
+          "App store screenshot mockups prepared",
+          "Onboarding flow under 3 steps"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce Product Requirements Document (PRD) covering MoSCoW-prioritized feature list, success metrics (CSAT, FCR, AHT, SLA compliance %), release roadmap with v1/v2/v3 milestones, and API-first strategy for third-party integrations.",
+        "payload": {
+          "framework": "MoSCoW",
+          "metrics": [
+            "CSAT",
+            "FCR",
+            "AHT",
+            "SLA_compliance_pct",
+            "ticket_deflection_rate"
+          ],
+          "milestones": [
+            "v1_core_ticketing",
+            "v2_ai_and_chat",
+            "v3_enterprise_sla"
+          ],
+          "deliverables": [
+            "PRD.md",
+            "roadmap.md",
+            "success_metrics.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD approved with MoSCoW triage for all 40+ user stories",
+          "Success metrics baseline defined with measurement method for each KPI",
+          "3-milestone roadmap with estimated scope and go/no-go criteria per release",
+          "API-first integration points documented (webhooks, OAuth2, REST)"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 5,
+        "task_type": "FINANCIAL",
+        "description": "Build SaaS financial model: per-seat and usage-based pricing tiers (Starter/Growth/Enterprise), CAC/LTV projections, infrastructure cost model (compute, storage, WhatsApp API per-message fees), 36-month P&L, and break-even analysis.",
+        "payload": {
+          "pricing_models": [
+            "per_seat_monthly",
+            "usage_based_messages",
+            "enterprise_custom"
+          ],
+          "tiers": [
+            "Starter",
+            "Growth",
+            "Enterprise"
+          ],
+          "cost_drivers": [
+            "compute",
+            "storage",
+            "WhatsApp_API",
+            "AI_tokens",
+            "CDN"
+          ],
+          "deliverables": [
+            "financial_model.xlsx",
+            "pricing_strategy.md",
+            "unit_economics.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "36-month P&L with 3 growth scenarios (base, bull, bear)",
+          "Pricing tiers validated against competitor benchmarks from step 1",
+          "Infrastructure cost per customer modeled at 3 scale points (100, 1k, 10k tickets/day)",
+          "Break-even month identified per scenario",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          1,
+          4
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 6,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), Data Processing Agreement (DPA) for enterprise customers, and WhatsApp Business API acceptable-use compliance review. Define data retention and deletion SLAs.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "DPA_template.md",
+            "whatsapp_aup_review.md"
+          ],
+          "regulations": [
+            "GDPR",
+            "CCPA",
+            "WhatsApp_Business_Policy"
+          ],
+          "retention_policy": {
+            "tickets": "7 years",
+            "chat_logs": "2 years",
+            "pii": "on_request_deletion"
+          }
+        },
+        "acceptance_criteria": [
+          "ToS and Privacy Policy reviewed against GDPR Art. 13/14 disclosure requirements",
+          "DPA template includes SCCs for EU data transfers",
+          "WhatsApp AUP review confirms acceptable use for customer support workflows",
+          "Data deletion endpoint and 30-day SLA documented in Privacy Policy",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 7,
+        "task_type": "DATABASE",
+        "description": "Design multi-tenant PostgreSQL schema covering: tenants, users/roles, tickets, ticket_events (audit log), messages, channels, knowledge_articles, article_feedback, sla_policies, sla_breaches, tags, canned_responses, and ai_suggestion_log. Include Alembic migration scripts and seed data.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "orm": "SQLAlchemy 2.0 + Alembic",
+          "tables": [
+            "tenants",
+            "users",
+            "roles",
+            "tickets",
+            "ticket_events",
+            "messages",
+            "channels",
+            "knowledge_articles",
+            "article_versions",
+            "sla_policies",
+            "sla_events",
+            "tags",
+            "canned_responses",
+            "ai_suggestion_log",
+            "webhooks"
+          ],
+          "indexing": [
+            "tenant_id on all tables",
+            "ticket status+priority composite",
+            "full_text on knowledge_articles"
+          ],
+          "multi_tenancy": "schema_per_tenant"
+        },
+        "acceptance_criteria": [
+          "ERD reviewed and approved, all FK constraints defined",
+          "Alembic migration baseline runs clean on fresh PostgreSQL instance",
+          "Full-text search index on knowledge_articles tested with 10k rows",
+          "Row-level security policies implemented for tenant isolation",
+          "Seed script populates demo tenant with 50 tickets, 20 KB articles"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "API",
+        "description": "Define OpenAPI 3.1 spec for all REST endpoints: auth (OAuth2/JWT), tickets CRUD, messages, knowledge base CRUD, live chat WebSocket protocol, SLA policies, channel configuration, webhook subscriptions, AI suggestion endpoints, and analytics. Version all endpoints under /v1/.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "auth": "OAuth2 + JWT Bearer",
+          "protocols": [
+            "REST",
+            "WebSocket (live chat)"
+          ],
+          "endpoint_groups": [
+            "auth",
+            "tickets",
+            "messages",
+            "knowledge",
+            "chat",
+            "sla",
+            "channels",
+            "webhooks",
+            "ai",
+            "analytics",
+            "admin"
+          ],
+          "versioning": "URI versioning /v1/"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec passes swagger-parser validation with 0 errors",
+          "All endpoints documented with request/response schemas and error codes",
+          "WebSocket protocol message types documented (connect, message, typing, close)",
+          "Rate limiting headers documented on all endpoints",
+          "Postman collection generated from spec with example requests"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up project configuration: monorepo structure (backend/frontend/infra), environment variable schema (.env.example), Docker Compose for local dev (PostgreSQL, Redis, Minio, MailHog), pre-commit hooks, ESLint/Black/Ruff linting, and coordinator agentic pattern config for AI auto-response pipeline.",
+        "payload": {
+          "structure": "monorepo",
+          "services": [
+            "api (FastAPI)",
+            "worker (Celery)",
+            "frontend (React 18 + Vite)",
+            "postgres",
+            "redis",
+            "minio",
+            "mailhog"
+          ],
+          "agentic_pattern": "coordinator",
+          "ai_components": [
+            "intake_classifier_agent",
+            "auto_response_agent",
+            "escalation_agent",
+            "kb_search_agent"
+          ],
+          "linting": [
+            "black",
+            "ruff",
+            "eslint",
+            "prettier"
+          ],
+          "env_vars": [
+            "DATABASE_URL",
+            "REDIS_URL",
+            "OPENAI_API_KEY",
+            "WHATSAPP_TOKEN",
+            "SMTP_HOST",
+            "SLACK_WEBHOOK",
+            "S3_ENDPOINT"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker compose up starts all 7 services with health checks passing",
+          ".env.example documents all required and optional env vars with descriptions",
+          "Pre-commit hooks block commits with lint errors",
+          "Coordinator agentic pattern config created at config/agents.yaml",
+          "README dev-setup section enables new developer to reach running app in under 10 minutes"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement core ticket management service: create/read/update/close tickets, assign to agents/teams, priority/status state machine (new->open->pending->on_hold->resolved->closed), tagging, internal notes, file attachments (S3/Minio), ticket merging, bulk operations, and full audit event log per ticket.",
+        "payload": {
+          "framework": "FastAPI",
+          "state_machine": {
+            "states": [
+              "new",
+              "open",
+              "pending",
+              "on_hold",
+              "resolved",
+              "closed"
+            ],
+            "transitions": "invalid transitions return 422 with reason"
+          },
+          "storage": "S3-compatible (Minio local, AWS S3 prod)",
+          "async_tasks": [
+            "attachment_virus_scan",
+            "attachment_thumbnail",
+            "ticket_assignment_notify"
+          ],
+          "endpoints": [
+            "POST /v1/tickets",
+            "GET /v1/tickets",
+            "PATCH /v1/tickets/{id}",
+            "POST /v1/tickets/{id}/notes",
+            "POST /v1/tickets/{id}/merge"
+          ]
+        },
+        "acceptance_criteria": [
+          "All ticket CRUD endpoints return correct HTTP status codes",
+          "State machine rejects invalid transitions with 422 and descriptive reason",
+          "File attachments upload to S3 and return signed URL within 2 seconds",
+          "Audit event written to ticket_events for every state change with actor_id",
+          "Bulk assign/close handles 100 tickets in single request under 500ms"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement knowledge base service: article CRUD with versioning, category/subcategory tree, full-text search (PostgreSQL tsvector), article publish/draft/archive workflow, SEO slug generation, article feedback (thumbs up/down), and public-facing search endpoint for embeddable widget.",
+        "payload": {
+          "search": "PostgreSQL tsvector + tsquery with ts_rank ranking",
+          "versioning": "article_versions table, diff available on request",
+          "workflows": [
+            "draft",
+            "in_review",
+            "published",
+            "archived"
+          ],
+          "endpoints": [
+            "GET /v1/knowledge/search",
+            "GET /v1/knowledge/articles/{slug}",
+            "POST /v1/knowledge/articles",
+            "PATCH /v1/knowledge/articles/{id}",
+            "POST /v1/knowledge/articles/{id}/feedback",
+            "GET /v1/public/knowledge/search"
+          ],
+          "public_endpoint_auth": "none, rate-limited to 60 req/min"
+        },
+        "acceptance_criteria": [
+          "Full-text search returns ranked results in under 100ms for 10k articles",
+          "Article versioning stores diff and author per version",
+          "Public search endpoint requires no auth and enforces 60 req/min rate limit",
+          "Feedback tallies stored per article and surfaced in KB analytics",
+          "SEO slugs unique per tenant, regenerated safely on title change"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement live chat backend: WebSocket connection manager with Redis pub/sub for horizontal scaling, conversation sessions, agent presence and availability, typing indicators, read receipts, chat-to-ticket escalation, offline message queueing, and chat transcript storage.",
+        "payload": {
+          "protocol": "WebSocket over FastAPI",
+          "pubsub": "Redis Streams",
+          "features": [
+            "typing_indicators",
+            "read_receipts",
+            "agent_presence",
+            "offline_queue",
+            "chat_to_ticket_escalation"
+          ],
+          "scaling": "Redis pub/sub enables message fan-out across multiple API pods",
+          "transcript_storage": "PostgreSQL messages table, S3 for bulk exports"
+        },
+        "acceptance_criteria": [
+          "WebSocket connects in under 200ms and handles 500 concurrent connections per pod",
+          "Messages delivered under 100ms p95 at 200 concurrent conversations",
+          "Typing indicators and read receipts propagate to all participants within 300ms",
+          "Offline messages queued in Redis and delivered in order on reconnect",
+          "Chat escalation creates linked ticket with full transcript as first note"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement SLA tracking service: configurable SLA policies (first response time, resolution time by priority/channel/business-hours), SLA clock start/pause/resume logic, breach prediction warn at 75%, breach events, compliance reporting by team/agent/period, and holiday calendar support.",
+        "payload": {
+          "policy_fields": [
+            "first_response_hours",
+            "resolution_hours",
+            "priority_multiplier",
+            "channel_override",
+            "business_hours_only"
+          ],
+          "clock_events": [
+            "start_on_ticket_create",
+            "pause_on_pending",
+            "resume_on_customer_reply",
+            "stop_on_resolve"
+          ],
+          "notifications": [
+            "warn_at_75pct",
+            "breach_alert_on_crossing"
+          ],
+          "reporting": [
+            "compliance_by_team",
+            "compliance_by_agent",
+            "breach_root_cause"
+          ],
+          "celery_beat": "SLA checker task runs every 60 seconds"
+        },
+        "acceptance_criteria": [
+          "SLA clock pauses when ticket set to pending and resumes on customer reply",
+          "Breach warning notification fires at exactly 75% of SLA window elapsed",
+          "Business-hours-only SLA excludes nights, weekends, and configured holidays",
+          "Compliance report accurate to plus or minus 1 minute verified by unit tests",
+          "SLA policy change applies only to tickets created after the change"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement multi-channel inbox: email ingestion via IMAP polling and SendGrid/Mailgun inbound webhooks, WhatsApp Business Cloud API v18+, Twitter/X DMs, Facebook Messenger, and Instagram DM. All channels map to unified messages table. Outbound replies dispatched via originating channel. OAuth2 flows for social channels.",
+        "payload": {
+          "channels": {
+            "email": "IMAP polling + SendGrid inbound parse webhook",
+            "whatsapp": "Meta WhatsApp Cloud API v18",
+            "twitter": "Twitter API v2 Direct Messages",
+            "facebook": "Messenger Platform API",
+            "instagram": "Instagram Messaging API"
+          },
+          "unified_model": "all channels write to messages table with channel_type enum",
+          "oauth_flows": [
+            "facebook_oauth2",
+            "twitter_oauth2",
+            "instagram_oauth2"
+          ],
+          "webhook_endpoints": [
+            "/v1/webhooks/sendgrid",
+            "/v1/webhooks/whatsapp",
+            "/v1/webhooks/twitter",
+            "/v1/webhooks/facebook"
+          ],
+          "idempotency": "deduplication key on all inbound webhook events"
+        },
+        "acceptance_criteria": [
+          "Email inbound webhook creates ticket with correct subject, body, and attachments",
+          "WhatsApp text, image, and document messages ingest correctly with media download",
+          "Outbound reply sent via same channel as inbound message",
+          "OAuth2 flows complete for all 3 social channels with token refresh handling",
+          "Idempotency key prevents same webhook event creating duplicate tickets"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "AGENTIC",
+        "description": "Implement AI auto-response system using coordinator pattern. IntakeClassifierAgent tags intent/sentiment/language. KBSearchAgent retrieves top-3 relevant articles via pgvector semantic search. AutoResponseAgent drafts reply using LLM plus KB context plus past resolutions. EscalationAgent decides auto-send vs agent-review based on confidence threshold. Coordinator orchestrates per incoming ticket or message.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": {
+            "intake_classifier": "classifies intent, sentiment, language, urgency \u2014 tools: ticket_reader, tag_writer",
+            "kb_search": "semantic search over knowledge_articles embeddings \u2014 tools: vector_search, article_fetcher",
+            "auto_response": "drafts reply from LLM plus context \u2014 tools: llm_generate, template_engine",
+            "escalation": "routes to agent if confidence below threshold \u2014 tools: ticket_assign, notification_send"
+          },
+          "confidence_threshold": 0.82,
+          "llm_provider": "claude-sonnet-4-6 via SAGE LLMGateway",
+          "vector_store": "pgvector extension on knowledge_articles embeddings column",
+          "audit": "all suggestions logged to ai_suggestion_log with trace_id, confidence, and cited articles"
+        },
+        "acceptance_criteria": [
+          "Coordinator pipeline completes intake to kb to response to escalation in under 3 seconds p95",
+          "Auto-response sent without agent review only when confidence is >= 0.82",
+          "All AI suggestions logged with confidence score and KB article IDs cited",
+          "Escalation fires for tickets with confidence below threshold, assigns to queue",
+          "Language detection routes non-English tickets to language-specific agent queues",
+          "A/B test harness in place to compare AI response vs human response CSAT over time"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build agent inbox UI: unified ticket list with channel icons, priority/SLA countdown indicator, assignment controls, filter/sort/search, bulk actions, real-time updates via SSE, and split-pane ticket detail view with conversation thread, internal notes tab, customer profile sidebar, and AI suggestion panel.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "state": "Zustand + React Query",
+          "realtime": "SSE for ticket list updates and SLA countdown",
+          "components": [
+            "TicketList",
+            "TicketFilters",
+            "TicketDetail",
+            "ConversationThread",
+            "InternalNotes",
+            "CustomerProfile",
+            "AISuggestionPanel",
+            "BulkActionBar"
+          ],
+          "design_system": "Tailwind CSS + shadcn/ui"
+        },
+        "acceptance_criteria": [
+          "Inbox renders 200 tickets with virtual scrolling and no layout shift",
+          "SLA countdown updates every 30 seconds without page refresh",
+          "AI suggestion panel shows top suggestion with one-click accept, edit, or dismiss",
+          "Bulk assign and close works for up to 50 selected tickets",
+          "Split-pane layout works at 1280px+, collapses to single pane on mobile"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build knowledge base management UI: rich text article editor (Tiptap/MDX), category tree sidebar, publish workflow with in_review gate, article analytics (views, thumbs, search impressions), and embeddable public-facing help center widget (iframe + standalone SSR page).",
+        "payload": {
+          "editor": "Tiptap with MDX export \u2014 supports headings, lists, code blocks, images, tables",
+          "components": [
+            "ArticleEditor",
+            "CategoryTree",
+            "PublishToolbar",
+            "ArticleAnalytics",
+            "HelpCenterWidget",
+            "SearchBar"
+          ],
+          "widget": "embeddable script tag and iframe for customer-facing sites",
+          "ssr": "Next.js or Vite SSR for public article pages for SEO"
+        },
+        "acceptance_criteria": [
+          "Article editor supports headings, lists, code blocks, images, and tables",
+          "Publish workflow requires in_review state before publish for non-admin roles",
+          "Help center widget loads in under 500ms and works unauthenticated",
+          "Article analytics shows 30/60/90 day views and thumbs up/down ratio",
+          "Public article pages render correct Open Graph and meta tags for SEO"
+        ],
+        "depends_on": [
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build live chat customer widget (embeddable JS bundle under 3KB gzipped, no React dependency) and agent chat panel inside inbox. Customer widget: proactive trigger rules, pre-chat form, real-time messaging, file upload, offline message fallback, CSAT survey post-chat. Agent panel: active chat list, typing indicators, quick replies, chat transfer.",
+        "payload": {
+          "customer_widget": "vanilla JS bundle, under 3KB gzipped, zero runtime dependencies",
+          "agent_panel": "React component embedded in agent inbox layout",
+          "features": [
+            "proactive_triggers",
+            "pre_chat_form",
+            "file_upload",
+            "offline_form",
+            "csat_survey",
+            "quick_replies",
+            "chat_transfer"
+          ],
+          "embedding": "script tag with data-token attribute"
+        },
+        "acceptance_criteria": [
+          "Customer widget JS bundle is under 3KB gzipped",
+          "Widget loads on third-party site without CSP violations (strict mode tested)",
+          "CSAT survey collects 1-5 rating plus optional comment, stored per conversation",
+          "Agent panel shows all active chats with unread message badge",
+          "Chat transfer delivers complete history to receiving agent in under 1 second"
+        ],
+        "depends_on": [
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build SLA dashboard and multi-channel admin UI: SLA compliance heatmap by team/agent/period, breach trend charts, channel configuration wizard (connect email/WhatsApp/social with OAuth2), business hours and holiday calendar editor, drag-and-drop routing rules builder, and user/role/team management.",
+        "payload": {
+          "charts": "Recharts \u2014 heatmap, line trend, bar breakdown",
+          "components": [
+            "SLAComplianceHeatmap",
+            "BreachTrendChart",
+            "ChannelWizard",
+            "BusinessHoursEditor",
+            "RoutingRulesBuilder",
+            "UserManagement",
+            "TeamManagement"
+          ],
+          "routing_rules": "drag-and-drop condition builder supporting AND/OR logic with affected-ticket preview"
+        },
+        "acceptance_criteria": [
+          "SLA heatmap renders compliance percentage by agent for last 30 days",
+          "Channel wizard connects email in 5 or fewer steps with live credential validation",
+          "Routing rules builder supports AND/OR conditions and shows preview count",
+          "Business hours editor supports per-timezone configuration with DST handling",
+          "User invite flow sends email, sets default role, and completes in under 1 minute"
+        ],
+        "depends_on": [
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "SECURITY",
+        "description": "Conduct STRIDE threat model covering all six product pillars. Define pentest plan for: auth bypass, tenant IDOR, WebSocket hijacking, file upload malware, WhatsApp webhook spoofing, and AI prompt injection. Implement SBOM via syft. Define secrets rotation policy.",
+        "payload": {
+          "framework": "STRIDE",
+          "attack_surfaces": [
+            "auth_jwt",
+            "tenant_isolation",
+            "websocket_session",
+            "file_upload",
+            "inbound_webhooks",
+            "ai_prompt_endpoints"
+          ],
+          "controls": [
+            "JWT_RS256",
+            "PKCE_oauth",
+            "webhook_HMAC_verification",
+            "ClamAV_attachment_scan",
+            "input_sanitization",
+            "per_tenant_rate_limiting",
+            "append_only_audit_log"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "pentest_plan.md",
+            "SBOM.json",
+            "secrets_rotation_policy.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all 6 attack surfaces with implemented mitigations",
+          "HMAC signature verification tested for all 4 inbound webhook endpoints",
+          "File upload rejects executable MIME types and files over 25MB",
+          "IDOR test: agent from tenant A gets 403 attempting to access tenant B tickets",
+          "Prompt injection test suite passes against AI suggestion endpoints",
+          "SBOM generated via syft covering all runtime Python and Node.js dependencies"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "COMPLIANCE",
+        "description": "Produce SOC 2 Type II evidence artifacts: control mapping to CC6 (logical access), CC7 (system operations), CC8 (change management), CC9 (risk mitigation). Generate audit log report, encryption-at-rest and in-transit evidence, incident response plan, vendor risk assessments for WhatsApp/SendGrid/cloud provider, and access review records.",
+        "payload": {
+          "standard": "SOC 2 Type II",
+          "trust_service_criteria": [
+            "CC6",
+            "CC7",
+            "CC8",
+            "CC9"
+          ],
+          "artifacts": [
+            "control_matrix.xlsx",
+            "audit_log_report.md",
+            "encryption_evidence.md",
+            "incident_response_plan.md",
+            "vendor_risk_assessments.md",
+            "access_review_records.md"
+          ],
+          "encryption": {
+            "at_rest": "AES-256 (PostgreSQL TDE)",
+            "in_transit": "TLS 1.3"
+          }
+        },
+        "acceptance_criteria": [
+          "Control matrix maps each SOC 2 CC criteria to an implemented technical or process control",
+          "Audit log demonstrates append-only immutability with hash chain verification",
+          "Encryption evidence includes config screenshots and key management procedures",
+          "Incident response plan includes RTO/RPO targets and named escalation contacts",
+          "Vendor risk assessments completed for WhatsApp API, SendGrid, and primary cloud provider"
+        ],
+        "depends_on": [
+          20
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "QA",
+        "description": "Write comprehensive QA test plan covering functional, regression, performance, accessibility, cross-browser, and multi-tenant isolation testing. Define test cases for all ticket state transitions, SLA calculations, channel routing, AI suggestion accuracy, and data isolation. Set up Playwright E2E framework with page object model.",
+        "payload": {
+          "test_types": [
+            "functional",
+            "regression",
+            "performance",
+            "accessibility",
+            "cross_browser",
+            "multi_tenant_isolation"
+          ],
+          "tools": [
+            "pytest",
+            "Playwright",
+            "k6 for load",
+            "axe-core for a11y"
+          ],
+          "browsers": [
+            "Chrome",
+            "Firefox",
+            "Safari",
+            "Edge"
+          ],
+          "coverage_target": ">=80% line coverage on backend Python",
+          "deliverables": [
+            "test_plan.md",
+            "test_cases.xlsx",
+            "playwright_project_scaffold"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test plan covers all 40+ user stories with at least 1 test case each",
+          "Playwright configured with page object model and GitHub Actions integration",
+          "k6 load test script simulates 500 concurrent agents for 5 minutes",
+          "axe-core accessibility scanner integrated into Playwright E2E suite",
+          "Multi-tenant isolation test verifies cross-tenant access returns 403 in all cases"
+        ],
+        "depends_on": [
+          19,
+          20
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "TESTS",
+        "description": "Write backend unit and integration tests: pytest suite for ticket state machine, SLA clock calculations, channel message parsers (email/WhatsApp/social), AI coordinator pipeline, knowledge base search ranking, and all REST and WebSocket endpoints. Target >=80% line coverage.",
+        "payload": {
+          "framework": "pytest + httpx async + pytest-asyncio",
+          "fixtures": [
+            "test_tenant",
+            "test_agent_user",
+            "test_ticket",
+            "mock_whatsapp_webhook",
+            "mock_llm_gateway"
+          ],
+          "coverage_tool": "pytest-cov",
+          "test_modules": [
+            "ticket_state_machine",
+            "sla_calculator",
+            "channel_parsers",
+            "ai_coordinator",
+            "kb_search",
+            "api_endpoints",
+            "websocket_manager"
+          ]
+        },
+        "acceptance_criteria": [
+          "pytest suite passes with 0 failures on CI",
+          ">=80% line coverage across all src/ backend modules",
+          "SLA calculator tests cover business-hours, holiday, and breach boundary edge cases",
+          "WhatsApp webhook parser tested with real payload fixtures from Meta documentation",
+          "AI coordinator tested with mocked LLMGateway returning deterministic outputs"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test suites using Playwright: full ticket lifecycle per channel (email, WhatsApp, live chat), AI auto-response acceptance rate, SLA breach notification timing, knowledge base widget search, and cross-tenant data isolation. Run k6 load test at 500 concurrent agents for 5 minutes.",
+        "payload": {
+          "e2e_suites": [
+            "ticket_lifecycle_email",
+            "ticket_lifecycle_whatsapp",
+            "live_chat_to_ticket_escalation",
+            "ai_auto_response_acceptance",
+            "sla_breach_notification",
+            "kb_widget_search",
+            "cross_tenant_isolation"
+          ],
+          "load_test": "k6: 500 VUs, 5 min sustained, target p95 API response under 300ms",
+          "environment": "staging",
+          "reporting": "Allure report published to CI artifacts"
+        },
+        "acceptance_criteria": [
+          "All 7 Playwright E2E suites pass on staging with 0 failures",
+          "k6 load test: p95 API response under 300ms, error rate 0% at 500 VUs",
+          "AI auto-response acceptance rate >=70% on test dataset of 100 labeled tickets",
+          "Cross-tenant isolation: 0 data leaks across 50 adversarial test cases",
+          "SLA breach notification fires within 60 seconds of breach event in E2E test"
+        ],
+        "depends_on": [
+          23
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 25,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline (GitHub Actions): lint to test to build to push Docker images to deploy on Kubernetes (EKS) via Helm. Configure staging and production environments with HPA for API and Celery worker pods, Prometheus + Grafana + Loki observability, PagerDuty alerting on SLA spike/latency/error rate, and blue/green deployment strategy.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "cd_platform": "Kubernetes EKS + Helm",
+          "pipeline_stages": [
+            "lint",
+            "test",
+            "docker_build",
+            "push_ecr",
+            "deploy_staging",
+            "e2e_smoke",
+            "deploy_prod"
+          ],
+          "autoscaling": "HPA scales API pods 2 to 20 on CPU over 70%, worker pods 1 to 10 on Redis queue depth",
+          "observability": "Prometheus + Grafana + Loki + Jaeger",
+          "alerting": "PagerDuty: SLA breach spike, p95 latency over 500ms, error rate over 1%",
+          "deployment_strategy": "blue_green with automated rollback on smoke test failure"
+        },
+        "acceptance_criteria": [
+          "CI pipeline completes lint plus test plus build in under 8 minutes",
+          "Blue/green deployment achieves zero downtime verified by continuous uptime probe",
+          "HPA scales API pods from 2 to 8 automatically during k6 load test",
+          "Grafana dashboard shows per-endpoint p50/p95/p99 latency",
+          "PagerDuty alert fires within 2 minutes of simulated SLA breach rate spike"
+        ],
+        "depends_on": [
+          24
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: P0/P1/P2 incident response classification and escalation, SLA breach escalation playbook, database backup and restore procedures (RTO 4h / RPO 1h), WhatsApp API quota management, on-call rotation setup in PagerDuty, and capacity planning model mapping tickets/day to pod counts.",
+        "payload": {
+          "runbooks": [
+            "incident_response.md",
+            "sla_breach_escalation.md",
+            "db_backup_restore.md",
+            "whatsapp_quota_management.md",
+            "capacity_planning.md",
+            "disaster_recovery.md"
+          ],
+          "incident_classification": {
+            "P0": "all channels down or data loss",
+            "P1": "single channel down or SLA tracking broken",
+            "P2": "AI suggestions offline or degraded"
+          },
+          "rto_rpo": {
+            "RTO": "4 hours",
+            "RPO": "1 hour"
+          },
+          "on_call": "PagerDuty rotation, 15-minute acknowledgement SLA, escalates to backup after 15 min no-ack"
+        },
+        "acceptance_criteria": [
+          "All 6 runbooks reviewed and approved by engineering lead",
+          "DB restore procedure tested from backup with data verified complete",
+          "Capacity model validated against k6 load test data",
+          "DR failover to secondary region tested and completes within 4 hours",
+          "On-call PagerDuty rotation configured with backup escalation path"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 27,
+        "task_type": "LOCALIZATION",
+        "description": "Set up i18n infrastructure for agent dashboard and customer-facing help center widget. Support en, es, fr, de, pt, ar (RTL). Use react-i18next for frontend, i18next-parser for string extraction in CI, and Phrase or Lokalise for translation management. Locale-aware date/time via date-fns-tz and number formatting via Intl.NumberFormat.",
+        "payload": {
+          "framework": "react-i18next",
+          "locales": [
+            "en",
+            "es",
+            "fr",
+            "de",
+            "pt",
+            "ar"
+          ],
+          "rtl_support": "Arabic requires dir=rtl layout flip \u2014 sidebar, chat bubbles, form fields all mirrored",
+          "string_extraction": "i18next-parser runs in CI and fails build on new hardcoded strings",
+          "tms": "Phrase or Lokalise for translator workflow",
+          "formatting": "date-fns-tz for timezone-aware display, Intl.NumberFormat for currency"
+        },
+        "acceptance_criteria": [
+          "All UI strings extracted to en.json with 0 hardcoded strings in JSX components",
+          "Arabic RTL layout renders correctly with mirrored sidebar and correct chat bubble alignment",
+          "i18next-parser CI check fails build when new hardcoded strings are detected",
+          "Date and time displays in agent local timezone with timezone selector in user profile",
+          "Help center widget respects visitor browser locale automatically",
+          "Top 5 target locales identified",
+          "Store listing translated"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 28,
+        "task_type": "TRAINING",
+        "description": "Create user onboarding and training materials: in-app product tour via Shepherd.js (8 stops), interactive agent quickstart guide, admin channel setup guide for email and WhatsApp, YouTube walkthrough video script (5 minutes), and AI auto-response confidence threshold tuning guide for team leads.",
+        "payload": {
+          "materials": [
+            "in_app_product_tour (Shepherd.js, 8 steps)",
+            "agent_quickstart_guide.md",
+            "admin_channel_setup_guide.md",
+            "youtube_video_script.md",
+            "ai_tuning_guide.md"
+          ],
+          "tour_stops": [
+            "inbox overview",
+            "ticket detail",
+            "reply via channel",
+            "AI suggestion accept",
+            "KB search",
+            "SLA indicator",
+            "chat widget",
+            "settings"
+          ],
+          "video_target_length": "5 minutes"
+        },
+        "acceptance_criteria": [
+          "In-app tour completes in under 3 minutes for new user with 0 dead-end steps",
+          "Agent quickstart guide tested with 3 non-technical users who complete first ticket unaided",
+          "Admin channel setup guide covers email and WhatsApp end-to-end with screenshots",
+          "Video script reviewed for technical accuracy against final shipped product",
+          "AI tuning guide explains confidence threshold adjustment with before/after CSAT examples"
+        ],
+        "depends_on": [
+          27
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 29,
+        "task_type": "DOCS",
+        "description": "Write developer and operator documentation: API reference auto-generated from OpenAPI spec via Redoc at /docs, webhook integration guide with payload examples for all channels, Python and Node.js SDK quickstart guides, and ADRs for multi-tenancy design, WebSocket/Redis pub-sub, and AI coordinator pattern.",
+        "payload": {
+          "api_reference": "Redoc from OpenAPI 3.1 spec hosted at /docs",
+          "guides": [
+            "webhook_integration_guide.md",
+            "python_sdk_quickstart.md",
+            "nodejs_sdk_quickstart.md"
+          ],
+          "adrs": [
+            "ADR-001_multi_tenancy_schema_per_tenant.md",
+            "ADR-002_websocket_redis_pubsub.md",
+            "ADR-003_ai_coordinator_pattern.md"
+          ],
+          "changelog": "CHANGELOG.md auto-generated in CI from conventional commits via standard-version"
+        },
+        "acceptance_criteria": [
+          "API reference hosted at /docs and lists all endpoints with request/response schemas",
+          "Webhook guide includes curl examples for all 4 inbound webhook types",
+          "Python SDK quickstart creates first ticket in under 20 lines of code",
+          "All 3 ADRs document context, decision, and consequences sections",
+          "CHANGELOG.md generated automatically in CI on every release tag"
+        ],
+        "depends_on": [
+          28
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 30,
+        "task_type": "FIRMWARE",
+        "description": "Implement firmware for optional on-premise hardware gateway appliance (ARM Cortex-A, CM4-based carrier board): embedded Linux init service, hardware watchdog daemon, secure boot chain verification, network interface configuration daemon, and OTA update agent with rollback on failure.",
+        "payload": {
+          "target": "ARM Cortex-A (Raspberry Pi CM4 form factor)",
+          "os": "Buildroot-based embedded Linux",
+          "components": [
+            "watchdog_daemon",
+            "secure_boot_verifier",
+            "network_config_daemon",
+            "ota_update_agent"
+          ],
+          "build_system": "CMake + arm-linux-gnueabihf cross-compiler",
+          "deliverables": [
+            "firmware.img",
+            "update_manifest.json",
+            "build_scripts/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Firmware image boots and connects to cloud API within 90 seconds of power-on",
+          "Watchdog daemon restarts API gateway process within 30 seconds of crash",
+          "Secure boot rejects image with mismatched checksum and halts",
+          "OTA update applies without data loss and rolls back automatically on boot failure",
+          "Network config daemon applies both DHCP and static IP configurations correctly"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 31,
+        "task_type": "HARDWARE_SIM",
+        "description": "Create QEMU-based simulation environment for the hardware gateway appliance to enable firmware CI testing without physical hardware. Includes simulated virtual Ethernet, watchdog peripheral, and NAND flash storage model. CI runs firmware boot in Docker-wrapped QEMU on every commit to firmware/.",
+        "payload": {
+          "simulator": "QEMU virt ARM machine",
+          "simulated_peripherals": [
+            "eth0_virtual_nic",
+            "watchdog_timer",
+            "nand_flash_model"
+          ],
+          "ci_integration": "Docker container wrapping QEMU \u2014 firmware boots headless in GitHub Actions",
+          "deliverables": [
+            "qemu_launch.sh",
+            "Dockerfile.qemu_sim",
+            "sim_test_harness.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "QEMU boots firmware image headless in CI Docker container in under 60 seconds",
+          "Simulated network interface passes ICMP ping test from host",
+          "Watchdog timer simulation triggers reboot after 30 second timeout",
+          "OTA update completes successfully within QEMU simulation environment"
+        ],
+        "depends_on": [
+          30
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 32,
+        "task_type": "PCB_DESIGN",
+        "description": "Design PCB schematic and 4-layer layout for on-premise gateway carrier board: CM4 connector, RTL8211F Gigabit Ethernet PHY, USB-C PD power, ATECC608B secure element (I2C), DS3231 RTC, and status LEDs. Generate KiCad files, BOM with supplier part numbers, and Gerber files passing DFM.",
+        "payload": {
+          "tool": "KiCad 7",
+          "key_components": [
+            "Raspberry Pi CM4 high-density connector",
+            "RTL8211F Gigabit PHY",
+            "USB-C PD controller (15W)",
+            "ATECC608B secure element via I2C",
+            "DS3231 RTC",
+            "status LEDs x4"
+          ],
+          "layer_count": 4,
+          "deliverables": [
+            "schematic.kicad_sch",
+            "pcb_layout.kicad_pcb",
+            "BOM.csv",
+            "gerbers.zip",
+            "DRC_report.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "KiCad DRC passes with 0 errors and 0 unconnected nets",
+          "BOM includes Mouser or Digikey part numbers for all components",
+          "Gerber files pass JLCPCB DFM check online tool with no critical issues",
+          "ATECC608B connected via I2C with correct pull-up resistor values",
+          "Power budget confirms USB-C PD at 15W sufficient for all loads with 20% headroom"
+        ],
+        "depends_on": [
+          31
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 33,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write Hardware-in-the-Loop (HIL) test specs and firmware unit tests using Unity framework: watchdog behavior, OTA state machine, network config daemon, secure boot chain, and API gateway connectivity. QEMU-based tests run in CI on every commit; HIL tests on physical CM4 hardware run weekly.",
+        "payload": {
+          "unit_test_framework": "Unity (C)",
+          "hil_environments": [
+            "QEMU Docker (CI, every commit)",
+            "physical CM4 board (weekly)"
+          ],
+          "test_suites": [
+            "watchdog_unit_tests",
+            "ota_state_machine_tests",
+            "network_config_tests",
+            "secure_boot_tests",
+            "api_gateway_connectivity_tests"
+          ],
+          "coverage_target": ">=75% branch coverage on firmware C code measured via gcov"
+        },
+        "acceptance_criteria": [
+          "Unity test suite builds and runs in QEMU CI with 0 failures",
+          ">=75% branch coverage on OTA update state machine via gcov",
+          "HIL test: physical CM4 connects to staging API and processes a test ticket end-to-end",
+          "Watchdog HIL test: process kill triggers reboot within 30 seconds on physical board",
+          "Secure boot HIL test: corrupted firmware image rejected and original boots successfully"
+        ],
+        "depends_on": [
+          31
+        ],
+        "agent_role": "developer"
+      }
+    ],
+    "task_count": 33,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 62,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 62,
+          "final_review": {
+            "score": 62,
+            "flaws": [
+              "Step 7 contradicts itself: specifies 'schema_per_tenant' multi-tenancy AND row-level security policies. These are mutually exclusive strategies. Schema-per-tenant isolates at the schema boundary; RLS operates within a shared schema. Choosing both wastes engineering time and creates ambiguous security guarantees.",
+              "Step 21 fundamentally misunderstands SOC 2 Type II. Type II requires a minimum 6-month auditor observation period of controls in operation. You cannot 'produce artifacts' and claim SOC 2 Type II. This plan will cause enterprise sales failures when customers request audit reports. Step 21 should target SOC 2 Type I initially.",
+              "Step 18 acceptance criteria of 'under 3KB gzipped' for a vanilla JS widget with WebSocket, file upload, proactive triggers, pre-chat form, CSAT survey, and offline fallback is not achievable. A minimal WebSocket client alone exceeds this. Intercom, Drift, and Crisp ship 40-100KB widgets. This criteria will be quietly dropped or the feature set gutted.",
+              "Steps 30-33 (firmware, QEMU simulation, PCB design, HIL testing) are a completely separate hardware product embedded in a SaaS helpdesk build plan. PCB design for an optional appliance has no business being in the critical path. This adds 4 sequential steps of hardware engineering risk to a software product launch.",
+              "WhatsApp Business API constraints are critically underestimated in Step 14. After the 24-hour customer service window closes, outbound messages MUST use pre-approved Message Templates. Free-form replies are not allowed for business-initiated messages. Auto-responses (Step 15) sent outside this window will be rejected by the API, breaking a core product promise.",
+              "Step 15 sets a confidence threshold of 0.82 with no calibration basis. Auto-sending LLM-generated responses to customers without human review at an arbitrary threshold is a customer satisfaction risk. The A/B test harness is listed as an acceptance criteria for the same step that auto-sends \u2014 you cannot A/B test a threshold you haven't validated yet.",
+              "Step 12 inconsistently specifies 'Redis pub/sub' in the description and 'Redis Streams' in the payload. These have different semantics: pub/sub is fire-and-forget; Streams are persistent. The offline message queue requirement in the same step requires persistence, so pub/sub alone is incorrect. The implementation team will make an arbitrary choice.",
+              "Step 20 (security threat modeling) depends on Step 15 (AI system built). STRIDE threat modeling must happen before implementation, not after. By Step 20, all six pillars are already coded. Architectural security findings at this stage require rework, not mitigations.",
+              "Step 17 introduces 'Next.js or Vite SSR' as an unresolved option for public KB pages. Step 9 already established a Vite monorepo. Introducing Next.js in Step 17 is a major architectural decision that affects the build system, hosting, routing, and SSR hydration strategy. This decision must be made in Step 9, not deferred.",
+              "Step 32 (PCB design) lists Step 31 (QEMU simulation) as its dependency. This is inverted. You need hardware specifications to design a simulation \u2014 the simulation is derived from the hardware design, not a prerequisite for it.",
+              "No billing or subscription management step exists. The financial model (Step 5) defines per-seat and usage-based pricing tiers, but there is no implementation step for Stripe (or equivalent), subscription lifecycle management, usage metering for message-based billing, or dunning. Without billing, this is not a shippable product."
+            ],
+            "suggestions": [
+              "Resolve the multi-tenancy strategy in Step 7 before writing a line of code. Choose either schema-per-tenant (stronger isolation, harder migrations, higher PostgreSQL connection overhead) or shared-schema with RLS (simpler ops, requires rigorous policy testing). Document the decision in an ADR.",
+              "Replace Step 21's SOC 2 Type II target with SOC 2 Type I for launch. Begin the 6-month Type II observation period immediately post-launch. Update the legal docs and sales collateral to accurately reflect which report is available.",
+              "Insert a billing implementation step between Steps 9 and 10. Stripe integration, webhook-driven subscription state machine, and usage metering (for message-based tiers) are blocking for any paid customer. This is more foundational than the firmware steps.",
+              "Move security threat modeling (Step 20) to before Step 7 (database design). Run STRIDE on the architecture document, not the finished code. Findings should inform schema design, API contracts, and agent boundaries \u2014 not retrofit controls post-build.",
+              "Define the pgvector strategy in Step 7. The database schema step must include the vector embeddings column on knowledge_articles, the pgvector extension, and the embedding generation trigger (on article create/update). Step 15 currently assumes this infrastructure exists but Step 7 does not create it.",
+              "Cut the 3KB widget constraint in Step 18 to a realistic 25-30KB gzipped budget. Document the actual constraint rationale. If load time is the concern, address it with async loading and lazy initialization, not an impossible size limit.",
+              "Add a WhatsApp Message Template management UI and workflow to Steps 14 and 19. The AI auto-response system (Step 15) must be aware of the 24-hour session window and switch to approved templates for out-of-window messages. This is not optional \u2014 it is a Meta platform requirement.",
+              "Make Steps 30-33 a separate, explicitly optional hardware product workstream. Remove them from the main dependency chain. The core SaaS product should reach production without any dependency on PCB Gerbers.",
+              "Add DKIM/SPF/DMARC configuration and email deliverability monitoring to Step 14. Outbound email replies will land in spam without proper DNS records. Postmaster tools for Gmail and Outlook should be set up as part of channel configuration.",
+              "Add a data migration tooling step for enterprise onboarding. Zendesk and Freshdesk both offer data export APIs. Without a migration path, enterprise deals will stall at procurement because customers cannot justify switching cost without data portability.",
+              "Twitter/X DM API access now requires paid tiers and is subject to frequent policy changes. Add an explicit risk flag and cost line item. Consider making X/Twitter a v2 feature and removing it from the core launch scope to reduce third-party API dependency risk."
+            ],
+            "missing": [
+              "Billing and subscription management implementation (Stripe or equivalent) \u2014 required to charge customers",
+              "pgvector extension and embedding generation pipeline in the database schema step",
+              "WhatsApp Message Template management and 24-hour session window handling",
+              "Email deliverability infrastructure: DKIM, SPF, DMARC, bounce handling, unsubscribe list management",
+              "Customer data migration tooling from Zendesk and Freshdesk",
+              "Feature flag system for progressive rollout and safe production deployments",
+              "Multi-region data residency strategy for GDPR compliance (EU data must stay in EU)",
+              "API rate limiting implementation details \u2014 only referenced, never specified (Redis sliding window? Token bucket? Which library?)",
+              "Webhook replay attack prevention beyond idempotency key (timestamp validation, replay window)",
+              "Agent performance reporting and CSAT attribution to individual agents (required for team lead personas defined in Step 2)",
+              "Async file upload virus scan race condition mitigation \u2014 ClamAV scan is async but file URL is returned before scan completes",
+              "SOC 2 Type I vs Type II clarification and realistic timeline for achieving each"
+            ],
+            "security_risks": [
+              "Schema-per-tenant ambiguity: if the application uses a PostgreSQL superuser connection, a SQL injection in one tenant's schema can affect all other tenants' schemas. The connection user must be scoped per schema with revoked cross-schema privileges.",
+              "AI prompt injection via ticket content is listed as a concern but the mitigation ('input sanitization') is insufficient for LLM prompt injection. Ticket content will be embedded directly in LLM prompts (Step 15). Sanitization that works for XSS does not prevent prompt injection. Requires structural prompt design with clear input/instruction separation.",
+              "ClamAV async scan window: Step 10 returns a signed S3 URL within 2 seconds, but the virus scan is listed as an async Celery task. This means a malicious file is accessible via signed URL before it is scanned. The signed URL must not be returned until the scan completes or the URL must be invalidated post-scan-failure.",
+              "WhatsApp webhook spoofing: Step 20 lists HMAC verification as a control, but Step 14 implements the webhook handlers. There is no acceptance criteria in Step 14 requiring HMAC verification. This gap means the webhook could ship without verification and only be caught in Step 20.",
+              "JWT RS256 private key management is unspecified. Key storage (HSM? KMS? Secret Manager?), rotation schedule, and emergency revocation procedure are absent. A compromised signing key invalidates all user sessions and cannot be rotated without disruption.",
+              "The embeddable KB widget (Step 11, Step 17) is unauthenticated and rate-limited to 60 req/min. A distributed scraper hitting this endpoint from multiple IPs can exfiltrate the entire knowledge base. Content sensitivity classification and robots.txt/noindex controls are not addressed.",
+              "Chat widget loaded via script tag (Step 18) on third-party sites is a supply chain injection risk. If the CDN serving the widget JS is compromised, all customers' websites are compromised. Subresource Integrity (SRI) hash enforcement is not mentioned."
+            ],
+            "summary": "This plan is architecturally thorough for a B2B SaaS helpdesk but has several production-blocking gaps that prevent a score above 65. The most critical failures are: (1) no billing implementation step \u2014 the product cannot charge customers without it; (2) SOC 2 Type II is listed as a deliverable but requires a 6-month auditor observation period that cannot be produced on a build timeline; (3) the schema-per-tenant and RLS contradiction will cause a security architecture debate mid-build; (4) the WhatsApp 24-hour session window and Message Template requirement are not accounted for in the AI auto-response design, meaning a core feature will be blocked by Meta's API policies; and (5) Steps 30-33 embed an entirely separate hardware product (PCB design, firmware, QEMU simulation) into the critical path of a SaaS launch. The core software plan \u2014 ticket management, live chat, knowledge base, SLA tracking, multi-channel \u2014 is well-specified with concrete acceptance criteria and a logical dependency chain. The security and compliance steps exist but are sequenced too late. The 3KB widget constraint and the arbitrary 0.82 confidence threshold for autonomous AI replies are acceptance criteria that will either be silently dropped or cause customer-facing failures. Recommend: cut hardware to a separate initiative, add billing as Step 9.5, move threat modeling before Step 7, resolve the multi-tenancy strategy before database design, and replace SOC 2 Type II with Type I for launch.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 62,
+              "flaws": [
+                "Step 7 contradicts itself: specifies 'schema_per_tenant' multi-tenancy AND row-level security policies. These are mutually exclusive strategies. Schema-per-tenant isolates at the schema boundary; RLS operates within a shared schema. Choosing both wastes engineering time and creates ambiguous security guarantees.",
+                "Step 21 fundamentally misunderstands SOC 2 Type II. Type II requires a minimum 6-month auditor observation period of controls in operation. You cannot 'produce artifacts' and claim SOC 2 Type II. This plan will cause enterprise sales failures when customers request audit reports. Step 21 should target SOC 2 Type I initially.",
+                "Step 18 acceptance criteria of 'under 3KB gzipped' for a vanilla JS widget with WebSocket, file upload, proactive triggers, pre-chat form, CSAT survey, and offline fallback is not achievable. A minimal WebSocket client alone exceeds this. Intercom, Drift, and Crisp ship 40-100KB widgets. This criteria will be quietly dropped or the feature set gutted.",
+                "Steps 30-33 (firmware, QEMU simulation, PCB design, HIL testing) are a completely separate hardware product embedded in a SaaS helpdesk build plan. PCB design for an optional appliance has no business being in the critical path. This adds 4 sequential steps of hardware engineering risk to a software product launch.",
+                "WhatsApp Business API constraints are critically underestimated in Step 14. After the 24-hour customer service window closes, outbound messages MUST use pre-approved Message Templates. Free-form replies are not allowed for business-initiated messages. Auto-responses (Step 15) sent outside this window will be rejected by the API, breaking a core product promise.",
+                "Step 15 sets a confidence threshold of 0.82 with no calibration basis. Auto-sending LLM-generated responses to customers without human review at an arbitrary threshold is a customer satisfaction risk. The A/B test harness is listed as an acceptance criteria for the same step that auto-sends \u2014 you cannot A/B test a threshold you haven't validated yet.",
+                "Step 12 inconsistently specifies 'Redis pub/sub' in the description and 'Redis Streams' in the payload. These have different semantics: pub/sub is fire-and-forget; Streams are persistent. The offline message queue requirement in the same step requires persistence, so pub/sub alone is incorrect. The implementation team will make an arbitrary choice.",
+                "Step 20 (security threat modeling) depends on Step 15 (AI system built). STRIDE threat modeling must happen before implementation, not after. By Step 20, all six pillars are already coded. Architectural security findings at this stage require rework, not mitigations.",
+                "Step 17 introduces 'Next.js or Vite SSR' as an unresolved option for public KB pages. Step 9 already established a Vite monorepo. Introducing Next.js in Step 17 is a major architectural decision that affects the build system, hosting, routing, and SSR hydration strategy. This decision must be made in Step 9, not deferred.",
+                "Step 32 (PCB design) lists Step 31 (QEMU simulation) as its dependency. This is inverted. You need hardware specifications to design a simulation \u2014 the simulation is derived from the hardware design, not a prerequisite for it.",
+                "No billing or subscription management step exists. The financial model (Step 5) defines per-seat and usage-based pricing tiers, but there is no implementation step for Stripe (or equivalent), subscription lifecycle management, usage metering for message-based billing, or dunning. Without billing, this is not a shippable product."
+              ],
+              "suggestions": [
+                "Resolve the multi-tenancy strategy in Step 7 before writing a line of code. Choose either schema-per-tenant (stronger isolation, harder migrations, higher PostgreSQL connection overhead) or shared-schema with RLS (simpler ops, requires rigorous policy testing). Document the decision in an ADR.",
+                "Replace Step 21's SOC 2 Type II target with SOC 2 Type I for launch. Begin the 6-month Type II observation period immediately post-launch. Update the legal docs and sales collateral to accurately reflect which report is available.",
+                "Insert a billing implementation step between Steps 9 and 10. Stripe integration, webhook-driven subscription state machine, and usage metering (for message-based tiers) are blocking for any paid customer. This is more foundational than the firmware steps.",
+                "Move security threat modeling (Step 20) to before Step 7 (database design). Run STRIDE on the architecture document, not the finished code. Findings should inform schema design, API contracts, and agent boundaries \u2014 not retrofit controls post-build.",
+                "Define the pgvector strategy in Step 7. The database schema step must include the vector embeddings column on knowledge_articles, the pgvector extension, and the embedding generation trigger (on article create/update). Step 15 currently assumes this infrastructure exists but Step 7 does not create it.",
+                "Cut the 3KB widget constraint in Step 18 to a realistic 25-30KB gzipped budget. Document the actual constraint rationale. If load time is the concern, address it with async loading and lazy initialization, not an impossible size limit.",
+                "Add a WhatsApp Message Template management UI and workflow to Steps 14 and 19. The AI auto-response system (Step 15) must be aware of the 24-hour session window and switch to approved templates for out-of-window messages. This is not optional \u2014 it is a Meta platform requirement.",
+                "Make Steps 30-33 a separate, explicitly optional hardware product workstream. Remove them from the main dependency chain. The core SaaS product should reach production without any dependency on PCB Gerbers.",
+                "Add DKIM/SPF/DMARC configuration and email deliverability monitoring to Step 14. Outbound email replies will land in spam without proper DNS records. Postmaster tools for Gmail and Outlook should be set up as part of channel configuration.",
+                "Add a data migration tooling step for enterprise onboarding. Zendesk and Freshdesk both offer data export APIs. Without a migration path, enterprise deals will stall at procurement because customers cannot justify switching cost without data portability.",
+                "Twitter/X DM API access now requires paid tiers and is subject to frequent policy changes. Add an explicit risk flag and cost line item. Consider making X/Twitter a v2 feature and removing it from the core launch scope to reduce third-party API dependency risk."
+              ],
+              "missing": [
+                "Billing and subscription management implementation (Stripe or equivalent) \u2014 required to charge customers",
+                "pgvector extension and embedding generation pipeline in the database schema step",
+                "WhatsApp Message Template management and 24-hour session window handling",
+                "Email deliverability infrastructure: DKIM, SPF, DMARC, bounce handling, unsubscribe list management",
+                "Customer data migration tooling from Zendesk and Freshdesk",
+                "Feature flag system for progressive rollout and safe production deployments",
+                "Multi-region data residency strategy for GDPR compliance (EU data must stay in EU)",
+                "API rate limiting implementation details \u2014 only referenced, never specified (Redis sliding window? Token bucket? Which library?)",
+                "Webhook replay attack prevention beyond idempotency key (timestamp validation, replay window)",
+                "Agent performance reporting and CSAT attribution to individual agents (required for team lead personas defined in Step 2)",
+                "Async file upload virus scan race condition mitigation \u2014 ClamAV scan is async but file URL is returned before scan completes",
+                "SOC 2 Type I vs Type II clarification and realistic timeline for achieving each"
+              ],
+              "security_risks": [
+                "Schema-per-tenant ambiguity: if the application uses a PostgreSQL superuser connection, a SQL injection in one tenant's schema can affect all other tenants' schemas. The connection user must be scoped per schema with revoked cross-schema privileges.",
+                "AI prompt injection via ticket content is listed as a concern but the mitigation ('input sanitization') is insufficient for LLM prompt injection. Ticket content will be embedded directly in LLM prompts (Step 15). Sanitization that works for XSS does not prevent prompt injection. Requires structural prompt design with clear input/instruction separation.",
+                "ClamAV async scan window: Step 10 returns a signed S3 URL within 2 seconds, but the virus scan is listed as an async Celery task. This means a malicious file is accessible via signed URL before it is scanned. The signed URL must not be returned until the scan completes or the URL must be invalidated post-scan-failure.",
+                "WhatsApp webhook spoofing: Step 20 lists HMAC verification as a control, but Step 14 implements the webhook handlers. There is no acceptance criteria in Step 14 requiring HMAC verification. This gap means the webhook could ship without verification and only be caught in Step 20.",
+                "JWT RS256 private key management is unspecified. Key storage (HSM? KMS? Secret Manager?), rotation schedule, and emergency revocation procedure are absent. A compromised signing key invalidates all user sessions and cannot be rotated without disruption.",
+                "The embeddable KB widget (Step 11, Step 17) is unauthenticated and rate-limited to 60 req/min. A distributed scraper hitting this endpoint from multiple IPs can exfiltrate the entire knowledge base. Content sensitivity classification and robots.txt/noindex controls are not addressed.",
+                "Chat widget loaded via script tag (Step 18) on third-party sites is a supply chain injection risk. If the CDN serving the widget JS is compromised, all customers' websites are compromised. Subresource Integrity (SRI) hash enforcement is not mentioned."
+              ],
+              "summary": "This plan is architecturally thorough for a B2B SaaS helpdesk but has several production-blocking gaps that prevent a score above 65. The most critical failures are: (1) no billing implementation step \u2014 the product cannot charge customers without it; (2) SOC 2 Type II is listed as a deliverable but requires a 6-month auditor observation period that cannot be produced on a build timeline; (3) the schema-per-tenant and RLS contradiction will cause a security architecture debate mid-build; (4) the WhatsApp 24-hour session window and Message Template requirement are not accounted for in the AI auto-response design, meaning a core feature will be blocked by Meta's API policies; and (5) Steps 30-33 embed an entirely separate hardware product (PCB design, firmware, QEMU simulation) into the critical path of a SaaS launch. The core software plan \u2014 ticket management, live chat, knowledge base, SLA tracking, multi-channel \u2014 is well-specified with concrete acceptance criteria and a logical dependency chain. The security and compliance steps exist but are sequenced too late. The 3KB widget constraint and the arbitrary 0.82 confidence threshold for autonomous AI replies are acceptance criteria that will either be silently dropped or cause customer-facing failures. Recommend: cut hardware to a separate initiative, add billing as Step 9.5, move threat modeling before Step 7, resolve the multi-tenancy strategy before database design, and replace SOC 2 Type II with Type I for launch.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T07:34:31.367626+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 412.48,
+      "critic_plan": 126.24
+    }
+  }
+}

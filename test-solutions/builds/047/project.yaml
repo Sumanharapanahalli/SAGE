@@ -1,0 +1,67 @@
+project_name: inventory_management
+display_name: Inventory Management
+version: 1.0.0
+domain: ecommerce
+description: Multi-channel inventory management with warehouse management, barcode
+  scanning, stock forecasting, purchase order automation, and marketplace sync (Amazon,
+  eBay, Shopify).
+detected_domains: []
+compliance_standards:
+- SOC 2
+- GDPR
+task_types:
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- FINANCIAL
+- FRONTEND
+- INFRA
+- LEGAL
+- MARKET_RESEARCH
+- ML_MODEL
+- OPERATIONS
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- financial_analyst
+- legal_advisor
+- marketing_strategist
+- operations_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

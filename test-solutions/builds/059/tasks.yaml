@@ -1,0 +1,318 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements document for the smart parking IoT system
+      covering occupancy sensors, mobile guidance, payment, reservations, and analytics.
+    agent_role: product_manager
+    acceptance_criteria:
+    - 'PRD covers all five major feature areas: sensors, mobile, payment, reservations,
+      analytics'
+    - User stories defined for at least 3 actor types (driver, operator, city admin)
+    - Success metrics include occupancy accuracy ≥95%, app response <2s, payment success
+      rate ≥99%
+    - Feature priorities ranked with MoSCoW labeling
+    depends_on: []
+  UX_DESIGN:
+    description: Design mobile app wireframes and user flows for parking discovery,
+      navigation, slot reservation, and payment confirmation.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all primary user journeys end-to-end
+    - Navigation flow validated with at least 3 usability test scenarios
+    - Accessibility audit passed for color contrast and touch target sizes
+    - Design system tokens defined (colors, typography, spacing)
+    depends_on:
+    - 1
+  SECURITY:
+    description: Produce threat model, IEC 62443 zone/conduit diagram, and SBOM for
+      the full smart parking system including IoT edge, cloud backend, and mobile
+      app.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All IEC 62443 security levels (SL1–SL2) assigned to each zone
+    - STRIDE analysis completed for all data flows
+    - SBOM lists all firmware and software dependencies with CVE status
+    - Penetration test plan drafted covering network, API, and device attack vectors
+    - Countermeasures documented for all HIGH and CRITICAL risks
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 1
+  CONFIG:
+    description: Set up mono-repo structure, CI/CD skeleton, environment configs,
+      and toolchain for firmware (ESP32/STM32), backend (FastAPI), mobile (React Native),
+      and analytics (Python).
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Mono-repo bootstrapped with per-service workspace configs
+    - GitHub Actions workflows scaffold present for all four service types
+    - Environment variable templates (.env.example) committed for each service
+    - Pre-commit hooks enforce linting and secret scanning
+    - README documents local setup in under 10 commands
+    depends_on:
+    - 1
+  FIRMWARE:
+    description: 'Implement occupancy sensor firmware for ultrasonic/IR/magnetic sensor
+      node: HAL drivers, FreeRTOS tasks for sampling, local debounce logic, MQTT publish
+      over WiFi/LoRa.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - HAL drivers compile cleanly for ESP32 target with zero warnings
+    - FreeRTOS task correctly debounces sensor state transitions (occupied/vacant)
+      with configurable threshold
+    - MQTT message published within 500ms of state change
+    - Firmware enters deep sleep between sampling cycles reducing idle current to
+      <50µA
+    - OTA update mechanism implemented and verified
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 4
+  DATABASE:
+    description: Design and migrate the relational schema for parking lots, zones,
+      slots, reservations, payments, users, and time-series occupancy events.
+    agent_role: developer
+    acceptance_criteria:
+    - All tables created with proper primary keys, foreign keys, and indexes
+    - TimescaleDB hypertable configured on occupancy_events with 1-day chunks
+    - Alembic migration scripts run cleanly from empty database to final schema
+    - ERD diagram committed to docs/
+    - Seed data script populates at least one city with 5 parking lots and 200 slots
+    depends_on:
+    - 4
+  API:
+    description: 'Design OpenAPI 3.1 specification for all backend endpoints: slot
+      status, reservation CRUD, payment webhooks, analytics queries, and IoT device
+      ingestion.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors against openapi-generator
+    - All endpoints have request/response schemas with examples
+    - Authentication schemes documented for both JWT (users) and API key (IoT devices)
+    - Error response codes standardized (RFC 7807 Problem Details)
+    - Spec reviewed against PRD requirements — 100% feature coverage
+    depends_on:
+    - 1
+    - 3
+  BACKEND:
+    description: 'Implement FastAPI backend: IoT device ingestion endpoint, slot state
+      engine, reservation management, user auth (JWT), and REST API per the OpenAPI
+      spec.'
+    agent_role: developer
+    acceptance_criteria:
+    - All OpenAPI endpoints implemented and return correct HTTP status codes
+    - IoT device can POST occupancy event and slot state updates in database within
+      100ms
+    - Reservation creation validates slot availability with optimistic locking (no
+      double-bookings)
+    - JWT auth middleware enforces role-based access (driver, operator, admin)
+    - Redis Pub/Sub broadcasts slot state changes for real-time WebSocket consumers
+    depends_on:
+    - 6
+    - 7
+  DATA:
+    description: 'Build analytics data pipeline: ETL from occupancy_events into aggregated
+      hourly/daily summaries, city-level dashboard dataset, and peak demand prediction
+      features.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Airflow DAG runs hourly aggregations without failures across 7-day backtest
+    - City-level dashboard dataset refreshed every 15 minutes
+    - Continuous aggregates in TimescaleDB answer time-range queries in <200ms
+    - S3 export runs nightly and is queryable via Athena
+    - Pipeline idempotent — re-runs produce identical results
+    depends_on:
+    - 8
+  ML_MODEL:
+    description: Train occupancy prediction model (LSTM or Prophet) per slot/zone
+      using historical time-series data, and expose predictions via /analytics/predict
+      endpoint.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Prophet baseline achieves MAE <10% on held-out 30-day test set
+    - LSTM model outperforms Prophet baseline by ≥5% MAE
+    - Model registered in MLflow with version tracking and evaluation metrics
+    - Prediction endpoint responds in <150ms at p95
+    - Model retrained weekly via Airflow DAG using latest occupancy data
+    depends_on:
+    - 11
+  FRONTEND:
+    description: 'Build React Native mobile app: interactive map with real-time slot
+      availability, turn-by-turn guidance to selected slot, reservation booking flow,
+      and payment screen.'
+    agent_role: developer
+    acceptance_criteria:
+    - Map renders available/occupied/reserved slots with color coding updated via
+      WebSocket
+    - User can find, select, and reserve a slot in ≤4 taps from map view
+    - Turn-by-turn navigation from current location to selected slot functional on
+      iOS and Android
+    - Payment flow completes via Stripe with success/failure feedback in <3s
+    - App handles offline mode gracefully with cached last-known slot state
+    depends_on:
+    - 2
+    - 8
+    - 9
+  INFRA:
+    description: 'Provision cloud infrastructure: ECS Fargate for backend + analytics,
+      RDS PostgreSQL with TimescaleDB, ElastiCache Redis, S3, IoT Core, and Terraform
+      IaC.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan applies cleanly to staging without manual steps
+    - All sensitive services (RDS, Redis, IoT broker) in private subnets with no public
+      ingress
+    - Auto-scaling policies configured for ECS tasks based on CPU and SQS queue depth
+    - RDS multi-AZ enabled for production
+    - Terraform state stored in S3 with DynamoDB locking
+    depends_on:
+    - 4
+    - 10
+  DEVOPS:
+    description: 'Build full CI/CD pipelines for firmware, backend, mobile, and analytics:
+      lint, test, build, container push, and blue/green deployment to ECS.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All four pipelines (firmware, backend, mobile, analytics) pass end-to-end on
+      main branch
+    - Blue/green deployment to ECS with automatic rollback on failed health check
+    - Firmware binary built, signed, and uploaded to S3 OTA bucket on tag push
+    - Mobile build deployed to TestFlight and Play Internal Track on release branch
+    - Pipeline run time <15 minutes for backend service
+    depends_on:
+    - 15
+  EMBEDDED_TEST:
+    description: 'Write firmware unit tests (Unity/CMock) and HIL test spec for occupancy
+      sensor node: sensor driver accuracy, MQTT publish timing, sleep/wake cycles,
+      and OTA update validation.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥80% of firmware source files excluding HAL stubs
+    - 'HIL test measures sensor accuracy: ≥95% correct occupied/vacant classification
+      against ground truth'
+    - MQTT publish latency measured <500ms from state change in 100 consecutive HIL
+      runs
+    - Deep sleep current measured <50µA with oscilloscope and logged
+    - OTA update test installs new firmware over-the-air and verifies rollback on
+      corrupt image
+    depends_on:
+    - 5
+  TESTS:
+    description: Write backend unit and integration tests for slot engine, reservation
+      service, payment flows, and IoT ingestion using pytest and testcontainers.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Line coverage ≥85% across backend src/
+    - Reservation double-booking test confirms optimistic lock raises conflict on
+      concurrent requests
+    - Payment webhook handler test covers success, failure, and signature-invalid
+      scenarios
+    - IoT ingestion test validates 1000 concurrent sensor messages processed without
+      loss
+    - All tests pass in CI within 5 minutes
+    depends_on:
+    - 8
+    - 9
+    - 10
+  SYSTEM_TEST:
+    description: 'Design and execute end-to-end system tests: driver books slot via
+      mobile app, sensor confirms entry, payment captured, analytics updated, operator
+      dashboard reflects change.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 'Happy path E2E test passes: reservation → entry detection → payment capture
+      in <30s wall time'
+    - 'Walk-in detection test: sensor triggers slot state change visible in app within
+      5s'
+    - Cancellation within grace period results in full Stripe refund confirmed via
+      API
+    - Analytics dashboard reflects new occupancy event within 15 minutes of sensor
+      trigger
+    - All 5 E2E scenarios pass 3 consecutive times in staging
+    depends_on:
+    - 13
+    - 14
+    - 17
+    - 18
+  COMPLIANCE:
+    description: 'Produce IEC 62443 compliance artifacts: security requirements traceability
+      matrix, zone/conduit design documentation, security acceptance test report,
+      and risk treatment register.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Traceability matrix maps every IEC 62443-3-3 security requirement to implemented
+      control
+    - All HIGH risks in risk treatment register have accepted residual risk or active
+      mitigation
+    - Security acceptance test report covers authentication, encryption, device identity,
+      and patch management
+    - Zone/conduit diagram peer-reviewed and signed off by security lead
+    - Document package reviewed against IEC 62443-2-1 CSMS requirements
+    depends_on:
+    - 3
+    - 15
+    - 19
+  AGENTIC:
+    description: 'Integrate a Multi-Agent Coordinator pattern into the analytics backend:
+      coordinator decomposes city parking queries, routes to specialist agents (occupancy
+      analyst, revenue analyst, prediction agent), and synthesizes responses for operator
+      dashboard.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes occupancy queries to occupancy_analyst and revenue
+      queries to revenue_analyst
+    - Multi-agent response synthesized and returned to caller within 3s for pre-cached
+      data
+    - Vector store retrieves relevant prior analyses to enrich agent context
+    - Each specialist agent's output includes confidence score and data source citation
+    - Human-in-the-loop gate present for any query that triggers bulk data export
+      or policy change
+    depends_on:
+    - 12
+    - 14
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR/CCPA), and data processing
+      agreements covering driver location data, payment data retention, and city data
+      sharing.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all data types collected with lawful basis stated for
+      each
+    - Data retention schedule documented and implemented in backend purge job
+    - GDPR right-to-erasure API endpoint implemented and tested
+    - DPA template ready for city government contracts
+    - Legal review sign-off recorded in audit trail
+    depends_on:
+    - 1
+    - 3
+  OPERATIONS:
+    description: 'Write operational runbooks: sensor node replacement procedure, backend
+      incident response, payment processor outage playbook, and SLA definitions for
+      city contracts.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Sensor replacement runbook allows field technician to swap and re-provision
+      node in <30 minutes
+    - Incident response runbook defines severity levels P0–P3 with escalation paths
+      and response time SLAs
+    - Payment outage playbook includes graceful degradation mode (allow exit without
+      capture, reconcile later)
+    - SLA definitions reviewed and approved by operations manager
+    - All runbooks accessible in ops wiki with last-tested dates
+    depends_on:
+    - 16
+    - 19
+  DOCS:
+    description: 'Produce technical documentation: API reference (auto-generated from
+      OpenAPI), firmware developer guide, deployment architecture diagram, and onboarding
+      guide for city operators.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from OpenAPI spec and deployed to docs site
+    - Firmware developer guide covers toolchain setup, flash procedure, and debug
+      via JTAG
+    - C4 context and container diagrams committed and reviewed for accuracy
+    - Operator onboarding guide tested with a non-technical user in ≤30 minutes
+    - MkDocs site builds and deploys via CI without errors
+    depends_on:
+    - 20
+    - 22

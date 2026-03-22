@@ -1,0 +1,72 @@
+project_name: micro_lending_platform
+display_name: Micro Lending Platform
+version: 1.0.0
+domain: fintech
+description: Micro-lending platform for emerging markets with alternative credit scoring
+  (mobile data, utility payments), automated disbursement, and collection management.
+detected_domains: []
+compliance_standards:
+- KYC/AML
+- Consumer Lending Regulations
+- Data Protection
+task_types:
+- AGENTIC
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FINANCIAL
+- FRONTEND
+- INFRA
+- LEGAL
+- LOCALIZATION
+- MARKET_RESEARCH
+- ML_MODEL
+- OPERATIONS
+- PRODUCT_MGMT
+- QA
+- REGULATORY
+- SECURITY
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- financial_analyst
+- legal_advisor
+- localization_engineer
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

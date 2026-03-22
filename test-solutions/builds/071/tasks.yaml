@@ -1,0 +1,312 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Conduct stakeholder interviews and define business requirements for
+      the LMS platform. Identify learner personas (students, corporate trainees, K-12),
+      instructor workflows, admin needs, and ROI model. Produce user stories, process
+      flow diagrams, and acceptance criteria baseline.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - 'User stories cover all six product areas: course builder, video hosting, quizzes,
+      progress tracking, certificates, SCORM/xAPI, LTI'
+    - Each user story has a defined acceptance condition and priority (MoSCoW)
+    - ROI model includes cost-per-learner and completion-rate uplift projections
+    - Process flows reviewed and signed off by at least one representative of each
+      persona group
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Author the Product Requirements Document (PRD), prioritized roadmap,
+      and success metrics for lms_platform. Define MVP scope vs. post-launch phases.
+      Set KPIs: course completion rate, time-to-certificate, SCORM 1.2/2004 and xAPI
+      pass rates, LTI grade passback success rate.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all MVP features with acceptance criteria for each
+    - Roadmap has at least two versioned phases with delivery milestones
+    - Success metrics are measurable and tied to business outcomes from step 1
+    - Scope boundary (MVP vs. phase 2) is unambiguous and agreed upon by stakeholders
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research sessions with learners, instructors, and admins.
+      Produce wireframes and interaction design for: learner dashboard, course player
+      (video + SCORM), quiz flow, progress tracker, certificate viewer, course builder
+      drag-and-drop, and LTI launch screen. Perform accessibility audit against WCAG
+      2.1 AA from the design stage.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All primary user flows covered by wireframes with annotated interaction states
+    - Wireframes reviewed and iterated with at least 3 representative users per persona
+    - WCAG 2.1 AA checklist completed for each screen design — no critical violations
+    - Color palette and typography system defined and WCAG contrast-compliant
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Produce compliance analysis and evidence artifacts for FERPA, COPPA,
+      and WCAG 2.1 applicable to an LMS. Define data handling policies for student
+      educational records (FERPA), age verification and parental consent flows for
+      under-13 users (COPPA), and accessibility obligations (WCAG 2.1). Produce a
+      traceability matrix mapping each standard clause to a system requirement.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Traceability matrix maps every FERPA, COPPA, and WCAG 2.1 AA clause to a numbered
+      system requirement
+    - COPPA parental consent flow designed with age-gate at registration, blocking
+      under-13 without consent
+    - FERPA data handling policy identifies all PII fields and specifies access controls
+      and retention limits
+    - WCAG checklist covers all 50 Level AA success criteria with pass/fail/N-A designation
+    depends_on:
+    - 1
+    - 2
+  SECURITY:
+    description: Build a threat model for lms_platform covering authentication, video
+      content access control, SCORM package upload, LTI OAuth 2.0 flows, student data
+      (FERPA PII), and certificate integrity. Produce OWASP Top 10 risk assessment,
+      attack surface map, and security requirements feeding into API and backend design.
+    agent_role: analyst
+    acceptance_criteria:
+    - STRIDE analysis completed for all six threat surfaces listed
+    - 'Security requirements produced for: JWT expiry, video signed URLs, SCORM sandbox
+      isolation, LTI signature validation, certificate tamper-evidence'
+    - OWASP Top 10 risk register has mitigations defined for all HIGH and CRITICAL
+      items
+    - Security requirements are numbered and referenced in the traceability matrix
+      from step 4
+    depends_on:
+    - 1
+    - 4
+  API:
+    description: 'Design the OpenAPI 3.1 specification for all lms_platform REST endpoints:
+      auth (JWT + OAuth 2.0/OIDC for LTI), users, courses, media upload, quiz CRUD,
+      progress events (xAPI statements), certificate generation, SCORM runtime data
+      (CMI), and LTI 1.3 launch/grade-passback endpoints. Define request/response
+      schemas, error codes, and rate limits.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec validates with no errors via `openapi-generator validate`
+    - All endpoint groups listed in payload are covered with full request/response
+      schemas
+    - LTI 1.3 endpoints conform to IMS Global LTI 1.3 spec (launch, NRPS, AGS)
+    - xAPI statement endpoint schema validates against xAPI 1.0.3 statement structure
+    - Error responses use RFC 7807 Problem Details format consistently
+    depends_on:
+    - 2
+    - 5
+  DATABASE:
+    description: 'Design and implement the relational database schema for lms_platform.
+      Tables: users (with age/consent flags for COPPA), courses, modules, media_assets,
+      quiz_definitions, quiz_questions, quiz_attempts, xapi_statements, scorm_runtime_data,
+      certificates, lti_registrations, lti_grade_passback_queue, audit_log. Write
+      migrations using Alembic. Seed data for development.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables defined with appropriate primary keys, foreign keys, and NOT NULL
+      constraints
+    - COPPA-required fields (date_of_birth, consent flags) present in users table
+    - FERPA PII fields identified with a column comment `-- FERPA_PII`
+    - Alembic migrations run cleanly from empty database to full schema
+    - ERD reviewed and matches OpenAPI schemas from step 6
+    - xapi_statements table stores full statement JSON and indexed actor/verb/object
+    depends_on:
+    - 6
+  CONFIG:
+    description: Scaffold the lms_platform monorepo. Initialize backend (FastAPI +
+      Python), frontend (React 18 + TypeScript + Vite), worker (Celery + Redis for
+      async jobs), and infrastructure directories. Configure linting (Ruff, ESLint),
+      formatting (Black, Prettier), pre-commit hooks, environment variable management
+      (.env.example), and Docker Compose for local development (Postgres, Redis, MinIO
+      for video storage).
+    agent_role: developer
+    acceptance_criteria:
+    - '`docker compose up` starts all local services with no errors'
+    - '`make dev-backend` starts FastAPI with hot reload on :8000'
+    - '`make dev-frontend` starts Vite on :5173 with proxy to :8000'
+    - Pre-commit hooks run Ruff, Black, ESLint, and Prettier and block on violations
+    - .env.example documents every required environment variable with descriptions
+    - Alembic `upgrade head` runs successfully against the Compose Postgres instance
+    depends_on:
+    - 6
+    - 7
+  BACKEND:
+    description: 'Implement authentication and user management services. Features:
+      JWT login/refresh/logout, OAuth 2.0 PKCE (for LTI OIDC), role-based access control
+      (learner/instructor/admin), COPPA age-gate at registration (block under-13 without
+      parental consent token), FERPA-compliant PII field access control, password
+      reset, email verification, and admin user impersonation with full audit logging.'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT tokens expire in 15 min (access) and 7 days (refresh); refresh rotation
+      implemented
+    - Registration rejects users under 13 without parental consent token — returns
+      403 with COPPA reason
+    - RBAC enforced via FastAPI dependency on every protected endpoint
+    - Admin impersonation writes an audit_log entry with impersonator_id and impersonated_id
+    - All PII fields returned only to the owning user or users with `admin` role
+    - 'Unit tests cover: login, refresh, logout, age-gate rejection, parental consent
+      approval, RBAC enforcement'
+    depends_on:
+    - 7
+    - 8
+  FRONTEND:
+    description: 'Build the frontend shell: React Router 6 routing, authentication
+      context (JWT storage in httpOnly cookie), role-based route guards, global layout
+      (sidebar nav, header, breadcrumbs), theme system, and API client (TanStack Query
+      + typed fetch from OpenAPI spec). Implement learner dashboard, course catalog
+      with search/filter, and course enrollment flow.'
+    agent_role: developer
+    acceptance_criteria:
+    - Unauthenticated users redirected to /login from any protected route
+    - Role-based route guards prevent learners from accessing /admin/* and /instructor/*
+    - JWT stored in httpOnly cookie — not accessible via `document.cookie` in browser
+      console
+    - Course catalog renders 100 courses with virtual scrolling and no layout shift
+    - Search filters by title, category, and instructor with debounced API call (300ms)
+    - Lighthouse accessibility score ≥ 90 on dashboard and catalog pages
+    depends_on:
+    - 9
+    - 8
+    - 3
+  LOCALIZATION:
+    description: Implement i18n infrastructure for lms_platform. Integrate react-i18next
+      on the frontend and Babel (gettext) or similar on the backend for server-side
+      strings. Extract all user-facing strings to translation files. Implement locale
+      detection (Accept-Language header, user preference), RTL layout support (CSS
+      logical properties), and date/number formatting per locale. Seed translations
+      for English (en-US), Spanish (es), French (fr), and Arabic (ar, RTL).
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All user-facing strings extracted — zero hardcoded English strings in components
+    - Switching to Arabic locale flips layout direction to RTL with no layout breakage
+    - Date and number formatting correct for all 4 initial locales (e.g., comma vs.
+      period decimal)
+    - Missing translation keys fall back to en-US without throwing errors
+    - Translation coverage report shows ≥ 95% of keys translated for es and fr locales
+    - WCAG 2.1 SC 3.1.1 (Language of Page) implemented — lang attribute updated on
+      locale switch
+    depends_on:
+    - 17
+    - 18
+    - 19
+    - 20
+    - 21
+  TESTS:
+    description: 'Write comprehensive unit and integration tests for all backend services.
+      Coverage targets: auth (≥95%), courses (≥90%), quiz engine (≥90%), progress/xAPI
+      (≥85%), SCORM runtime (≥85%), LTI (≥85%), certificates (≥90%). Use pytest with
+      a test Postgres instance (pytest-asyncio, factory_boy for fixtures). Include
+      parameterized tests for SCORM 1.2 vs. 2004 CMI data model differences.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Coverage thresholds met per service (see description)
+    - All SCORM ADL test suite scenarios covered as parameterized test cases
+    - LTI tests use a mock LTI platform (recorded HTTP cassettes via pytest-recording)
+    - Tests run in under 3 minutes on CI with parallel execution (`pytest -n auto`)
+    - No tests rely on external network calls — all external services mocked or cassette-recorded
+    - CI fails if coverage drops below thresholds (enforced via `--cov-fail-under`)
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions), containerization (Docker
+      multi-stage builds), and production infrastructure (AWS ECS Fargate or Kubernetes).
+      Pipeline: lint → test → build → push to ECR → deploy to staging → smoke test
+      → manual gate → deploy to production. Add monitoring (CloudWatch/Datadog), alerting
+      (PagerDuty), and log aggregation (CloudWatch Logs Insights). Configure Redis
+      and Postgres managed services for production.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and blocks merge on test failure or coverage drop
+    - Docker images build in under 5 minutes with layer caching
+    - Staging deployment triggered automatically on merge to `main`
+    - Production deployment requires manual approval in GitHub Actions environment
+    - Datadog dashboard shows p50/p95/p99 latency and error rate for all API endpoints
+    - PagerDuty alert fires within 2 minutes of error rate exceeding 1% in production
+    depends_on:
+    - 23
+    - 24
+  QA:
+    description: 'Execute full QA test plan. Produce test execution report covering:
+      functional test cases for all features (course builder, video, quiz, SCORM 1.2/2004,
+      LTI 1.3, certificates, progress tracking), regression test suite, exploratory
+      testing sessions, cross-browser compatibility (Chrome, Firefox, Safari, Edge),
+      and mobile responsiveness testing (iOS Safari, Android Chrome). Log and triage
+      all defects.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - ≥ 95% of test cases executed and passed before production sign-off
+    - Zero P0/P1 defects open at production release
+    - 'SCORM 1.2 ADL conformance test suite: 100% pass rate'
+    - 'LTI 1.3 IMS Global certification checklist: 100% pass rate'
+    - Cross-browser testing shows no layout breakage or functional failures in listed
+      browsers
+    - Mobile testing confirms all learner flows usable on iOS and Android without
+      horizontal scroll
+    depends_on:
+    - 22
+    - 23
+    - 24
+  SYSTEM_TEST:
+    description: 'Execute system-level integration and performance tests. Load test
+      with k6: 500 concurrent learners watching video + 200 concurrent SCORM sessions
+      + 100 concurrent quiz submissions. Verify autoscaling behavior. Test LTI grade
+      passback under load. Test xAPI statement ingestion at 1000 statements/minute.
+      Measure and document p95 latency for all critical endpoints.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All SLA targets met under specified load scenarios
+    - ECS autoscaling triggers and completes scale-out within 2 minutes of load increase
+    - Zero 5xx errors during load test (5xx rate < 0.1% acceptable)
+    - SCORM session data integrity verified — no CMI data loss under concurrent write
+      load
+    - xAPI ingestion handles 1000 statements/min with queue depth remaining bounded
+    - Performance report documents p50/p95/p99 for all tested endpoints
+    depends_on:
+    - 25
+    - 28
+  TRAINING:
+    description: 'Create user guides, onboarding materials, and training content for
+      all three personas. Learner guide: enroll, watch, take quiz, download certificate.
+      Instructor guide: build a course, upload video, create SCORM package, configure
+      quizzes, view analytics. Admin guide: manage users, configure LTI integrations,
+      manage certificates, FERPA data requests, COPPA consent management. Produce
+      video walkthroughs (Loom) and in-app onboarding tooltips.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - All three persona guides cover every major workflow end-to-end
+    - LTI integration guide tested against Canvas sandbox — all steps accurate
+    - SCORM authoring guide tested with Articulate Storyline and Adobe Captivate exports
+    - Video walkthroughs captioned (VTT) for WCAG 1.2.2 compliance
+    - In-app Shepherd.js tour triggers on first login and covers ≥ 5 key actions per
+      persona
+    - Docs reviewed by one representative from each persona group — feedback incorporated
+    depends_on:
+    - 27
+    - 28
+  DOCS:
+    description: 'Produce technical documentation: API reference (auto-generated from
+      OpenAPI spec via Redoc/Stoplight), architecture decision records (ADRs) for
+      SCORM runtime design, LTI 1.3 security model, xAPI statement schema, and video
+      CDN architecture. Write a developer contribution guide, local setup guide, and
+      deployment runbook. Document the FERPA data handling procedures for engineering.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from openapi.yaml and covers all endpoints with request/response
+      examples
+    - Five ADRs written with Context/Decision/Consequences structure
+    - 'Local setup guide: new developer achieves running system in under 30 minutes
+      (timed test)'
+    - Deployment runbook covers rollback to previous ECS task definition in ≤ 5 steps
+    - FERPA data deletion procedure documents exactly which tables and fields to purge
+      and how to verify
+    - CONTRIBUTING.md includes branch naming, PR template, and test coverage requirements
+    depends_on:
+    - 29
+    - 30

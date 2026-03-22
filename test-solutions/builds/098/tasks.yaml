@@ -1,0 +1,382 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Gather and document business requirements for the enterprise knowledge
+      management platform. Define user personas (knowledge contributors, consumers,
+      admins), core workflows (create/review/approve/retire content), ROI model (support
+      ticket deflection, onboarding speed), and process flows for wiki, FAQ, decision
+      tree, and expertise directory modules.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - Business requirements document covers all 6 modules with user stories in Given/When/Then
+      format
+    - At least 4 user personas defined with goals, pain points, and usage frequency
+    - ROI model includes baseline metrics and projected improvements with data sources
+    - Process flows cover create, review, publish, update, retire lifecycle for each
+      content type
+    - Stakeholder sign-off obtained on requirements document
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Create the product requirements document (PRD), prioritized roadmap,
+      and success metrics framework. Define MVP scope vs. v2 features. Establish KPIs:
+      search relevance score, content freshness index, time-to-answer, expert utilization
+      rate, and knowledge reuse rate.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all functional and non-functional requirements with priority (P0/P1/P2)
+    - MVP scope clearly separated from future phases with rationale
+    - Each success metric has a baseline, target, and measurement method
+    - Roadmap spans 3 phases with milestones and dependencies
+    - PRD reviewed and approved by product stakeholders
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft terms of service, privacy policy, and data processing agreements.
+      Review IP ownership for user-generated content in the wiki. Define content licensing
+      model. Assess GDPR/CCPA implications for the expertise directory (personal data
+      of employees). Review OSS license compatibility for planned dependencies.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy explicitly covers expertise directory personal data collection
+      and retention
+    - Terms of service include content ownership, acceptable use, and DMCA takedown
+      provisions
+    - DPA template covers all sub-processors with SCCs for EU data transfer
+    - OSS license audit lists all planned dependencies with license type and compatibility
+      risk
+    - Legal review sign-off documented
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Produce ISO 27001 and SOC 2 readiness artifacts. Define the information
+      security management scope statement, asset inventory, and risk treatment plan
+      for the knowledge management system. Map controls to SOC 2 Trust Service Criteria
+      (Security, Availability, Confidentiality). Create initial compliance evidence
+      tracker.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - ISMS scope statement defines boundaries, assets, and exclusions
+    - Asset inventory covers all data stores, services, and third-party integrations
+    - Risk treatment plan assigns owner and treatment to each identified risk
+    - SOC 2 control mapping covers all applicable CC criteria with control descriptions
+    - Evidence tracker lists each control with collection method and frequency
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all major flows:
+      wiki article create/edit, FAQ builder, decision tree editor (visual node graph),
+      AI search interface, content freshness dashboard, and expertise directory profile
+      pages. Define information architecture, navigation hierarchy, and accessibility
+      requirements (WCAG 2.1 AA).'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 8 identified pages at medium-fidelity
+    - Information architecture diagram shows all navigation paths and content hierarchy
+    - Decision tree editor wireframe supports visual drag-and-drop node creation
+    - Accessibility checklist maps each UI component to WCAG 2.1 AA criteria
+    - Design system tokens defined for color, typography, spacing, and elevation
+    - Usability test with 5 users conducted and findings documented
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design the database schema for all knowledge management entities:
+      articles (wiki), FAQ entries, decision tree nodes and edges, expertise profiles,
+      tags, categories, search indices, freshness scores, and audit logs. Define indexing
+      strategy for full-text search. Plan vector embedding storage for AI search.
+      Write migrations.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all entities with cardinality and foreign key constraints
+    - Schema includes soft-delete, created_at/updated_at on all mutable entities
+    - pgvector table defined with 1536-dim embedding column and HNSW index
+    - ContentVersion table supports full version history with diff metadata
+    - Migrations are idempotent and reversible (up/down)
+    - All PII fields in ExpertProfile documented in data dictionary
+    depends_on:
+    - 2
+  API:
+    description: 'Design the OpenAPI 3.0 specification for all REST endpoints across
+      modules: wiki CRUD, FAQ CRUD, decision tree CRUD, search (keyword + semantic),
+      freshness score API, expertise directory CRUD, user management, permissions,
+      webhooks, and admin endpoints. Define authentication (JWT + API key), rate limiting
+      headers, and pagination contracts.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors against OpenAPI 3.0 schema
+    - Every endpoint has request/response schemas, status codes, and examples
+    - Authentication schemes documented with token acquisition flow
+    - Rate limiting headers (X-RateLimit-*) specified on all endpoints
+    - Webhook payload schemas defined for content published/updated/retired events
+    - Search endpoint supports both keyword and semantic (vector) query modes
+    depends_on:
+    - 2
+    - 6
+  SECURITY:
+    description: 'Produce a threat model (STRIDE) for the knowledge management system.
+      Identify attack surfaces: authentication, content injection, search injection
+      (prompt injection for AI search), access control bypass, and data exfiltration
+      via expertise directory. Define security controls and produce a penetration
+      test plan.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Threat model covers all 6 attack surfaces with STRIDE categories
+    - Each threat has likelihood, impact, and risk rating
+    - Security controls map to ISO 27001 Annex A and SOC 2 CC6 criteria
+    - Prompt injection mitigations specified for AI search input sanitization
+    - SBOM generated listing all direct and transitive dependencies with CVE scan
+    - Penetration test plan covers scope, test cases, and acceptance criteria
+    depends_on:
+    - 4
+    - 7
+  CONFIG:
+    description: 'Set up the agentic AI pattern for the platform''s AI-powered features.
+      Configure a Multi-Agent Coordinator pattern: a coordinator agent routes queries
+      to specialist agents (wiki search agent, FAQ match agent, decision tree traversal
+      agent, expertise recommender agent). Set up embedding pipeline config, LLM gateway
+      config, and vector store connection. Define system prompts for each specialist
+      agent.'
+    agent_role: developer
+    acceptance_criteria:
+    - agent_config.yaml defines all 5 agents with roles, tools, and routing rules
+    - system_prompts.yaml contains tested prompts for each specialist agent
+    - Coordinator correctly routes a test query to the appropriate specialist agent
+    - Embedding pipeline config specifies model, batch size, and retry policy
+    - LLM provider is configurable via environment variable with no code changes
+    - Prompt injection guard rules defined in coordinator system prompt
+    depends_on:
+    - 7
+  BACKEND:
+    description: 'Build the core backend services: authentication/authorization (JWT,
+      RBAC with roles: viewer, contributor, editor, admin), user management, and shared
+      middleware (rate limiting, request logging, audit trail, tenant isolation).
+      Implement the project scaffolding: FastAPI application factory, dependency injection,
+      database session management, and health check endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT tokens issued with configurable expiry and refresh token rotation
+    - RBAC middleware enforces role permissions on all protected endpoints
+    - Audit log records all write operations with user_id, timestamp, entity, and
+      action
+    - Rate limiting returns 429 with Retry-After header when exceeded
+    - Health check endpoint returns database, cache, and search engine status
+    - All middleware covered by unit tests with >85% coverage
+    depends_on:
+    - 6
+    - 7
+  ML_MODEL:
+    description: 'Build the AI-powered search pipeline: document ingestion and chunking,
+      embedding generation (text-embedding-3-small), vector storage in pgvector, hybrid
+      search (BM25 keyword + cosine similarity vector), re-ranking with a cross-encoder
+      model, and the Multi-Agent Coordinator orchestration layer that routes queries
+      to the appropriate specialist agent based on query intent classification.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Ingestion pipeline processes wiki, FAQ, and decision tree content into chunks
+      ≤512 tokens
+    - Embedding generation batches documents with retry on rate limit errors
+    - Hybrid search combines BM25 and vector scores with configurable alpha weight
+    - Re-ranker improves top-10 retrieval MRR by ≥15% on test query set
+    - Coordinator correctly classifies query intent and routes to correct specialist
+      agent in ≥90% of test cases
+    - Search response includes source document, chunk, relevance score, and content
+      type
+    - End-to-end search latency P95 ≤ 2 seconds under 50 concurrent users
+    depends_on:
+    - 9
+    - 11
+    - 12
+    - 13
+  AGENTIC:
+    description: Implement the HITL (Human-in-the-Loop) agentic pattern for AI-generated
+      content suggestions and expert recommendations. When the AI search agent proposes
+      an answer synthesis or the expertise recommender suggests a new expert profile
+      tag, the system creates a proposal in the approval queue. Editors/admins review
+      and approve before the change is published. Use iterative_refinement for auto-improvement
+      of generated content drafts.
+    agent_role: developer
+    acceptance_criteria:
+    - Every AI-generated content modification creates a proposal record before any
+      DB write
+    - 'Proposal store tracks status: pending, approved, rejected, expired'
+    - Approved proposals execute the associated action and log the approval chain
+    - Rejected proposals feed correction back to the refinement agent for learning
+    - Iterative refinement loops a maximum of 3 times before escalating to human
+    - 'Proposal expiry auto-rejects after configurable TTL (default: 7 days)'
+    depends_on:
+    - 15
+    - 16
+  FRONTEND:
+    description: 'Build the React frontend scaffold: project setup (Vite + TypeScript
+      + React 18), routing (React Router v6), state management (Zustand), API client
+      layer (typed fetch with OpenAPI-generated types), authentication context (JWT
+      storage, refresh, logout), global error boundary, and loading/skeleton components.
+      Implement the design system from UX tokens.'
+    agent_role: developer
+    acceptance_criteria:
+    - TypeScript compiles with strict mode and zero errors
+    - API client generated from OpenAPI spec with all endpoints typed
+    - Auth context persists JWT across page reloads and handles token expiry with
+      refresh
+    - Global error boundary catches unhandled errors and shows user-friendly fallback
+    - Design system components (Button, Input, Badge, Card, Modal) match UX wireframes
+    - Lighthouse accessibility score ≥ 90 on the component library page
+    depends_on:
+    - 5
+    - 7
+  DATA:
+    description: 'Build the data pipeline for search index synchronization: event-driven
+      ingestion (Postgres CDC or webhook triggers), incremental embedding updates,
+      Elasticsearch index management (aliases, zero-downtime reindex), and analytics
+      data warehouse (user search patterns, content usage, expert utilization). Implement
+      the freshness signal aggregation pipeline.'
+    agent_role: data_engineer
+    acceptance_criteria:
+    - CDC pipeline propagates content changes to search index within 30 seconds
+    - Zero-downtime reindex uses index aliases with blue/green swap
+    - Freshness aggregator runs on schedule and writes scores to freshness_scores
+      table
+    - Analytics ETL captures search query, result clicked, dwell time, and feedback
+      per session
+    - Pipeline failures are logged with retry policy and alerting on repeated failure
+    - Incremental embedding updates only re-embed changed chunks to minimize cost
+    depends_on:
+    - 15
+    - 16
+  INFRA:
+    description: Set up Docker Compose for local development (PostgreSQL, pgvector,
+      Redis, Elasticsearch, backend, frontend) and Kubernetes manifests for production
+      deployment. Define resource limits, liveness/readiness probes, horizontal pod
+      autoscaler, persistent volume claims for vector store, and network policies
+      for internal service communication.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up starts all services with a single command in < 3 minutes
+    - All K8s manifests pass kubectl --dry-run=client validation
+    - HPA configured for backend deployment with CPU threshold 70% and min/max replicas
+      2/10
+    - Network policies restrict inter-service communication to documented paths only
+    - PVC for pgvector and Elasticsearch configured with retain reclaim policy
+    - Liveness probes for all services with appropriate initialDelaySeconds
+    depends_on:
+    - 10
+  DEVOPS:
+    description: 'Build the CI/CD pipeline: GitHub Actions workflows for PR checks
+      (lint, type-check, unit tests, security scan), staging deployment on merge to
+      main, and production deployment with manual approval gate. Set up monitoring
+      (Prometheus + Grafana), structured logging (Loki), distributed tracing (OpenTelemetry
+      → Jaeger), and alerting rules for SLA breaches.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR check workflow runs lint, mypy, pytest, and Trivy scan in parallel under
+      10 minutes
+    - Staging deploy runs automatically on merge to main with smoke tests
+    - Production deploy requires manual approval and runs canary at 10% traffic for
+      5 minutes
+    - Prometheus scrapes metrics from all backend pods with 15s interval
+    - 'Grafana dashboard shows: request rate, latency P50/P95/P99, error rate, search
+      latency, freshness job status'
+    - Alert fires within 2 minutes of threshold breach in staging and production
+    depends_on:
+    - 24
+  TESTS:
+    description: 'Write comprehensive unit and integration tests for all backend modules:
+      auth/RBAC, wiki CRUD, FAQ CRUD, decision tree CRUD and traversal, expertise
+      directory, freshness scoring, AI search pipeline, and HITL proposal system.
+      Target ≥85% coverage. Use pytest with fixtures and factory_boy for test data
+      generation.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest runs all unit tests in < 5 minutes with no flakiness
+    - Integration tests use real PostgreSQL (testcontainers) not mocks
+    - Coverage report shows ≥85% line coverage across all src/ modules
+    - Decision tree cycle detection tested with graph fixtures containing cycles
+    - HITL proposal tests verify no DB write occurs before proposal approval
+    - Search pipeline tests validate BM25 and vector retrieval independently
+    - Auth tests cover all RBAC role combinations for each endpoint
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+  QA:
+    description: Produce the QA test plan, test case library, and traceability matrix
+      mapping requirements to test cases. Define test environments, entry/exit criteria,
+      defect severity levels, and regression suite scope. Execute exploratory testing
+      sessions on AI search quality, freshness scoring accuracy, and decision tree
+      traversal edge cases.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all PRD requirements with coverage percentage
+    - Traceability matrix maps every P0/P1 requirement to at least one test case
+    - Exploratory testing sessions documented with session charters and findings
+    - AI search quality evaluation uses NDCG metric on 50-query golden set
+    - Freshness scoring accuracy validated against manually labeled staleness dataset
+      of 100 items
+    - Regression suite automated via Playwright covering all critical user journeys
+    depends_on:
+    - 2
+    - 26
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system integration tests across the full stack:
+      complete knowledge lifecycle (create wiki article → index → search → retrieve
+      → freshen), expertise recommendation flow, decision tree publish-and-traverse
+      flow, and HITL approval pipeline. Run load tests (k6) simulating 200 concurrent
+      users and measure SLA compliance.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 'Full knowledge lifecycle E2E test passes: create → index → search returns the
+      created article'
+    - HITL E2E test verifies no content change persists without an approved proposal
+      record
+    - Decision tree E2E test traverses a 10-node tree to correct terminal node
+    - Load test at 200 users shows search P95 ≤ 2000ms and error rate ≤ 0.1%
+    - All system test scenarios pass in staging environment before production deploy
+    - System test report documents pass/fail status for all test scenarios
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 22
+    - 23
+    - 26
+    - 27
+  OPERATIONS:
+    description: 'Write operational runbooks: deployment runbook, rollback procedure,
+      database backup/restore, Elasticsearch index recovery, LLM gateway failover,
+      freshness job manual trigger, on-call escalation matrix. Define SLAs (99.5%
+      availability, P95 search < 2s). Create incident severity classification and
+      response time targets.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Deployment runbook tested end-to-end by someone other than the author
+    - Rollback runbook restores previous version within 15 minutes
+    - Database backup/restore runbook validated with a restore drill in staging
+    - SLA document defines availability, latency, and recovery time objectives
+    - Incident severity levels (P0–P3) defined with response time and escalation path
+    - Capacity plan projects resource needs for 3x current load with scaling trigger
+      points
+    depends_on:
+    - 25
+  TRAINING:
+    description: 'Produce user-facing documentation and training materials: end-user
+      guide (wiki authoring, FAQ creation, decision tree building, search tips), admin
+      guide (user management, module config, freshness tuning, compliance reports),
+      API developer guide, and onboarding checklist for new team members. Create video
+      script outlines for 3 key workflows.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - User guide covers all 6 modules with step-by-step screenshots
+    - Admin guide includes freshness threshold configuration with before/after examples
+    - API developer guide includes code examples in Python and JavaScript for auth
+      and search
+    - Onboarding checklist validated by a new user completing it without assistance
+    - 'Video scripts written for: wiki article creation, AI search, and decision tree
+      traversal'
+    - All docs reviewed for accuracy against final implemented features
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 28

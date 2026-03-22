@@ -1,0 +1,1085 @@
+{
+  "run_id": "da6b807b-0c97-48bb-a7c9-eeacac0d83bd",
+  "solution_name": "elder_fall_detection",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-21T22:18:22.219037+00:00",
+  "updated_at": "2026-03-21T22:25:40.621423+00:00",
+  "product_description": "IoT wearable device for elderly fall detection with real-time caregiver alerts, GPS tracking, and automatic emergency dispatch. Must comply with FDA Class II and IEC 62304 for medical device software.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "SAFETY",
+      "description": "Conduct ISO 14971 risk management: identify hazards (missed fall, false alarm, GPS failure, alert delay), estimate severity/probability for each, define risk controls, and produce Risk Management File (RMF) and Hazard Analysis Report.",
+      "payload": {
+        "standard": "ISO 14971:2019",
+        "intended_use": "Continuous wearable fall detection for elderly users with automated emergency alerting",
+        "hazards": [
+          "Undetected fall leading to delayed emergency response",
+          "False positive alarm causing unnecessary emergency dispatch",
+          "GPS location inaccuracy during emergency",
+          "Alert delivery failure (network outage)",
+          "Device battery depletion during use",
+          "Skin irritation from prolonged wear",
+          "Incorrect emergency contact notified"
+        ],
+        "deliverables": [
+          "Risk Management Plan",
+          "Hazard Analysis Report",
+          "Risk Acceptability Matrix",
+          "Risk Control Measures Register"
+        ]
+      },
+      "acceptance_criteria": [
+        "All identified hazards have severity and probability ratings (S1\u2013S5, P1\u2013P5)",
+        "Residual risk for every hazard is ALARP and within FDA/ISO 14971 acceptability thresholds",
+        "Risk Management Plan is signed and version-controlled",
+        "Hazard-to-requirement traceability is established for each risk control",
+        "ISO 14971 risk management file complete",
+        "Residual risk acceptable"
+      ],
+      "depends_on": [],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 2,
+      "task_type": "COMPLIANCE",
+      "description": "Establish the Design History File (DHF) skeleton per FDA 21 CFR Part 820.30 and ISO 13485. Define IEC 62304 software lifecycle documentation structure (Software Development Plan, Software Requirements Spec, Software Architecture Doc, V&V protocols). Map all applicable standards and create traceability matrix shell.",
+      "payload": {
+        "standards": [
+          "FDA 21 CFR Part 820",
+          "IEC 62304",
+          "ISO 13485:2016",
+          "ISO 14971:2019",
+          "IEC 62443"
+        ],
+        "device_class": "FDA Class II",
+        "software_safety_class": "IEC 62304 Class B (non-life-sustaining, injury possible)",
+        "dhf_sections": [
+          "Design and Development Plan",
+          "User Needs",
+          "Design Inputs",
+          "Design Outputs",
+          "Design Review Records",
+          "Design Verification",
+          "Design Validation",
+          "Design Transfer",
+          "Design Changes"
+        ],
+        "deliverables": [
+          "DHF Index Document",
+          "Traceability Matrix Shell",
+          "Software Development Plan (IEC 62304)",
+          "Document Control Procedure"
+        ]
+      },
+      "acceptance_criteria": [
+        "DHF structure covers all 21 CFR 820.30 required sections",
+        "IEC 62304 Software Development Plan is drafted with lifecycle phases, roles, and deliverables",
+        "Traceability matrix links user needs \u2192 design inputs \u2192 design outputs \u2192 V&V",
+        "Document control numbering scheme is defined and applied to all artifacts",
+        "Software safety class justification (Class B) is documented with rationale",
+        "DHF (Design History File) structure created",
+        "V&V protocol drafted"
+      ],
+      "depends_on": [],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 3,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define system architecture and product requirements: wearable hardware specs (MCU, IMU, GPS, cellular/BLE), cloud backend topology, caregiver mobile app scope, fall detection algorithm approach, emergency dispatch integration (911 API or PSAP gateway), and user personas (elderly wearer, caregiver, emergency responder).",
+      "payload": {
+        "system_components": [
+          "Wearable device (MCU + 6-axis IMU + GPS + LTE-M/NB-IoT + BLE + battery)",
+          "Cloud backend (alert engine, GPS tracker, emergency dispatch, device management)",
+          "Caregiver mobile app (iOS + Android)",
+          "Emergency dispatch integration (PSAP or third-party SOS relay)"
+        ],
+        "key_requirements": [
+          "Fall detection latency < 3 seconds from event",
+          "Alert delivery to caregiver < 10 seconds from detection",
+          "GPS accuracy \u2264 10 meters outdoors",
+          "Battery life \u2265 72 hours continuous use",
+          "IP67 waterproofing",
+          "False positive rate < 2% during normal ADL",
+          "Automatic 911 dispatch after 30s no-response window"
+        ],
+        "solution_name": "elder_fall_detection"
+      },
+      "acceptance_criteria": [
+        "System architecture diagram approved showing all components and data flows",
+        "Numbered design input requirements (\u226550) traceable to user needs",
+        "Performance requirements have measurable acceptance criteria",
+        "Use cases for fall detection, caregiver alert, and emergency dispatch are documented",
+        "Out-of-scope items explicitly listed"
+      ],
+      "depends_on": [],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 4,
+      "task_type": "SECURITY",
+      "description": "Produce threat model (STRIDE) for device-to-cloud and cloud-to-caregiver communication paths. Define security architecture: TLS 1.3 for all transport, AES-256 for data at rest, device attestation, OTA firmware signing, HIPAA-aligned PHI handling. Generate SBOM for all software components.",
+      "payload": {
+        "threat_model_scope": [
+          "Device firmware",
+          "LTE-M/NB-IoT communication",
+          "Cloud API",
+          "Mobile app",
+          "OTA update channel"
+        ],
+        "stride_categories": [
+          "Spoofing",
+          "Tampering",
+          "Repudiation",
+          "Information Disclosure",
+          "Denial of Service",
+          "Elevation of Privilege"
+        ],
+        "security_controls": [
+          "Mutual TLS (mTLS) for device-cloud channel",
+          "ECDSA firmware signing for OTA",
+          "Secure element for device identity (X.509 cert)",
+          "AES-256-GCM for stored GPS/health data",
+          "OAuth 2.0 + PKCE for caregiver app auth",
+          "API rate limiting on alert endpoints",
+          "HIPAA Business Associate Agreement with cloud provider"
+        ],
+        "standards": [
+          "IEC 62443",
+          "HIPAA Security Rule",
+          "NIST SP 800-213 (IoT)"
+        ],
+        "deliverables": [
+          "Threat Model Report",
+          "Security Architecture Document",
+          "SBOM (CycloneDX format)"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis completed for all 5 system interfaces",
+        "Every HIGH and CRITICAL threat has a documented mitigation control",
+        "SBOM lists all third-party libraries with CVE scan results (zero known critical CVEs)",
+        "Penetration test plan is drafted for pre-market validation phase",
+        "HIPAA PHI data flows are identified and encryption controls documented",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 5,
+      "task_type": "UX_DESIGN",
+      "description": "Design caregiver mobile app UX and wearable device interaction model. Wireframe alert notification flow, location map view, device status dashboard, emergency dispatch confirmation screen, and onboarding flow. Conduct accessibility audit for elderly user interaction with device (single-button SOS, haptic feedback, LED indicators).",
+      "payload": {
+        "personas": [
+          "Elderly wearer (limited tech proficiency, possible cognitive decline)",
+          "Family caregiver (remote, mobile-first)",
+          "Professional caregiver (managing multiple wearers)"
+        ],
+        "screens": [
+          "Caregiver app: Fall alert push notification + accept/dismiss",
+          "Caregiver app: Real-time GPS map with wearer location",
+          "Caregiver app: Device battery and connectivity status",
+          "Caregiver app: Alert history and fall event log",
+          "Caregiver app: Emergency dispatch confirmation dialog",
+          "Caregiver app: Wearer profile and contact setup",
+          "Device: Single SOS button interaction + haptic/LED feedback spec"
+        ],
+        "accessibility_requirements": [
+          "WCAG 2.1 AA for mobile app",
+          "Minimum tap target 44x44pt",
+          "High contrast mode",
+          "VoiceOver/TalkBack support"
+        ]
+      },
+      "acceptance_criteria": [
+        "All screens wireframed and reviewed by representative caregivers",
+        "Alert-to-acknowledge flow completes in \u22643 taps",
+        "Device interaction spec defines SOS button hold duration, LED patterns, and haptic sequences",
+        "Accessibility audit report shows WCAG 2.1 AA compliance",
+        "Usability test with 5 participants shows task success rate \u226590% for critical flows"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 6,
+      "task_type": "PCB_DESIGN",
+      "description": "Capture hardware schematic: MCU (Nordic nRF9161 with LTE-M/NB-IoT + DECT NR+), 6-axis IMU (LSM6DSO32X), GPS module (u-blox M10), BLE 5.3, Li-Po battery with fuel gauge (MAX17048), USB-C charging, secure element (ATECC608B). Generate BOM and apply DRC rules for medical-grade PCB (IPC Class 3).",
+      "payload": {
+        "mcu": "Nordic nRF9161 (integrated LTE-M/NB-IoT + ARM Cortex-M33)",
+        "imu": "STMicro LSM6DSO32X (\u00b132g accelerometer, gyroscope, machine learning core)",
+        "gps": "u-blox M10 (low-power GNSS, multi-constellation)",
+        "cellular": "Integrated in nRF9161 (LTE-M/NB-IoT Cat-M1/NB2)",
+        "secure_element": "Microchip ATECC608B (TLS auth, firmware signature verification)",
+        "battery": "Li-Po 400mAh + MAX17048 fuel gauge",
+        "form_factor": "Wrist-worn, IP67, 38x38x12mm target",
+        "pcb_class": "IPC-6012 Class 3",
+        "deliverables": [
+          "Schematic PDF",
+          "BOM (CSV)",
+          "PCB layout Gerbers",
+          "DRC report",
+          "Electrical design spec"
+        ]
+      },
+      "acceptance_criteria": [
+        "Schematic passes ERC with zero errors",
+        "BOM includes manufacturer part numbers and approved alternates for all components",
+        "DRC passes for IPC Class 3 spacing rules",
+        "Power budget analysis shows \u226572h battery life at nominal operation",
+        "IMU interrupt line routed to MCU wake pin for low-power fall detection"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design cloud data model: time-series sensor data (accelerometer events, GPS positions), fall events, alert records, device registry, caregiver-wearer relationships, and audit trail. Define retention policies, HIPAA-compliant de-identification strategy, and backup/recovery RPO/RTO targets.",
+      "payload": {
+        "database_stack": "PostgreSQL (relational) + TimescaleDB (time-series sensor data) + Redis (alert fan-out pub/sub)",
+        "core_tables": [
+          "devices (device_id, firmware_version, last_seen, battery_level, status)",
+          "wearers (wearer_id, device_id, emergency_contacts, medical_notes_encrypted)",
+          "caregivers (caregiver_id, wearer_ids[], notification_preferences)",
+          "fall_events (event_id, device_id, timestamp, confidence_score, location_lat, location_lng, alert_status)",
+          "gps_positions (device_id, timestamp, lat, lng, accuracy_m, source) \u2014 TimescaleDB hypertable",
+          "alerts (alert_id, fall_event_id, caregiver_id, sent_at, acknowledged_at, escalated_to_911)",
+          "audit_log (event_type, actor_id, resource_id, timestamp, details_json)"
+        ],
+        "hipaa_controls": [
+          "PHI fields encrypted at column level (pgcrypto AES-256)",
+          "Audit log immutable append-only",
+          "Retention: sensor data 90 days, fall events 7 years"
+        ],
+        "deliverables": [
+          "ER Diagram",
+          "Migration scripts (Alembic)",
+          "Data dictionary",
+          "HIPAA data flow diagram"
+        ]
+      },
+      "acceptance_criteria": [
+        "ER diagram reviewed and approved by engineering lead",
+        "All migrations run cleanly on PostgreSQL 15+ with TimescaleDB extension",
+        "PHI columns encrypted and decryption requires authenticated service identity",
+        "Audit log table has insert-only policy (no UPDATE/DELETE permissions on app role)",
+        "RTO \u2264 4h, RPO \u2264 1h documented and tested with restore drill"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 specification for all system interfaces: device-to-cloud MQTT/HTTPS protocol (telemetry ingestion, OTA commands), cloud REST API (caregiver app, device management), and webhook contract for emergency dispatch integration. Define versioning strategy and error codes.",
+      "payload": {
+        "device_protocol": "MQTT over TLS 1.3 (AWS IoT Core or Azure IoT Hub) for telemetry; HTTPS for OTA",
+        "rest_api_base": "https://api.elder-fall-detection.com/v1",
+        "endpoints": [
+          "POST /devices/{device_id}/telemetry \u2014 sensor batch upload",
+          "POST /devices/{device_id}/fall-event \u2014 fall detection trigger",
+          "GET  /devices/{device_id}/status \u2014 battery, connectivity, GPS",
+          "GET  /wearers/{wearer_id}/location \u2014 current GPS position",
+          "GET  /wearers/{wearer_id}/alerts \u2014 alert history with pagination",
+          "POST /alerts/{alert_id}/acknowledge \u2014 caregiver dismisses alert",
+          "POST /alerts/{alert_id}/dispatch-emergency \u2014 trigger 911 dispatch",
+          "POST /devices/{device_id}/ota \u2014 push OTA update command",
+          "GET  /caregivers/{caregiver_id}/dashboard \u2014 summary stats"
+        ],
+        "emergency_dispatch_webhook": "POST to third-party PSAP relay (RapidSOS API or equivalent)",
+        "deliverables": [
+          "OpenAPI 3.1 YAML spec",
+          "MQTT topic schema doc",
+          "Error code registry"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates against OpenAPI 3.1 schema with zero errors",
+        "All endpoints have request/response schemas, error responses (400/401/403/404/500), and examples",
+        "MQTT topic hierarchy documented with QoS levels and retention flags",
+        "Emergency dispatch webhook contract tested against RapidSOS sandbox",
+        "API versioning strategy documented (URI versioning v1/v2)"
+      ],
+      "depends_on": [
+        3,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "FIRMWARE",
+      "description": "Implement fall detection firmware on nRF9161 using Zephyr RTOS. IMU HAL driver (LSM6DSO32X SPI), fall detection algorithm (threshold-based + ML Core pattern recognition), RTOS tasks for sensor polling, fall event state machine (free-fall \u2192 impact \u2192 post-fall posture), and SOS button ISR handler. Implements IEC 62304 Class B software unit requirements.",
+      "payload": {
+        "rtos": "Zephyr RTOS v3.5+",
+        "toolchain": "nRF Connect SDK + ARM GNU Toolchain",
+        "imu_driver": "SPI HAL driver for LSM6DSO32X with DMA transfer",
+        "fall_algorithm": {
+          "stage_1": "Free-fall detection: |acceleration| < 0.6g for >80ms",
+          "stage_2": "Impact detection: |acceleration| > 3.0g within 500ms of free-fall",
+          "stage_3": "Post-fall: orientation change >45\u00b0 sustained >2s (lying down)",
+          "ml_assist": "LSM6DSO32X Machine Learning Core with pre-loaded fall decision tree"
+        },
+        "rtos_tasks": [
+          "imu_task: 200Hz IMU polling, circular buffer, fall state machine",
+          "gps_task: 1Hz position fix, power-managed (duty cycle when stationary)",
+          "comm_task: MQTT publish telemetry + fall events via LTE-M",
+          "ble_task: BLE pairing/bonding for app-direct proximity alert",
+          "power_task: Battery monitoring, low-battery alert, sleep orchestration",
+          "ota_task: FOTA update download + signature verify + apply"
+        ],
+        "sos_button": "GPIO interrupt \u2192 immediate alert bypass (skip 30s wait window)"
+      },
+      "acceptance_criteria": [
+        "IMU driver passes loopback self-test on boot with zero SPI errors",
+        "Fall state machine correctly classifies \u226595% of simulated fall sequences in bench test",
+        "False positive rate < 2% on 60-minute ADL simulation (walking, sitting, arm raises)",
+        "Fall-to-MQTT-publish latency < 2 seconds measured on logic analyzer",
+        "SOS button ISR triggers within 50ms of press (measured)",
+        "Firmware image signed with ECDSA P-256 private key and signature verified on boot",
+        "All firmware modules have IEC 62304 software unit documentation (inputs, outputs, rationale)",
+        "IEC 62304 software class documented",
+        "SOUP components listed",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        6,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "FIRMWARE",
+      "description": "Implement GPS and cellular communication firmware: u-blox M10 UART driver, NMEA parsing, geofencing zone logic, LTE-M/NB-IoT modem management (nRF9161 AT commands), MQTT client (MQTT-SN over LTE-M), TLS 1.3 stack configuration, and OTA firmware update (FOTA) manager with rollback.",
+      "payload": {
+        "gps_driver": "UART HAL for u-blox M10, NMEA 0183 GPRMC/GPGGA parser",
+        "power_modes": [
+          "Full tracking (1Hz): active emergency",
+          "Duty-cycle (1 fix/30s): normal wear",
+          "Stationary suppress: no movement >5min \u2192 1 fix/5min"
+        ],
+        "cellular_modem": "nRF9161 modem firmware + AT command abstraction layer",
+        "mqtt_client": "Eclipse Paho MQTT C client, QoS 1 for fall events, QoS 0 for telemetry",
+        "tls_config": "mbedTLS 3.x, TLS 1.3 only, mTLS with device X.509 cert from ATECC608B",
+        "fota": "nRF Cloud FOTA service integration, download resume on disconnect, ECDSA signature verify before apply, automatic rollback on 3 consecutive boot failures",
+        "offline_buffer": "Circular flash buffer (8KB) to store events during connectivity loss, flush on reconnect"
+      },
+      "acceptance_criteria": [
+        "GPS first fix < 30s cold start, < 5s hot start in open sky",
+        "GPS position accuracy verified \u226410m with u-blox EVK reference comparison",
+        "MQTT connection established within 15s of LTE-M registration",
+        "TLS 1.3 handshake verified with Wireshark \u2014 no downgrade to TLS 1.2",
+        "FOTA: corrupted image rejected (checksum fail) and previous firmware boots successfully",
+        "Offline buffer stores \u2265100 events and flushes in order on reconnect (verified in network outage test)",
+        "IEC 62304 software class documented",
+        "SOUP components listed",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build cloud alert engine and emergency dispatch service: MQTT ingestion from AWS IoT Core, fall event processor (deduplication, confidence filtering), caregiver notification fan-out (push notification + SMS + in-app), 30-second no-response escalation timer, and RapidSOS API integration for automatic 911 dispatch with GPS location payload.",
+      "payload": {
+        "stack": "Python 3.11 + FastAPI + Celery (async tasks) + Redis (pub/sub + rate limiting)",
+        "cloud": "AWS (IoT Core, ECS Fargate, RDS PostgreSQL, ElastiCache Redis, SNS, SES)",
+        "alert_pipeline": [
+          "1. MQTT message received by IoT Core rule \u2192 SQS queue",
+          "2. Alert processor validates device, filters confidence < 0.85",
+          "3. Deduplication: suppress duplicate fall events within 60s window",
+          "4. Fan-out: FCM push + Twilio SMS + WebSocket to app",
+          "5. Start 30s Celery countdown task for escalation",
+          "6. If acknowledged: cancel countdown, log resolution",
+          "7. If not acknowledged: POST to RapidSOS /emergency with GPS + wearer profile"
+        ],
+        "rapidsos_integration": "RapidSOS NG911 API: POST /incidents with location (lat/lng/accuracy), wearer name, medical notes, device battery level",
+        "deliverables": [
+          "Alert engine service",
+          "Emergency dispatch service",
+          "Celery worker configuration",
+          "Dead-letter queue for failed notifications"
+        ]
+      },
+      "acceptance_criteria": [
+        "Fall event to caregiver push notification delivered in < 5 seconds (measured end-to-end)",
+        "Deduplication correctly suppresses duplicate events within 60s window (unit tested)",
+        "30-second escalation timer fires within \u00b11 second of deadline",
+        "RapidSOS API call succeeds with correct GPS payload in integration test against sandbox",
+        "Dead-letter queue captures and retries failed notifications with exponential backoff",
+        "Alert engine handles 1000 concurrent fall events without degradation (load test)"
+      ],
+      "depends_on": [
+        7,
+        8,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build GPS tracking service and device management API: real-time location ingestion pipeline, caregiver map API (WebSocket live updates + REST history), geofence management (define safe zones, alert on exit), device registry CRUD, device health monitoring (battery, last-seen, connectivity), and OTA update orchestration.",
+      "payload": {
+        "location_pipeline": "MQTT \u2192 IoT Core \u2192 Kinesis Data Streams \u2192 TimescaleDB (GPS hypertable)",
+        "websocket": "FastAPI WebSocket endpoint /ws/wearers/{id}/location \u2014 pushes GPS updates every 5s to connected caregivers",
+        "geofence": "PostGIS ST_Within() check on each GPS fix against wearer's configured safe zones; alert trigger on breach",
+        "device_management": [
+          "GET/POST/PATCH /devices \u2014 CRUD with firmware version tracking",
+          "POST /devices/{id}/ota \u2014 schedule FOTA update",
+          "GET /devices/{id}/health \u2014 battery %, RSSI, last heartbeat",
+          "GET /devices/fleet \u2014 all devices for organization with health summary"
+        ],
+        "health_monitoring": "Celery Beat task every 60s: flag devices with no heartbeat >5min as OFFLINE, alert caregivers"
+      },
+      "acceptance_criteria": [
+        "GPS position stored in TimescaleDB within 2 seconds of device MQTT publish",
+        "WebSocket live location updates delivered to caregiver app within 1 second of ingestion",
+        "Geofence breach detected and alert triggered within 10 seconds of GPS fix crossing boundary",
+        "OTA update job successfully pushed to device and FOTA completion confirmed via device telemetry",
+        "Device offline detection alerts caregiver within 6 minutes of device going offline"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "FRONTEND",
+      "description": "Build caregiver mobile app (React Native + Expo) implementing all UX wireframes: real-time fall alert with vibration + sound, GPS map view (MapLibre), device health dashboard, alert history, emergency dispatch confirmation, and wearer profile management. Implement push notifications (FCM/APNs) and background location refresh.",
+      "payload": {
+        "framework": "React Native 0.73 + Expo SDK 50",
+        "navigation": "React Navigation v6 (stack + bottom tabs)",
+        "map": "MapLibre React Native \u2014 real-time wearer location pin with accuracy radius",
+        "state_management": "Zustand + React Query (API caching + WebSocket sync)",
+        "push_notifications": "Expo Notifications + FCM (Android) + APNs (iOS)",
+        "screens": [
+          "AlertScreen: Full-screen fall alert with wearer name, location, time, Call / Dismiss / Dispatch 911 actions",
+          "MapScreen: Live GPS map, location history trail (last 24h), geofence zone overlay",
+          "DashboardScreen: Battery %, connectivity, last activity, today's alert count",
+          "HistoryScreen: Paginated fall events with severity, response time, resolution",
+          "ProfileScreen: Wearer info, emergency contacts, medical notes, geofence setup",
+          "SettingsScreen: Notification preferences, account, 2FA setup"
+        ],
+        "auth": "OAuth 2.0 + PKCE via Auth0 (biometric unlock on subsequent opens)"
+      },
+      "acceptance_criteria": [
+        "Fall alert push notification received and AlertScreen opens within 3 seconds on both iOS 17 and Android 14",
+        "Map renders wearer GPS location with \u22642s delay from WebSocket update",
+        "Emergency dispatch confirmation dialog requires explicit 2-tap confirmation to prevent accidental 911 calls",
+        "App passes Accessibility audit (WCAG 2.1 AA) on both platforms",
+        "Background GPS refresh works on iOS with Always location permission (verified in Airplane-mode-then-reconnect test)",
+        "All API calls use mTLS certificate pinning (verified with Charles Proxy \u2014 certificate substitution rejected)"
+      ],
+      "depends_on": [
+        5,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "CONFIG",
+      "description": "Configure SAGE solution for elder_fall_detection: create project.yaml (domain, active modules, theme), prompts.yaml (analyst, developer, safety, regulatory roles with domain context), and tasks.yaml (fall detection firmware review, alert engine analysis, regulatory compliance check task types). Configure agentic pattern: Human-in-the-Loop (HITL) for all OTA deployment and emergency dispatch configuration changes.",
+      "payload": {
+        "solution_name": "elder_fall_detection",
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "developer",
+          "approvals",
+          "queue",
+          "improvements",
+          "audit",
+          "knowledge",
+          "integrations"
+        ],
+        "agentic_pattern": "human_in_the_loop",
+        "hitl_gates": [
+          "OTA firmware deployment",
+          "Emergency dispatch configuration changes",
+          "Geofence zone modifications",
+          "Regulatory artifact updates"
+        ],
+        "theme": {
+          "sidebar_bg": "#0f2027",
+          "sidebar_text": "#94c9d8",
+          "badge_bg": "#1a3a4a",
+          "badge_text": "#38bdf8"
+        },
+        "task_types_to_register": [
+          "fall_firmware_review: Analyst reviews firmware diff for safety-critical fall detection changes",
+          "alert_engine_analysis: Monitor analyzes alert delivery latency and escalation success rates",
+          "regulatory_compliance_check: Regulatory agent verifies DHF artifact completeness before submission"
+        ],
+        "files": [
+          "solutions/elder_fall_detection/project.yaml",
+          "solutions/elder_fall_detection/prompts.yaml",
+          "solutions/elder_fall_detection/tasks.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "make run PROJECT=elder_fall_detection starts without errors",
+        "All active_modules appear in sidebar with correct routing",
+        "HITL approval queue intercepts OTA deployment proposals (verified via POST /analyze test)",
+        "SAGE theme renders correctly in browser",
+        "All 3 custom task types appear in POST /analyze task_type dropdown"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Develop hardware-in-the-loop (HIL) test suite for fall detection firmware: automated fall simulation rig (IMU signal injection via JTAG/SWD), test cases for all fall scenarios, firmware unit tests (Zephyr Test Framework), and integration test harness validating end-to-end flow from IMU trigger to MQTT publish.",
+      "payload": {
+        "hil_rig": "Nordic PPK2 (power measurement) + J-Link + custom IMU signal injector (STM32 replaying recorded fall data)",
+        "test_datasets": [
+          "Simfall dataset: 200 fall events (forward, backward, sideways, stair fall)",
+          "ADL dataset: 500 activities of daily living (walking, running, sitting, arm raise, gym exercise)",
+          "Edge cases: near-falls, stumbles, rapid directional changes"
+        ],
+        "unit_tests": [
+          "test_imu_driver: SPI read/write, FIFO overflow handling, self-test pass",
+          "test_fall_state_machine: All 8 state transitions with correct timing",
+          "test_free_fall_detection: 50 threshold variations, sensitivity/specificity curve",
+          "test_impact_detection: 20 impact magnitude scenarios",
+          "test_sos_button: ISR latency, debounce, long-press vs short-press",
+          "test_offline_buffer: Circular buffer wraparound, flush order guarantee",
+          "test_fota_signature: Valid sig accepts, invalid sig rejects (5 tampered images)"
+        ],
+        "integration_tests": [
+          "test_fall_to_mqtt: IMU inject \u2192 state machine \u2192 MQTT publish measured < 2s",
+          "test_network_loss_recovery: Inject fall during LTE outage \u2192 buffer \u2192 reconnect \u2192 flush",
+          "test_battery_low_alert: Discharge to 15% \u2192 alert MQTT \u2192 caregiver notified"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test coverage \u2265 80% of firmware source lines (measured with gcov)",
+        "Fall detection sensitivity \u2265 95% on 200-event simfall dataset",
+        "ADL false positive rate < 2% on 500-event ADL dataset",
+        "All 7 unit test suites pass with zero failures on clean build",
+        "HIL integration test for fall-to-MQTT passes 50 consecutive runs without failure",
+        "IEC 62304 software unit test records generated and signed for each test suite"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 16,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Develop system-level HIL tests: full device power cycle, LTE-M network registration, GPS acquisition, fall detection \u2192 cloud alert \u2192 caregiver notification end-to-end flow. Stress test battery life measurement (72h continuous with representative duty cycle). Environmental testing spec (IP67 ingress, operating temperature -10\u00b0C to 50\u00b0C).",
+      "payload": {
+        "e2e_test_scenarios": [
+          "Cold boot \u2192 LTE-M registration \u2192 GPS fix \u2192 fall inject \u2192 MQTT publish \u2192 cloud alert \u2192 FCM push \u2192 caregiver app alert display",
+          "Network loss recovery: fall inject during LTE outage \u2192 local buffer \u2192 reconnect \u2192 delayed alert < 30s",
+          "SOS button override: press during normal operation \u2192 immediate alert bypass 30s timer",
+          "Caregiver no-response escalation: fall inject \u2192 no acknowledge within 30s \u2192 RapidSOS API call",
+          "OTA update: push FOTA \u2192 device downloads \u2192 verifies \u2192 applies \u2192 reboots \u2192 confirms new version to cloud"
+        ],
+        "battery_test": "Automated 72h runtime test with Nordic PPK2 logging current at 1Hz; expected average current < 1.5mA",
+        "environmental_spec": "IP67 ingress (30min at 1m depth), -10\u00b0C to 50\u00b0C operational, 10 x 1m drop onto concrete (IEC 60068-2-31)",
+        "deliverables": [
+          "HIL test scripts (pytest + pyserial)",
+          "72h battery log CSV",
+          "Environmental test specification",
+          "Test execution report"
+        ]
+      },
+      "acceptance_criteria": [
+        "E2E fall alert flow completes successfully in 100 consecutive test runs",
+        "72h battery test shows device operational for \u226572h at rated duty cycle",
+        "IP67 test: device fully functional after 30-min submersion at 1m",
+        "Drop test: device operational and fall detection functional after 10 x 1m drops",
+        "OTA update succeeds in 50 consecutive FOTA cycles with zero failed updates",
+        "Test execution report signed and stored in DHF as design verification evidence"
+      ],
+      "depends_on": [
+        15,
+        12
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 17,
+      "task_type": "QA",
+      "description": "Develop and execute QA test plan for cloud backend and mobile app: functional test cases for all API endpoints (positive and negative paths), alert delivery reliability test (1000 simulated fall events), caregiver app UI regression suite (Detox), and performance test (Locust: 10,000 concurrent devices).",
+      "payload": {
+        "test_framework": "pytest (backend API), Detox (React Native E2E), Locust (load testing)",
+        "functional_tests": [
+          "Alert engine: 50 scenarios covering duplicate suppression, confidence filtering, escalation timing",
+          "GPS tracking: 30 scenarios including geofence breach, WebSocket updates, history pagination",
+          "Device management: CRUD operations, OTA scheduling, health monitoring offline detection",
+          "Auth flows: login, token refresh, 2FA, session expiry, concurrent sessions"
+        ],
+        "reliability_test": "Inject 1000 fall events over 1h \u2192 measure delivery success rate, P99 latency, failed/retried alerts",
+        "load_test": "Locust: 10,000 simulated devices publishing telemetry at 1Hz for 10min \u2192 measure backend CPU, memory, DB connections, alert processing rate",
+        "mobile_regression": "Detox E2E on iOS 17 + Android 14 simulators: 25 critical path scenarios automated"
+      },
+      "acceptance_criteria": [
+        "All functional test cases pass with \u226599% pass rate",
+        "Alert delivery reliability \u2265 99.9% over 1000-event test (\u22641 undelivered alert)",
+        "Alert P99 latency < 8 seconds under 10,000 device load",
+        "Backend maintains < 2% error rate under full load test",
+        "Mobile Detox regression suite: 100% pass rate on both iOS and Android simulators",
+        "QA test report with defect log generated and stored in DHF"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "COMPLIANCE",
+      "description": "Populate complete DHF per FDA 21 CFR Part 820.30: compile all design verification and validation evidence, complete traceability matrix (user need \u2192 design input \u2192 design output \u2192 verification result \u2192 validation result), write IEC 62304 software architecture document and unit/integration test records. Prepare 510(k) predicate device analysis.",
+      "payload": {
+        "dhf_artifacts": [
+          "Design and Development Plan (final, revision-controlled)",
+          "User Needs Document (signed)",
+          "Design Input Requirements (numbered, \u226550 requirements)",
+          "Design Output Documents (schematic, firmware specs, API spec, SDD)",
+          "Design Review Minutes (gate reviews at each phase)",
+          "Design Verification Report (links to all HIL and QA test reports)",
+          "Design Validation Protocol and Report (clinical-setting simulation)",
+          "Risk Management Report (ISO 14971, summarizing RMF findings)",
+          "Software Development Plan + Architecture Doc (IEC 62304)",
+          "Software Unit Test Records (IEC 62304 \u00a75.5)",
+          "Traceability Matrix (complete bidirectional)"
+        ],
+        "510k_predicate": "Identify predicate device(s) under FDA Product Code MVO (fall detection systems), document substantial equivalence",
+        "iso13485_records": [
+          "Management Review Minutes",
+          "CAPA Log",
+          "Supplier Qualification Records for CM/PCB fab"
+        ]
+      },
+      "acceptance_criteria": [
+        "Traceability matrix has zero untraced requirements (every input traced to output + verification evidence)",
+        "All DHF artifacts are revision-controlled with author, reviewer, and approver signatures",
+        "IEC 62304 Software Architecture Document covers all software items, interfaces, and safety classifications",
+        "510(k) predicate device identified with documented intended use comparison",
+        "ISO 13485 CAPA log has entries for every defect found during V&V with disposition",
+        "DHF review by regulatory_specialist shows zero critical gaps against 21 CFR 820.30 checklist",
+        "DHF (Design History File) structure created",
+        "V&V protocol drafted"
+      ],
+      "depends_on": [
+        15,
+        16,
+        17,
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 19,
+      "task_type": "REGULATORY",
+      "description": "Prepare 510(k) premarket notification submission package: cover letter, device description, substantial equivalence comparison, performance testing summary, software documentation summary (IEC 62304 Level of Concern: Moderate), cybersecurity documentation per FDA Cybersecurity Guidance (2023), and labeling (UDI, Rx Only, contraindications).",
+      "payload": {
+        "submission_type": "510(k) Premarket Notification",
+        "fda_product_code": "MVO",
+        "sections": [
+          "Cover Letter with Device Classification",
+          "Table of Contents",
+          "Device Description and Intended Use",
+          "Substantial Equivalence Comparison (predicate vs subject)",
+          "Proposed Labeling (UDI-DI, instructions for use, carton label)",
+          "Performance Testing \u2014 Summary Report",
+          "Software Documentation per FDA Guidance (Level of Concern: Moderate)",
+          "Cybersecurity Documentation per FDA 2023 Cybersecurity Guidance",
+          "Risk Management Summary (ISO 14971)",
+          "Declaration of Conformity (IEC 62304, ISO 13485)"
+        ],
+        "udi": "GS1 format UDI-DI assigned via FDA GUDID database",
+        "labeling_requirements": [
+          "Rx Only symbol",
+          "UDI barcode",
+          "IP67 rating",
+          "Contraindications",
+          "FCC ID"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 510(k) sections complete per FDA guidance document on 510(k) submissions",
+        "Software documentation includes SOUP list, anomaly list, and level of concern justification",
+        "Cybersecurity section addresses all FDA 2023 guidance requirements (SBOM, vulnerability disclosure policy, update mechanism)",
+        "Labeling reviewed by legal_advisor for FDA Part 801 compliance",
+        "UDI registered in FDA GUDID database",
+        "Submission package reviewed by regulatory_specialist and ready for FDA eCopy submission"
+      ],
+      "depends_on": [
+        18,
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 20,
+      "task_type": "DEVOPS",
+      "description": "Build CI/CD pipelines: firmware build pipeline (GitHub Actions + nRF Connect SDK Docker container, automated HIL test trigger on PR), cloud backend pipeline (Python lint + pytest + Docker build + ECS deploy with blue-green), mobile app pipeline (Expo EAS Build + Detox tests + TestFlight/Play Console deploy). Add infrastructure-as-code (Terraform) for all AWS resources.",
+      "payload": {
+        "firmware_pipeline": "GitHub Actions: nRF Connect SDK build \u2192 binary artifact \u2192 HIL test trigger (self-hosted runner with J-Link) \u2192 FOTA staging push on main merge",
+        "backend_pipeline": "GitHub Actions: ruff lint \u2192 pytest \u2192 Docker build \u2192 ECR push \u2192 ECS Fargate blue-green deploy \u2192 smoke test",
+        "mobile_pipeline": "Expo EAS Build \u2192 Detox E2E on iOS + Android simulators \u2192 TestFlight (iOS) + Play Internal Testing (Android) on main merge",
+        "iac": "Terraform: AWS IoT Core, ECS cluster, RDS (Multi-AZ), ElastiCache, Kinesis, SNS, SES, CloudWatch alarms, WAF",
+        "monitoring": "CloudWatch dashboards: alert delivery latency P50/P95/P99, device online rate, GPS fix success rate, MQTT message throughput",
+        "alerts": "PagerDuty: alert delivery failure rate > 0.1%, backend error rate > 1%, device fleet offline > 5%"
+      },
+      "acceptance_criteria": [
+        "Firmware pipeline builds and runs HIL tests automatically on every PR (< 15min pipeline)",
+        "Backend pipeline deploys to staging on PR merge and production on release tag (blue-green, zero downtime)",
+        "Mobile pipeline produces signed builds for both platforms on every main merge",
+        "Terraform plan applies cleanly to fresh AWS account with zero manual steps",
+        "CloudWatch dashboards show all critical metrics with correct alarm thresholds",
+        "PagerDuty alert fires within 2 minutes of simulated alert delivery failure"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13,
+        10
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 21,
+      "task_type": "SECURITY",
+      "description": "Execute penetration test plan against all system surfaces: firmware binary analysis (Binwalk, Ghidra), cloud API fuzzing (OWASP ZAP), mobile app static analysis (MobSF), MQTT broker attack surface (unauthorized publish/subscribe), TLS downgrade attempts, and OTA spoofing simulation. Remediate all HIGH/CRITICAL findings.",
+      "payload": {
+        "firmware_analysis": "Binwalk entropy analysis for embedded secrets; Ghidra static analysis for unsafe functions (strcpy, sprintf); verify secure boot chain",
+        "api_pentest": "OWASP ZAP automated scan + manual testing: auth bypass, IDOR on wearer/device IDs, mass assignment, rate limiting bypass",
+        "mobile_pentest": "MobSF static: hardcoded secrets, insecure storage, exported Activities; dynamic: traffic interception, certificate pinning bypass attempt",
+        "mqtt_attack": "Unauthorized MQTT subscribe to other device topics; unauthorized publish to fall-event topic; broker ACL bypass",
+        "ota_attack": "Attempt OTA with unsigned image, downgrade attack (old firmware), replay attack with captured FOTA session",
+        "deliverables": [
+          "Penetration Test Report",
+          "Vulnerability Register with CVSS scores",
+          "Remediation Evidence Report"
+        ]
+      },
+      "acceptance_criteria": [
+        "Zero CRITICAL vulnerabilities in final penetration test report",
+        "Zero HIGH vulnerabilities unmitigated (all either fixed or accepted with compensating controls)",
+        "Firmware binary contains no hardcoded credentials (verified with trufflehog scan)",
+        "Certificate pinning bypass attempt fails on both iOS and Android",
+        "MQTT ACL prevents cross-device topic access (verified with unauthorized subscribe test)",
+        "OTA with unsigned or downgrade image rejected by device (verified in 10 attack scenarios)",
+        "Penetration test report stored in DHF as cybersecurity validation evidence",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        20,
+        4
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 22,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute design validation in representative use environment: clinical simulation with elderly volunteer participants wearing device during ADL (30 participants), caregiver alert workflow user acceptance test (20 caregiver participants), emergency dispatch integration test with RapidSOS production sandbox, and 30-day field reliability trial.",
+      "payload": {
+        "clinical_simulation": {
+          "participants": 30,
+          "protocol": "Controlled fall simulation (padded mat, supervised) + 4h ADL wear; measure detection rate, false positives, comfort",
+          "metrics": [
+            "Fall detection sensitivity \u2265 95%",
+            "False positive rate \u2264 2%/4h wear",
+            "SOS button reachable within 3s by participant"
+          ]
+        },
+        "caregiver_uat": {
+          "participants": 20,
+          "tasks": [
+            "Receive and respond to fall alert",
+            "View wearer location on map",
+            "Configure geofence",
+            "Trigger emergency dispatch"
+          ],
+          "success_criteria": "Task completion rate \u2265 95%, System Usability Scale score \u2265 80"
+        },
+        "emergency_dispatch_test": "End-to-end test with RapidSOS production sandbox: verify incident creation, GPS accuracy, data completeness (10 test calls)",
+        "field_trial": "30-day trial with 10 participants: log all alerts, false positives, battery performance, device uptime"
+      },
+      "acceptance_criteria": [
+        "Clinical simulation: sensitivity \u2265 95%, false positive rate \u2264 2% per 4h (primary validation endpoints)",
+        "Caregiver UAT: SUS score \u2265 80, task completion \u2265 95%",
+        "RapidSOS sandbox: 10/10 test incidents created with correct GPS and wearer data",
+        "30-day field trial: device uptime \u2265 99%, battery life \u2265 72h, zero data loss events",
+        "Design Validation Report signed by clinical lead and regulatory_specialist",
+        "All validation deviations documented with impact assessment in DHF"
+      ],
+      "depends_on": [
+        16,
+        17,
+        13
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 23,
+      "task_type": "DOCS",
+      "description": "Produce all documentation: developer README (local setup, build, test), API reference (auto-generated from OpenAPI spec with Redoc), firmware architecture document (IEC 62304 \u00a75.3), user manual for caregivers, quick-start guide for wearers, and maintenance/service manual for clinical staff.",
+      "payload": {
+        "developer_docs": [
+          "README.md: prerequisites, make commands, solution setup",
+          "CONTRIBUTING.md: firmware coding standards, PR checklist",
+          "ARCHITECTURE.md: system diagram, data flows, component responsibilities"
+        ],
+        "api_docs": "Redoc static site generated from OpenAPI 3.1 spec, hosted at /docs endpoint",
+        "iec62304_docs": [
+          "Software Architecture Document (\u00a75.3)",
+          "Software Detailed Design (\u00a75.4)",
+          "Software Unit Test Records template"
+        ],
+        "user_docs": [
+          "Caregiver Mobile App User Manual (PDF + in-app help)",
+          "Wearer Quick Start Card (laminated, large print)",
+          "Device Charging and Maintenance Guide"
+        ],
+        "clinical_docs": [
+          "Device Service Manual (battery replacement, firmware update procedure)",
+          "Cleaning and Disinfection Instructions (IPA wipes, IP67 rated)"
+        ]
+      },
+      "acceptance_criteria": [
+        "README allows a new engineer to set up dev environment and run tests in < 30 minutes",
+        "API reference covers all endpoints with request/response examples and error codes",
+        "IEC 62304 Software Architecture Document reviewed and approved by technical lead",
+        "Caregiver user manual tested with 5 participants unfamiliar with the app (all complete onboarding unaided)",
+        "Wearer quick start card reviewed by occupational therapist for clarity with elderly users",
+        "All documents version-controlled and referenced in DHF index"
+      ],
+      "depends_on": [
+        18,
+        19
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 24,
+      "task_type": "TRAINING",
+      "description": "Develop training materials: clinical staff onboarding (device setup, caregiver app admin, alert response protocol), caregiver app onboarding video series (5 x 3-minute videos), and regulatory training record for IEC 62304 compliance (all engineering staff trained on software lifecycle procedures).",
+      "payload": {
+        "clinical_training": [
+          "Device provisioning and pairing procedure (step-by-step with screenshots)",
+          "Caregiver app admin guide (adding wearers, managing contacts, reviewing alert history)",
+          "Emergency dispatch override procedure (when to manually call 911 vs let system dispatch)"
+        ],
+        "caregiver_videos": [
+          "Video 1: Setting up the app and pairing the device (3min)",
+          "Video 2: Understanding fall alerts and how to respond (3min)",
+          "Video 3: Reading the GPS map and location history (3min)",
+          "Video 4: Setting up geofence safe zones (3min)",
+          "Video 5: Troubleshooting common issues (3min)"
+        ],
+        "regulatory_training": "IEC 62304 software lifecycle training deck + quiz for all developers; training records stored in QMS"
+      },
+      "acceptance_criteria": [
+        "Clinical training materials reviewed and approved by clinical operations manager",
+        "Caregiver video series tested with 5 representative caregivers (all complete setup unaided after viewing)",
+        "IEC 62304 training: 100% of engineering staff complete training with \u226580% quiz score",
+        "Training records stored in QMS with employee signatures and completion dates",
+        "Training materials version-controlled and updated with each major software release"
+      ],
+      "depends_on": [
+        23,
+        22
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 24,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "IEC 62304 Software Safety Class misclassification: Class B ('injury possible') is almost certainly wrong. An undetected fall causing an elderly person to lie unresponsive for hours can be fatal \u2014 that is Class C ('death possible'). Class B requires only software unit testing; Class C requires full integration and system testing with traceability to every software item. If FDA reviewers disagree with your Class B justification, the entire IEC 62304 software documentation package must be redone. This is submission-killing if wrong.",
+            "510(k) predicate assumption is unvalidated and deferred too late. The predicate device search is listed as an acceptance criterion in Step 18 \u2014 after 17 steps of design work. If no adequate predicate exists under MVO, or if FDA classifies automatic emergency dispatch as a novel feature requiring De Novo, the entire regulatory strategy collapses. Predicate identification must happen in Step 2, not Step 18.",
+            "No IRB/Ethics Board approval step. Step 22 involves controlled fall simulations with elderly participants on padded mats and a 30-day field trial. This requires IRB approval (45 CFR Part 46 / 21 CFR Part 50) before any human subject study begins. Proceeding without IRB approval invalidates the clinical data for FDA submission and exposes the organization to serious legal liability.",
+            "Indoor GPS is the primary failure mode and it's unaddressed. Falls predominantly happen indoors \u2014 bathroom, bedroom, kitchen. u-blox M10 GPS will not achieve \u226410m accuracy indoors; it often cannot acquire a fix at all. There is no fallback positioning strategy (WiFi positioning, BLE beacon triangulation, cell tower triangulation, last-known-outdoors position). The '\u226410 meters' GPS spec will fail the majority of real-world use cases.",
+            "400mAh battery vs. 72h runtime with LTE-M + GPS is not credible without a detailed power budget. LTE-M active transmit current on nRF9161 is 220-490mA peak; GPS acquisition is 15-20mA; Zephyr RTOS active MCU is 5-15mA. Even with aggressive duty cycling (eDRX, PSM), 400mAh / 72h = 5.5mA average budget is extremely tight. Step 6 acceptance criteria require a power budget analysis, but the 400mAh figure is already specified as a fixed constraint in the BOM \u2014 if the power budget fails, the hardware must be redesigned. This should be validated before committing to the form factor.",
+            "30-second escalation timer for automatic 911 dispatch has no legal framework. Automatic emergency dispatch is regulated differently in each US state. False-positive 911 calls can result in liability under FCC rules and state statutes. No legal review step exists in this plan. RapidSOS NG911 API access requires a signed agreement with RapidSOS, carrier integration agreements, and may not have PSAP coverage in all geographies. The plan treats this as a pure engineering problem.",
+            "Clinical validation sample size is inadequate for FDA evidence. 30 participants (10 for field trial) is far below what FDA expects for a Class II device with a primary safety endpoint. Predicate devices in the fall detection space have used 100-300 participants for pivotal validation. The 'controlled fall simulation on padded mats' does not replicate real fall biomechanics. FDA will likely require clinical data from spontaneous or minimally-assisted falls. This validation plan will not support a 510(k) submission.",
+            "Fall detection algorithm training data provenance and demographic coverage are unspecified. The ML Core decision tree is 'pre-loaded' but there is no specification of what dataset it was trained on, whether it covers the target demographic (elderly, 65+, varying BMIs, mobility aids like walkers/canes), or whether the training data is independent from the validation data. This is a SOUP qualification gap under IEC 62304 and a performance validation gap for FDA.",
+            "No Post-Market Surveillance (PMS) Plan. FDA 21 CFR Part 822 requires a post-market surveillance plan for Class II devices. ISO 13485 requires post-market monitoring. MDR (Medical Device Reporting) procedures under 21 CFR Part 803 for adverse event reporting are completely absent. These are not optional and must exist before commercialization.",
+            "No FCC / RF Certification step. The nRF9161 LTE-M radio and BLE 5.3 require FCC Part 15/22 certification. Even using a pre-certified module, the end-product integration requires FCC approval or a Declaration of Conformity. This process takes 6-16 weeks, can require test lab time, and may require hardware modifications. It's entirely absent from the plan.",
+            "Caregiver push notification delivery (FCM/APNs) is treated as reliable for a life-safety alert path. FCM/APNs are best-effort, not guaranteed-delivery. The caregiver's phone may have notifications disabled, the app backgrounded/killed by iOS memory pressure, or the phone on DND/airplane mode. There is no SMS fallback SLA, no PSTN voice call fallback, and no multi-caregiver escalation chain specified. A single-point FCM failure means no alert.",
+            "OTA signing key management is unspecified. The ECDSA P-256 private key for firmware signing is critical \u2014 if compromised, an attacker can push arbitrary firmware to all deployed devices. There is no HSM requirement, no key ceremony procedure, no key rotation policy, and no revocation mechanism specified. This is both a security gap and a regulatory gap (cybersecurity documentation for FDA 510(k)).",
+            "Step 1 (risk management) and Step 3 (system architecture) have no dependency on each other and run in parallel. The hazard analysis outputs (risk controls, mitigations) must inform the architecture requirements. If Step 3 produces an architecture before Step 1 identifies a hazard that requires an architectural control (e.g., redundant alert paths for alert delivery failure), the architecture must be revised \u2014 causing cascading rework.",
+            "False positive rate specification (2%) applies only to 'normal ADL' bench simulation. No specification exists for sleep positions, bed egress, wheelchair use, exercise, or activities by users with mobility aids. The ADL dataset of 500 events is small and likely does not cover clinically relevant edge cases for an elderly population."
+          ],
+          "suggestions": [
+            "Resolve software safety class (Class B vs C) as the first decision, before any other work begins. Document the hazard severity analysis that justifies the class. If any software function failure could contribute to a death, it is Class C. Get this decision signed off by your regulatory lead and an external notified body if targeting EU MDR simultaneously.",
+            "Run predicate device search in parallel with Step 1/2, not deferred to Step 18. Use FDA 510(k) database, product code MVO, and engage FDA pre-submission (Q-Sub) meeting early to confirm the regulatory pathway. Budget 3-6 months for FDA feedback cycles.",
+            "Add an IRB protocol submission step immediately before Step 22. Allow 8-12 weeks for IRB approval. Write the clinical protocol (including fall simulation methodology, inclusion/exclusion criteria, stopping rules, adverse event reporting) in Step 2 alongside the DHF structure.",
+            "Add a hybrid positioning fallback architecture: GPS (outdoor), WiFi positioning (indoor via Google/Apple location APIs), BLE beacon proximity (home environment option), with cell tower triangulation as last resort. Specify indoor vs outdoor accuracy requirements separately in the design inputs.",
+            "Commission a detailed power budget analysis as a blocking gate before PCB layout is finalized. Use nRF9161 Power Profiler Kit 2 measurements. If 400mAh cannot support 72h with representative duty cycle, increase to 600-800mAh or shrink the GPS duty cycle further \u2014 this decision must be made before Gerbers are fabricated.",
+            "Engage legal counsel specializing in telehealth/emergency services regulation before Step 11 (alert engine) is built. Obtain a RapidSOS partner agreement and confirm PSAP coverage in your target markets. Define false-alarm liability policy. Add a legal review gate before the 911 dispatch feature is enabled in production.",
+            "Increase clinical validation to minimum 100 participants for the pivotal study and engage a clinical research organization (CRO) with fall detection experience. Consider a wear-and-detect protocol with instrumented falls rather than supervised padded-mat falls to get more realistic biomechanical data.",
+            "Specify ML Core decision tree training dataset: source, size, demographic breakdown, independent validation holdout, and IRB approval for any human-derived data. Treat the decision tree as SOUP requiring qualification evidence per IEC 62304 \u00a78.",
+            "Add Step 0: FCC pre-certification assessment and RF test planning. Determine whether to use a pre-certified nRF9161 module or do board-level FCC approval. Add FCC testing to the critical path \u2014 it must complete before commercial launch.",
+            "Add a Post-Market Surveillance plan and MDR/complaint handling SOP as deliverables in Step 18 or a new Step 18.5. These are required before commercial distribution.",
+            "Implement a multi-tier alert delivery chain: FCM push (primary, 0-5s) \u2192 SMS via Twilio (secondary, 5-15s) \u2192 PSTN voice call to caregiver (tertiary, 15-25s) \u2192 RapidSOS dispatch (30s). Each tier should fire if the previous tier is unacknowledged, not just the final escalation.",
+            "Specify ECDSA signing key management: HSM (AWS CloudHSM or similar) for key storage, documented key ceremony, dual-control key access, key rotation every 2 years, device revocation list mechanism. This is required for FDA cybersecurity documentation.",
+            "Make Step 3 depend on Step 1 (risk management outputs), or explicitly document that Step 3 is a preliminary architecture subject to revision after risk analysis completes. Track all architecture-impacting risk controls in the traceability matrix from Step 1 outputs."
+          ],
+          "missing": [
+            "Post-Market Surveillance Plan (required by 21 CFR Part 822 and ISO 13485 \u00a78.2.1)",
+            "Medical Device Reporting (MDR) and Complaint Handling SOP (21 CFR Part 803 / 820.198)",
+            "IRB protocol submission and approval process (21 CFR Part 50, 45 CFR Part 46)",
+            "FCC Part 15/22 RF certification step and timeline",
+            "Indoor positioning fallback strategy \u2014 GPS alone is insufficient for the intended use environment",
+            "OTA signing key management procedure (HSM, key ceremony, rotation, revocation)",
+            "Legal review of automatic 911 dispatch liability, FCC false-alarm rules, and state-by-state emergency dispatch laws",
+            "Multi-tier alert delivery with guaranteed fallback (SMS \u2192 voice call \u2192 911) beyond single FCM push",
+            "De Novo pathway analysis as alternative to 510(k) if no adequate predicate is found",
+            "FDA Pre-Submission (Q-Sub) meeting step to confirm regulatory pathway before significant investment",
+            "COOP / multi-region AWS deployment strategy for the life-safety alert engine (single-region outage = no alerts)",
+            "Supplier qualification records and component obsolescence risk assessment for critical components (nRF9161, LSM6DSO32X, ATECC608B)",
+            "Cleaning and biocompatibility assessment per ISO 10993 \u2014 skin-contact wearable requires cytotoxicity and sensitization testing",
+            "Quality Management System (QMS) selection and setup (required for ISO 13485 certification and FDA 820.5)",
+            "ANVISA (Brazil), Health Canada, TGA (Australia) registration strategy if non-US markets are targeted",
+            "EU MDR 2017/745 Technical Documentation and Notified Body engagement if CE marking is required",
+            "Software anomaly resolution procedure (IEC 62304 \u00a76.2.5) \u2014 defects found during V&V must go through a documented resolution process"
+          ],
+          "security_risks": [
+            "OTA signing key stored without HSM: if the ECDSA private key is compromised (developer laptop, CI/CD secret leak), an attacker can push malicious firmware to the entire deployed device fleet \u2014 silently disabling fall detection or enabling remote surveillance. No revocation mechanism is specified.",
+            "RapidSOS API endpoint is a high-value target: an attacker who can forge a fall event (exploiting a confidence score bypass or MQTT topic ACL gap) can trigger automatic 911 dispatch to any address, causing emergency resource exhaustion. Rate limiting on the fall-event endpoint is specified but its enforcement under a spoofed device identity is not verified.",
+            "mTLS device certificates provisioned at manufacturing (ATECC608B) have no revocation mechanism specified. If a device is stolen or its certificate extracted, it can permanently impersonate a legitimate device. No OCSP/CRL infrastructure is defined.",
+            "The offline flash buffer (8KB, Step 10) stores unprocessed fall events. If the buffer contents are not encrypted at rest on the nRF9161 flash, an attacker with physical access (JTAG/SWD) can read buffered GPS positions and health events \u2014 PHI exposure without decryption.",
+            "The 30-second no-response escalation window is a denial-of-service vector: an attacker who can flood the alert engine with high-confidence false fall events (by compromising one device's credentials) can saturate Celery workers, delay legitimate escalations, and potentially deplete the RapidSOS API quota causing real emergencies to go undispatched.",
+            "The caregiver app uses OAuth 2.0 + PKCE via Auth0, but biometric unlock on subsequent opens does not re-authenticate to the server \u2014 it only unlocks the local token store. A stolen unlocked phone gives permanent caregiver access with no session expiry on the device. Server-side session binding to device fingerprint is not specified.",
+            "IEC 62443 is cited as a security standard (Step 4) but it governs industrial control systems, not medical device cybersecurity. The correct references are FDA 2023 Cybersecurity Guidance, IEC 81001-5-1:2021, and NIST SP 800-213 (already cited). Relying on IEC 62443 framing may produce a security architecture that passes an industrial audit but fails FDA cybersecurity review.",
+            "GPS position data transmitted at 1Hz during emergencies over MQTT QoS 1 means precise real-time location of a vulnerable elderly person is continuously accessible to anyone who can read the MQTT broker stream. MQTT topic ACLs are mentioned but the broker-level authorization model (per-device topic isolation) and the cloud-side storage encryption for live location data are not fully specified."
+          ],
+          "summary": "This plan is unusually comprehensive for a medtech IoT system \u2014 the technology choices are sensible (nRF9161, LSM6DSO32X ML Core, Zephyr RTOS, TimescaleDB, RapidSOS), the regulatory structure is well-intentioned, and the testing depth is above average for an early-stage plan. However, it cannot score above 54 for an FDA Class II submission target because it contains multiple blocking issues that will cause either FDA rejection or post-market regulatory action: the IEC 62304 software safety class is almost certainly wrong and must be resolved before any V&V work begins; the 510(k) predicate strategy is unvalidated and deferred 17 steps too late; no IRB approval step exists for human subject studies; indoor GPS is the primary use case failure mode with no mitigation; 400mAh supporting 72h with active LTE-M and GPS is a credible but unproven claim that must be budgeted before PCB fabrication; automatic 911 dispatch has zero legal review; and post-market surveillance and MDR complaint handling procedures \u2014 both non-negotiable FDA requirements \u2014 are entirely absent. The security architecture is solid in concept but has critical gaps in key management and revocation infrastructure. To reach production readiness for a regulated submission, the plan needs a regulatory strategy gate (Step 0: predicate + pathway + Q-Sub), a reclassification decision on IEC 62304 safety class, IRB process, indoor positioning fallback, FCC certification track, post-market procedures, and legal review of the 911 dispatch feature \u2014 before committing to the current hardware BOM and firmware architecture.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "IEC 62304 Software Safety Class misclassification: Class B ('injury possible') is almost certainly wrong. An undetected fall causing an elderly person to lie unresponsive for hours can be fatal \u2014 that is Class C ('death possible'). Class B requires only software unit testing; Class C requires full integration and system testing with traceability to every software item. If FDA reviewers disagree with your Class B justification, the entire IEC 62304 software documentation package must be redone. This is submission-killing if wrong.",
+              "510(k) predicate assumption is unvalidated and deferred too late. The predicate device search is listed as an acceptance criterion in Step 18 \u2014 after 17 steps of design work. If no adequate predicate exists under MVO, or if FDA classifies automatic emergency dispatch as a novel feature requiring De Novo, the entire regulatory strategy collapses. Predicate identification must happen in Step 2, not Step 18.",
+              "No IRB/Ethics Board approval step. Step 22 involves controlled fall simulations with elderly participants on padded mats and a 30-day field trial. This requires IRB approval (45 CFR Part 46 / 21 CFR Part 50) before any human subject study begins. Proceeding without IRB approval invalidates the clinical data for FDA submission and exposes the organization to serious legal liability.",
+              "Indoor GPS is the primary failure mode and it's unaddressed. Falls predominantly happen indoors \u2014 bathroom, bedroom, kitchen. u-blox M10 GPS will not achieve \u226410m accuracy indoors; it often cannot acquire a fix at all. There is no fallback positioning strategy (WiFi positioning, BLE beacon triangulation, cell tower triangulation, last-known-outdoors position). The '\u226410 meters' GPS spec will fail the majority of real-world use cases.",
+              "400mAh battery vs. 72h runtime with LTE-M + GPS is not credible without a detailed power budget. LTE-M active transmit current on nRF9161 is 220-490mA peak; GPS acquisition is 15-20mA; Zephyr RTOS active MCU is 5-15mA. Even with aggressive duty cycling (eDRX, PSM), 400mAh / 72h = 5.5mA average budget is extremely tight. Step 6 acceptance criteria require a power budget analysis, but the 400mAh figure is already specified as a fixed constraint in the BOM \u2014 if the power budget fails, the hardware must be redesigned. This should be validated before committing to the form factor.",
+              "30-second escalation timer for automatic 911 dispatch has no legal framework. Automatic emergency dispatch is regulated differently in each US state. False-positive 911 calls can result in liability under FCC rules and state statutes. No legal review step exists in this plan. RapidSOS NG911 API access requires a signed agreement with RapidSOS, carrier integration agreements, and may not have PSAP coverage in all geographies. The plan treats this as a pure engineering problem.",
+              "Clinical validation sample size is inadequate for FDA evidence. 30 participants (10 for field trial) is far below what FDA expects for a Class II device with a primary safety endpoint. Predicate devices in the fall detection space have used 100-300 participants for pivotal validation. The 'controlled fall simulation on padded mats' does not replicate real fall biomechanics. FDA will likely require clinical data from spontaneous or minimally-assisted falls. This validation plan will not support a 510(k) submission.",
+              "Fall detection algorithm training data provenance and demographic coverage are unspecified. The ML Core decision tree is 'pre-loaded' but there is no specification of what dataset it was trained on, whether it covers the target demographic (elderly, 65+, varying BMIs, mobility aids like walkers/canes), or whether the training data is independent from the validation data. This is a SOUP qualification gap under IEC 62304 and a performance validation gap for FDA.",
+              "No Post-Market Surveillance (PMS) Plan. FDA 21 CFR Part 822 requires a post-market surveillance plan for Class II devices. ISO 13485 requires post-market monitoring. MDR (Medical Device Reporting) procedures under 21 CFR Part 803 for adverse event reporting are completely absent. These are not optional and must exist before commercialization.",
+              "No FCC / RF Certification step. The nRF9161 LTE-M radio and BLE 5.3 require FCC Part 15/22 certification. Even using a pre-certified module, the end-product integration requires FCC approval or a Declaration of Conformity. This process takes 6-16 weeks, can require test lab time, and may require hardware modifications. It's entirely absent from the plan.",
+              "Caregiver push notification delivery (FCM/APNs) is treated as reliable for a life-safety alert path. FCM/APNs are best-effort, not guaranteed-delivery. The caregiver's phone may have notifications disabled, the app backgrounded/killed by iOS memory pressure, or the phone on DND/airplane mode. There is no SMS fallback SLA, no PSTN voice call fallback, and no multi-caregiver escalation chain specified. A single-point FCM failure means no alert.",
+              "OTA signing key management is unspecified. The ECDSA P-256 private key for firmware signing is critical \u2014 if compromised, an attacker can push arbitrary firmware to all deployed devices. There is no HSM requirement, no key ceremony procedure, no key rotation policy, and no revocation mechanism specified. This is both a security gap and a regulatory gap (cybersecurity documentation for FDA 510(k)).",
+              "Step 1 (risk management) and Step 3 (system architecture) have no dependency on each other and run in parallel. The hazard analysis outputs (risk controls, mitigations) must inform the architecture requirements. If Step 3 produces an architecture before Step 1 identifies a hazard that requires an architectural control (e.g., redundant alert paths for alert delivery failure), the architecture must be revised \u2014 causing cascading rework.",
+              "False positive rate specification (2%) applies only to 'normal ADL' bench simulation. No specification exists for sleep positions, bed egress, wheelchair use, exercise, or activities by users with mobility aids. The ADL dataset of 500 events is small and likely does not cover clinically relevant edge cases for an elderly population."
+            ],
+            "suggestions": [
+              "Resolve software safety class (Class B vs C) as the first decision, before any other work begins. Document the hazard severity analysis that justifies the class. If any software function failure could contribute to a death, it is Class C. Get this decision signed off by your regulatory lead and an external notified body if targeting EU MDR simultaneously.",
+              "Run predicate device search in parallel with Step 1/2, not deferred to Step 18. Use FDA 510(k) database, product code MVO, and engage FDA pre-submission (Q-Sub) meeting early to confirm the regulatory pathway. Budget 3-6 months for FDA feedback cycles.",
+              "Add an IRB protocol submission step immediately before Step 22. Allow 8-12 weeks for IRB approval. Write the clinical protocol (including fall simulation methodology, inclusion/exclusion criteria, stopping rules, adverse event reporting) in Step 2 alongside the DHF structure.",
+              "Add a hybrid positioning fallback architecture: GPS (outdoor), WiFi positioning (indoor via Google/Apple location APIs), BLE beacon proximity (home environment option), with cell tower triangulation as last resort. Specify indoor vs outdoor accuracy requirements separately in the design inputs.",
+              "Commission a detailed power budget analysis as a blocking gate before PCB layout is finalized. Use nRF9161 Power Profiler Kit 2 measurements. If 400mAh cannot support 72h with representative duty cycle, increase to 600-800mAh or shrink the GPS duty cycle further \u2014 this decision must be made before Gerbers are fabricated.",
+              "Engage legal counsel specializing in telehealth/emergency services regulation before Step 11 (alert engine) is built. Obtain a RapidSOS partner agreement and confirm PSAP coverage in your target markets. Define false-alarm liability policy. Add a legal review gate before the 911 dispatch feature is enabled in production.",
+              "Increase clinical validation to minimum 100 participants for the pivotal study and engage a clinical research organization (CRO) with fall detection experience. Consider a wear-and-detect protocol with instrumented falls rather than supervised padded-mat falls to get more realistic biomechanical data.",
+              "Specify ML Core decision tree training dataset: source, size, demographic breakdown, independent validation holdout, and IRB approval for any human-derived data. Treat the decision tree as SOUP requiring qualification evidence per IEC 62304 \u00a78.",
+              "Add Step 0: FCC pre-certification assessment and RF test planning. Determine whether to use a pre-certified nRF9161 module or do board-level FCC approval. Add FCC testing to the critical path \u2014 it must complete before commercial launch.",
+              "Add a Post-Market Surveillance plan and MDR/complaint handling SOP as deliverables in Step 18 or a new Step 18.5. These are required before commercial distribution.",
+              "Implement a multi-tier alert delivery chain: FCM push (primary, 0-5s) \u2192 SMS via Twilio (secondary, 5-15s) \u2192 PSTN voice call to caregiver (tertiary, 15-25s) \u2192 RapidSOS dispatch (30s). Each tier should fire if the previous tier is unacknowledged, not just the final escalation.",
+              "Specify ECDSA signing key management: HSM (AWS CloudHSM or similar) for key storage, documented key ceremony, dual-control key access, key rotation every 2 years, device revocation list mechanism. This is required for FDA cybersecurity documentation.",
+              "Make Step 3 depend on Step 1 (risk management outputs), or explicitly document that Step 3 is a preliminary architecture subject to revision after risk analysis completes. Track all architecture-impacting risk controls in the traceability matrix from Step 1 outputs."
+            ],
+            "missing": [
+              "Post-Market Surveillance Plan (required by 21 CFR Part 822 and ISO 13485 \u00a78.2.1)",
+              "Medical Device Reporting (MDR) and Complaint Handling SOP (21 CFR Part 803 / 820.198)",
+              "IRB protocol submission and approval process (21 CFR Part 50, 45 CFR Part 46)",
+              "FCC Part 15/22 RF certification step and timeline",
+              "Indoor positioning fallback strategy \u2014 GPS alone is insufficient for the intended use environment",
+              "OTA signing key management procedure (HSM, key ceremony, rotation, revocation)",
+              "Legal review of automatic 911 dispatch liability, FCC false-alarm rules, and state-by-state emergency dispatch laws",
+              "Multi-tier alert delivery with guaranteed fallback (SMS \u2192 voice call \u2192 911) beyond single FCM push",
+              "De Novo pathway analysis as alternative to 510(k) if no adequate predicate is found",
+              "FDA Pre-Submission (Q-Sub) meeting step to confirm regulatory pathway before significant investment",
+              "COOP / multi-region AWS deployment strategy for the life-safety alert engine (single-region outage = no alerts)",
+              "Supplier qualification records and component obsolescence risk assessment for critical components (nRF9161, LSM6DSO32X, ATECC608B)",
+              "Cleaning and biocompatibility assessment per ISO 10993 \u2014 skin-contact wearable requires cytotoxicity and sensitization testing",
+              "Quality Management System (QMS) selection and setup (required for ISO 13485 certification and FDA 820.5)",
+              "ANVISA (Brazil), Health Canada, TGA (Australia) registration strategy if non-US markets are targeted",
+              "EU MDR 2017/745 Technical Documentation and Notified Body engagement if CE marking is required",
+              "Software anomaly resolution procedure (IEC 62304 \u00a76.2.5) \u2014 defects found during V&V must go through a documented resolution process"
+            ],
+            "security_risks": [
+              "OTA signing key stored without HSM: if the ECDSA private key is compromised (developer laptop, CI/CD secret leak), an attacker can push malicious firmware to the entire deployed device fleet \u2014 silently disabling fall detection or enabling remote surveillance. No revocation mechanism is specified.",
+              "RapidSOS API endpoint is a high-value target: an attacker who can forge a fall event (exploiting a confidence score bypass or MQTT topic ACL gap) can trigger automatic 911 dispatch to any address, causing emergency resource exhaustion. Rate limiting on the fall-event endpoint is specified but its enforcement under a spoofed device identity is not verified.",
+              "mTLS device certificates provisioned at manufacturing (ATECC608B) have no revocation mechanism specified. If a device is stolen or its certificate extracted, it can permanently impersonate a legitimate device. No OCSP/CRL infrastructure is defined.",
+              "The offline flash buffer (8KB, Step 10) stores unprocessed fall events. If the buffer contents are not encrypted at rest on the nRF9161 flash, an attacker with physical access (JTAG/SWD) can read buffered GPS positions and health events \u2014 PHI exposure without decryption.",
+              "The 30-second no-response escalation window is a denial-of-service vector: an attacker who can flood the alert engine with high-confidence false fall events (by compromising one device's credentials) can saturate Celery workers, delay legitimate escalations, and potentially deplete the RapidSOS API quota causing real emergencies to go undispatched.",
+              "The caregiver app uses OAuth 2.0 + PKCE via Auth0, but biometric unlock on subsequent opens does not re-authenticate to the server \u2014 it only unlocks the local token store. A stolen unlocked phone gives permanent caregiver access with no session expiry on the device. Server-side session binding to device fingerprint is not specified.",
+              "IEC 62443 is cited as a security standard (Step 4) but it governs industrial control systems, not medical device cybersecurity. The correct references are FDA 2023 Cybersecurity Guidance, IEC 81001-5-1:2021, and NIST SP 800-213 (already cited). Relying on IEC 62443 framing may produce a security architecture that passes an industrial audit but fails FDA cybersecurity review.",
+              "GPS position data transmitted at 1Hz during emergencies over MQTT QoS 1 means precise real-time location of a vulnerable elderly person is continuously accessible to anyone who can read the MQTT broker stream. MQTT topic ACLs are mentioned but the broker-level authorization model (per-device topic isolation) and the cloud-side storage encryption for live location data are not fully specified."
+            ],
+            "summary": "This plan is unusually comprehensive for a medtech IoT system \u2014 the technology choices are sensible (nRF9161, LSM6DSO32X ML Core, Zephyr RTOS, TimescaleDB, RapidSOS), the regulatory structure is well-intentioned, and the testing depth is above average for an early-stage plan. However, it cannot score above 54 for an FDA Class II submission target because it contains multiple blocking issues that will cause either FDA rejection or post-market regulatory action: the IEC 62304 software safety class is almost certainly wrong and must be resolved before any V&V work begins; the 510(k) predicate strategy is unvalidated and deferred 17 steps too late; no IRB approval step exists for human subject studies; indoor GPS is the primary use case failure mode with no mitigation; 400mAh supporting 72h with active LTE-M and GPS is a credible but unproven claim that must be budgeted before PCB fabrication; automatic 911 dispatch has zero legal review; and post-market surveillance and MDR complaint handling procedures \u2014 both non-negotiable FDA requirements \u2014 are entirely absent. The security architecture is solid in concept but has critical gaps in key management and revocation infrastructure. To reach production readiness for a regulated submission, the plan needs a regulatory strategy gate (Step 0: predicate + pathway + Q-Sub), a reclassification decision on IEC 62304 safety class, IRB process, indoor positioning fallback, FCC certification track, post-market procedures, and legal review of the 911 dispatch feature \u2014 before committing to the current hardware BOM and firmware architecture.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-21T22:25:40.621411+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 267.28,
+    "critic_plan": 171.12
+  }
+}

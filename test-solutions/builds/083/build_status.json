@@ -1,0 +1,1186 @@
+{
+  "run_id": "c27f5646-a9ab-41f0-b4af-9d684a887b74",
+  "solution_name": "dating_app",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T10:15:48.811555+00:00",
+  "updated_at": "2026-03-22T10:20:39.612099+00:00",
+  "product_description": "Dating app with profile creation, photo verification, matching algorithm, chat with video calls, safety features (block/report), and premium subscription.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the dating app market: competitor landscape (Tinder, Bumble, Hinge), user demographics, monetization benchmarks, and differentiation opportunities for dating_app.",
+      "payload": {
+        "competitors": [
+          "Tinder",
+          "Bumble",
+          "Hinge",
+          "OkCupid",
+          "Coffee Meets Bagel"
+        ],
+        "focus_areas": [
+          "matching algorithms",
+          "safety features",
+          "premium tiers",
+          "video call adoption",
+          "retention metrics"
+        ],
+        "deliverables": [
+          "competitor matrix",
+          "TAM/SAM/SOM estimate",
+          "positioning statement"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix covers at least 5 apps across pricing, features, and safety",
+        "Positioning statement articulates a unique differentiator for dating_app",
+        "TAM/SAM/SOM estimate is documented with cited sources",
+        "Premium tier benchmarks (price points, conversion rates) are included"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define the product requirements document (PRD): user stories for profile creation, photo verification, matching, chat/video, safety, and premium. Set success metrics and V1 roadmap.",
+      "payload": {
+        "modules": [
+          "onboarding",
+          "profile",
+          "discovery",
+          "matching",
+          "chat",
+          "video_calls",
+          "safety",
+          "subscription"
+        ],
+        "success_metrics": [
+          "DAU/MAU ratio",
+          "match rate",
+          "message response rate",
+          "premium conversion rate",
+          "safety incident rate"
+        ],
+        "hitl_level": "standard"
+      },
+      "acceptance_criteria": [
+        "User stories written for all 6 core feature areas with acceptance criteria",
+        "V1 scope explicitly defined with out-of-scope items listed",
+        "Success metrics are measurable with baseline targets defined",
+        "Roadmap covers V1 launch + 2 follow-on milestones"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes for all major flows: onboarding, profile setup, swipe/discovery, match queue, chat, video call, safety reporting, and paywall. Include accessibility audit.",
+      "payload": {
+        "flows": [
+          "onboarding",
+          "profile_creation",
+          "photo_upload",
+          "discovery_swipe",
+          "match_notification",
+          "chat",
+          "video_call",
+          "block_report",
+          "premium_paywall"
+        ],
+        "accessibility_standard": "WCAG 2.1 AA",
+        "deliverables": [
+          "user journey maps",
+          "lo-fi wireframes",
+          "hi-fi mockups",
+          "accessibility checklist"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wireframes cover 100% of flows listed in the PRD",
+        "Accessibility checklist passes WCAG 2.1 AA for contrast, tap target sizes, and screen reader labels",
+        "User journey maps include emotional states and pain points at each step",
+        "Design system tokens (color, type, spacing) are documented",
+        "App store screenshot mockups prepared",
+        "Onboarding flow under 3 steps"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "SECURITY",
+      "description": "Produce threat model and security architecture for dating_app: identity verification threat vectors, photo abuse, location spoofing, chat privacy, video call interception, and payment fraud.",
+      "payload": {
+        "threat_model_framework": "STRIDE",
+        "sensitive_data": [
+          "location",
+          "photos",
+          "chat messages",
+          "payment info",
+          "government ID for verification"
+        ],
+        "deliverables": [
+          "threat model doc",
+          "security requirements list",
+          "data classification matrix"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all 6 feature domains",
+        "Data classification matrix labels all PII fields with retention policy",
+        "Security requirements are tagged to specific backend components",
+        "OWASP Mobile Top 10 risks are addressed in the requirements"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, and community guidelines for dating_app. Cover GDPR/CCPA compliance, age verification requirements, content moderation obligations, and subscription cancellation policy.",
+      "payload": {
+        "jurisdictions": [
+          "US",
+          "EU",
+          "UK"
+        ],
+        "regulations": [
+          "GDPR",
+          "CCPA",
+          "COPPA",
+          "PCI-DSS for payments"
+        ],
+        "deliverables": [
+          "ToS draft",
+          "Privacy Policy draft",
+          "Community Guidelines",
+          "age verification flow spec"
+        ]
+      },
+      "acceptance_criteria": [
+        "Privacy Policy covers all GDPR Article 13 disclosure requirements",
+        "CCPA opt-out mechanism is specified in the privacy flow",
+        "Age verification (18+) is explicitly required in onboarding flow",
+        "Subscription cancellation terms comply with app store guidelines (Apple/Google)"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Design the database schema for dating_app: users, profiles, photos, matches, messages, video_sessions, blocks, reports, subscriptions, and audit_log tables. Include indexing strategy for geo-queries and matching.",
+      "payload": {
+        "database": "PostgreSQL with PostGIS for geolocation",
+        "tables": [
+          "users",
+          "profiles",
+          "photos",
+          "interests",
+          "matches",
+          "messages",
+          "video_sessions",
+          "blocks",
+          "reports",
+          "subscriptions",
+          "transactions",
+          "audit_log"
+        ],
+        "indexing": [
+          "geospatial index on location",
+          "composite index on matching filters",
+          "full-text index on profile bios"
+        ],
+        "migrations_tool": "Alembic"
+      },
+      "acceptance_criteria": [
+        "All tables have primary keys, foreign keys, and NOT NULL constraints defined",
+        "Geospatial queries (users within N km) execute under 50ms on 1M row dataset",
+        "Soft-delete pattern applied to users, matches, and messages for GDPR erasure compliance",
+        "Migration files are idempotent and reversible"
+      ],
+      "depends_on": [
+        4,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "CONFIG",
+      "description": "Set up the project monorepo structure, dev environment, CI/CD skeleton, and environment configs for dating_app. Configure agentic pattern: Multi-Agent Coordinator for orchestrating matching, moderation, and notification agents.",
+      "payload": {
+        "monorepo_layout": {
+          "backend": "FastAPI (Python)",
+          "frontend": "React Native (Expo)",
+          "infra": "Terraform + Docker"
+        },
+        "agentic_pattern": "coordinator",
+        "coordinator_agents": [
+          "matching_agent",
+          "moderation_agent",
+          "notification_agent"
+        ],
+        "env_configs": [
+          "development",
+          "staging",
+          "production"
+        ],
+        "secrets_manager": "AWS Secrets Manager"
+      },
+      "acceptance_criteria": [
+        "Monorepo initializes with `make dev` and all services start locally",
+        "Coordinator agent config registers all 3 specialist agents with routing rules",
+        "Environment configs externalize all secrets (no hardcoded credentials)",
+        "Pre-commit hooks enforce lint and type checks"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Build authentication and user management service: registration, email/phone OTP verification, JWT token issuance, refresh token rotation, session management, and account deletion (GDPR right-to-erasure).",
+      "payload": {
+        "framework": "FastAPI",
+        "auth": "JWT + refresh tokens",
+        "otp_providers": [
+          "Twilio SMS",
+          "SendGrid email"
+        ],
+        "endpoints": [
+          "POST /auth/register",
+          "POST /auth/verify-otp",
+          "POST /auth/login",
+          "POST /auth/refresh",
+          "DELETE /auth/account"
+        ]
+      },
+      "acceptance_criteria": [
+        "OTP codes expire after 10 minutes and are single-use",
+        "JWT access tokens expire in 15 minutes; refresh tokens in 30 days",
+        "Account deletion cascades soft-delete to all PII within 30 days per GDPR",
+        "All auth endpoints return standardized error codes with no stack traces in production"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Build profile creation and management service: profile CRUD, interests/preferences, location update, age/gender/orientation fields, and profile completeness scoring.",
+      "payload": {
+        "endpoints": [
+          "POST /profiles",
+          "GET /profiles/{id}",
+          "PATCH /profiles/{id}",
+          "GET /profiles/me/completeness"
+        ],
+        "fields": [
+          "display_name",
+          "bio",
+          "birthdate",
+          "gender",
+          "orientation",
+          "location",
+          "interests",
+          "height",
+          "occupation"
+        ],
+        "completeness_weights": {
+          "photo": 40,
+          "bio": 20,
+          "interests": 20,
+          "location": 20
+        }
+      },
+      "acceptance_criteria": [
+        "Profile completeness score updates in real-time on field changes",
+        "Age is derived from birthdate and cannot be manually set",
+        "Location is stored as PostGIS POINT and never exposed as raw coordinates to other users",
+        "Profile PATCH is partial-update safe (unset fields are not nullified)"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Build photo upload and AI-assisted photo verification service: multi-photo upload to S3, face detection (AWS Rekognition), liveness check, NSFW content moderation, and photo ordering.",
+      "payload": {
+        "storage": "AWS S3 with CloudFront CDN",
+        "ai_services": [
+          "AWS Rekognition (face detection + liveness)",
+          "AWS Rekognition (content moderation)"
+        ],
+        "endpoints": [
+          "POST /photos/upload",
+          "GET /photos/{id}/status",
+          "DELETE /photos/{id}",
+          "PATCH /photos/order"
+        ],
+        "max_photos": 9,
+        "verification_states": [
+          "pending",
+          "approved",
+          "rejected_nsfw",
+          "rejected_no_face",
+          "verified"
+        ]
+      },
+      "acceptance_criteria": [
+        "Photos are scanned for NSFW content within 5 seconds of upload",
+        "Liveness detection rejects static photos used as identity spoofing",
+        "Rejected photos return a user-friendly rejection reason without exposing AI confidence scores",
+        "Primary photo cannot be deleted if it is the only approved photo",
+        "Photo URLs are signed S3 URLs expiring in 1 hour (no public bucket access)"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build the matching algorithm service: candidate pool generation (geo + preference filters), compatibility scoring (interests overlap, activity score, mutual like boost), swipe recording (like/pass/super-like), and mutual match detection.",
+      "payload": {
+        "algorithm": "multi_agent_sequential",
+        "stages": [
+          "geo_filter",
+          "preference_filter",
+          "compatibility_score",
+          "diversity_injection",
+          "rank_and_serve"
+        ],
+        "signals": [
+          "interests_overlap",
+          "activity_recency",
+          "photo_verification_status",
+          "mutual_like_bonus",
+          "premium_boost"
+        ],
+        "endpoints": [
+          "GET /discover",
+          "POST /swipes",
+          "GET /matches",
+          "GET /matches/{id}"
+        ],
+        "anti_patterns": [
+          "prevent showing same profile twice within 48h",
+          "deprioritize inactive users > 30 days"
+        ]
+      },
+      "acceptance_criteria": [
+        "Discovery feed returns 20 candidates in under 200ms for users with 10k+ users in radius",
+        "Mutual match is detected and both users notified within 2 seconds of second swipe",
+        "Algorithm includes diversity injection to prevent filter-bubble echo chambers",
+        "Super-like quota is enforced (1/day free, 5/day premium)"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build real-time chat service: WebSocket message delivery, message persistence, read receipts, typing indicators, media sharing (photos/GIFs), message expiry for unmatched pairs, and end-to-end encryption key exchange.",
+      "payload": {
+        "transport": "WebSocket via FastAPI + Redis pub/sub",
+        "persistence": "PostgreSQL messages table",
+        "encryption": "Signal Protocol key exchange for E2E",
+        "endpoints": [
+          "WS /chat/{match_id}",
+          "GET /chat/{match_id}/history",
+          "DELETE /chat/{match_id}/messages"
+        ],
+        "features": [
+          "read_receipts",
+          "typing_indicator",
+          "gif_via_giphy_api",
+          "photo_in_chat"
+        ]
+      },
+      "acceptance_criteria": [
+        "Message delivery latency under 100ms for users in same region",
+        "Messages persist for 1 year; deleted when match is unmatched or blocked",
+        "Typing indicator stops broadcasting after 3 seconds of no keystrokes",
+        "End-to-end encryption key exchange completes before first message is sent",
+        "Chat history is paginated (cursor-based, 50 messages per page)"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Integrate video call service: WebRTC signaling server, ICE/TURN server setup (Twilio TURN), call session management, call duration limits (free: 10min, premium: unlimited), and call recording opt-in for safety.",
+      "payload": {
+        "signaling": "WebRTC via FastAPI WebSocket",
+        "turn_provider": "Twilio Network Traversal Service",
+        "endpoints": [
+          "POST /calls/initiate",
+          "POST /calls/{id}/accept",
+          "POST /calls/{id}/end",
+          "GET /calls/{id}/token"
+        ],
+        "limits": {
+          "free_max_duration_minutes": 10,
+          "premium_max_duration_minutes": null
+        },
+        "safety": "call_reporting_available_post_call"
+      },
+      "acceptance_criteria": [
+        "Call connection established in under 3 seconds on 4G network",
+        "Free tier call ends gracefully at 10 minutes with 60-second warning",
+        "TURN credentials are ephemeral (expire after 1 hour)",
+        "Both users must consent before any call recording is enabled",
+        "Call end reason is logged (user_ended, timeout, network_error) for support"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Build safety features: block service (bidirectional hide + prevent re-match), report service (categories: harassment, fake profile, inappropriate content, spam), automated moderation queue, and ban management.",
+      "payload": {
+        "endpoints": [
+          "POST /safety/block/{user_id}",
+          "DELETE /safety/block/{user_id}",
+          "POST /safety/report",
+          "GET /admin/reports",
+          "POST /admin/reports/{id}/action"
+        ],
+        "report_categories": [
+          "harassment",
+          "fake_profile",
+          "inappropriate_content",
+          "spam",
+          "underage_suspicion",
+          "other"
+        ],
+        "auto_actions": {
+          "reports_threshold_24h": 3,
+          "action": "shadow_ban_pending_review"
+        },
+        "agentic_pattern": "review_and_critique",
+        "moderation_agent": "Automated pre-screening \u2192 human review queue"
+      },
+      "acceptance_criteria": [
+        "Block takes effect within 1 second and hides both users from each other's feeds",
+        "Reported user is shadow-banned automatically after 3 reports in 24 hours pending human review",
+        "Report submission confirms receipt to reporter without revealing moderation action taken",
+        "Admin dashboard shows report queue with priority scoring (severity \u00d7 report count)",
+        "Repeat offenders (3+ confirmed violations) are permanently banned"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Build premium subscription service: Stripe integration, subscription tiers (Gold/Platinum), feature gating middleware, free trial logic, receipt validation for in-app purchases (Apple/Google), and billing portal.",
+      "payload": {
+        "payment_provider": "Stripe",
+        "iap_providers": [
+          "Apple StoreKit 2",
+          "Google Play Billing v5"
+        ],
+        "tiers": {
+          "gold": [
+            "unlimited_likes",
+            "see_who_liked_you",
+            "5_super_likes_day",
+            "rewind_last_swipe"
+          ],
+          "platinum": [
+            "gold_features",
+            "unlimited_video_calls",
+            "priority_in_discovery",
+            "read_receipts",
+            "profile_boost_1_month"
+          ]
+        },
+        "endpoints": [
+          "POST /subscriptions/checkout",
+          "POST /subscriptions/cancel",
+          "GET /subscriptions/status",
+          "POST /webhooks/stripe",
+          "POST /webhooks/apple-iap",
+          "POST /webhooks/google-iap"
+        ]
+      },
+      "acceptance_criteria": [
+        "Stripe webhook signature is verified before processing any subscription event",
+        "Feature gate middleware denies premium features within 100ms for expired subscriptions",
+        "Free trial cannot be re-activated after first use (enforced server-side, not client-side)",
+        "Subscription status is consistent across web, iOS, and Android within 30 seconds of payment",
+        "PCI-DSS: no raw card data touches dating_app servers (Stripe Elements only)"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build React Native (Expo) onboarding and auth screens: splash, registration, OTP verification, and login. Implement deep linking for magic link auth.",
+      "payload": {
+        "screens": [
+          "SplashScreen",
+          "WelcomeScreen",
+          "RegisterScreen",
+          "OTPVerifyScreen",
+          "LoginScreen"
+        ],
+        "navigation": "React Navigation v6 (stack)",
+        "form_validation": "React Hook Form + Zod",
+        "deep_linking": "Expo Linking for magic link"
+      },
+      "acceptance_criteria": [
+        "OTP input auto-advances between digits and auto-submits on last digit",
+        "Registration form shows inline validation errors without full page re-render",
+        "Deep link from email/SMS opens app directly to OTP verification screen",
+        "Splash screen resolves auth state and routes to correct screen in under 1.5 seconds"
+      ],
+      "depends_on": [
+        8,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build profile creation and photo upload screens: multi-step profile wizard, interest tag selector, location permission request, photo picker with crop/reorder, and profile preview.",
+      "payload": {
+        "screens": [
+          "ProfileWizardScreen",
+          "InterestSelectorScreen",
+          "LocationPermissionScreen",
+          "PhotoUploadScreen",
+          "ProfilePreviewScreen"
+        ],
+        "photo_ui": "drag-to-reorder grid, upload progress indicator, verification status badge",
+        "location": "Expo Location with permission fallback to manual city entry"
+      },
+      "acceptance_criteria": [
+        "Profile wizard shows progress indicator and allows back-navigation without data loss",
+        "Photo grid shows upload progress per photo and verification status (pending/approved/rejected)",
+        "Interest tags are searchable and limited to 10 selections",
+        "Profile completeness score updates visually as each field is filled"
+      ],
+      "depends_on": [
+        9,
+        10,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the discovery and swiping screen: card stack with swipe gestures (like/pass/super-like), match animation, filter sheet (age range, distance, gender), and boost activation UI.",
+      "payload": {
+        "screens": [
+          "DiscoverScreen",
+          "FilterSheet",
+          "MatchCelebrationModal",
+          "ProfileDetailSheet"
+        ],
+        "gesture_library": "React Native Reanimated 3 + Gesture Handler",
+        "animations": [
+          "card_swipe_physics",
+          "match_confetti_animation",
+          "super_like_blue_flash"
+        ]
+      },
+      "acceptance_criteria": [
+        "Swipe gesture reaches 60fps on iPhone 12 and equivalent Android",
+        "Match celebration animation plays within 200ms of mutual match detection",
+        "Filter changes immediately refresh the discovery feed (no stale cards shown)",
+        "Profile detail sheet shows all photos, bio, and interests with scroll"
+      ],
+      "depends_on": [
+        11,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build matches list and real-time chat screens: match inbox, chat thread with message bubbles, typing indicator, read receipts, GIF picker, and in-chat photo sharing.",
+      "payload": {
+        "screens": [
+          "MatchesScreen",
+          "ChatScreen",
+          "GifPickerModal",
+          "PhotoViewerModal"
+        ],
+        "state_management": "Zustand for chat state",
+        "websocket": "React Native WebSocket with reconnect logic",
+        "gif_provider": "Giphy SDK"
+      },
+      "acceptance_criteria": [
+        "New messages appear without full list re-render (optimistic UI)",
+        "Unread message count badge on matches tab updates in real-time",
+        "Chat scrolls to bottom on new message if user is already at bottom; shows 'new message' nudge otherwise",
+        "GIF picker loads trending GIFs within 1 second"
+      ],
+      "depends_on": [
+        12,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build in-app video call screen: call initiation flow, WebRTC video view, mute/camera toggle, call timer, call end UI, and post-call report prompt.",
+      "payload": {
+        "screens": [
+          "IncomingCallScreen",
+          "VideoCallScreen",
+          "CallEndedScreen"
+        ],
+        "webrtc_library": "react-native-webrtc",
+        "ui_elements": [
+          "mute_button",
+          "camera_toggle",
+          "flip_camera",
+          "end_call_button",
+          "call_duration_timer",
+          "free_tier_countdown"
+        ]
+      },
+      "acceptance_criteria": [
+        "Video call UI enters full-screen on call connect",
+        "Free-tier countdown is visible in the last 60 seconds with prominent warning",
+        "Post-call report prompt appears only if call duration > 30 seconds",
+        "Call screen handles permission denial for camera/mic with user-friendly recovery flow"
+      ],
+      "depends_on": [
+        13,
+        19
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build safety screens: block/report flow accessible from profile and chat, report category picker, optional screenshot attachment, confirmation states, and blocked users management list.",
+      "payload": {
+        "screens": [
+          "ReportSheet",
+          "BlockConfirmModal",
+          "BlockedUsersScreen"
+        ],
+        "entry_points": [
+          "profile_detail_menu",
+          "chat_header_menu",
+          "post_call_prompt"
+        ],
+        "ux_principle": "frictionless reporting \u2014 max 3 taps to submit"
+      },
+      "acceptance_criteria": [
+        "Report flow completes in 3 taps from any entry point",
+        "Block confirmation modal clearly explains mutual-hide behavior",
+        "Blocked users list shows display name and block date with unblock option",
+        "After report submission, reporter sees confirmation without any indication of pending moderation action"
+      ],
+      "depends_on": [
+        14,
+        19
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "FRONTEND",
+      "description": "Build premium subscription screens: feature comparison paywall, subscription plan picker, Stripe payment sheet integration, Apple/Google IAP native flow, subscription management, and Gold/Platinum feature unlock states.",
+      "payload": {
+        "screens": [
+          "PaywallScreen",
+          "PlanPickerScreen",
+          "SubscriptionManageScreen"
+        ],
+        "payment_ui": "Stripe React Native SDK (PaymentSheet)",
+        "iap": "react-native-iap for Apple/Google",
+        "feature_gates": "locked UI states with upgrade prompts for free users"
+      },
+      "acceptance_criteria": [
+        "Paywall shows feature comparison table for Gold vs Platinum with monthly/annual toggle",
+        "Payment sheet pre-fills saved payment methods for returning subscribers",
+        "Premium features are unlocked within 5 seconds of successful payment",
+        "Subscription manage screen shows renewal date, amount, and one-tap cancel"
+      ],
+      "depends_on": [
+        15,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 23,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure with react-i18next (mobile) and extract all UI strings. Produce translation-ready JSON files for English (base) and prepare scaffolding for Spanish, French, Portuguese, and German.",
+      "payload": {
+        "i18n_library": "react-i18next",
+        "base_locale": "en-US",
+        "target_locales": [
+          "es-ES",
+          "fr-FR",
+          "pt-BR",
+          "de-DE"
+        ],
+        "scope": "all screens \u2014 auth, profile, discovery, chat, video, safety, premium",
+        "rtl_support": false,
+        "date_format_localization": true
+      },
+      "acceptance_criteria": [
+        "Zero hardcoded strings in any React Native component (enforced by i18n-lint)",
+        "Translation JSON files are structured by feature namespace (auth, chat, safety, premium)",
+        "Date/time formatting uses locale-aware Intl.DateTimeFormat",
+        "Missing translation keys fall back to en-US without crash",
+        "Top 5 target locales identified",
+        "Store listing translated"
+      ],
+      "depends_on": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "INFRA",
+      "description": "Provision production infrastructure: AWS ECS Fargate for backend, RDS PostgreSQL with PostGIS, ElastiCache Redis, S3 + CloudFront, Twilio TURN, ALB with WAF, and staging environment mirror.",
+      "payload": {
+        "iac_tool": "Terraform",
+        "regions": [
+          "us-east-1 (primary)",
+          "eu-west-1 (GDPR data residency)"
+        ],
+        "services": [
+          "ECS Fargate",
+          "RDS PostgreSQL 15 + PostGIS",
+          "ElastiCache Redis 7",
+          "S3 + CloudFront",
+          "ALB + WAF",
+          "Secrets Manager",
+          "CloudWatch"
+        ],
+        "environments": [
+          "staging",
+          "production"
+        ],
+        "data_residency": "EU user data stored in eu-west-1 only"
+      },
+      "acceptance_criteria": [
+        "Terraform plan produces zero manual changes after initial apply",
+        "RDS is in private subnet with no public endpoint",
+        "WAF rules block SQL injection, XSS, and rate-limit /auth endpoints to 10 req/min per IP",
+        "Staging environment is identical to production (same instance types, same config)",
+        "Data residency routing sends EU users to eu-west-1 via Route 53 geolocation"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipelines: GitHub Actions for backend (lint, test, Docker build, ECS deploy), Expo EAS Build for mobile (TestFlight + Play Console), automated staging deploy on PR merge, and production deploy gate.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "mobile_ci": "Expo EAS Build",
+        "pipelines": [
+          "backend-ci",
+          "backend-deploy-staging",
+          "backend-deploy-production",
+          "mobile-build-staging",
+          "mobile-build-production"
+        ],
+        "gates": {
+          "production_deploy": "manual approval required",
+          "staging_deploy": "automatic on main merge"
+        },
+        "notifications": "Slack alerts on deploy failure"
+      },
+      "acceptance_criteria": [
+        "Backend CI pipeline completes in under 5 minutes",
+        "Production deploy requires explicit manual approval in GitHub Actions",
+        "EAS Build produces signed IPA and AAB artifacts for each release",
+        "Failed deploys trigger Slack alert with commit SHA and error summary",
+        "Rollback to previous ECS task definition takes under 2 minutes"
+      ],
+      "depends_on": [
+        24
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "QA",
+      "description": "Create the quality assurance test plan: test case catalog for all features, edge case matrix (zero matches, network failure, expired subscription mid-session), exploratory testing charters, and bug severity classification.",
+      "payload": {
+        "test_areas": [
+          "auth_flows",
+          "profile_creation",
+          "photo_verification",
+          "matching_algorithm",
+          "chat_reliability",
+          "video_calls",
+          "safety_features",
+          "premium_billing",
+          "localization"
+        ],
+        "edge_cases": [
+          "no internet during swipe",
+          "subscription lapses mid video call",
+          "both users report each other simultaneously",
+          "photo rejected after profile published"
+        ],
+        "severity_levels": [
+          "P0 (data loss / security breach)",
+          "P1 (feature broken)",
+          "P2 (degraded UX)",
+          "P3 (cosmetic)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test case catalog covers 100% of user stories from the PRD",
+        "Edge case matrix includes at least 3 cases per major feature area",
+        "Bug severity classification criteria are documented and agreed with product",
+        "Regression test suite is identified for each release cycle"
+      ],
+      "depends_on": [
+        2,
+        3
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "TESTS",
+      "description": "Write backend unit and integration tests: auth service, profile service, matching algorithm, chat WebSocket, safety service, and subscription feature gating. Minimum 80% line coverage.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio",
+        "coverage_target": 80,
+        "test_types": [
+          "unit tests per service",
+          "integration tests against test DB",
+          "WebSocket chat load test (locust)"
+        ],
+        "mocking": "responses library for external APIs (Twilio, Stripe, Rekognition)"
+      },
+      "acceptance_criteria": [
+        "All tests pass in CI with no flakiness over 10 consecutive runs",
+        "Line coverage >= 80% reported in CI artifact",
+        "Matching algorithm tests cover: geo filter, preference filter, mutual match detection",
+        "Stripe webhook tests cover: subscription created, renewed, cancelled, payment failed",
+        "Chat WebSocket test simulates 100 concurrent connections without message loss"
+      ],
+      "depends_on": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "TESTS",
+      "description": "Write React Native component tests and E2E tests using Detox: onboarding flow, profile creation, swiping, chat, and premium upgrade. Test on iOS simulator and Android emulator.",
+      "payload": {
+        "unit_test_framework": "Jest + React Native Testing Library",
+        "e2e_framework": "Detox",
+        "e2e_flows": [
+          "complete_onboarding",
+          "create_profile_with_photo",
+          "swipe_and_match",
+          "send_first_message",
+          "upgrade_to_gold"
+        ],
+        "platforms": [
+          "iOS 16+",
+          "Android 12+"
+        ]
+      },
+      "acceptance_criteria": [
+        "All E2E flows pass on both iOS simulator and Android emulator",
+        "Component tests cover all custom hooks with mock API responses",
+        "E2E tests run in CI within 15 minutes on both platforms",
+        "Detox tests are deterministic (no timing-based waits)"
+      ],
+      "depends_on": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 29,
+      "task_type": "TRAINING",
+      "description": "Produce user-facing onboarding guides, in-app tooltip copy, support FAQ, and internal moderation team runbook for reviewing reports and managing bans.",
+      "payload": {
+        "user_materials": [
+          "in-app onboarding tooltips (5 screens)",
+          "Help Center FAQ (20 articles)",
+          "Safety Tips page",
+          "Community Guidelines plain-language summary"
+        ],
+        "internal_materials": [
+          "Moderation Team Runbook",
+          "Escalation Procedures for Serious Reports",
+          "Admin Dashboard User Guide"
+        ],
+        "format": "Markdown for Help Center, PDF for internal runbooks"
+      },
+      "acceptance_criteria": [
+        "FAQ covers top 20 support topics identified from competitor app reviews",
+        "Moderation runbook defines decision criteria for each report category",
+        "In-app tooltips are written at reading level Grade 8 or below",
+        "Safety Tips page is accessible from profile settings and onboarding flow"
+      ],
+      "depends_on": [
+        5,
+        26
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 30,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute full system integration testing: end-to-end user journey from registration to video call, load testing matching endpoint (1000 concurrent users), WebSocket chat stress test, and payment flow validation in Stripe test mode.",
+      "payload": {
+        "test_environment": "staging",
+        "load_test_tool": "k6",
+        "scenarios": [
+          "full_user_journey_E2E",
+          "matching_1000_concurrent",
+          "chat_websocket_500_connections",
+          "stripe_payment_flows"
+        ],
+        "performance_targets": {
+          "p99_api_latency_ms": 500,
+          "matching_p95_ms": 300,
+          "websocket_message_latency_ms": 150
+        }
+      },
+      "acceptance_criteria": [
+        "Full user journey E2E passes without errors on staging environment",
+        "Matching endpoint handles 1000 concurrent requests with p95 < 300ms",
+        "Zero message loss under 500 concurrent WebSocket connections",
+        "All Stripe test-mode payment flows (success, decline, refund, webhook) pass",
+        "No P0 or P1 bugs open at end of system test cycle"
+      ],
+      "depends_on": [
+        27,
+        28,
+        25
+      ],
+      "agent_role": "system_tester"
+    }
+  ],
+  "task_count": 30,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 58,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 58,
+        "final_review": {
+          "score": 58,
+          "flaws": [
+            "E2E encryption (Signal Protocol, Step 12) is fundamentally incompatible with the server-side chat history endpoint GET /chat/{match_id}/history. If messages are E2E encrypted, the server stores ciphertext only \u2014 it cannot return a decrypted history. The plan never resolves this contradiction. You either have E2E encryption or server-readable history, not both.",
+            "Push notifications are completely absent from the entire 30-step plan. No APNs/FCM setup, no notification service, no token registration endpoints. New match, new message, super-like, call incoming \u2014 every core engagement loop depends on push. This is a P0 missing feature, not an oversight.",
+            "Age verification is self-attestation via birthdate (Step 9). Step 5 lists COPPA compliance and the UK Online Safety Act requires age assurance \u2014 DOB entry does not satisfy either. No age verification provider (Yoti, Veriff, Onfido) is specified. A regulator will reject this as insufficient.",
+            "The matching algorithm performance target (200ms for 20 candidates with 10k+ users in radius) has no precomputation strategy. Running live multi-stage geo+preference+compatibility scoring on PostgreSQL per request will not hit 200ms at any meaningful scale. No mention of offline candidate pool generation, Redis cache, or vector similarity indexing for interests.",
+            "Soft-delete is not GDPR erasure (Steps 6, 8). GDPR Article 17 requires actual deletion of PII. Soft-deleting a row keeps all personal data in the database. The plan needs a separate scheduled erasure job that nulls/removes PII fields and confirms deletion within the 30-day window. Soft-delete for foreign key integrity is fine, but it is not the erasure mechanism.",
+            "AWS Rekognition is not available in eu-west-1 with the same feature set (liveness detection may require us-east-1). Sending EU user photos to a US AWS service for processing is a GDPR cross-border transfer issue. No Standard Contractual Clauses or data transfer mechanism is mentioned.",
+            "The subscription cross-platform consistency model is broken. A user who subscribes via Stripe (web) then opens the iOS app will appear as free-tier because Apple StoreKit won't know about the Stripe subscription. The 30-second sync target (Step 15) only works within a single payment rail. No unified entitlement layer is specified.",
+            "WebSocket offline delivery is unaddressed. Step 12's server-side design uses Redis pub/sub, which is fire-and-forget. If the recipient is offline, the message is lost from the pub/sub channel. Step 19 mentions 'reconnect logic' on the client, but the server has no message queue for offline delivery. Messages sent while a user is offline will be silently dropped.",
+            "The automated shadow-ban threshold (3 reports in 24 hours, Step 14) is trivially gameable by coordinated harassment groups spacing reports across multiple days, and simultaneously abusable for mass-false-reporting innocent users. No mention of reporter credibility weighting, report velocity analysis, or appeal process.",
+            "Step 13's 'call recording opt-in for safety' has no implementation path. Two-party consent laws vary by jurisdiction, storage costs are unaccounted for, retention policy is undefined, and there is no moderation workflow for reviewing recorded calls. This feature will be cut in production or create legal liability.",
+            "The matching algorithm has no fairness or bias evaluation. Collaborative filtering signals (activity_recency, premium_boost, mutual_like_bonus) create rich-get-richer loops that systematically disadvantage new users and non-subscribers. No A/B testing framework, no bias metrics, no equity guards are in the plan.",
+            "Step 23 (localization) is planned after all frontend screens are built. Retrofitting i18n into completed components is 3-5x the work of building with i18n from the start. React Native text rendered natively (e.g., inside react-native-reanimated animations, WebRTC overlays) often cannot be extracted by standard i18n tooling."
+          ],
+          "suggestions": [
+            "Add a Step 7.5 for push notification infrastructure: APNs HTTP/2 + FCM v1 setup, device token registration endpoint (POST /devices/token), and a notification dispatch service. This unblocks match alerts, message notifications, and call incoming \u2014 all critical for retention.",
+            "Resolve the E2E encryption contradiction by choosing a clear model: (a) Server-managed encryption (server holds keys, can serve history, can moderate) \u2014 simpler, better for safety/moderation; or (b) True E2E (client holds keys, server stores ciphertext, no server-side history, no content moderation on messages). For a dating app with safety requirements, option (a) is more defensible.",
+            "Add a precomputed candidate pool service to Step 11: a background job (Celery beat or AWS EventBridge) that pre-generates and caches ranked candidate lists per user in Redis, refreshed every 15-30 minutes. The live /discover endpoint reads from cache, not from live DB queries. This is the only credible path to 200ms at scale.",
+            "Replace birthdate self-attestation with an integration to a real age verification vendor (Veriff, Onfido, or Yoti) for the 18+ gate. At minimum, add a flag for 'age_verified: false' with a grace period before blocking access, so the system can be upgraded without a breaking change.",
+            "Add a unified entitlement service (Step 15.5): a single source of truth for subscription status that ingests webhooks from Stripe, Apple App Store Server API, and Google Play Developer API, and exposes a single GET /entitlements/me endpoint. Every feature gate hits this service, not the raw payment provider state.",
+            "Add Step 11.5 for Redis Streams or a proper message queue (SQS FIFO) for chat message persistence before the WebSocket delivery layer. Store messages durably on receipt, then fan out to connected clients via pub/sub. This provides offline delivery, at-least-once guarantees, and decouples persistence from transport.",
+            "Add observability to Step 7: Sentry for error tracking, Datadog or Grafana Cloud for APM, and structured logging (JSON) from day one. Dating apps have complex failure modes (match detection race conditions, WebSocket reconnect storms) that are impossible to debug without traces.",
+            "Add an appeal workflow to Step 14's ban management: users need a path to contest shadow-bans and permanent bans, both for legal defensibility and to handle false-positive reports from coordinated harassment.",
+            "Specify a data residency enforcement mechanism beyond Route 53 geolocation in Step 24. Route 53 geolocation routes HTTP traffic, not data \u2014 you need application-level tenant routing that writes EU user records only to the eu-west-1 RDS instance and enforces this at the ORM layer.",
+            "Add a rate-limiting layer at the application level (Step 8/11): Redis-backed rate limits on /swipes (e.g., 100/hour for free users), /discover, and /photos/upload. WAF rules alone are insufficient \u2014 WAF operates at IP level and won't catch authenticated API abuse."
+          ],
+          "missing": [
+            "Push notification service (APNs + FCM) \u2014 completely absent from all 30 steps",
+            "Unified entitlement/subscription state service across Stripe, Apple, and Google payment rails",
+            "Offline message delivery mechanism (Redis Streams, SQS, or equivalent)",
+            "Real age verification vendor integration (currently only self-attested DOB)",
+            "Analytics pipeline \u2014 no Mixpanel/Amplitude/Firebase Analytics. Success metrics in Step 2 are defined but never instrumented anywhere in the plan",
+            "Error tracking and APM (Sentry, Datadog) \u2014 zero observability tooling in the plan",
+            "Database backup and disaster recovery strategy for RDS (point-in-time recovery config, cross-region snapshot replication)",
+            "GDPR erasure job \u2014 a scheduled process that actually purges PII fields from soft-deleted records within the 30-day window",
+            "Appeal and ban review workflow for moderation actions",
+            "Certificate pinning for the React Native app to prevent MITM on internal API endpoints",
+            "Pre-computation / caching strategy for the matching algorithm at scale",
+            "Admin dashboard frontend \u2014 Step 14 defines admin API endpoints but no UI for moderators is planned",
+            "Content moderation for chat text (only photo moderation is covered \u2014 text harassment is unaddressed)",
+            "Referral / invite system \u2014 omitted but standard for dating app growth loops; not a blocker but notable for V1 roadmap",
+            "App store review strategy \u2014 dating apps face heightened scrutiny from Apple; no review preparation checklist, content rating classification, or privacy nutrition label specification"
+          ],
+          "security_risks": [
+            "Refresh token revocation gap: 30-day refresh tokens with no revocation endpoint or device session management. A stolen refresh token gives full account access for up to 30 days. No mention of refresh token families (rotation + invalidation on reuse detection).",
+            "Location triangulation: PostGIS POINT is stored with full precision. 'Never exposed as raw coordinates' is an implementation promise, not an enforced constraint. Fuzzy location rounding must be applied at the query layer, not just the serialization layer. If any join or aggregate leaks a precise distance, adversaries can triangulate exact location with 3+ queries.",
+            "Apple IAP receipt validation is deprecated: the legacy /verifyReceipt endpoint was deprecated in 2023. Step 15 must use the App Store Server API with server-to-server JWT authentication. Using the deprecated endpoint creates validation bypass risks and will eventually stop working.",
+            "Government ID data handling: Step 4 lists 'government ID for verification' as sensitive data but no verification vendor (Veriff, Onfido) is specified, no ID data retention/deletion policy is defined, and no mention of how ID data is isolated from the main user database. Storing government IDs on the same server as dating profiles is a catastrophic breach scenario.",
+            "Signed S3 URL leakage: 1-hour signed URLs (Step 10) can be shared outside the app. No Referer header validation, no CloudFront signed cookie alternative for restricting photo access to authenticated sessions. A user can screenshot a URL and share it for an hour.",
+            "WebRTC TURN credential scope: Step 13 says TURN credentials expire after 1 hour, but if credentials are issued at call initiation (POST /calls/initiate), a user could harvest TURN credentials without completing calls and use Twilio TURN bandwidth at the app's expense. Credentials should be bound to a specific call session ID.",
+            "Shadow-ban information leakage: if a shadow-banned user can detect they are shadow-banned (e.g., by noticing zero matches despite high activity), this reveals the moderation action and allows ban evasion. The UX needs to simulate normal operation for shadow-banned accounts.",
+            "OTP brute force: Step 8 requires OTP codes expire in 10 minutes and are single-use, but no mention of attempt rate limiting (e.g., max 5 attempts per OTP before requiring re-issue). A 6-digit OTP has 1M combinations \u2014 without rate limiting, it is brute-forceable within the expiry window.",
+            "Stripe webhook replay: Step 15 correctly requires signature verification, but no mention of idempotency key storage to prevent replay attacks. A replayed 'invoice.payment_succeeded' event could incorrectly extend a subscription.",
+            "No mention of dependency scanning or SBOM for the supply chain. React Native + Expo + 15+ third-party SDKs (WebRTC, IAP, Giphy, Stripe) is a large attack surface with no automated CVE monitoring specified."
+          ],
+          "summary": "This is an ambitious, well-structured plan that covers the right surface area for a dating app MVP \u2014 the technology choices are reasonable, the compliance awareness is above average, and the dependency graph is mostly coherent. However, it has several critical production failures that would surface within weeks of launch: push notifications are entirely absent (every core engagement loop breaks without them), the E2E encryption design directly contradicts the server-side history API, the matching algorithm has no scalability architecture and will collapse under real load, and age verification is legal self-attestation that will not satisfy COPPA or the UK Online Safety Act. The soft-delete-as-erasure pattern is a GDPR compliance fiction. The subscription entitlement model breaks the moment a user pays via Stripe and opens the iOS app. For a prototype with 100-1000 users and legal tolerance for gaps, this plan gets you to a demo. For a production dating app targeting real regulatory jurisdictions and real scale, at least 6 of the flaws identified above represent launch-blocking issues that require fundamental rework, not incremental fixes.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 58,
+            "flaws": [
+              "E2E encryption (Signal Protocol, Step 12) is fundamentally incompatible with the server-side chat history endpoint GET /chat/{match_id}/history. If messages are E2E encrypted, the server stores ciphertext only \u2014 it cannot return a decrypted history. The plan never resolves this contradiction. You either have E2E encryption or server-readable history, not both.",
+              "Push notifications are completely absent from the entire 30-step plan. No APNs/FCM setup, no notification service, no token registration endpoints. New match, new message, super-like, call incoming \u2014 every core engagement loop depends on push. This is a P0 missing feature, not an oversight.",
+              "Age verification is self-attestation via birthdate (Step 9). Step 5 lists COPPA compliance and the UK Online Safety Act requires age assurance \u2014 DOB entry does not satisfy either. No age verification provider (Yoti, Veriff, Onfido) is specified. A regulator will reject this as insufficient.",
+              "The matching algorithm performance target (200ms for 20 candidates with 10k+ users in radius) has no precomputation strategy. Running live multi-stage geo+preference+compatibility scoring on PostgreSQL per request will not hit 200ms at any meaningful scale. No mention of offline candidate pool generation, Redis cache, or vector similarity indexing for interests.",
+              "Soft-delete is not GDPR erasure (Steps 6, 8). GDPR Article 17 requires actual deletion of PII. Soft-deleting a row keeps all personal data in the database. The plan needs a separate scheduled erasure job that nulls/removes PII fields and confirms deletion within the 30-day window. Soft-delete for foreign key integrity is fine, but it is not the erasure mechanism.",
+              "AWS Rekognition is not available in eu-west-1 with the same feature set (liveness detection may require us-east-1). Sending EU user photos to a US AWS service for processing is a GDPR cross-border transfer issue. No Standard Contractual Clauses or data transfer mechanism is mentioned.",
+              "The subscription cross-platform consistency model is broken. A user who subscribes via Stripe (web) then opens the iOS app will appear as free-tier because Apple StoreKit won't know about the Stripe subscription. The 30-second sync target (Step 15) only works within a single payment rail. No unified entitlement layer is specified.",
+              "WebSocket offline delivery is unaddressed. Step 12's server-side design uses Redis pub/sub, which is fire-and-forget. If the recipient is offline, the message is lost from the pub/sub channel. Step 19 mentions 'reconnect logic' on the client, but the server has no message queue for offline delivery. Messages sent while a user is offline will be silently dropped.",
+              "The automated shadow-ban threshold (3 reports in 24 hours, Step 14) is trivially gameable by coordinated harassment groups spacing reports across multiple days, and simultaneously abusable for mass-false-reporting innocent users. No mention of reporter credibility weighting, report velocity analysis, or appeal process.",
+              "Step 13's 'call recording opt-in for safety' has no implementation path. Two-party consent laws vary by jurisdiction, storage costs are unaccounted for, retention policy is undefined, and there is no moderation workflow for reviewing recorded calls. This feature will be cut in production or create legal liability.",
+              "The matching algorithm has no fairness or bias evaluation. Collaborative filtering signals (activity_recency, premium_boost, mutual_like_bonus) create rich-get-richer loops that systematically disadvantage new users and non-subscribers. No A/B testing framework, no bias metrics, no equity guards are in the plan.",
+              "Step 23 (localization) is planned after all frontend screens are built. Retrofitting i18n into completed components is 3-5x the work of building with i18n from the start. React Native text rendered natively (e.g., inside react-native-reanimated animations, WebRTC overlays) often cannot be extracted by standard i18n tooling."
+            ],
+            "suggestions": [
+              "Add a Step 7.5 for push notification infrastructure: APNs HTTP/2 + FCM v1 setup, device token registration endpoint (POST /devices/token), and a notification dispatch service. This unblocks match alerts, message notifications, and call incoming \u2014 all critical for retention.",
+              "Resolve the E2E encryption contradiction by choosing a clear model: (a) Server-managed encryption (server holds keys, can serve history, can moderate) \u2014 simpler, better for safety/moderation; or (b) True E2E (client holds keys, server stores ciphertext, no server-side history, no content moderation on messages). For a dating app with safety requirements, option (a) is more defensible.",
+              "Add a precomputed candidate pool service to Step 11: a background job (Celery beat or AWS EventBridge) that pre-generates and caches ranked candidate lists per user in Redis, refreshed every 15-30 minutes. The live /discover endpoint reads from cache, not from live DB queries. This is the only credible path to 200ms at scale.",
+              "Replace birthdate self-attestation with an integration to a real age verification vendor (Veriff, Onfido, or Yoti) for the 18+ gate. At minimum, add a flag for 'age_verified: false' with a grace period before blocking access, so the system can be upgraded without a breaking change.",
+              "Add a unified entitlement service (Step 15.5): a single source of truth for subscription status that ingests webhooks from Stripe, Apple App Store Server API, and Google Play Developer API, and exposes a single GET /entitlements/me endpoint. Every feature gate hits this service, not the raw payment provider state.",
+              "Add Step 11.5 for Redis Streams or a proper message queue (SQS FIFO) for chat message persistence before the WebSocket delivery layer. Store messages durably on receipt, then fan out to connected clients via pub/sub. This provides offline delivery, at-least-once guarantees, and decouples persistence from transport.",
+              "Add observability to Step 7: Sentry for error tracking, Datadog or Grafana Cloud for APM, and structured logging (JSON) from day one. Dating apps have complex failure modes (match detection race conditions, WebSocket reconnect storms) that are impossible to debug without traces.",
+              "Add an appeal workflow to Step 14's ban management: users need a path to contest shadow-bans and permanent bans, both for legal defensibility and to handle false-positive reports from coordinated harassment.",
+              "Specify a data residency enforcement mechanism beyond Route 53 geolocation in Step 24. Route 53 geolocation routes HTTP traffic, not data \u2014 you need application-level tenant routing that writes EU user records only to the eu-west-1 RDS instance and enforces this at the ORM layer.",
+              "Add a rate-limiting layer at the application level (Step 8/11): Redis-backed rate limits on /swipes (e.g., 100/hour for free users), /discover, and /photos/upload. WAF rules alone are insufficient \u2014 WAF operates at IP level and won't catch authenticated API abuse."
+            ],
+            "missing": [
+              "Push notification service (APNs + FCM) \u2014 completely absent from all 30 steps",
+              "Unified entitlement/subscription state service across Stripe, Apple, and Google payment rails",
+              "Offline message delivery mechanism (Redis Streams, SQS, or equivalent)",
+              "Real age verification vendor integration (currently only self-attested DOB)",
+              "Analytics pipeline \u2014 no Mixpanel/Amplitude/Firebase Analytics. Success metrics in Step 2 are defined but never instrumented anywhere in the plan",
+              "Error tracking and APM (Sentry, Datadog) \u2014 zero observability tooling in the plan",
+              "Database backup and disaster recovery strategy for RDS (point-in-time recovery config, cross-region snapshot replication)",
+              "GDPR erasure job \u2014 a scheduled process that actually purges PII fields from soft-deleted records within the 30-day window",
+              "Appeal and ban review workflow for moderation actions",
+              "Certificate pinning for the React Native app to prevent MITM on internal API endpoints",
+              "Pre-computation / caching strategy for the matching algorithm at scale",
+              "Admin dashboard frontend \u2014 Step 14 defines admin API endpoints but no UI for moderators is planned",
+              "Content moderation for chat text (only photo moderation is covered \u2014 text harassment is unaddressed)",
+              "Referral / invite system \u2014 omitted but standard for dating app growth loops; not a blocker but notable for V1 roadmap",
+              "App store review strategy \u2014 dating apps face heightened scrutiny from Apple; no review preparation checklist, content rating classification, or privacy nutrition label specification"
+            ],
+            "security_risks": [
+              "Refresh token revocation gap: 30-day refresh tokens with no revocation endpoint or device session management. A stolen refresh token gives full account access for up to 30 days. No mention of refresh token families (rotation + invalidation on reuse detection).",
+              "Location triangulation: PostGIS POINT is stored with full precision. 'Never exposed as raw coordinates' is an implementation promise, not an enforced constraint. Fuzzy location rounding must be applied at the query layer, not just the serialization layer. If any join or aggregate leaks a precise distance, adversaries can triangulate exact location with 3+ queries.",
+              "Apple IAP receipt validation is deprecated: the legacy /verifyReceipt endpoint was deprecated in 2023. Step 15 must use the App Store Server API with server-to-server JWT authentication. Using the deprecated endpoint creates validation bypass risks and will eventually stop working.",
+              "Government ID data handling: Step 4 lists 'government ID for verification' as sensitive data but no verification vendor (Veriff, Onfido) is specified, no ID data retention/deletion policy is defined, and no mention of how ID data is isolated from the main user database. Storing government IDs on the same server as dating profiles is a catastrophic breach scenario.",
+              "Signed S3 URL leakage: 1-hour signed URLs (Step 10) can be shared outside the app. No Referer header validation, no CloudFront signed cookie alternative for restricting photo access to authenticated sessions. A user can screenshot a URL and share it for an hour.",
+              "WebRTC TURN credential scope: Step 13 says TURN credentials expire after 1 hour, but if credentials are issued at call initiation (POST /calls/initiate), a user could harvest TURN credentials without completing calls and use Twilio TURN bandwidth at the app's expense. Credentials should be bound to a specific call session ID.",
+              "Shadow-ban information leakage: if a shadow-banned user can detect they are shadow-banned (e.g., by noticing zero matches despite high activity), this reveals the moderation action and allows ban evasion. The UX needs to simulate normal operation for shadow-banned accounts.",
+              "OTP brute force: Step 8 requires OTP codes expire in 10 minutes and are single-use, but no mention of attempt rate limiting (e.g., max 5 attempts per OTP before requiring re-issue). A 6-digit OTP has 1M combinations \u2014 without rate limiting, it is brute-forceable within the expiry window.",
+              "Stripe webhook replay: Step 15 correctly requires signature verification, but no mention of idempotency key storage to prevent replay attacks. A replayed 'invoice.payment_succeeded' event could incorrectly extend a subscription.",
+              "No mention of dependency scanning or SBOM for the supply chain. React Native + Expo + 15+ third-party SDKs (WebRTC, IAP, Giphy, Stripe) is a large attack surface with no automated CVE monitoring specified."
+            ],
+            "summary": "This is an ambitious, well-structured plan that covers the right surface area for a dating app MVP \u2014 the technology choices are reasonable, the compliance awareness is above average, and the dependency graph is mostly coherent. However, it has several critical production failures that would surface within weeks of launch: push notifications are entirely absent (every core engagement loop breaks without them), the E2E encryption design directly contradicts the server-side history API, the matching algorithm has no scalability architecture and will collapse under real load, and age verification is legal self-attestation that will not satisfy COPPA or the UK Online Safety Act. The soft-delete-as-erasure pattern is a GDPR compliance fiction. The subscription entitlement model breaks the moment a user pays via Stripe and opens the iOS app. For a prototype with 100-1000 users and legal tolerance for gaps, this plan gets you to a demo. For a production dating app targeting real regulatory jurisdictions and real scale, at least 6 of the flaws identified above represent launch-blocking issues that require fundamental rework, not incremental fixes.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T10:20:39.612090+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 152.24,
+    "critic_plan": 138.56
+  }
+}

@@ -1,0 +1,59 @@
+project_name: surgical_robot_ui
+display_name: Surgical Robot Ui
+version: 1.0.0
+domain: medtech
+description: Surgeon console interface for a minimally invasive surgical robot with
+  3D visualization, haptic feedback controls, and real-time instrument tracking. ISO
+  13485 and IEC 62304 SIL 3.
+detected_domains: []
+compliance_standards:
+- ISO 13485
+- IEC 62304
+- IEC 61508 SIL 3
+- ISO 14971
+task_types:
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- PRODUCT_MGMT
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- UX_DESIGN
+agent_roles:
+- developer
+- devops_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

@@ -1,0 +1,852 @@
+{
+  "run_id": "a293ebda-8862-4e8d-bc26-84d413fd8ad3",
+  "status": {
+    "run_id": "a293ebda-8862-4e8d-bc26-84d413fd8ad3",
+    "solution_name": "flashcard_app",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T09:46:20.794718+00:00",
+    "updated_at": "2026-03-22T09:50:10.396189+00:00",
+    "product_description": "Collaborative flashcard app with spaced repetition algorithm, image/audio support, shared decks, study statistics, and cross-platform sync.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user personas, and process flows for the collaborative flashcard app. Identify learner, educator, and team-study personas. Map COPPA/FERPA data handling requirements for under-13 users and student records.",
+        "payload": {
+          "deliverables": [
+            "user_personas.md",
+            "business_requirements.md",
+            "process_flows.md"
+          ],
+          "standards": [
+            "COPPA",
+            "FERPA"
+          ],
+          "personas": [
+            "student_under13",
+            "student_adult",
+            "educator",
+            "team_learner"
+          ]
+        },
+        "acceptance_criteria": [
+          "At least 3 user personas documented with goals, pain points, and data sensitivity flags",
+          "COPPA applicability decision documented with consent flow defined for under-13 users",
+          "FERPA data categories identified for educator use cases",
+          "Core user journeys mapped: create deck, study session, share deck, view statistics"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyse competitor flashcard apps (Anki, Quizlet, Brainscape, Remnote). Identify differentiators for collaborative + spaced repetition + media support combination. Define positioning and go-to-market strategy.",
+        "payload": {
+          "competitors": [
+            "Anki",
+            "Quizlet",
+            "Brainscape",
+            "Remnote"
+          ],
+          "focus_areas": [
+            "spaced_repetition_algorithms",
+            "collaboration_model",
+            "media_support",
+            "pricing"
+          ]
+        },
+        "acceptance_criteria": [
+          "Feature comparison matrix covering top 4 competitors",
+          "3+ clear differentiation points documented",
+          "Target market segment and TAM estimate provided",
+          "Pricing model recommendation with rationale"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 3,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Write the Product Requirements Document (PRD), feature roadmap (MVP vs v2), and define success metrics (DAU, retention D7/D30, cards studied per session, sync latency P95).",
+        "payload": {
+          "mvp_features": [
+            "spaced_repetition_sm2",
+            "image_audio_cards",
+            "shared_decks",
+            "study_stats",
+            "cross_platform_sync"
+          ],
+          "success_metrics": [
+            "DAU",
+            "D7_retention",
+            "D30_retention",
+            "cards_per_session",
+            "sync_latency_p95"
+          ],
+          "hitl_level": "standard"
+        },
+        "acceptance_criteria": [
+          "PRD approved with MVP scope locked \u2014 no gold-plating in v1",
+          "Success metrics defined with baseline targets and measurement method",
+          "Feature roadmap distinguishes MVP from v2 backlog",
+          "HITL approval checkpoints identified for content moderation and data deletion flows"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 4,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research, create wireframes for all core flows (onboarding, deck creation, study session, statistics dashboard, sharing), and perform WCAG 2.1 AA accessibility audit on designs. Design must support image and audio card layouts.",
+        "payload": {
+          "flows": [
+            "onboarding",
+            "deck_creation",
+            "card_editor_with_media",
+            "study_session_srm",
+            "share_deck",
+            "statistics_dashboard",
+            "cross_platform_sync_status"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA",
+          "platforms": [
+            "web",
+            "ios",
+            "android"
+          ]
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all 7 core flows with annotated interaction notes",
+          "WCAG 2.1 AA audit checklist completed \u2014 contrast ratios, keyboard nav, screen reader labels verified",
+          "Image and audio card editor supports alt-text and transcript fields",
+          "Study session UI includes progress indicator and SR schedule visibility",
+          "Designs reviewed and signed off by at least one representative user from each persona",
+          "Accessibility for learners with disabilities",
+          "Mobile-responsive for student devices"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 5,
+        "task_type": "COMPLIANCE",
+        "description": "Produce compliance artifacts for COPPA, FERPA, and WCAG 2.1. Define parental consent flow, student data access/deletion procedures, and accessibility conformance statement. Create data flow diagram showing PII boundaries.",
+        "payload": {
+          "standards": [
+            "COPPA",
+            "FERPA",
+            "WCAG_2.1"
+          ],
+          "artifacts": [
+            "data_flow_diagram",
+            "parental_consent_flow",
+            "student_data_procedures",
+            "accessibility_conformance_statement",
+            "risk_matrix"
+          ]
+        },
+        "acceptance_criteria": [
+          "Data flow diagram identifies all PII fields and storage locations",
+          "Parental consent flow documented for users under 13: opt-in, revocation, data deletion within 30 days",
+          "FERPA: educator access controls and audit trail requirements documented",
+          "WCAG 2.1 AA conformance statement template completed with known exceptions",
+          "Compliance artifacts stored in docs/compliance/ and version-controlled"
+        ],
+        "depends_on": [
+          3,
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (COPPA-compliant for under-13), and data retention/deletion policy. Review open-source licensing for any SR algorithm libraries used.",
+        "payload": {
+          "documents": [
+            "terms_of_service",
+            "privacy_policy_coppa",
+            "data_retention_policy",
+            "open_source_license_review"
+          ],
+          "jurisdictions": [
+            "US",
+            "EU_GDPR"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy includes verifiable parental consent mechanism for COPPA compliance",
+          "Data retention periods defined for card data, study stats, and user accounts",
+          "GDPR right-to-erasure procedure documented",
+          "All third-party libraries audited for license compatibility (MIT/Apache preferred)",
+          "FERPA/COPPA compliance if minors involved"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 7,
+        "task_type": "DATABASE",
+        "description": "Design the relational schema for users, decks, cards (with media references), study sessions, SR schedule state (SM-2 parameters per card per user), collaborators, and statistics aggregates. Include schema migrations and seed data.",
+        "payload": {
+          "tables": [
+            "users",
+            "decks",
+            "cards",
+            "card_media",
+            "deck_collaborators",
+            "study_sessions",
+            "sr_schedule",
+            "study_stats_daily"
+          ],
+          "sr_fields": [
+            "easiness_factor",
+            "interval_days",
+            "repetitions",
+            "next_review_date"
+          ],
+          "storage_backend": "PostgreSQL",
+          "migrations_tool": "Alembic"
+        },
+        "acceptance_criteria": [
+          "ERD covers all tables with FK relationships and indexes on hot query paths",
+          "SR schedule table stores SM-2 state per (user_id, card_id) with next_review_date indexed",
+          "Card media table stores blob_url, media_type (image/audio), alt_text, transcript fields",
+          "deck_collaborators table has role field (owner/editor/viewer) with RLS policy sketch",
+          "Alembic migration scripts run cleanly from empty DB to full schema",
+          "Seed data script creates sample decks with image and audio cards for dev testing"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "CONFIG",
+        "description": "Set up the monorepo structure, toolchain configs (ESLint, Prettier, mypy), environment variable management (.env.example), Docker Compose for local dev (PostgreSQL, Redis, object storage), and configure the multi-agent coordinator pattern for AI-assisted card generation.",
+        "payload": {
+          "repo_structure": "monorepo",
+          "services": [
+            "backend_fastapi",
+            "frontend_react",
+            "mobile_expo",
+            "postgres",
+            "redis",
+            "minio_s3"
+          ],
+          "agentic_pattern": "coordinator",
+          "pattern_components": [
+            "coordinator_agent",
+            "sr_algorithm_agent",
+            "media_processor_agent",
+            "stats_aggregator_agent"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker-compose up starts all local services without manual steps",
+          ".env.example documents all required environment variables with descriptions",
+          "ESLint + Prettier configs enforced via pre-commit hooks",
+          "mypy strict mode enabled for backend Python source",
+          "Multi-agent coordinator config scaffolded in src/agents/coordinator.py with task routing stubs"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement the core FastAPI backend: user auth (JWT + OAuth), deck CRUD, card CRUD with image/audio upload to object storage, SM-2 spaced repetition scheduler, study session recording, statistics aggregation, and real-time sync via WebSocket or SSE.",
+        "payload": {
+          "framework": "FastAPI",
+          "auth": [
+            "JWT",
+            "OAuth2_Google"
+          ],
+          "sr_algorithm": "SM-2",
+          "media_storage": "S3_compatible",
+          "sync_mechanism": "WebSocket",
+          "endpoints": [
+            "POST /auth/register",
+            "POST /auth/login",
+            "GET/POST/PUT/DELETE /decks",
+            "GET/POST/PUT/DELETE /decks/{id}/cards",
+            "POST /cards/{id}/media",
+            "POST /decks/{id}/collaborators",
+            "POST /study/session/start",
+            "POST /study/session/answer",
+            "GET /study/queue/{deck_id}",
+            "GET /stats/user",
+            "GET /stats/deck/{id}",
+            "WS /sync"
+          ]
+        },
+        "acceptance_criteria": [
+          "SM-2 scheduler correctly computes next_review_date after each answer (quality 0-5)",
+          "Image and audio uploads validated (type, size limit), stored in object storage, URL returned",
+          "Deck sharing: collaborator can read/edit based on role; non-collaborator gets 403",
+          "Study queue endpoint returns cards due today ordered by overdue days descending",
+          "WebSocket sync broadcasts deck/card changes to all connected collaborators within 500ms",
+          "All endpoints return OpenAPI-compatible responses; schema exported to openapi.json",
+          "COPPA flag on user record prevents under-13 data from analytics pipelines"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "API",
+        "description": "Define and publish the full OpenAPI 3.1 spec for all backend endpoints. Include request/response schemas, error codes, authentication requirements, and rate limit headers. Generate client SDKs for web and mobile.",
+        "payload": {
+          "spec_format": "OpenAPI_3.1",
+          "output": [
+            "openapi.json",
+            "generated_typescript_client",
+            "generated_python_client"
+          ],
+          "rate_limits": {
+            "study_session": "100/min",
+            "media_upload": "20/min"
+          }
+        },
+        "acceptance_criteria": [
+          "openapi.json validates against OpenAPI 3.1 schema without errors",
+          "All 20+ endpoints documented with request bodies, response schemas, and error codes",
+          "Generated TypeScript client compiles without type errors",
+          "Rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining) present in responses"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "FRONTEND",
+        "description": "Build the React web app: onboarding, deck library, rich card editor (text + image + audio with WCAG alt-text fields), study session UI with SM-2 self-rating (0-5), statistics dashboard with charts, deck sharing UI, and real-time sync status indicator.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "state_management": "Zustand",
+          "charts": "Recharts",
+          "media_editor": "image_crop_upload + audio_recorder",
+          "wcag_target": "WCAG 2.1 AA",
+          "i18n_library": "react-i18next"
+        },
+        "acceptance_criteria": [
+          "Card editor accepts image upload (JPEG/PNG/WebP \u22645MB) and audio recording/upload (MP3/WAV \u226410MB)",
+          "All images require alt-text field; all audio requires transcript field (WCAG 1.1.1)",
+          "Study session shows card front, flip action, then SM-2 quality rating buttons (0-5 with labels)",
+          "Statistics dashboard shows: cards studied today, streak, retention rate, deck heatmap",
+          "Deck sharing modal allows invite by email with role selector (editor/viewer)",
+          "Sync indicator shows connected/offline/syncing states; offline edits queue locally",
+          "All interactive elements keyboard-navigable; focus rings visible; colour contrast \u22654.5:1"
+        ],
+        "depends_on": [
+          10,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "FRONTEND",
+        "description": "Build the cross-platform mobile app with Expo/React Native sharing business logic with web. Implement offline-first study sessions with local SQLite queue, background sync, push notifications for daily review reminders.",
+        "payload": {
+          "framework": "Expo + React Native",
+          "offline_storage": "SQLite via expo-sqlite",
+          "sync_strategy": "offline_first_with_conflict_resolution",
+          "notifications": "expo-notifications",
+          "platforms": [
+            "ios",
+            "android"
+          ]
+        },
+        "acceptance_criteria": [
+          "App functions fully offline: study cards, rate answers, edit cards \u2014 all queue locally",
+          "Background sync uploads queued changes when connection restored, resolves conflicts by last-write-wins with server timestamp",
+          "Push notification scheduled daily at user-configured time showing cards-due count",
+          "Image and audio playback work on both iOS and Android",
+          "App passes Expo build for both platforms without native module errors"
+        ],
+        "depends_on": [
+          10,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "AGENTIC",
+        "description": "Implement the Multi-Agent Coordinator pattern for AI-assisted card generation. Coordinator receives a topic/document, routes to specialist agents: ContentExtractor (identifies key concepts), CardDraftAgent (generates Q&A pairs), MediaSuggestionAgent (suggests image search terms), CriticAgent (scores card quality and flags duplicates). Output: reviewed card batch for human approval before import.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": {
+            "coordinator": "decomposes topic into card generation sub-tasks",
+            "content_extractor": "extracts key concepts from text/PDF input",
+            "card_draft_agent": "generates front/back Q&A pairs using ReAct loop",
+            "media_suggestion_agent": "suggests image search terms per card",
+            "critic_agent": "scores card quality (clarity, uniqueness, difficulty balance)"
+          },
+          "hitl_gate": "human approves/edits batch before cards imported to deck",
+          "output_format": "card_import_batch_with_quality_scores"
+        },
+        "acceptance_criteria": [
+          "Coordinator correctly decomposes a 500-word text into 5-15 card drafts",
+          "Critic agent rejects cards scoring <0.6 clarity with specific feedback",
+          "HITL approval gate presents card batch for review \u2014 no cards imported without human sign-off",
+          "Duplicate detection flags cards with >80% semantic similarity to existing deck cards",
+          "End-to-end latency for 10-card batch generation \u226430s on standard LLM provider"
+        ],
+        "depends_on": [
+          9,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "DATA",
+        "description": "Build the study statistics pipeline: real-time event ingestion (study_answer events), daily aggregation jobs (retention rate, due-vs-studied ratio, forgetting curve fit per deck), and analytics schema for the statistics dashboard.",
+        "payload": {
+          "event_schema": "study_answer: {user_id, card_id, deck_id, quality, response_time_ms, timestamp}",
+          "aggregations": [
+            "daily_cards_studied",
+            "retention_rate_7d_30d",
+            "forgetting_curve_params",
+            "streak_days"
+          ],
+          "storage": "TimescaleDB or PostgreSQL with partitioning",
+          "job_runner": "Celery + Redis"
+        },
+        "acceptance_criteria": [
+          "study_answer events written within 100ms of answer submission",
+          "Daily aggregation job completes for 100k users in \u226410 minutes",
+          "Retention rate calculated as: cards recalled (quality\u22653) / cards due, per 7-day window",
+          "Forgetting curve parameters (initial stability, decay) estimated per user per deck",
+          "Statistics API returns user dashboard data in \u2264200ms via pre-aggregated tables"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 15,
+        "task_type": "LOCALIZATION",
+        "description": "Set up i18n infrastructure for web and mobile. Extract all user-facing strings, configure react-i18next, create translation files for English (base), Spanish, French, and German. Implement locale-aware date formatting for SR schedule display.",
+        "payload": {
+          "i18n_library_web": "react-i18next",
+          "i18n_library_mobile": "expo-localization + i18next",
+          "base_locale": "en",
+          "initial_locales": [
+            "en",
+            "es",
+            "fr",
+            "de"
+          ],
+          "locale_sensitive_features": [
+            "sr_next_review_date",
+            "study_streak",
+            "statistics_charts"
+          ]
+        },
+        "acceptance_criteria": [
+          "Zero hardcoded user-facing strings in web or mobile source \u2014 all in locale JSON files",
+          "Spanish, French, German translation files cover 100% of en keys (no fallback gaps)",
+          "SR next_review_date displays in locale-appropriate date format (e.g., DD/MM vs MM/DD)",
+          "RTL layout tested in Arabic locale (future-proofing) \u2014 no layout breakage",
+          "Translation files pass JSON lint and key coverage check in CI"
+        ],
+        "depends_on": [
+          11,
+          12
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "SECURITY",
+        "description": "Perform security review: threat model for user-generated media uploads, authentication flows, deck sharing access control, and FERPA student data access. Define SBOM, run SAST scan, and document pen test plan.",
+        "payload": {
+          "threat_areas": [
+            "media_upload_malware",
+            "JWT_token_theft",
+            "IDOR_deck_access",
+            "FERPA_data_leakage",
+            "XSS_in_card_content"
+          ],
+          "tools": [
+            "Bandit_SAST",
+            "npm_audit",
+            "OWASP_ZAP_plan"
+          ],
+          "sbom_format": "SPDX"
+        },
+        "acceptance_criteria": [
+          "Threat model covers all 5 threat areas with mitigations documented",
+          "Media uploads: file type validated server-side (not just extension), antivirus scan stub in place",
+          "Card HTML content sanitised server-side to prevent stored XSS",
+          "IDOR test: user A cannot access user B's private deck via direct ID",
+          "SAST scan shows zero high/critical findings in backend Python source",
+          "SBOM generated and stored in docs/security/sbom.spdx"
+        ],
+        "depends_on": [
+          9,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "TESTS",
+        "description": "Write unit tests for the SM-2 algorithm, deck sharing permission logic, media upload validation, statistics aggregation functions, and offline sync conflict resolution. Target \u226585% coverage on core business logic modules.",
+        "payload": {
+          "test_framework_backend": "pytest",
+          "test_framework_frontend": "Vitest + React Testing Library",
+          "coverage_target": 85,
+          "critical_modules": [
+            "sr_algorithm",
+            "deck_permissions",
+            "media_validator",
+            "stats_aggregator",
+            "sync_conflict_resolver"
+          ]
+        },
+        "acceptance_criteria": [
+          "SM-2 algorithm tests cover: new card first review, correct answer, incorrect answer, graduated card, lapsed card",
+          "Permission tests assert: owner can edit/delete, editor can edit, viewer cannot edit, non-collaborator gets 403",
+          "Media upload tests validate: type rejection (e.g., .exe), size limit, missing alt-text warning",
+          "Conflict resolution test: offline edit wins vs server edit based on timestamp comparison",
+          "pytest --cov reports \u226585% line coverage on src/core/ and src/agents/",
+          "All tests pass in CI with no flaky tests over 3 consecutive runs"
+        ],
+        "depends_on": [
+          9,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "QA",
+        "description": "Design and execute the QA test plan: functional test cases for all user flows, exploratory testing of SM-2 scheduling edge cases, media playback across browsers/devices, accessibility audit using axe-core and screen reader testing.",
+        "payload": {
+          "test_types": [
+            "functional",
+            "exploratory",
+            "accessibility",
+            "cross_browser",
+            "cross_device"
+          ],
+          "browsers": [
+            "Chrome",
+            "Firefox",
+            "Safari",
+            "Edge"
+          ],
+          "devices": [
+            "iOS_iPhone14",
+            "Android_Pixel7"
+          ],
+          "accessibility_tools": [
+            "axe-core",
+            "NVDA_screenreader",
+            "VoiceOver_iOS"
+          ],
+          "wcag_target": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "Test plan covers all PRD user stories with pass/fail criteria",
+          "SM-2 edge cases tested: quality=0 after long streak resets interval to 1 day",
+          "Audio playback tested on Chrome, Safari, Firefox \u2014 no silent failures",
+          "axe-core automated scan returns zero critical or serious violations on all main pages",
+          "NVDA screen reader can complete a full study session without visual cues",
+          "QA sign-off report produced listing all defects found, severity, and resolution status"
+        ],
+        "depends_on": [
+          11,
+          12,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system tests: multi-user collaboration scenario, cross-platform sync (web edits reflected on mobile within 2s), offline study with sync recovery, load test study session API at 1000 concurrent users.",
+        "payload": {
+          "e2e_framework": "Playwright",
+          "load_test_tool": "k6",
+          "scenarios": [
+            "multi_user_collaborative_edit",
+            "offline_study_sync_recovery",
+            "cross_platform_sync_latency",
+            "1000_concurrent_study_sessions"
+          ],
+          "sync_latency_sla": "2000ms P95"
+        },
+        "acceptance_criteria": [
+          "Playwright E2E: User A edits deck, User B sees update within 2s on web",
+          "Offline scenario: 20 answers submitted offline, all synced correctly after reconnection",
+          "Cross-platform sync: card edited on web appears on mobile within 2s P95",
+          "Load test: 1000 concurrent study session submissions at P99 \u2264500ms backend latency",
+          "No data loss or corruption in any system test scenario across 10 runs"
+        ],
+        "depends_on": [
+          17,
+          18
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 20,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline (GitHub Actions): lint, type-check, unit tests, build, Docker image push, deploy to staging on PR merge, production deploy on release tag. Configure monitoring (Prometheus + Grafana), error tracking (Sentry), and uptime alerts.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "stages": [
+            "lint",
+            "typecheck",
+            "unit_tests",
+            "build",
+            "docker_push",
+            "deploy_staging",
+            "smoke_test",
+            "deploy_prod"
+          ],
+          "monitoring": "Prometheus + Grafana",
+          "error_tracking": "Sentry",
+          "alerts": [
+            "p99_latency > 500ms",
+            "error_rate > 1%",
+            "sync_lag > 5s"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs in \u22648 minutes on PR; fails fast on lint or type errors",
+          "Docker images tagged with git SHA and pushed to registry on main merge",
+          "Staging deploy runs smoke tests against /health endpoint before marking success",
+          "Grafana dashboard shows: request rate, p50/p99 latency, error rate, sync queue depth",
+          "Sentry captures unhandled exceptions with user context (anonymised, GDPR-compliant)",
+          "PagerDuty alert fires within 3 minutes of p99 latency SLA breach"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "TRAINING",
+        "description": "Create user-facing training materials: onboarding tutorial (in-app + video walkthrough), educator guide for creating and sharing decks, spaced repetition explainer (why SR works, how to interpret the schedule), and help centre articles.",
+        "payload": {
+          "formats": [
+            "in_app_tooltips",
+            "video_walkthrough_5min",
+            "help_centre_articles",
+            "educator_pdf_guide"
+          ],
+          "topics": [
+            "create_first_deck",
+            "add_image_audio_cards",
+            "understand_sr_schedule",
+            "share_deck_with_class",
+            "read_statistics_dashboard"
+          ]
+        },
+        "acceptance_criteria": [
+          "In-app onboarding covers 5 core flows with skip option and progress indicator",
+          "5-minute video walkthrough published covering deck creation, study session, and sharing",
+          "SR explainer accurately describes SM-2 parameters in plain language (no formulas required)",
+          "Educator guide includes FERPA compliance notes for classroom use",
+          "Help centre articles cover top 10 support questions identified in user research"
+        ],
+        "depends_on": [
+          18,
+          4
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 22,
+        "task_type": "DOCS",
+        "description": "Write developer documentation: API reference (auto-generated from OpenAPI), architecture decision records (ADRs) for SR algorithm choice and sync strategy, local dev setup guide, and contribution guide.",
+        "payload": {
+          "docs": [
+            "api_reference_from_openapi",
+            "adr_sr_algorithm",
+            "adr_sync_strategy",
+            "local_dev_setup",
+            "contributing_guide",
+            "compliance_summary"
+          ],
+          "docs_site": "Docusaurus"
+        },
+        "acceptance_criteria": [
+          "API reference auto-generated from openapi.json and published to docs site",
+          "ADR for SM-2: documents alternatives considered (SM-5, FSRS), rationale for SM-2 choice",
+          "Local dev setup: new developer can run full stack with one command following the guide",
+          "Compliance summary links to COPPA, FERPA, WCAG artifacts in docs/compliance/",
+          "All docs pass spell-check and link-check in CI"
+        ],
+        "depends_on": [
+          10,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 22,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 63,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 63,
+          "final_review": {
+            "score": 63,
+            "flaws": [
+              "WebSocket sync has no horizontal scaling strategy. Broadcasting to 'all connected collaborators' works on a single server but breaks the moment you add a second backend instance. No Redis pub/sub or sticky session strategy is mentioned anywhere in the plan.",
+              "Conflict resolution is 'last-write-wins by server timestamp' for mobile sync. This silently destroys SR state: two users study the same shared card offline, one's review data is erased on sync. For a spaced repetition app, lost review history is the worst possible data loss.",
+              "Security review at step 16 is after the entire backend (step 9) and frontend (step 11) are built. IDOR on deck access, stored XSS in card content, and FERPA data leakage are architectural concerns, not late-stage checks. Finding these post-build means rework, not fixes.",
+              "Localization is step 15, after frontend (step 11) and mobile (step 12) are complete. Retrofitting i18n into an existing React/RN codebase requires touching every component. This is a known high-friction rework that teams consistently underestimate.",
+              "Step 8 (monorepo and toolchain setup) depends on step 7 (DB schema). This is wrong \u2014 repo structure, ESLint, Docker Compose, and environment config are prerequisites for development, not outputs of schema design. This bottleneck delays all parallel dev work unnecessarily.",
+              "RLS (Row-Level Security) for deck_collaborators is described as a 'sketch'. PostgreSQL RLS is the enforcement mechanism for multi-user data isolation \u2014 a sketch that doesn't ship is a FERPA violation waiting to happen.",
+              "Step 13 (agentic card generation) requires semantic similarity embeddings for duplicate detection but the database design (step 7) has no embeddings table or vector index. pgvector extension, collection schema, and embedding model choice are completely absent.",
+              "The forgetting curve parameter estimation in step 14 ('initial stability, decay estimated per user per deck') requires meaningful per-user study history to produce valid estimates. New users with <10 reviews per deck will get garbage parameters. No cold-start fallback defined.",
+              "Step 12 (mobile) passes an Expo build as the acceptance criterion, but there is no App Store/Google Play submission path, no signing certificate management, no review timeline buffer, and no TestFlight/internal track setup. Expo build \u2260 shippable app.",
+              "Step 9 defines rate limits in the OpenAPI spec step (step 10) but the backend implementation step has no rate limiting in its acceptance criteria. Rate limits exist on paper only \u2014 no Redis-backed limiter is wired in."
+            ],
+            "suggestions": [
+              "Move security threat modeling to step 3-4 (alongside PRD), not step 16. Define the IDOR and XSS mitigations before writing the backend, not after.",
+              "Replace last-write-wins conflict resolution with a merge strategy that combines SR state: take the more-conservative next_review_date (earlier date wins) and max repetitions. Lost reviews in SR apps produce overconfidence; this heuristic prevents it without requiring CRDTs.",
+              "Add Redis pub/sub to the WebSocket sync architecture explicitly. The coordinator pattern in step 8 already includes Redis \u2014 wire it for WS fanout. Document the connection limit per pod and horizontal scaling strategy before step 9 ships.",
+              "Move i18n infrastructure setup to step 8 (CONFIG). Scaffold react-i18next and all locale JSON files before any UI strings are written. Enforce the no-hardcoded-strings rule via ESLint (eslint-plugin-i18next) from day one.",
+              "Decide TimescaleDB vs PostgreSQL partitioning in step 7, not step 14. The schema and migration strategy differ significantly \u2014 this is an architectural decision, not a data pipeline detail.",
+              "Add pgvector to the step 7 database design for the duplicate-detection embeddings (step 13). Include a card_embeddings table with (card_id, embedding vector(1536)) and an ivfflat index.",
+              "Add an email service (SES or SendGrid) to the step 8 Docker Compose and step 9 backend implementation. Deck sharing by email invite (step 11 acceptance criteria) has no delivery mechanism in the current plan.",
+              "Define push notification backend infrastructure in step 9: APNS/FCM credential management, a notifications table for queuing, and a Celery task for delivery. expo-notifications handles the client SDK; the server side is unaddressed.",
+              "Add infrastructure-as-code (Terraform or Pulumi) as a deliverable in step 20. Without IaC, the production environment is undocumented and non-reproducible.",
+              "Define a per-user storage quota for media uploads in step 7 schema and step 9 backend. Open-ended image/audio upload with only a per-file size limit will generate runaway S3 costs at scale."
+            ],
+            "missing": [
+              "CDN for media delivery. Images and audio served directly from S3 will have unacceptable latency for non-US users. No CloudFront, Cloudflare, or equivalent is mentioned anywhere.",
+              "Full-text search for decks and cards. A user with 500 decks and 10,000 cards needs search. No PostgreSQL full-text search, Meilisearch, or equivalent is in the plan.",
+              "Age gate implementation on the registration endpoint. COPPA requires blocking under-13 registration without verifiable parental consent. The backend step 9 endpoint list has no age verification flow \u2014 the COPPA flag appears on the user record but the gate that prevents creation is absent.",
+              "Database backup and point-in-time recovery strategy. With FERPA student data, data loss is a compliance event, not just an operational inconvenience.",
+              "Media content moderation. User-uploaded images and audio can contain CSAM or FERPA-protected content. The plan mentions HITL checkpoints for content moderation in the PRD but no implementation exists \u2014 not even a stub.",
+              "Verifiable parental consent mechanism (COPPA \u00a7312.5). 'Email + consent form' is not verifiable consent under COPPA. Credit card transaction, knowledge-based authentication, or digital signature service is required. This is a legal blocker for under-13 users, not a design preference.",
+              "Webhook or background job for SR reminder emails (web users). Push notifications cover mobile but web users get no review reminders \u2014 a significant retention gap given D7/D30 retention is a success metric.",
+              "Audio transcoding and image optimization pipeline. Raw WAV uploads (\u226410MB) should be converted to compressed formats server-side. No FFmpeg worker, Cloudinary integration, or equivalent is specified.",
+              "Session management and refresh token rotation. JWT is mentioned but refresh token strategy, expiry, revocation on logout, and concurrent session limits are unspecified \u2014 critical for a FERPA-compliant system where account sharing is a violation.",
+              "Staging environment definition with production parity. Step 20 mentions staging deploy but no staging infrastructure spec \u2014 same DB engine version, same Redis config, same media storage setup. Without parity, staging test results are unreliable."
+            ],
+            "security_risks": [
+              "Stored XSS in card content: Cards support rich text with image embeds. Without a strict server-side HTML sanitizer (DOMPurify server-side equivalent, not client-side), a malicious card shared to a classroom deck becomes a stored XSS vector affecting all students who study it. Step 16 mentions this but the backend step 9 has no sanitization in its acceptance criteria.",
+              "IDOR on media URLs: S3 pre-signed URLs or direct blob URLs for card media are accessible to anyone with the URL. A private deck's audio file URL, once obtained, can be shared externally. No per-request authorization check on media access is specified.",
+              "Antivirus scan is a stub, not an implementation. Step 16 acceptance criterion says 'antivirus scan stub in place' \u2014 a stub that doesn't scan is no protection against malware-embedded files. This needs a real integration (ClamAV, VirusTotal API) before production.",
+              "JWT secret rotation is unaddressed. A compromised JWT secret invalidates all sessions \u2014 no rotation strategy, no short expiry + refresh pattern, no key versioning is defined.",
+              "FERPA audit trail for educator access: Step 5 mentions audit trail requirements but no implementation is in the backend step. Educator access to student study records without a logged audit trail is a FERPA violation.",
+              "Semantic similarity embeddings (step 13) require sending card content to an external LLM API. If cards contain FERPA-protected student-generated content (e.g., a student's personal notes), this is a third-party data sharing event that requires disclosure in the Privacy Policy and potentially a DPA with the LLM provider.",
+              "WebSocket authentication: The WS /sync endpoint is listed in step 9 but WebSocket upgrade requests cannot carry Authorization headers in browser clients. Token-in-query-param is a common workaround but logs tokens in server access logs. No WebSocket auth strategy is specified."
+            ],
+            "summary": "This is a thorough and well-structured plan for a collaborative flashcard MVP \u2014 the compliance coverage (COPPA, FERPA, WCAG), SM-2 algorithm specificity, agentic card generation design, and testing depth are genuinely strong. However, it has several production-blocking gaps that would surface late and be expensive to fix: WebSocket sync assumes single-server deployment with no horizontal scaling path; the conflict resolution strategy silently destroys SR data in collaborative offline scenarios; security review happens after the entire stack is built rather than informing its design; i18n is a retrofit rather than built-in from step one; and COPPA verifiable parental consent is documented as a requirement but the actual technical mechanism (not just an email form) is unspecified, which is a legal blocker. The plan also has infrastructure gaps \u2014 no CDN for media, no email service for sharing invitations, no IaC for production, and an antivirus stub that provides no actual protection. At MVP scope for a non-regulated product this would be a 63: the core learning loop is well-designed, but at least five of the identified flaws would require architectural rework rather than incremental fixes if left until late in development.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 63,
+              "flaws": [
+                "WebSocket sync has no horizontal scaling strategy. Broadcasting to 'all connected collaborators' works on a single server but breaks the moment you add a second backend instance. No Redis pub/sub or sticky session strategy is mentioned anywhere in the plan.",
+                "Conflict resolution is 'last-write-wins by server timestamp' for mobile sync. This silently destroys SR state: two users study the same shared card offline, one's review data is erased on sync. For a spaced repetition app, lost review history is the worst possible data loss.",
+                "Security review at step 16 is after the entire backend (step 9) and frontend (step 11) are built. IDOR on deck access, stored XSS in card content, and FERPA data leakage are architectural concerns, not late-stage checks. Finding these post-build means rework, not fixes.",
+                "Localization is step 15, after frontend (step 11) and mobile (step 12) are complete. Retrofitting i18n into an existing React/RN codebase requires touching every component. This is a known high-friction rework that teams consistently underestimate.",
+                "Step 8 (monorepo and toolchain setup) depends on step 7 (DB schema). This is wrong \u2014 repo structure, ESLint, Docker Compose, and environment config are prerequisites for development, not outputs of schema design. This bottleneck delays all parallel dev work unnecessarily.",
+                "RLS (Row-Level Security) for deck_collaborators is described as a 'sketch'. PostgreSQL RLS is the enforcement mechanism for multi-user data isolation \u2014 a sketch that doesn't ship is a FERPA violation waiting to happen.",
+                "Step 13 (agentic card generation) requires semantic similarity embeddings for duplicate detection but the database design (step 7) has no embeddings table or vector index. pgvector extension, collection schema, and embedding model choice are completely absent.",
+                "The forgetting curve parameter estimation in step 14 ('initial stability, decay estimated per user per deck') requires meaningful per-user study history to produce valid estimates. New users with <10 reviews per deck will get garbage parameters. No cold-start fallback defined.",
+                "Step 12 (mobile) passes an Expo build as the acceptance criterion, but there is no App Store/Google Play submission path, no signing certificate management, no review timeline buffer, and no TestFlight/internal track setup. Expo build \u2260 shippable app.",
+                "Step 9 defines rate limits in the OpenAPI spec step (step 10) but the backend implementation step has no rate limiting in its acceptance criteria. Rate limits exist on paper only \u2014 no Redis-backed limiter is wired in."
+              ],
+              "suggestions": [
+                "Move security threat modeling to step 3-4 (alongside PRD), not step 16. Define the IDOR and XSS mitigations before writing the backend, not after.",
+                "Replace last-write-wins conflict resolution with a merge strategy that combines SR state: take the more-conservative next_review_date (earlier date wins) and max repetitions. Lost reviews in SR apps produce overconfidence; this heuristic prevents it without requiring CRDTs.",
+                "Add Redis pub/sub to the WebSocket sync architecture explicitly. The coordinator pattern in step 8 already includes Redis \u2014 wire it for WS fanout. Document the connection limit per pod and horizontal scaling strategy before step 9 ships.",
+                "Move i18n infrastructure setup to step 8 (CONFIG). Scaffold react-i18next and all locale JSON files before any UI strings are written. Enforce the no-hardcoded-strings rule via ESLint (eslint-plugin-i18next) from day one.",
+                "Decide TimescaleDB vs PostgreSQL partitioning in step 7, not step 14. The schema and migration strategy differ significantly \u2014 this is an architectural decision, not a data pipeline detail.",
+                "Add pgvector to the step 7 database design for the duplicate-detection embeddings (step 13). Include a card_embeddings table with (card_id, embedding vector(1536)) and an ivfflat index.",
+                "Add an email service (SES or SendGrid) to the step 8 Docker Compose and step 9 backend implementation. Deck sharing by email invite (step 11 acceptance criteria) has no delivery mechanism in the current plan.",
+                "Define push notification backend infrastructure in step 9: APNS/FCM credential management, a notifications table for queuing, and a Celery task for delivery. expo-notifications handles the client SDK; the server side is unaddressed.",
+                "Add infrastructure-as-code (Terraform or Pulumi) as a deliverable in step 20. Without IaC, the production environment is undocumented and non-reproducible.",
+                "Define a per-user storage quota for media uploads in step 7 schema and step 9 backend. Open-ended image/audio upload with only a per-file size limit will generate runaway S3 costs at scale."
+              ],
+              "missing": [
+                "CDN for media delivery. Images and audio served directly from S3 will have unacceptable latency for non-US users. No CloudFront, Cloudflare, or equivalent is mentioned anywhere.",
+                "Full-text search for decks and cards. A user with 500 decks and 10,000 cards needs search. No PostgreSQL full-text search, Meilisearch, or equivalent is in the plan.",
+                "Age gate implementation on the registration endpoint. COPPA requires blocking under-13 registration without verifiable parental consent. The backend step 9 endpoint list has no age verification flow \u2014 the COPPA flag appears on the user record but the gate that prevents creation is absent.",
+                "Database backup and point-in-time recovery strategy. With FERPA student data, data loss is a compliance event, not just an operational inconvenience.",
+                "Media content moderation. User-uploaded images and audio can contain CSAM or FERPA-protected content. The plan mentions HITL checkpoints for content moderation in the PRD but no implementation exists \u2014 not even a stub.",
+                "Verifiable parental consent mechanism (COPPA \u00a7312.5). 'Email + consent form' is not verifiable consent under COPPA. Credit card transaction, knowledge-based authentication, or digital signature service is required. This is a legal blocker for under-13 users, not a design preference.",
+                "Webhook or background job for SR reminder emails (web users). Push notifications cover mobile but web users get no review reminders \u2014 a significant retention gap given D7/D30 retention is a success metric.",
+                "Audio transcoding and image optimization pipeline. Raw WAV uploads (\u226410MB) should be converted to compressed formats server-side. No FFmpeg worker, Cloudinary integration, or equivalent is specified.",
+                "Session management and refresh token rotation. JWT is mentioned but refresh token strategy, expiry, revocation on logout, and concurrent session limits are unspecified \u2014 critical for a FERPA-compliant system where account sharing is a violation.",
+                "Staging environment definition with production parity. Step 20 mentions staging deploy but no staging infrastructure spec \u2014 same DB engine version, same Redis config, same media storage setup. Without parity, staging test results are unreliable."
+              ],
+              "security_risks": [
+                "Stored XSS in card content: Cards support rich text with image embeds. Without a strict server-side HTML sanitizer (DOMPurify server-side equivalent, not client-side), a malicious card shared to a classroom deck becomes a stored XSS vector affecting all students who study it. Step 16 mentions this but the backend step 9 has no sanitization in its acceptance criteria.",
+                "IDOR on media URLs: S3 pre-signed URLs or direct blob URLs for card media are accessible to anyone with the URL. A private deck's audio file URL, once obtained, can be shared externally. No per-request authorization check on media access is specified.",
+                "Antivirus scan is a stub, not an implementation. Step 16 acceptance criterion says 'antivirus scan stub in place' \u2014 a stub that doesn't scan is no protection against malware-embedded files. This needs a real integration (ClamAV, VirusTotal API) before production.",
+                "JWT secret rotation is unaddressed. A compromised JWT secret invalidates all sessions \u2014 no rotation strategy, no short expiry + refresh pattern, no key versioning is defined.",
+                "FERPA audit trail for educator access: Step 5 mentions audit trail requirements but no implementation is in the backend step. Educator access to student study records without a logged audit trail is a FERPA violation.",
+                "Semantic similarity embeddings (step 13) require sending card content to an external LLM API. If cards contain FERPA-protected student-generated content (e.g., a student's personal notes), this is a third-party data sharing event that requires disclosure in the Privacy Policy and potentially a DPA with the LLM provider.",
+                "WebSocket authentication: The WS /sync endpoint is listed in step 9 but WebSocket upgrade requests cannot carry Authorization headers in browser clients. Token-in-query-param is a common workaround but logs tokens in server access logs. No WebSocket auth strategy is specified."
+              ],
+              "summary": "This is a thorough and well-structured plan for a collaborative flashcard MVP \u2014 the compliance coverage (COPPA, FERPA, WCAG), SM-2 algorithm specificity, agentic card generation design, and testing depth are genuinely strong. However, it has several production-blocking gaps that would surface late and be expensive to fix: WebSocket sync assumes single-server deployment with no horizontal scaling path; the conflict resolution strategy silently destroys SR data in collaborative offline scenarios; security review happens after the entire stack is built rather than informing its design; i18n is a retrofit rather than built-in from step one; and COPPA verifiable parental consent is documented as a requirement but the actual technical mechanism (not just an email form) is unspecified, which is a legal blocker. The plan also has infrastructure gaps \u2014 no CDN for media, no email service for sharing invitations, no IaC for production, and an antivirus stub that provides no actual protection. At MVP scope for a non-regulated product this would be a 63: the core learning loop is well-designed, but at least five of the identified flaws would require architectural rework rather than incremental fixes if left until late in development.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T09:50:10.396168+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 123.19,
+      "critic_plan": 106.41
+    }
+  }
+}

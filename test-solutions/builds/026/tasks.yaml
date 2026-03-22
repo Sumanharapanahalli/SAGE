@@ -1,0 +1,409 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Conduct market analysis for OBD-II diagnostics app: competitor landscape
+      (Torque Pro, FIXD, BlueDriver, CarMD), TAM/SAM/SOM sizing, user segments (DIY
+      mechanics, fleet managers, everyday drivers), mechanic marketplace dynamics,
+      and go-to-market positioning.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers ≥8 apps with feature/pricing/rating breakdown
+    - TAM/SAM/SOM calculated with cited data sources
+    - 3 distinct user personas defined with jobs-to-be-done
+    - Mechanic marketplace revenue model benchmarked against Fiverr/TaskRabbit models
+    - GTM strategy document approved by product lead
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements, user stories, and process flows for
+      OBD-II app: DTC reading flow, live sensor dashboard, maintenance scheduling
+      engine, mechanic marketplace booking flow, and notification system. Produce
+      ROI analysis.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - BRD covers all 4 core feature areas with MoSCoW prioritization
+    - ≥40 user stories written in Given/When/Then format
+    - Process flow diagrams cover happy path + 3 error paths per flow
+    - ROI break-even timeline calculated for 3 scenarios (pessimistic/base/optimistic)
+    - Stakeholder sign-off recorded
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Create product requirements document, phased roadmap (MVP → v1.1
+      → v2.0), feature prioritization matrix, and success metrics (DAU, DTC scans/day,
+      marketplace GMV, maintenance schedule completion rate).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD reviewed and signed off by engineering lead
+    - Roadmap spans 18 months with quarterly milestones
+    - Each feature has a priority score (RICE or WSJF)
+    - Success metrics have baseline targets and measurement methodology defined
+    - MVP feature set fits within 12-week build estimate
+    depends_on:
+    - 2
+  FINANCIAL:
+    description: 'Build financial model: subscription pricing tiers (free/pro/fleet),
+      marketplace commission structure (10-15%), 3-year P&L projection, unit economics
+      (CAC/LTV), infrastructure cost model, and funding requirements.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - 3-year P&L model with monthly granularity for Year 1
+    - LTV:CAC ratio ≥3:1 in base scenario
+    - Infrastructure cost model tied to user count milestones
+    - Break-even month identified in all 3 scenarios
+    - Model reviewed by financial_analyst and product_manager
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 2
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), mechanic
+      marketplace terms, vehicle data handling policy, and IP review of OBD-II protocol
+      usage (SAE J1979/J1939 licensing constraints).
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy explicitly lists all collected vehicle and personal data categories
+    - SAE J1979/J1939 usage reviewed — no unlicensed reproduction of code tables
+    - GDPR Article 30 processing register created
+    - Mechanic Partner Agreement includes liability caps and insurance requirements
+    - Legal review sign-off documented
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  SAFETY:
+    description: 'Perform safety analysis per ISO 26262 and ISO 14971 (if health monitoring
+      features present): FMEA for OBD-II adapter connection failures, fault trees
+      for incorrect DTC display, hazard analysis for driver distraction from live
+      dashboard, and UNECE R155 cybersecurity threat model for vehicle data channel.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - FMEA covers ≥20 failure modes with severity/occurrence/detection ratings
+    - All Safety Goal violations classified per ASIL A-D
+    - UNECE R155 threat catalog maps each threat to a mitigation control
+    - Driver distraction mitigations documented (no input while vehicle moving policy)
+    - Safety analysis reviewed and signed by safety_engineer
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on:
+    - 3
+  COMPLIANCE:
+    description: Produce compliance artifacts for UNECE R155/R156 (cybersecurity/OTA),
+      SOC 2 Type I readiness checklist, and AUTOSAR-aligned OBD-II interface documentation.
+      Create traceability matrix linking safety requirements to implementation.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - R155 CSMS document covers all 7 mandatory cybersecurity process areas
+    - R156 OTA update policy defines rollback procedure and integrity verification
+    - SOC 2 control mapping covers CC6-CC9 (logical access + change management)
+    - Traceability matrix links every safety requirement to ≥1 test case
+    - Compliance artifacts reviewed by regulatory_specialist
+    depends_on:
+    - 6
+  UX_DESIGN:
+    description: Conduct user research (5 interviews per persona), create information
+      architecture, wireframes for all screens (DTC scan, live dashboard, maintenance
+      calendar, mechanic marketplace), interaction design spec, and accessibility
+      audit (WCAG 2.1 AA). Design OBD adapter pairing onboarding flow.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - ≥15 user research insights documented from interviews
+    - Full Figma prototype covering all screens with interactive flows
+    - Accessibility audit report — zero critical WCAG 2.1 AA violations
+    - Live dashboard passes cognitive load review (≤7 data points primary view)
+    - Adapter pairing onboarding completable in <3 minutes by test users
+    - Design system (colors, typography, components) documented in Figma
+    depends_on:
+    - 3
+  DATABASE:
+    description: 'Design and implement database schema: vehicles table (VIN, make,
+      model, year), DTC_events (code, description, severity, timestamp, resolved),
+      sensor_readings (time-series: PID, value, unit), maintenance_records, mechanics,
+      bookings, reviews, users. Set up PostgreSQL with TimescaleDB extension for sensor
+      time-series.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram covers all tables with FK relationships
+    - TimescaleDB hypertable created for sensor_readings with 7-day chunks
+    - PostGIS extension enabled for mechanic geospatial search
+    - All migrations idempotent and reversible
+    - Seed data script populates 10 vehicles, 50 DTC codes, 20 mechanics for dev/test
+    - Query for 30-day sensor history returns in <200ms for 1M rows
+    depends_on:
+    - 3
+  HARDWARE_SIM:
+    description: 'Build OBD-II hardware simulation model: virtual ECU responding to
+      SAE J1979 Mode 01-09 PIDs over simulated ELM327 AT command interface. Implement
+      SimPy-based vehicle simulator with fault injection (DTC trigger, sensor drift,
+      adapter disconnect) for HIL testing without physical hardware.'
+    agent_role: developer
+    acceptance_criteria:
+    - Virtual ECU responds to all Mode 01-09 AT commands per SAE J1979
+    - Simulated RPM/speed values follow realistic drive cycle (EPA FTP-75)
+    - Fault injection API triggers any DTC code on demand via REST call
+    - Simulator runs as Docker container, connectable by app backend
+    - Latency per PID response <50ms (matching real ELM327 behavior)
+    - 'Concurrent connection test: 10 simultaneous clients without errors'
+    depends_on:
+    - 6
+  FIRMWARE:
+    description: 'Implement OBD-II BLE adapter firmware (ESP32-based): BLE GATT service
+      for mobile communication, OBD-II CAN bus interface (ISO 15765-4), ELM327-compatible
+      AT command parser, SAE J1979 PID request/response handler, and OTA firmware
+      update capability (UNECE R156 compliant with signature verification).'
+    agent_role: developer
+    acceptance_criteria:
+    - BLE GATT service exposes OBD characteristic UUID with notify+write properties
+    - All SAE J1979 Mode 01 PIDs (mandatory set) respond correctly
+    - OTA update verifies firmware signature before flashing — rejects tampered binaries
+    - Firmware handles CAN bus errors (off-bus, frame loss) without crash
+    - FreeRTOS task watermarks show ≥20% stack headroom under full load
+    - Power consumption <50mA during active polling (OBD-II port powered)
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 10
+  API:
+    description: 'Design OpenAPI 3.1 spec for all backend endpoints: vehicle management,
+      DTC scan, live sensor streaming (SSE), maintenance CRUD, mechanic search (geo),
+      booking lifecycle, payment webhooks, push notification triggers, and OTA firmware
+      update distribution.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors via swagger-cli
+    - All endpoints have request/response schemas with examples
+    - Authentication schemes defined for public vs. authenticated endpoints
+    - SSE /scan/live documented with event schema (pid, value, unit, timestamp)
+    - Mechanic search endpoint documents geo-radius parameter and PostGIS query
+    - Spec reviewed and approved by frontend lead before backend implementation
+    depends_on:
+    - 9
+  CONFIG:
+    description: 'Set up SAGE solution configuration: create obd_diagnostics_app solution
+      with project.yaml (agent manifest, active modules, theme), prompts.yaml (analyst/developer/safety
+      engineer roles with automotive domain context), and tasks.yaml (DTC analysis,
+      sensor anomaly detection, maintenance recommendation, mechanic matching task
+      types). Configure coordinator agentic pattern for multi-specialist orchestration.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml validates and loads without errors via POST /config/switch
+    - prompts.yaml defines system prompts for all 3 custom agent roles
+    - tasks.yaml registers all 5 custom task types with routing rules
+    - 'Coordinator pattern wires: analyst → safety_analyst → developer flow'
+    - 'Solution boots cleanly: make run PROJECT=obd_diagnostics_app exits with no
+      errors'
+    - Active modules render correctly in sidebar UI
+    depends_on:
+    - 7
+  BACKEND:
+    description: 'Implement FastAPI backend: vehicle management service (VIN decoder
+      via NHTSA API), DTC scan coordinator (BLE adapter session management, ELM327
+      command dispatch), live sensor SSE streaming, DTC code lookup (OBDII-CODES.COM
+      / local SQLite DTC DB), maintenance schedule engine (mileage + time-based rules),
+      and mechanic search with PostGIS geo-radius.'
+    agent_role: developer
+    acceptance_criteria:
+    - VIN decode returns make/model/year/engine for valid VINs in <500ms
+    - OBD session supports concurrent BLE connections per user (one active session)
+    - SSE /scan/live streams PID data at ≥1Hz update rate
+    - DTC lookup returns description + severity + top-3 repair suggestions for ≥95%
+      of P-codes
+    - Mechanic geo-search returns results within specified radius sorted by rating
+    - All endpoints return correct HTTP status codes with RFC 7807 error bodies
+    - API handles OBD adapter disconnect gracefully (session cleanup within 30s)
+    depends_on:
+    - 12
+    - 13
+  FRONTEND:
+    description: 'Build React Native (Expo) mobile app: vehicle health home screen,
+      BLE adapter pairing flow, DTC scan screen with animated scanner + code results,
+      live sensor dashboard (real-time charts — Victory Native), maintenance calendar,
+      mechanic map (react-native-maps + clustering), booking flow, and in-app payment
+      (Stripe React Native).'
+    agent_role: developer
+    acceptance_criteria:
+    - BLE pairing completes in <10s on Android 12+ and iOS 16+ in test environment
+    - DTC scan results render within 3s of adapter connection
+    - Live dashboard updates all 6 PIDs at ≥1Hz without frame drops (≥60fps Hermes)
+    - Mechanic map renders 500 pins without jank (supercluster active)
+    - Payment flow completes end-to-end in staging Stripe environment
+    - All screens pass snapshot tests
+    - App size ≤50MB (Android APK), ≤100MB (iOS IPA)
+    depends_on:
+    - 8
+    - 14
+  AGENTIC:
+    description: 'Implement AI diagnostic assistant using coordinator pattern: OBD
+      analyst agent reads DTC codes + sensor history from TimescaleDB, safety analyst
+      agent validates against FMEA risk table, developer agent generates repair action
+      plan with parts list and estimated cost. HITL gate before sending repair recommendation
+      to user.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator routes DTC to all 3 specialist agents in parallel wave
+    - Safety analyst correctly classifies P0300 as HIGH urgency, P0420 as MEDIUM
+    - 'Repair recommendation includes: root cause, parts needed, estimated cost range,
+      urgency level'
+    - HITL gate creates proposal in SAGE approval queue before sending to user
+    - Vector store retrieval enriches context with ≥3 prior similar cases when available
+    - End-to-end diagnostic cycle completes within 30s for stored DTC analysis
+    depends_on:
+    - 14
+    - 13
+  SECURITY:
+    description: 'Security review and implementation: OBD session authentication (prevent
+      unauthorized vehicle data access), BLE communication encryption (AES-128 per
+      session key), API threat model (OWASP Top 10), VIN/PII data encryption at rest
+      (AES-256), UNECE R155 cybersecurity controls implementation, and penetration
+      test plan for OBD-II channel.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - BLE session key unique per connection — replay attack simulation fails
+    - OBD write commands blocked unless vehicle owner explicitly enables (off by default)
+    - API fuzzer (OWASP ZAP) finds zero high/critical vulnerabilities
+    - VIN data encrypted in PostgreSQL using pgcrypto — plaintext not in query logs
+    - Penetration test plan covers all 4 attack vectors with pass/fail criteria
+    - R155 cybersecurity controls mapped to implementation with evidence artifacts
+    depends_on:
+    - 14
+    - 11
+  EMBEDDED_TEST:
+    description: 'Write HIL test specs and firmware unit tests for OBD-II adapter:
+      BLE GATT characteristic tests, ELM327 AT command parser unit tests, SAE J1979
+      PID response validation, CAN bus error recovery tests, OTA update integrity
+      verification, and fault injection test suite using the SimPy vehicle simulator.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Firmware unit test coverage ≥80% (functions) for AT parser and PID handler
+    - All mandatory SAE J1979 Mode 01 PIDs return correct values in HIL sim
+    - 'OTA tampered binary test: firmware refuses update with error code logged'
+    - 'CAN bus-off recovery: firmware reconnects within 5s of bus restoration'
+    - HIL test suite runs fully automated in CI (no physical hardware required)
+    - Test report generated in JUnit XML format for CI integration
+    depends_on:
+    - 11
+    - 10
+  TESTS:
+    description: 'Write backend unit and integration tests: DTC lookup service (all
+      code categories), maintenance schedule engine (mileage + time rules), booking
+      state machine (all transitions + rejection cases), payment webhook idempotency,
+      VIN decoder, mechanic geo-search accuracy, and SAGE agent coordinator flow.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest --cov reports ≥85% line coverage for src/
+    - All booking state machine transitions tested (valid + invalid)
+    - 'Stripe webhook idempotency: duplicate event delivery handled correctly'
+    - Schemathesis contract tests pass against OpenAPI spec with no violations
+    - 'Sensor write throughput test: 10,000 rows/sec sustained for 60s'
+    - 'Geo-search test: results within 10km radius are complete and sorted by rating'
+    depends_on:
+    - 14
+    - 15
+  SYSTEM_TEST:
+    description: 'Execute system-level integration test suite: full DTC scan flow
+      (mobile → BLE sim → backend → DB → push notification), booking lifecycle (create→confirm→complete→payout),
+      OTA firmware update distribution, multi-user concurrent scan sessions, and load
+      test (500 concurrent SSE streams).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full DTC scan pipeline completes in <10s (95th percentile)
+    - '500 concurrent SSE streams: server CPU <70%, memory <4GB'
+    - All booking state transitions complete without data integrity violations
+    - 'OTA distribution: 100 concurrent firmware downloads complete without 5xx errors'
+    - 'Database replica promotion test: app reconnects within 30s'
+    - System test report published with pass/fail per scenario
+    depends_on:
+    - 21
+    - 22
+    - 20
+  INFRA:
+    description: 'Set up infrastructure: Kubernetes cluster (EKS), PostgreSQL RDS
+      with TimescaleDB, Redis (session + cache), S3 (firmware binaries + receipts),
+      CloudFront CDN, VPC with private subnets for DB, Terraform IaC for all resources,
+      and environment separation (dev/staging/prod).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan applies with zero errors in all 3 environments
+    - RDS TimescaleDB accessible from EKS pods only (no public endpoint)
+    - S3 firmware bucket has presigned URL generation — no public read
+    - KMS key rotation enabled for PII encryption keys
+    - CloudFront distribution serves assets with cache-control headers
+    - All resources tagged with environment, team, and cost-center tags
+    depends_on:
+    - 9
+  DEVOPS:
+    description: 'Build CI/CD pipelines: GitHub Actions for backend (lint → test →
+      build → push ECR → deploy EKS), React Native (lint → unit test → E2E → EAS build),
+      firmware (compile → unit test → OTA package sign → S3 upload). Implement GitOps
+      with ArgoCD for Kubernetes deployments.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - 'Backend pipeline: PR → production deploy in <15 minutes'
+    - 'Firmware pipeline: build + sign + S3 upload completes in <10 minutes'
+    - 'Mobile pipeline: EAS Build triggered automatically on main merge'
+    - ArgoCD syncs Kubernetes manifests within 2 minutes of Git push
+    - Firmware codesign uses AWS KMS — private key never touches pipeline runner
+    - 'Secrets Manager integration: no plaintext credentials in pipeline YAML'
+    depends_on:
+    - 24
+  OPERATIONS:
+    description: 'Create operational runbooks: OBD session leak remediation, database
+      failover procedure, payment dispute escalation, mechanic fraud detection response,
+      firmware OTA rollback procedure, and incident response playbook. Define SLAs
+      and on-call rotation.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Each runbook has: trigger condition, step-by-step procedure, rollback, and
+      owner'
+    - SLA targets entered into monitoring system as alert thresholds
+    - Runbook for OBD session leak tested in staging environment
+    - PagerDuty escalation policy defined (L1→L2 in 15min, L2→manager in 30min)
+    - Incident response playbook covers Sev1/Sev2/Sev3 classification criteria
+    - Runbooks stored in Git (not a wiki) and linked from SAGE knowledge base
+    depends_on:
+    - 25
+  QA:
+    description: 'Execute QA test plan: exploratory testing of all user flows on physical
+      Android and iOS devices, regression suite execution, accessibility audit of
+      mobile app (iOS VoiceOver + Android TalkBack), performance profiling (React
+      Native Flipper), and sign-off test report.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All user stories from BRD marked as Pass/Fail in test report
+    - Zero P0/P1 bugs open at QA sign-off
+    - 'VoiceOver and TalkBack: all interactive elements have accessible labels'
+    - 'Flipper profiler: <16ms frame render time on all tested devices (60fps target)'
+    - 'Usability test: 4/5 users complete DTC scan flow without assistance'
+    - QA sign-off report submitted with test coverage summary
+    depends_on:
+    - 23
+  DOCS:
+    description: 'Write technical documentation: API reference (auto-generated from
+      OpenAPI + Mintlify), OBD adapter firmware flashing guide, backend architecture
+      decision records (ADRs), SAGE solution configuration guide for obd_diagnostics_app,
+      and mechanic partner integration guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference deployed at docs.obdapp.com and covers all endpoints
+    - Firmware flashing guide tested by engineer unfamiliar with ESP32
+    - 3 ADRs written covering key architectural decisions
+    - 'SAGE solution guide covers: how to add a new task type, how to add a custom
+      agent role'
+    - Mechanic Partner guide enables 3rd-party integration without eng support
+    depends_on:
+    - 28
+  TRAINING:
+    description: 'Create user onboarding materials: in-app onboarding tour (5-step
+      tooltip flow), help center articles (DTC codes explained, how to pair adapter,
+      booking a mechanic, maintenance reminders), mechanic partner onboarding video
+      script, and app store listing copy (screenshots, description, keywords).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - In-app tour covers 5 key features, skippable, shown only on first launch
+    - Help center has ≥8 articles, all searchable by keyword
+    - App store description passes Apple and Google content guidelines review
+    - 'Mechanic onboarding video script covers: profile setup, calendar, payouts (<5min
+      runtime)'
+    - All materials reviewed for accuracy against final product behavior
+    depends_on:
+    - 28

@@ -1,0 +1,1082 @@
+{
+  "run_id": "b8955594-2aac-4afc-9bd5-a2a44874912c",
+  "status": {
+    "run_id": "b8955594-2aac-4afc-9bd5-a2a44874912c",
+    "solution_name": "smart_home_hub",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T07:34:31.476984+00:00",
+    "updated_at": "2026-03-22T07:40:21.719529+00:00",
+    "product_description": "Smart home hub platform with Zigbee/Z-Wave/Matter protocol support, device pairing, automation rules engine, voice assistant integration, and energy monitoring.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "CONFIG",
+        "description": "Initialize smart_home_hub solution: monorepo structure, dev environment, toolchain config (cross-compiler for hub MCU, Node/Python versions, Zigbee/Z-Wave/Matter SDKs), and .env templates.",
+        "payload": {
+          "solution_name": "smart_home_hub",
+          "directories": [
+            "firmware/",
+            "backend/",
+            "web/",
+            "infra/",
+            "tests/",
+            "docs/",
+            "ml/"
+          ],
+          "toolchain": [
+            "arm-none-eabi-gcc",
+            "python3.11",
+            "node20",
+            "zigbee-sdk",
+            "z-wave-sdk",
+            "matter-sdk"
+          ],
+          "env_vars": [
+            "HUB_SERIAL_PORT",
+            "MQTT_BROKER_URL",
+            "VOICE_ASSISTANT_API_KEY",
+            "Z_WAVE_NETWORK_KEY",
+            "MATTER_VENDOR_ID"
+          ]
+        },
+        "acceptance_criteria": [
+          "make dev bootstraps all services without manual steps",
+          "All SDK dependencies resolve without conflicts",
+          ".env.example covers every required environment variable",
+          "Pre-commit hooks enforce linting for Python, TypeScript, and C/C++"
+        ],
+        "depends_on": [],
+        "agent_role": "developer"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document covering all protocols (Zigbee 3.0, Z-Wave LR, Matter 1.3), device classes, automation rule capabilities, voice assistant targets (Alexa, Google, Siri), energy monitoring granularity, and user personas.",
+        "payload": {
+          "protocols": [
+            "Zigbee 3.0",
+            "Z-Wave Long Range",
+            "Matter 1.3",
+            "Thread"
+          ],
+          "voice_assistants": [
+            "Amazon Alexa",
+            "Google Home",
+            "Apple HomeKit"
+          ],
+          "device_classes": [
+            "lights",
+            "plugs",
+            "locks",
+            "sensors",
+            "thermostats",
+            "cameras",
+            "EV_chargers"
+          ],
+          "energy_metrics": [
+            "per-device wattage",
+            "hourly/daily/monthly aggregates",
+            "carbon footprint",
+            "cost estimation"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD reviewed and signed off covering all three protocol stacks",
+          "User stories written for device pairing, rule creation, and energy dashboard flows",
+          "Success metrics defined: pairing time < 30s, rule evaluation latency < 100ms, energy data refresh < 5s",
+          "Compliance scope for IEC 62443 SL-1 documented"
+        ],
+        "depends_on": [],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema: devices table (protocol, state, metadata), automation_rules, energy_readings (time-series), users, homes, zones, and audit_events. Include TimescaleDB hypertable for energy_readings.",
+        "payload": {
+          "engine": "PostgreSQL 16 + TimescaleDB",
+          "tables": [
+            "homes",
+            "zones",
+            "devices",
+            "device_states",
+            "automation_rules",
+            "rule_conditions",
+            "rule_actions",
+            "energy_readings",
+            "users",
+            "audit_events",
+            "voice_integrations"
+          ],
+          "migrations_tool": "Alembic",
+          "indexes": [
+            "devices(home_id, protocol)",
+            "energy_readings(device_id, recorded_at DESC)",
+            "automation_rules(home_id, enabled)"
+          ]
+        },
+        "acceptance_criteria": [
+          "All migrations run cleanly on fresh Postgres + TimescaleDB instance",
+          "energy_readings hypertable chunks by week, compression after 7 days",
+          "Foreign key constraints enforce referential integrity across all tables",
+          "Seed data includes 5 device types across all three protocols for dev testing"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 4,
+        "task_type": "FIRMWARE",
+        "description": "Implement hub base firmware: FreeRTOS kernel setup, HAL drivers (UART, SPI, I2C, USB, Ethernet), OTA update manager, secure boot chain, and inter-task communication (message queues per protocol stack).",
+        "payload": {
+          "target_mcu": "ESP32-S3 / NXP i.MX RT1060",
+          "rtos": "FreeRTOS 10.5",
+          "hal_drivers": [
+            "UART (Z-Wave UART bridge)",
+            "SPI (Zigbee co-processor)",
+            "Ethernet (Matter/IP)",
+            "USB-CDC (debug)"
+          ],
+          "ota_strategy": "A/B partition swap with rollback",
+          "secure_boot": "RSA-2048 signed firmware images"
+        },
+        "acceptance_criteria": [
+          "FreeRTOS boots on target hardware with all tasks initializing without fault",
+          "OTA update downloads, verifies signature, and swaps partition within 60 seconds",
+          "Secure boot rejects unsigned firmware image with logged error",
+          "All HAL drivers pass loopback self-tests at startup",
+          "Watchdog timer triggers reset on any task starvation > 5s",
+          "OTA update mechanism implemented",
+          "Watchdog timer configured"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 5,
+        "task_type": "FIRMWARE",
+        "description": "Implement Zigbee 3.0 protocol stack integration: coordinator/router mode, device discovery, pairing (touchlink + network steering), cluster handling (ZCL), and MQTT bridge publishing device events to backend.",
+        "payload": {
+          "sdk": "Silicon Labs GSDK / EmberZNet",
+          "clusters": [
+            "On/Off",
+            "Level Control",
+            "Color Control",
+            "Thermostat",
+            "IAS Zone",
+            "Metering"
+          ],
+          "pairing_modes": [
+            "Network Steering",
+            "Touchlink Commissioning"
+          ],
+          "bridge": "Zigbee \u2192 MQTT (zigbee2mqtt-compatible message format)"
+        },
+        "acceptance_criteria": [
+          "Hub joins a Zigbee 3.0 PAN and accepts child device joins within 30 seconds",
+          "At least 10 Zigbee device types pair and publish state to MQTT broker",
+          "ZCL attribute reads return correct values for Metering cluster",
+          "Network re-join after hub reboot completes without manual intervention",
+          "MQTT messages conform to zigbee2mqtt JSON schema",
+          "OTA update mechanism implemented",
+          "Watchdog timer configured"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 6,
+        "task_type": "FIRMWARE",
+        "description": "Implement Z-Wave Long Range protocol stack: Z-Wave controller mode, S2 security frame (Authenticated, AccessControl), device inclusion/exclusion, NIF parsing, and MQTT bridge for Z-Wave events.",
+        "payload": {
+          "sdk": "Silicon Labs Z-Wave SDK 7.x",
+          "security": [
+            "S2 Unauthenticated",
+            "S2 Authenticated",
+            "S2 AccessControl",
+            "SmartStart QR"
+          ],
+          "command_classes": [
+            "Binary Switch",
+            "Multilevel Switch",
+            "Door Lock",
+            "Notification",
+            "Meter",
+            "Thermostat Mode"
+          ],
+          "bridge": "Z-Wave \u2192 MQTT (Z-Wave JS compatible message format)"
+        },
+        "acceptance_criteria": [
+          "Z-Wave controller initializes and broadcasts NWI within 10 seconds of boot",
+          "SmartStart QR code inclusion completes in under 20 seconds",
+          "S2 Authenticated frame exchange verified with protocol analyzer",
+          "At least 8 Z-Wave device types included and publishing events to MQTT",
+          "Device exclusion cleanly removes device from NVM and notifies backend",
+          "OTA update mechanism implemented",
+          "Watchdog timer configured"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 7,
+        "task_type": "FIRMWARE",
+        "description": "Implement Matter 1.3 / Thread protocol stack: Matter commissioner, BLE commissioning window, Thread border router, device attestation (DAC/PAA), and bridge to internal MQTT bus.",
+        "payload": {
+          "sdk": "connectedhomeip (CHIP SDK)",
+          "commissioning": "BLE + Wi-Fi + Thread",
+          "device_types": [
+            "On/Off Light",
+            "Dimmable Light",
+            "Door Lock",
+            "Thermostat",
+            "Energy Sensor"
+          ],
+          "attestation": "Device Attestation Certificate chain (DAC \u2192 PAI \u2192 PAA)",
+          "thread_role": "Border Router (OpenThread)"
+        },
+        "acceptance_criteria": [
+          "Matter commissioner onboards a Matter-certified device via BLE in under 45 seconds",
+          "OpenThread border router bridges Thread network to IP backbone",
+          "Device Attestation Certificate validation passes against CSA test PAA",
+          "Matter device state changes propagate to MQTT broker within 200ms",
+          "Multi-admin sharing verified: same Matter device accessible from two controllers",
+          "OTA update mechanism implemented",
+          "Watchdog timer configured"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Build core backend API service (FastAPI): device registry, home/zone management, real-time device state via WebSocket, MQTT consumer (all protocol bridges), and event bus for rule engine triggers.",
+        "payload": {
+          "framework": "FastAPI + asyncio",
+          "messaging": "Mosquitto MQTT broker + aiomqtt consumer",
+          "realtime": "WebSocket (per-home rooms)",
+          "auth": "JWT + refresh tokens, PKCE OAuth2 for voice assistants",
+          "api_modules": [
+            "devices",
+            "homes",
+            "zones",
+            "pairing",
+            "websocket",
+            "health"
+          ]
+        },
+        "acceptance_criteria": [
+          "GET /devices returns all devices for authenticated home within 50ms",
+          "WebSocket pushes device state change within 200ms of MQTT message arrival",
+          "MQTT consumer reconnects automatically on broker disconnect",
+          "All endpoints return 401 for unauthenticated requests",
+          "Health endpoint reports protocol bridge connectivity status"
+        ],
+        "depends_on": [
+          1,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement device pairing service: unified pairing API abstracting Zigbee/Z-Wave/Matter protocols, pairing session state machine, device fingerprinting, capability negotiation, and device metadata persistence.",
+        "payload": {
+          "pairing_modes": {
+            "zigbee": "network_steering",
+            "zwave": "smartstart_qr + nwi",
+            "matter": "ble_commissioning"
+          },
+          "state_machine_states": [
+            "idle",
+            "scanning",
+            "pairing",
+            "configuring",
+            "paired",
+            "failed"
+          ],
+          "endpoints": [
+            "POST /pairing/start",
+            "GET /pairing/status/{session_id}",
+            "POST /pairing/cancel",
+            "GET /pairing/discovered"
+          ]
+        },
+        "acceptance_criteria": [
+          "POST /pairing/start returns session_id and begins protocol-appropriate scan within 1s",
+          "SSE stream on /pairing/status delivers discovered device events in real time",
+          "Paired device appears in /devices with correct protocol, capabilities, and metadata",
+          "Pairing session times out and cleans up after 120 seconds of no activity",
+          "Duplicate device re-pairing updates existing record, does not create duplicate"
+        ],
+        "depends_on": [
+          5,
+          6,
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build automation rules engine: condition evaluator (device state, time, location triggers), action dispatcher (device commands, notifications, webhooks), rule scheduling (cron), and conflict detection between overlapping rules.",
+        "payload": {
+          "pattern": "multi_agent_sequential",
+          "rule_schema": {
+            "triggers": [
+              "device_state_change",
+              "schedule_cron",
+              "sunrise_sunset",
+              "occupancy"
+            ],
+            "conditions": [
+              "AND/OR/NOT logical tree",
+              "numeric comparisons",
+              "string match"
+            ],
+            "actions": [
+              "set_device_state",
+              "send_notification",
+              "call_webhook",
+              "run_scene",
+              "delay"
+            ]
+          },
+          "engine": "asyncio event loop with priority queue",
+          "conflict_detection": "rule overlap graph with warning flags"
+        },
+        "acceptance_criteria": [
+          "Rule evaluates and dispatches action within 100ms of triggering event",
+          "Nested AND/OR condition trees (depth \u2264 5) evaluate correctly",
+          "Cron-scheduled rules fire within 2 seconds of scheduled time",
+          "Conflict detector flags rules with overlapping triggers and conflicting actions",
+          "Rule execution audit trail logged to audit_events table with trace_id",
+          "Rules survive backend restart without re-configuration"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement voice assistant integration: OAuth2 skill/action backend for Amazon Alexa (Smart Home Skill API), Google Home (Actions on Google), and Apple HomeKit (HAP-nodejs bridge). Sync device state bidirectionally.",
+        "payload": {
+          "alexa": "Alexa Smart Home Skill API v3 \u2014 Lambda handler + proactive state reports",
+          "google": "Google Home Actions API + Google Home Graph sync",
+          "homekit": "HAP-nodejs bridge \u2014 maps internal devices to HomeKit accessories",
+          "oauth2_server": "PKCE flow with per-user tokens per assistant",
+          "sync_strategy": "event-driven proactive updates + polling fallback"
+        },
+        "acceptance_criteria": [
+          "Alexa discovers all paired devices via account linking within 30 seconds",
+          "Voice command 'turn off living room lights' executes within 1.5 seconds end-to-end",
+          "Google Home reports correct device state after manual state change within 5 seconds",
+          "HomeKit bridge exposes all devices with correct accessory categories",
+          "OAuth2 token refresh handled transparently without user re-authentication"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "DATA",
+        "description": "Build energy monitoring data pipeline: per-device wattage ingestion from Metering cluster / Z-Wave Meter CC / Matter Energy cluster, TimescaleDB continuous aggregates (hourly/daily/monthly), cost estimation (user-defined tariff), and carbon footprint calculation.",
+        "payload": {
+          "ingestion": "MQTT \u2192 asyncio consumer \u2192 TimescaleDB batch insert (1s windows)",
+          "aggregates": [
+            "cagg_hourly_energy",
+            "cagg_daily_energy",
+            "cagg_monthly_energy"
+          ],
+          "derived_metrics": [
+            "cost_usd (tariff * kWh)",
+            "co2_kg (grid carbon intensity * kWh)",
+            "power_factor"
+          ],
+          "tariff_model": "time-of-use (TOU) with peak/off-peak/weekend rates",
+          "retention": "raw: 90 days | hourly: 2 years | daily: forever"
+        },
+        "acceptance_criteria": [
+          "Energy readings insert at > 1000 events/second under load test",
+          "Continuous aggregates refresh within 5 seconds of new data",
+          "Cost calculation matches manual verification for 3 sample tariff configurations",
+          "Data retention policy enforced automatically by TimescaleDB scheduler",
+          "API endpoint GET /energy/{device_id}?granularity=hourly returns data within 200ms"
+        ],
+        "depends_on": [
+          3,
+          8
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 13,
+        "task_type": "SECURITY",
+        "description": "Perform IEC 62443 SL-1 threat model and security architecture review: network segmentation, device authentication, communication encryption (TLS 1.3, DTLS), secure credential storage, firmware integrity, and SBOM generation.",
+        "payload": {
+          "standard": "IEC 62443-3-3 SL-1",
+          "threat_model_tool": "STRIDE + attack trees",
+          "controls": [
+            "TLS 1.3 for all cloud communications",
+            "DTLS 1.2 for Thread/Matter device comms",
+            "Z-Wave S2 encryption mandatory",
+            "Zigbee APS link key per device",
+            "LUKS-encrypted storage on hub",
+            "Certificate pinning for voice assistant OAuth"
+          ],
+          "sbom_format": "SPDX 2.3 + CycloneDX 1.4"
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all 6 protocol interface surfaces",
+          "Every identified threat has a mapped countermeasure and residual risk rating",
+          "SBOM generated for firmware and backend covering all dependencies",
+          "Penetration test plan written covering OWASP IoT Top 10",
+          "IEC 62443 SL-1 control mapping document completed with evidence pointers",
+          "No high-severity unmitigated risks remain after countermeasure mapping",
+          "Device identity provisioned",
+          "Firmware signing enabled"
+        ],
+        "depends_on": [
+          4,
+          8
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 14,
+        "task_type": "SECURITY",
+        "description": "Implement security controls: mTLS for hub-to-cloud, JWT signing with RS256 + short expiry, rate limiting, input validation, secure credential vault (HashiCorp Vault or AWS Secrets Manager), and automated vulnerability scanning in CI.",
+        "payload": {
+          "auth": "RS256 JWT (15min access + 7d refresh), mTLS device certificates",
+          "vault": "HashiCorp Vault with AppRole \u2014 stores Z-Wave network key, voice API keys",
+          "rate_limiting": "100 req/min per user, 10 req/min for pairing endpoints",
+          "scanning": [
+            "Trivy (container CVE)",
+            "Bandit (Python SAST)",
+            "Semgrep (custom rules)",
+            "OWASP ZAP (DAST)"
+          ]
+        },
+        "acceptance_criteria": [
+          "mTLS handshake verified between hub firmware and backend on test bench",
+          "Vault unseals automatically on backend startup with AppRole credentials",
+          "Rate limiter returns 429 after threshold with Retry-After header",
+          "Trivy scan reports zero critical CVEs in production container images",
+          "OWASP ZAP scan finds no high-severity issues against staging API",
+          "Device identity provisioned",
+          "Firmware signing enabled"
+        ],
+        "depends_on": [
+          8,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "ML_MODEL",
+        "description": "Train energy anomaly detection model (Isolation Forest + LSTM autoencoder) to flag abnormal device consumption patterns, and an automation suggestion model (collaborative filtering on rule co-occurrence) to recommend new rules to users.",
+        "payload": {
+          "anomaly_model": {
+            "algorithm": "Isolation Forest (baseline) + LSTM Autoencoder (sequence patterns)",
+            "features": [
+              "device_id",
+              "hour_of_day",
+              "day_of_week",
+              "rolling_mean_24h",
+              "wattage_delta"
+            ],
+            "training_data": "synthetic 6-month energy dataset + real labeled anomalies",
+            "threshold": "anomaly_score > 0.85 triggers alert"
+          },
+          "suggestion_model": {
+            "algorithm": "Item-based collaborative filtering on rule co-occurrence matrix",
+            "input": "home's active rules + device inventory",
+            "output": "top-3 rule suggestions with confidence score"
+          },
+          "serving": "FastAPI ML microservice, models loaded from MLflow registry"
+        },
+        "acceptance_criteria": [
+          "Anomaly model achieves F1 > 0.80 on held-out labeled test set",
+          "Inference latency < 50ms per device per evaluation cycle",
+          "Suggestion model returns at least 1 relevant rule suggestion for 80% of test homes",
+          "Models versioned and tracked in MLflow with reproducible training pipeline",
+          "Retraining pipeline runs automatically when > 10,000 new energy readings accumulate",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build React dashboard: home overview with live device state tiles, room/zone floor plan layout, real-time WebSocket connection indicator, global status bar (alerts, active automations), and responsive mobile layout.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "ui_library": "shadcn/ui + Tailwind CSS",
+          "state": "Zustand + React Query",
+          "realtime": "native WebSocket hook with reconnect logic",
+          "layout": "responsive grid: 1-col mobile, 3-col tablet, 5-col desktop"
+        },
+        "acceptance_criteria": [
+          "Dashboard loads in under 2 seconds on 4G mobile connection",
+          "Device state tiles update within 300ms of WebSocket event",
+          "Floor plan layout supports drag-to-assign device to zone",
+          "Global alert banner appears within 1 second of energy anomaly detection",
+          "All interactive elements meet WCAG 2.1 AA accessibility standard"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build device management UI: device list with filter/search by protocol/room/type, device detail panel (state controls, history chart, firmware version, signal strength), pairing wizard (protocol selection \u2192 QR/NFC \u2192 discovery \u2192 naming).",
+        "payload": {
+          "pages": [
+            "DeviceList",
+            "DeviceDetail",
+            "PairingWizard"
+          ],
+          "pairing_wizard_steps": [
+            "select_protocol",
+            "prepare_device",
+            "scanning",
+            "discovered",
+            "configure",
+            "success"
+          ],
+          "controls": [
+            "toggle switch",
+            "dimmer slider",
+            "color picker",
+            "thermostat set-point",
+            "lock/unlock button"
+          ],
+          "history_chart": "Recharts line chart \u2014 last 24h state changes"
+        },
+        "acceptance_criteria": [
+          "Pairing wizard completes without navigating away from the flow",
+          "Device search returns results within 100ms for up to 500 devices",
+          "Control commands dispatched from UI reflect in device state within 500ms",
+          "Signal strength displayed with protocol-appropriate icon (Zigbee LQI, Z-Wave RSSI, Matter RSSI)",
+          "Pairing wizard shows helpful error message if device not found after timeout"
+        ],
+        "depends_on": [
+          9,
+          16
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build automation rules builder UI: visual drag-and-drop rule composer (trigger \u2192 conditions \u2192 actions), rule list with enable/disable toggle, execution history log, conflict warning indicators, and rule templates library.",
+        "payload": {
+          "rule_builder": "react-flow canvas for visual node-based rule composition",
+          "node_types": [
+            "TriggerNode",
+            "ConditionNode",
+            "LogicNode (AND/OR/NOT)",
+            "ActionNode",
+            "DelayNode"
+          ],
+          "templates": [
+            "Good morning routine",
+            "Vacation mode",
+            "Energy saver",
+            "Bedtime scene"
+          ],
+          "history": "last 50 executions with timestamp, result, and matched conditions"
+        },
+        "acceptance_criteria": [
+          "Rule with 3 conditions and 2 actions can be created without reading docs",
+          "Conflict warning renders inline next to conflicting rule within 500ms of save",
+          "Rule execution history loads in under 1 second with 50 entries",
+          "Templates pre-populate rule builder with one click",
+          "Rule builder is fully keyboard navigable"
+        ],
+        "depends_on": [
+          10,
+          16
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build energy monitoring dashboard: per-device and whole-home consumption charts, cost and CO2 projections, anomaly alert timeline, ML-powered rule suggestions panel, and tariff configuration form.",
+        "payload": {
+          "charts": [
+            "stacked bar (daily by device)",
+            "area chart (30d trend)",
+            "donut (by device category)",
+            "heatmap (hourly usage)"
+          ],
+          "library": "Recharts + D3 for heatmap",
+          "projections": "current month extrapolated to end-of-month cost + kWh",
+          "anomaly_timeline": "scrollable list of flagged events with device and severity"
+        },
+        "acceptance_criteria": [
+          "30-day energy chart renders in under 1 second for homes with 50 devices",
+          "Anomaly alert shows device name, detected pattern, and recommended action",
+          "Rule suggestion card displays with Accept/Dismiss actions linked to rule builder",
+          "Tariff form validates time-of-use rate ranges (must cover full 24h without gaps)",
+          "Export button downloads 30-day energy data as CSV within 3 seconds"
+        ],
+        "depends_on": [
+          12,
+          15,
+          16
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 20,
+        "task_type": "INFRA",
+        "description": "Containerize all services and build CI/CD pipeline: Docker Compose for local dev, Kubernetes manifests for production, GitHub Actions pipeline (lint \u2192 test \u2192 build \u2192 security scan \u2192 deploy), and OTA firmware delivery CDN.",
+        "payload": {
+          "services": [
+            "backend-api",
+            "ml-service",
+            "mqtt-broker",
+            "postgres+timescaledb",
+            "vault",
+            "frontend-nginx"
+          ],
+          "k8s": "Helm chart with values per environment (dev/staging/prod)",
+          "ci_cd": "GitHub Actions: PR gate (test + SAST) + main branch deploy to staging + manual promote to prod",
+          "ota_cdn": "S3 + CloudFront for signed firmware images with version manifest",
+          "secrets": "External Secrets Operator \u2192 Vault"
+        },
+        "acceptance_criteria": [
+          "docker compose up starts full stack in under 90 seconds on clean machine",
+          "CI pipeline completes PR gate in under 10 minutes",
+          "Kubernetes pods restart automatically on crash with liveness probe",
+          "OTA firmware manifest served from CDN with < 50ms latency globally",
+          "Secrets never appear in container environment variables \u2014 only mounted as files from Vault"
+        ],
+        "depends_on": [
+          8,
+          14,
+          16
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write HIL test harness for hub firmware: protocol sniffer fixtures (Zigbee Wireshark, Z-Wave PC Controller, Matter CHIP Tool), automated pairing test cases, OTA update regression suite, and secure boot verification tests.",
+        "payload": {
+          "hil_framework": "pytest + pyserial + hardware test fixtures",
+          "fixtures": {
+            "zigbee": "HUSBZB-1 USB sniffer + Zigbee2MQTT test harness",
+            "zwave": "Z-Wave.Me USB stick + Z-Wave JS test harness",
+            "matter": "CHIP Tool CLI + Matter test harness"
+          },
+          "test_suites": [
+            "pairing_regression",
+            "ota_update",
+            "secure_boot_rejection",
+            "multi_protocol_coexistence",
+            "power_cycle_recovery"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 3 protocol pairing tests pass on real hardware without manual steps",
+          "OTA update test suite covers: success, power-loss mid-update (rollback), and signature failure",
+          "Secure boot test verifies signed image boots and unsigned image is rejected with log",
+          "Multi-protocol coexistence test runs Zigbee + Z-Wave + Matter simultaneously for 1 hour without errors",
+          "HIL suite runs fully automated in CI on dedicated hardware runner"
+        ],
+        "depends_on": [
+          5,
+          6,
+          7
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write backend unit and integration test suite: API endpoint tests (pytest + httpx), rules engine logic unit tests, energy pipeline tests with synthetic time-series data, WebSocket integration tests, and MQTT consumer tests with mock broker.",
+        "payload": {
+          "framework": "pytest + httpx (async) + pytest-asyncio",
+          "coverage_target": "85% line coverage on src/",
+          "test_categories": {
+            "unit": [
+              "rules engine condition evaluation",
+              "tariff cost calculation",
+              "JWT validation"
+            ],
+            "integration": [
+              "API endpoints with test DB",
+              "MQTT consumer \u2192 DB pipeline",
+              "voice assistant OAuth flow"
+            ],
+            "contract": [
+              "OpenAPI schema validation for all endpoints"
+            ]
+          }
+        },
+        "acceptance_criteria": [
+          "Test suite achieves > 85% line coverage on backend src/",
+          "All API endpoints have at least 3 test cases (happy path, validation error, auth error)",
+          "Rules engine unit tests cover all condition types and logical operators",
+          "Integration tests run against real PostgreSQL+TimescaleDB in CI (no mocks for DB layer)",
+          "Test run completes in under 3 minutes in CI"
+        ],
+        "depends_on": [
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "TESTS",
+        "description": "Write E2E test suite (Playwright): full device pairing flow per protocol (simulated), rule creation and trigger verification, energy dashboard data rendering, and voice assistant mock integration tests.",
+        "payload": {
+          "framework": "Playwright (TypeScript)",
+          "browsers": [
+            "Chromium",
+            "Firefox",
+            "WebKit (mobile viewport)"
+          ],
+          "scenarios": [
+            "zigbee_pairing_to_control",
+            "automation_rule_create_and_trigger",
+            "energy_anomaly_alert_display",
+            "voice_assistant_oauth_link",
+            "tariff_config_and_cost_projection"
+          ],
+          "mock_strategy": "MSW (Mock Service Worker) for protocol bridge events in E2E"
+        },
+        "acceptance_criteria": [
+          "All 5 E2E scenarios pass on Chromium, Firefox, and WebKit",
+          "E2E suite runs in under 8 minutes in CI headless mode",
+          "Visual regression baseline captured for dashboard, device detail, and rule builder pages",
+          "E2E tests run against staging environment on every merge to main",
+          "Flaky test rate < 2% over 50 consecutive CI runs"
+        ],
+        "depends_on": [
+          16,
+          17,
+          18,
+          19,
+          22
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "COMPLIANCE",
+        "description": "Produce IEC 62443-3-3 SL-1 compliance evidence package: security requirements traceability matrix (SRTM) mapping SR 1.1\u20137.7 to implementation evidence, V&V protocol, penetration test report, and security assessment report.",
+        "payload": {
+          "standard": "IEC 62443-3-3 SL-1",
+          "artifacts": [
+            "Security Requirements Traceability Matrix (SRTM)",
+            "Threat and Risk Assessment (TRA) report",
+            "Security V&V Protocol with pass/fail criteria",
+            "Penetration Test Report (OWASP IoT Top 10 coverage)",
+            "SBOM (SPDX + CycloneDX)",
+            "Security Assessment Report"
+          ],
+          "traceability_tool": "CSV SRTM linked to GitHub issue/PR numbers as evidence"
+        },
+        "acceptance_criteria": [
+          "SRTM covers all 51 SL-1 requirements with evidence pointers (code, test, doc)",
+          "Zero SL-1 requirements marked as 'not addressed' without documented rationale",
+          "Penetration test covers all OWASP IoT Top 10 categories",
+          "SBOM validates with NTIA minimum elements checker",
+          "Security Assessment Report signed by regulatory_specialist and reviewed by safety_engineer"
+        ],
+        "depends_on": [
+          13,
+          14,
+          21,
+          22
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 25,
+        "task_type": "DEVOPS",
+        "description": "Set up production monitoring: Prometheus + Grafana dashboards (API latency, MQTT throughput, device online rate, energy pipeline lag), PagerDuty alerting, distributed tracing (OpenTelemetry \u2192 Jaeger), and SRE runbooks.",
+        "payload": {
+          "metrics": [
+            "api_request_duration_p99",
+            "mqtt_messages_per_second",
+            "device_online_ratio",
+            "energy_pipeline_lag_seconds",
+            "rule_evaluation_latency_p95"
+          ],
+          "alerts": [
+            "device_online_ratio < 0.90 for > 5 min \u2192 page",
+            "api_p99 > 500ms for > 2 min \u2192 warn",
+            "energy_pipeline_lag > 30s \u2192 page"
+          ],
+          "tracing": "OpenTelemetry SDK in FastAPI + automatic instrumentation for asyncio",
+          "runbooks": [
+            "hub_offline_recovery",
+            "database_failover",
+            "ota_rollback_procedure",
+            "protocol_bridge_restart"
+          ]
+        },
+        "acceptance_criteria": [
+          "Grafana dashboard shows all 5 key metrics with 1-minute resolution",
+          "PagerDuty alert fires within 2 minutes of device_online_ratio threshold breach",
+          "Distributed trace visible end-to-end from frontend request to MQTT publish",
+          "All 4 runbooks tested and validated in staging environment",
+          "Alert noise rate < 1 false positive per week in staging load test"
+        ],
+        "depends_on": [
+          20
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "DOCS",
+        "description": "Write developer and user documentation: OpenAPI spec review, architecture decision records (ADRs) for protocol selection and rules engine design, hub setup guide, user guide for pairing and automations, and API integration guide for voice assistant developers.",
+        "payload": {
+          "openapi": "Auto-generated from FastAPI + manually enriched examples for all endpoints",
+          "adrs": [
+            "ADR-001: Protocol stack selection rationale",
+            "ADR-002: TimescaleDB for energy time-series",
+            "ADR-003: Rules engine event-driven design"
+          ],
+          "user_guides": [
+            "Hub hardware setup",
+            "Pairing devices by protocol",
+            "Creating your first automation",
+            "Understanding your energy report"
+          ],
+          "developer_docs": [
+            "API quick-start",
+            "Webhook integration",
+            "Custom voice skill development"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates without errors and covers 100% of endpoints",
+          "Each ADR follows RFC format: context, decision, consequences",
+          "User pairing guide tested by 3 non-technical users \u2014 all complete pairing without assistance",
+          "Developer quick-start guide results in working API call within 10 minutes of reading",
+          "All docs published to static site (Docusaurus) accessible at /docs"
+        ],
+        "depends_on": [
+          8,
+          20,
+          24
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 26,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 52,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 52,
+          "final_review": {
+            "score": 52,
+            "flaws": [
+              "Hardware architecture is fatally underspecified: ESP32-S3 cannot run Z-Wave \u2014 Z-Wave requires a dedicated Silicon Labs EFR32ZG chip or a UART-attached Z-Wave module (e.g., ZGM230). The plan never resolves 'ESP32-S3 / NXP i.MX RT1060' \u2014 you cannot write firmware for two completely different MCUs simultaneously. The multi-protocol hub almost certainly requires a multi-chip architecture (main MCU + Zigbee co-processor + Z-Wave module + Thread/Matter radio), which is never acknowledged.",
+              "Matter certification is a business process, not a dev task: CSA membership ($3,500\u2013$10,000/year), Authorized Test Lab (ATL) engagement, and device certification (weeks to months, $10k+ per device type) are not mentioned anywhere. Shipping a Matter device without passing CSA certification is illegal under the Matter trademark license. Step 7's acceptance criteria ('validates against CSA test PAA') is dev testing only \u2014 it does not constitute certification.",
+              "Apple HomeKit/Siri integration requires Apple MFi certification for hardware products. Using HAP-nodejs in a commercial product without MFi approval violates Apple's HomeKit licensing terms. This is a legal blocker, not a technical one. Step 11 treats this as a pure engineering task.",
+              "Z-Wave SDK is not freely available: Silicon Labs Z-Wave 700/800 series SDK requires a Silicon Labs partnership agreement and NDA. 'z-wave-sdk' in step 1's toolchain is not a real installable package \u2014 this dependency cannot be bootstrapped with 'make dev'.",
+              "IEC 62443-3-3 is the wrong standard: IEC 62443 is for Industrial Automation and Control Systems (IACS). A consumer smart home hub should target ETSI EN 303 645 (European consumer IoT security baseline), NIST IR 8425 (U.S. consumer IoT), and/or UL 2900-2-2 (IoT security). Applying IEC 62443 SL-1 to a consumer product is scope mismatch and will not satisfy regulators or insurers in target markets.",
+              "Vault auto-unseal on startup negates the security model: Step 14 states 'Vault unseals automatically on backend startup with AppRole credentials.' Auto-unsealing with AppRole stores the unseal credentials in the same environment being protected. This is a well-documented anti-pattern \u2014 it converts Vault from a security control into a complexity layer. The credentials that unseal Vault must be stored separately (AWS KMS auto-unseal, HSM, etc.).",
+              "ML model trained on synthetic data with F1 > 0.80 target is unrealistic: Step 15 plans to train an anomaly detection model on a 'synthetic 6-month energy dataset + real labeled anomalies' and expects F1 > 0.80 on held-out data. Distribution shift between synthetic and real device telemetry is the primary failure mode for IoT ML. Without a labeled real-world dataset from actual deployed devices, this acceptance criterion cannot be validated before launch.",
+              "Alexa and Google Home Actions require platform approval processes: Submitting an Alexa Smart Home Skill or Google Home Action to production requires Amazon/Google review (days to weeks), developer account registration, and certification testing. Step 11 treats these as pure development tasks with no process timeline. A skill rejected by Amazon or Google blocks the entire voice integration milestone.",
+              "MQTT broker security is unaddressed: Steps 5, 6, 7, and 8 all rely on an MQTT broker as the internal bus. The plan never specifies MQTT authentication (username/password or mTLS client certs), authorization (topic ACLs), or TLS transport for the broker. An unauthenticated Mosquitto broker on a LAN is a documented attack surface for lateral movement in smart home environments.",
+              "No offline / local-only operation mode: The plan has no fallback for internet outage. A smart home hub that cannot control lights when the cloud is down is a P0 user experience failure. No mention of local API, mDNS discovery, or hub-local rule execution without backend connectivity.",
+              "Step 4 OTA acceptance criterion (60 seconds) conflicts with typical embedded OTA reality: A/B partition swap on firmware images for ESP32-S3 or i.MX RT1060 over typical home Wi-Fi involves: download (firmware can be 2\u20138 MB), SHA256 verify, flash write, and reboot. 60 seconds is achievable only on fast local networks with small images. No network condition or image size assumptions are documented.",
+              "Energy carbon intensity data source is missing: Step 12 includes 'co2_kg (grid carbon intensity * kWh)' as a derived metric but names no external API for real-time grid carbon intensity (ElectricityMaps, WattTime, etc.). Without this, CO2 calculation uses a static national average, making the feature misleading and potentially a regulatory liability in jurisdictions with strict environmental claims laws.",
+              "Rule engine conflict detection is NP-hard at scale: Step 10 proposes an 'overlap graph with warning flags' for conflict detection. For N rules with M triggers each, detecting all conflicts is at minimum O(N\u00b2 \u00d7 M). No complexity bound is specified. At 100+ rules per home \u2014 realistic for power users \u2014 this will either be too slow for the 100ms latency target or require significant approximation that the plan does not acknowledge.",
+              "Pairing security window not addressed: During Zigbee network steering, Z-Wave NWI, and Matter BLE commissioning, the hub is broadcasting open join capability. No timeout, no rate limiting on join attempts, and no protection against malicious device injection during the pairing window is specified anywhere in the security steps.",
+              "Device-to-device OTA (Zigbee/Z-Wave/Matter device firmware updates) is absent: Step 4 covers hub OTA. But smart home hubs are also responsible for pushing firmware to paired Zigbee (OTA cluster), Z-Wave (Firmware Update CC), and Matter (OTA Requestor cluster) devices. This is a major feature users expect that is completely absent from the plan."
+            ],
+            "suggestions": [
+              "Resolve the hardware architecture first \u2014 before writing a line of firmware. Define the exact BOM: which main MCU, which Zigbee radio (EFR32MG or CC2652), which Z-Wave module (ZGM230S or EFR32ZG), and which Thread/Matter radio. The firmware steps (4\u20137) are unexecutable until this is decided.",
+              "Add a certification timeline step before Step 7: CSA Matter certification, Z-Wave Alliance certification, and Apple MFi application each take 3\u20136 months. These must begin concurrently with early firmware development, not after it. Insert a step 2.5: 'Initiate Matter CSA membership, Z-Wave Alliance certification application, and Apple MFi program application.'",
+              "Replace IEC 62443 with the correct consumer IoT standards: ETSI EN 303 645 for EU market access, NIST IR 8425 for US market. Add GDPR/CCPA privacy impact assessment as a compliance step \u2014 consumer IoT home data (occupancy patterns, lock state) is sensitive personal data.",
+              "Redesign Vault integration: Use AWS KMS or Azure Key Vault auto-unseal (cloud-provider managed HSM) rather than AppRole-based auto-unseal. Store the KMS key reference in an instance role, not in the environment.",
+              "Add a local operation mode to Step 8: The backend API should degrade gracefully to local-only mode when upstream connectivity fails. Rule engine evaluation and device control must continue locally. Document the subset of features available offline.",
+              "Separate the ML service into a post-launch iteration: The anomaly model requires real production telemetry to train meaningfully. Shipping with a synthetic-data model risks false positive floods that erode user trust. Launch with a simple statistical threshold (rolling mean + 3\u03c3), collect 30\u201390 days of real data, then train and deploy the LSTM model.",
+              "Define MQTT topic ACL schema in the security step: Specify per-device topic namespacing (e.g., home/{home_id}/device/{device_id}/state), mTLS client certificates per protocol bridge, and Mosquitto ACL rules. This is security architecture, not optional hardening.",
+              "Add a mobile app strategy: Smart home hubs require iOS and Android apps for pairing (BLE commissioning for Matter requires a mobile app), push notifications (anomaly alerts), and remote access. The current plan has no mobile surface.",
+              "Add multi-hub topology to Step 2 PRD: Users with large homes will have multiple hubs. Define whether this is in scope and if so, how hub mesh routing, device ownership, and rule cross-hub triggers work.",
+              "Specify the network discovery mechanism: How does the mobile app or web UI discover the hub on the local network? mDNS/Avahi? UPnP? Manual IP? This is a significant UX factor absent from both frontend and backend steps.",
+              "Add device-to-device OTA as an explicit step between 7 and 8: Zigbee OTA cluster (0x0019), Z-Wave Firmware Update CC, and Matter OTA Requestor cluster each require backend OTA image hosting and a per-protocol update orchestration service.",
+              "The HIL CI runner in Step 21 needs a dedicated section: Running HIL tests in CI requires a self-hosted GitHub Actions runner physically connected to hardware, a way to reset the hub between tests, and power control hardware for the OTA power-loss test. This is an infrastructure procurement and setup task that should be its own step."
+            ],
+            "missing": [
+              "Hardware BOM and multi-chip architecture diagram \u2014 the entire firmware section is blocked without this",
+              "Matter CSA certification process and timeline (months-long external process)",
+              "Apple MFi certification for HomeKit hardware integration",
+              "Z-Wave Alliance SDK licensing agreement",
+              "Alexa/Google Home Actions platform review and submission process",
+              "GDPR/CCPA privacy impact assessment and data minimization design",
+              "Mobile app (iOS/Android) \u2014 required for BLE Matter commissioning alone",
+              "Local/offline operation mode with hub-autonomous rule execution",
+              "Device firmware OTA pipeline for Zigbee/Z-Wave/Matter end devices",
+              "Multi-hub mesh topology (scope decision required in PRD)",
+              "Network discovery mechanism (mDNS, UPnP, or manual)",
+              "User configuration backup and restore",
+              "Tariff schema database table (referenced in Step 12 but not in Step 3's table list)",
+              "Real-time grid carbon intensity API integration",
+              "MLflow deployment in the infra step (Step 15 references it, Step 20 omits it)",
+              "MQTT broker authentication and topic ACL design",
+              "WebSocket connection rate limiting and authentication",
+              "API versioning strategy",
+              "Database backup, point-in-time recovery, and DR runbook",
+              "Rollback attack protection for OTA (version downgrade prevention in secure boot chain)",
+              "i18n/localization strategy if targeting non-English markets"
+            ],
+            "security_risks": [
+              "Vault auto-unseal via AppRole: credentials that unseal Vault stored in the same system \u2014 attacker with container access gets full secret store access",
+              "MQTT broker unauthenticated: unspecified authentication on the internal MQTT bus means any process on the host or LAN segment can inject arbitrary device state or commands",
+              "Pairing mode open window: no per-session join token or IP binding during Zigbee/Z-Wave inclusion \u2014 susceptible to rogue device injection during 120-second pairing window",
+              "Z-Wave network key as high-value target: S2 network key in Vault protects it at rest, but Step 6 does not specify how the key is injected into the Z-Wave SDK at runtime without exposing it in process memory",
+              "Certificate pinning + voice assistant OAuth fragility: pinned certs for Alexa/Google will break silently when Amazon/Google rotate their OAuth endpoint certificates, creating a hard outage that requires an app update to fix",
+              "OTA rollback attack vector: A/B partition swap does not prevent an attacker with firmware signing key access from flashing a known-vulnerable older signed image. No minimum version enforcement is specified in the secure boot chain.",
+              "Thread Border Router as attack pivot: the OpenThread border router in Step 7 bridges the Thread mesh to the IP backbone. Misconfigured firewall rules on the border router create a path from IP network into the Thread mesh and all paired Thread devices.",
+              "WebSocket lacks connection-level rate limiting: Step 8 specifies per-user REST rate limiting but no equivalent for WebSocket connections \u2014 susceptible to connection exhaustion DoS from a single authenticated account",
+              "HAP-nodejs in commercial product without MFi: using the open-source HAP-nodejs library for a commercial product that is not MFi certified may expose the manufacturer to Apple legal action and HomeKit accessory revocation",
+              "LUKS-encrypted storage key management not specified: Step 13 lists LUKS-encrypted storage on the hub, but does not specify where the LUKS passphrase/key is stored \u2014 if stored on the same device, encryption provides no protection against physical extraction attacks"
+            ],
+            "summary": "This plan demonstrates strong breadth and correct instincts on many fronts \u2014 TimescaleDB for time-series, A/B OTA with secure boot, S2 security for Z-Wave, DAC attestation for Matter, and a sensible test pyramid. However, it has three categories of blockers that would prevent production shipment regardless of implementation quality. First, the hardware architecture is never resolved: Z-Wave cannot run on ESP32-S3, the multi-chip topology for three simultaneous radio stacks is not designed, and firmware steps 4\u20137 are all built on an undefined foundation. Second, the certification and platform approval processes for Matter (CSA), HomeKit (MFi), Alexa Smart Home Skills (Amazon review), and Google Home Actions (Google review) are treated as engineering tasks when they are months-long external business processes that must begin immediately and in parallel with development. Third, the compliance framing is wrong \u2014 IEC 62443 is for industrial control systems; consumer IoT requires ETSI EN 303 645, NIST IR 8425, and a GDPR/CCPA privacy impact assessment, none of which appear. The Vault auto-unseal design is a security anti-pattern that must be rearchitected before any production deployment. The ML step's reliance on synthetic training data will produce a model that cannot meet its own F1 threshold on real device telemetry. This plan needs hardware architecture resolution, a certification process timeline, corrected compliance scope, and Vault redesign before implementation should begin \u2014 the current state would produce working demos against most steps but would fail to ship a legal, certifiable, secure product.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 52,
+              "flaws": [
+                "Hardware architecture is fatally underspecified: ESP32-S3 cannot run Z-Wave \u2014 Z-Wave requires a dedicated Silicon Labs EFR32ZG chip or a UART-attached Z-Wave module (e.g., ZGM230). The plan never resolves 'ESP32-S3 / NXP i.MX RT1060' \u2014 you cannot write firmware for two completely different MCUs simultaneously. The multi-protocol hub almost certainly requires a multi-chip architecture (main MCU + Zigbee co-processor + Z-Wave module + Thread/Matter radio), which is never acknowledged.",
+                "Matter certification is a business process, not a dev task: CSA membership ($3,500\u2013$10,000/year), Authorized Test Lab (ATL) engagement, and device certification (weeks to months, $10k+ per device type) are not mentioned anywhere. Shipping a Matter device without passing CSA certification is illegal under the Matter trademark license. Step 7's acceptance criteria ('validates against CSA test PAA') is dev testing only \u2014 it does not constitute certification.",
+                "Apple HomeKit/Siri integration requires Apple MFi certification for hardware products. Using HAP-nodejs in a commercial product without MFi approval violates Apple's HomeKit licensing terms. This is a legal blocker, not a technical one. Step 11 treats this as a pure engineering task.",
+                "Z-Wave SDK is not freely available: Silicon Labs Z-Wave 700/800 series SDK requires a Silicon Labs partnership agreement and NDA. 'z-wave-sdk' in step 1's toolchain is not a real installable package \u2014 this dependency cannot be bootstrapped with 'make dev'.",
+                "IEC 62443-3-3 is the wrong standard: IEC 62443 is for Industrial Automation and Control Systems (IACS). A consumer smart home hub should target ETSI EN 303 645 (European consumer IoT security baseline), NIST IR 8425 (U.S. consumer IoT), and/or UL 2900-2-2 (IoT security). Applying IEC 62443 SL-1 to a consumer product is scope mismatch and will not satisfy regulators or insurers in target markets.",
+                "Vault auto-unseal on startup negates the security model: Step 14 states 'Vault unseals automatically on backend startup with AppRole credentials.' Auto-unsealing with AppRole stores the unseal credentials in the same environment being protected. This is a well-documented anti-pattern \u2014 it converts Vault from a security control into a complexity layer. The credentials that unseal Vault must be stored separately (AWS KMS auto-unseal, HSM, etc.).",
+                "ML model trained on synthetic data with F1 > 0.80 target is unrealistic: Step 15 plans to train an anomaly detection model on a 'synthetic 6-month energy dataset + real labeled anomalies' and expects F1 > 0.80 on held-out data. Distribution shift between synthetic and real device telemetry is the primary failure mode for IoT ML. Without a labeled real-world dataset from actual deployed devices, this acceptance criterion cannot be validated before launch.",
+                "Alexa and Google Home Actions require platform approval processes: Submitting an Alexa Smart Home Skill or Google Home Action to production requires Amazon/Google review (days to weeks), developer account registration, and certification testing. Step 11 treats these as pure development tasks with no process timeline. A skill rejected by Amazon or Google blocks the entire voice integration milestone.",
+                "MQTT broker security is unaddressed: Steps 5, 6, 7, and 8 all rely on an MQTT broker as the internal bus. The plan never specifies MQTT authentication (username/password or mTLS client certs), authorization (topic ACLs), or TLS transport for the broker. An unauthenticated Mosquitto broker on a LAN is a documented attack surface for lateral movement in smart home environments.",
+                "No offline / local-only operation mode: The plan has no fallback for internet outage. A smart home hub that cannot control lights when the cloud is down is a P0 user experience failure. No mention of local API, mDNS discovery, or hub-local rule execution without backend connectivity.",
+                "Step 4 OTA acceptance criterion (60 seconds) conflicts with typical embedded OTA reality: A/B partition swap on firmware images for ESP32-S3 or i.MX RT1060 over typical home Wi-Fi involves: download (firmware can be 2\u20138 MB), SHA256 verify, flash write, and reboot. 60 seconds is achievable only on fast local networks with small images. No network condition or image size assumptions are documented.",
+                "Energy carbon intensity data source is missing: Step 12 includes 'co2_kg (grid carbon intensity * kWh)' as a derived metric but names no external API for real-time grid carbon intensity (ElectricityMaps, WattTime, etc.). Without this, CO2 calculation uses a static national average, making the feature misleading and potentially a regulatory liability in jurisdictions with strict environmental claims laws.",
+                "Rule engine conflict detection is NP-hard at scale: Step 10 proposes an 'overlap graph with warning flags' for conflict detection. For N rules with M triggers each, detecting all conflicts is at minimum O(N\u00b2 \u00d7 M). No complexity bound is specified. At 100+ rules per home \u2014 realistic for power users \u2014 this will either be too slow for the 100ms latency target or require significant approximation that the plan does not acknowledge.",
+                "Pairing security window not addressed: During Zigbee network steering, Z-Wave NWI, and Matter BLE commissioning, the hub is broadcasting open join capability. No timeout, no rate limiting on join attempts, and no protection against malicious device injection during the pairing window is specified anywhere in the security steps.",
+                "Device-to-device OTA (Zigbee/Z-Wave/Matter device firmware updates) is absent: Step 4 covers hub OTA. But smart home hubs are also responsible for pushing firmware to paired Zigbee (OTA cluster), Z-Wave (Firmware Update CC), and Matter (OTA Requestor cluster) devices. This is a major feature users expect that is completely absent from the plan."
+              ],
+              "suggestions": [
+                "Resolve the hardware architecture first \u2014 before writing a line of firmware. Define the exact BOM: which main MCU, which Zigbee radio (EFR32MG or CC2652), which Z-Wave module (ZGM230S or EFR32ZG), and which Thread/Matter radio. The firmware steps (4\u20137) are unexecutable until this is decided.",
+                "Add a certification timeline step before Step 7: CSA Matter certification, Z-Wave Alliance certification, and Apple MFi application each take 3\u20136 months. These must begin concurrently with early firmware development, not after it. Insert a step 2.5: 'Initiate Matter CSA membership, Z-Wave Alliance certification application, and Apple MFi program application.'",
+                "Replace IEC 62443 with the correct consumer IoT standards: ETSI EN 303 645 for EU market access, NIST IR 8425 for US market. Add GDPR/CCPA privacy impact assessment as a compliance step \u2014 consumer IoT home data (occupancy patterns, lock state) is sensitive personal data.",
+                "Redesign Vault integration: Use AWS KMS or Azure Key Vault auto-unseal (cloud-provider managed HSM) rather than AppRole-based auto-unseal. Store the KMS key reference in an instance role, not in the environment.",
+                "Add a local operation mode to Step 8: The backend API should degrade gracefully to local-only mode when upstream connectivity fails. Rule engine evaluation and device control must continue locally. Document the subset of features available offline.",
+                "Separate the ML service into a post-launch iteration: The anomaly model requires real production telemetry to train meaningfully. Shipping with a synthetic-data model risks false positive floods that erode user trust. Launch with a simple statistical threshold (rolling mean + 3\u03c3), collect 30\u201390 days of real data, then train and deploy the LSTM model.",
+                "Define MQTT topic ACL schema in the security step: Specify per-device topic namespacing (e.g., home/{home_id}/device/{device_id}/state), mTLS client certificates per protocol bridge, and Mosquitto ACL rules. This is security architecture, not optional hardening.",
+                "Add a mobile app strategy: Smart home hubs require iOS and Android apps for pairing (BLE commissioning for Matter requires a mobile app), push notifications (anomaly alerts), and remote access. The current plan has no mobile surface.",
+                "Add multi-hub topology to Step 2 PRD: Users with large homes will have multiple hubs. Define whether this is in scope and if so, how hub mesh routing, device ownership, and rule cross-hub triggers work.",
+                "Specify the network discovery mechanism: How does the mobile app or web UI discover the hub on the local network? mDNS/Avahi? UPnP? Manual IP? This is a significant UX factor absent from both frontend and backend steps.",
+                "Add device-to-device OTA as an explicit step between 7 and 8: Zigbee OTA cluster (0x0019), Z-Wave Firmware Update CC, and Matter OTA Requestor cluster each require backend OTA image hosting and a per-protocol update orchestration service.",
+                "The HIL CI runner in Step 21 needs a dedicated section: Running HIL tests in CI requires a self-hosted GitHub Actions runner physically connected to hardware, a way to reset the hub between tests, and power control hardware for the OTA power-loss test. This is an infrastructure procurement and setup task that should be its own step."
+              ],
+              "missing": [
+                "Hardware BOM and multi-chip architecture diagram \u2014 the entire firmware section is blocked without this",
+                "Matter CSA certification process and timeline (months-long external process)",
+                "Apple MFi certification for HomeKit hardware integration",
+                "Z-Wave Alliance SDK licensing agreement",
+                "Alexa/Google Home Actions platform review and submission process",
+                "GDPR/CCPA privacy impact assessment and data minimization design",
+                "Mobile app (iOS/Android) \u2014 required for BLE Matter commissioning alone",
+                "Local/offline operation mode with hub-autonomous rule execution",
+                "Device firmware OTA pipeline for Zigbee/Z-Wave/Matter end devices",
+                "Multi-hub mesh topology (scope decision required in PRD)",
+                "Network discovery mechanism (mDNS, UPnP, or manual)",
+                "User configuration backup and restore",
+                "Tariff schema database table (referenced in Step 12 but not in Step 3's table list)",
+                "Real-time grid carbon intensity API integration",
+                "MLflow deployment in the infra step (Step 15 references it, Step 20 omits it)",
+                "MQTT broker authentication and topic ACL design",
+                "WebSocket connection rate limiting and authentication",
+                "API versioning strategy",
+                "Database backup, point-in-time recovery, and DR runbook",
+                "Rollback attack protection for OTA (version downgrade prevention in secure boot chain)",
+                "i18n/localization strategy if targeting non-English markets"
+              ],
+              "security_risks": [
+                "Vault auto-unseal via AppRole: credentials that unseal Vault stored in the same system \u2014 attacker with container access gets full secret store access",
+                "MQTT broker unauthenticated: unspecified authentication on the internal MQTT bus means any process on the host or LAN segment can inject arbitrary device state or commands",
+                "Pairing mode open window: no per-session join token or IP binding during Zigbee/Z-Wave inclusion \u2014 susceptible to rogue device injection during 120-second pairing window",
+                "Z-Wave network key as high-value target: S2 network key in Vault protects it at rest, but Step 6 does not specify how the key is injected into the Z-Wave SDK at runtime without exposing it in process memory",
+                "Certificate pinning + voice assistant OAuth fragility: pinned certs for Alexa/Google will break silently when Amazon/Google rotate their OAuth endpoint certificates, creating a hard outage that requires an app update to fix",
+                "OTA rollback attack vector: A/B partition swap does not prevent an attacker with firmware signing key access from flashing a known-vulnerable older signed image. No minimum version enforcement is specified in the secure boot chain.",
+                "Thread Border Router as attack pivot: the OpenThread border router in Step 7 bridges the Thread mesh to the IP backbone. Misconfigured firewall rules on the border router create a path from IP network into the Thread mesh and all paired Thread devices.",
+                "WebSocket lacks connection-level rate limiting: Step 8 specifies per-user REST rate limiting but no equivalent for WebSocket connections \u2014 susceptible to connection exhaustion DoS from a single authenticated account",
+                "HAP-nodejs in commercial product without MFi: using the open-source HAP-nodejs library for a commercial product that is not MFi certified may expose the manufacturer to Apple legal action and HomeKit accessory revocation",
+                "LUKS-encrypted storage key management not specified: Step 13 lists LUKS-encrypted storage on the hub, but does not specify where the LUKS passphrase/key is stored \u2014 if stored on the same device, encryption provides no protection against physical extraction attacks"
+              ],
+              "summary": "This plan demonstrates strong breadth and correct instincts on many fronts \u2014 TimescaleDB for time-series, A/B OTA with secure boot, S2 security for Z-Wave, DAC attestation for Matter, and a sensible test pyramid. However, it has three categories of blockers that would prevent production shipment regardless of implementation quality. First, the hardware architecture is never resolved: Z-Wave cannot run on ESP32-S3, the multi-chip topology for three simultaneous radio stacks is not designed, and firmware steps 4\u20137 are all built on an undefined foundation. Second, the certification and platform approval processes for Matter (CSA), HomeKit (MFi), Alexa Smart Home Skills (Amazon review), and Google Home Actions (Google review) are treated as engineering tasks when they are months-long external business processes that must begin immediately and in parallel with development. Third, the compliance framing is wrong \u2014 IEC 62443 is for industrial control systems; consumer IoT requires ETSI EN 303 645, NIST IR 8425, and a GDPR/CCPA privacy impact assessment, none of which appear. The Vault auto-unseal design is a security anti-pattern that must be rearchitected before any production deployment. The ML step's reliance on synthetic training data will produce a model that cannot meet its own F1 threshold on real device telemetry. This plan needs hardware architecture resolution, a certification process timeline, corrected compliance scope, and Vault redesign before implementation should begin \u2014 the current state would produce working demos against most steps but would fail to ship a legal, certifiable, secure product.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T07:40:21.719518+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 183.06,
+      "critic_plan": 167.18
+    }
+  }
+}

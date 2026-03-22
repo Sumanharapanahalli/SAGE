@@ -1,0 +1,337 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas (children under 13, adult
+      learners, educators), user stories, and ROI model. Document COPPA/FERPA applicability
+      based on target age groups and institutional use.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 30 user stories written and prioritized by MoSCoW
+    - COPPA applicability decision documented with legal rationale
+    - FERPA scope documented for any institutional/educator use cases
+    - ROI model includes 3 monetization scenarios (freemium, subscription, institutional)
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Analyze competitors (Duolingo, Babbel, Rosetta Stone, Pimsleur),
+      identify differentiators for spaced repetition + speech AI combo, define target
+      languages and markets.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Feature matrix comparing top 5 competitors across all key dimensions
+    - Differentiation statement for speech + conversational AI positioning
+    - Go-to-market strategy for at least 2 language markets
+    - Pricing benchmark analysis against 3 competitors
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Write the Product Requirements Document (PRD), define MVP scope,
+      create phased roadmap (MVP → v1.0 → v2.0), and establish success metrics (DAU,
+      lesson completion rate, pronunciation accuracy threshold, retention at 30/60/90
+      days).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all 5 core features with functional requirements and edge cases
+    - MVP scope agreed with at least 15 user stories tagged as MVP
+    - 3-phase roadmap with milestone dates and success criteria per phase
+    - OKRs defined for first 6 months post-launch
+    depends_on:
+    - 1
+    - 2
+  UX_DESIGN:
+    description: Conduct user research, create information architecture, design wireframes
+      for all core flows (onboarding, daily lesson, pronunciation drill, conversational
+      AI session, progress dashboard, offline mode), and produce accessibility audit
+      plan for WCAG 2.1 AA compliance.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes completed for all 7 core flows in low and high fidelity
+    - WCAG 2.1 AA checklist documented with pass/fail per component
+    - Child-safe UI variant wireframes for COPPA-applicable screens
+    - Usability test plan with at least 5 test participants per persona
+    - Accessibility audit report with remediation backlog
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on:
+    - 3
+  COMPLIANCE:
+    description: Produce compliance evidence artifacts for COPPA, FERPA, and WCAG
+      2.1. Document parental consent workflows, data minimization policies for minors,
+      FERPA data handling for institutional users, and create traceability matrix
+      mapping features to compliance requirements.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - COPPA compliance checklist completed with evidence for each requirement
+    - Parental consent flow documented with verification mechanism (email, credit
+      card micro-charge, or knowledge-based)
+    - FERPA data handling agreement template drafted for institutional customers
+    - WCAG 2.1 AA traceability matrix maps every UI component to compliance status
+    - Privacy Impact Assessment completed and reviewed by legal_advisor
+    depends_on:
+    - 3
+    - 4
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (COPPA-compliant with parental
+      consent section), Cookie Policy, and institutional licensing agreement (FERPA-aware).
+      Review IP ownership of user-generated speech data.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy includes explicit COPPA section with parental rights and consent
+      mechanism
+    - ToS includes FERPA data processing addendum for institutional users
+    - Speech data IP policy clearly states user owns recordings, company has limited
+      processing license
+    - GDPR data subject rights documented (access, deletion, portability)
+    - Cookie consent mechanism specified for GDPR compliance
+    - FERPA/COPPA compliance if minors involved
+    depends_on:
+    - 5
+  CONFIG:
+    description: Set up project monorepo structure (mobile app + backend + ML services),
+      configure development toolchain (React Native or Flutter for mobile, FastAPI
+      backend, Python ML services), CI/CD skeleton, environment configs, and agentic
+      AI pattern configuration for conversational practice (coordinator pattern with
+      specialist sub-agents for grammar, vocabulary, and pronunciation coaching).
+    agent_role: developer
+    acceptance_criteria:
+    - Monorepo initialized with all service directories and shared type definitions
+    - Coordinator agentic pattern scaffolded with 4 specialist agent stubs
+    - Feature flag system operational for gradual rollout
+    - All environment configs validated with no secrets committed
+    - Pre-commit hooks installed (lint, type check, secret scan)
+    depends_on:
+    - 3
+  DATABASE:
+    description: Design and implement database schema for users, vocabulary items,
+      learning sessions, spaced repetition state (SM-2 or FSRS algorithm state per
+      card per user), gamification (streaks, XP, badges, leaderboard), speech recordings
+      metadata, and conversation history.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD documented covering all entities and relationships
+    - FSRS card state schema supports stability, difficulty, due_date, last_review,
+      review_count
+    - All user-owned tables include sync_state column for offline support
+    - Under-13 user data isolation mechanism implemented and tested
+    - Migrations run cleanly from empty DB to full schema
+    - Indexes on high-frequency query paths (user_id+due_date for SRS reviews)
+    depends_on:
+    - 7
+  API:
+    description: 'Design OpenAPI specification for all backend endpoints: auth (with
+      parental consent flow), user management, SRS review queue, lesson content delivery,
+      speech evaluation submission, conversational AI session management, gamification
+      events, and offline sync endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec covers all endpoint groups with request/response schemas
+    - Auth flow includes parental consent endpoint with verification mechanism
+    - Offline sync endpoints support delta-only payloads with conflict resolution
+      strategy documented
+    - All endpoints document error codes including COPPA-specific errors
+    - API contract reviewed and approved before backend implementation begins
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Implement core backend: FastAPI application with JWT auth, parental
+      consent flow, user management service, COPPA age-gate middleware, FERPA institutional
+      data isolation, and audit logging for all PII access.'
+    agent_role: developer
+    acceptance_criteria:
+    - Age gate rejects under-13 registration without verified parental consent
+    - Parental consent email flow functional end-to-end in staging
+    - All PII access logged with user_id, accessor_id, timestamp, and purpose
+    - FERPA institutional users isolated in separate tenant context
+    - All auth endpoints return correct HTTP status codes and OWASP-safe error messages
+    - JWT expiry and refresh token rotation working correctly
+    depends_on:
+    - 9
+  ML_MODEL:
+    description: Build speech recognition and pronunciation evaluation pipeline. Integrate
+      Whisper (offline-capable) for transcription and a phoneme-level scoring model
+      to give pronunciation feedback. Deploy as a microservice with async job queue
+      for evaluation results.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Whisper transcription achieves < 5% WER on clean speech for all 6 target languages
+    - Pronunciation scoring returns phoneme-level breakdown with actionable tip per
+      word
+    - On-device Whisper base model bundled and functional offline on iOS and Android
+    - Evaluation pipeline processes 10-second audio clip in < 3 seconds server-side
+    - Model evaluation report documents WER and pronunciation scoring accuracy benchmarks
+    depends_on:
+    - 7
+  AGENTIC:
+    description: Implement the conversational AI practice system using the Coordinator
+      agentic pattern. Build ConversationalCoordinator that routes user messages to
+      specialist sub-agents (GrammarCoach, VocabularyCoach, PronunciationCoach, CulturalContextAgent),
+      synthesizes responses, and maintains conversation history with learning context
+      injection.
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes to all 4 specialist agents based on message intent
+    - Specialist agent responses synthesized into single coherent reply in < 4 seconds
+    - Conversation history persists across sessions and injects relevant prior context
+    - 4 conversation modes all functional and produce distinct agent behavior
+    - Grammar errors flagged inline without breaking conversation flow
+    - Vocabulary introduced from user's SRS deck (not random) at appropriate intervals
+    depends_on:
+    - 10
+    - 11
+  FRONTEND:
+    description: 'Build mobile app core shell in React Native: navigation structure
+      (tab bar + stack nav), theming system, auth screens (login, register with age-gate,
+      parental consent flow), onboarding placement test, and bottom tab navigation
+      for Home, Practice, Progress, and Profile.'
+    agent_role: developer
+    acceptance_criteria:
+    - Age gate on registration blocks under-13 and routes to parental consent flow
+    - Placement test correctly sets initial CEFR level and seeds SRS deck at that
+      level
+    - Tab navigation renders all 4 tabs without crashes on iOS 15+ and Android 11+
+    - All interactive elements pass 44pt touch target requirement
+    - Light and dark mode switch without visual glitches
+    - Screen reader (VoiceOver/TalkBack) announces all interactive elements correctly
+    depends_on:
+    - 4
+    - 10
+  LOCALIZATION:
+    description: Set up i18n infrastructure for the app UI itself (separate from language
+      learning content). Support English, Spanish, French, Portuguese, Japanese, and
+      Arabic (RTL) for the app interface. Configure translation workflow, locale-specific
+      number and date formatting, and RTL layout support.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All user-facing strings in app UI use i18n keys (zero hardcoded strings in components)
+    - Arabic locale renders with correct RTL layout including navigation, icons, and
+      text alignment
+    - Date formats adapt to locale (e.g., DD/MM/YYYY for European locales)
+    - Plural rules work correctly for all supported locales (tested with 0, 1, 2,
+      5 items)
+    - Translation files cover 100% of i18n keys for English; at least 80% for all
+      other locales
+    - Missing translation keys fall back to English gracefully
+    depends_on:
+    - 16
+  SECURITY:
+    description: 'Conduct security review: threat model for speech data and user PII,
+      penetration test plan for API endpoints (auth bypass, injection, IDOR on user
+      content), OWASP Mobile Top 10 review for the React Native app, SBOM generation,
+      and data-at-rest encryption review for offline storage.'
+    agent_role: developer
+    acceptance_criteria:
+    - Threat model covers all 5 identified threats with mitigations documented
+    - OWASP Mobile Top 10 review completed with pass/fail per item and remediation
+      for failures
+    - Offline SQLite storage uses SQLCipher encryption (verified by attempting plaintext
+      read of .db file)
+    - API pen test plan covers auth bypass, IDOR, and injection vectors
+    - SBOM generated and no critical CVEs in dependencies
+    - Parental consent bypass attempt documented and mitigated
+    depends_on:
+    - 10
+    - 15
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: SRS algorithm
+      correctness (all rating paths, boundary conditions), gamification XP calculations,
+      parental consent flow, offline sync delta logic, and conversational AI coordinator
+      routing logic.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - FSRS algorithm tests cover all 4 rating values and match reference implementation
+      outputs
+    - Timezone edge case tests pass for streak reset at midnight in UTC-12 and UTC+14
+    - Under-13 age-gate test confirms rejection at exactly DoB threshold
+    - Delta sync tests cover 5 conflict scenarios with expected resolution outcomes
+    - Coordinator routing tests cover all 4 specialist agent intents
+    - Overall backend line coverage >= 80% (reported by pytest-cov)
+    depends_on:
+    - 11
+    - 13
+    - 14
+    - 15
+  QA:
+    description: Create QA test plan covering manual test cases for COPPA/FERPA compliance
+      flows, WCAG 2.1 AA accessibility testing on physical devices, pronunciation
+      scoring accuracy test matrix (native vs non-native speakers across 6 languages),
+      and exploratory test charters for gamification edge cases.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - COPPA compliance test suite has at least 12 test cases with expected outcomes
+      documented
+    - WCAG 2.1 AA test cases cover all interactive components on iOS and Android
+    - Pronunciation scoring test matrix executed and inter-rater reliability >= 0.8
+      (Cohen's kappa)
+    - Exploratory test charters written for all 4 gamification edge case areas
+    - Test plan reviewed and signed off before system testing begins
+    depends_on:
+    - 5
+    - 20
+    - 18
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite covering: full user journey
+      (register → placement test → lesson → SRS review → pronunciation drill → conversation
+      session → gamification earned), offline mode (airplane mode for full session
+      then sync), and multi-device sync scenarios.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 6 E2E journeys pass on iOS 15+ and Android 11+ physical devices
+    - 'Offline mode: full SRS session completed in airplane mode, all data synced
+      correctly on reconnect'
+    - Performance benchmarks all met on mid-tier test devices
+    - Under-13 user cannot access leaderboard or conversation sharing features
+    - 'Load test: p95 speech evaluation < 5s at 1000 concurrent users'
+    - Zero data loss after forced app kill mid-sync
+    depends_on:
+    - 17
+    - 18
+    - 19
+    - 20
+    - 21
+    - 24
+    - 25
+  DEVOPS:
+    description: 'Build CI/CD pipeline: GitHub Actions for mobile builds (Expo EAS
+      Build), backend Docker containerization, staging and production environments
+      on AWS (ECS + RDS + S3 for audio assets), CDN for language pack downloads, and
+      monitoring/alerting setup.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs in < 10 minutes on every PR
+    - Staging auto-deploys within 5 minutes of main merge
+    - EAS Build produces signed iOS IPA and Android APK for TestFlight/Play Console
+    - CloudFront CDN serves language packs with < 100ms TTFB in us-east-1
+    - PagerDuty alert fires correctly when p95 speech eval > 5s in load test
+    - All secrets managed through AWS Secrets Manager (zero plaintext secrets in codebase
+      verified by secret scan)
+    depends_on:
+    - 23
+    - 26
+  TRAINING:
+    description: Create user-facing onboarding guides, in-app tutorial overlays, educator
+      setup documentation for FERPA institutional accounts, and video scripts for
+      app store preview videos.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - 10 help center articles cover all major features with screenshots
+    - In-app tutorial overlay content covers all 5 tutorial topics in under 60 seconds
+      of reading
+    - Educator setup guide covers FERPA features, data export, and student account
+      management
+    - Parent consent explainer page written at 6th-grade reading level (Flesch-Kincaid
+      >= 60)
+    - App store preview video script approved by product_manager before production
+    depends_on:
+    - 26
+  DOCS:
+    description: 'Write technical documentation: API reference (auto-generated from
+      OpenAPI spec), architecture decision records (ADRs) for FSRS algorithm choice,
+      coordinator agentic pattern, offline sync protocol, and SBOM documentation.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference covers all endpoints with at least one request/response example
+      each
+    - 4 ADRs written with context, decision, consequences, and alternatives considered
+    - Architecture diagram accurately reflects deployed system components
+    - On-call runbook covers top 3 incident scenarios with step-by-step resolution
+    - COPPA data deletion runbook documents process and SLA (must complete within
+      45 days per FTC)
+    depends_on:
+    - 27

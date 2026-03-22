@@ -1,0 +1,982 @@
+{
+  "run_id": "dbfb2e02-cfbc-4857-809c-6517e86ee48e",
+  "status": {
+    "run_id": "dbfb2e02-cfbc-4857-809c-6517e86ee48e",
+    "solution_name": "patient_monitoring_dashboard",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-21T22:46:09.523236+00:00",
+    "updated_at": "2026-03-21T22:51:18.671113+00:00",
+    "product_description": "ICU patient monitoring dashboard aggregating data from ventilators, infusion pumps, and vital sign monitors. Real-time alerting with nurse station integration. HL7 FHIR compliant.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Gather and document ICU stakeholder requirements: clinical workflows for nurses and intensivists, device integration scope (ventilators, infusion pumps, vital sign monitors), alerting escalation protocols, and nurse station notification flows. Produce a formal Business Requirements Document (BRD) and user story backlog.",
+        "payload": {
+          "stakeholders": [
+            "ICU nurses",
+            "intensivists",
+            "biomedical engineers",
+            "IT/security",
+            "compliance officers"
+          ],
+          "devices": [
+            "ventilators",
+            "infusion_pumps",
+            "vital_sign_monitors"
+          ],
+          "output_artifacts": [
+            "BRD",
+            "user_story_backlog",
+            "process_flow_diagrams"
+          ],
+          "standards_context": [
+            "HL7 FHIR R4",
+            "IEC 62304",
+            "ISO 13485"
+          ]
+        },
+        "acceptance_criteria": [
+          "BRD reviewed and signed off by at least one clinical stakeholder",
+          "All device integration protocols documented (HL7 v2, HL7 FHIR, proprietary)",
+          "Alert escalation matrix defined with priority levels (P1-P4)",
+          "User story backlog covers all identified ICU workflows",
+          "Process flow diagrams include nurse station notification paths"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "SAFETY",
+        "description": "Conduct preliminary hazard analysis and FMEA for the ICU patient monitoring system per ISO 14971. Identify failure modes for data loss, alert suppression, erroneous readings, network outages, and device communication failures. Produce Hazard Identification Log, Risk Matrix (severity \u00d7 probability), and initial Risk Control Measures.",
+        "payload": {
+          "standard": "ISO 14971:2019",
+          "scope": [
+            "data_aggregation_failures",
+            "alert_suppression",
+            "erroneous_alarm_floods",
+            "network_partition",
+            "device_disconnect"
+          ],
+          "output_artifacts": [
+            "hazard_identification_log",
+            "FMEA_table",
+            "risk_matrix",
+            "risk_control_measures"
+          ],
+          "risk_levels": [
+            "critical",
+            "serious",
+            "moderate",
+            "negligible"
+          ]
+        },
+        "acceptance_criteria": [
+          "FMEA table covers all device types and communication channels",
+          "All critical hazards (patient harm potential) have documented risk controls",
+          "Risk matrix uses ISO 14971 severity \u00d7 probability framework",
+          "Residual risk accepted or flagged for design mitigation before implementation",
+          "Safety engineer sign-off on hazard log completeness",
+          "ISO 14971 risk management file complete",
+          "Residual risk acceptable"
+        ],
+        "depends_on": [],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 3,
+        "task_type": "REGULATORY",
+        "description": "Map product to applicable regulatory frameworks: FDA 21 CFR Part 820 (QMS), IEC 62304 (software lifecycle), ISO 13485 (medical device QMS), HIPAA/HITECH (PHI handling), and HL7 FHIR compliance. Produce Standards Traceability Matrix linking each regulation to design controls and verification activities.",
+        "payload": {
+          "standards": [
+            "FDA 21 CFR Part 820",
+            "IEC 62304",
+            "ISO 13485",
+            "HIPAA",
+            "HITECH",
+            "HL7 FHIR R4"
+          ],
+          "classification": "FDA Class II medical device software (SaMD)",
+          "output_artifacts": [
+            "standards_traceability_matrix",
+            "regulatory_strategy_doc",
+            "predicate_device_analysis"
+          ],
+          "submission_pathway": "510(k)"
+        },
+        "acceptance_criteria": [
+          "Every applicable clause from each standard mapped to a design control or artifact",
+          "Software safety class determined per IEC 62304 (Class B or C)",
+          "PHI data flows identified and mapped to HIPAA safeguard requirements",
+          "Regulatory strategy document approved by regulatory specialist",
+          "510(k) predicate device analysis completed",
+          "HIPAA risk assessment complete",
+          "BAA template prepared"
+        ],
+        "depends_on": [],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 4,
+        "task_type": "LEGAL",
+        "description": "Draft legal artifacts for the ICU monitoring platform: HIPAA Business Associate Agreement (BAA) template, Terms of Service for hospital IT, Privacy Policy covering PHI handling, open-source license audit (SBOM pre-check), and IP review for HL7 FHIR integration libraries.",
+        "payload": {
+          "artifacts": [
+            "HIPAA_BAA_template",
+            "terms_of_service",
+            "privacy_policy",
+            "open_source_license_inventory"
+          ],
+          "phi_scope": "real-time vital signs, device telemetry, patient identifiers",
+          "compliance_frameworks": [
+            "HIPAA",
+            "HITECH",
+            "GDPR (if EU deployment)"
+          ]
+        },
+        "acceptance_criteria": [
+          "HIPAA BAA template reviewed by legal counsel",
+          "Privacy Policy enumerates all PHI data categories collected",
+          "All third-party library licenses documented and compatible with commercial use",
+          "ToS covers liability limitations for clinical alert systems",
+          "IP review confirms no patent conflicts with HL7 FHIR implementation"
+        ],
+        "depends_on": [],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Design ICU dashboard UX: nurse station alert panel, multi-patient grid view, per-patient vital trend charts, device status indicators, and alert acknowledgment flows. Conduct accessibility audit (WCAG 2.1 AA). Produce high-fidelity wireframes and interactive prototype for clinical validation.",
+        "payload": {
+          "views": [
+            "multi_patient_grid",
+            "single_patient_detail",
+            "alert_panel",
+            "nurse_station_display",
+            "device_status_board"
+          ],
+          "alert_interaction": [
+            "acknowledge",
+            "escalate",
+            "silence_with_reason"
+          ],
+          "accessibility": "WCAG 2.1 AA",
+          "clinical_validation": "usability study with 3+ ICU nurses"
+        },
+        "acceptance_criteria": [
+          "Multi-patient grid displays \u226512 patients simultaneously without scrolling on 1920\u00d71080",
+          "Critical alert acknowledgment requires \u22643 clicks/taps",
+          "Color-coded alert severity meets WCAG 2.1 AA contrast ratios",
+          "Wireframes validated by at least 3 ICU clinical staff",
+          "Interactive prototype covers all primary nurse workflows end-to-end"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "DATABASE",
+        "description": "Design HL7 FHIR R4-aligned data schema for patient vitals, device observations, alert events, and audit logs. Define PostgreSQL schema with TimescaleDB extension for time-series vitals. Include PHI encryption-at-rest design, patient-device linkage tables, and audit trail schema per HIPAA requirements.",
+        "payload": {
+          "fhir_resources": [
+            "Patient",
+            "Device",
+            "Observation",
+            "Alert",
+            "AuditEvent",
+            "ServiceRequest"
+          ],
+          "time_series_store": "TimescaleDB (PostgreSQL extension)",
+          "encryption": "AES-256 at rest, TLS 1.3 in transit",
+          "retention_policy": "7 years per HIPAA minimum",
+          "partitioning": "by patient_id and timestamp for query performance"
+        },
+        "acceptance_criteria": [
+          "FHIR R4 resource schemas validated against official FHIR StructureDefinitions",
+          "TimescaleDB hypertables created for Observation resources with <100ms p99 query for 24h window",
+          "PHI fields encrypted at rest using AES-256 with key rotation policy documented",
+          "Audit log table captures all PHI access events with user, timestamp, action",
+          "Database migration scripts are idempotent and version-controlled"
+        ],
+        "depends_on": [
+          1,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design HL7 FHIR R4 REST API specification: FHIR server endpoints for Patient, Observation, Device, AuditEvent resources; device data ingestion WebSocket endpoints; real-time alert push API (SSE); nurse station notification API. Produce OpenAPI 3.1 spec and FHIR CapabilityStatement.",
+        "payload": {
+          "fhir_interactions": [
+            "read",
+            "search",
+            "create",
+            "update",
+            "history"
+          ],
+          "custom_endpoints": [
+            "POST /ingest/device",
+            "GET /alerts/stream (SSE)",
+            "POST /alerts/{id}/acknowledge",
+            "POST /nurse-station/notify"
+          ],
+          "auth": "OAuth 2.0 + SMART on FHIR",
+          "output_artifacts": [
+            "openapi_3_1_spec.yaml",
+            "fhir_capability_statement.json"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec passes lint validation with no errors",
+          "FHIR CapabilityStatement lists all supported resource types and interactions",
+          "SMART on FHIR authorization flows documented for EHR launch context",
+          "Device ingestion endpoint supports HL7 v2 ADT, ORU message parsing",
+          "SSE alert stream endpoint defined with reconnection and event-type schema"
+        ],
+        "depends_on": [
+          1,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "SECURITY",
+        "description": "Produce threat model (STRIDE) for the ICU monitoring system covering device communication channels, PHI data at rest and in transit, nurse station integration, and API exposure. Define security architecture: network segmentation, authentication, authorization (RBAC), and audit logging requirements. Produce initial SBOM.",
+        "payload": {
+          "methodology": "STRIDE",
+          "threat_surfaces": [
+            "HL7 device interfaces",
+            "REST API",
+            "WebSocket streams",
+            "nurse_station_integration",
+            "admin_console"
+          ],
+          "controls": [
+            "mTLS for device comms",
+            "OAuth2+SMART on FHIR",
+            "RBAC (nurse/intensivist/admin/biomedical)",
+            "PHI field-level encryption"
+          ],
+          "output_artifacts": [
+            "threat_model.md",
+            "security_architecture.md",
+            "SBOM_initial.json",
+            "RBAC_matrix"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all identified threat surfaces",
+          "Every threat has a documented countermeasure or accepted risk",
+          "RBAC matrix defines permissions for all 4 user roles across all API endpoints",
+          "SBOM covers all runtime dependencies with CVE status",
+          "Security architecture reviewed and approved by security engineer",
+          "PHI encryption at rest and in transit",
+          "Access audit logging enabled"
+        ],
+        "depends_on": [
+          3,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "COMPLIANCE",
+        "description": "Initialize Design History File (DHF) per FDA 21 CFR Part 820 and ISO 13485. Create Device Design Plan, Risk Management File (linked to step 2 FMEA), Design Input requirements, and Verification & Validation protocol templates. Establish traceability matrix linking requirements \u2192 design \u2192 test evidence.",
+        "payload": {
+          "dhf_sections": [
+            "design_plan",
+            "design_inputs",
+            "design_outputs",
+            "design_review_records",
+            "design_verification",
+            "design_validation",
+            "design_transfer",
+            "design_changes"
+          ],
+          "risk_management_file": "linked to ISO 14971 FMEA from step 2",
+          "traceability_tool": "requirements_traceability_matrix (RTM)",
+          "standards": [
+            "FDA 21 CFR Part 820.30",
+            "ISO 13485:2016 Clause 7.3"
+          ]
+        },
+        "acceptance_criteria": [
+          "DHF document structure approved by regulatory specialist",
+          "All Design Inputs traceable to stakeholder requirements from BRD",
+          "RTM links each requirement to \u22651 verification test case",
+          "Risk Management File references FMEA from step 2 with risk control measures",
+          "V&V protocol templates reviewed and approved before implementation begins",
+          "DHF (Design History File) structure created",
+          "V&V protocol drafted"
+        ],
+        "depends_on": [
+          1,
+          2,
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 10,
+        "task_type": "FIRMWARE",
+        "description": "Implement device adapter firmware/drivers for bedside device integration. Build HL7 v2 message parser (ADT, ORU, MDM), serial/RS-232 and TCP/IP device communication handlers, and a lightweight RTOS-based polling loop for vital sign monitors. Target embedded gateway hardware (ARM Cortex-M or Linux-based edge device).",
+        "payload": {
+          "target": "ARM Cortex-A (Linux edge gateway) or Cortex-M (bare-metal fallback)",
+          "protocols": [
+            "HL7 v2.x",
+            "RS-232",
+            "TCP/IP",
+            "Bluetooth LE (optional)"
+          ],
+          "message_types": [
+            "ADT^A01 (admit)",
+            "ORU^R01 (observation result)",
+            "MDM^T02 (device data)"
+          ],
+          "rtos": "FreeRTOS (bare-metal) / Yocto Linux (edge gateway)",
+          "iec_62304_class": "Class B"
+        },
+        "acceptance_criteria": [
+          "HL7 v2 ORU^R01 parser correctly extracts all OBX segment vital sign values",
+          "Device communication handler reconnects automatically within 5s of TCP disconnect",
+          "All firmware modules have corresponding unit tests with \u226580% line coverage",
+          "IEC 62304 software unit documentation completed for each module",
+          "Firmware compiles without warnings under -Wall -Wextra for target architecture",
+          "IEC 62304 software class documented",
+          "SOUP components listed"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement the FHIR R4 server and device data ingestion service. Build: HAPI FHIR server (Java) or Python FHIR server with resource validation, HL7 v2\u2192FHIR R4 transformation pipeline, real-time observation ingestion from device adapters via WebSocket/MQTT, and TimescaleDB persistence layer. Implement SMART on FHIR OAuth2 authorization server integration.",
+        "payload": {
+          "fhir_server": "HAPI FHIR (Java) or fhir-kit-client (Node.js) with custom extensions",
+          "ingestion": "MQTT broker (Mosquitto) + WebSocket bridge for device adapters",
+          "transformation": "HL7 v2 to FHIR R4 Observation mapping engine",
+          "auth": "Keycloak with SMART on FHIR plugin",
+          "agentic_pattern": "multi_agent_parallel \u2014 parallel ingestion agents per device type"
+        },
+        "acceptance_criteria": [
+          "FHIR server passes HL7 FHIR R4 validation for all supported resource types",
+          "HL7 v2 ORU messages transformed to FHIR Observation resources with correct coding (LOINC)",
+          "Device data ingestion handles \u2265500 concurrent device connections",
+          "TimescaleDB writes complete within 50ms p99 for single observation",
+          "SMART on FHIR token introspection integrated and rejecting invalid tokens"
+        ],
+        "depends_on": [
+          6,
+          7,
+          8,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement real-time alerting engine and nurse station notification service. Build configurable alert rule engine (vital sign thresholds, device disconnect, data staleness), alert deduplication and suppression logic, escalation policy engine (P1\u2192P2\u2192P3), and nurse station push notification via SSE and HL7 ADT/ACK messaging.",
+        "payload": {
+          "alert_rules": [
+            "vital_threshold_breach",
+            "device_disconnect",
+            "data_staleness_>30s",
+            "critical_trend_delta"
+          ],
+          "deduplication": "sliding 60s window per patient per alert type",
+          "escalation": "configurable escalation chain with timeout per tier",
+          "nurse_station_protocols": [
+            "SSE push",
+            "HL7 ACK",
+            "REST webhook"
+          ],
+          "agentic_pattern": "human_in_the_loop \u2014 critical alerts require nurse acknowledgment within SLA"
+        },
+        "acceptance_criteria": [
+          "Alert triggers within 2 seconds of threshold breach in device data",
+          "Duplicate alert suppression prevents >1 alert per patient per rule per 60s window",
+          "Escalation to next tier fires automatically if acknowledgment SLA breached",
+          "Nurse station SSE stream delivers alert within 500ms of generation",
+          "Alert acknowledgment recorded in FHIR AuditEvent resource"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "FRONTEND",
+        "description": "Implement ICU monitoring dashboard React application. Build: multi-patient grid with real-time vital sign tiles, single-patient detail view with trend charts (Chart.js/Recharts), alert panel with acknowledgment workflow, device status board, nurse station display mode, and SMART on FHIR EHR launch integration. SSE-driven live updates.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "state_management": "Zustand for alert state, React Query for FHIR data",
+          "charts": "Recharts for vital trend visualization",
+          "real_time": "SSE EventSource for alert stream, polling fallback",
+          "auth": "SMART on FHIR launch sequence (EHR context)",
+          "views": [
+            "grid_view",
+            "patient_detail",
+            "alert_panel",
+            "device_status",
+            "nurse_station_display"
+          ]
+        },
+        "acceptance_criteria": [
+          "Multi-patient grid renders 12-patient view with <100ms initial load on LAN",
+          "Vital sign values update in UI within 1 second of backend SSE event",
+          "Alert acknowledge modal appears within 200ms of clicking alert",
+          "WCAG 2.1 AA audit passes for all primary views",
+          "SMART on FHIR EHR launch flow tested against SMART App Launcher"
+        ],
+        "depends_on": [
+          5,
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "CONFIG",
+        "description": "Configure SAGE solution YAML files for patient_monitoring_dashboard: project.yaml (solution manifest, active modules, HITL level = strict), prompts.yaml (clinical analyst, alert reviewer, compliance reviewer agent roles), tasks.yaml (alert_review, vitals_analysis, device_health_check task types). Set up agentic coordinator pattern for multi-agent monitoring.",
+        "payload": {
+          "solution_name": "patient_monitoring_dashboard",
+          "hitl_level": "strict",
+          "active_modules": [
+            "dashboard",
+            "analyst",
+            "approvals",
+            "queue",
+            "audit",
+            "knowledge",
+            "improvements"
+          ],
+          "agent_roles": [
+            "clinical_analyst",
+            "alert_reviewer",
+            "compliance_reviewer"
+          ],
+          "agentic_pattern": "coordinator",
+          "task_types": [
+            "alert_review",
+            "vitals_trend_analysis",
+            "device_health_check",
+            "compliance_audit_check"
+          ]
+        },
+        "acceptance_criteria": [
+          "project.yaml validates against SAGE schema with no errors",
+          "SAGE backend starts with PROJECT=patient_monitoring_dashboard without errors",
+          "All 3 agent roles defined in prompts.yaml with domain-specific system prompts",
+          "task_types in tasks.yaml cover all clinical monitoring workflows",
+          "HITL gate active for alert_review and compliance_audit_check task types"
+        ],
+        "depends_on": [
+          1,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline, container orchestration, and monitoring infrastructure. Docker Compose (dev) + Kubernetes (prod) with HIPAA-compliant logging. GitHub Actions CI: lint, unit tests, FHIR validation, SAST scan (Semgrep). Prometheus + Grafana monitoring. Alertmanager integration. Network segmentation for device VLAN isolation.",
+        "payload": {
+          "ci_cd": "GitHub Actions",
+          "containers": "Docker + Kubernetes (GKE or on-prem)",
+          "monitoring": "Prometheus + Grafana + Alertmanager",
+          "logging": "ELK stack with PHI field masking",
+          "network": "Device VLAN isolation, mTLS between services",
+          "sast": "Semgrep + Bandit (Python) + ESLint security plugin"
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs on every PR and fails on SAST findings of severity HIGH+",
+          "FHIR resource validation runs in CI against HAPI FHIR validator",
+          "PHI fields masked/redacted in all log outputs (verified by log audit)",
+          "Kubernetes resource limits defined for all services",
+          "Grafana dashboard covers ingestion latency, alert delivery latency, device connection count"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Design and implement hardware-in-the-loop (HIL) test specs for device adapter firmware. Build a device simulator (HL7 v2 message generator) for ventilators, infusion pumps, and vital sign monitors. Write firmware unit tests using Unity/CppUTest. Define HIL test harness for disconnect/reconnect, malformed message, and high-throughput scenarios.",
+        "payload": {
+          "simulator": "Python-based HL7 v2 device simulator (generates ADT, ORU, MDM messages)",
+          "unit_test_framework": "Unity (C) / pytest (Python adapter layer)",
+          "hil_scenarios": [
+            "device_disconnect_reconnect",
+            "malformed_hl7_message",
+            "message_flood_1000msg/s",
+            "concurrent_3_device_types",
+            "clock_skew_handling"
+          ],
+          "coverage_target": "\u226585% line coverage on firmware adapter modules"
+        },
+        "acceptance_criteria": [
+          "Device simulator generates valid HL7 v2 ORU^R01 messages for all 3 device types",
+          "Firmware unit test suite passes with \u226585% line coverage",
+          "HIL disconnect/reconnect test: adapter recovers and resumes within 5 seconds",
+          "Malformed HL7 message test: adapter logs error, does not crash, resumes processing",
+          "1000 msg/s flood test: no message loss, queue depth bounded"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "QA",
+        "description": "Produce comprehensive QA test plan covering functional, regression, usability, and performance testing. Define test cases for: vital sign data accuracy, alert generation correctness, FHIR resource conformance, multi-user concurrency, and nurse station notification delivery. Establish defect severity classification aligned to patient risk levels.",
+        "payload": {
+          "test_categories": [
+            "functional",
+            "regression",
+            "usability",
+            "performance",
+            "FHIR_conformance",
+            "alert_accuracy"
+          ],
+          "defect_severity": [
+            "critical (patient_safety_risk)",
+            "major (clinical_workflow_impact)",
+            "minor (cosmetic)"
+          ],
+          "traceability": "each test case linked to RTM requirement",
+          "tools": "pytest, Playwright (E2E), k6 (load testing), FHIR Touchstone (conformance)"
+        },
+        "acceptance_criteria": [
+          "Test plan covers 100% of requirements in RTM",
+          "Each test case has explicit pass/fail criteria and expected data values",
+          "Defect severity matrix approved by clinical stakeholder and safety engineer",
+          "FHIR conformance test suite configured in FHIR Touchstone",
+          "Performance test targets defined: <2s alert delivery, <100ms UI update, 500 concurrent users"
+        ],
+        "depends_on": [
+          9,
+          11,
+          12,
+          13
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "SECURITY",
+        "description": "Execute security review and penetration test plan for the ICU monitoring platform. Test: SMART on FHIR token bypass attempts, PHI data leakage in API responses, HL7 injection via device simulator, RBAC privilege escalation, and SSE stream hijacking. Produce finalized SBOM with CVE remediation status.",
+        "payload": {
+          "pentest_scope": [
+            "REST API",
+            "SMART_on_FHIR_auth",
+            "SSE_stream",
+            "HL7_device_interface",
+            "nurse_station_webhook"
+          ],
+          "test_types": [
+            "authentication_bypass",
+            "authorization_bypass",
+            "injection",
+            "data_exposure",
+            "denial_of_service"
+          ],
+          "tools": [
+            "OWASP ZAP",
+            "Burp Suite",
+            "hl7-fuzz (custom)",
+            "Trivy (SBOM CVE scan)"
+          ],
+          "output_artifacts": [
+            "pentest_report",
+            "SBOM_final.json",
+            "CVE_remediation_plan"
+          ]
+        },
+        "acceptance_criteria": [
+          "Zero critical or high CVEs in SBOM without documented remediation or accepted risk",
+          "No PHI returned in unauthenticated API responses",
+          "SMART on FHIR token bypass tests all fail (auth enforced)",
+          "HL7 injection fuzzing: no crashes or unexpected data insertion",
+          "Pentest report reviewed by security engineer and all critical findings remediated",
+          "PHI encryption at rest and in transit",
+          "Access audit logging enabled"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test suite: full patient admit\u2192monitor\u2192alert\u2192acknowledge\u2192discharge workflow across all device types. Load test: 50 concurrent ICU patients, 3 device types each, sustained 30 minutes. FHIR conformance validation via FHIR Touchstone. Nurse station integration test with real HL7 ACK round-trip.",
+        "payload": {
+          "e2e_scenarios": [
+            "patient_admit_device_connect_vital_stream",
+            "threshold_breach_alert_acknowledge_escalate",
+            "device_disconnect_reconnect_alert_clear",
+            "multi_patient_concurrent_alerts",
+            "nurse_station_notification_ack_roundtrip"
+          ],
+          "load_test": "50 patients \u00d7 3 devices \u00d7 30min sustained via k6",
+          "fhir_conformance": "FHIR Touchstone test suite against all resource types",
+          "performance_targets": {
+            "alert_latency_p99": "2000ms",
+            "ui_update_p99": "1000ms",
+            "api_p99": "500ms"
+          }
+        },
+        "acceptance_criteria": [
+          "All E2E scenarios pass without errors on staging environment",
+          "Load test: zero alert drops, p99 alert delivery \u22642s under 50-patient load",
+          "FHIR Touchstone reports 100% pass rate for all mandatory interactions",
+          "Nurse station HL7 ACK received within 1s of alert push",
+          "System test report signed off by system_tester and QA engineer"
+        ],
+        "depends_on": [
+          16,
+          17,
+          18
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 20,
+        "task_type": "COMPLIANCE",
+        "description": "Complete DHF with all executed V&V evidence: link each test execution record to RTM, attach system test results as Design Verification evidence, produce Design Validation protocol (clinical environment testing), and compile the complete Device Design History File for regulatory submission readiness.",
+        "payload": {
+          "dhf_artifacts": [
+            "design_verification_report (linked to step 19 results)",
+            "design_validation_protocol",
+            "risk_management_report (updated FMEA post-testing)",
+            "software_development_plan (IEC 62304)",
+            "traceability_matrix_final"
+          ],
+          "validation_environment": "simulated ICU with clinical staff performing acceptance testing",
+          "standards": [
+            "FDA 21 CFR Part 820.30",
+            "IEC 62304",
+            "ISO 13485:2016"
+          ]
+        },
+        "acceptance_criteria": [
+          "Every requirement in RTM has \u22651 passing test result as evidence",
+          "Risk Management Report updated with post-test residual risk assessment",
+          "No unmitigated critical risks remain open in FMEA",
+          "DHF completeness checklist per 21 CFR 820.30 fully checked",
+          "Regulatory specialist confirms DHF is 510(k) submission-ready",
+          "DHF (Design History File) structure created",
+          "V&V protocol drafted"
+        ],
+        "depends_on": [
+          9,
+          19
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 21,
+        "task_type": "REGULATORY",
+        "description": "Prepare FDA 510(k) premarket notification package: predicate device comparison, substantial equivalence argument, performance testing summary, software documentation per FDA guidance (Software as a Medical Device), and cybersecurity documentation per FDA 2023 Cybersecurity guidance.",
+        "payload": {
+          "submission_type": "510(k)",
+          "sections": [
+            "device_description",
+            "intended_use_indications",
+            "predicate_device_comparison",
+            "substantial_equivalence_summary",
+            "software_documentation_level_C",
+            "cybersecurity_documentation",
+            "performance_testing_summary",
+            "labeling"
+          ],
+          "fda_guidances": [
+            "2022 Software as a Medical Device",
+            "2023 Cybersecurity in Medical Devices"
+          ]
+        },
+        "acceptance_criteria": [
+          "510(k) package includes all required sections per FDA eSTAR format",
+          "Software documentation meets Level C requirements (highest risk class) per FDA guidance",
+          "Cybersecurity documentation includes threat model, SBOM, and incident response plan",
+          "Substantial equivalence argument references \u22651 cleared predicate device",
+          "Submission package reviewed by regulatory specialist before filing",
+          "HIPAA risk assessment complete",
+          "BAA template prepared"
+        ],
+        "depends_on": [
+          20
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "OPERATIONS",
+        "description": "Produce operational runbooks, SLA definitions, incident response playbooks, and capacity planning for the ICU monitoring platform. Define SLAs: system uptime (99.9%), alert delivery latency (\u22642s), data retention (7 years). Create incident severity levels with on-call escalation paths for clinical safety incidents.",
+        "payload": {
+          "sla_targets": {
+            "uptime": "99.9%",
+            "alert_delivery_p99": "2000ms",
+            "rpo": "1 hour",
+            "rto": "15 minutes"
+          },
+          "runbooks": [
+            "device_adapter_restart",
+            "fhir_server_recovery",
+            "database_failover",
+            "network_partition_response",
+            "phi_breach_incident"
+          ],
+          "on_call": "24/7 with clinical safety escalation path to biomedical engineering",
+          "capacity_planning": "100 concurrent ICU beds per instance, horizontal scaling plan"
+        },
+        "acceptance_criteria": [
+          "All runbooks tested in staging environment and steps verified executable",
+          "PHI breach incident response playbook meets HIPAA 60-day notification requirement",
+          "SLA targets documented and reviewed by clinical IT leadership",
+          "Capacity model validated: 100-bed load test passes with defined SLAs",
+          "On-call escalation tree reviewed and contacts confirmed"
+        ],
+        "depends_on": [
+          15,
+          19
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 23,
+        "task_type": "TRAINING",
+        "description": "Produce training materials for all user roles: ICU nurse quick-start guide (alert acknowledgment, patient view navigation), intensivist clinical workflow guide, biomedical engineer device integration guide, and IT administrator deployment and maintenance guide. Include video scripts for LMS integration.",
+        "payload": {
+          "audience_materials": {
+            "icu_nurse": "alert acknowledgment, patient grid navigation, escalation procedures",
+            "intensivist": "trend analysis, alert threshold customization, device status review",
+            "biomedical_engineer": "device adapter configuration, HL7 mapping, connectivity troubleshooting",
+            "it_administrator": "deployment, user management, SMART on FHIR configuration, backup/restore"
+          },
+          "formats": [
+            "PDF quick-reference cards",
+            "web-based LMS modules",
+            "video scripts (5-10 min per role)"
+          ],
+          "localization_ready": true
+        },
+        "acceptance_criteria": [
+          "Nurse quick-start guide reviewed and approved by \u22652 ICU nurses",
+          "All guides reviewed for clinical accuracy by clinical stakeholder",
+          "LMS module structure defined with knowledge check questions per section",
+          "Video scripts cover all primary workflows shown in UX wireframes",
+          "Training materials version-controlled and linked to product version"
+        ],
+        "depends_on": [
+          13,
+          22
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 24,
+        "task_type": "DOCS",
+        "description": "Produce technical documentation: architecture decision records (ADRs), FHIR CapabilityStatement and implementation guide, API reference (generated from OpenAPI spec), developer onboarding README, deployment guide, and IEC 62304 Software Architecture Document.",
+        "payload": {
+          "documents": [
+            "architecture_decision_records (ADRs for FHIR server choice, DB, auth)",
+            "fhir_implementation_guide",
+            "api_reference (auto-generated from OpenAPI 3.1)",
+            "developer_README",
+            "deployment_guide (Docker Compose + Kubernetes)",
+            "iec_62304_software_architecture_document"
+          ],
+          "iec_62304_doc": "software architecture decomposition per IEC 62304 5.3"
+        },
+        "acceptance_criteria": [
+          "IEC 62304 Software Architecture Document covers all software items and their classification",
+          "FHIR Implementation Guide published and passes IG Publisher validation",
+          "API reference generated from final OpenAPI spec with all endpoints documented",
+          "Developer README allows a new engineer to run the full stack locally in <30 minutes",
+          "All ADRs document the rejected alternatives and rationale"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 24,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 61,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 61,
+          "final_review": {
+            "score": 61,
+            "flaws": [
+              "IEC 60601-1-8 (Alarm Systems for Medical Electrical Equipment) is completely absent from the entire plan. This is the primary standard governing medical alarm management \u2014 precisely what this product is. Its omission is not a minor gap; it is a foundational regulatory miss that invalidates the alarm engine design and could block FDA clearance.",
+              "IEC 62304 software safety class is left as 'Class B or C' (step 3) but this determination gates every subsequent design decision: documentation depth, testing coverage requirements, architecture decomposition, and SOUP management. Deferring this to step 3 while firmware (step 10) assumes \u226580% line coverage is backward. Class C (almost certain for an ICU alerting system) mandates 100% branch coverage of safety-critical units \u2014 this plan's 80% line coverage target is flatly non-compliant.",
+              "Step 11 has an unresolved architectural fork: 'HAPI FHIR (Java) or fhir-kit-client (Node.js)'. These are not interchangeable options \u2014 HAPI FHIR is a full server with its own persistence and validation engine; fhir-kit-client is a REST client library requiring a separate FHIR server. Leaving this unresolved at implementation time means the database schema (step 6), API design (step 7), and DevOps (step 15) could all need rework. This is an ADR that must close before step 6.",
+              "No real physical device interoperability testing exists in the plan. Step 16 builds a Python simulator, but Philips IntelliVue, Dr\u00e4ger Evita, Masimo Radical, and GE Carescape all implement HL7 v2 with vendor-specific extensions, non-standard segment ordering, and proprietary OBX identifiers. A simulator will not expose these divergences. Without testing against actual devices or captured production HL7 traffic, the firmware will fail in the first hospital.",
+              "The Mosquitto MQTT broker (step 11) is a critical single point of failure for all device data ingestion. In an ICU, broker downtime means loss of all real-time patient monitoring. No clustering, HA configuration, or broker-level persistence is specified. A single Mosquitto instance does not meet the 99.9% SLA defined in step 22.",
+              "Step 10 firmware target is 'ARM Cortex-A or Cortex-M' \u2014 a hardware architecture decision left open during implementation. Bare-metal FreeRTOS and Yocto Linux are fundamentally different development environments with different toolchains, SOUP lists, and IEC 62304 documentation requirements. This must be resolved before any firmware is written.",
+              "The HL7 v2 \u2192 FHIR R4 transformation (step 11) is treated as a 'mapping engine' \u2014 a single-step implementation task. In reality this is a 6-12 week effort involving LOINC code mapping tables, handling missing/malformed segments, managing vendor-specific PV1/OBX variants, and building a test corpus from real device traffic. The plan has no dedicated step for this and no acceptance criterion for mapping coverage across device types.",
+              "Step 14 introduces SAGE AI agent roles ('alert_reviewer', 'clinical_analyst') that could influence clinical alert decisions. If these agents surface clinical recommendations that affect care, they are themselves SaMD requiring separate FDA clearance. The plan neither flags this regulatory risk nor constrains agent outputs to administrative/operational scope only.",
+              "Design Validation (actual clinical environment testing with clinical staff on patient-representative scenarios) is referenced in step 20 as a 'protocol to be produced' but never executed as a plan step. FDA 21 CFR 820.30(g) requires Design Validation evidence, not just a protocol. The plan ends with a protocol draft, not executed validation evidence.",
+              "mTLS for device communications (step 8) is specified as a control, but legacy ICU devices \u2014 the majority of installed base \u2014 do not support TLS at all. RS-232 serial devices and older TCP/IP stacks cannot participate in mTLS. The plan has no fallback architecture (e.g., TLS-terminating gateway proxy at the device interface layer) and no acceptance criterion for how non-TLS devices are handled.",
+              "Step 22 defines an RTO of 15 minutes but no DR test is in the plan. Runbook documentation does not prove RTO achievability. The load test (step 19) is scoped to 50 patients under normal conditions, not failover scenarios. A 15-minute RTO for an ICU system requires tested, measured failover \u2014 not documented intent.",
+              "Missing: physiological plausibility validation on ingested data. A SpO2 reading of 150%, heart rate of 500 bpm, or arterial BP of 300/200 mmHg from a malfunctioning or mis-configured device will pass through the ingestion pipeline, be stored, and trigger alerts. No range-gate, calibration-drift detection, or implausibility flagging exists in the design."
+            ],
+            "suggestions": [
+              "Add a dedicated step 2.5 (before firmware design) to resolve the IEC 62304 software safety class and produce the Software Development Plan. Gate all subsequent development steps on this determination. Expect Class C \u2014 design for it from the start.",
+              "Add IEC 60601-1-8 to the regulatory mapping in step 3 and create a dedicated alarm management design step between steps 12 and 13 covering: alarm prioritization taxonomy (high/medium/low/advisory), alarm signal characteristics, alarm condition persistence logic, and nurse override/silence policies. This is not optional for a product in this category.",
+              "Replace the Mosquitto single broker with a clustered MQTT setup (EMQX cluster or HiveMQ with HA) or use a Kafka-backed ingestion pipeline for device data, with MQTT as the edge protocol only. Document the HA architecture explicitly before step 11.",
+              "Capture real HL7 traffic from at least one target device type (even in a lab environment) before implementing the transformation engine. Create a dedicated 'Device Interoperability Spike' step between steps 10 and 11 with the deliverable of a validated HL7 corpus for each device type.",
+              "Add a step for hospital IT infrastructure dependency resolution: VLAN provisioning approval, network access to device ports, firewall rule changes, and integration engine assessment (Mirth Connect/Rhapsody/Corepoint). In most hospitals this takes 4-12 weeks and cannot run in parallel with firmware development.",
+              "Constrain SAGE agent roles (step 14) to administrative and operational tasks only (alert routing, shift handover summaries, compliance check status). Add explicit documentation that agent outputs are not clinical decision support and are not used in direct patient care decisions. Alternatively, scope out AI agent functionality until post-clearance.",
+              "Add a time synchronization design section to step 6/7: NTP/PTP sync requirements for device adapters, handling of late-arriving or out-of-order messages, and timestamp normalization policy. Without this, trend charts and alert timing will be unreliable when device clocks drift.",
+              "Add firmware SOUP (Software of Unknown Provenance) management per IEC 62304 Section 8 as an explicit deliverable in step 10. Each third-party library used in firmware must have a documented version, known anomalies list, and regression test evidence. This is an audit finding target.",
+              "Add FDA 2023 Cybersecurity post-market requirements to step 21: ongoing SBOM monitoring process, coordinated vulnerability disclosure policy, and software update mechanism documentation. The 2023 guidance makes these mandatory for submissions."
+            ],
+            "missing": [
+              "IEC 60601-1-8 alarm management standard \u2014 entirely absent, directly applicable",
+              "Dedicated IEC 62304 Software Safety Classification step with gating logic before design begins",
+              "Real device interoperability testing step (not simulator-only) with vendor-specific HL7 corpus",
+              "Hospital IT/infrastructure dependency resolution step (VLAN, firewall, integration engine assessment)",
+              "HL7 Clinical Integration Engine (Mirth/Rhapsody) assessment \u2014 most hospitals route all HL7 through a CIE, bypassing the plan's assumed direct device connectivity",
+              "ADT feed from EHR (Epic/Cerner) for patient admission/discharge/transfer synchronization \u2014 without this, patient-device linkage depends on manual entry",
+              "Time synchronization design: NTP/PTP policy for device adapters, clock skew handling in data pipeline",
+              "Physiological plausibility validation layer on ingested observations",
+              "Joint Commission NPSG 06.01.01 alarm management requirements (US hospital accreditation standard)",
+              "FDA post-market cybersecurity surveillance program (required by 2023 guidance for 510(k) submissions)",
+              "Executed Design Validation (clinical environment) \u2014 plan produces protocol but never executes it",
+              "SOUP list and anomaly tracking per IEC 62304 Section 8 for all firmware and backend components",
+              "DR failover test demonstrating 15-minute RTO is achievable",
+              "Coordinated Vulnerability Disclosure (CVD) program documentation",
+              "Architectural Decision Record closing the HAPI FHIR vs. alternative FHIR server selection before step 6"
+            ],
+            "security_risks": [
+              "SSE stream reconnection (step 12/13): if the EventSource reconnects without re-authenticating the OAuth token, an expired or revoked token could maintain an active PHI stream. The plan does not specify token re-validation on SSE reconnect.",
+              "WebSocket device ingestion endpoint (step 7/11): device-to-server WebSocket authentication relies on mTLS, which legacy devices cannot perform. If the fallback for non-mTLS devices uses API key or IP allowlisting, those controls are not specified and are typically weak.",
+              "HL7 v2 injection: the fuzzing test in step 18 is correct to include, but the HL7 parser in step 10/11 must also be validated for buffer overflow and memory safety \u2014 particularly if the C-based HL7 v2 parser processes untrusted device input over TCP. This is a remote code execution surface on a medical device gateway.",
+              "Nurse station webhook endpoint: step 12 lists 'REST webhook' as a nurse station protocol. Incoming webhooks without HMAC signature validation are trivially spoofable and could inject false alert acknowledgments, creating a patient safety risk (alert marked acknowledged when it was not).",
+              "PHI in Prometheus/Grafana metrics: step 15 uses Prometheus for monitoring. If any metric labels include patient identifiers (e.g., per-patient alert counts), PHI will be present in the metrics endpoint. This is a common HIPAA violation in observability stacks.",
+              "ELK stack PHI masking (step 15): 'PHI field masking' is listed as a requirement but the implementation is undefined. Log shipping pipelines frequently have timing gaps where unmasked PHI appears in intermediate buffers (Logstash pipeline, Elasticsearch indexing queue) before masking is applied.",
+              "Keycloak SMART on FHIR plugin maturity: the Keycloak SMART on FHIR community plugin has known gaps in the EHR launch context flow and is not officially supported by Keycloak. Production ICU use should evaluate a purpose-built SMART authorization server (e.g., Inferno-compatible) instead.",
+              "Admin console threat surface (step 8): the RBAC matrix covers nurse/intensivist/admin/biomedical roles but does not specify what the 'admin' role can access. Unrestricted admin access to PHI query endpoints, FHIR history, and audit logs is a HIPAA minimum-necessary violation risk."
+            ],
+            "summary": "This plan demonstrates genuine regulatory sophistication \u2014 the DHF structure, ISO 14971 FMEA, HIPAA controls, and FHIR R4 alignment are handled with appropriate depth, and the 24-step sequencing correctly front-loads compliance artifacts before implementation. However, it has one disqualifying omission (IEC 60601-1-8 for alarm management) and three critical gaps that would cause production failures or regulatory rejection: the IEC 62304 safety class is unresolved at the point where it governs firmware coverage requirements, the FHIR server architecture is left as an open fork through implementation, and real device interoperability testing is absent in favor of a simulator that will not surface vendor-specific HL7 deviations. The MQTT single-broker design, legacy device mTLS gap, and missing Design Validation execution (protocol only, no evidence) are additional showstoppers for a 510(k) submission. For a regulated ICU monitoring SaMD, this plan is solid preliminary work that needs a targeted rework pass on alarm standards compliance, safety class gating, infrastructure HA, and real-device testing before implementation begins. Current state: suitable for design review and stakeholder alignment, not ready to gate implementation start.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 61,
+              "flaws": [
+                "IEC 60601-1-8 (Alarm Systems for Medical Electrical Equipment) is completely absent from the entire plan. This is the primary standard governing medical alarm management \u2014 precisely what this product is. Its omission is not a minor gap; it is a foundational regulatory miss that invalidates the alarm engine design and could block FDA clearance.",
+                "IEC 62304 software safety class is left as 'Class B or C' (step 3) but this determination gates every subsequent design decision: documentation depth, testing coverage requirements, architecture decomposition, and SOUP management. Deferring this to step 3 while firmware (step 10) assumes \u226580% line coverage is backward. Class C (almost certain for an ICU alerting system) mandates 100% branch coverage of safety-critical units \u2014 this plan's 80% line coverage target is flatly non-compliant.",
+                "Step 11 has an unresolved architectural fork: 'HAPI FHIR (Java) or fhir-kit-client (Node.js)'. These are not interchangeable options \u2014 HAPI FHIR is a full server with its own persistence and validation engine; fhir-kit-client is a REST client library requiring a separate FHIR server. Leaving this unresolved at implementation time means the database schema (step 6), API design (step 7), and DevOps (step 15) could all need rework. This is an ADR that must close before step 6.",
+                "No real physical device interoperability testing exists in the plan. Step 16 builds a Python simulator, but Philips IntelliVue, Dr\u00e4ger Evita, Masimo Radical, and GE Carescape all implement HL7 v2 with vendor-specific extensions, non-standard segment ordering, and proprietary OBX identifiers. A simulator will not expose these divergences. Without testing against actual devices or captured production HL7 traffic, the firmware will fail in the first hospital.",
+                "The Mosquitto MQTT broker (step 11) is a critical single point of failure for all device data ingestion. In an ICU, broker downtime means loss of all real-time patient monitoring. No clustering, HA configuration, or broker-level persistence is specified. A single Mosquitto instance does not meet the 99.9% SLA defined in step 22.",
+                "Step 10 firmware target is 'ARM Cortex-A or Cortex-M' \u2014 a hardware architecture decision left open during implementation. Bare-metal FreeRTOS and Yocto Linux are fundamentally different development environments with different toolchains, SOUP lists, and IEC 62304 documentation requirements. This must be resolved before any firmware is written.",
+                "The HL7 v2 \u2192 FHIR R4 transformation (step 11) is treated as a 'mapping engine' \u2014 a single-step implementation task. In reality this is a 6-12 week effort involving LOINC code mapping tables, handling missing/malformed segments, managing vendor-specific PV1/OBX variants, and building a test corpus from real device traffic. The plan has no dedicated step for this and no acceptance criterion for mapping coverage across device types.",
+                "Step 14 introduces SAGE AI agent roles ('alert_reviewer', 'clinical_analyst') that could influence clinical alert decisions. If these agents surface clinical recommendations that affect care, they are themselves SaMD requiring separate FDA clearance. The plan neither flags this regulatory risk nor constrains agent outputs to administrative/operational scope only.",
+                "Design Validation (actual clinical environment testing with clinical staff on patient-representative scenarios) is referenced in step 20 as a 'protocol to be produced' but never executed as a plan step. FDA 21 CFR 820.30(g) requires Design Validation evidence, not just a protocol. The plan ends with a protocol draft, not executed validation evidence.",
+                "mTLS for device communications (step 8) is specified as a control, but legacy ICU devices \u2014 the majority of installed base \u2014 do not support TLS at all. RS-232 serial devices and older TCP/IP stacks cannot participate in mTLS. The plan has no fallback architecture (e.g., TLS-terminating gateway proxy at the device interface layer) and no acceptance criterion for how non-TLS devices are handled.",
+                "Step 22 defines an RTO of 15 minutes but no DR test is in the plan. Runbook documentation does not prove RTO achievability. The load test (step 19) is scoped to 50 patients under normal conditions, not failover scenarios. A 15-minute RTO for an ICU system requires tested, measured failover \u2014 not documented intent.",
+                "Missing: physiological plausibility validation on ingested data. A SpO2 reading of 150%, heart rate of 500 bpm, or arterial BP of 300/200 mmHg from a malfunctioning or mis-configured device will pass through the ingestion pipeline, be stored, and trigger alerts. No range-gate, calibration-drift detection, or implausibility flagging exists in the design."
+              ],
+              "suggestions": [
+                "Add a dedicated step 2.5 (before firmware design) to resolve the IEC 62304 software safety class and produce the Software Development Plan. Gate all subsequent development steps on this determination. Expect Class C \u2014 design for it from the start.",
+                "Add IEC 60601-1-8 to the regulatory mapping in step 3 and create a dedicated alarm management design step between steps 12 and 13 covering: alarm prioritization taxonomy (high/medium/low/advisory), alarm signal characteristics, alarm condition persistence logic, and nurse override/silence policies. This is not optional for a product in this category.",
+                "Replace the Mosquitto single broker with a clustered MQTT setup (EMQX cluster or HiveMQ with HA) or use a Kafka-backed ingestion pipeline for device data, with MQTT as the edge protocol only. Document the HA architecture explicitly before step 11.",
+                "Capture real HL7 traffic from at least one target device type (even in a lab environment) before implementing the transformation engine. Create a dedicated 'Device Interoperability Spike' step between steps 10 and 11 with the deliverable of a validated HL7 corpus for each device type.",
+                "Add a step for hospital IT infrastructure dependency resolution: VLAN provisioning approval, network access to device ports, firewall rule changes, and integration engine assessment (Mirth Connect/Rhapsody/Corepoint). In most hospitals this takes 4-12 weeks and cannot run in parallel with firmware development.",
+                "Constrain SAGE agent roles (step 14) to administrative and operational tasks only (alert routing, shift handover summaries, compliance check status). Add explicit documentation that agent outputs are not clinical decision support and are not used in direct patient care decisions. Alternatively, scope out AI agent functionality until post-clearance.",
+                "Add a time synchronization design section to step 6/7: NTP/PTP sync requirements for device adapters, handling of late-arriving or out-of-order messages, and timestamp normalization policy. Without this, trend charts and alert timing will be unreliable when device clocks drift.",
+                "Add firmware SOUP (Software of Unknown Provenance) management per IEC 62304 Section 8 as an explicit deliverable in step 10. Each third-party library used in firmware must have a documented version, known anomalies list, and regression test evidence. This is an audit finding target.",
+                "Add FDA 2023 Cybersecurity post-market requirements to step 21: ongoing SBOM monitoring process, coordinated vulnerability disclosure policy, and software update mechanism documentation. The 2023 guidance makes these mandatory for submissions."
+              ],
+              "missing": [
+                "IEC 60601-1-8 alarm management standard \u2014 entirely absent, directly applicable",
+                "Dedicated IEC 62304 Software Safety Classification step with gating logic before design begins",
+                "Real device interoperability testing step (not simulator-only) with vendor-specific HL7 corpus",
+                "Hospital IT/infrastructure dependency resolution step (VLAN, firewall, integration engine assessment)",
+                "HL7 Clinical Integration Engine (Mirth/Rhapsody) assessment \u2014 most hospitals route all HL7 through a CIE, bypassing the plan's assumed direct device connectivity",
+                "ADT feed from EHR (Epic/Cerner) for patient admission/discharge/transfer synchronization \u2014 without this, patient-device linkage depends on manual entry",
+                "Time synchronization design: NTP/PTP policy for device adapters, clock skew handling in data pipeline",
+                "Physiological plausibility validation layer on ingested observations",
+                "Joint Commission NPSG 06.01.01 alarm management requirements (US hospital accreditation standard)",
+                "FDA post-market cybersecurity surveillance program (required by 2023 guidance for 510(k) submissions)",
+                "Executed Design Validation (clinical environment) \u2014 plan produces protocol but never executes it",
+                "SOUP list and anomaly tracking per IEC 62304 Section 8 for all firmware and backend components",
+                "DR failover test demonstrating 15-minute RTO is achievable",
+                "Coordinated Vulnerability Disclosure (CVD) program documentation",
+                "Architectural Decision Record closing the HAPI FHIR vs. alternative FHIR server selection before step 6"
+              ],
+              "security_risks": [
+                "SSE stream reconnection (step 12/13): if the EventSource reconnects without re-authenticating the OAuth token, an expired or revoked token could maintain an active PHI stream. The plan does not specify token re-validation on SSE reconnect.",
+                "WebSocket device ingestion endpoint (step 7/11): device-to-server WebSocket authentication relies on mTLS, which legacy devices cannot perform. If the fallback for non-mTLS devices uses API key or IP allowlisting, those controls are not specified and are typically weak.",
+                "HL7 v2 injection: the fuzzing test in step 18 is correct to include, but the HL7 parser in step 10/11 must also be validated for buffer overflow and memory safety \u2014 particularly if the C-based HL7 v2 parser processes untrusted device input over TCP. This is a remote code execution surface on a medical device gateway.",
+                "Nurse station webhook endpoint: step 12 lists 'REST webhook' as a nurse station protocol. Incoming webhooks without HMAC signature validation are trivially spoofable and could inject false alert acknowledgments, creating a patient safety risk (alert marked acknowledged when it was not).",
+                "PHI in Prometheus/Grafana metrics: step 15 uses Prometheus for monitoring. If any metric labels include patient identifiers (e.g., per-patient alert counts), PHI will be present in the metrics endpoint. This is a common HIPAA violation in observability stacks.",
+                "ELK stack PHI masking (step 15): 'PHI field masking' is listed as a requirement but the implementation is undefined. Log shipping pipelines frequently have timing gaps where unmasked PHI appears in intermediate buffers (Logstash pipeline, Elasticsearch indexing queue) before masking is applied.",
+                "Keycloak SMART on FHIR plugin maturity: the Keycloak SMART on FHIR community plugin has known gaps in the EHR launch context flow and is not officially supported by Keycloak. Production ICU use should evaluate a purpose-built SMART authorization server (e.g., Inferno-compatible) instead.",
+                "Admin console threat surface (step 8): the RBAC matrix covers nurse/intensivist/admin/biomedical roles but does not specify what the 'admin' role can access. Unrestricted admin access to PHI query endpoints, FHIR history, and audit logs is a HIPAA minimum-necessary violation risk."
+              ],
+              "summary": "This plan demonstrates genuine regulatory sophistication \u2014 the DHF structure, ISO 14971 FMEA, HIPAA controls, and FHIR R4 alignment are handled with appropriate depth, and the 24-step sequencing correctly front-loads compliance artifacts before implementation. However, it has one disqualifying omission (IEC 60601-1-8 for alarm management) and three critical gaps that would cause production failures or regulatory rejection: the IEC 62304 safety class is unresolved at the point where it governs firmware coverage requirements, the FHIR server architecture is left as an open fork through implementation, and real device interoperability testing is absent in favor of a simulator that will not surface vendor-specific HL7 deviations. The MQTT single-broker design, legacy device mTLS gap, and missing Design Validation execution (protocol only, no evidence) are additional showstoppers for a 510(k) submission. For a regulated ICU monitoring SaMD, this plan is solid preliminary work that needs a targeted rework pass on alarm standards compliance, safety class gating, infrastructure HA, and real-device testing before implementation begins. Current state: suitable for design review and stakeholder alignment, not ready to gate implementation start.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-21T22:51:18.671089+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 171.73,
+      "critic_plan": 137.41
+    }
+  }
+}

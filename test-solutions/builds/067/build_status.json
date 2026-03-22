@@ -1,0 +1,899 @@
+{
+  "run_id": "cad2da51-3787-427c-839a-f7b0df234542",
+  "solution_name": "image_generation",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T08:48:51.632275+00:00",
+  "updated_at": "2026-03-22T08:53:24.605103+00:00",
+  "product_description": "AI image generation service with Stable Diffusion backend, prompt engineering UI, style transfer, inpainting, upscaling, and asset library management.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "DATA",
+      "description": "Design the core data model: image generation jobs, asset metadata schema (prompt, seed, model version, style, dimensions, tags), generation history, and asset library collections.",
+      "payload": {
+        "entities": [
+          "GenerationJob",
+          "Asset",
+          "AssetCollection",
+          "StylePreset",
+          "PromptTemplate"
+        ],
+        "storage_backends": [
+          "PostgreSQL (metadata)",
+          "S3-compatible object store (images)"
+        ],
+        "indexes": [
+          "asset.tags",
+          "job.created_at",
+          "job.status",
+          "asset.collection_id"
+        ]
+      },
+      "acceptance_criteria": [
+        "ERD diagram covers all entities with cardinality annotations",
+        "Asset metadata schema includes prompt, negative_prompt, seed, model_id, steps, cfg_scale, width, height, style_id",
+        "GenerationJob tracks status (queued/running/complete/failed), progress %, output asset references",
+        "Schema supports soft-delete for asset library management"
+      ],
+      "depends_on": [],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 2,
+      "task_type": "ML_MODEL",
+      "description": "Set up Stable Diffusion model pipeline: download and configure SDXL base + refiner, build inference wrapper supporting txt2img, img2img, inpainting (with mask), and ControlNet for style transfer. Integrate ESRGAN/Real-ESRGAN for upscaling.",
+      "payload": {
+        "models": [
+          "stabilityai/stable-diffusion-xl-base-1.0",
+          "stabilityai/stable-diffusion-xl-refiner-1.0",
+          "lllyasviel/ControlNet-v1-1",
+          "Real-ESRGAN x4plus"
+        ],
+        "frameworks": [
+          "diffusers",
+          "torch",
+          "xformers"
+        ],
+        "pipelines": [
+          "StableDiffusionXLPipeline",
+          "StableDiffusionXLImg2ImgPipeline",
+          "StableDiffusionXLInpaintPipeline",
+          "StableDiffusionControlNetPipeline"
+        ],
+        "precision": "fp16",
+        "device": "cuda"
+      },
+      "acceptance_criteria": [
+        "txt2img generates 1024x1024 image in under 12s on A10G GPU",
+        "Inpainting pipeline accepts image + binary mask and produces coherent fill",
+        "Style transfer via ControlNet (canny/depth/openpose) preserves structure with style applied",
+        "ESRGAN upscales 512px to 2048px with PSNR > 30dB on validation set",
+        "All pipelines serialize/deserialize model state correctly for warm-start",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 3,
+      "task_type": "INFRA",
+      "description": "Scaffold Docker Compose and Kubernetes manifests: GPU-enabled worker containers (nvidia-docker), Redis task queue, PostgreSQL, MinIO (S3-compatible object store), and reverse proxy. Include GPU resource limits and CUDA version pinning.",
+      "payload": {
+        "services": [
+          "api-server",
+          "sd-worker",
+          "redis",
+          "postgres",
+          "minio",
+          "nginx"
+        ],
+        "gpu_runtime": "nvidia-container-toolkit",
+        "cuda_version": "12.1",
+        "base_image": "nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04",
+        "worker_replicas": 2,
+        "queue_backend": "Redis Streams"
+      },
+      "acceptance_criteria": [
+        "docker compose up starts all services with GPU workers available",
+        "CUDA device visible inside worker container via nvidia-smi",
+        "MinIO bucket auto-created on startup with versioning enabled",
+        "Health check endpoints respond within 5s for all services",
+        "Worker scales horizontally \u2014 adding a second worker doubles throughput"
+      ],
+      "depends_on": [],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 4,
+      "task_type": "API",
+      "description": "Define OpenAPI 3.1 spec for all generation, asset library, and management endpoints: POST /generate, POST /inpaint, POST /style-transfer, POST /upscale, GET/POST/DELETE /assets, GET/POST /collections, GET /jobs/{id}, GET /jobs/{id}/stream (SSE progress), POST /prompts/enhance.",
+      "payload": {
+        "spec_format": "OpenAPI 3.1",
+        "auth": "Bearer JWT",
+        "async_pattern": "job queue with SSE progress stream",
+        "response_formats": [
+          "application/json",
+          "image/png (direct download)"
+        ],
+        "rate_limiting": "per-user token bucket"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates with no errors against openapi-generator",
+        "Every endpoint has request schema, response schema, and error codes documented",
+        "SSE /jobs/{id}/stream emits progress events with percent and stage fields",
+        "POST /generate schema includes all SD parameters with min/max validation",
+        "/prompts/enhance endpoint contract specifies input prompt \u2192 enriched prompt + negative prompt"
+      ],
+      "depends_on": [],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 5,
+      "task_type": "UX_DESIGN",
+      "description": "Design wireframes and interaction flows for: prompt engineering workspace (live parameter controls, prompt history), canvas-based inpainting editor (brush mask drawing), style transfer panel, upscaling controls, and asset library grid with collections and tagging.",
+      "payload": {
+        "pages": [
+          "generate",
+          "inpaint",
+          "style-transfer",
+          "upscale",
+          "library",
+          "collections"
+        ],
+        "key_interactions": [
+          "drag-to-paint mask",
+          "side-by-side before/after comparison",
+          "prompt template gallery",
+          "batch generation queue view"
+        ],
+        "design_system": "component library with dark mode default"
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all 6 pages at desktop and tablet breakpoints",
+        "Inpainting canvas interaction flow documented with brush size, eraser, undo/redo",
+        "Prompt engineering workspace shows parameter sliders (CFG, steps, seed) with real-time token count",
+        "Asset library supports multi-select, bulk tag, bulk delete, drag-to-collection",
+        "User flow from prompt entry to downloaded asset is under 5 clicks"
+      ],
+      "depends_on": [],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Implement PostgreSQL schema migrations using Alembic: tables for generation_jobs, assets, asset_collections, style_presets, prompt_templates, users. Add indexes, foreign keys, and soft-delete columns. Seed default style presets and prompt templates.",
+      "payload": {
+        "migration_tool": "Alembic",
+        "orm": "SQLAlchemy 2.x",
+        "seed_data": [
+          "10 style presets (photorealistic, anime, oil painting, etc.)",
+          "20 prompt templates by category"
+        ],
+        "soft_delete": "deleted_at TIMESTAMP NULL"
+      },
+      "acceptance_criteria": [
+        "alembic upgrade head runs without errors on clean Postgres instance",
+        "alembic downgrade base fully reverts all migrations",
+        "All foreign keys enforced with ON DELETE CASCADE or RESTRICT as appropriate",
+        "Query for asset library with tag filter runs in < 50ms on 100K asset dataset",
+        "Seed script populates 10 style presets and 20 prompt templates"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "BACKEND",
+      "description": "Build the FastAPI application skeleton: authentication middleware (JWT), job submission endpoints, Redis Streams task queue producer, MinIO storage client, database session factory, structured logging, and health/readiness probes.",
+      "payload": {
+        "framework": "FastAPI",
+        "queue_client": "redis-py (Streams)",
+        "storage_client": "boto3 (MinIO endpoint)",
+        "auth": "python-jose JWT",
+        "background_tasks": "Redis consumer worker process",
+        "logging": "structlog + JSON formatter"
+      },
+      "acceptance_criteria": [
+        "POST /generate returns job_id within 200ms (before GPU processing starts)",
+        "JWT middleware rejects invalid/expired tokens with 401",
+        "Job submitted to Redis Stream visible via XREAD within 50ms",
+        "GET /health returns 200 with db, redis, minio status flags",
+        "Structured logs include trace_id, user_id, job_id on every request"
+      ],
+      "depends_on": [
+        3,
+        4,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "CONFIG",
+      "description": "Set up model configuration system: YAML-based model registry (model ID, HuggingFace path, VRAM requirement, supported pipelines), environment variable schema (.env.example), and runtime config loader with validation via Pydantic Settings.",
+      "payload": {
+        "config_files": [
+          "config/models.yaml",
+          "config/pipelines.yaml",
+          ".env.example"
+        ],
+        "validation": "pydantic-settings BaseSettings",
+        "secrets_management": "environment variables (no hardcoded secrets)",
+        "model_registry_fields": [
+          "model_id",
+          "hf_repo",
+          "vram_gb",
+          "pipelines",
+          "enabled"
+        ]
+      },
+      "acceptance_criteria": [
+        "models.yaml lists all 4+ models with VRAM requirements",
+        "App startup fails fast with clear error if required env vars missing",
+        ".env.example documents every variable with description and example value",
+        "Model registry loads and validates on startup, logs available models",
+        "Switching active model requires only config change, no code change"
+      ],
+      "depends_on": [
+        2,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Implement the SD worker process: Redis Streams consumer, model warm-start cache, txt2img generation with full parameter support (CFG, steps, scheduler, seed, negative prompt), progress callback emitting SSE events, and image storage to MinIO.",
+      "payload": {
+        "consumer_group": "sd-workers",
+        "model_cache": "singleton loaded once per worker process",
+        "schedulers": [
+          "DPMSolverMultistep",
+          "DDIM",
+          "Euler",
+          "EulerAncestral"
+        ],
+        "progress_backend": "Redis Pub/Sub \u2192 SSE",
+        "output_format": "PNG + WebP thumbnail"
+      },
+      "acceptance_criteria": [
+        "Worker processes job from Redis Stream within 100ms of submission",
+        "Progress events emitted at every 10 steps with percent and ETA",
+        "Generated PNG stored in MinIO with signed URL returned in job result",
+        "Worker handles OOM gracefully \u2014 job fails with error, worker stays alive",
+        "Model loaded once at startup \u2014 subsequent jobs skip cold-start"
+      ],
+      "depends_on": [
+        7,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement style transfer pipeline: ControlNet preprocessors (Canny edge, depth map, HED, OpenPose), style conditioning strength parameter, style preset CRUD API, and style library with thumbnail previews.",
+      "payload": {
+        "controlnet_models": [
+          "lllyasviel/control_v11p_sd15_canny",
+          "lllyasviel/control_v11f1p_sd15_depth",
+          "lllyasviel/control_v11p_sd15_openpose"
+        ],
+        "preprocessors": [
+          "controlnet_aux: CannyDetector, MidasDetector, OpenposeDetector"
+        ],
+        "style_strength_range": [
+          0.0,
+          1.0
+        ],
+        "endpoints": [
+          "POST /style-transfer",
+          "GET /styles",
+          "POST /styles",
+          "DELETE /styles/{id}"
+        ]
+      },
+      "acceptance_criteria": [
+        "POST /style-transfer accepts reference image + content image + strength parameter",
+        "Canny preprocessor extracts edges and conditions generation correctly",
+        "Style preset stores ControlNet model ID, conditioning scale, and thumbnail",
+        "GET /styles returns paginated list with thumbnail URLs",
+        "Style transfer output preserves structural content while applying style"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement inpainting pipeline: accept base image + binary mask (PNG alpha or separate mask image), run SDXL inpainting model, blend seams with Poisson image editing, and return composited full image with inpainted region.",
+      "payload": {
+        "pipeline": "StableDiffusionXLInpaintPipeline",
+        "mask_input_formats": [
+          "PNG with alpha channel",
+          "separate grayscale mask"
+        ],
+        "blending": "cv2.seamlessClone (MIXED_CLONE)",
+        "endpoint": "POST /inpaint",
+        "mask_blur_radius": "configurable 0-20px"
+      },
+      "acceptance_criteria": [
+        "POST /inpaint accepts multipart form with image, mask, prompt, and SD params",
+        "Inpainted region seamlessly blended \u2014 no visible hard edge at mask boundary",
+        "Mask provided as either alpha channel or separate grayscale image",
+        "Output image same resolution as input image",
+        "Invalid mask (all black/all white) returns 400 with descriptive error"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement upscaling pipeline: Real-ESRGAN x2/x4 upscaling with optional face restoration (GFPGAN), tile-based processing for large images, and batch upscaling support.",
+      "payload": {
+        "models": [
+          "RealESRGAN_x4plus",
+          "RealESRGAN_x2plus",
+          "RealESRGAN_x4plus_anime_6B"
+        ],
+        "face_restoration": "GFPGAN v1.4",
+        "tile_size": 512,
+        "endpoint": "POST /upscale",
+        "max_input_resolution": "2048x2048",
+        "max_output_resolution": "8192x8192"
+      },
+      "acceptance_criteria": [
+        "POST /upscale accepts image + scale factor (2 or 4) + model selection",
+        "x4 upscaling of 512x512 image produces 2048x2048 output",
+        "Tile-based processing handles images up to 2048x2048 without OOM",
+        "Face restoration optionally applied when face_restore=true param set",
+        "PSNR improvement of at least 2dB over bicubic baseline on test set"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "DATA",
+      "description": "Build asset library management service: CRUD for assets and collections, full-text search with tag filtering, bulk operations (tag, move to collection, delete), duplicate detection via image perceptual hash, and export (ZIP download of collection).",
+      "payload": {
+        "search_backend": "PostgreSQL full-text search (tsvector on tags + prompt)",
+        "duplicate_detection": "imagehash (pHash, Hamming distance < 10)",
+        "bulk_ops": [
+          "bulk_tag",
+          "bulk_move",
+          "bulk_delete"
+        ],
+        "export": "ZIP archive with metadata JSON manifest",
+        "endpoints": [
+          "GET /assets",
+          "POST /assets/{id}/tags",
+          "POST /collections/{id}/export",
+          "POST /assets/bulk"
+        ]
+      },
+      "acceptance_criteria": [
+        "GET /assets?tags=portrait,cinematic returns filtered results in < 100ms",
+        "Bulk tag of 500 assets completes in under 2s",
+        "Duplicate detection flags images with pHash distance < 10",
+        "Collection export ZIP includes all images + metadata.json with per-image prompt data",
+        "Full-text search on prompt text returns ranked results"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement prompt engineering service: LLM-powered prompt enhancement (expand short prompts, add style keywords, suggest negative prompts), prompt template CRUD, prompt history per user, and token count estimation.",
+      "payload": {
+        "llm_integration": "SAGE LLM gateway (POST /llm/generate)",
+        "enhancement_strategies": [
+          "style expansion",
+          "quality boosters",
+          "negative prompt suggestion",
+          "artist reference injection"
+        ],
+        "template_categories": [
+          "portrait",
+          "landscape",
+          "product",
+          "abstract",
+          "architecture"
+        ],
+        "token_counter": "CLIP tokenizer (max 77 tokens)"
+      },
+      "acceptance_criteria": [
+        "POST /prompts/enhance takes short prompt and returns enhanced prompt + suggested negative prompt",
+        "Token count returned with each prompt (warn if > 77 CLIP tokens)",
+        "Prompt templates CRUD with category filtering",
+        "User prompt history stores last 100 prompts with generation params",
+        "Enhancement latency < 3s"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Build the prompt engineering workspace UI: parameter sidebar (CFG scale, steps, scheduler, seed sliders), prompt/negative prompt text areas with token counter, prompt history panel, template gallery, enhance button, and real-time generation progress with SSE.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "state_management": "Zustand",
+        "components": [
+          "PromptEditor",
+          "ParameterSidebar",
+          "PromptHistory",
+          "TemplateGallery",
+          "GenerationProgress",
+          "ImageResult"
+        ],
+        "sse_client": "EventSource API",
+        "styling": "Tailwind CSS + shadcn/ui"
+      },
+      "acceptance_criteria": [
+        "Parameter sliders update preview of generation settings in real-time",
+        "Token counter updates on every keystroke, turns red when > 77 tokens",
+        "SSE progress bar updates smoothly from 0-100% during generation",
+        "Generated image displayed inline with download and add-to-library buttons",
+        "Prompt history shows last 20 prompts, clicking restores all parameters"
+      ],
+      "depends_on": [
+        5,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build canvas-based inpainting editor: HTML5 Canvas brush tool for mask drawing (configurable size, hardness), eraser, undo/redo stack, zoom/pan, mask preview overlay, and integrated generation form with inpainting-specific parameters.",
+      "payload": {
+        "canvas_library": "Fabric.js or Konva.js",
+        "tools": [
+          "brush",
+          "eraser",
+          "fill",
+          "clear"
+        ],
+        "undo_stack_depth": 20,
+        "mask_overlay_color": "rgba(255,0,0,0.5)",
+        "supported_input": [
+          "upload image",
+          "use from library",
+          "use last generated"
+        ]
+      },
+      "acceptance_criteria": [
+        "Brush stroke renders at 60fps on 1024x1024 canvas",
+        "Undo/redo works correctly up to 20 steps",
+        "Mask exported as binary PNG matching source image dimensions",
+        "Zoom up to 4x with pan via mouse drag",
+        "Side-by-side before/after comparison after inpainting completes"
+      ],
+      "depends_on": [
+        5,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build style transfer UI: reference image uploader, content image selector, ControlNet preprocessor selector with live preview of preprocessed image, style strength slider, style preset gallery, and comparison view.",
+      "payload": {
+        "preprocessor_preview": "call POST /style/preview \u2192 returns preprocessed edge/depth map",
+        "preset_gallery": "grid of thumbnails with hover preview",
+        "comparison_view": "slider-based before/after",
+        "image_selector": "upload or pick from asset library"
+      },
+      "acceptance_criteria": [
+        "Preprocessor preview updates within 2s of image upload",
+        "Style preset gallery loads thumbnails with lazy loading",
+        "Before/after slider comparison draggable and touch-friendly",
+        "Reference image and content image independently selectable from library",
+        "Style strength slider shows descriptive label (subtle/moderate/strong)"
+      ],
+      "depends_on": [
+        5,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build asset library UI: masonry/grid view toggle, multi-select with shift-click, tag editor, collection sidebar, bulk action toolbar, asset detail modal (full metadata, prompt copy, upscale/inpaint actions), and collection export button.",
+      "payload": {
+        "layout": [
+          "masonry grid",
+          "uniform grid",
+          "list view"
+        ],
+        "virtual_scrolling": "react-virtuoso for large libraries",
+        "search": "debounced full-text + tag filter chips",
+        "modal": "full metadata display with prompt copy-to-clipboard"
+      },
+      "acceptance_criteria": [
+        "Library renders 1000 assets without performance degradation (virtual scroll)",
+        "Multi-select with shift-click range selection works correctly",
+        "Tag filter chips update results in < 300ms",
+        "Asset detail modal shows all generation parameters with copy button",
+        "Collection export triggers ZIP download with progress indicator"
+      ],
+      "depends_on": [
+        5,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "TESTS",
+      "description": "Write unit tests for all backend services: generation job queue producer/consumer, inpainting mask validation, upscaling pipeline wrapper, style preset CRUD, prompt enhancement service, and asset library search/filter logic.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio",
+        "mocking": "unittest.mock for GPU pipelines (avoid GPU in unit tests)",
+        "coverage_target": "80% line coverage on src/",
+        "fixtures": [
+          "mock SD pipeline",
+          "test database (SQLite)",
+          "mock MinIO (moto)"
+        ]
+      },
+      "acceptance_criteria": [
+        "pytest runs with no GPU required (all ML calls mocked)",
+        "Coverage report shows >= 80% on service layer modules",
+        "Job queue producer/consumer round-trip tested end-to-end with Redis test container",
+        "Mask validation rejects all-black, all-white, and dimension-mismatch masks",
+        "Prompt token counter tested against known CLIP tokenizer outputs"
+      ],
+      "depends_on": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "ML_MODEL",
+      "description": "Build model evaluation pipeline: automated quality benchmarks for each pipeline (FID score for txt2img, SSIM for inpainting seam quality, PSNR for upscaling), regression test suite to catch model degradation, and benchmark result storage.",
+      "payload": {
+        "metrics": {
+          "txt2img": "FID score on 100-image COCO validation subset",
+          "inpainting": "SSIM of blended boundary vs ground truth",
+          "upscaling": "PSNR and SSIM vs bicubic baseline",
+          "style_transfer": "LPIPS perceptual similarity"
+        },
+        "benchmark_runner": "scripts/benchmark.py",
+        "result_storage": "SQLite benchmark_results.db"
+      },
+      "acceptance_criteria": [
+        "benchmark.py runs all 4 pipeline evaluations and stores results",
+        "FID score for SDXL txt2img < 20 on validation set",
+        "Upscaling PSNR > 30dB on standard Set5 benchmark",
+        "Inpainting SSIM > 0.85 on masked COCO images",
+        "Results compared against baseline and regression alert if > 10% degradation",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        10,
+        11,
+        12
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 21,
+      "task_type": "SECURITY",
+      "description": "Security review: input validation for uploaded images (file type, size, magic bytes), prompt injection sanitization, signed URL expiry for MinIO assets, rate limiting per user, authentication token rotation, and OWASP Top 10 review of API endpoints.",
+      "payload": {
+        "image_validation": "python-magic for MIME type, max 10MB",
+        "prompt_sanitization": "strip control characters, max 500 chars",
+        "signed_url_ttl": "3600s",
+        "rate_limits": {
+          "generate": "10/min",
+          "upscale": "5/min"
+        },
+        "auth_token_expiry": "1h access / 7d refresh"
+      },
+      "acceptance_criteria": [
+        "Uploading a disguised executable as PNG returns 400",
+        "Prompt with null bytes or control characters sanitized before LLM/SD processing",
+        "MinIO signed URLs expire after 1 hour",
+        "Rate limiter returns 429 with Retry-After header when exceeded",
+        "OWASP checklist completed with no critical findings"
+      ],
+      "depends_on": [
+        7,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions): lint + type-check on PR, unit tests with coverage gate, Docker image build and push, GPU integration test job (self-hosted runner), and staging deployment with smoke tests.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "stages": [
+          "lint (ruff, mypy)",
+          "unit tests (coverage >= 80%)",
+          "docker build",
+          "gpu integration tests (self-hosted)",
+          "staging deploy"
+        ],
+        "coverage_gate": "80%",
+        "docker_registry": "ghcr.io",
+        "deployment": "docker compose pull && up -d"
+      },
+      "acceptance_criteria": [
+        "PR opens trigger lint + unit test jobs automatically",
+        "Coverage below 80% blocks merge",
+        "Docker images tagged with git SHA and pushed to ghcr.io",
+        "GPU integration test job runs on self-hosted runner with real model inference",
+        "Staging deploy runs smoke test hitting /health and POST /generate"
+      ],
+      "depends_on": [
+        3,
+        19
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write frontend component tests and E2E tests: Vitest + React Testing Library for component units, Playwright E2E covering full generation flow (enter prompt \u2192 generate \u2192 view in library), inpainting canvas interactions, and asset library bulk operations.",
+      "payload": {
+        "component_testing": "Vitest + React Testing Library",
+        "e2e_framework": "Playwright",
+        "e2e_scenarios": [
+          "txt2img full flow: prompt entry \u2192 generate \u2192 library save",
+          "inpainting: upload \u2192 mask draw \u2192 generate \u2192 compare",
+          "style transfer: upload content + reference \u2192 transfer \u2192 download",
+          "asset library: search \u2192 multi-select \u2192 bulk tag \u2192 export collection"
+        ],
+        "browser_targets": [
+          "chromium",
+          "firefox"
+        ]
+      },
+      "acceptance_criteria": [
+        "Component tests cover PromptEditor, ParameterSidebar, InpaintingCanvas",
+        "E2E txt2img flow completes successfully in < 60s including generation",
+        "Playwright tests run in CI against staging environment",
+        "Canvas mask drawing test verifies exported mask is non-empty PNG",
+        "All 4 E2E scenarios pass on both Chromium and Firefox"
+      ],
+      "depends_on": [
+        15,
+        16,
+        17,
+        18,
+        22
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "TESTS",
+      "description": "System-level performance and load testing: measure generation throughput per GPU, queue saturation behavior under concurrent load, SSE connection stability under 100 concurrent clients, and asset library query performance at 1M record scale.",
+      "payload": {
+        "load_tool": "Locust",
+        "scenarios": [
+          "ramp to 50 concurrent generation requests",
+          "100 concurrent SSE listeners",
+          "asset library search at 1M records"
+        ],
+        "slo_targets": {
+          "generation_p95": "30s",
+          "api_p95": "200ms",
+          "search_p95": "100ms",
+          "queue_depth_alarm": 100
+        }
+      },
+      "acceptance_criteria": [
+        "System sustains 10 concurrent generations without worker crash or OOM",
+        "API p95 latency (excluding generation) < 200ms under 50 concurrent users",
+        "SSE connections stable for 10 minutes under 100 concurrent listeners",
+        "Asset search p95 < 100ms with 1M rows (seeded test dataset)",
+        "Queue depth monitored; alert fires when backlog > 100 jobs"
+      ],
+      "depends_on": [
+        22,
+        23
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 25,
+      "task_type": "DOCS",
+      "description": "Write API reference documentation (auto-generated from OpenAPI spec + hand-written guides), developer quickstart (Docker setup, first generation in 5 minutes), model configuration guide, and user guide for each feature (prompt engineering, inpainting, style transfer, asset library).",
+      "payload": {
+        "api_docs": "Redoc from OpenAPI spec",
+        "guides": [
+          "quickstart.md",
+          "model-config.md",
+          "prompt-engineering.md",
+          "inpainting.md",
+          "style-transfer.md",
+          "asset-library.md"
+        ],
+        "hosting": "served at /docs by FastAPI"
+      },
+      "acceptance_criteria": [
+        "Quickstart guide takes a new developer from zero to first generated image in < 15 minutes",
+        "All API endpoints documented with example request/response",
+        "Model configuration guide covers adding a new model to models.yaml",
+        "User guides include screenshots from the built UI",
+        "Docs served at /docs with working search"
+      ],
+      "depends_on": [
+        4,
+        7,
+        23
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 25,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 51,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 51,
+        "final_review": {
+          "score": 51,
+          "flaws": [
+            "CRITICAL: SD1.5 ControlNet models used against SDXL base. Step 2 specifies 'stabilityai/stable-diffusion-xl-base-1.0' but step 10 loads 'lllyasviel/control_v11p_sd15_canny' and SD1.5 depth/openpose models. These are architecturally incompatible \u2014 SD1.5 ControlNet conditioning tensors have different shapes than SDXL's dual-encoder UNet. Style transfer will throw a dimension mismatch error at runtime, not a graceful failure.",
+            "SDXL inpainting model omitted from step 2. The plan lists the base + refiner but 'stabilityai/stable-diffusion-xl-1.0-inpainting-0.1' is a separate fine-tuned model required for SDXL inpainting. Using StableDiffusionXLInpaintPipeline with the base model produces incoherent outputs.",
+            "No user registration/login endpoints anywhere. Step 4 specifies 'Bearer JWT' auth and step 7 implements JWT validation middleware, but there is no POST /auth/register, POST /auth/login, or POST /auth/refresh. JWTs cannot be issued without these. The entire auth flow is headless.",
+            "SSE progress delivery under multi-instance API deployment is unresolved. Workers emit progress to Redis Pub/Sub; SSE subscribers are connected to a specific API server instance. Under K8s with 2+ api-server replicas, 50% of SSE clients will receive no events from jobs processed by the other instance. No sticky sessions, no shared SSE broker, no acknowledgment of this problem.",
+            "VRAM budget for simultaneous model loading is never calculated. SDXL base (fp16) ~6.9GB + refiner ~6.5GB + SDXL ControlNet ~2.5GB + Real-ESRGAN ~0.1GB + GFPGAN ~0.3GB = ~16GB minimum with no active inference tensors. An A10G has 24GB. One concurrent SDXL generation uses ~4GB activation memory. Two workers sharing a GPU (step 3 sets worker_replicas=2 without specifying GPU affinity) will OOM with no explicit model offloading or mutual exclusion strategy.",
+            "FID on 100 images is statistically invalid. Step 20 acceptance criterion 'FID score for SDXL txt2img < 20 on validation set' uses 100 COCO images. FID requires thousands of samples for stable estimates \u2014 the variance on 100-sample FID is so large the number is meaningless. This benchmark will produce wildly different results per run and cannot catch real regressions.",
+            "Poisson blending (cv2.seamlessClone) on AI-generated inpainted regions frequently produces color bleeding and texture artifacts. The blending boundary algorithm assumes natural photographic content. SDXL-generated fills regularly have stylistic discontinuities that seamlessClone amplifies rather than heals. No fallback or alpha-feathering alternative specified.",
+            "Redis Streams consumer group failure mode unaddressed. If an sd-worker crashes mid-generation, its pending message stays in the PEL (pending entries list) indefinitely. No XAUTOCLAIM, dead-letter queue, or job requeue-on-timeout logic is specified. Jobs will silently stall.",
+            "CLIP token counter is wrong for SDXL. SDXL uses a dual text encoder (CLIP-L/14 + OpenCLIP-G/14). Each encoder has a 77-token limit but they are applied independently, and SDXL supports prompt weighting and token padding that effectively allows longer prompts. A single CLIP-L tokenizer count is misleading and will incorrectly warn users on prompts that SDXL handles fine.",
+            "SDXL refiner integration never designed. The refiner is listed in step 2's model list and noted in the payload, but no step specifies when the refiner fires (typically denoising_end=0.8 on base, then refiner from 0.8), how it's chained in the worker, or how it affects progress reporting. It will either be silently unused or require last-minute implementation that hasn't been tested.",
+            "MinIO signed URL expiry creates broken asset links. Asset records are stored in PostgreSQL with signed URL references. A user who saves a job result and opens it 2 hours later gets a 403 from MinIO. No URL refresh endpoint, no lazy re-signing on GET /assets, no acknowledgment of this problem.",
+            "Duplicate detection via full-table pHash scan at 1M assets is O(N). Step 13 specifies 'imagehash pHash Hamming distance < 10' but describes no indexing strategy. A VP-tree, LSH index, or pgvector similarity column would be required to make this sub-second. The current approach will take minutes at 1M records."
+          ],
+          "suggestions": [
+            "Replace SD1.5 ControlNet models in step 10 with SDXL-native equivalents: 'diffusers/controlnet-canny-sdxl-1.0', 'diffusers/controlnet-depth-sdxl-1.0'. Alternatively, downgrade the base model to SD1.5 and drop the refiner \u2014 simpler stack, all ControlNet models become compatible.",
+            "Add step 2 model: 'stabilityai/stable-diffusion-xl-1.0-inpainting-0.1'. This is a distinct HuggingFace repo, not a pipeline variant of the base model.",
+            "Add POST /auth/register and POST /auth/login to the step 4 OpenAPI spec. They're the prerequisite for every authenticated endpoint and are currently missing.",
+            "For SSE under multi-instance deployment: have each API server subscribe to a Redis Pub/Sub channel keyed by job_id at the moment a client opens the SSE connection. Workers publish progress to Redis Pub/Sub (not just the Stream). This makes SSE delivery instance-agnostic.",
+            "Add a VRAM budget table to step 8's model registry (vram_gb field is already there). Enforce at worker startup: sum enabled models' VRAM requirements against available GPU memory and refuse to start if headroom < 4GB. Use diffusers' enable_model_cpu_offload() as fallback.",
+            "Replace FID-on-100-images with CLIP score (image-text alignment) and aesthetic score as per-sample metrics. These are valid on small sets. Reserve FID for optional nightly runs on 10K+ samples.",
+            "For inpainting seam quality, replace seamlessClone with alpha-feathered compositing using a Gaussian-blurred mask boundary. More robust for AI content. Only fall back to seamlessClone as an opt-in enhancement.",
+            "Add dead-letter queue: after XAUTOCLAIM reclaims a message that has been idle > 5 minutes, move it to a 'failed_jobs' stream and mark the GenerationJob as status='failed' with error='worker_timeout'.",
+            "Add POST /auth/refresh endpoint and implement lazy re-signing: when GET /assets is called, re-sign any URLs older than 55 minutes before returning them. Store the S3 object key (not the signed URL) in PostgreSQL.",
+            "For pHash duplicate detection at scale: store pHash as a BIGINT column on the assets table, then use a periodic batch job that groups by pHash range (Hamming distance binning) rather than pairwise comparison."
+          ],
+          "missing": [
+            "Content safety / NSFW filtering. No SafetyChecker, no NSFW classifier, no content policy enforcement. Any public deployment of an image generation service without this will generate illegal content and expose the operator to legal liability. This is a hard blocker for any non-private deployment.",
+            "User registration and authentication flow (POST /auth/register, POST /auth/login, POST /auth/refresh, POST /auth/logout). Referenced everywhere, implemented nowhere.",
+            "SDXL refiner chaining logic \u2014 when to invoke it, how denoising_end/denoising_start split is configured, how it's represented in job progress.",
+            "GPU affinity / exclusive allocation policy for K8s. With 2 worker replicas and 1 GPU, both workers will try to load full model sets simultaneously. Need nvidia.com/gpu: 1 resource limit per pod and pod anti-affinity or a GPU allocation queue.",
+            "Model download / caching strategy at container startup. HuggingFace model pulls (25-30GB total) at cold start will timeout any reasonable Kubernetes liveness probe. Need pre-built images with baked-in models or a persistent volume mount with pre-downloaded weights.",
+            "Job cancellation endpoint (DELETE /jobs/{id}) and worker-side cancellation signal via Redis.",
+            "Output file size limits. ESRGAN 4x on a 2048x2048 input produces 8192x8192 PNG (~192MB uncompressed). No cap on output resolution or file size is specified.",
+            "Multi-user data isolation audit. Asset library CRUD, bulk operations, and collection export must enforce user_id ownership checks. The schema has users table but the API layer ownership validation is never explicitly specified.",
+            "Bias evaluation methodology. Steps 2 and 20 say 'bias evaluation performed' as an acceptance criterion with no specification of what dataset, what axes (demographic representation, style diversity), what tooling, or what constitutes a pass. This is a compliance checkbox with no substance.",
+            "WebP thumbnail generation pipeline. Step 9 mentions 'PNG + WebP thumbnail' as output format but no step specifies thumbnail dimensions, generation timing, or storage path."
+          ],
+          "security_risks": [
+            "Image upload parsing before magic-byte validation. Step 21 specifies python-magic for MIME validation, but if the image is passed to PIL or cv2 before validation (e.g., for dimension checks in inpainting), a malformed file can trigger CVE-level PIL/libpng parser vulnerabilities. Validation must be the first operation, before any image decoding.",
+            "Prompt injection into LLM gateway. Step 14's prompt enhancement calls POST /llm/generate with user-supplied prompt text. If the LLM gateway system prompt is not isolated from user input, adversarial prompts can override enhancement behavior, extract system prompts, or cause SAGE's LLM gateway to execute unintended actions. The sanitization in step 21 strips control characters but does not prevent semantic injection.",
+            "Signed URL SSRF potential. The MinIO signed URL generation uses boto3 with a configurable endpoint. If model_id, hf_repo, or storage paths are user-influenced and not strictly validated, an attacker could potentially redirect signed URL generation to internal services.",
+            "Redis Streams consumer group with no authentication in Docker Compose. Step 3 scaffolds Redis without specifying requirepass. An unauthenticated Redis instance on the Docker network allows any container (or network-adjacent host) to read generation jobs, inject fake completions, or publish progress events for other users' SSEs.",
+            "Bulk delete endpoint without ownership validation creates IDOR. POST /assets/bulk with bulk_delete operation and a list of asset IDs \u2014 if the service layer doesn't filter by authenticated user_id, any user can delete any other user's assets by guessing UUIDs.",
+            "ZIP export path traversal risk. Step 13's collection export creates a ZIP with filenames derived from asset metadata. If asset filenames or metadata fields contain '../' sequences and are not sanitized before zipfile.write(), the downloaded ZIP can overwrite files on extraction (Zip Slip vulnerability).",
+            "No Content Security Policy or CORS policy specified for the frontend. The React app calls the FastAPI backend; without explicit CORS allowlist and CSP headers, XSS in the asset library (e.g., via a crafted prompt string rendered as HTML) can exfiltrate JWTs."
+          ],
+          "summary": "This is an architecturally ambitious plan with good structural coverage \u2014 the dependency graph is sound, acceptance criteria are specific, and the tech stack choices are reasonable. However, it contains one disqualifying technical incompatibility: the entire style transfer feature is built on SD1.5 ControlNet models wired to an SDXL pipeline, which will fail at the tensor dimension level before a single image is generated. Beyond that blocker, the plan is missing its own authentication issuance flow (JWTs are validated but never issued), has no content safety layer (a hard legal requirement for any non-private deployment), leaves SSE delivery broken under multi-instance scaling, and never designs the SDXL refiner chaining that makes SDXL worth using over SD1.5. The ML benchmarking methodology (FID on 100 samples) is statistically invalid. Fixing the ControlNet model selection, adding the auth flow, and adding NSFW filtering would raise this to a shippable MVP at roughly 68-72. As written, style transfer ships broken and the service is legally undeployable in any public context.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 51,
+            "flaws": [
+              "CRITICAL: SD1.5 ControlNet models used against SDXL base. Step 2 specifies 'stabilityai/stable-diffusion-xl-base-1.0' but step 10 loads 'lllyasviel/control_v11p_sd15_canny' and SD1.5 depth/openpose models. These are architecturally incompatible \u2014 SD1.5 ControlNet conditioning tensors have different shapes than SDXL's dual-encoder UNet. Style transfer will throw a dimension mismatch error at runtime, not a graceful failure.",
+              "SDXL inpainting model omitted from step 2. The plan lists the base + refiner but 'stabilityai/stable-diffusion-xl-1.0-inpainting-0.1' is a separate fine-tuned model required for SDXL inpainting. Using StableDiffusionXLInpaintPipeline with the base model produces incoherent outputs.",
+              "No user registration/login endpoints anywhere. Step 4 specifies 'Bearer JWT' auth and step 7 implements JWT validation middleware, but there is no POST /auth/register, POST /auth/login, or POST /auth/refresh. JWTs cannot be issued without these. The entire auth flow is headless.",
+              "SSE progress delivery under multi-instance API deployment is unresolved. Workers emit progress to Redis Pub/Sub; SSE subscribers are connected to a specific API server instance. Under K8s with 2+ api-server replicas, 50% of SSE clients will receive no events from jobs processed by the other instance. No sticky sessions, no shared SSE broker, no acknowledgment of this problem.",
+              "VRAM budget for simultaneous model loading is never calculated. SDXL base (fp16) ~6.9GB + refiner ~6.5GB + SDXL ControlNet ~2.5GB + Real-ESRGAN ~0.1GB + GFPGAN ~0.3GB = ~16GB minimum with no active inference tensors. An A10G has 24GB. One concurrent SDXL generation uses ~4GB activation memory. Two workers sharing a GPU (step 3 sets worker_replicas=2 without specifying GPU affinity) will OOM with no explicit model offloading or mutual exclusion strategy.",
+              "FID on 100 images is statistically invalid. Step 20 acceptance criterion 'FID score for SDXL txt2img < 20 on validation set' uses 100 COCO images. FID requires thousands of samples for stable estimates \u2014 the variance on 100-sample FID is so large the number is meaningless. This benchmark will produce wildly different results per run and cannot catch real regressions.",
+              "Poisson blending (cv2.seamlessClone) on AI-generated inpainted regions frequently produces color bleeding and texture artifacts. The blending boundary algorithm assumes natural photographic content. SDXL-generated fills regularly have stylistic discontinuities that seamlessClone amplifies rather than heals. No fallback or alpha-feathering alternative specified.",
+              "Redis Streams consumer group failure mode unaddressed. If an sd-worker crashes mid-generation, its pending message stays in the PEL (pending entries list) indefinitely. No XAUTOCLAIM, dead-letter queue, or job requeue-on-timeout logic is specified. Jobs will silently stall.",
+              "CLIP token counter is wrong for SDXL. SDXL uses a dual text encoder (CLIP-L/14 + OpenCLIP-G/14). Each encoder has a 77-token limit but they are applied independently, and SDXL supports prompt weighting and token padding that effectively allows longer prompts. A single CLIP-L tokenizer count is misleading and will incorrectly warn users on prompts that SDXL handles fine.",
+              "SDXL refiner integration never designed. The refiner is listed in step 2's model list and noted in the payload, but no step specifies when the refiner fires (typically denoising_end=0.8 on base, then refiner from 0.8), how it's chained in the worker, or how it affects progress reporting. It will either be silently unused or require last-minute implementation that hasn't been tested.",
+              "MinIO signed URL expiry creates broken asset links. Asset records are stored in PostgreSQL with signed URL references. A user who saves a job result and opens it 2 hours later gets a 403 from MinIO. No URL refresh endpoint, no lazy re-signing on GET /assets, no acknowledgment of this problem.",
+              "Duplicate detection via full-table pHash scan at 1M assets is O(N). Step 13 specifies 'imagehash pHash Hamming distance < 10' but describes no indexing strategy. A VP-tree, LSH index, or pgvector similarity column would be required to make this sub-second. The current approach will take minutes at 1M records."
+            ],
+            "suggestions": [
+              "Replace SD1.5 ControlNet models in step 10 with SDXL-native equivalents: 'diffusers/controlnet-canny-sdxl-1.0', 'diffusers/controlnet-depth-sdxl-1.0'. Alternatively, downgrade the base model to SD1.5 and drop the refiner \u2014 simpler stack, all ControlNet models become compatible.",
+              "Add step 2 model: 'stabilityai/stable-diffusion-xl-1.0-inpainting-0.1'. This is a distinct HuggingFace repo, not a pipeline variant of the base model.",
+              "Add POST /auth/register and POST /auth/login to the step 4 OpenAPI spec. They're the prerequisite for every authenticated endpoint and are currently missing.",
+              "For SSE under multi-instance deployment: have each API server subscribe to a Redis Pub/Sub channel keyed by job_id at the moment a client opens the SSE connection. Workers publish progress to Redis Pub/Sub (not just the Stream). This makes SSE delivery instance-agnostic.",
+              "Add a VRAM budget table to step 8's model registry (vram_gb field is already there). Enforce at worker startup: sum enabled models' VRAM requirements against available GPU memory and refuse to start if headroom < 4GB. Use diffusers' enable_model_cpu_offload() as fallback.",
+              "Replace FID-on-100-images with CLIP score (image-text alignment) and aesthetic score as per-sample metrics. These are valid on small sets. Reserve FID for optional nightly runs on 10K+ samples.",
+              "For inpainting seam quality, replace seamlessClone with alpha-feathered compositing using a Gaussian-blurred mask boundary. More robust for AI content. Only fall back to seamlessClone as an opt-in enhancement.",
+              "Add dead-letter queue: after XAUTOCLAIM reclaims a message that has been idle > 5 minutes, move it to a 'failed_jobs' stream and mark the GenerationJob as status='failed' with error='worker_timeout'.",
+              "Add POST /auth/refresh endpoint and implement lazy re-signing: when GET /assets is called, re-sign any URLs older than 55 minutes before returning them. Store the S3 object key (not the signed URL) in PostgreSQL.",
+              "For pHash duplicate detection at scale: store pHash as a BIGINT column on the assets table, then use a periodic batch job that groups by pHash range (Hamming distance binning) rather than pairwise comparison."
+            ],
+            "missing": [
+              "Content safety / NSFW filtering. No SafetyChecker, no NSFW classifier, no content policy enforcement. Any public deployment of an image generation service without this will generate illegal content and expose the operator to legal liability. This is a hard blocker for any non-private deployment.",
+              "User registration and authentication flow (POST /auth/register, POST /auth/login, POST /auth/refresh, POST /auth/logout). Referenced everywhere, implemented nowhere.",
+              "SDXL refiner chaining logic \u2014 when to invoke it, how denoising_end/denoising_start split is configured, how it's represented in job progress.",
+              "GPU affinity / exclusive allocation policy for K8s. With 2 worker replicas and 1 GPU, both workers will try to load full model sets simultaneously. Need nvidia.com/gpu: 1 resource limit per pod and pod anti-affinity or a GPU allocation queue.",
+              "Model download / caching strategy at container startup. HuggingFace model pulls (25-30GB total) at cold start will timeout any reasonable Kubernetes liveness probe. Need pre-built images with baked-in models or a persistent volume mount with pre-downloaded weights.",
+              "Job cancellation endpoint (DELETE /jobs/{id}) and worker-side cancellation signal via Redis.",
+              "Output file size limits. ESRGAN 4x on a 2048x2048 input produces 8192x8192 PNG (~192MB uncompressed). No cap on output resolution or file size is specified.",
+              "Multi-user data isolation audit. Asset library CRUD, bulk operations, and collection export must enforce user_id ownership checks. The schema has users table but the API layer ownership validation is never explicitly specified.",
+              "Bias evaluation methodology. Steps 2 and 20 say 'bias evaluation performed' as an acceptance criterion with no specification of what dataset, what axes (demographic representation, style diversity), what tooling, or what constitutes a pass. This is a compliance checkbox with no substance.",
+              "WebP thumbnail generation pipeline. Step 9 mentions 'PNG + WebP thumbnail' as output format but no step specifies thumbnail dimensions, generation timing, or storage path."
+            ],
+            "security_risks": [
+              "Image upload parsing before magic-byte validation. Step 21 specifies python-magic for MIME validation, but if the image is passed to PIL or cv2 before validation (e.g., for dimension checks in inpainting), a malformed file can trigger CVE-level PIL/libpng parser vulnerabilities. Validation must be the first operation, before any image decoding.",
+              "Prompt injection into LLM gateway. Step 14's prompt enhancement calls POST /llm/generate with user-supplied prompt text. If the LLM gateway system prompt is not isolated from user input, adversarial prompts can override enhancement behavior, extract system prompts, or cause SAGE's LLM gateway to execute unintended actions. The sanitization in step 21 strips control characters but does not prevent semantic injection.",
+              "Signed URL SSRF potential. The MinIO signed URL generation uses boto3 with a configurable endpoint. If model_id, hf_repo, or storage paths are user-influenced and not strictly validated, an attacker could potentially redirect signed URL generation to internal services.",
+              "Redis Streams consumer group with no authentication in Docker Compose. Step 3 scaffolds Redis without specifying requirepass. An unauthenticated Redis instance on the Docker network allows any container (or network-adjacent host) to read generation jobs, inject fake completions, or publish progress events for other users' SSEs.",
+              "Bulk delete endpoint without ownership validation creates IDOR. POST /assets/bulk with bulk_delete operation and a list of asset IDs \u2014 if the service layer doesn't filter by authenticated user_id, any user can delete any other user's assets by guessing UUIDs.",
+              "ZIP export path traversal risk. Step 13's collection export creates a ZIP with filenames derived from asset metadata. If asset filenames or metadata fields contain '../' sequences and are not sanitized before zipfile.write(), the downloaded ZIP can overwrite files on extraction (Zip Slip vulnerability).",
+              "No Content Security Policy or CORS policy specified for the frontend. The React app calls the FastAPI backend; without explicit CORS allowlist and CSP headers, XSS in the asset library (e.g., via a crafted prompt string rendered as HTML) can exfiltrate JWTs."
+            ],
+            "summary": "This is an architecturally ambitious plan with good structural coverage \u2014 the dependency graph is sound, acceptance criteria are specific, and the tech stack choices are reasonable. However, it contains one disqualifying technical incompatibility: the entire style transfer feature is built on SD1.5 ControlNet models wired to an SDXL pipeline, which will fail at the tensor dimension level before a single image is generated. Beyond that blocker, the plan is missing its own authentication issuance flow (JWTs are validated but never issued), has no content safety layer (a hard legal requirement for any non-private deployment), leaves SSE delivery broken under multi-instance scaling, and never designs the SDXL refiner chaining that makes SDXL worth using over SD1.5. The ML benchmarking methodology (FID on 100 samples) is statistically invalid. Fixing the ControlNet model selection, adding the auth flow, and adding NSFW filtering would raise this to a shippable MVP at roughly 68-72. As written, style transfer ships broken and the service is legally undeployable in any public context.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T08:53:24.605091+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 153.13,
+    "critic_plan": 119.84
+  }
+}

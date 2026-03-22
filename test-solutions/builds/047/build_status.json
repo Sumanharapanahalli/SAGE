@@ -1,0 +1,1231 @@
+{
+  "run_id": "6d2bf404-0d76-41ad-ae0c-c315e726c1ab",
+  "solution_name": "inventory_management",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T06:05:31.010891+00:00",
+  "updated_at": "2026-03-22T06:10:39.632611+00:00",
+  "product_description": "Multi-channel inventory management with warehouse management, barcode scanning, stock forecasting, purchase order automation, and marketplace sync (Amazon, eBay, Shopify).",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the multi-channel inventory management market: competitor landscape (Linnworks, Brightpearl, Cin7, Fishbowl), SMB vs enterprise segments, Amazon/eBay/Shopify seller pain points, pricing benchmarks, and go-to-market positioning.",
+      "payload": {
+        "competitors": [
+          "Linnworks",
+          "Brightpearl",
+          "Cin7",
+          "Fishbowl",
+          "SkuVault",
+          "TradeGecko"
+        ],
+        "channels": [
+          "Amazon",
+          "eBay",
+          "Shopify"
+        ],
+        "segments": [
+          "SMB",
+          "Mid-market"
+        ],
+        "deliverables": [
+          "competitor_matrix.md",
+          "gtm_strategy.md",
+          "positioning_doc.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor feature matrix covering \u22656 tools across \u226510 dimensions",
+        "Identified top 3 underserved pain points in multi-channel inventory",
+        "Go-to-market strategy document with target ICP and acquisition channels",
+        "Pricing model recommendation with tiered SaaS pricing benchmarks"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements: user personas (warehouse operator, purchasing manager, e-commerce seller, finance team), core user stories, process flows for receiving, picking, stock replenishment, and PO lifecycle. Produce a prioritized product backlog.",
+      "payload": {
+        "personas": [
+          "warehouse_operator",
+          "purchasing_manager",
+          "ecommerce_seller",
+          "finance_analyst"
+        ],
+        "core_flows": [
+          "receive_goods",
+          "pick_and_ship",
+          "stock_replenishment",
+          "purchase_order_lifecycle",
+          "marketplace_sync"
+        ],
+        "deliverables": [
+          "user_stories.md",
+          "process_flow_diagrams.md",
+          "backlog.csv"
+        ]
+      },
+      "acceptance_criteria": [
+        "\u226520 user stories with acceptance criteria in Given/When/Then format",
+        "Process flow diagrams for all 5 core flows reviewed and signed off",
+        "Backlog prioritized with MoSCoW (Must/Should/Could/Won't) labels",
+        "ROI analysis showing time savings vs manual inventory management"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research interviews with 5+ warehouse/e-commerce operators, then produce wireframes and interaction designs for: dashboard, warehouse map, barcode scan flow, PO creation wizard, stock forecasting view, and marketplace sync panel. Accessibility audit (WCAG 2.1 AA).",
+      "payload": {
+        "research_method": "semi-structured interviews",
+        "participant_count": 5,
+        "screens": [
+          "dashboard",
+          "warehouse_map",
+          "barcode_scan_flow",
+          "po_wizard",
+          "forecast_view",
+          "marketplace_panel",
+          "receiving_dock",
+          "settings"
+        ],
+        "accessibility_standard": "WCAG 2.1 AA",
+        "deliverables": [
+          "research_report.md",
+          "wireframes.figma",
+          "interaction_spec.md",
+          "accessibility_audit.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Research report with \u22655 user interviews synthesized into themes",
+        "Wireframes for all 8 screens at mid-fidelity, reviewed by product stakeholder",
+        "Barcode scan flow validated as operable with one hand on mobile",
+        "Accessibility audit showing 0 critical WCAG 2.1 AA violations in wireframes",
+        "Interaction spec covering error states, empty states, and loading states"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "FINANCIAL",
+      "description": "Build a financial model covering SaaS pricing tiers (Starter/Growth/Enterprise), cost of goods (hosting, marketplace API fees, ML compute), unit economics (CAC, LTV, payback period), and 3-year P&L projection for inventory_management.",
+      "payload": {
+        "pricing_tiers": [
+          "starter",
+          "growth",
+          "enterprise"
+        ],
+        "cost_drivers": [
+          "AWS_hosting",
+          "marketplace_api_fees",
+          "ml_inference",
+          "support"
+        ],
+        "deliverables": [
+          "pricing_model.xlsx",
+          "unit_economics.md",
+          "3yr_pnl.xlsx"
+        ]
+      },
+      "acceptance_criteria": [
+        "Pricing tiers defined with feature gates and monthly/annual rates",
+        "Unit economics model showing LTV:CAC ratio \u22653x at scale",
+        "3-year P&L with break-even month identified",
+        "Sensitivity analysis on churn rate (5%, 10%, 20%) included"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 5,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (GDPR/CCPA), and marketplace integration licensing review (Amazon SP-API, eBay API, Shopify API ToS compliance). Review data residency requirements for PCI DSS cardholder data environment.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "dpa.md",
+          "api_licensing_review.md"
+        ],
+        "standards": [
+          "GDPR",
+          "CCPA",
+          "PCI DSS"
+        ],
+        "marketplace_apis": [
+          "Amazon SP-API",
+          "eBay Developer API",
+          "Shopify API"
+        ]
+      },
+      "acceptance_criteria": [
+        "ToS covers data retention, SLA, acceptable use, and termination",
+        "Privacy Policy compliant with GDPR Article 13 and CCPA \u00a7 1798.100",
+        "DPA includes sub-processor list and SCCs for EU data transfers",
+        "Marketplace API licensing review confirms compliant usage for all 3 platforms",
+        "PCI DSS scope defined \u2014 cardholder data environment boundary documented",
+        "Return/refund policy drafted",
+        "Consumer protection compliance checked"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 6,
+      "task_type": "SECURITY",
+      "description": "Produce threat model (STRIDE) for the inventory platform covering: multi-tenant data isolation, marketplace OAuth tokens, barcode scanner endpoints, purchase order approval workflows, and payment/billing data. Define SBOM and penetration test plan aligned with PCI DSS Requirement 11.",
+      "payload": {
+        "methodology": "STRIDE",
+        "scope_areas": [
+          "multi_tenant_isolation",
+          "marketplace_oauth",
+          "barcode_api",
+          "po_approval",
+          "billing_pci"
+        ],
+        "standard": "PCI DSS v4.0",
+        "deliverables": [
+          "threat_model.md",
+          "sbom.json",
+          "pentest_plan.md",
+          "security_controls.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all 5 scope areas with risk ratings",
+        "SBOM generated in CycloneDX format listing all direct and transitive dependencies",
+        "Penetration test plan covers OWASP Top 10 + PCI DSS Req 11.3 scope",
+        "Security controls mapped to PCI DSS requirements 1\u201312",
+        "OAuth token storage design reviewed \u2014 tokens stored encrypted at rest",
+        "Payment flow PCI compliant",
+        "Fraud detection rules defined"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 7,
+      "task_type": "COMPLIANCE",
+      "description": "Produce PCI DSS v4.0 compliance artifacts: network segmentation diagram, data flow diagram for cardholder data, Requirement 6 (secure development) evidence, Requirement 7 (access control) policy, and SAQ-A or SAQ-D applicability assessment for the billing integration.",
+      "payload": {
+        "standard": "PCI DSS v4.0",
+        "artifacts": [
+          "network_segmentation_diagram.md",
+          "cde_data_flow.md",
+          "secure_dev_policy.md",
+          "access_control_policy.md",
+          "saq_assessment.md"
+        ],
+        "requirements_covered": [
+          "Req1",
+          "Req2",
+          "Req6",
+          "Req7",
+          "Req8",
+          "Req10",
+          "Req11"
+        ]
+      },
+      "acceptance_criteria": [
+        "Network segmentation diagram distinguishes CDE from out-of-scope systems",
+        "Data flow diagram traces cardholder data from billing UI to payment processor",
+        "Secure development policy covers code review, SAST, dependency scanning",
+        "Access control policy enforces least-privilege and MFA for admin roles",
+        "SAQ applicability assessment determines correct SAQ type with rationale"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 specification for all inventory_management REST endpoints: inventory CRUD, warehouse zones/locations, barcode lookup, purchase orders, stock forecasts, marketplace sync jobs, webhook receivers, and multi-tenant auth (JWT + API keys). Define versioning strategy (v1/).",
+      "payload": {
+        "spec_format": "OpenAPI 3.1",
+        "endpoint_groups": [
+          "inventory",
+          "warehouses",
+          "locations",
+          "barcodes",
+          "purchase_orders",
+          "forecasts",
+          "marketplace_sync",
+          "webhooks",
+          "auth",
+          "tenants"
+        ],
+        "auth": [
+          "JWT Bearer",
+          "API Key"
+        ],
+        "versioning": "URI path /v1/",
+        "deliverables": [
+          "openapi.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec passes validation with 0 errors via `openapi-generator validate`",
+        "All endpoints have request/response schemas, status codes, and error formats",
+        "Auth schemes documented with example JWT claims and API key header",
+        "Pagination defined consistently (cursor-based) across all list endpoints",
+        "Webhook payload schemas defined for inventory_low, po_approved, sync_complete events"
+      ],
+      "depends_on": [
+        2,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "DATABASE",
+      "description": "Design and implement the PostgreSQL schema for inventory_management: products, SKUs, variants, warehouses, locations (zone/aisle/bin), stock_levels, stock_movements, purchase_orders, po_line_items, suppliers, marketplace_listings, sync_jobs, forecasts, tenants, users, audit_log. Add migrations via Alembic.",
+      "payload": {
+        "database": "PostgreSQL 16",
+        "migration_tool": "Alembic",
+        "tables": [
+          "tenants",
+          "users",
+          "products",
+          "skus",
+          "variants",
+          "warehouses",
+          "zones",
+          "locations",
+          "stock_levels",
+          "stock_movements",
+          "purchase_orders",
+          "po_line_items",
+          "suppliers",
+          "marketplace_listings",
+          "sync_jobs",
+          "forecasts",
+          "audit_log",
+          "barcodes"
+        ],
+        "features": [
+          "row_level_security",
+          "partitioning_on_stock_movements",
+          "full_text_search_on_products"
+        ],
+        "deliverables": [
+          "migrations/",
+          "schema_diagram.png",
+          "seed_data.sql"
+        ]
+      },
+      "acceptance_criteria": [
+        "All migrations apply cleanly on a fresh PostgreSQL 16 instance",
+        "Row-level security policies enforce tenant isolation on all data tables",
+        "stock_movements table partitioned by month for query performance",
+        "Foreign key constraints and indexes documented in schema diagram",
+        "Seed data provides 3 tenants, 50 products, 2 warehouses for local dev"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "CONFIG",
+      "description": "Set up the inventory_management solution scaffold: copy starter template, configure project.yaml (active_modules, theme), prompts.yaml (analyst, developer, planner roles), tasks.yaml (task types for inventory domain). Configure environment: .env.example, Docker Compose for Postgres + Redis + backend, pre-commit hooks, SAST (Bandit, Semgrep).",
+      "payload": {
+        "solution_name": "inventory_management",
+        "template": "solutions/starter",
+        "services": [
+          "postgresql:16",
+          "redis:7",
+          "fastapi_backend",
+          "celery_worker",
+          "flower"
+        ],
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "improvements",
+          "knowledge",
+          "audit"
+        ],
+        "sast_tools": [
+          "bandit",
+          "semgrep"
+        ],
+        "deliverables": [
+          "solutions/inventory_management/",
+          "docker-compose.yml",
+          ".env.example",
+          ".pre-commit-config.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "`docker compose up` starts all services with 0 errors",
+        "project.yaml passes SAGE YAML validation endpoint",
+        "Pre-commit hooks run Bandit and Semgrep on every commit",
+        ".env.example documents all required environment variables with descriptions",
+        "SAGE backend starts with PROJECT=inventory_management and health check returns 200"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement core inventory service: product/SKU/variant CRUD, stock level tracking, stock movement recording (receive, transfer, adjust, write-off), multi-location warehouse model (zone \u2192 aisle \u2192 bin), multi-tenant isolation via PostgreSQL RLS. FastAPI routers, Pydantic v2 schemas, SQLAlchemy 2.0 async ORM.",
+      "payload": {
+        "framework": "FastAPI",
+        "orm": "SQLAlchemy 2.0 async",
+        "validation": "Pydantic v2",
+        "modules": [
+          "products",
+          "skus",
+          "stock_levels",
+          "stock_movements",
+          "warehouses",
+          "locations"
+        ],
+        "patterns": [
+          "repository_pattern",
+          "unit_of_work",
+          "domain_events"
+        ]
+      },
+      "acceptance_criteria": [
+        "CRUD endpoints for products/SKUs return correct HTTP status codes per OpenAPI spec",
+        "Stock movement creates an immutable audit record with before/after quantities",
+        "Multi-tenant isolation verified: tenant A cannot read tenant B's inventory",
+        "Warehouse location tree (zone\u2192aisle\u2192bin) supports CRUD and stock assignment",
+        "All endpoints respond in <200ms at p95 for 1000 products (local benchmark)"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement barcode scanning service: barcode registration (EAN-13, UPC-A, QR, Code128), lookup endpoint, mobile-optimized scan-to-receive and scan-to-pick workflows, batch scan processing via Redis queue. Support Zebra/Honeywell scanner input via USB HID and WebSocket stream.",
+      "payload": {
+        "barcode_formats": [
+          "EAN-13",
+          "UPC-A",
+          "QR",
+          "Code128",
+          "GTIN"
+        ],
+        "input_modes": [
+          "REST API",
+          "WebSocket stream",
+          "batch CSV upload"
+        ],
+        "queue": "Redis + Celery",
+        "workflows": [
+          "scan_to_receive",
+          "scan_to_pick",
+          "scan_to_count",
+          "scan_to_transfer"
+        ]
+      },
+      "acceptance_criteria": [
+        "Barcode lookup returns product + stock level in <50ms for registered barcodes",
+        "Unknown barcode returns 404 with actionable error (link to register flow)",
+        "WebSocket stream handles 20 scans/second without message loss",
+        "scan_to_receive workflow updates stock_level and creates stock_movement in one transaction",
+        "Batch scan CSV of 1000 lines processed within 30 seconds"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement purchase order (PO) management service: supplier CRUD, PO creation (manual and auto-generated), line items with cost and expected delivery, approval workflow (draft \u2192 approved \u2192 sent \u2192 partially_received \u2192 closed), goods receipt against PO, automated email/webhook notifications to suppliers.",
+      "payload": {
+        "po_states": [
+          "draft",
+          "approved",
+          "sent_to_supplier",
+          "partially_received",
+          "fully_received",
+          "closed",
+          "cancelled"
+        ],
+        "automation": [
+          "auto_generate_on_reorder_point",
+          "supplier_email_notification",
+          "webhook_on_approval"
+        ],
+        "approval": "HITL via SAGE proposal store",
+        "deliverables": [
+          "purchase_orders router",
+          "po_service.py",
+          "supplier_notifier.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "PO state machine enforces valid transitions only (draft\u2192approved, not closed\u2192draft)",
+        "Auto-generate PO triggered when stock_level falls below reorder_point threshold",
+        "Supplier email notification sent within 60 seconds of PO approval",
+        "Goods receipt against PO updates stock_level and records stock_movement",
+        "PO approval gate creates SAGE proposal requiring human sign-off before supplier send"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "ML_MODEL",
+      "description": "Build stock forecasting pipeline: feature engineering from stock_movements history (seasonality, trend, velocity), train Prophet + LightGBM ensemble model per SKU, generate 30/60/90-day demand forecasts, compute reorder points and safety stock levels. Serve via async forecast job with results stored in forecasts table.",
+      "payload": {
+        "models": [
+          "Facebook Prophet",
+          "LightGBM"
+        ],
+        "ensemble": "weighted average",
+        "features": [
+          "daily_sales_velocity",
+          "seasonality_index",
+          "lead_time_days",
+          "stockout_history"
+        ],
+        "forecast_horizons": [
+          30,
+          60,
+          90
+        ],
+        "serving": "Celery async job + REST endpoint",
+        "deliverables": [
+          "ml/forecasting/",
+          "forecast_service.py",
+          "model_evaluation_report.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Forecast pipeline trains on \u226590 days of movement history per SKU",
+        "MAPE (Mean Absolute Percentage Error) \u226420% on held-out 30-day test set",
+        "Reorder point calculation accounts for lead time and desired service level (95%)",
+        "Forecast job completes for 1000 SKUs within 10 minutes on 4-core CPU",
+        "Model evaluation report documents MAPE, RMSE, and coverage per product category"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement marketplace sync service for Amazon (SP-API), eBay (Restful API), and Shopify (Admin API): OAuth2 token management, listing sync (price, stock, description), inventory quantity push on stock change, order import and stock deduction, sync job scheduling (cron + webhook triggers), conflict resolution (marketplace wins vs. local wins strategy).",
+      "payload": {
+        "marketplaces": {
+          "amazon": "SP-API v2 + OAuth LWA",
+          "ebay": "eBay RESTful API + OAuth2",
+          "shopify": "Shopify Admin API + OAuth2 + webhooks"
+        },
+        "sync_types": [
+          "inventory_quantity",
+          "price",
+          "listing_status",
+          "order_import"
+        ],
+        "scheduler": "Celery Beat",
+        "conflict_resolution": "configurable_per_channel",
+        "deliverables": [
+          "integrations/amazon.py",
+          "integrations/ebay.py",
+          "integrations/shopify.py",
+          "sync_engine.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "OAuth token refresh handled automatically before expiry for all 3 marketplaces",
+        "Inventory quantity pushed to all 3 marketplaces within 5 minutes of stock change",
+        "Order import pulls new orders every 15 minutes and deducts stock atomically",
+        "Conflict resolution strategy configurable per channel with audit trail",
+        "Sync failure triggers retry with exponential backoff (3 attempts, max 30min)"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement AGENTIC pattern (coordinator): inventory intelligence agent coordinator that routes tasks to specialist sub-agents \u2014 StockAnalystAgent (anomaly detection on movements), ReplenishmentAgent (auto-draft POs from forecasts), SyncMonitorAgent (detect and alert on sync failures). Uses SAGE multi-agent coordinator pattern with human-in-the-loop for PO proposals.",
+      "payload": {
+        "agentic_pattern": "coordinator",
+        "agents": [
+          {
+            "name": "StockAnalystAgent",
+            "role": "analyst",
+            "task": "anomaly_detection"
+          },
+          {
+            "name": "ReplenishmentAgent",
+            "role": "planner",
+            "task": "po_auto_draft"
+          },
+          {
+            "name": "SyncMonitorAgent",
+            "role": "monitor",
+            "task": "marketplace_health"
+          }
+        ],
+        "hitl_gates": [
+          "po_approval",
+          "bulk_stock_write_off"
+        ],
+        "deliverables": [
+          "agents/inventory_coordinator.py",
+          "agents/stock_analyst.py",
+          "agents/replenishment.py",
+          "agents/sync_monitor.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly routes anomaly events to StockAnalystAgent",
+        "ReplenishmentAgent drafts PO proposals that go to SAGE approval queue (not auto-execute)",
+        "SyncMonitorAgent raises alert within 5 minutes of a marketplace sync failure",
+        "All agent actions written to SAGE audit log with trace_id",
+        "Human approval required for any PO above configurable threshold (default $500)"
+      ],
+      "depends_on": [
+        13,
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build the inventory management dashboard: real-time stock level overview, low-stock alerts panel, recent movements feed, marketplace sync status indicators, pending PO count, and forecast accuracy widget. React 18 + TypeScript, Recharts for graphs, Tailwind CSS, responsive for tablet (warehouse floor use).",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "ui_library": "Tailwind CSS + shadcn/ui",
+        "charts": "Recharts",
+        "components": [
+          "StockOverviewCard",
+          "LowStockAlert",
+          "MovementsFeed",
+          "SyncStatusBadge",
+          "POCountWidget",
+          "ForecastAccuracyChart"
+        ],
+        "responsive": "tablet-first (1024px min)"
+      },
+      "acceptance_criteria": [
+        "Dashboard loads in <2 seconds on tablet (simulated 4G throttle in DevTools)",
+        "Low-stock alerts panel updates in real-time via 30s polling or SSE",
+        "Sync status shows last sync time and error count per marketplace",
+        "All 6 dashboard components render correctly at 1024px and 1440px breakpoints",
+        "Lighthouse performance score \u226585 on dashboard page"
+      ],
+      "depends_on": [
+        11,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build warehouse management UI: interactive warehouse map with zone/aisle/bin drill-down, location stock view, transfer workflow (scan source \u2192 scan destination \u2192 confirm), stocktake (count) interface optimized for mobile barcode scanning, receive goods wizard with PO linkage.",
+      "payload": {
+        "pages": [
+          "WarehouseMap",
+          "LocationDetail",
+          "TransferWizard",
+          "StocktakeInterface",
+          "ReceiveGoodsWizard"
+        ],
+        "mobile_optimized": [
+          "StocktakeInterface",
+          "TransferWizard"
+        ],
+        "barcode_input": "WebSocket connection to barcode scanner endpoint",
+        "features": [
+          "drag_to_move_location",
+          "bulk_transfer",
+          "partial_stocktake"
+        ]
+      },
+      "acceptance_criteria": [
+        "Warehouse map renders zone/aisle/bin hierarchy with stock density heat-map coloring",
+        "TransferWizard completes scan-source \u2192 scan-destination flow in \u22644 taps",
+        "StocktakeInterface works offline (PWA service worker) and syncs when reconnected",
+        "Receive goods wizard links to open POs and pre-fills line items from PO data",
+        "All warehouse pages pass WCAG 2.1 AA automated check (axe-core 0 critical)"
+      ],
+      "depends_on": [
+        12,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build purchase order management UI: PO list with filter/search, PO creation wizard (supplier selection, line items, expected delivery), PO detail with approval action and goods receipt workflow, supplier management page, auto-replenishment settings panel.",
+      "payload": {
+        "pages": [
+          "POList",
+          "POCreateWizard",
+          "PODetail",
+          "SupplierManagement",
+          "ReplenishmentSettings"
+        ],
+        "features": [
+          "bulk_po_approval",
+          "po_pdf_export",
+          "email_preview_before_send",
+          "auto_po_threshold_config"
+        ]
+      },
+      "acceptance_criteria": [
+        "PO list supports filter by status, supplier, date range, and full-text search",
+        "POCreateWizard validates line items (quantity > 0, unit cost > 0) before submission",
+        "PODetail shows approval history and links to goods receipt records",
+        "Auto-replenishment settings allow per-SKU reorder point and PO threshold config",
+        "PO PDF export generates correctly formatted document with supplier address and line items"
+      ],
+      "depends_on": [
+        13,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build stock forecasting and analytics UI: 30/60/90-day demand forecast chart per SKU, reorder point visualization, overstock/understock heatmap across product catalog, forecast vs. actual comparison view, replenishment recommendation table with one-click draft-PO action.",
+      "payload": {
+        "pages": [
+          "ForecastDashboard",
+          "SKUForecastDetail",
+          "ReplenishmentRecommendations",
+          "CatalogHealthHeatmap"
+        ],
+        "chart_types": [
+          "line_forecast_with_confidence_interval",
+          "heatmap",
+          "bar_forecast_vs_actual"
+        ],
+        "filters": [
+          "category",
+          "warehouse",
+          "marketplace_channel",
+          "forecast_horizon"
+        ]
+      },
+      "acceptance_criteria": [
+        "Forecast chart renders 90-day projection with confidence interval bands",
+        "Reorder point displayed as reference line on forecast chart",
+        "Replenishment recommendations table sortable by urgency (days_of_stock_remaining)",
+        "One-click draft-PO from recommendation creates PO in draft state and routes to approval",
+        "Heatmap renders for catalogs up to 5000 SKUs without browser freeze"
+      ],
+      "depends_on": [
+        14,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build marketplace sync management UI: channel connection wizard (Amazon/eBay/Shopify OAuth), sync status dashboard per channel, listing management (view, override price, pause/resume listing), sync log viewer with error details, conflict resolution settings per channel.",
+      "payload": {
+        "pages": [
+          "ChannelConnections",
+          "SyncDashboard",
+          "ListingManager",
+          "SyncLogViewer",
+          "ConflictSettings"
+        ],
+        "oauth_flows": [
+          "amazon_lwa",
+          "ebay_oauth2",
+          "shopify_oauth2"
+        ],
+        "features": [
+          "bulk_price_override",
+          "sync_pause_per_sku",
+          "conflict_resolution_config"
+        ]
+      },
+      "acceptance_criteria": [
+        "OAuth connection wizard completes for all 3 marketplaces with PKCE flow",
+        "Sync dashboard shows last_sync_at, error_count, and items_synced per channel",
+        "Listing manager supports bulk price override for up to 500 SKUs",
+        "Sync log viewer is filterable by channel, date, error type",
+        "OAuth tokens stored encrypted \u2014 never exposed in frontend or API responses"
+      ],
+      "depends_on": [
+        15,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "QA",
+      "description": "Produce QA test plan: define test scope, entry/exit criteria, risk-based test prioritization, test case design for all 5 functional areas (inventory, warehouse, barcodes, POs, marketplace sync). Includes PCI DSS control verification test cases and multi-tenant isolation test cases.",
+      "payload": {
+        "test_areas": [
+          "inventory_crud",
+          "warehouse_management",
+          "barcode_scanning",
+          "purchase_orders",
+          "marketplace_sync",
+          "forecasting",
+          "multi_tenant_isolation",
+          "pci_dss_controls"
+        ],
+        "methodology": "risk_based_testing",
+        "deliverables": [
+          "qa_test_plan.md",
+          "test_cases.csv",
+          "pci_test_cases.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan covers all 8 test areas with \u22655 test cases each",
+        "PCI DSS test cases cover Req 6, 7, 8, 10 controls",
+        "Multi-tenant isolation test cases attempt cross-tenant data access via all API endpoints",
+        "Risk matrix identifies top 10 highest-risk test scenarios",
+        "Entry/exit criteria defined with measurable pass/fail thresholds"
+      ],
+      "depends_on": [
+        8,
+        7
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests: \u226580% line coverage on backend services (inventory, barcode, PO, sync). Unit tests for stock movement calculations, reorder point logic, and forecast model inputs. Integration tests for database layer using testcontainers (real PostgreSQL). Pytest with async support.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio",
+        "coverage_target": "80%",
+        "test_db": "testcontainers (PostgreSQL 16)",
+        "modules_to_test": [
+          "inventory_service",
+          "barcode_service",
+          "po_service",
+          "sync_engine",
+          "forecast_pipeline",
+          "agent_coordinator"
+        ],
+        "fixtures": [
+          "tenant_factory",
+          "warehouse_factory",
+          "product_factory",
+          "movement_factory"
+        ]
+      },
+      "acceptance_criteria": [
+        "pytest reports \u226580% line coverage on all backend service modules",
+        "Integration tests use real PostgreSQL via testcontainers (no mocked DB)",
+        "Stock movement tests verify immutability (no UPDATE/DELETE on movements table)",
+        "Multi-tenant isolation tests assert 403 on cross-tenant access attempts",
+        "All tests pass in CI under 5 minutes"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        22
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system test suite: full flow from barcode scan \u2192 stock receive \u2192 inventory update \u2192 marketplace sync \u2192 PO auto-generation \u2192 approval \u2192 supplier notification. Performance test: 1000 concurrent users on inventory endpoints. Chaos test: simulate marketplace API downtime and verify graceful degradation.",
+      "payload": {
+        "e2e_scenarios": [
+          "receive_goods_via_barcode_scan",
+          "stock_depletion_triggers_po_auto_draft",
+          "po_approval_sends_to_supplier",
+          "stock_change_syncs_to_all_3_marketplaces",
+          "forecast_generates_replenishment_recommendations"
+        ],
+        "performance_tool": "Locust",
+        "chaos_scenarios": [
+          "amazon_api_timeout",
+          "ebay_rate_limit",
+          "shopify_webhook_failure"
+        ],
+        "deliverables": [
+          "e2e_test_report.md",
+          "performance_report.md",
+          "chaos_report.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 5 E2E scenarios pass on staging environment with real marketplace sandbox APIs",
+        "p95 latency \u2264500ms for inventory read endpoints under 1000 concurrent users",
+        "Amazon API timeout causes graceful queue-and-retry, not data loss",
+        "System recovers automatically from all 3 chaos scenarios within 10 minutes",
+        "Zero cross-tenant data leakage detected across all E2E test runs"
+      ],
+      "depends_on": [
+        23,
+        16
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 25,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions): lint \u2192 SAST (Bandit/Semgrep) \u2192 unit tests \u2192 integration tests \u2192 Docker build \u2192 push to ECR \u2192 deploy to staging \u2192 E2E smoke test \u2192 manual gate \u2192 deploy to production. Add monitoring: Prometheus metrics, Grafana dashboards for sync lag, stock movement rate, PO processing time. PagerDuty alerting for P1 incidents.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "registry": "AWS ECR",
+        "deploy_targets": [
+          "staging (ECS Fargate)",
+          "production (ECS Fargate)"
+        ],
+        "monitoring": [
+          "Prometheus",
+          "Grafana"
+        ],
+        "alerting": "PagerDuty",
+        "sast_tools": [
+          "Bandit",
+          "Semgrep"
+        ],
+        "key_metrics": [
+          "sync_lag_seconds",
+          "stock_movement_rate",
+          "po_processing_time_ms",
+          "forecast_job_duration_s",
+          "api_error_rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "Pipeline runs end-to-end on PR merge: lint \u2192 test \u2192 build \u2192 deploy to staging in <15 min",
+        "Manual approval gate required before production deployment",
+        "SAST failures block merge (pipeline fails on any High severity finding)",
+        "Grafana dashboard displays all 5 key metrics with appropriate alert thresholds",
+        "PagerDuty alert fires within 2 minutes of sync_lag exceeding 30 minutes"
+      ],
+      "depends_on": [
+        24,
+        10
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "INFRA",
+      "description": "Provision AWS infrastructure via Terraform: VPC with public/private subnets, ECS Fargate cluster, RDS PostgreSQL 16 Multi-AZ, ElastiCache Redis, Application Load Balancer with WAF, S3 for exports/reports, Secrets Manager for marketplace OAuth tokens and DB credentials, CloudWatch Logs. PCI DSS network segmentation enforced in VPC.",
+      "payload": {
+        "iac_tool": "Terraform",
+        "cloud": "AWS",
+        "services": [
+          "VPC",
+          "ECS Fargate",
+          "RDS PostgreSQL 16 Multi-AZ",
+          "ElastiCache Redis",
+          "ALB + WAF",
+          "S3",
+          "Secrets Manager",
+          "CloudWatch"
+        ],
+        "environments": [
+          "staging",
+          "production"
+        ],
+        "pci_controls": [
+          "network_segmentation",
+          "encrypted_at_rest",
+          "encrypted_in_transit",
+          "vpc_flow_logs"
+        ]
+      },
+      "acceptance_criteria": [
+        "Terraform plan applies cleanly for both staging and production workspaces",
+        "RDS and ElastiCache are in private subnets, not internet-accessible",
+        "WAF rules block OWASP Top 10 patterns on ALB",
+        "All data encrypted at rest (RDS, S3, ElastiCache) and in transit (TLS 1.2+)",
+        "VPC flow logs enabled and shipping to CloudWatch for PCI Req 10 compliance"
+      ],
+      "depends_on": [
+        25
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: incident response playbook (P1/P2/P3 classification), marketplace sync outage runbook, database failover procedure, PO approval backlog clearance SOP, capacity planning guidelines (storage growth, Celery worker scaling), and SLA definitions (99.5% uptime, 15-min sync SLA).",
+      "payload": {
+        "runbooks": [
+          "incident_response_playbook.md",
+          "marketplace_sync_outage.md",
+          "database_failover.md",
+          "po_backlog_clearance.md",
+          "capacity_planning.md"
+        ],
+        "sla_targets": {
+          "uptime": "99.5%",
+          "sync_lag": "15 minutes max",
+          "api_latency_p95": "500ms",
+          "po_notification": "60 seconds"
+        }
+      },
+      "acceptance_criteria": [
+        "Incident response playbook defines P1/P2/P3 with escalation paths and response SLAs",
+        "Marketplace sync outage runbook covers all 3 channels with step-by-step recovery",
+        "Database failover procedure tested in staging with documented RTO \u226415 minutes",
+        "SLA document signed off by product stakeholder",
+        "Capacity planning model projects infrastructure costs at 1k, 10k, 100k SKUs"
+      ],
+      "depends_on": [
+        26
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 28,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: API reference (auto-generated from OpenAPI spec + enriched examples), architecture decision records (ADRs) for key choices (PostgreSQL RLS for multi-tenancy, Prophet+LightGBM ensemble, coordinator agent pattern), developer onboarding guide, and marketplace integration setup guides (Amazon SP-API, eBay, Shopify).",
+      "payload": {
+        "docs": [
+          "api_reference/",
+          "adrs/adr_001_multitenant_rls.md",
+          "adrs/adr_002_forecast_ensemble.md",
+          "adrs/adr_003_coordinator_agent.md",
+          "developer_onboarding.md",
+          "marketplace_setup/amazon.md",
+          "marketplace_setup/ebay.md",
+          "marketplace_setup/shopify.md"
+        ],
+        "api_doc_tool": "Redoc (from OpenAPI spec)"
+      },
+      "acceptance_criteria": [
+        "API reference generated from OpenAPI spec with \u22651 request/response example per endpoint",
+        "3 ADRs written with Context/Decision/Consequences format",
+        "Developer onboarding guide enables new dev to run full stack locally in <30 minutes",
+        "Each marketplace setup guide covers OAuth app creation, required scopes, and test mode setup",
+        "All docs reviewed for technical accuracy by developer who implemented each area"
+      ],
+      "depends_on": [
+        24,
+        15
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 29,
+      "task_type": "TRAINING",
+      "description": "Create user training materials: warehouse operator quick-start guide (barcode scanning, receiving, stock counts), purchasing manager guide (PO creation, approval workflow, supplier setup), e-commerce seller guide (marketplace connection, sync settings, conflict resolution), and in-app onboarding tooltips/walkthroughs.",
+      "payload": {
+        "guides": [
+          "warehouse_operator_quickstart.md",
+          "purchasing_manager_guide.md",
+          "ecommerce_seller_guide.md"
+        ],
+        "in_app": "Shepherd.js guided tour for first-run",
+        "formats": [
+          "Markdown (web docs)",
+          "PDF export",
+          "in-app tooltips"
+        ]
+      },
+      "acceptance_criteria": [
+        "Each guide covers the user's core workflow end-to-end in \u226410 pages",
+        "In-app onboarding tour covers \u22655 key UI elements with actionable tooltip text",
+        "Warehouse operator guide usable by non-technical staff (validated with 1 test reader)",
+        "PDF exports render correctly with page numbers, cover page, and table of contents",
+        "Guides reviewed for accuracy against final shipped UI"
+      ],
+      "depends_on": [
+        18,
+        19,
+        21,
+        28
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 29,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 62,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 62,
+        "final_review": {
+          "score": 62,
+          "flaws": [
+            "ML cold-start problem is completely unaddressed (Step 14): the model requires \u226590 days of movement history per SKU, meaning every new customer gets zero forecasts at onboarding. No fallback strategy (category-level models, velocity input wizard, similar-SKU clustering) exists. This blocks the product's core value proposition for 3 months after signup.",
+            "Concurrency and row-level locking omitted across Steps 11-13: multiple sources (barcode scan, marketplace order import, manual adjustment, PO receipt) can hit the same SKU stock_level simultaneously. No SELECT FOR UPDATE / optimistic locking / MVCC strategy is defined. This will cause negative stock levels and silent data corruption in production.",
+            "Order import idempotency not designed (Step 15): Celery workers retrying a failed import, combined with 15-minute polling overlap, will create duplicate stock deductions. No idempotency key pattern is defined for order ingestion. Overselling is the direct consequence.",
+            "PCI DSS SAQ type is deferred as a decision (Step 7), but it should drive the entire architecture. If the billing integration ever touches raw cardholder data, it's SAQ-D (300+ controls). SAQ-A only applies if payment is fully outsourced with no cardholder data touching your systems. This ambiguity means the compliance scope could double after architecture is locked.",
+            "Amazon SP-API complexity is severely underestimated (Step 15): inventory quantity on Amazon is not a real-time push \u2014 it requires the Feeds API (async, throttled) or FBA inventory reports. SP-API throttles at the selling-partner level, not at the API-key level, so a single tenant's aggressive sync can consume the shared rate limit budget for all tenants. Multi-tenant token management under SP-API requires each seller to individually authorize via LWA \u2014 there's no shared app flow.",
+            "WebSocket scaling for barcode scanning is broken in ECS Fargate (Step 12): WebSocket connections are stateful. Load-balanced ECS Fargate with multiple task instances requires Redis pub/sub or sticky sessions to route scanner messages to the correct backend instance. This isn't designed, meaning the '20 scans/second' benchmark only holds for single-instance deployments.",
+            "GDPR right to erasure conflicts with immutable audit log (Step 23 acceptance criteria: no UPDATE/DELETE on movements table): stock movements and audit logs likely contain user_id (personal data). GDPR Article 17 requires erasure on request. Pseudonymization strategy is absent \u2014 this will require retroactive schema redesign.",
+            "No connection pooling strategy for multi-tenant async workload: SQLAlchemy 2.0 async with multiple Fargate tasks + Celery workers against a single RDS instance will exhaust connections under load. PgBouncer or asyncpg pool sizing is not mentioned anywhere. RDS max_connections for a db.r6g.large is ~1000 \u2014 this ceiling will be hit before the performance targets are.",
+            "Conflict resolution for concurrent marketplace updates is undefined beyond 'configurable_per_channel': if stock changes simultaneously on Amazon (order deducted), Shopify (manual adjustment), and local (barcode scan), the sync engine has no defined merge strategy. The acceptance criteria say 'audit trail' but not which value wins. This will cause overselling on high-velocity SKUs.",
+            "Forecast job at scale is unrealistic for the acceptance criteria timeline (Step 14): '1000 SKUs in 10 minutes on 4-core CPU' may hold at MVP, but with a typical SMB catalog of 10,000-50,000 SKUs, this grows to 100-500 minutes. No incremental training, model caching, or SKU batching strategy is designed. The financial model (Step 4) also doesn't account for ML compute costs per tenant at scale.",
+            "Celery default serializer is pickle \u2014 an RCE vector: the plan uses Celery throughout (Steps 12, 13, 14, 15) but never specifies task_serializer='json'. Pickle deserialization of untrusted input is a known arbitrary code execution vulnerability. This is not in the threat model despite STRIDE coverage.",
+            "Step 21 PKCE is misapplied: PKCE is for public (browser/mobile) OAuth clients where a client secret cannot be kept confidential. The marketplace OAuth flows (Amazon LWA, eBay, Shopify) for a server-side SaaS backend should use confidential client flows with client_secret stored in Secrets Manager. Requiring PKCE for the backend introduces unnecessary complexity and may not be supported by all three marketplace OAuth servers."
+          ],
+          "suggestions": [
+            "Design a cold-start path for new tenants in Step 14: offer manual velocity input (units sold/week per SKU), category-level priors, and a 'not enough data' state with explicit messaging. Gate the ML forecast behind a minimum data threshold and fall back to simple exponential smoothing (statsmodels ETS) which works on 14+ days of data.",
+            "Add an explicit locking strategy document as a prerequisite to Step 11: define per-SKU advisory locks or SELECT FOR UPDATE SKIP LOCKED for all stock mutation paths. Stock movements must be serialized per SKU, not per-tenant. Consider an event-sourced ledger model where stock_level is a projection, not a mutable field.",
+            "Add idempotency_key column to orders and sync_job tables before Step 15 implementation: hash (marketplace, order_id) as the key. Enforce UNIQUE constraint. Celery retry + manual rerun should be safe by default.",
+            "Resolve PCI SAQ type in Step 5 (Legal), not Step 7 (Compliance): the SAQ determination should feed into the architecture of the billing integration. If SAQ-D applies, significant additional controls (pen test scope, log review, vulnerability management) must be added to Steps 6, 7, 25, 26.",
+            "Add a marketplace API rate-limit budget manager as a first-class component in Step 15: model it as a token bucket per (tenant, marketplace) pair with Redis. Reject sync jobs that would exceed the daily/hourly SP-API quota. Log quota consumption per tenant for billing purposes.",
+            "Add Redis pub/sub WebSocket routing layer in Step 10 infrastructure setup: configure the FastAPI barcode WebSocket endpoint to publish to a Redis channel and subscribe across all worker instances. This is the standard pattern for stateful connections behind a load balancer.",
+            "Add pseudonymization design for audit tables before Step 9 schema design: user_id in stock_movements and audit_log should be a pseudonymous reference. Store the mapping in a separate 'identity vault' that can be deleted on GDPR erasure request without corrupting the movement ledger.",
+            "Split Step 14 ML work into two phases: (a) feature pipeline + data quality validation, then (b) model training and serving. The forecast accuracy acceptance criteria (MAPE \u226420%) cannot be validated until you have real customer data \u2014 add a 'model readiness gate' that prevents forecast UI from going live until sufficient history exists.",
+            "Add PgBouncer sidecar to Step 10 Docker Compose and Step 26 Terraform: define connection pool sizing per service (FastAPI: 20 max, Celery: 10 per worker). Document RDS max_connections ceiling and set alarm when usage exceeds 80%.",
+            "Add Celery task serializer enforcement to Step 10 config: CELERY_TASK_SERIALIZER='json', CELERY_ACCEPT_CONTENT=['json']. This is a one-line config change that eliminates the pickle RCE class entirely.",
+            "Add distributed tracing (AWS X-Ray or OpenTelemetry) to Step 25: marketplace sync failures and forecast job failures are async and will be nearly impossible to debug with metrics alone. Trace IDs should propagate from API request through Celery task to DB query.",
+            "Step 3 requires recruiting 5 participants across 4 personas \u2014 plan for 2-3 per persona (8-12 total) or explicitly accept the research as directional only: one-interview-per-persona is not statistically meaningful for design decisions that will affect all warehouse operators."
+          ],
+          "missing": [
+            "Data migration strategy: no onboarding path for customers moving from spreadsheets, Cin7, or Fishbowl. This is the #1 adoption blocker for inventory management tools. A CSV import wizard with field mapping and validation is table stakes.",
+            "API idempotency specification: no mention of Idempotency-Key header pattern for POST endpoints (create stock movement, create PO, trigger sync). Without this, all client retries and webhook re-deliveries are unsafe.",
+            "Shopify API version lifecycle management: Shopify deprecates API versions quarterly and requires migration every 12 months. No versioning pinning, upgrade notification, or migration strategy is present.",
+            "Negative stock handling policy: what happens when a marketplace order arrives for a SKU that is already at zero? Allow negative stock? Block sync? Queue for back-order? This business rule is not defined anywhere and will surface immediately in production.",
+            "Disaster recovery testing: Step 26 defines Multi-AZ RDS but no backup/restore drill is planned. RTO \u226415 minutes is asserted in Step 27 but never verified. Point-in-time recovery test should be a Step 26 acceptance criterion.",
+            "Marketplace sandbox limitations documentation: Amazon, eBay, and Shopify sandboxes all have known gaps vs. production (Amazon sandbox doesn't support all SP-API operations; Shopify test orders don't trigger all webhooks). Step 24 E2E tests on sandbox APIs will have false positives that fail silently in production.",
+            "PO auto-generation rate limiting: Step 13 auto-generates POs when stock falls below reorder_point, but there's no guard against a bad forecast or data anomaly triggering hundreds of POs in minutes. A 'max POs per hour' circuit breaker is missing.",
+            "Multi-tenant secret isolation strategy: Step 26 stores OAuth tokens in Secrets Manager, but the architecture for per-tenant secret isolation isn't defined. Storing all tokens in one secret vs. one secret per tenant has significant IAM and cost implications at 100+ tenants.",
+            "Supplier portal or EDI integration: the plan sends supplier emails (Step 13) but has no defined strategy for structured supplier responses (order acknowledgement, delivery confirmation). Manual email parsing will be the bottleneck in the PO lifecycle at any meaningful volume.",
+            "SLA enforcement mechanism: Step 27 defines SLAs (99.5% uptime, 15-min sync lag) but there's no customer-facing SLA breach notification, credit calculation, or contractual enforcement mechanism \u2014 typically required for B2B SaaS with paying customers.",
+            "RBAC / permissions model: four personas (warehouse operator, purchasing manager, e-commerce seller, finance analyst) have very different permission requirements, but no role-based access control schema, permission matrix, or API authorization middleware is designed in any step.",
+            "Multi-warehouse stock allocation logic: if a product exists in 3 warehouses and a Shopify order arrives, which warehouse fulfills it? No allocation rules (nearest, FIFO, priority) are defined \u2014 this is the core business logic of a WMS."
+          ],
+          "security_risks": [
+            "Celery pickle serialization (RCE): not explicitly disabled anywhere in the plan. Any Celery worker processing tasks from an insufficiently isolated queue can execute arbitrary code via a crafted pickle payload. Must set task_serializer='json' in Step 10.",
+            "Marketplace OAuth token exposure in logs: async Celery tasks that log request/response details for debugging will capture OAuth Bearer tokens in CloudWatch Logs unless explicit scrubbing middleware is applied. The threat model (Step 6) notes token storage but not token logging surface.",
+            "Barcode WebSocket endpoint authentication gap: Step 12 defines a WebSocket endpoint for scanner input. WebSocket upgrade requests bypass standard HTTP middleware auth chains in many FastAPI configurations. Explicit JWT validation on the WebSocket upgrade handshake must be called out \u2014 it is not.",
+            "PO auto-generation as a financial control bypass: a malicious tenant with write access to stock_levels or reorder_point values could artificially trigger large POs. The '$500 threshold for human approval' (Step 16) is the only control, but manipulating reorder_point to generate many sub-$500 POs bypasses it. No aggregate daily PO value cap per tenant is defined.",
+            "Multi-tenant RLS bypass via SQLAlchemy connection pooling: if a connection is reused across requests with different tenant contexts (a common async pool bug), RLS will enforce the wrong tenant's policy. The tenant context must be set at the DB session level on every request \u2014 this is a subtle async bug that the plan doesn't guard against explicitly.",
+            "Bulk operations without row-level authorization: Step 21 allows bulk price override for 500 SKUs. If the authorization check is only at the endpoint level (not per-SKU), a tenant could override pricing for SKUs belonging to a different tenant if any data isolation bug exists. Per-row authorization on bulk operations is not mentioned.",
+            "Secrets Manager IAM over-privilege risk: Step 26 places all marketplace OAuth tokens in Secrets Manager, but if the ECS task role has GetSecretValue on all secrets (a common misconfiguration), a compromised container can exfiltrate every tenant's OAuth tokens. Least-privilege secret access per service must be defined."
+          ],
+          "summary": "This is a thorough and professionally structured plan with good coverage of the product surface area, compliance artifacts, and operational concerns. The dependency graph is logical, the tech stack is sound, and the inclusion of STRIDE threat modeling, PCI DSS artifacts, chaos testing, and HITL gates for PO approval reflects genuine production thinking. However, the plan has several critical gaps that would cause failures before the first paying customer reaches steady state: the ML forecasting pipeline has no cold-start strategy and will be useless for 3+ months after onboarding; stock mutation paths have no concurrency control and will produce corrupt inventory counts under normal multi-source load; order import has no idempotency design and will oversell; and the PCI SAQ type ambiguity could invalidate the entire compliance effort if resolved incorrectly after the architecture is built. The marketplace integrations \u2014 particularly Amazon SP-API \u2014 are underestimated in complexity and rate-limit budget management. The plan reads as designed by someone with strong breadth but insufficient depth on the hardest technical problems: concurrent stock mutation, ML cold-start, and multi-tenant secret isolation at scale. Score 62: solid foundation with a believable scope, but fundamental rework required on concurrency design, idempotency, ML cold-start, and PCI scoping before this is production-safe.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 62,
+            "flaws": [
+              "ML cold-start problem is completely unaddressed (Step 14): the model requires \u226590 days of movement history per SKU, meaning every new customer gets zero forecasts at onboarding. No fallback strategy (category-level models, velocity input wizard, similar-SKU clustering) exists. This blocks the product's core value proposition for 3 months after signup.",
+              "Concurrency and row-level locking omitted across Steps 11-13: multiple sources (barcode scan, marketplace order import, manual adjustment, PO receipt) can hit the same SKU stock_level simultaneously. No SELECT FOR UPDATE / optimistic locking / MVCC strategy is defined. This will cause negative stock levels and silent data corruption in production.",
+              "Order import idempotency not designed (Step 15): Celery workers retrying a failed import, combined with 15-minute polling overlap, will create duplicate stock deductions. No idempotency key pattern is defined for order ingestion. Overselling is the direct consequence.",
+              "PCI DSS SAQ type is deferred as a decision (Step 7), but it should drive the entire architecture. If the billing integration ever touches raw cardholder data, it's SAQ-D (300+ controls). SAQ-A only applies if payment is fully outsourced with no cardholder data touching your systems. This ambiguity means the compliance scope could double after architecture is locked.",
+              "Amazon SP-API complexity is severely underestimated (Step 15): inventory quantity on Amazon is not a real-time push \u2014 it requires the Feeds API (async, throttled) or FBA inventory reports. SP-API throttles at the selling-partner level, not at the API-key level, so a single tenant's aggressive sync can consume the shared rate limit budget for all tenants. Multi-tenant token management under SP-API requires each seller to individually authorize via LWA \u2014 there's no shared app flow.",
+              "WebSocket scaling for barcode scanning is broken in ECS Fargate (Step 12): WebSocket connections are stateful. Load-balanced ECS Fargate with multiple task instances requires Redis pub/sub or sticky sessions to route scanner messages to the correct backend instance. This isn't designed, meaning the '20 scans/second' benchmark only holds for single-instance deployments.",
+              "GDPR right to erasure conflicts with immutable audit log (Step 23 acceptance criteria: no UPDATE/DELETE on movements table): stock movements and audit logs likely contain user_id (personal data). GDPR Article 17 requires erasure on request. Pseudonymization strategy is absent \u2014 this will require retroactive schema redesign.",
+              "No connection pooling strategy for multi-tenant async workload: SQLAlchemy 2.0 async with multiple Fargate tasks + Celery workers against a single RDS instance will exhaust connections under load. PgBouncer or asyncpg pool sizing is not mentioned anywhere. RDS max_connections for a db.r6g.large is ~1000 \u2014 this ceiling will be hit before the performance targets are.",
+              "Conflict resolution for concurrent marketplace updates is undefined beyond 'configurable_per_channel': if stock changes simultaneously on Amazon (order deducted), Shopify (manual adjustment), and local (barcode scan), the sync engine has no defined merge strategy. The acceptance criteria say 'audit trail' but not which value wins. This will cause overselling on high-velocity SKUs.",
+              "Forecast job at scale is unrealistic for the acceptance criteria timeline (Step 14): '1000 SKUs in 10 minutes on 4-core CPU' may hold at MVP, but with a typical SMB catalog of 10,000-50,000 SKUs, this grows to 100-500 minutes. No incremental training, model caching, or SKU batching strategy is designed. The financial model (Step 4) also doesn't account for ML compute costs per tenant at scale.",
+              "Celery default serializer is pickle \u2014 an RCE vector: the plan uses Celery throughout (Steps 12, 13, 14, 15) but never specifies task_serializer='json'. Pickle deserialization of untrusted input is a known arbitrary code execution vulnerability. This is not in the threat model despite STRIDE coverage.",
+              "Step 21 PKCE is misapplied: PKCE is for public (browser/mobile) OAuth clients where a client secret cannot be kept confidential. The marketplace OAuth flows (Amazon LWA, eBay, Shopify) for a server-side SaaS backend should use confidential client flows with client_secret stored in Secrets Manager. Requiring PKCE for the backend introduces unnecessary complexity and may not be supported by all three marketplace OAuth servers."
+            ],
+            "suggestions": [
+              "Design a cold-start path for new tenants in Step 14: offer manual velocity input (units sold/week per SKU), category-level priors, and a 'not enough data' state with explicit messaging. Gate the ML forecast behind a minimum data threshold and fall back to simple exponential smoothing (statsmodels ETS) which works on 14+ days of data.",
+              "Add an explicit locking strategy document as a prerequisite to Step 11: define per-SKU advisory locks or SELECT FOR UPDATE SKIP LOCKED for all stock mutation paths. Stock movements must be serialized per SKU, not per-tenant. Consider an event-sourced ledger model where stock_level is a projection, not a mutable field.",
+              "Add idempotency_key column to orders and sync_job tables before Step 15 implementation: hash (marketplace, order_id) as the key. Enforce UNIQUE constraint. Celery retry + manual rerun should be safe by default.",
+              "Resolve PCI SAQ type in Step 5 (Legal), not Step 7 (Compliance): the SAQ determination should feed into the architecture of the billing integration. If SAQ-D applies, significant additional controls (pen test scope, log review, vulnerability management) must be added to Steps 6, 7, 25, 26.",
+              "Add a marketplace API rate-limit budget manager as a first-class component in Step 15: model it as a token bucket per (tenant, marketplace) pair with Redis. Reject sync jobs that would exceed the daily/hourly SP-API quota. Log quota consumption per tenant for billing purposes.",
+              "Add Redis pub/sub WebSocket routing layer in Step 10 infrastructure setup: configure the FastAPI barcode WebSocket endpoint to publish to a Redis channel and subscribe across all worker instances. This is the standard pattern for stateful connections behind a load balancer.",
+              "Add pseudonymization design for audit tables before Step 9 schema design: user_id in stock_movements and audit_log should be a pseudonymous reference. Store the mapping in a separate 'identity vault' that can be deleted on GDPR erasure request without corrupting the movement ledger.",
+              "Split Step 14 ML work into two phases: (a) feature pipeline + data quality validation, then (b) model training and serving. The forecast accuracy acceptance criteria (MAPE \u226420%) cannot be validated until you have real customer data \u2014 add a 'model readiness gate' that prevents forecast UI from going live until sufficient history exists.",
+              "Add PgBouncer sidecar to Step 10 Docker Compose and Step 26 Terraform: define connection pool sizing per service (FastAPI: 20 max, Celery: 10 per worker). Document RDS max_connections ceiling and set alarm when usage exceeds 80%.",
+              "Add Celery task serializer enforcement to Step 10 config: CELERY_TASK_SERIALIZER='json', CELERY_ACCEPT_CONTENT=['json']. This is a one-line config change that eliminates the pickle RCE class entirely.",
+              "Add distributed tracing (AWS X-Ray or OpenTelemetry) to Step 25: marketplace sync failures and forecast job failures are async and will be nearly impossible to debug with metrics alone. Trace IDs should propagate from API request through Celery task to DB query.",
+              "Step 3 requires recruiting 5 participants across 4 personas \u2014 plan for 2-3 per persona (8-12 total) or explicitly accept the research as directional only: one-interview-per-persona is not statistically meaningful for design decisions that will affect all warehouse operators."
+            ],
+            "missing": [
+              "Data migration strategy: no onboarding path for customers moving from spreadsheets, Cin7, or Fishbowl. This is the #1 adoption blocker for inventory management tools. A CSV import wizard with field mapping and validation is table stakes.",
+              "API idempotency specification: no mention of Idempotency-Key header pattern for POST endpoints (create stock movement, create PO, trigger sync). Without this, all client retries and webhook re-deliveries are unsafe.",
+              "Shopify API version lifecycle management: Shopify deprecates API versions quarterly and requires migration every 12 months. No versioning pinning, upgrade notification, or migration strategy is present.",
+              "Negative stock handling policy: what happens when a marketplace order arrives for a SKU that is already at zero? Allow negative stock? Block sync? Queue for back-order? This business rule is not defined anywhere and will surface immediately in production.",
+              "Disaster recovery testing: Step 26 defines Multi-AZ RDS but no backup/restore drill is planned. RTO \u226415 minutes is asserted in Step 27 but never verified. Point-in-time recovery test should be a Step 26 acceptance criterion.",
+              "Marketplace sandbox limitations documentation: Amazon, eBay, and Shopify sandboxes all have known gaps vs. production (Amazon sandbox doesn't support all SP-API operations; Shopify test orders don't trigger all webhooks). Step 24 E2E tests on sandbox APIs will have false positives that fail silently in production.",
+              "PO auto-generation rate limiting: Step 13 auto-generates POs when stock falls below reorder_point, but there's no guard against a bad forecast or data anomaly triggering hundreds of POs in minutes. A 'max POs per hour' circuit breaker is missing.",
+              "Multi-tenant secret isolation strategy: Step 26 stores OAuth tokens in Secrets Manager, but the architecture for per-tenant secret isolation isn't defined. Storing all tokens in one secret vs. one secret per tenant has significant IAM and cost implications at 100+ tenants.",
+              "Supplier portal or EDI integration: the plan sends supplier emails (Step 13) but has no defined strategy for structured supplier responses (order acknowledgement, delivery confirmation). Manual email parsing will be the bottleneck in the PO lifecycle at any meaningful volume.",
+              "SLA enforcement mechanism: Step 27 defines SLAs (99.5% uptime, 15-min sync lag) but there's no customer-facing SLA breach notification, credit calculation, or contractual enforcement mechanism \u2014 typically required for B2B SaaS with paying customers.",
+              "RBAC / permissions model: four personas (warehouse operator, purchasing manager, e-commerce seller, finance analyst) have very different permission requirements, but no role-based access control schema, permission matrix, or API authorization middleware is designed in any step.",
+              "Multi-warehouse stock allocation logic: if a product exists in 3 warehouses and a Shopify order arrives, which warehouse fulfills it? No allocation rules (nearest, FIFO, priority) are defined \u2014 this is the core business logic of a WMS."
+            ],
+            "security_risks": [
+              "Celery pickle serialization (RCE): not explicitly disabled anywhere in the plan. Any Celery worker processing tasks from an insufficiently isolated queue can execute arbitrary code via a crafted pickle payload. Must set task_serializer='json' in Step 10.",
+              "Marketplace OAuth token exposure in logs: async Celery tasks that log request/response details for debugging will capture OAuth Bearer tokens in CloudWatch Logs unless explicit scrubbing middleware is applied. The threat model (Step 6) notes token storage but not token logging surface.",
+              "Barcode WebSocket endpoint authentication gap: Step 12 defines a WebSocket endpoint for scanner input. WebSocket upgrade requests bypass standard HTTP middleware auth chains in many FastAPI configurations. Explicit JWT validation on the WebSocket upgrade handshake must be called out \u2014 it is not.",
+              "PO auto-generation as a financial control bypass: a malicious tenant with write access to stock_levels or reorder_point values could artificially trigger large POs. The '$500 threshold for human approval' (Step 16) is the only control, but manipulating reorder_point to generate many sub-$500 POs bypasses it. No aggregate daily PO value cap per tenant is defined.",
+              "Multi-tenant RLS bypass via SQLAlchemy connection pooling: if a connection is reused across requests with different tenant contexts (a common async pool bug), RLS will enforce the wrong tenant's policy. The tenant context must be set at the DB session level on every request \u2014 this is a subtle async bug that the plan doesn't guard against explicitly.",
+              "Bulk operations without row-level authorization: Step 21 allows bulk price override for 500 SKUs. If the authorization check is only at the endpoint level (not per-SKU), a tenant could override pricing for SKUs belonging to a different tenant if any data isolation bug exists. Per-row authorization on bulk operations is not mentioned.",
+              "Secrets Manager IAM over-privilege risk: Step 26 places all marketplace OAuth tokens in Secrets Manager, but if the ECS task role has GetSecretValue on all secrets (a common misconfiguration), a compromised container can exfiltrate every tenant's OAuth tokens. Least-privilege secret access per service must be defined."
+            ],
+            "summary": "This is a thorough and professionally structured plan with good coverage of the product surface area, compliance artifacts, and operational concerns. The dependency graph is logical, the tech stack is sound, and the inclusion of STRIDE threat modeling, PCI DSS artifacts, chaos testing, and HITL gates for PO approval reflects genuine production thinking. However, the plan has several critical gaps that would cause failures before the first paying customer reaches steady state: the ML forecasting pipeline has no cold-start strategy and will be useless for 3+ months after onboarding; stock mutation paths have no concurrency control and will produce corrupt inventory counts under normal multi-source load; order import has no idempotency design and will oversell; and the PCI SAQ type ambiguity could invalidate the entire compliance effort if resolved incorrectly after the architecture is built. The marketplace integrations \u2014 particularly Amazon SP-API \u2014 are underestimated in complexity and rate-limit budget management. The plan reads as designed by someone with strong breadth but insufficient depth on the hardest technical problems: concurrent stock mutation, ML cold-start, and multi-tenant secret isolation at scale. Score 62: solid foundation with a believable scope, but fundamental rework required on concurrency design, idempotency, ML cold-start, and PCI scoping before this is production-safe.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T06:10:39.632584+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 173.0,
+    "critic_plan": 135.62
+  }
+}

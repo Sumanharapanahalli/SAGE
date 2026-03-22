@@ -1,0 +1,354 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Document business requirements, user personas (legal ops, procurement,
+      executives), core process flows for contract creation → negotiation → execution
+      → obligation tracking → renewal, and ROI model vs. manual CLM.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - 'BRD covers all 6 core features: template library, clause extraction, redline,
+      e-signature, obligation tracking, renewal alerting'
+    - At least 20 user stories with acceptance criteria in Given/When/Then format
+    - Process flow diagrams cover happy path and 3 exception paths per core workflow
+    - ROI model quantifies time-to-sign reduction and risk-of-missed-renewal scenarios
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce Product Requirements Document, prioritized feature roadmap
+      (MLP → v1 → v2), success metrics (time-to-sign, contract cycle time, renewal
+      capture rate), and launch criteria.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD defines MLP, v1, and v2 feature sets with clear scope boundaries
+    - Each feature has measurable success metric and baseline target
+    - Roadmap has quarterly milestones tied to business outcomes
+    - Launch criteria checklist includes compliance, security, and training gates
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR/CCPA-compliant), e-signature
+      legal validity review (ESIGN Act, eIDAS), data retention policy for contracts,
+      and IP/licensing review for clause extraction models.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Terms of Service covers liability limitations for contract execution and e-signature
+    - Privacy Policy addresses contract data as PII and specifies retention periods
+    - E-signature legal memo confirms enforceability in target jurisdictions (US,
+      EU minimum)
+    - Data retention policy specifies contract archival periods by type (commercial,
+      employment, NDA)
+    - IP review confirms licensing compliance for any NLP/ML models used in clause
+      extraction
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'User research sessions with legal ops and procurement users. Produce
+      wireframes for: contract workspace, template library browser, redline comparison
+      view, e-signature flow, obligation tracker dashboard, and renewal alert center.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research includes at least 5 interviews covering all 3 primary personas
+    - Wireframes cover all MLP screens at mid-fidelity with annotated interaction
+      states
+    - Redline comparison view clearly differentiates insertions, deletions, and comments
+      by party
+    - E-signature flow wire includes identity verification step and audit certificate
+      preview
+    - Accessibility audit confirms WCAG 2.1 AA compliance for all primary flows
+    depends_on:
+    - 1
+    - 2
+  SECURITY:
+    description: Produce threat model (STRIDE) for CLM system, define security controls
+      mapping to ISO 27001 Annex A and SOC 2 Trust Service Criteria, document encryption-at-rest
+      and in-transit requirements, and create penetration test plan.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 data flow boundaries in the architecture
+    - Security controls matrix maps each ISO 27001 Annex A control to implementation
+      evidence
+    - SOC 2 CC criteria (Security, Availability, Confidentiality) mapped to technical
+      controls
+    - Encryption spec mandates AES-256 at rest for contract documents and e-signature
+      certificates
+    - Penetration test plan covers OWASP Top 10 and business logic attacks specific
+      to contract data
+    depends_on:
+    - 1
+    - 2
+  DATABASE:
+    description: 'Design relational schema for: contracts (versions, status FSM),
+      template library, clause registry, obligation items, signature envelopes, renewal
+      schedules, and audit event log. Include migration scripts and seed data.'
+    agent_role: developer
+    acceptance_criteria:
+    - Schema supports full contract version history with parent-child relationships
+    - Contract status FSM enforces valid state transitions at DB constraint level
+    - Audit event table is append-only with no UPDATE/DELETE permissions
+    - All PII columns (signatory email, name) are marked for encryption at application
+      layer
+    - Migration scripts are idempotent and include rollback procedures
+    - Seed data includes 5 template types and sample obligation types for testing
+    depends_on:
+    - 2
+    - 5
+  API:
+    description: 'Define OpenAPI 3.1 specification for all CLM endpoints: contract
+      CRUD + versioning, template library CRUD, clause extraction trigger/results,
+      redline diff generation, e-signature envelope lifecycle, obligation CRUD + status
+      updates, renewal schedule + alert configuration.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors against openapi-spec-validator
+    - All endpoints have request/response schemas with examples
+    - Error responses follow RFC 7807 Problem Details format consistently
+    - Authentication and RBAC scopes documented per endpoint
+    - Webhook payload schemas defined for e-signature provider callbacks
+    - API contract reviewed and signed off by frontend and backend leads before implementation
+      begins
+    depends_on:
+    - 2
+    - 6
+  CONFIG:
+    description: Initialize monorepo structure (backend Python/FastAPI + frontend
+      React/TypeScript), configure dependency management, linting, pre-commit hooks,
+      environment variable schema (.env.example), Docker Compose for local dev (Postgres,
+      Redis, object storage), and SAGE solution YAML files.
+    agent_role: developer
+    acceptance_criteria:
+    - docker-compose up starts all local services with health checks passing
+    - Pre-commit hooks enforce linting and type checking on every commit
+    - .env.example documents all required environment variables with descriptions
+    - SAGE project.yaml correctly declares solution name as contract_management with
+      active modules
+    - make test runs without errors from a clean checkout
+    - README documents local setup in under 5 commands
+    depends_on:
+    - 7
+  BACKEND:
+    description: 'Implement core contract service: CRUD with immutable versioning,
+      status FSM enforcement, document storage (object storage with signed URLs),
+      full-text search index, and activity event emission.'
+    agent_role: developer
+    acceptance_criteria:
+    - Create/read/update contract with version history — every save creates a new
+      immutable version
+    - Invalid status transitions raise 422 with descriptive error
+    - Document upload returns pre-signed download URL expiring in configurable TTL
+    - Full-text search returns results ranked by relevance across contract title,
+      parties, and metadata
+    - All mutations emit structured audit events with actor, timestamp, and diff
+    - Unit test coverage ≥ 90% for status machine and version manager
+    depends_on:
+    - 8
+  AGENTIC:
+    description: 'Implement AI clause extraction service using the review_and_critique
+      pattern: NLP agent extracts named clauses (payment, termination, liability,
+      indemnification, IP, confidentiality, governing law) from contract text; critic
+      agent validates extraction confidence and flags ambiguous clauses for human
+      review.'
+    agent_role: developer
+    acceptance_criteria:
+    - Extraction pipeline processes a 20-page contract in under 30 seconds
+    - Named clause types are correctly identified with ≥ 85% precision on test corpus
+      of 50 contracts
+    - Critic agent correctly flags low-confidence extractions — false negative rate
+      < 5%
+    - Human review queue surfaces flagged clauses with surrounding context for approval
+    - Approved corrections feed back into extraction prompt context (iterative refinement)
+    - 'Clause registry enables cross-contract search: ''find all contracts with limitation
+      of liability < $1M'''
+    depends_on:
+    - 9
+  FRONTEND:
+    description: 'Build contract workspace UI: contract list dashboard with status/owner/expiry
+      filters, contract detail view with version history timeline, side-by-side redline
+      comparison viewer, and metadata editing panel.'
+    agent_role: developer
+    acceptance_criteria:
+    - Contract list loads and renders 500 contracts with virtual scrolling — no jank
+    - Status filters work correctly for all FSM states
+    - Version history timeline shows all versions with author, timestamp, and change
+      summary
+    - Redline comparison viewer renders insertions (green), deletions (red strikethrough),
+      and moves (blue)
+    - Metadata panel edits persist correctly and reflect in contract detail without
+      page reload
+    - All components meet WCAG 2.1 AA — navigable by keyboard, screen reader labels
+      on all interactive elements
+    depends_on:
+    - 4
+    - 12
+  DATA:
+    description: 'Build CLM analytics pipeline: contract cycle time metrics, signing
+      velocity by template/counterparty, obligation completion rate, renewal capture
+      rate, and clause frequency analysis across contract corpus.'
+    agent_role: data_engineer
+    acceptance_criteria:
+    - All 6 key metrics compute correctly against synthetic test data
+    - Metrics refresh within 1 hour of underlying events
+    - Dashboard API returns metric data in < 500ms for 12-month lookback
+    - CSV export includes all raw event data with correct column headers
+    - Clause frequency analysis identifies top 10 most negotiated clauses across corpus
+    depends_on:
+    - 9
+    - 14
+    - 15
+  COMPLIANCE:
+    description: 'Produce ISO 27001 and SOC 2 Type II evidence artifacts: information
+      security policy, access control matrix, risk register, incident response procedure,
+      change management log, and audit trail completeness evidence.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - ISO 27001 risk register covers all assets identified in security threat model
+      (step 5)
+    - SOC 2 CC6 evidence demonstrates RBAC implementation with quarterly access review
+      process
+    - SOC 2 CC8 evidence documents change management process from PR to production
+      deployment
+    - Audit trail evidence demonstrates append-only log with no modification capability
+    - All controls have named owner, testing frequency, and last-tested date
+    - 'Evidence package is reviewer-ready: indexed, cross-referenced to control IDs'
+    depends_on:
+    - 5
+    - 9
+    - 13
+  TESTS:
+    description: 'Write comprehensive unit and integration test suite: contract service,
+      template rendering, clause extraction, redline diff, e-signature envelope lifecycle,
+      obligation state machine, and renewal alert scheduler.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest runs to 100% pass rate with no warnings
+    - Line coverage ≥ 90% across all backend service modules
+    - Contract status FSM tested for all valid transitions and all invalid transition
+      rejections
+    - E-signature provider adapter contract tests pass against recorded API fixtures
+    - Obligation escalation logic tested with time-mocked due dates
+    - Renewal alert scheduler tested against contract corpus with known expiry dates
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  QA:
+    description: 'Produce QA test plan: test strategy, test case catalog (functional,
+      edge case, negative), defect severity matrix, UAT plan with legal ops and procurement
+      personas, and test execution report template.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test case catalog covers all user stories from BRD with at least 3 test cases
+      per story
+    - Negative test cases cover all error states and invalid inputs for each API endpoint
+    - UAT plan defines acceptance criteria that map to product success metrics
+    - 'Defect severity matrix distinguishes: blocker (data loss, esign failure), critical,
+      major, minor'
+    - Test execution report template captures pass/fail per test case with evidence
+      attachment field
+    depends_on:
+    - 1
+    - 2
+    - 23
+  DEVOPS:
+    description: 'Build CI/CD pipeline: automated test gate on PR, staging deployment
+      pipeline, production deployment with blue-green strategy, Prometheus/Grafana
+      observability stack, alert rules for SLA-critical paths (e-signature webhook
+      processing, renewal alert delivery), and SRE runbooks.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs and passes on every PR — failing tests block merge
+    - Security scan (bandit + trivy) runs on every build and fails on HIGH severity
+      findings
+    - Blue-green deployment completes with zero downtime — verified by canary smoke
+      tests
+    - Grafana dashboard displays all 4 SLA-critical alert rules with correct thresholds
+    - Rollback completes in under 5 minutes from alert trigger
+    - SRE runbooks document response procedures for each alert rule
+    depends_on:
+    - 23
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite covering: full contract lifecycle
+      (create from template → extract clauses → redline → negotiate → esign → track
+      obligations → renew), multi-party signing flows, concurrent user load, and ISO
+      27001 / SOC 2 control verification.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 3 E2E lifecycle scenarios complete without errors from start to renewal
+      alert
+    - Multi-party sequential signing enforces order — verified in E2E with deliberate
+      out-of-order attempt
+    - 'Load test: p99 API latency < 2s at 50 concurrent users, 0% error rate'
+    - RBAC cross-org access test confirms 403 for all unauthorized contract access
+      attempts
+    - Audit log for NDA lifecycle contains events for every state transition with
+      correct actor attribution
+    - 'Renewal alert E2E: alert fires within 1 minute of scheduled trigger time'
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+    - 24
+    - 25
+  OPERATIONS:
+    description: 'Produce operational runbooks: SLA definitions (uptime, latency,
+      esign SLA), incident response playbooks (data breach, esign service outage,
+      DB corruption), capacity planning model, backup/restore procedures, and on-call
+      rotation guide.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA document defines measurement methodology and exclusion windows for each
+      SLA metric
+    - Data breach playbook covers GDPR 72-hour notification requirement with assigned
+      DRI
+    - Backup procedure validated with test restore completing in < 4 hours RTO
+    - Capacity planning model projects resource requirements at 10x current contract
+      volume
+    - On-call guide includes escalation matrix, war room procedure, and post-mortem
+      template
+    depends_on:
+    - 25
+    - 26
+  TRAINING:
+    description: 'Produce user onboarding and training materials: quick-start guide
+      for each persona (legal counsel, procurement, contract admin), feature walkthrough
+      videos (template creation, redline workflow, esign flow, obligation tracking),
+      admin setup guide, and in-app onboarding tooltips copy.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Quick-start guide for each persona enables completion of core task in ≤ 15 minutes
+      without support
+    - Video scripts cover all 4 core workflows with step-by-step narration
+    - 'Admin setup guide documents: SSO configuration, RBAC role assignment, esign
+      provider setup'
+    - In-app tooltip copy covers all primary interactive elements (reviewed for clarity
+      by UX)
+    - FAQ addresses top 10 support questions identified during UAT
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 26
+  DOCS:
+    description: 'Produce technical documentation: API reference (auto-generated from
+      OpenAPI spec), architecture decision records (ADRs) for key design choices,
+      integration guide (DocuSign/HelloSign setup, Slack notifications, iCal feed),
+      and developer onboarding guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference auto-generates from OpenAPI spec and renders all endpoints with
+      examples
+    - 'Each ADR documents: context, decision, consequences, and alternatives considered'
+    - Integration guide enables DocuSign setup from zero to first envelope in ≤ 30
+      minutes
+    - Developer onboarding guide covers local setup, architecture overview, and contribution
+      workflow
+    - All documentation passes spell-check and broken-link scan
+    depends_on:
+    - 7
+    - 26

@@ -1,0 +1,1139 @@
+{
+  "run_id": "b7c19b7d-b14f-4d4b-b0c2-edb70779a629",
+  "solution_name": "crypto_trading_platform",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-21T23:26:34.443774+00:00",
+  "updated_at": "2026-03-21T23:31:23.170757+00:00",
+  "product_description": "Cryptocurrency trading platform with real-time orderbook, limit/market/stop orders, portfolio tracking, tax reporting, and institutional custody. FinCEN MSB registration.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze cryptocurrency exchange market: competitors (Coinbase, Kraken, Binance), target segments (retail vs institutional), fee models, and regulatory landscape across key jurisdictions.",
+      "payload": {
+        "competitors": [
+          "Coinbase",
+          "Kraken",
+          "Binance",
+          "Gemini",
+          "Bitfinex"
+        ],
+        "segments": [
+          "retail traders",
+          "institutional investors",
+          "high-frequency traders"
+        ],
+        "fee_models": [
+          "maker-taker",
+          "flat fee",
+          "tiered volume"
+        ],
+        "jurisdictions": [
+          "US",
+          "EU",
+          "UK"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix covers at least 5 exchanges with fee structures, supported assets, custody model, and regulatory status",
+        "Target persona definitions for retail and institutional segments",
+        "Regulatory landscape summary per jurisdiction with compliance cost estimates",
+        "Go-to-market recommendation with differentiation strategy"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements: user stories for retail and institutional flows, order lifecycle, portfolio tracking, tax reporting, and custody service model. Produce process flow diagrams.",
+      "payload": {
+        "user_stories": [
+          "place limit order",
+          "view orderbook",
+          "withdraw funds",
+          "generate tax report",
+          "institutional custody deposit"
+        ],
+        "order_types": [
+          "limit",
+          "market",
+          "stop-loss",
+          "stop-limit"
+        ],
+        "compliance_flows": [
+          "KYC/AML onboarding",
+          "suspicious activity reporting",
+          "travel rule"
+        ]
+      },
+      "acceptance_criteria": [
+        "User stories documented with acceptance criteria for all core trading and custody flows",
+        "Order lifecycle state machine diagram (pending \u2192 open \u2192 partially_filled \u2192 filled \u2192 cancelled)",
+        "KYC/AML onboarding flow with tier levels (retail vs institutional)",
+        "Tax reporting data model covers cost-basis methods (FIFO, LIFO, HIFO)",
+        "Stakeholder sign-off obtained"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "REGULATORY",
+      "description": "Prepare FinCEN MSB registration artifacts, map requirements to PCI DSS, SOC 2 Type II, and SOX controls. Produce compliance traceability matrix and gap analysis.",
+      "payload": {
+        "registrations": [
+          "FinCEN MSB (Money Services Business)"
+        ],
+        "standards": [
+          "PCI DSS v4.0",
+          "SOC 2 Type II",
+          "SOX Section 404"
+        ],
+        "aml_frameworks": [
+          "BSA",
+          "FATF Travel Rule",
+          "FinCEN SAR filing"
+        ],
+        "artifacts": [
+          "traceability_matrix",
+          "risk_register",
+          "gap_analysis"
+        ]
+      },
+      "acceptance_criteria": [
+        "FinCEN MSB registration checklist completed with all required documentation",
+        "PCI DSS v4.0 control mapping covers all 12 requirements with owner and evidence type",
+        "SOC 2 Trust Services Criteria mapped to system controls (Security, Availability, Confidentiality)",
+        "SOX control inventory for financial reporting assertions",
+        "Gap analysis identifies all open items with remediation owners and target dates",
+        "AML program document includes SAR filing procedures and Travel Rule compliance plan"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 4,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, institutional custody agreement, and IP licensing review. Ensure alignment with FinCEN MSB, GDPR, and state money transmitter laws.",
+      "payload": {
+        "documents": [
+          "Terms of Service",
+          "Privacy Policy",
+          "Institutional Custody Agreement",
+          "KYC Data Retention Policy"
+        ],
+        "jurisdictions": [
+          "US federal",
+          "US state MTL requirements",
+          "GDPR (EU)"
+        ],
+        "ip_review": [
+          "open source license audit",
+          "third-party data feed licensing"
+        ]
+      },
+      "acceptance_criteria": [
+        "Terms of Service reviewed by legal counsel and covers liability limitations, account termination, and dispute resolution",
+        "Privacy Policy is GDPR-compliant with data subject rights procedures",
+        "Institutional Custody Agreement defines segregation of assets, insurance, and SLA",
+        "Open source license audit produces SBOM with no GPL license conflicts in commercial product",
+        "State money transmitter license applicability matrix for all 50 states"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 5,
+      "task_type": "SECURITY",
+      "description": "Produce threat model (STRIDE), penetration test plan, SBOM, and security architecture for the trading platform covering custody key management, API authentication, and DDoS protection.",
+      "payload": {
+        "methodology": "STRIDE",
+        "scope": [
+          "trading engine",
+          "orderbook API",
+          "custody HSM integration",
+          "user authentication",
+          "withdrawal pipeline"
+        ],
+        "key_risks": [
+          "private key theft",
+          "order injection",
+          "front-running",
+          "session hijacking",
+          "supply chain attack"
+        ],
+        "controls": [
+          "HSM for custody keys",
+          "MFA enforcement",
+          "rate limiting",
+          "WAF",
+          "audit logging"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all 5 system components with risk ratings",
+        "Penetration test plan defines scope, methodology, success criteria, and remediation SLA",
+        "SBOM generated for all dependencies with CVE scan showing no critical unmitigated vulnerabilities",
+        "Key management architecture documented: HSM vendor, key ceremony procedure, backup and recovery",
+        "API authentication design: OAuth 2.0 + PKCE for users, HMAC-signed requests for institutional API",
+        "DDoS mitigation plan at network and application layers",
+        "PCI DSS SAQ completed",
+        "Encryption at rest and in transit"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "UX_DESIGN",
+      "description": "Design wireframes and interaction flows for trading dashboard (orderbook, chart, order entry), portfolio tracker, tax report generator, and institutional custody portal.",
+      "payload": {
+        "screens": [
+          "trading_view",
+          "order_entry_panel",
+          "portfolio_dashboard",
+          "tax_report_wizard",
+          "institutional_custody_portal",
+          "kyc_onboarding"
+        ],
+        "accessibility": "WCAG 2.1 AA",
+        "design_system": "component library with dark/light theme"
+      },
+      "acceptance_criteria": [
+        "Wireframes delivered for all 6 screen categories at desktop and mobile breakpoints",
+        "Order entry panel supports limit, market, and stop orders with real-time validation feedback",
+        "Trading view wireframe integrates depth chart, order history, and live orderbook tick-by-tick",
+        "Tax report wizard covers date range selection, cost-basis method, and export formats (CSV, TurboTax)",
+        "WCAG 2.1 AA accessibility audit checklist completed",
+        "Design system component library documented with usage guidelines"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 7,
+      "task_type": "FINANCIAL",
+      "description": "Build financial model: fee revenue projections, custody fee structure, tax reporting subscription pricing, exchange liquidity cost model, and operating cost breakdown.",
+      "payload": {
+        "revenue_streams": [
+          "trading fees (maker/taker)",
+          "institutional custody fees (bps on AUM)",
+          "tax reporting SaaS subscription",
+          "interest on stablecoin float"
+        ],
+        "cost_drivers": [
+          "cloud infrastructure",
+          "compliance/legal",
+          "liquidity provisioning",
+          "HSM/custody ops"
+        ],
+        "scenarios": [
+          "conservative",
+          "base",
+          "aggressive"
+        ]
+      },
+      "acceptance_criteria": [
+        "5-year P&L model with monthly granularity for first 2 years",
+        "Break-even analysis showing volume required at each fee tier",
+        "Custody fee schedule benchmarked against Coinbase Prime and Anchorage",
+        "Unit economics per active trader documented (CAC, LTV, payback period)",
+        "Three scenario models with sensitivity analysis on trading volume assumptions"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 8,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product roadmap, MVP feature set vs. post-MVP, success metrics (KPIs), and prioritized backlog aligned with regulatory go-live milestones.",
+      "payload": {
+        "mvp_features": [
+          "spot trading (BTC/ETH/USDC pairs)",
+          "limit + market orders",
+          "basic portfolio view",
+          "KYC onboarding",
+          "fiat on/off ramp (ACH)"
+        ],
+        "post_mvp": [
+          "stop orders",
+          "tax reporting",
+          "institutional custody",
+          "additional pairs",
+          "mobile app"
+        ],
+        "kpis": [
+          "daily active traders",
+          "trading volume (USD)",
+          "order fill rate",
+          "p99 order latency",
+          "KYC pass rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "MVP feature list approved by stakeholders with clear inclusion/exclusion rationale",
+        "Prioritized backlog in tracking system with story points and sprint assignments",
+        "KPI dashboard spec with data sources and alert thresholds defined",
+        "Go-live milestone timeline aligned with FinCEN MSB registration completion",
+        "Launch readiness checklist covering compliance, security, and ops criteria"
+      ],
+      "depends_on": [
+        3,
+        7
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 9,
+      "task_type": "DATABASE",
+      "description": "Design and implement database schema for users, accounts, orders, trades, positions, ledger entries, audit log, and tax lots. Produce migrations and seed data.",
+      "payload": {
+        "tables": [
+          "users",
+          "kyc_profiles",
+          "accounts",
+          "wallets",
+          "orders",
+          "trades",
+          "ledger_entries",
+          "tax_lots",
+          "custody_accounts",
+          "audit_log"
+        ],
+        "engines": {
+          "primary": "PostgreSQL 16",
+          "timeseries": "TimescaleDB (orderbook snapshots, OHLCV)",
+          "cache": "Redis (live orderbook)"
+        },
+        "compliance_requirements": [
+          "immutable audit log (append-only)",
+          "7-year retention for financial records",
+          "PII encryption at rest"
+        ]
+      },
+      "acceptance_criteria": [
+        "ERD covers all 10 tables with foreign key relationships and index strategy",
+        "Ledger table uses double-entry accounting model (debit/credit, asset_id, account_id)",
+        "Tax lot table supports FIFO/LIFO/HIFO cost-basis tracking with acquisition_date and basis_amount",
+        "Audit log is append-only (no UPDATE/DELETE permissions on audit role)",
+        "PII fields (SSN, address) encrypted using AES-256 with key stored in secrets manager",
+        "TimescaleDB hypertable configured for trade and orderbook data with retention policy",
+        "All migrations are idempotent and reversible",
+        "Seed data covers 3 test users, 5 trading pairs, and sample order history",
+        "Transaction isolation level documented",
+        "Audit trail on all writes"
+      ],
+      "depends_on": [
+        2,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "INFRA",
+      "description": "Set up cloud infrastructure: VPC, Kubernetes cluster, HSM integration (AWS CloudHSM or Thales), secrets management, WAF, CDN, and multi-region failover for exchange availability.",
+      "payload": {
+        "cloud": "AWS",
+        "components": [
+          "EKS cluster",
+          "RDS Aurora PostgreSQL",
+          "ElastiCache Redis",
+          "CloudHSM",
+          "AWS Secrets Manager",
+          "WAF + Shield Advanced",
+          "CloudFront CDN",
+          "VPC with private subnets"
+        ],
+        "regions": [
+          "us-east-1 (primary)",
+          "us-west-2 (DR)"
+        ],
+        "iac": "Terraform",
+        "availability_target": "99.95% uptime SLA"
+      },
+      "acceptance_criteria": [
+        "Terraform modules provision all components with no manual console steps",
+        "VPC uses private subnets for trading engine and database; public subnets only for load balancers",
+        "CloudHSM cluster initialized with key ceremony documented and access controls verified",
+        "WAF rules block OWASP Top 10 attack patterns and rate-limit order submission endpoints",
+        "Multi-region failover tested: RTO < 15 minutes, RPO < 1 minute for order data",
+        "Secrets rotation automated via AWS Secrets Manager with zero-downtime rotation tested",
+        "DR runbook documented and tested with chaos engineering scenario"
+      ],
+      "depends_on": [
+        5,
+        9
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 11,
+      "task_type": "CONFIG",
+      "description": "Configure the agentic AI pattern for the platform: Multi-Agent Coordinator (coordinator pattern) to route trading risk checks, compliance screening, and tax lot calculations to specialist agents with HITL gates for high-risk withdrawals.",
+      "payload": {
+        "pattern": "human_in_the_loop",
+        "coordinator_agents": [
+          "risk_screener",
+          "aml_checker",
+          "tax_lot_calculator",
+          "withdrawal_approver"
+        ],
+        "hitl_triggers": [
+          "withdrawal > $10,000",
+          "new beneficiary address",
+          "high-risk jurisdiction flag",
+          "unusual trading pattern"
+        ],
+        "approval_queue": "SAGE proposal store",
+        "audit_trail": "immutable audit_log table"
+      },
+      "acceptance_criteria": [
+        "Coordinator agent routes incoming events to correct specialist agent based on event type",
+        "HITL gate pauses withdrawals matching threshold criteria and creates approval proposal",
+        "Approval queue UI shows risk score, transaction details, and AML flag reason",
+        "All agent decisions logged to audit_log with trace_id, agent_role, and outcome",
+        "Agent config declared in prompts.yaml and tasks.yaml \u2014 no hardcoded routing logic in Python"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement the matching engine: price-time priority orderbook for limit orders, market order sweeping, stop order trigger engine, and trade settlement with atomic ledger updates.",
+      "payload": {
+        "engine": "in-memory matching engine (Rust or Go for latency) with Redis orderbook mirror",
+        "order_types": [
+          "limit",
+          "market",
+          "stop-loss",
+          "stop-limit"
+        ],
+        "pairs": [
+          "BTC/USD",
+          "ETH/USD",
+          "BTC/USDC",
+          "ETH/USDC"
+        ],
+        "guarantees": [
+          "atomic settlement (ledger debit + credit in single DB transaction)",
+          "no partial fill without rollback capability",
+          "idempotent order submission"
+        ],
+        "latency_target": "p99 order-to-ack < 10ms"
+      },
+      "acceptance_criteria": [
+        "Limit order matching follows price-time priority (FIFO at same price level)",
+        "Market order sweeps book until filled or rejects with insufficient liquidity error",
+        "Stop orders trigger atomically when last trade price crosses stop price",
+        "Trade settlement uses DB transaction: debit buyer quote, credit buyer base, debit seller base, credit seller quote \u2014 all or nothing",
+        "Duplicate order submission (same client_order_id) returns idempotent response, no double execution",
+        "p99 order-to-acknowledgment latency < 10ms under 1000 concurrent orders load test",
+        "Orderbook state persisted to Redis on every update for fast recovery"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Build REST and WebSocket API layer: order submission, orderbook streaming, account endpoints, portfolio positions, fiat on/off ramp integration (ACH via Plaid/Synapse), and institutional API with HMAC signing.",
+      "payload": {
+        "rest_endpoints": [
+          "/orders",
+          "/orderbook",
+          "/trades",
+          "/accounts",
+          "/portfolio",
+          "/withdrawals",
+          "/deposits",
+          "/tax/report"
+        ],
+        "websocket_channels": [
+          "orderbook.{pair}",
+          "trades.{pair}",
+          "account.orders",
+          "account.positions"
+        ],
+        "auth": [
+          "JWT (retail)",
+          "HMAC-SHA256 API key (institutional)"
+        ],
+        "fiat_partners": [
+          "Plaid ACH",
+          "Synapse FBO accounts"
+        ],
+        "rate_limits": {
+          "retail": "100 req/min",
+          "institutional": "10000 req/min"
+        }
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 spec published for all REST endpoints with request/response schemas",
+        "WebSocket orderbook stream delivers full snapshot on connect then incremental diffs",
+        "HMAC signing verified on every institutional API request; rejected requests return 401 with reason",
+        "ACH deposit webhook handler is idempotent (duplicate webhook does not double-credit account)",
+        "Rate limiting returns 429 with Retry-After header and does not leak internal state",
+        "All endpoints return RFC 7807 Problem+JSON error format",
+        "API versioning strategy documented (v1 prefix, deprecation policy)"
+      ],
+      "depends_on": [
+        12,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement institutional custody service: multi-sig wallet architecture, HSM-backed private key operations, withdrawal policy engine (whitelist, multi-approver), and custody account segregation.",
+      "payload": {
+        "custody_model": "omnibus + segregated sub-accounts",
+        "signing": "2-of-3 multisig (customer key + platform HSM key + backup key)",
+        "hsm": "AWS CloudHSM (FIPS 140-2 Level 3)",
+        "policy_engine": [
+          "withdrawal whitelist",
+          "daily limits",
+          "multi-approver (M-of-N)"
+        ],
+        "blockchains": [
+          "Bitcoin",
+          "Ethereum",
+          "ERC-20 tokens"
+        ]
+      },
+      "acceptance_criteria": [
+        "Private keys never exist in plaintext outside HSM boundary \u2014 verified by key ceremony documentation",
+        "2-of-3 multisig signing flow tested end-to-end on testnet for BTC and ETH",
+        "Withdrawal policy engine enforces whitelist check before HSM signing request",
+        "Multi-approver flow: second approver receives email + in-platform notification; transaction paused until M approvals received",
+        "Custody account balances reconcile to on-chain balances every 5 minutes with alert on mismatch > 0.00000001 BTC",
+        "Key backup and recovery procedure documented and tested in isolated DR environment"
+      ],
+      "depends_on": [
+        10,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Build tax reporting engine: cost-basis calculation (FIFO/LIFO/HIFO), capital gains/loss computation, wash sale detection, Form 8949 data generation, and export in CSV and TurboTax formats.",
+      "payload": {
+        "cost_basis_methods": [
+          "FIFO",
+          "LIFO",
+          "HIFO"
+        ],
+        "tax_events": [
+          "sale",
+          "trade",
+          "crypto-to-crypto swap",
+          "staking reward",
+          "fork",
+          "airdrop"
+        ],
+        "forms": [
+          "Form 8949 equivalent data",
+          "Schedule D summary"
+        ],
+        "exports": [
+          "CSV",
+          "TurboTax TXF",
+          "CoinTracker-compatible JSON"
+        ],
+        "jurisdiction": "US IRS guidance (Rev. Rul. 2019-24)"
+      },
+      "acceptance_criteria": [
+        "FIFO lot selection produces correct gain/loss verified against 10 hand-calculated test cases",
+        "HIFO lot selection minimizes short-term capital gains in verified test scenarios",
+        "Wash sale detection flags repurchase within 30 days of loss sale",
+        "Annual report generation completes in < 30 seconds for accounts with 10,000 trades",
+        "Form 8949 data export matches IRS field specifications (column headers, date format, proceeds, basis)",
+        "TurboTax TXF export loads successfully in TurboTax test environment"
+      ],
+      "depends_on": [
+        9,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement KYC/AML pipeline: Tier 1 (email + phone), Tier 2 (government ID + selfie via Jumio/Persona integration), Tier 3 (institutional accreditation), OFAC/sanctions screening, transaction monitoring, and SAR filing workflow.",
+      "payload": {
+        "kyc_provider": "Persona or Jumio",
+        "sanctions_screening": [
+          "OFAC SDN list",
+          "EU sanctions",
+          "UN sanctions"
+        ],
+        "transaction_monitoring": "rule-based (velocity, structuring, layering detection)",
+        "sar_workflow": "BSA E-Filing System integration",
+        "data_retention": "5 years post account closure (BSA requirement)"
+      },
+      "acceptance_criteria": [
+        "KYC Tier 2 verification returns decision in < 60 seconds for 95% of submissions",
+        "OFAC screening runs on every new user, every withdrawal beneficiary, and daily batch re-screen",
+        "Structuring detection flags deposits split within 24 hours to avoid $10,000 CTR threshold",
+        "SAR filing workflow generates FinCEN XML format and provides submission confirmation",
+        "KYC data retained for 5 years with automated deletion after retention period expires",
+        "Failed KYC attempts generate compliance alert with risk score and documentation"
+      ],
+      "depends_on": [
+        13,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build trading dashboard: real-time orderbook depth display, candlestick/TradingView chart, order entry panel (limit/market/stop), open orders table, and trade history feed.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "charting": "TradingView Lightweight Charts",
+        "realtime": "WebSocket orderbook and trade stream",
+        "order_panel": [
+          "limit",
+          "market",
+          "stop-loss",
+          "stop-limit"
+        ],
+        "state_management": "Zustand",
+        "ui_library": "Tailwind CSS + Radix UI"
+      },
+      "acceptance_criteria": [
+        "Orderbook renders bid/ask levels with depth bars and updates < 100ms from WebSocket message",
+        "Order entry form validates quantity, price, and available balance client-side before submission",
+        "Stop order form shows stop price and limit price fields with tooltip explaining trigger logic",
+        "Open orders table supports cancel single order and cancel all with confirmation dialog",
+        "TradingView chart renders 1m/5m/1h/1d/1w intervals with OHLCV data",
+        "Page is responsive at 1280px, 1440px, and 1920px widths",
+        "Lighthouse performance score >= 85 on trading dashboard page"
+      ],
+      "depends_on": [
+        13,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build portfolio dashboard: asset allocation breakdown, P&L (unrealized + realized), position history, deposit/withdrawal flow, and transaction history with filtering.",
+      "payload": {
+        "charts": [
+          "donut chart (asset allocation)",
+          "line chart (portfolio value over time)"
+        ],
+        "pnl_calculation": "real-time mark-to-market using last trade price",
+        "fiat_flows": [
+          "ACH deposit modal",
+          "bank withdrawal form with beneficiary management"
+        ],
+        "filters": [
+          "asset",
+          "date range",
+          "transaction type"
+        ]
+      },
+      "acceptance_criteria": [
+        "Portfolio value updates in real-time as prices change via WebSocket",
+        "P&L shows both unrealized (open positions) and realized (closed trades) with cost-basis breakdown",
+        "ACH deposit modal validates bank account details and displays estimated settlement time",
+        "Transaction history supports pagination, CSV export, and filtering by asset and date range",
+        "Empty state shown for new accounts with onboarding CTA to deposit funds"
+      ],
+      "depends_on": [
+        17,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build institutional custody portal: sub-account management, multi-approver withdrawal workflow, policy configuration UI, audit log viewer, and on-chain balance reconciliation dashboard.",
+      "payload": {
+        "features": [
+          "sub-account creation",
+          "withdrawal policy builder (whitelist, limits, approver rules)",
+          "pending approvals queue",
+          "audit log with filters",
+          "reconciliation status"
+        ],
+        "access_control": "role-based (admin, trader, compliance viewer)",
+        "export": "audit log CSV export"
+      },
+      "acceptance_criteria": [
+        "Sub-account creation flow validates legal entity name and generates custody agreement preview",
+        "Withdrawal policy builder allows adding/removing whitelist addresses with ENS resolution",
+        "Pending approvals queue shows transaction details, risk flags, and approve/reject actions",
+        "Audit log viewer supports full-text search and date range filtering",
+        "Reconciliation dashboard shows on-chain vs platform balance delta with timestamp of last sync",
+        "Role-based access control prevents traders from viewing compliance-only screens"
+      ],
+      "depends_on": [
+        14,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build tax reporting wizard: tax year selection, cost-basis method picker, report preview, and export actions. Integrate KYC onboarding flow for new users.",
+      "payload": {
+        "wizard_steps": [
+          "select tax year",
+          "choose cost-basis method",
+          "preview gains/losses summary",
+          "export report"
+        ],
+        "kyc_flow": [
+          "email verification",
+          "phone verification",
+          "ID upload + selfie",
+          "accreditation (institutional)"
+        ],
+        "accessibility": "WCAG 2.1 AA"
+      },
+      "acceptance_criteria": [
+        "Tax wizard step progress indicator shows current step and allows backward navigation",
+        "Cost-basis method selection shows estimated tax impact comparison between FIFO/LIFO/HIFO",
+        "Report preview renders gains/losses summary table before download",
+        "KYC flow displays document upload progress and estimated review time",
+        "All form fields have accessible labels and ARIA attributes",
+        "WCAG 2.1 AA audit passes with no critical violations"
+      ],
+      "depends_on": [
+        15,
+        16,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline, monitoring stack (Prometheus + Grafana), alerting (PagerDuty), distributed tracing (OpenTelemetry + Jaeger), and SRE runbooks for trading platform operations.",
+      "payload": {
+        "ci_cd": "GitHub Actions \u2014 build, test, security scan, deploy to EKS",
+        "monitoring": [
+          "Prometheus metrics",
+          "Grafana dashboards (orderbook depth, order latency p99, fill rate)",
+          "Loki logs"
+        ],
+        "alerting": [
+          "PagerDuty on-call",
+          "alerts: matching engine down, p99 latency > 50ms, reconciliation mismatch"
+        ],
+        "tracing": "OpenTelemetry SDK \u2192 Jaeger",
+        "slo": "99.95% availability, p99 order latency < 10ms"
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs lint, unit tests, integration tests, and SAST scan on every PR \u2014 merge blocked on failure",
+        "Deployment pipeline supports blue-green deploy with automatic rollback on health check failure",
+        "Grafana dashboard covers: order submission rate, fill rate, matching engine queue depth, p50/p95/p99 latency",
+        "PagerDuty alert fires within 60 seconds of matching engine health check failure",
+        "OpenTelemetry trace propagated from API gateway through matching engine to ledger write",
+        "SRE runbooks cover: matching engine restart, database failover, HSM connectivity loss, reconciliation failure"
+      ],
+      "depends_on": [
+        10,
+        13
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 22,
+      "task_type": "COMPLIANCE",
+      "description": "Produce SOC 2 Type II evidence artifacts: control narratives, risk assessment, vendor due diligence, change management policy, and incident response plan aligned with PCI DSS and SOX requirements.",
+      "payload": {
+        "trust_services_criteria": [
+          "CC6 (Logical Access)",
+          "CC7 (System Operations)",
+          "CC8 (Change Management)",
+          "A1 (Availability)",
+          "C1 (Confidentiality)"
+        ],
+        "pci_dss_controls": [
+          "Req 1-2 (Network)",
+          "Req 3-4 (Cardholder Data)",
+          "Req 6 (Secure Development)",
+          "Req 10 (Logging)",
+          "Req 12 (Policy)"
+        ],
+        "artifacts": [
+          "control_narratives.docx",
+          "risk_assessment_matrix.xlsx",
+          "vendor_due_diligence.xlsx",
+          "incident_response_plan.md",
+          "change_management_policy.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Control narratives written for all 5 Trust Services Criteria with mapped evidence sources",
+        "Risk assessment matrix scores all risks with inherent risk, control effectiveness, and residual risk",
+        "Vendor due diligence completed for all critical vendors (AWS, Jumio, Plaid, CloudHSM)",
+        "Incident response plan covers detection, containment, eradication, recovery, and post-mortem phases",
+        "Change management policy defines approval workflow, rollback procedures, and emergency change process",
+        "PCI DSS Requirement 10 evidence: log retention policy (12 months), log review procedure, SIEM alert rules"
+      ],
+      "depends_on": [
+        3,
+        21
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write unit tests for matching engine (order priority, partial fills, stop triggers), tax lot calculator (FIFO/LIFO/HIFO), ledger double-entry invariants, and KYC/AML rule engine.",
+      "payload": {
+        "frameworks": {
+          "backend": "pytest + hypothesis (property-based)",
+          "frontend": "Vitest + React Testing Library"
+        },
+        "coverage_target": "90% line coverage on matching engine and tax engine",
+        "property_tests": [
+          "orderbook total volume == sum of all open order quantities",
+          "ledger debits always equal credits",
+          "FIFO lot selection always selects oldest lot first"
+        ]
+      },
+      "acceptance_criteria": [
+        "Matching engine tests cover: limit order full fill, partial fill, price-time priority, cancel, market order sweep, stop trigger",
+        "Tax engine tests cover: FIFO gain calculation, HIFO lot selection, wash sale detection, crypto-to-crypto swap event",
+        "Ledger tests verify double-entry invariant: sum(debits) == sum(credits) for every trade settlement",
+        "Property-based tests run with Hypothesis generating 1000 random order sequences without invariant violation",
+        "90% line coverage achieved on src/matching_engine/ and src/tax_engine/",
+        "Frontend tests cover order entry form validation, orderbook rendering, and WebSocket reconnection"
+      ],
+      "depends_on": [
+        12,
+        15,
+        16
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "SYSTEM_TEST",
+      "description": "End-to-end system tests: full order lifecycle (submit \u2192 match \u2192 settle \u2192 ledger update), custody withdrawal flow (policy check \u2192 HSM sign \u2192 broadcast), tax report generation, and load testing at 10x expected peak volume.",
+      "payload": {
+        "e2e_framework": "Playwright (UI) + custom trading bot (API)",
+        "load_test": "k6 \u2014 simulate 5,000 concurrent traders, 50,000 orders/minute",
+        "scenarios": [
+          "retail trading flow",
+          "institutional custody withdrawal with multi-approver",
+          "annual tax report for 10k-trade account",
+          "KYC onboarding Tier 1 and Tier 2"
+        ],
+        "chaos_engineering": [
+          "matching engine pod restart",
+          "Redis cache flush",
+          "database primary failover"
+        ]
+      },
+      "acceptance_criteria": [
+        "Full retail trading flow E2E test: signup \u2192 KYC \u2192 deposit \u2192 place limit order \u2192 fill \u2192 withdraw \u2192 passes consistently",
+        "Institutional custody withdrawal with 2-of-3 approvers completes end-to-end on testnet",
+        "Tax report for 10,000-trade account generates in < 30 seconds",
+        "Load test at 50,000 orders/minute: p99 latency < 20ms, zero order loss, zero double-execution",
+        "Matching engine pod restart: orders resume processing within 30 seconds with no lost open orders",
+        "Database primary failover: trading resumes within 15 minutes (RTO target)"
+      ],
+      "depends_on": [
+        23,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 25,
+      "task_type": "DOCS",
+      "description": "Write API documentation (OpenAPI interactive docs), institutional onboarding guide, developer integration guide for HMAC-signed API, and internal runbook for compliance team (SAR filing, CTR reporting).",
+      "payload": {
+        "api_docs": "Swagger UI + Redoc from OpenAPI 3.1 spec",
+        "guides": [
+          "institutional_onboarding.md",
+          "api_quickstart.md",
+          "hmac_signing_guide.md",
+          "compliance_runbook.md"
+        ],
+        "formats": [
+          "Markdown in /docs",
+          "PDF for compliance team"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec published at /api/docs with working Try-It-Out for all public endpoints",
+        "Institutional onboarding guide covers account creation, custody agreement execution, API key generation, and policy setup",
+        "HMAC signing guide includes code samples in Python, JavaScript, and Go",
+        "Compliance runbook covers: CTR filing for transactions > $10,000, SAR filing workflow, OFAC match escalation procedure",
+        "All documentation reviewed by legal and compliance before publication"
+      ],
+      "depends_on": [
+        13,
+        22,
+        24
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 26,
+      "task_type": "OPERATIONS",
+      "description": "Define SLA, on-call rotation, capacity planning model, incident response procedure, and trading halt protocol (circuit breakers for extreme market volatility or system anomaly).",
+      "payload": {
+        "sla": {
+          "availability": "99.95%",
+          "order_latency_p99": "10ms",
+          "support_response": "4 hours (retail), 1 hour (institutional)"
+        },
+        "circuit_breakers": [
+          "price movement > 20% in 5 minutes",
+          "matching engine queue depth > 100,000",
+          "reconciliation mismatch > $1,000"
+        ],
+        "on_call": "PagerDuty 24/7 rotation \u2014 3 engineers minimum",
+        "capacity_planning": "quarterly review of EKS node count and RDS instance sizing"
+      },
+      "acceptance_criteria": [
+        "SLA document signed and published on company website",
+        "Circuit breaker thresholds configured in matching engine and tested with simulated price spike",
+        "Trading halt procedure documented: who can halt, how to communicate to users, resumption checklist",
+        "On-call runbook covers top 10 incident scenarios with decision tree and escalation path",
+        "Capacity planning spreadsheet built with traffic growth assumptions and scale trigger thresholds",
+        "Post-incident review template created and used after first incident drill"
+      ],
+      "depends_on": [
+        21,
+        24
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 27,
+      "task_type": "TRAINING",
+      "description": "Create user onboarding guides, compliance team training materials (AML, SAR filing, OFAC procedures), and institutional client onboarding documentation.",
+      "payload": {
+        "materials": [
+          "new_user_getting_started.md",
+          "trading_guide.md",
+          "tax_reporting_guide.md",
+          "compliance_team_aml_training.pdf",
+          "institutional_custody_guide.pdf"
+        ],
+        "formats": [
+          "in-app tooltip system",
+          "help center articles",
+          "PDF guides"
+        ]
+      },
+      "acceptance_criteria": [
+        "New user getting started guide covers account creation, KYC, first deposit, and first trade",
+        "AML training material covers transaction monitoring rules, escalation procedure, and SAR filing \u2014 reviewed by compliance officer",
+        "Institutional custody guide covers sub-account setup, withdrawal policy configuration, and API integration",
+        "In-app tooltip system covers all major UI elements on trading dashboard",
+        "Compliance training documented with completion tracking mechanism"
+      ],
+      "depends_on": [
+        25,
+        22
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 27,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 44,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 44,
+        "final_review": {
+          "score": 44,
+          "flaws": [
+            "Synapse Financial Technologies filed for bankruptcy in 2024 and is no longer operational. Listing 'Synapse FBO accounts' as a fiat partner is a dead end \u2014 a banking-as-a-service replacement (Column, Stripe Treasury, Evolve Bank) must be identified before any fiat rail design begins.",
+            "Plaid is a bank account data aggregator, not an ACH payment execution provider. Plaid cannot move money. ACH execution requires a separate provider (Dwolla, Modern Treasury, Stripe, or a direct bank partner). This is a fundamental product architecture error in step 13.",
+            "State Money Transmitter Licenses (MTLs) are never actually obtained \u2014 only a 50-state applicability matrix is produced. NY BitLicense alone takes 12\u201324 months, costs $100K+, and requires quarterly audits. Without NY, CA, TX, FL, and WA licenses, you cannot legally serve the majority of US users. The plan has zero steps for filing or tracking these applications.",
+            "SOC 2 Type II requires a 6\u201312 month observation window during live operations before an auditor can issue the report. Step 22 treats it as an artifact-production exercise. You cannot get the certification before operating, which means it cannot be a launch prerequisite and cannot be on the same timeline as the build steps.",
+            "No step performs an actual penetration test. Step 5 produces a pen test *plan* and step 22 references PCI DSS Req 6, but no step hires an external pen tester, executes the test, or remediates findings. PCI DSS and SOC 2 both require evidence of completed testing, not just plans.",
+            "Travel Rule compliance (FATF/FinCEN Rule 31 CFR 1010.410) requires VASPs to collect and transmit originator/beneficiary information for transfers \u2265 $3,000. Mentioned in step 2 as a flow to define, but no step implements the actual Travel Rule protocol integration (TRUST network, OpenVASP, or TRP). Without this, the platform cannot legally process crypto transfers post-launch.",
+            "No banking partner is identified or contracted. Post-FTX, most traditional banks have derisked crypto exchanges. Securing a bank willing to hold FBO accounts and process ACH for a new crypto exchange can take 6\u201318 months. This is a critical path blocker with no step assigned.",
+            "Wash sale rule inclusion in the tax engine (step 15) is legally incorrect \u2014 the wash sale rule (IRC \u00a71091) does not currently apply to cryptocurrency. Generating tax reports with wash sale adjustments would produce incorrect tax data and expose users and the platform to IRS penalties.",
+            "The matching engine in step 12 uses 'Redis orderbook mirror' for recovery, but the acceptance criterion 'Orderbook state persisted to Redis on every update' creates a synchronous write bottleneck that directly conflicts with the p99 < 10ms latency target. At 50,000 orders/minute, synchronous Redis writes on every order mutation will blow the latency budget.",
+            "ERC-20 token listing carries unaddressed securities law exposure. Listing tokens that pass the Howey test without broker-dealer registration violates federal securities laws (SEC v. Ripple, SEC v. Coinbase). No step performs a token legal review or establishes a listing policy. This is an existential legal risk.",
+            "No cold storage / hot wallet architecture. Industry standard is 95%+ of funds in air-gapped cold storage with daily reconciliation against hot wallet float. The plan only describes HSM-backed hot wallet signing. A custody service without cold storage is unbankable for institutional clients and creates catastrophic concentration risk.",
+            "No proof-of-reserves mechanism. Post-FTX, institutional clients require periodic on-chain proof-of-reserves attestations (Merkle tree approach or third-party audit). Absence makes the custody offering non-competitive for the exact segment (institutional) that justifies the HSM cost.",
+            "Blockchain node infrastructure is completely absent. Broadcasting BTC and ETH transactions requires either self-hosted full nodes or node provider contracts (Alchemy, Infura, QuickNode). No step provisions this. Without nodes, step 14 cannot function.",
+            "Step 5 assigns the security architecture (STRIDE threat model, HSM key management design, pen test planning) to the 'regulatory_specialist' role. This work requires a CISO or senior security engineer. Wrong role assignment means wrong expertise applied to the highest-risk design decisions."
+          ],
+          "suggestions": [
+            "Replace Synapse with a viable BaaS provider immediately. Column Bank, Stripe Treasury, or Evolve Bank & Trust are common choices for fintech with crypto exposure. This unblocks all fiat rail design.",
+            "Split the ACH implementation: use Plaid for bank account ownership verification only, and add a dedicated ACH execution provider (Dwolla or Modern Treasury) for fund movement. Update step 13 accordingly.",
+            "Add a dedicated regulatory licensing track (parallel to build, not sequential) covering: FinCEN MSB registration (weeks), NY BitLicense application (file on Day 1), priority state MTL applications (CA, TX, FL, WA), and EU EMI/VASP registration if EU launch is in scope. Track via a licensing log with state, status, expected date, and counsel contact.",
+            "Reframe SOC 2 Type II as a post-launch milestone (12 months after go-live). Replace it in the launch checklist with SOC 2 Type I (point-in-time snapshot, achievable pre-launch) and a completed SOC 2 readiness assessment by an accredited auditor.",
+            "Add an explicit step for external penetration test execution \u2014 contract a CREST or OSCP-certified firm, execute against staging environment, produce finding report, remediate all Critical and High findings, re-test confirmation. Attach this as a hard gate before go-live.",
+            "Add a Travel Rule implementation step: integrate with a TRUST network participant or deploy OpenVASP/TRP, test counterparty VASP discovery, and validate information transmission flow for transfers \u2265 $3,000.",
+            "Remove wash sale logic from the tax engine entirely. Add a comment and UI disclaimer that wash sale rules do not currently apply to digital assets under US law, and that users should consult a tax advisor. Update step 15 acceptance criteria accordingly.",
+            "Design a cold/hot wallet split in step 14: define the cold storage architecture (air-gapped HSM, geographic distribution, dual-control key ceremonies), daily sweep policy, and reconciliation process. This is required for institutional custody credibility.",
+            "Add a token listing review process: legal screening checklist per asset (Howey test analysis, regulatory status per jurisdiction), listing committee approval workflow, and ongoing monitoring for regulatory reclassification.",
+            "Add blockchain node provisioning to step 10 infra: either managed node provider accounts with SLA (Alchemy Enterprise for ETH, Blockstream for BTC) or self-hosted archive nodes. Include fallback provider for each chain.",
+            "Move security architecture ownership (step 5) to a security_engineer or CISO role. Have the regulatory specialist review only the compliance mapping output, not produce the threat model.",
+            "Add staking rewards tax treatment per Rev. Rul. 2023-14 (ordinary income at time of receipt) to step 15 tax engine scope, replacing or supplementing the Rev. Rul. 2019-24 reference."
+          ],
+          "missing": [
+            "Banking partner identification and contracting (FBO account provider willing to serve crypto exchange) \u2014 critical path item with no assigned step",
+            "Proof-of-reserves attestation mechanism (Merkle tree-based or third-party audited) \u2014 required for institutional custody sales",
+            "Cold storage architecture and air-gapped key management \u2014 no hot/cold wallet split defined anywhere",
+            "Blockchain node infrastructure provisioning (BTC full node, ETH archive node, or managed node provider contracts)",
+            "External penetration test execution and finding remediation \u2014 plan produced in step 5 but never executed",
+            "SOC 2 Type I pre-launch readiness assessment \u2014 replacing the unachievable Type II pre-launch certification",
+            "Travel Rule protocol implementation (TRUST/OpenVASP/TRP integration) \u2014 mentioned in requirements, never built",
+            "Token listing legal review process and listing policy \u2014 no securities law screening for any listed asset",
+            "State Money Transmitter License filing timeline and priority state strategy (NY, CA, TX, FL, WA)",
+            "Insurance coverage \u2014 crime/specie insurance for crypto custody, cyber liability, D&O, and E&O policies",
+            "Institutional client onboarding agreements beyond the custody agreement \u2014 prime brokerage terms, margin agreements if applicable, reporting SLAs",
+            "Market maker / liquidity provider agreements \u2014 the orderbook is empty at launch without committed market makers; no step addresses this",
+            "Disaster recovery scenario for HSM cluster total loss \u2014 current plan mentions HSM DR but does not define what happens if CloudHSM cluster is unrecoverable (customer fund access depends on this answer)",
+            "Regulatory capital reserve requirements \u2014 some state MTLs require permissible investment reserves equal to customer float; not modeled in the financial plan",
+            "GDPR Data Residency \u2014 EU users may require EU-hosted infrastructure or Standard Contractual Clauses; single-region AWS us-east-1 primary does not satisfy this"
+          ],
+          "security_risks": [
+            "Plaid misidentification as ACH provider means the actual ACH execution path is undefined, creating a gap where fund movement controls, reconciliation, and fraud detection have not been designed for the real provider",
+            "Redis orderbook mirror as recovery mechanism without WAL or AOF persistence configured creates a data loss window on Redis restart. If Redis loses state during active trading, the matching engine's recovery path to reconstruct in-flight orders is undefined \u2014 this is a fund-loss scenario",
+            "2-of-3 multisig without cold storage means 100% of customer funds are potentially accessible from internet-connected infrastructure. A compromise of the platform HSM key + any one other key factor results in total fund loss \u2014 no air gap protection",
+            "ERC-20 token support without input validation on contract addresses creates smart contract interaction risks: reentrancy via malicious ERC-20 approve callbacks, fee-on-transfer tokens breaking ledger invariants, and rebasing tokens causing balance reconciliation failures",
+            "WebSocket authentication not specified beyond 'JWT (retail)'. No step defines WebSocket token refresh, connection re-authentication, or session invalidation propagation to open WebSocket connections. Stale session tokens on live WebSocket connections are a known account takeover vector",
+            "HMAC signing for institutional API: clock skew tolerance, nonce/timestamp replay prevention window, and key rotation procedure are not defined in the acceptance criteria. A 5-minute replay window with no nonce tracking is exploitable",
+            "Fiat on-ramp webhook idempotency is specified but the deposit credit path (webhook \u2192 ledger credit) creates a race condition if the same webhook is processed by two pods simultaneously before the idempotency check completes. Distributed lock or database-level idempotency key constraint required",
+            "KYC document storage: government ID images and selfies are not addressed in the encryption-at-rest scheme. Step 9 encrypts SSN and address fields but biometric data (selfie images) may require separate encryption controls and BIPA compliance in Illinois",
+            "Structuring detection in step 16 only catches deposits split within 24 hours. Sophisticated structuring uses multiple accounts and longer time windows. Rule-based detection without ML behavioral analytics will have high false negative rates, creating BSA compliance exposure",
+            "CloudHSM FIPS 140-2 Level 3 is correct, but the key ceremony requires multiple trusted officers physically present at AWS. If the ceremony is inadequately documented or uses fewer officers than required, the HSM initialization may not satisfy FIPS requirements \u2014 invalidating the compliance claim"
+          ],
+          "summary": "This plan demonstrates substantial domain knowledge and covers the right categories for a crypto exchange build \u2014 the step sequencing is logical, the compliance artifacts are correctly identified, and the technical stack choices (Rust/Go matching engine, TimescaleDB, CloudHSM) are defensible. However, it contains several production-blocking failures that disqualify it from launch readiness. The most critical: Synapse is bankrupt (fiat rails undefined), Plaid cannot execute ACH (core money movement broken), no state MTL filing strategy exists (legal operation in most US states is blocked), the SOC 2 Type II observation window is ignored (certification timing is impossible), no penetration test is ever actually executed, and there is no cold storage architecture for what is supposed to be an institutional custody service. The tax engine implements wash sale rules that legally do not apply to crypto, which would generate incorrect tax documents. The Travel Rule integration is declared as a requirement but never built. Combined, these gaps mean the platform cannot legally operate, cannot custody institutional funds safely, cannot accurately report taxes, and has no validated security posture. Score: 44. Fundamental rework required on the regulatory licensing track, fiat rail architecture, custody model, and security validation steps before this plan is viable.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 44,
+            "flaws": [
+              "Synapse Financial Technologies filed for bankruptcy in 2024 and is no longer operational. Listing 'Synapse FBO accounts' as a fiat partner is a dead end \u2014 a banking-as-a-service replacement (Column, Stripe Treasury, Evolve Bank) must be identified before any fiat rail design begins.",
+              "Plaid is a bank account data aggregator, not an ACH payment execution provider. Plaid cannot move money. ACH execution requires a separate provider (Dwolla, Modern Treasury, Stripe, or a direct bank partner). This is a fundamental product architecture error in step 13.",
+              "State Money Transmitter Licenses (MTLs) are never actually obtained \u2014 only a 50-state applicability matrix is produced. NY BitLicense alone takes 12\u201324 months, costs $100K+, and requires quarterly audits. Without NY, CA, TX, FL, and WA licenses, you cannot legally serve the majority of US users. The plan has zero steps for filing or tracking these applications.",
+              "SOC 2 Type II requires a 6\u201312 month observation window during live operations before an auditor can issue the report. Step 22 treats it as an artifact-production exercise. You cannot get the certification before operating, which means it cannot be a launch prerequisite and cannot be on the same timeline as the build steps.",
+              "No step performs an actual penetration test. Step 5 produces a pen test *plan* and step 22 references PCI DSS Req 6, but no step hires an external pen tester, executes the test, or remediates findings. PCI DSS and SOC 2 both require evidence of completed testing, not just plans.",
+              "Travel Rule compliance (FATF/FinCEN Rule 31 CFR 1010.410) requires VASPs to collect and transmit originator/beneficiary information for transfers \u2265 $3,000. Mentioned in step 2 as a flow to define, but no step implements the actual Travel Rule protocol integration (TRUST network, OpenVASP, or TRP). Without this, the platform cannot legally process crypto transfers post-launch.",
+              "No banking partner is identified or contracted. Post-FTX, most traditional banks have derisked crypto exchanges. Securing a bank willing to hold FBO accounts and process ACH for a new crypto exchange can take 6\u201318 months. This is a critical path blocker with no step assigned.",
+              "Wash sale rule inclusion in the tax engine (step 15) is legally incorrect \u2014 the wash sale rule (IRC \u00a71091) does not currently apply to cryptocurrency. Generating tax reports with wash sale adjustments would produce incorrect tax data and expose users and the platform to IRS penalties.",
+              "The matching engine in step 12 uses 'Redis orderbook mirror' for recovery, but the acceptance criterion 'Orderbook state persisted to Redis on every update' creates a synchronous write bottleneck that directly conflicts with the p99 < 10ms latency target. At 50,000 orders/minute, synchronous Redis writes on every order mutation will blow the latency budget.",
+              "ERC-20 token listing carries unaddressed securities law exposure. Listing tokens that pass the Howey test without broker-dealer registration violates federal securities laws (SEC v. Ripple, SEC v. Coinbase). No step performs a token legal review or establishes a listing policy. This is an existential legal risk.",
+              "No cold storage / hot wallet architecture. Industry standard is 95%+ of funds in air-gapped cold storage with daily reconciliation against hot wallet float. The plan only describes HSM-backed hot wallet signing. A custody service without cold storage is unbankable for institutional clients and creates catastrophic concentration risk.",
+              "No proof-of-reserves mechanism. Post-FTX, institutional clients require periodic on-chain proof-of-reserves attestations (Merkle tree approach or third-party audit). Absence makes the custody offering non-competitive for the exact segment (institutional) that justifies the HSM cost.",
+              "Blockchain node infrastructure is completely absent. Broadcasting BTC and ETH transactions requires either self-hosted full nodes or node provider contracts (Alchemy, Infura, QuickNode). No step provisions this. Without nodes, step 14 cannot function.",
+              "Step 5 assigns the security architecture (STRIDE threat model, HSM key management design, pen test planning) to the 'regulatory_specialist' role. This work requires a CISO or senior security engineer. Wrong role assignment means wrong expertise applied to the highest-risk design decisions."
+            ],
+            "suggestions": [
+              "Replace Synapse with a viable BaaS provider immediately. Column Bank, Stripe Treasury, or Evolve Bank & Trust are common choices for fintech with crypto exposure. This unblocks all fiat rail design.",
+              "Split the ACH implementation: use Plaid for bank account ownership verification only, and add a dedicated ACH execution provider (Dwolla or Modern Treasury) for fund movement. Update step 13 accordingly.",
+              "Add a dedicated regulatory licensing track (parallel to build, not sequential) covering: FinCEN MSB registration (weeks), NY BitLicense application (file on Day 1), priority state MTL applications (CA, TX, FL, WA), and EU EMI/VASP registration if EU launch is in scope. Track via a licensing log with state, status, expected date, and counsel contact.",
+              "Reframe SOC 2 Type II as a post-launch milestone (12 months after go-live). Replace it in the launch checklist with SOC 2 Type I (point-in-time snapshot, achievable pre-launch) and a completed SOC 2 readiness assessment by an accredited auditor.",
+              "Add an explicit step for external penetration test execution \u2014 contract a CREST or OSCP-certified firm, execute against staging environment, produce finding report, remediate all Critical and High findings, re-test confirmation. Attach this as a hard gate before go-live.",
+              "Add a Travel Rule implementation step: integrate with a TRUST network participant or deploy OpenVASP/TRP, test counterparty VASP discovery, and validate information transmission flow for transfers \u2265 $3,000.",
+              "Remove wash sale logic from the tax engine entirely. Add a comment and UI disclaimer that wash sale rules do not currently apply to digital assets under US law, and that users should consult a tax advisor. Update step 15 acceptance criteria accordingly.",
+              "Design a cold/hot wallet split in step 14: define the cold storage architecture (air-gapped HSM, geographic distribution, dual-control key ceremonies), daily sweep policy, and reconciliation process. This is required for institutional custody credibility.",
+              "Add a token listing review process: legal screening checklist per asset (Howey test analysis, regulatory status per jurisdiction), listing committee approval workflow, and ongoing monitoring for regulatory reclassification.",
+              "Add blockchain node provisioning to step 10 infra: either managed node provider accounts with SLA (Alchemy Enterprise for ETH, Blockstream for BTC) or self-hosted archive nodes. Include fallback provider for each chain.",
+              "Move security architecture ownership (step 5) to a security_engineer or CISO role. Have the regulatory specialist review only the compliance mapping output, not produce the threat model.",
+              "Add staking rewards tax treatment per Rev. Rul. 2023-14 (ordinary income at time of receipt) to step 15 tax engine scope, replacing or supplementing the Rev. Rul. 2019-24 reference."
+            ],
+            "missing": [
+              "Banking partner identification and contracting (FBO account provider willing to serve crypto exchange) \u2014 critical path item with no assigned step",
+              "Proof-of-reserves attestation mechanism (Merkle tree-based or third-party audited) \u2014 required for institutional custody sales",
+              "Cold storage architecture and air-gapped key management \u2014 no hot/cold wallet split defined anywhere",
+              "Blockchain node infrastructure provisioning (BTC full node, ETH archive node, or managed node provider contracts)",
+              "External penetration test execution and finding remediation \u2014 plan produced in step 5 but never executed",
+              "SOC 2 Type I pre-launch readiness assessment \u2014 replacing the unachievable Type II pre-launch certification",
+              "Travel Rule protocol implementation (TRUST/OpenVASP/TRP integration) \u2014 mentioned in requirements, never built",
+              "Token listing legal review process and listing policy \u2014 no securities law screening for any listed asset",
+              "State Money Transmitter License filing timeline and priority state strategy (NY, CA, TX, FL, WA)",
+              "Insurance coverage \u2014 crime/specie insurance for crypto custody, cyber liability, D&O, and E&O policies",
+              "Institutional client onboarding agreements beyond the custody agreement \u2014 prime brokerage terms, margin agreements if applicable, reporting SLAs",
+              "Market maker / liquidity provider agreements \u2014 the orderbook is empty at launch without committed market makers; no step addresses this",
+              "Disaster recovery scenario for HSM cluster total loss \u2014 current plan mentions HSM DR but does not define what happens if CloudHSM cluster is unrecoverable (customer fund access depends on this answer)",
+              "Regulatory capital reserve requirements \u2014 some state MTLs require permissible investment reserves equal to customer float; not modeled in the financial plan",
+              "GDPR Data Residency \u2014 EU users may require EU-hosted infrastructure or Standard Contractual Clauses; single-region AWS us-east-1 primary does not satisfy this"
+            ],
+            "security_risks": [
+              "Plaid misidentification as ACH provider means the actual ACH execution path is undefined, creating a gap where fund movement controls, reconciliation, and fraud detection have not been designed for the real provider",
+              "Redis orderbook mirror as recovery mechanism without WAL or AOF persistence configured creates a data loss window on Redis restart. If Redis loses state during active trading, the matching engine's recovery path to reconstruct in-flight orders is undefined \u2014 this is a fund-loss scenario",
+              "2-of-3 multisig without cold storage means 100% of customer funds are potentially accessible from internet-connected infrastructure. A compromise of the platform HSM key + any one other key factor results in total fund loss \u2014 no air gap protection",
+              "ERC-20 token support without input validation on contract addresses creates smart contract interaction risks: reentrancy via malicious ERC-20 approve callbacks, fee-on-transfer tokens breaking ledger invariants, and rebasing tokens causing balance reconciliation failures",
+              "WebSocket authentication not specified beyond 'JWT (retail)'. No step defines WebSocket token refresh, connection re-authentication, or session invalidation propagation to open WebSocket connections. Stale session tokens on live WebSocket connections are a known account takeover vector",
+              "HMAC signing for institutional API: clock skew tolerance, nonce/timestamp replay prevention window, and key rotation procedure are not defined in the acceptance criteria. A 5-minute replay window with no nonce tracking is exploitable",
+              "Fiat on-ramp webhook idempotency is specified but the deposit credit path (webhook \u2192 ledger credit) creates a race condition if the same webhook is processed by two pods simultaneously before the idempotency check completes. Distributed lock or database-level idempotency key constraint required",
+              "KYC document storage: government ID images and selfies are not addressed in the encryption-at-rest scheme. Step 9 encrypts SSN and address fields but biometric data (selfie images) may require separate encryption controls and BIPA compliance in Illinois",
+              "Structuring detection in step 16 only catches deposits split within 24 hours. Sophisticated structuring uses multiple accounts and longer time windows. Rule-based detection without ML behavioral analytics will have high false negative rates, creating BSA compliance exposure",
+              "CloudHSM FIPS 140-2 Level 3 is correct, but the key ceremony requires multiple trusted officers physically present at AWS. If the ceremony is inadequately documented or uses fewer officers than required, the HSM initialization may not satisfy FIPS requirements \u2014 invalidating the compliance claim"
+            ],
+            "summary": "This plan demonstrates substantial domain knowledge and covers the right categories for a crypto exchange build \u2014 the step sequencing is logical, the compliance artifacts are correctly identified, and the technical stack choices (Rust/Go matching engine, TimescaleDB, CloudHSM) are defensible. However, it contains several production-blocking failures that disqualify it from launch readiness. The most critical: Synapse is bankrupt (fiat rails undefined), Plaid cannot execute ACH (core money movement broken), no state MTL filing strategy exists (legal operation in most US states is blocked), the SOC 2 Type II observation window is ignored (certification timing is impossible), no penetration test is ever actually executed, and there is no cold storage architecture for what is supposed to be an institutional custody service. The tax engine implements wash sale rules that legally do not apply to crypto, which would generate incorrect tax documents. The Travel Rule integration is declared as a requirement but never built. Combined, these gaps mean the platform cannot legally operate, cannot custody institutional funds safely, cannot accurately report taxes, and has no validated security posture. Score: 44. Fundamental rework required on the regulatory licensing track, fiat rail architecture, custody model, and security validation steps before this plan is viable.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-21T23:31:23.170741+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 175.51,
+    "critic_plan": 113.21
+  }
+}

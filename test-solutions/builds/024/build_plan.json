@@ -1,0 +1,1209 @@
+{
+  "run_id": "2a28a878-1f64-44be-af7b-35e1f0f60922",
+  "status": {
+    "run_id": "2a28a878-1f64-44be-af7b-35e1f0f60922",
+    "solution_name": "fleet_telematics",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T04:32:54.157346+00:00",
+    "updated_at": "2026-03-22T04:38:44.677898+00:00",
+    "product_description": "Fleet management telematics platform with GPS tracking, driver behavior scoring, fuel optimization, predictive maintenance, and ELD compliance.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements, roadmap, and success metrics for the fleet_telematics platform covering GPS tracking, driver behavior scoring, fuel optimization, predictive maintenance, and ELD compliance.",
+        "payload": {
+          "deliverables": [
+            "PRD",
+            "feature_roadmap",
+            "KPI_definitions",
+            "stakeholder_map"
+          ],
+          "scope": [
+            "GPS real-time tracking",
+            "driver behavior scoring",
+            "fuel optimization engine",
+            "predictive maintenance alerts",
+            "ELD (FMCSA) compliance module"
+          ],
+          "success_metrics": [
+            "tracking latency < 5s",
+            "ELD audit pass",
+            "fuel savings > 8% per fleet"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD approved by stakeholders with all five feature areas scoped",
+          "Success metrics defined and measurable",
+          "Roadmap with phased milestones (MVP \u2192 GA) documented"
+        ],
+        "depends_on": [],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Document business requirements, fleet operator user stories, driver workflows, and ROI model for fuel savings and maintenance cost reduction.",
+        "payload": {
+          "user_personas": [
+            "fleet_manager",
+            "driver",
+            "compliance_officer",
+            "mechanic"
+          ],
+          "user_stories": "JIRA-format stories per persona",
+          "process_flows": [
+            "vehicle_onboarding",
+            "alert_triage",
+            "HOS_log_submission",
+            "maintenance_work_order"
+          ]
+        },
+        "acceptance_criteria": [
+          "User stories cover all five product feature areas with acceptance criteria",
+          "Process flows validated with at least two fleet operator personas",
+          "ROI model shows \u2265 12-month payback period calculation"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Competitive analysis of Samsara, Verizon Connect, Motive (KeepTruckin), and Geotab. Identify differentiation opportunities in AI-driven fuel optimization and predictive maintenance.",
+        "payload": {
+          "competitors": [
+            "Samsara",
+            "Verizon Connect",
+            "Motive",
+            "Geotab",
+            "Fleetio"
+          ],
+          "dimensions": [
+            "pricing",
+            "ELD_certification",
+            "API_openness",
+            "AI_capabilities",
+            "hardware_form_factor"
+          ]
+        },
+        "acceptance_criteria": [
+          "Feature comparison matrix covering all five competitors",
+          "Three or more differentiation opportunities identified with evidence",
+          "Pricing benchmarks documented"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 4,
+        "task_type": "REGULATORY",
+        "description": "Map all applicable regulatory requirements: FMCSA ELD mandate (49 CFR Part 395), UNECE R155/R156 (vehicle cybersecurity), ISO 26262 (functional safety), and AUTOSAR compliance checklist.",
+        "payload": {
+          "standards": [
+            "49_CFR_Part_395",
+            "UNECE_R155",
+            "UNECE_R156",
+            "ISO_26262",
+            "AUTOSAR_4.x"
+          ],
+          "deliverables": [
+            "standards_traceability_matrix",
+            "certification_roadmap",
+            "gap_analysis"
+          ],
+          "fmcsa_eld_requirements": [
+            "HOS_logging",
+            "data_transfer_methods",
+            "tamper_detection",
+            "display_requirements"
+          ]
+        },
+        "acceptance_criteria": [
+          "Traceability matrix maps every regulatory clause to a product requirement",
+          "ELD technical specifications checklist complete (FMCSA self-certification checklist)",
+          "UNECE R155 cybersecurity threat catalog populated",
+          "ISO 26262 ASIL level assigned per vehicle function"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "SAFETY",
+        "description": "Perform system-level FMEA and hazard analysis for the telematics ECU and connected vehicle systems. Assign ASIL levels per ISO 26262. Produce fault tree for GPS spoofing, ECU lockup, and false maintenance alerts.",
+        "payload": {
+          "standard": "ISO_26262",
+          "hazards_to_analyze": [
+            "GPS_spoofing",
+            "CAN_bus_tampering",
+            "false_brake_alert",
+            "ECU_power_loss",
+            "OTA_update_failure"
+          ],
+          "asil_assignment": "per_hazard",
+          "deliverables": [
+            "FMEA_worksheet",
+            "fault_tree_analysis",
+            "ASIL_decomposition_table",
+            "safety_goals"
+          ]
+        },
+        "acceptance_criteria": [
+          "FMEA covers all hardware and software failure modes with severity/occurrence/detection ratings",
+          "ASIL levels assigned for all safety-relevant functions (at minimum ASIL A for HOS alerts, ASIL B for brake event detection)",
+          "Fault trees drawn for top five hazard scenarios",
+          "Safety goals documented and traceable to system requirements",
+          "ASIL level determined for each function",
+          "Fault tree analysis complete"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 6,
+        "task_type": "SECURITY",
+        "description": "Perform threat modeling (STRIDE) for the telematics platform per UNECE R155/R156. Cover OTA update pipeline, CAN bus injection, cloud API exposure, and driver data privacy.",
+        "payload": {
+          "standard": "UNECE_R155",
+          "threat_model_method": "STRIDE",
+          "attack_surfaces": [
+            "OTA_update_channel",
+            "CAN_bus",
+            "REST_API",
+            "GPS_receiver",
+            "driver_mobile_app",
+            "fleet_portal"
+          ],
+          "deliverables": [
+            "threat_model_report",
+            "CSMS_policy",
+            "OTA_signing_specification",
+            "SBOM"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE analysis covers all six attack surfaces",
+          "CSMS (Cybersecurity Management System) policy document produced per UNECE R155",
+          "OTA signing key management procedure defined",
+          "SBOM generated covering all ECU firmware dependencies"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 7,
+        "task_type": "UX_DESIGN",
+        "description": "Design fleet manager dashboard, driver mobile app, and compliance officer reporting UI. Wireframes for GPS live map, driver scorecard, fuel analytics, maintenance queue, and ELD log viewer.",
+        "payload": {
+          "screens": [
+            "live_map_with_vehicle_pins",
+            "vehicle_detail_panel",
+            "driver_scorecard_page",
+            "fuel_efficiency_analytics",
+            "maintenance_alert_queue",
+            "ELD_HOS_log_viewer",
+            "compliance_report_export"
+          ],
+          "platforms": [
+            "web_portal (fleet_manager)",
+            "iOS/Android (driver)"
+          ],
+          "accessibility": "WCAG_2.1_AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all seven screen types",
+          "Driver mobile app flow covers: login \u2192 view HOS \u2192 sign log \u2192 view score",
+          "Accessibility audit passes WCAG 2.1 AA for fleet portal",
+          "Design reviewed and approved by at least one fleet operator persona"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 8,
+        "task_type": "HARDWARE_SIM",
+        "description": "Create hardware simulation models for the telematics ECU: CAN bus simulation (Vector CANoe / CAPL scripts), GPS signal injection test bench, OBD-II diagnostic simulation, and accelerometer behavior model for driver scoring.",
+        "payload": {
+          "tools": [
+            "CANoe_CAPL",
+            "SPICE",
+            "GPS_signal_generator_model"
+          ],
+          "models": [
+            "CAN_bus_traffic_sim",
+            "OBD2_PID_simulator",
+            "GPS_NMEA_injector",
+            "3-axis_accelerometer_model"
+          ],
+          "test_scenarios": [
+            "hard_braking_event",
+            "rapid_acceleration",
+            "GPS_signal_loss",
+            "engine_fault_code_injection"
+          ]
+        },
+        "acceptance_criteria": [
+          "CAN bus simulation produces valid J1939 and OBD-II PID messages at 250/500 kbps",
+          "GPS simulator generates NMEA 0183 sentences with configurable spoofing scenarios",
+          "Accelerometer model outputs configurable g-force profiles for harsh event injection",
+          "All four test scenarios produce deterministic, repeatable outputs"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 9,
+        "task_type": "FIRMWARE",
+        "description": "Implement telematics ECU firmware: RTOS task architecture (FreeRTOS), HAL drivers for GPS (UART/NMEA), CAN bus (SocketCAN/MCP2515), OBD-II reader, accelerometer (SPI/I2C), LTE modem (PPP/MQTT), and secure OTA bootloader.",
+        "payload": {
+          "rtos": "FreeRTOS",
+          "mcu_target": "STM32H7 or NXP S32K series",
+          "hal_drivers": [
+            "GPS_UART_NMEA",
+            "CAN_MCP2515",
+            "OBD2_ELM327",
+            "IMU_MPU6050_SPI",
+            "LTE_SIM7600_PPP"
+          ],
+          "tasks": [
+            "gps_task (10Hz sampling)",
+            "can_reader_task (J1939 decoder)",
+            "event_detector_task (harsh events, speeding)",
+            "mqtt_uplink_task (buffered, store-and-forward)",
+            "ota_monitor_task",
+            "eld_hours_tracker_task"
+          ],
+          "ota": "secure_bootloader_with_rollback",
+          "autosar_compliance": "AUTOSAR_Classic_BSW_mapping"
+        },
+        "acceptance_criteria": [
+          "All RTOS tasks boot without deadlock; watchdog recovery tested",
+          "GPS task parses NMEA GGA/RMC at 10Hz and buffers with < 100ms latency",
+          "CAN task decodes J1939 PGNs: fuel rate (PGN 65266), engine speed (PGN 61444), odometer (PGN 65248)",
+          "OTA bootloader verifies firmware signature (ECDSA-256) before flashing",
+          "AUTOSAR BSW layer mapping documented for OS, COM, and DIAG modules",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 10,
+        "task_type": "FIRMWARE",
+        "description": "Implement ELD compliance module in firmware: FMCSA-certified HOS logging, tamper detection, driver ID via NFC/PIN, data transfer via USB/BT/Telematics (3 mandatory methods), and unidentified driving detection.",
+        "payload": {
+          "fmcsa_requirements": [
+            "49_CFR_395.26",
+            "49_CFR_395.28",
+            "49_CFR_395.30"
+          ],
+          "transfer_methods": [
+            "USB_ELD_file_format",
+            "Bluetooth_BLE",
+            "telematics_cloud_transfer"
+          ],
+          "tamper_detection": [
+            "power_disconnect_log",
+            "GPS_antenna_tamper",
+            "CAN_bus_disconnect"
+          ],
+          "driver_auth": [
+            "NFC_card_reader",
+            "PIN_pad_fallback"
+          ]
+        },
+        "acceptance_criteria": [
+          "HOS log records all seven duty status changes with UTC timestamp and location",
+          "Three FMCSA data transfer methods functional and tested",
+          "Tamper events logged immutably with GPS coordinates and timestamp",
+          "Unidentified driving detection triggers within 30 seconds of motion without driver login",
+          "ELD output file validates against FMCSA ELD file format specification",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 11,
+        "task_type": "DATABASE",
+        "description": "Design time-series and relational database schema for fleet_telematics: vehicle telemetry (TimescaleDB/InfluxDB), trip records, driver events, maintenance schedules, ELD logs, and fuel transactions.",
+        "payload": {
+          "databases": {
+            "time_series": "TimescaleDB (PostgreSQL extension)",
+            "relational": "PostgreSQL",
+            "cache": "Redis"
+          },
+          "schemas": [
+            "vehicles (id, vin, make, model, year, fleet_id)",
+            "telemetry (vehicle_id, ts, lat, lon, speed, heading, altitude, hdop)",
+            "driver_events (id, vehicle_id, driver_id, event_type, severity, ts, lat, lon, g_force)",
+            "trips (id, vehicle_id, driver_id, start_ts, end_ts, distance_km, fuel_used_L, score)",
+            "eld_records (id, driver_id, vehicle_id, duty_status, start_ts, end_ts, location, transfer_hash)",
+            "maintenance_schedules (id, vehicle_id, component, last_service_ts, next_due_km, predicted_failure_ts)",
+            "fuel_transactions (id, vehicle_id, ts, liters, cost, odometer)"
+          ],
+          "partitioning": "telemetry hypertable partitioned by week"
+        },
+        "acceptance_criteria": [
+          "TimescaleDB hypertable for telemetry ingests 1000 rows/sec with < 10ms write latency",
+          "Geospatial queries (vehicles within bounding box) return in < 200ms on 1M row dataset",
+          "All foreign key relationships enforced with cascade rules defined",
+          "Migrations written and reversible via Alembic",
+          "ELD records table enforces immutability via append-only policy (no UPDATE/DELETE)"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "CONFIG",
+        "description": "Set up project infrastructure: monorepo structure, Docker Compose for local dev (TimescaleDB, Redis, MQTT broker, backend, frontend), GitHub Actions CI, environment configs, and MQTT topic schema for telematics ingestion.",
+        "payload": {
+          "repo_structure": {
+            "firmware/": "ECU firmware (C/C++, FreeRTOS)",
+            "backend/": "FastAPI services",
+            "frontend/": "React dashboard + React Native driver app",
+            "infra/": "Terraform, Helm charts",
+            "ml/": "Predictive maintenance and driver scoring models",
+            "docs/": "Architecture and compliance docs"
+          },
+          "docker_compose_services": [
+            "timescaledb",
+            "redis",
+            "mosquitto_mqtt",
+            "backend",
+            "frontend",
+            "grafana"
+          ],
+          "mqtt_topics": {
+            "telemetry": "fleet/{vehicle_id}/telemetry",
+            "events": "fleet/{vehicle_id}/events",
+            "eld": "fleet/{vehicle_id}/eld",
+            "maintenance": "fleet/{vehicle_id}/diagnostics"
+          },
+          "ci": "GitHub Actions \u2014 lint, test, build firmware, docker build"
+        },
+        "acceptance_criteria": [
+          "docker compose up starts all services with no manual intervention",
+          "MQTT broker accepts messages on all defined topic patterns",
+          "GitHub Actions CI pipeline runs on every PR and blocks merge on failure",
+          "Environment config uses .env files with no secrets in source control"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement telemetry ingestion service: MQTT subscriber consuming GPS/CAN/event payloads, validation pipeline, time-series write to TimescaleDB, real-time position broadcasting via WebSocket, and geofence evaluation engine.",
+        "payload": {
+          "tech": "FastAPI + asyncio, paho-mqtt, asyncpg, websockets",
+          "throughput_target": "10,000 vehicles concurrent",
+          "features": [
+            "MQTT message validation with Pydantic schemas",
+            "Batch write to TimescaleDB (bulk_insert 500ms windows)",
+            "WebSocket broadcaster per fleet for live map updates",
+            "Geofence engine: polygon and radius, entry/exit event generation",
+            "Store-and-forward handling for offline device reconnection"
+          ]
+        },
+        "acceptance_criteria": [
+          "Ingestion service sustains 10,000 msg/sec with < 500ms end-to-end latency",
+          "Invalid messages rejected with error logged; valid messages persisted with 100% durability",
+          "WebSocket broadcasts vehicle positions to subscribed fleet dashboards within 1 second",
+          "Geofence violations generate alert events within 2 seconds of boundary crossing",
+          "Reconnecting device flushes store-and-forward buffer without data loss"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "ML_MODEL",
+        "description": "Build driver behavior scoring model: feature engineering from acceleration, braking, cornering, speeding, phone use events; supervised model trained on labeled fleet data; score normalization (0\u2013100); per-trip and rolling 30-day scores.",
+        "payload": {
+          "features": [
+            "harsh_braking_events_per_100km",
+            "harsh_acceleration_events_per_100km",
+            "speeding_percentage",
+            "cornering_events_per_100km",
+            "night_driving_percentage",
+            "following_distance_score"
+          ],
+          "model_type": "XGBoost + SHAP explainability",
+          "output": "driver_score (0-100), per_category_breakdown, trend_7d_30d",
+          "training_data": "synthetic_fleet_dataset + publicly available SHRP2 naturalistic driving data",
+          "serving": "FastAPI ML endpoint, pre-computed per trip, cached in Redis"
+        },
+        "acceptance_criteria": [
+          "Model achieves AUC > 0.82 on held-out test set predicting accident risk quartile",
+          "SHAP values expose top contributing factors per driver score",
+          "Score computed within 5 seconds of trip completion",
+          "Scoring endpoint returns p99 latency < 100ms from Redis cache",
+          "Score normalization produces uniform distribution across synthetic fleet dataset"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 15,
+        "task_type": "ML_MODEL",
+        "description": "Build predictive maintenance model: multi-variate time-series anomaly detection on engine RPM, coolant temp, oil pressure, DTC frequency, and mileage since service. Predict component failure 2\u20134 weeks ahead.",
+        "payload": {
+          "components_modeled": [
+            "engine_oil",
+            "brake_pads",
+            "battery",
+            "transmission_fluid",
+            "coolant",
+            "tire_wear"
+          ],
+          "algorithm": "Isolation Forest + LSTM for time-series patterns",
+          "input_features": [
+            "OBD_PIDs",
+            "J1939_PGNs",
+            "mileage",
+            "operating_temperature",
+            "idle_hours"
+          ],
+          "output": "failure_probability (0-1), estimated_days_to_failure, recommended_action",
+          "retraining": "weekly on new fleet data via automated pipeline"
+        },
+        "acceptance_criteria": [
+          "Precision \u2265 0.75 and recall \u2265 0.70 on brake pad failure prediction (30-day horizon)",
+          "False positive rate < 15% across all component types",
+          "Predictions updated daily per vehicle",
+          "Model version tracked in MLflow with experiment comparison",
+          "Retraining pipeline completes without manual intervention"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 16,
+        "task_type": "ML_MODEL",
+        "description": "Build fuel optimization engine: per-vehicle fuel consumption baseline modeling, idle time analysis, route efficiency scoring, and eco-driving recommendations using trip and CAN bus data.",
+        "payload": {
+          "approach": "regression model (LightGBM) + rule-based idle detection",
+          "features": [
+            "speed_profile",
+            "engine_load",
+            "idle_minutes_per_trip",
+            "route_grade_variation",
+            "AC_usage",
+            "payload_weight"
+          ],
+          "output": "fuel_efficiency_score (MPG vs baseline), idle_cost_USD, eco_recommendations (list)",
+          "benchmarking": "compare against vehicle EPA rating + fleet historical baseline"
+        },
+        "acceptance_criteria": [
+          "Fuel consumption prediction within 5% MAPE vs actual fuel card transactions",
+          "Idle detection accuracy > 95% vs GPS/speed ground truth",
+          "Eco-driving recommendations actionable (max 5 per trip, prioritized by impact)",
+          "Fleet-level fuel cost projection available in dashboard with 30-day forecast"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 17,
+        "task_type": "BACKEND",
+        "description": "Implement core REST API services: fleet management CRUD, driver management, trip API, alert management, ELD compliance API, reporting endpoints, and webhook outbound notifications.",
+        "payload": {
+          "endpoints": [
+            "GET/POST/PATCH /fleets, /vehicles, /drivers",
+            "GET /trips?vehicle_id&date_range",
+            "GET /drivers/{id}/score?period=30d",
+            "GET /vehicles/{id}/maintenance/predictions",
+            "GET/POST /eld/logs, /eld/transfer",
+            "GET /reports/fuel_summary, /reports/safety_summary, /reports/compliance",
+            "POST /webhooks/configure",
+            "GET /vehicles/live (SSE stream)"
+          ],
+          "auth": "JWT + API key (fleet integrations)",
+          "rate_limiting": "100 req/min per tenant",
+          "multi_tenancy": "fleet_id scoping on all queries"
+        },
+        "acceptance_criteria": [
+          "All CRUD endpoints return correct HTTP status codes with Pydantic-validated responses",
+          "ELD log export endpoint produces FMCSA-compliant file format (UTF-8, tab-delimited)",
+          "JWT auth rejects expired tokens; API key scoped to fleet_id",
+          "SSE stream delivers vehicle positions within 2 seconds of ingestion",
+          "OpenAPI spec auto-generated and accessible at /docs"
+        ],
+        "depends_on": [
+          13,
+          14,
+          15,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build fleet manager web dashboard: real-time GPS map (Mapbox GL JS), vehicle status panel, driver leaderboard, fuel analytics charts, maintenance alert queue, and ELD compliance report viewer.",
+        "payload": {
+          "tech": "React 18 + TypeScript, Mapbox GL JS, Recharts, React Query, Zustand",
+          "pages": [
+            "Live Map \u2014 vehicle clustering, trail replay, geofence overlay",
+            "Fleet Overview \u2014 table with status, driver, speed, alerts",
+            "Driver Scorecard \u2014 score trend, event breakdown, SHAP factors",
+            "Fuel Analytics \u2014 fleet MPG trend, idle cost chart, eco-recommendations",
+            "Maintenance Queue \u2014 Kanban by urgency, work order modal",
+            "ELD Compliance \u2014 HOS grid log viewer, export button, violation flags",
+            "Reports \u2014 PDF/CSV export for safety, fuel, compliance"
+          ],
+          "realtime": "WebSocket for live map, SSE for alerts"
+        },
+        "acceptance_criteria": [
+          "Live map renders 1000 vehicles with smooth pan/zoom (60fps)",
+          "Driver scorecard displays score, trend chart, and top 3 SHAP factors",
+          "ELD HOS log viewer renders grid with 24-hour duty status timeline",
+          "Fuel analytics page loads in < 2 seconds with 90-day data",
+          "All pages mobile-responsive (1024px breakpoint)",
+          "Accessibility: keyboard navigable, ARIA labels on interactive elements"
+        ],
+        "depends_on": [
+          17,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build driver mobile app (React Native): HOS clock display, duty status selector, pre-trip inspection checklist, trip history with score, ELD log review and sign-off, and co-driver management.",
+        "payload": {
+          "tech": "React Native (Expo), React Navigation, AsyncStorage for offline",
+          "screens": [
+            "Dashboard \u2014 HOS clock, current status, violations",
+            "Duty Status \u2014 status change with location confirmation",
+            "Trip History \u2014 list with score badge, tap for breakdown",
+            "ELD Log \u2014 daily grid view, sign & certify flow",
+            "Pre-trip Inspection \u2014 DVIR checklist with photo capture",
+            "Co-driver \u2014 swap driver, unidentified drive assignment"
+          ],
+          "offline": "store-and-forward HOS changes when no cell signal"
+        },
+        "acceptance_criteria": [
+          "HOS clock accurate to within 1 second, updates without app refresh",
+          "Duty status change persists offline and syncs when connectivity restored",
+          "ELD log sign-off generates cryptographic signature and uploads to backend",
+          "DVIR checklist supports photo capture with offline storage",
+          "App passes Apple App Store and Google Play policy review requirements"
+        ],
+        "depends_on": [
+          17,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "AGENTIC",
+        "description": "Implement multi-agent coordinator pattern for fleet intelligence: coordinator routes to specialist agents (driver coaching, maintenance planner, compliance monitor, fuel advisor). Each agent uses ReAct loops against fleet data tools.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": {
+            "driver_coach": "analyzes score decline \u2192 generates personalized coaching tips \u2192 proposes manager notification",
+            "maintenance_planner": "queries prediction model \u2192 checks shop availability \u2192 generates work order proposal",
+            "compliance_monitor": "scans HOS violations \u2192 generates corrective action \u2192 flags for compliance officer review",
+            "fuel_advisor": "identifies high-idle vehicles \u2192 generates route recommendations \u2192 estimates savings"
+          },
+          "tools_per_agent": [
+            "fleet_db_query",
+            "ml_model_inference",
+            "alert_generator",
+            "notification_sender"
+          ],
+          "hitl_gates": [
+            "work_order_approval",
+            "driver_corrective_action",
+            "compliance_violation_report"
+          ],
+          "trigger": "scheduled (hourly batch) + event-driven (trip completion, DTC event)"
+        },
+        "acceptance_criteria": [
+          "Coordinator correctly routes trip completion events to driver_coach and fuel_advisor in parallel",
+          "Each agent produces a structured proposal with confidence score and supporting evidence",
+          "HITL gates fire for work orders and corrective actions before any external notification",
+          "Agent proposals stored in proposal_store with trace_id and audit trail",
+          "ReAct loops terminate within 10 seconds per agent with valid output or explicit failure"
+        ],
+        "depends_on": [
+          17
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "INFRA",
+        "description": "Provision production infrastructure: Kubernetes cluster (EKS/GKE), TimescaleDB managed (Timescale Cloud or self-hosted), Redis Cluster, MQTT broker (HiveMQ or EMQ X), CDN for dashboard, VPN for device connectivity.",
+        "payload": {
+          "iac": "Terraform",
+          "cloud": "AWS (primary), multi-region for ELD compliance data residency",
+          "services": [
+            "EKS cluster",
+            "RDS Aurora + TimescaleDB",
+            "ElastiCache Redis",
+            "HiveMQ BYOC",
+            "CloudFront CDN",
+            "IoT Core for device auth"
+          ],
+          "networking": [
+            "VPC",
+            "private subnets for DB",
+            "NAT gateway",
+            "AWS IoT Core certificates for device MQTT auth"
+          ],
+          "data_residency": "ELD records stored in US region only (FMCSA requirement)"
+        },
+        "acceptance_criteria": [
+          "Terraform plan applies without errors; state stored in S3 backend",
+          "EKS cluster autoscales from 3 to 20 nodes based on CPU/memory",
+          "TimescaleDB achieves 99.9% uptime SLA with automated backups every 6 hours",
+          "ELD data confirmed stored only in us-east-1 / us-west-2",
+          "MQTT broker handles 50,000 concurrent device connections"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipelines: GitHub Actions for backend (test \u2192 build \u2192 deploy), firmware (compile \u2192 unit test \u2192 OTA package signing), frontend (lint \u2192 test \u2192 build \u2192 deploy to CDN), and ML model retraining pipeline.",
+        "payload": {
+          "pipelines": {
+            "backend": "pytest \u2192 docker build \u2192 ECR push \u2192 helm upgrade",
+            "firmware": "arm-none-eabi-gcc \u2192 unity tests \u2192 binary sign \u2192 S3 OTA bucket",
+            "frontend": "eslint \u2192 vitest \u2192 vite build \u2192 CloudFront invalidate",
+            "ml": "data_validate \u2192 train \u2192 evaluate \u2192 register_mlflow \u2192 deploy if MAPE improves"
+          },
+          "environments": [
+            "dev",
+            "staging",
+            "production"
+          ],
+          "secrets_management": "AWS Secrets Manager",
+          "monitoring": "Grafana + Prometheus, PagerDuty alerts"
+        },
+        "acceptance_criteria": [
+          "Backend pipeline deploys to staging in < 8 minutes from merge to main",
+          "Firmware OTA package signed with HSM-backed key before S3 upload",
+          "ML pipeline blocks promotion if MAPE regresses > 2% vs production",
+          "Zero-downtime deployments via rolling update strategy on EKS",
+          "PagerDuty alert fires within 2 minutes of p99 latency exceeding 1 second"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Build hardware-in-the-loop (HIL) test harness for the telematics ECU: inject simulated GPS, CAN, and OBD-II signals; validate firmware event detection, ELD state machine, and OTA bootloader on target hardware.",
+        "payload": {
+          "hil_platform": "NI VeriStand or custom Raspberry Pi HIL",
+          "test_cases": [
+            "GPS_fix_acquisition_under_60s",
+            "harsh_braking_event_detection_at_0.3g",
+            "ELD_duty_status_state_machine_all_transitions",
+            "OTA_update_valid_signature_accepted",
+            "OTA_update_invalid_signature_rejected_with_rollback",
+            "CAN_bus_disconnect_tamper_event_logged",
+            "power_loss_during_HOS_record_persistence",
+            "store_and_forward_replay_on_LTE_reconnect"
+          ],
+          "coverage_target": "90% firmware branch coverage"
+        },
+        "acceptance_criteria": [
+          "All eight HIL test cases pass with deterministic outcomes across 10 repetitions",
+          "Firmware branch coverage report shows \u2265 90% coverage",
+          "OTA rollback test completes in < 60 seconds with valid previous firmware restored",
+          "ELD state machine test covers all FMCSA-defined duty status transitions",
+          "HIL test suite runnable in CI via USB-connected target board"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "COMPLIANCE",
+        "description": "Produce FMCSA ELD self-certification package: technical documentation, test results, registration, and compliance declaration. Produce UNECE R155 cybersecurity type-approval documentation.",
+        "payload": {
+          "fmcsa_deliverables": [
+            "ELD_technical_documentation_package",
+            "FMCSA_self_certification_checklist_completed",
+            "ELD_registration_submission",
+            "tamper_detection_test_evidence",
+            "data_transfer_method_test_evidence (USB/BT/telematics)"
+          ],
+          "unece_r155_deliverables": [
+            "CSMS_audit_report",
+            "cybersecurity_risk_assessment",
+            "threat_countermeasure_traceability",
+            "penetration_test_summary"
+          ],
+          "iso_26262_deliverables": [
+            "safety_plan",
+            "HARA_report",
+            "safety_goals_and_ASIL_assignments",
+            "functional_safety_concept"
+          ]
+        },
+        "acceptance_criteria": [
+          "FMCSA ELD self-certification checklist 100% complete with evidence for every item",
+          "ELD registered on FMCSA ELD list (or submission confirmation in hand)",
+          "UNECE R155 CSMS audit report signed by qualified cybersecurity assessor",
+          "ISO 26262 safety plan approved by functional safety manager",
+          "All traceability matrices link requirements \u2192 design \u2192 test evidence"
+        ],
+        "depends_on": [
+          23,
+          6,
+          5
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 25,
+        "task_type": "LEGAL",
+        "description": "Draft terms of service, driver data privacy policy (CCPA/GDPR), data processing agreements for fleet operators, and ELD data retention policy (minimum 6 months per FMCSA).",
+        "payload": {
+          "documents": [
+            "terms_of_service",
+            "driver_privacy_policy (CCPA + GDPR)",
+            "fleet_operator_DPA",
+            "ELD_data_retention_policy (6-month FMCSA minimum)",
+            "biometric_data_policy (if driver face ID used)"
+          ],
+          "data_categories": [
+            "GPS location",
+            "HOS records",
+            "driver behavior scores",
+            "vehicle diagnostics"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy policy covers all collected data categories with CCPA opt-out mechanism",
+          "GDPR data subject rights (access, deletion, portability) procedures documented",
+          "ELD data retention policy specifies 6-month minimum and deletion schedule",
+          "DPA reviewed and approved by legal counsel",
+          "Driver consent flow in mobile app reviewed against privacy policy"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 26,
+        "task_type": "TESTS",
+        "description": "Write backend unit and integration tests: telemetry ingestion pipeline, ELD state machine, driver scoring service, predictive maintenance endpoint, geofence engine, and multi-tenant data isolation.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio",
+          "coverage_target": "85% line coverage on src/",
+          "test_categories": [
+            "unit: ELD state machine transitions (all 5 duty statuses)",
+            "unit: geofence polygon containment algorithm",
+            "unit: driver score normalization",
+            "integration: MQTT \u2192 TimescaleDB ingestion pipeline",
+            "integration: ML endpoint returns valid JSON schema",
+            "integration: multi-tenant isolation (fleet A cannot read fleet B data)",
+            "integration: ELD export file format validation"
+          ]
+        },
+        "acceptance_criteria": [
+          "pytest suite passes with \u2265 85% line coverage",
+          "ELD state machine tests cover all FMCSA-defined transitions without gaps",
+          "Multi-tenant isolation test confirms zero data leakage between fleet_ids",
+          "MQTT ingestion integration test achieves 10,000 msg/batch without errors",
+          "CI pipeline blocks merge on any test failure"
+        ],
+        "depends_on": [
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 27,
+        "task_type": "QA",
+        "description": "Design and execute QA test plan: driver app ELD workflow, fleet dashboard GPS accuracy, driver score consistency, fuel report accuracy vs fuel card actuals, and cross-browser compatibility.",
+        "payload": {
+          "test_types": [
+            "functional",
+            "regression",
+            "cross-browser (Chrome/Firefox/Safari/Edge)",
+            "mobile (iOS 16+, Android 12+)",
+            "accessibility (WCAG 2.1 AA)"
+          ],
+          "critical_paths": [
+            "driver login \u2192 duty status change \u2192 HOS log \u2192 sign \u2192 transfer",
+            "vehicle alert \u2192 maintenance work order \u2192 approval \u2192 closure",
+            "fleet manager \u2192 download compliance report \u2192 verify FMCSA format"
+          ],
+          "defect_tracking": "GitHub Issues with severity labels"
+        },
+        "acceptance_criteria": [
+          "All critical path test cases pass with zero P1/P2 defects open",
+          "Cross-browser matrix complete across four browsers on latest two versions",
+          "Accessibility audit scores WCAG 2.1 AA pass on fleet portal",
+          "Mobile app tested on iOS 16+ (iPhone 12+) and Android 12+ (Pixel 6+)",
+          "QA sign-off report produced and approved before production deployment"
+        ],
+        "depends_on": [
+          18,
+          19,
+          26
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 28,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test: physical or simulated ECU \u2192 MQTT \u2192 backend \u2192 dashboard. Validate full telemetry flow, ELD compliance scenario, predictive maintenance alert lifecycle, and load test at 10,000 vehicles.",
+        "payload": {
+          "scenarios": [
+            "E2E_GPS_track: ECU NMEA \u2192 MQTT \u2192 DB \u2192 dashboard map (< 5s latency)",
+            "E2E_ELD_workflow: driver login \u2192 drive \u2192 status change \u2192 HOS sign \u2192 FMCSA export",
+            "E2E_maintenance_alert: DTC inject \u2192 ML predict \u2192 alert \u2192 work order \u2192 HITL approve",
+            "E2E_driver_score: trip complete \u2192 score compute \u2192 mobile app display \u2192 coach agent proposal",
+            "load_test: 10,000 simulated vehicles at 1Hz telemetry for 10 minutes"
+          ],
+          "tools": [
+            "k6 for load testing",
+            "HIL harness for hardware scenarios",
+            "Postman E2E collection"
+          ]
+        },
+        "acceptance_criteria": [
+          "All four E2E scenarios pass without manual intervention",
+          "GPS telemetry end-to-end latency p95 < 5 seconds",
+          "Load test sustains 10,000 vehicles at 10,000 msg/sec with < 1% error rate",
+          "ELD export file from E2E test validates against FMCSA validator tool",
+          "No P1 defects outstanding after system test execution"
+        ],
+        "depends_on": [
+          23,
+          27,
+          20,
+          22
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 29,
+        "task_type": "FINANCIAL",
+        "description": "Build fleet_telematics financial model: hardware BOM cost, SaaS pricing tiers, CAC, LTV, break-even analysis, and 3-year P&L projection.",
+        "payload": {
+          "pricing_model": "per_vehicle_per_month SaaS (Essential / Pro / Enterprise tiers)",
+          "hardware_cost": "ECU BOM + assembly + logistics",
+          "cogs_components": [
+            "cloud_infra",
+            "MQTT_broker",
+            "ML_compute",
+            "support"
+          ],
+          "target_metrics": [
+            "CAC < $150/vehicle",
+            "LTV > $1,200/vehicle",
+            "gross_margin > 65%"
+          ]
+        },
+        "acceptance_criteria": [
+          "3-year P&L model with monthly granularity",
+          "Break-even analysis at three fleet sizes (50, 500, 5000 vehicles)",
+          "Hardware + SaaS unit economics show positive contribution margin at 500 vehicles",
+          "Model reviewed and approved by financial_analyst"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 30,
+        "task_type": "TRAINING",
+        "description": "Produce user documentation and training materials: fleet manager admin guide, driver mobile app quick-start, ELD compliance training module, and API integration guide for fleet management system partners.",
+        "payload": {
+          "deliverables": [
+            "fleet_manager_admin_guide (PDF + HTML)",
+            "driver_app_quick_start (in-app tooltip flow + PDF)",
+            "ELD_compliance_training_module (slide deck + video script)",
+            "API_integration_guide (OpenAPI + code samples in Python/JS)"
+          ],
+          "localization_ready": true,
+          "format": "GitBook or Docusaurus"
+        },
+        "acceptance_criteria": [
+          "Admin guide covers all dashboard features with screenshots",
+          "Driver quick-start walkthrough validated by at least one non-technical driver tester",
+          "ELD training module covers FMCSA HOS rules, duty statuses, and violation penalties",
+          "API guide includes working curl and SDK code examples for top 10 endpoints",
+          "All docs published and accessible at /docs subdomain"
+        ],
+        "depends_on": [
+          28
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 31,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: vehicle onboarding SOP, ELD investigation procedure, incident response for telemetry outage, data retention enforcement, and SLA definitions for fleet customers.",
+        "payload": {
+          "runbooks": [
+            "vehicle_onboarding: ECU install checklist, IMEI registration, provisioning API call",
+            "eld_investigation: HOW to investigate driver ELD violations step-by-step",
+            "telemetry_outage: triage tree from device \u2192 MQTT \u2192 backend \u2192 DB",
+            "data_retention: monthly job to archive/delete ELD records per policy",
+            "incident_response: P1 playbook with escalation contacts"
+          ],
+          "sla": "99.9% uptime, < 5s telemetry latency, 4-hour RTO for P1 incidents"
+        },
+        "acceptance_criteria": [
+          "Vehicle onboarding runbook enables a new field tech to provision a device in < 30 minutes",
+          "Telemetry outage triage tree covers all failure points from ECU to database",
+          "SLA definitions reviewed and approved by operations_manager",
+          "Data retention job tested in staging with confirmed deletion audit log",
+          "Incident response runbook includes after-incident review template"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 32,
+        "task_type": "DOCS",
+        "description": "Produce architecture documentation: system architecture diagram, data flow diagrams, MQTT topic schema reference, API contract, firmware ICD, and regulatory evidence index.",
+        "payload": {
+          "documents": [
+            "system_architecture_diagram (C4 model: context, container, component)",
+            "data_flow_diagram: device \u2192 cloud \u2192 dashboard",
+            "MQTT_topic_schema_reference",
+            "API_contract (OpenAPI 3.1)",
+            "firmware_ICD: message formats, CAN PGN mapping",
+            "regulatory_evidence_index: links all compliance artifacts to standards clauses"
+          ],
+          "format": "Markdown in /docs, diagrams as Mermaid or draw.io"
+        },
+        "acceptance_criteria": [
+          "C4 architecture diagrams cover all four levels (Context, Container, Component, Code for critical paths)",
+          "Regulatory evidence index maps every artifact to its governing standard clause",
+          "OpenAPI spec validates without errors in Swagger editor",
+          "Firmware ICD documents every MQTT payload field with type, unit, and range",
+          "Docs reviewed by developer and regulatory_specialist before release"
+        ],
+        "depends_on": [
+          28,
+          24
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 32,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "MISRA C 'zero violations' in Steps 9 and 10 is unachievable in practice. FreeRTOS itself ships with documented MISRA deviations. The correct acceptance criterion is 'zero unjustified deviations' with a deviation log \u2014 not zero violations. Any CI gate enforcing zero will block the build permanently on the first third-party include.",
+              "ISO 26262 scope is misapplied. ISO 26262 governs E/E systems that can cause physical harm to vehicle occupants or road users. A read-only telematics ECU that does not actuate any vehicle system does not meet the 'controllability' threshold for ASIL assignment. Assigning ASIL A to 'HOS alerts' (an informational notification) and ASIL B to 'brake event detection' (which is passive logging, not brake control) misuses the standard and will fail a functional safety audit. The actual applicable standard for a data-logging device is ISO/SAE 21434 for cybersecurity, not ISO 26262.",
+              "AUTOSAR Classic BSW mapping in Steps 9 and 10 requires commercial AUTOSAR toolchains (EB tresos Studio, Vector DaVinci Configurator). These are $50k+ annual licenses. Acceptance criterion 'AUTOSAR compliance checked' is not a functional test \u2014 AUTOSAR conformance testing requires accredited test labs. Treating this as a firmware checkbox will fail any OEM integration audit.",
+              "ML training data bootstrapping problem is unresolved. Steps 14, 15, and 16 depend on 'labeled fleet data' and 'fleet data from Step 13,' but Step 13 is the ingestion infrastructure \u2014 not a data collection program. The product has no data before launch. The AUC >0.82 target on synthetic SHRP2 data does not validate real-world fleet performance. No warm-start strategy, no minimum fleet size for statistical validity, no model confidence floor before serving predictions to real operators.",
+              "SHRP2 naturalistic driving data access is non-trivial. It requires a formal data-sharing agreement with Virginia Tech Transportation Institute (VTTI) and IRB-equivalent review. Treating it as a passive dependency ('publicly available') is incorrect \u2014 it is licensed data with use restrictions.",
+              "Hardware design is entirely absent. The plan includes firmware (Step 9), hardware simulation (Step 8), and HIL testing (Step 23) but zero steps for PCB schematic, component selection, thermal design, EMC/EMI testing, or hardware design review. You cannot build firmware for undefined hardware.",
+              "FCC/IC/CE certification for the telematics ECU device is missing. Any device sold in the US that emits RF (LTE modem + GPS) requires FCC Part 15/Part 90 certification. This is a multi-month process with an accredited test lab. Without it, the device cannot be legally sold or installed. This is a hard stop before Step 28.",
+              "Cellular carrier certification is absent. Devices connecting to AT&T, Verizon, or T-Mobile LTE networks require carrier device certification (PTCRB/GCF) in addition to FCC approval. Fleet operators will demand certified devices. This can take 3-6 months and is not mentioned anywhere.",
+              "React Native Expo (Step 19) is incompatible with ELD compliance requirements. FMCSA mandates three data transfer methods including USB. Expo managed workflow does not support USB host/accessory mode, custom BLE service UUIDs required for ELD profile, or background location with the reliability required for continuous HOS tracking. This requires a bare React Native workflow with native modules \u2014 a significant architecture change.",
+              "ELD cryptographic signature private key storage on mobile (Step 19) has no security specification. 'ELD log sign-off generates cryptographic signature' without specifying Secure Enclave (iOS) / StrongBox (Android) usage means keys will likely land in AsyncStorage or app storage \u2014 readable by any process with device access. An FMCSA auditor or court discovery will invalidate signatures stored this way.",
+              "PostGIS is missing from the database design (Step 11). TimescaleDB does not natively support geospatial queries. The acceptance criterion 'geospatial queries return in <200ms on 1M rows' requires PostGIS with GIST spatial indexes. Without it, bounding-box queries will full-scan the telemetry table and fail the latency target at any meaningful scale.",
+              "MQTT topic structure enables cross-tenant enumeration. `fleet/{vehicle_id}/telemetry` with predictable vehicle IDs allows a subscriber with a valid broker connection to subscribe to `fleet/+/telemetry` and receive data across all fleets. Broker-level ACLs per tenant are not specified anywhere in the plan.",
+              "GDPR right to erasure vs. FMCSA 6-month retention is flagged as a documentation task (Step 25) but requires a concrete technical implementation decision. You cannot delete ELD records on GDPR request while simultaneously satisfying FMCSA retention. The legal position (FMCSA as a superseding federal obligation) must be codified in the privacy policy AND technically enforced (selective field suppression vs. full deletion). This is not just a lawyer task.",
+              "Vehicle provisioning flow has no dedicated design step. Step 31 references a 'vehicle onboarding runbook' and Step 21 mentions AWS IoT Core certificates, but no step designs the device provisioning API: IMEI registration, X.509 certificate issuance and push to device, fleet assignment, and first-telemetry validation. This is a critical operational gap \u2014 field technicians have no defined workflow.",
+              "UNECE R155 type approval process is misunderstood. R155 type approval is conducted by national type approval authorities (T\u00dcV S\u00dcD, DEKRA, etc.) on behalf of vehicle OEMs, not aftermarket telematics vendors. A telematics device supplier provides a CSMS and evidence package to the OEM, who applies for type approval. Step 6 and Step 24 treat this as the vendor's own certification \u2014 which is incorrect and will produce documentation that no OEM can use.",
+              "LTE PPP stack choice (Step 9) is outdated and fragile. Modern SIM7600/EC25 modems support ECM or RNDIS Ethernet emulation mode, which gives a standard network interface to the RTOS TCP/IP stack without implementing PPP. PPP adds dial-up-era complexity, higher CPU overhead, and fragile reconnection behavior that will cause store-and-forward data loss in poor signal conditions.",
+              "The plan has no V2X, fleet integrations (TMW, PeopleNet, Omnitracs), or ERP/dispatch system integration story. Competing against Samsara and Geotab without an open API and integration marketplace is a market positioning failure, not just a technical gap.",
+              "Load test in Step 28 targets '10,000 vehicles at 1Hz telemetry for 10 minutes' using k6. k6 is an HTTP load testing tool \u2014 it does not natively support MQTT protocol simulation at scale. 10,000 concurrent MQTT connections requires a purpose-built MQTT load generator (mqttx-cli, JMeter MQTT plugin, or custom tooling). Using k6 for this will produce misleading results."
+            ],
+            "suggestions": [
+              "Replace 'MISRA C zero violations' with 'all MISRA C:2012 deviations documented with rationale, approved by safety engineer, total deviations < 50.' Use PC-lint Plus or LDRA for enforcement \u2014 not a CI regex.",
+              "Remove ISO 26262 from the telematics ECU scope unless the ECU will actuate vehicle systems. Replace with ISO/SAE 21434 (automotive cybersecurity), which is the correct standard for a connected telematics device. Retain the FMEA for failure mode analysis \u2014 just don't assign ASIL levels to passive logging functions.",
+              "Add a dedicated HARDWARE step between Steps 8 and 9: PCB schematic, component BOM with lead times, thermal design review, and EMC pre-scan. This unblocks firmware, HIL, and FCC certification in parallel. Without it, Steps 9, 23, and 28 have no validated hardware target.",
+              "Add FCC/IC/CE certification as an explicit step with a dependency on hardware design. Assign it between Steps 8 and 23. It is a critical path blocker for GA and must start as early as EVT hardware is stable.",
+              "For ML cold-start: define a 'shadow mode' launch where models run but do not surface predictions to users until a minimum 30-day dataset from 200+ vehicles is available per fleet. Specify synthetic pre-training accuracy thresholds separately from production accuracy thresholds.",
+              "Replace Expo with bare React Native from the start. Define required native modules: react-native-ble-plx (BLE ELD transfer), react-native-usb (USB transfer), react-native-keychain (Secure Enclave key storage), react-native-background-geolocation (continuous HOS tracking). Specify iOS minimum iOS 15 for CryptoKit Secure Enclave access.",
+              "Add PostGIS to Step 11's database design. Add GIST index on `telemetry(location)` where location is a PostGIS geography type. Restate geospatial query acceptance criterion explicitly as 'ST_Within bounding box query on PostGIS geography column with GIST index.'",
+              "Add an MQTT ACL design document as a deliverable in Step 12. Define per-tenant topic namespacing (e.g., `t/{tenant_id}/fleet/{vehicle_id}/telemetry`) and require broker-enforced ACL that rejects cross-tenant subscriptions. Test with a negative case: fleet A's credentials attempt to subscribe to fleet B's topic.",
+              "Split Step 24 into two steps: (a) FMCSA self-certification package (executable by the vendor), and (b) CSMS evidence package preparation for OEM partners pursuing UNECE R155 type approval. Clarify that your organization produces (b) as a vendor deliverable \u2014 OEMs carry the type approval burden.",
+              "Add an explicit MQTT load testing tool to Step 28. Use mqttx-cli (`mqttx bench pub -c 10000 -t 'fleet/{id}/telemetry' -im 1000`) or a custom Go MQTT publisher. Document the load test tool in the acceptance criteria so reviewers can reproduce the results.",
+              "Add a Step 33: FCC/IC/CE Certification and Carrier Approval. Dependencies: Step 8 (hardware sim), hardware design step. Deliverables: FCC grant of authorization, PTCRB certification report, carrier device approval letters. This is the hard gate before commercial deployment."
+            ],
+            "missing": [
+              "Hardware PCB design step \u2014 schematics, BOM, component selection, thermal analysis, signal integrity review",
+              "FCC Part 15 / PTCRB / CE certification plan and timeline for the ECU device",
+              "Device provisioning API design \u2014 X.509 certificate lifecycle, IMEI registration, first-boot enrollment flow",
+              "PostGIS spatial extension in database design",
+              "MISRA C deviation management process (deviation log format, approval workflow, deviation budget)",
+              "ML warm-start and cold-start strategy \u2014 minimum data requirements before model serves live predictions",
+              "MQTT per-tenant ACL specification",
+              "OTA key ceremony procedure \u2014 HSM setup, key generation, key custody policy, rotation schedule, revocation procedure",
+              "V2X and third-party fleet management system integration API (TMW, McLeod, PeopleNet) \u2014 required for enterprise fleet operator adoption",
+              "Vehicle compatibility matrix \u2014 not all commercial vehicles expose J1939 PGNs; older vehicles may require OBD-II only fallback; some vehicles have non-standard CAN implementations",
+              "SIM card / cellular provider agreements and APN configuration management for deployed devices",
+              "GPS cold-start, TTFF (time to first fix) specification, and HDOP threshold policy (when to reject GPS readings as inaccurate)",
+              "FMCSA ELD Technical Standard version reference (current is v4.0) \u2014 acceptance criteria should cite specific document version",
+              "Carrier certification step (AT&T FirstNet for public safety, Verizon Network Access Requirements)",
+              "Step for GDPR data subject rights technical implementation \u2014 how deletion requests are processed when FMCSA retention creates a hold"
+            ],
+            "security_risks": [
+              "MQTT topic enumeration: `fleet/{vehicle_id}/telemetry` with sequential or guessable vehicle IDs allows a compromised or rogue device to subscribe to `fleet/+/telemetry` and harvest all fleet data. No broker ACL design is specified.",
+              "ELD cryptographic key on mobile device: Step 19 requires cryptographic signature of ELD logs but does not specify Secure Enclave (iOS) / Android StrongBox usage. Keys in app-accessible storage can be extracted from a rooted device, invalidating the tamper-evidence guarantee that regulators require.",
+              "WebSocket token refresh not addressed: Live map WebSocket connections are long-lived (hours). JWT expiry during an active session will either silently continue serving stale auth or abruptly disconnect fleet managers. Neither is specified, and the silent-continue case is a broken access control.",
+              "OTA rollback attack: Step 9 specifies ECDSA-256 signature verification for OTA updates but does not specify anti-rollback counters. A signed but older (vulnerable) firmware version is a valid ECDSA signature. Without a monotonic version counter in OTP memory, a downgrade attack restores known vulnerabilities.",
+              "CAN bus injection no authentication: Step 9 reads J1939 PGNs from CAN bus with no input validation or anomaly detection on the bus. A compromised OBD-II dongle or tampered CAN node could inject falsified fuel consumption, RPM, or mileage values that corrupt driver scoring and predictive maintenance models \u2014 directly undermining the product's core value proposition.",
+              "Driver GPS location continuous exposure: Step 25 lists GPS location as a collected data category, but the data model in Step 11 stores lat/lon at 10Hz. This is surveillance-grade location granularity. No data minimization strategy (e.g., location fuzzing at rest stops, geofenced location suppression near driver's home) is specified, creating CCPA/GDPR class action exposure.",
+              "SBOM not enforced in CI: Step 6 requires an SBOM for ECU firmware dependencies, but Step 22's firmware CI pipeline (`arm-none-eabi-gcc \u2192 unity tests \u2192 binary sign \u2192 S3`) has no SBOM generation or dependency vulnerability scanning step. The SBOM becomes a snapshot artifact, not a living supply chain control."
+            ],
+            "summary": "This plan is broad, structured, and clearly authored by people who understand fleet telematics at a systems level. The dependency graph is coherent, the acceptance criteria are specific, and the regulatory awareness (FMCSA, UNECE R155) is above average for this type of plan. However, it has three fatal gaps that prevent a production score above 60 for a regulated hardware product. First, the hardware device \u2014 the physical ECU \u2014 has no design step, no PCB, no BOM, no FCC/CE certification plan, and no carrier approval process; firmware and HIL tests cannot proceed on undefined hardware, and the device cannot be legally sold without RF certification. Second, the ISO 26262 application is incorrect \u2014 assigning ASIL levels to passive data logging functions will fail any functional safety audit and may create liability exposure by implying safety claims the product cannot substantiate. Third, the ML models have a training data bootstrapping problem with no solution: the product needs real fleet data to produce useful predictions, but real fleet data only exists after the product is deployed and trusted. The plan assumes this problem doesn't exist. The MISRA C zero-violations criterion, AUTOSAR Classic without tooling budget, and Expo for an ELD-certified mobile app are individually fixable but collectively indicate the plan was written without scoping the embedded/regulatory implementation cost. Estimate these gaps add 4-8 months and $500k+ to the delivery timeline before the plan becomes executable as written.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "MISRA C 'zero violations' in Steps 9 and 10 is unachievable in practice. FreeRTOS itself ships with documented MISRA deviations. The correct acceptance criterion is 'zero unjustified deviations' with a deviation log \u2014 not zero violations. Any CI gate enforcing zero will block the build permanently on the first third-party include.",
+                "ISO 26262 scope is misapplied. ISO 26262 governs E/E systems that can cause physical harm to vehicle occupants or road users. A read-only telematics ECU that does not actuate any vehicle system does not meet the 'controllability' threshold for ASIL assignment. Assigning ASIL A to 'HOS alerts' (an informational notification) and ASIL B to 'brake event detection' (which is passive logging, not brake control) misuses the standard and will fail a functional safety audit. The actual applicable standard for a data-logging device is ISO/SAE 21434 for cybersecurity, not ISO 26262.",
+                "AUTOSAR Classic BSW mapping in Steps 9 and 10 requires commercial AUTOSAR toolchains (EB tresos Studio, Vector DaVinci Configurator). These are $50k+ annual licenses. Acceptance criterion 'AUTOSAR compliance checked' is not a functional test \u2014 AUTOSAR conformance testing requires accredited test labs. Treating this as a firmware checkbox will fail any OEM integration audit.",
+                "ML training data bootstrapping problem is unresolved. Steps 14, 15, and 16 depend on 'labeled fleet data' and 'fleet data from Step 13,' but Step 13 is the ingestion infrastructure \u2014 not a data collection program. The product has no data before launch. The AUC >0.82 target on synthetic SHRP2 data does not validate real-world fleet performance. No warm-start strategy, no minimum fleet size for statistical validity, no model confidence floor before serving predictions to real operators.",
+                "SHRP2 naturalistic driving data access is non-trivial. It requires a formal data-sharing agreement with Virginia Tech Transportation Institute (VTTI) and IRB-equivalent review. Treating it as a passive dependency ('publicly available') is incorrect \u2014 it is licensed data with use restrictions.",
+                "Hardware design is entirely absent. The plan includes firmware (Step 9), hardware simulation (Step 8), and HIL testing (Step 23) but zero steps for PCB schematic, component selection, thermal design, EMC/EMI testing, or hardware design review. You cannot build firmware for undefined hardware.",
+                "FCC/IC/CE certification for the telematics ECU device is missing. Any device sold in the US that emits RF (LTE modem + GPS) requires FCC Part 15/Part 90 certification. This is a multi-month process with an accredited test lab. Without it, the device cannot be legally sold or installed. This is a hard stop before Step 28.",
+                "Cellular carrier certification is absent. Devices connecting to AT&T, Verizon, or T-Mobile LTE networks require carrier device certification (PTCRB/GCF) in addition to FCC approval. Fleet operators will demand certified devices. This can take 3-6 months and is not mentioned anywhere.",
+                "React Native Expo (Step 19) is incompatible with ELD compliance requirements. FMCSA mandates three data transfer methods including USB. Expo managed workflow does not support USB host/accessory mode, custom BLE service UUIDs required for ELD profile, or background location with the reliability required for continuous HOS tracking. This requires a bare React Native workflow with native modules \u2014 a significant architecture change.",
+                "ELD cryptographic signature private key storage on mobile (Step 19) has no security specification. 'ELD log sign-off generates cryptographic signature' without specifying Secure Enclave (iOS) / StrongBox (Android) usage means keys will likely land in AsyncStorage or app storage \u2014 readable by any process with device access. An FMCSA auditor or court discovery will invalidate signatures stored this way.",
+                "PostGIS is missing from the database design (Step 11). TimescaleDB does not natively support geospatial queries. The acceptance criterion 'geospatial queries return in <200ms on 1M rows' requires PostGIS with GIST spatial indexes. Without it, bounding-box queries will full-scan the telemetry table and fail the latency target at any meaningful scale.",
+                "MQTT topic structure enables cross-tenant enumeration. `fleet/{vehicle_id}/telemetry` with predictable vehicle IDs allows a subscriber with a valid broker connection to subscribe to `fleet/+/telemetry` and receive data across all fleets. Broker-level ACLs per tenant are not specified anywhere in the plan.",
+                "GDPR right to erasure vs. FMCSA 6-month retention is flagged as a documentation task (Step 25) but requires a concrete technical implementation decision. You cannot delete ELD records on GDPR request while simultaneously satisfying FMCSA retention. The legal position (FMCSA as a superseding federal obligation) must be codified in the privacy policy AND technically enforced (selective field suppression vs. full deletion). This is not just a lawyer task.",
+                "Vehicle provisioning flow has no dedicated design step. Step 31 references a 'vehicle onboarding runbook' and Step 21 mentions AWS IoT Core certificates, but no step designs the device provisioning API: IMEI registration, X.509 certificate issuance and push to device, fleet assignment, and first-telemetry validation. This is a critical operational gap \u2014 field technicians have no defined workflow.",
+                "UNECE R155 type approval process is misunderstood. R155 type approval is conducted by national type approval authorities (T\u00dcV S\u00dcD, DEKRA, etc.) on behalf of vehicle OEMs, not aftermarket telematics vendors. A telematics device supplier provides a CSMS and evidence package to the OEM, who applies for type approval. Step 6 and Step 24 treat this as the vendor's own certification \u2014 which is incorrect and will produce documentation that no OEM can use.",
+                "LTE PPP stack choice (Step 9) is outdated and fragile. Modern SIM7600/EC25 modems support ECM or RNDIS Ethernet emulation mode, which gives a standard network interface to the RTOS TCP/IP stack without implementing PPP. PPP adds dial-up-era complexity, higher CPU overhead, and fragile reconnection behavior that will cause store-and-forward data loss in poor signal conditions.",
+                "The plan has no V2X, fleet integrations (TMW, PeopleNet, Omnitracs), or ERP/dispatch system integration story. Competing against Samsara and Geotab without an open API and integration marketplace is a market positioning failure, not just a technical gap.",
+                "Load test in Step 28 targets '10,000 vehicles at 1Hz telemetry for 10 minutes' using k6. k6 is an HTTP load testing tool \u2014 it does not natively support MQTT protocol simulation at scale. 10,000 concurrent MQTT connections requires a purpose-built MQTT load generator (mqttx-cli, JMeter MQTT plugin, or custom tooling). Using k6 for this will produce misleading results."
+              ],
+              "suggestions": [
+                "Replace 'MISRA C zero violations' with 'all MISRA C:2012 deviations documented with rationale, approved by safety engineer, total deviations < 50.' Use PC-lint Plus or LDRA for enforcement \u2014 not a CI regex.",
+                "Remove ISO 26262 from the telematics ECU scope unless the ECU will actuate vehicle systems. Replace with ISO/SAE 21434 (automotive cybersecurity), which is the correct standard for a connected telematics device. Retain the FMEA for failure mode analysis \u2014 just don't assign ASIL levels to passive logging functions.",
+                "Add a dedicated HARDWARE step between Steps 8 and 9: PCB schematic, component BOM with lead times, thermal design review, and EMC pre-scan. This unblocks firmware, HIL, and FCC certification in parallel. Without it, Steps 9, 23, and 28 have no validated hardware target.",
+                "Add FCC/IC/CE certification as an explicit step with a dependency on hardware design. Assign it between Steps 8 and 23. It is a critical path blocker for GA and must start as early as EVT hardware is stable.",
+                "For ML cold-start: define a 'shadow mode' launch where models run but do not surface predictions to users until a minimum 30-day dataset from 200+ vehicles is available per fleet. Specify synthetic pre-training accuracy thresholds separately from production accuracy thresholds.",
+                "Replace Expo with bare React Native from the start. Define required native modules: react-native-ble-plx (BLE ELD transfer), react-native-usb (USB transfer), react-native-keychain (Secure Enclave key storage), react-native-background-geolocation (continuous HOS tracking). Specify iOS minimum iOS 15 for CryptoKit Secure Enclave access.",
+                "Add PostGIS to Step 11's database design. Add GIST index on `telemetry(location)` where location is a PostGIS geography type. Restate geospatial query acceptance criterion explicitly as 'ST_Within bounding box query on PostGIS geography column with GIST index.'",
+                "Add an MQTT ACL design document as a deliverable in Step 12. Define per-tenant topic namespacing (e.g., `t/{tenant_id}/fleet/{vehicle_id}/telemetry`) and require broker-enforced ACL that rejects cross-tenant subscriptions. Test with a negative case: fleet A's credentials attempt to subscribe to fleet B's topic.",
+                "Split Step 24 into two steps: (a) FMCSA self-certification package (executable by the vendor), and (b) CSMS evidence package preparation for OEM partners pursuing UNECE R155 type approval. Clarify that your organization produces (b) as a vendor deliverable \u2014 OEMs carry the type approval burden.",
+                "Add an explicit MQTT load testing tool to Step 28. Use mqttx-cli (`mqttx bench pub -c 10000 -t 'fleet/{id}/telemetry' -im 1000`) or a custom Go MQTT publisher. Document the load test tool in the acceptance criteria so reviewers can reproduce the results.",
+                "Add a Step 33: FCC/IC/CE Certification and Carrier Approval. Dependencies: Step 8 (hardware sim), hardware design step. Deliverables: FCC grant of authorization, PTCRB certification report, carrier device approval letters. This is the hard gate before commercial deployment."
+              ],
+              "missing": [
+                "Hardware PCB design step \u2014 schematics, BOM, component selection, thermal analysis, signal integrity review",
+                "FCC Part 15 / PTCRB / CE certification plan and timeline for the ECU device",
+                "Device provisioning API design \u2014 X.509 certificate lifecycle, IMEI registration, first-boot enrollment flow",
+                "PostGIS spatial extension in database design",
+                "MISRA C deviation management process (deviation log format, approval workflow, deviation budget)",
+                "ML warm-start and cold-start strategy \u2014 minimum data requirements before model serves live predictions",
+                "MQTT per-tenant ACL specification",
+                "OTA key ceremony procedure \u2014 HSM setup, key generation, key custody policy, rotation schedule, revocation procedure",
+                "V2X and third-party fleet management system integration API (TMW, McLeod, PeopleNet) \u2014 required for enterprise fleet operator adoption",
+                "Vehicle compatibility matrix \u2014 not all commercial vehicles expose J1939 PGNs; older vehicles may require OBD-II only fallback; some vehicles have non-standard CAN implementations",
+                "SIM card / cellular provider agreements and APN configuration management for deployed devices",
+                "GPS cold-start, TTFF (time to first fix) specification, and HDOP threshold policy (when to reject GPS readings as inaccurate)",
+                "FMCSA ELD Technical Standard version reference (current is v4.0) \u2014 acceptance criteria should cite specific document version",
+                "Carrier certification step (AT&T FirstNet for public safety, Verizon Network Access Requirements)",
+                "Step for GDPR data subject rights technical implementation \u2014 how deletion requests are processed when FMCSA retention creates a hold"
+              ],
+              "security_risks": [
+                "MQTT topic enumeration: `fleet/{vehicle_id}/telemetry` with sequential or guessable vehicle IDs allows a compromised or rogue device to subscribe to `fleet/+/telemetry` and harvest all fleet data. No broker ACL design is specified.",
+                "ELD cryptographic key on mobile device: Step 19 requires cryptographic signature of ELD logs but does not specify Secure Enclave (iOS) / Android StrongBox usage. Keys in app-accessible storage can be extracted from a rooted device, invalidating the tamper-evidence guarantee that regulators require.",
+                "WebSocket token refresh not addressed: Live map WebSocket connections are long-lived (hours). JWT expiry during an active session will either silently continue serving stale auth or abruptly disconnect fleet managers. Neither is specified, and the silent-continue case is a broken access control.",
+                "OTA rollback attack: Step 9 specifies ECDSA-256 signature verification for OTA updates but does not specify anti-rollback counters. A signed but older (vulnerable) firmware version is a valid ECDSA signature. Without a monotonic version counter in OTP memory, a downgrade attack restores known vulnerabilities.",
+                "CAN bus injection no authentication: Step 9 reads J1939 PGNs from CAN bus with no input validation or anomaly detection on the bus. A compromised OBD-II dongle or tampered CAN node could inject falsified fuel consumption, RPM, or mileage values that corrupt driver scoring and predictive maintenance models \u2014 directly undermining the product's core value proposition.",
+                "Driver GPS location continuous exposure: Step 25 lists GPS location as a collected data category, but the data model in Step 11 stores lat/lon at 10Hz. This is surveillance-grade location granularity. No data minimization strategy (e.g., location fuzzing at rest stops, geofenced location suppression near driver's home) is specified, creating CCPA/GDPR class action exposure.",
+                "SBOM not enforced in CI: Step 6 requires an SBOM for ECU firmware dependencies, but Step 22's firmware CI pipeline (`arm-none-eabi-gcc \u2192 unity tests \u2192 binary sign \u2192 S3`) has no SBOM generation or dependency vulnerability scanning step. The SBOM becomes a snapshot artifact, not a living supply chain control."
+              ],
+              "summary": "This plan is broad, structured, and clearly authored by people who understand fleet telematics at a systems level. The dependency graph is coherent, the acceptance criteria are specific, and the regulatory awareness (FMCSA, UNECE R155) is above average for this type of plan. However, it has three fatal gaps that prevent a production score above 60 for a regulated hardware product. First, the hardware device \u2014 the physical ECU \u2014 has no design step, no PCB, no BOM, no FCC/CE certification plan, and no carrier approval process; firmware and HIL tests cannot proceed on undefined hardware, and the device cannot be legally sold without RF certification. Second, the ISO 26262 application is incorrect \u2014 assigning ASIL levels to passive data logging functions will fail any functional safety audit and may create liability exposure by implying safety claims the product cannot substantiate. Third, the ML models have a training data bootstrapping problem with no solution: the product needs real fleet data to produce useful predictions, but real fleet data only exists after the product is deployed and trusted. The plan assumes this problem doesn't exist. The MISRA C zero-violations criterion, AUTOSAR Classic without tooling budget, and Expo for an ELD-certified mobile app are individually fixable but collectively indicate the plan was written without scoping the embedded/regulatory implementation cost. Estimate these gaps add 4-8 months and $500k+ to the delivery timeline before the plan becomes executable as written.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T04:38:44.677873+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 194.65,
+      "critic_plan": 155.86
+    }
+  }
+}

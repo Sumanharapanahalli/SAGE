@@ -1,0 +1,1324 @@
+{
+  "run_id": "e16b851e-0150-485e-b9a6-2aafb68d7613",
+  "solution_name": "lms_platform",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T09:06:33.133805+00:00",
+  "updated_at": "2026-03-22T09:13:17.169374+00:00",
+  "product_description": "Learning management system with course builder, video hosting, quizzes, progress tracking, certificates, SCORM/xAPI compliance, and LTI integration.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Conduct stakeholder interviews and define business requirements for the LMS platform. Identify learner personas (students, corporate trainees, K-12), instructor workflows, admin needs, and ROI model. Produce user stories, process flow diagrams, and acceptance criteria baseline.",
+      "payload": {
+        "deliverables": [
+          "stakeholder_interview_notes.md",
+          "user_stories.md",
+          "process_flows.md",
+          "roi_analysis.md"
+        ],
+        "personas": [
+          "learner",
+          "instructor",
+          "admin",
+          "LTI_consumer_institution"
+        ],
+        "key_flows": [
+          "course_enrollment",
+          "content_creation",
+          "quiz_attempt",
+          "certificate_issuance",
+          "SCORM_launch",
+          "LTI_handshake"
+        ]
+      },
+      "acceptance_criteria": [
+        "User stories cover all six product areas: course builder, video hosting, quizzes, progress tracking, certificates, SCORM/xAPI, LTI",
+        "Each user story has a defined acceptance condition and priority (MoSCoW)",
+        "ROI model includes cost-per-learner and completion-rate uplift projections",
+        "Process flows reviewed and signed off by at least one representative of each persona group"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Author the Product Requirements Document (PRD), prioritized roadmap, and success metrics for lms_platform. Define MVP scope vs. post-launch phases. Set KPIs: course completion rate, time-to-certificate, SCORM 1.2/2004 and xAPI pass rates, LTI grade passback success rate.",
+      "payload": {
+        "deliverables": [
+          "PRD.md",
+          "roadmap.md",
+          "success_metrics.md"
+        ],
+        "mvp_scope": [
+          "course_builder",
+          "video_hosting",
+          "quizzes",
+          "progress_tracking",
+          "certificates",
+          "SCORM_1.2",
+          "LTI_1.3"
+        ],
+        "phase2_scope": [
+          "xAPI_tincan",
+          "SCORM_2004",
+          "advanced_analytics",
+          "white_labeling"
+        ],
+        "kpis": [
+          "completion_rate",
+          "quiz_pass_rate",
+          "LTI_grade_passback_accuracy",
+          "certificate_issuance_time_p95"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all MVP features with acceptance criteria for each",
+        "Roadmap has at least two versioned phases with delivery milestones",
+        "Success metrics are measurable and tied to business outcomes from step 1",
+        "Scope boundary (MVP vs. phase 2) is unambiguous and agreed upon by stakeholders"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research sessions with learners, instructors, and admins. Produce wireframes and interaction design for: learner dashboard, course player (video + SCORM), quiz flow, progress tracker, certificate viewer, course builder drag-and-drop, and LTI launch screen. Perform accessibility audit against WCAG 2.1 AA from the design stage.",
+      "payload": {
+        "deliverables": [
+          "ux_research_report.md",
+          "wireframes/",
+          "interaction_design.figma",
+          "wcag_design_audit.md"
+        ],
+        "screens": [
+          "learner_dashboard",
+          "course_catalog",
+          "video_player",
+          "scorm_player",
+          "quiz_attempt",
+          "results_screen",
+          "certificate_viewer",
+          "course_builder",
+          "progress_dashboard",
+          "admin_panel",
+          "lti_launch"
+        ],
+        "accessibility_targets": [
+          "WCAG_2.1_AA",
+          "keyboard_navigation",
+          "screen_reader_compatibility",
+          "color_contrast_4.5:1"
+        ]
+      },
+      "acceptance_criteria": [
+        "All primary user flows covered by wireframes with annotated interaction states",
+        "Wireframes reviewed and iterated with at least 3 representative users per persona",
+        "WCAG 2.1 AA checklist completed for each screen design \u2014 no critical violations",
+        "Color palette and typography system defined and WCAG contrast-compliant",
+        "Accessibility for learners with disabilities",
+        "Mobile-responsive for student devices"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "COMPLIANCE",
+      "description": "Produce compliance analysis and evidence artifacts for FERPA, COPPA, and WCAG 2.1 applicable to an LMS. Define data handling policies for student educational records (FERPA), age verification and parental consent flows for under-13 users (COPPA), and accessibility obligations (WCAG 2.1). Produce a traceability matrix mapping each standard clause to a system requirement.",
+      "payload": {
+        "standards": [
+          "FERPA_20_USC_1232g",
+          "COPPA_16_CFR_312",
+          "WCAG_2.1_AA"
+        ],
+        "deliverables": [
+          "compliance_traceability_matrix.xlsx",
+          "data_handling_policy.md",
+          "parental_consent_flow.md",
+          "wcag_compliance_checklist.md"
+        ],
+        "ferpa_scope": [
+          "PII_fields",
+          "directory_information_policy",
+          "legitimate_educational_interest",
+          "data_sharing_agreements"
+        ],
+        "coppa_scope": [
+          "age_gate_mechanism",
+          "parental_consent_workflow",
+          "data_minimization_for_minors",
+          "deletion_on_request"
+        ]
+      },
+      "acceptance_criteria": [
+        "Traceability matrix maps every FERPA, COPPA, and WCAG 2.1 AA clause to a numbered system requirement",
+        "COPPA parental consent flow designed with age-gate at registration, blocking under-13 without consent",
+        "FERPA data handling policy identifies all PII fields and specifies access controls and retention limits",
+        "WCAG checklist covers all 50 Level AA success criteria with pass/fail/N-A designation"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "SECURITY",
+      "description": "Build a threat model for lms_platform covering authentication, video content access control, SCORM package upload, LTI OAuth 2.0 flows, student data (FERPA PII), and certificate integrity. Produce OWASP Top 10 risk assessment, attack surface map, and security requirements feeding into API and backend design.",
+      "payload": {
+        "deliverables": [
+          "threat_model.md",
+          "security_requirements.md",
+          "owasp_risk_register.md"
+        ],
+        "threat_surfaces": [
+          "auth_login",
+          "video_cdn_access",
+          "scorm_xapi_upload",
+          "lti_1.3_oidc_flow",
+          "certificate_pdf_signing",
+          "student_PII_storage",
+          "admin_impersonation"
+        ],
+        "frameworks": [
+          "OWASP_Top10_2021",
+          "STRIDE",
+          "NIST_CSF"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis completed for all six threat surfaces listed",
+        "Security requirements produced for: JWT expiry, video signed URLs, SCORM sandbox isolation, LTI signature validation, certificate tamper-evidence",
+        "OWASP Top 10 risk register has mitigations defined for all HIGH and CRITICAL items",
+        "Security requirements are numbered and referenced in the traceability matrix from step 4"
+      ],
+      "depends_on": [
+        1,
+        4
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 6,
+      "task_type": "API",
+      "description": "Design the OpenAPI 3.1 specification for all lms_platform REST endpoints: auth (JWT + OAuth 2.0/OIDC for LTI), users, courses, media upload, quiz CRUD, progress events (xAPI statements), certificate generation, SCORM runtime data (CMI), and LTI 1.3 launch/grade-passback endpoints. Define request/response schemas, error codes, and rate limits.",
+      "payload": {
+        "deliverables": [
+          "openapi.yaml"
+        ],
+        "endpoint_groups": [
+          "POST /auth/login, POST /auth/refresh, POST /auth/logout",
+          "GET|POST|PUT|DELETE /courses, /courses/{id}/modules, /courses/{id}/publish",
+          "POST /media/upload, GET /media/{id}/signed-url",
+          "GET|POST|PUT|DELETE /quizzes, /quizzes/{id}/attempts",
+          "POST /xapi/statements, GET /progress/{user_id}/{course_id}",
+          "POST /certificates/issue, GET /certificates/{id}/verify",
+          "POST /scorm/runtime/{session_id}/data, GET /scorm/runtime/{session_id}/data",
+          "POST /lti/launch, POST /lti/grade-passback, GET /.well-known/lti-configuration"
+        ],
+        "auth_scheme": "Bearer JWT + LTI 1.3 OAuth 2.0 PKCE"
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 spec validates with no errors via `openapi-generator validate`",
+        "All endpoint groups listed in payload are covered with full request/response schemas",
+        "LTI 1.3 endpoints conform to IMS Global LTI 1.3 spec (launch, NRPS, AGS)",
+        "xAPI statement endpoint schema validates against xAPI 1.0.3 statement structure",
+        "Error responses use RFC 7807 Problem Details format consistently"
+      ],
+      "depends_on": [
+        2,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design and implement the relational database schema for lms_platform. Tables: users (with age/consent flags for COPPA), courses, modules, media_assets, quiz_definitions, quiz_questions, quiz_attempts, xapi_statements, scorm_runtime_data, certificates, lti_registrations, lti_grade_passback_queue, audit_log. Write migrations using Alembic. Seed data for development.",
+      "payload": {
+        "deliverables": [
+          "schema.sql",
+          "migrations/",
+          "seed_data.sql",
+          "erd.png"
+        ],
+        "db_engine": "PostgreSQL 16",
+        "key_tables": [
+          "users",
+          "courses",
+          "modules",
+          "media_assets",
+          "quiz_definitions",
+          "quiz_questions",
+          "quiz_attempts",
+          "xapi_statements",
+          "scorm_runtime_data",
+          "certificates",
+          "lti_registrations",
+          "lti_grade_passback_queue",
+          "audit_log"
+        ],
+        "indexes": [
+          "user_id+course_id on xapi_statements",
+          "course_id on modules",
+          "user_id+quiz_id on quiz_attempts"
+        ],
+        "coppa_fields": [
+          "users.date_of_birth",
+          "users.parental_consent_status",
+          "users.parental_consent_date"
+        ]
+      },
+      "acceptance_criteria": [
+        "All tables defined with appropriate primary keys, foreign keys, and NOT NULL constraints",
+        "COPPA-required fields (date_of_birth, consent flags) present in users table",
+        "FERPA PII fields identified with a column comment `-- FERPA_PII`",
+        "Alembic migrations run cleanly from empty database to full schema",
+        "ERD reviewed and matches OpenAPI schemas from step 6",
+        "xapi_statements table stores full statement JSON and indexed actor/verb/object"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "CONFIG",
+      "description": "Scaffold the lms_platform monorepo. Initialize backend (FastAPI + Python), frontend (React 18 + TypeScript + Vite), worker (Celery + Redis for async jobs), and infrastructure directories. Configure linting (Ruff, ESLint), formatting (Black, Prettier), pre-commit hooks, environment variable management (.env.example), and Docker Compose for local development (Postgres, Redis, MinIO for video storage).",
+      "payload": {
+        "repo_structure": [
+          "backend/",
+          "frontend/",
+          "worker/",
+          "infra/",
+          "docs/"
+        ],
+        "backend_stack": "FastAPI 0.111, Python 3.12, SQLAlchemy 2, Alembic, Pydantic v2",
+        "frontend_stack": "React 18, TypeScript 5, Vite 5, TanStack Query, Zustand, Radix UI",
+        "worker_stack": "Celery 5, Redis 7",
+        "local_services": "PostgreSQL 16, Redis 7, MinIO (S3-compatible video storage)",
+        "deliverables": [
+          "pyproject.toml",
+          "package.json",
+          ".env.example",
+          "docker-compose.yml",
+          ".pre-commit-config.yaml",
+          "Makefile"
+        ]
+      },
+      "acceptance_criteria": [
+        "`docker compose up` starts all local services with no errors",
+        "`make dev-backend` starts FastAPI with hot reload on :8000",
+        "`make dev-frontend` starts Vite on :5173 with proxy to :8000",
+        "Pre-commit hooks run Ruff, Black, ESLint, and Prettier and block on violations",
+        ".env.example documents every required environment variable with descriptions",
+        "Alembic `upgrade head` runs successfully against the Compose Postgres instance"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Implement authentication and user management services. Features: JWT login/refresh/logout, OAuth 2.0 PKCE (for LTI OIDC), role-based access control (learner/instructor/admin), COPPA age-gate at registration (block under-13 without parental consent token), FERPA-compliant PII field access control, password reset, email verification, and admin user impersonation with full audit logging.",
+      "payload": {
+        "deliverables": [
+          "backend/app/auth/",
+          "backend/app/users/"
+        ],
+        "auth_libraries": "python-jose (JWT), passlib (bcrypt), authlib (OAuth 2.0)",
+        "rbac_roles": [
+          "learner",
+          "instructor",
+          "admin",
+          "super_admin"
+        ],
+        "coppa_flow": "Reject registration if DOB indicates age < 13 without a valid parental_consent_token; send parental consent email flow",
+        "audit_events": [
+          "login",
+          "logout",
+          "role_change",
+          "impersonation_start",
+          "impersonation_end",
+          "password_reset"
+        ]
+      },
+      "acceptance_criteria": [
+        "JWT tokens expire in 15 min (access) and 7 days (refresh); refresh rotation implemented",
+        "Registration rejects users under 13 without parental consent token \u2014 returns 403 with COPPA reason",
+        "RBAC enforced via FastAPI dependency on every protected endpoint",
+        "Admin impersonation writes an audit_log entry with impersonator_id and impersonated_id",
+        "All PII fields returned only to the owning user or users with `admin` role",
+        "Unit tests cover: login, refresh, logout, age-gate rejection, parental consent approval, RBAC enforcement"
+      ],
+      "depends_on": [
+        7,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement course builder backend service. Features: course CRUD (draft/published/archived states), hierarchical module ordering (sections \u2192 lessons), rich-text content storage, prerequisite enforcement, enrollment management, bulk import via CSV, and course versioning for SCORM compliance. Expose endpoints per OpenAPI spec from step 6.",
+      "payload": {
+        "deliverables": [
+          "backend/app/courses/"
+        ],
+        "course_states": [
+          "draft",
+          "published",
+          "archived"
+        ],
+        "module_types": [
+          "video",
+          "scorm_package",
+          "quiz",
+          "text",
+          "assignment"
+        ],
+        "enrollment_modes": [
+          "open",
+          "invite_only",
+          "approval_required"
+        ],
+        "versioning": "Immutable course versions once learners enrolled \u2014 new version creates a fork"
+      },
+      "acceptance_criteria": [
+        "Course CRUD endpoints return correct 404/403/409 for not found, unauthorized, and duplicate slug",
+        "Module ordering persists correctly after drag-and-drop reorder API calls",
+        "Prerequisite enforcement blocks enrollment if required prior course is incomplete",
+        "Course versioning creates a new version record without mutating enrolled learners' active version",
+        "Bulk CSV import handles 1000-row files within 10 seconds (measured via test fixture)",
+        "All endpoints covered by integration tests using a test Postgres instance"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement video hosting backend. Features: S3-compatible upload (MinIO/AWS S3) with multipart chunked upload, transcoding pipeline via Celery worker (ffmpeg \u2014 generate 360p/720p/1080p HLS), signed URL generation with 1-hour expiry for access control, thumbnail extraction, caption/subtitle upload (VTT), and storage quota enforcement per instructor account.",
+      "payload": {
+        "deliverables": [
+          "backend/app/media/",
+          "worker/tasks/transcode.py"
+        ],
+        "storage_backend": "MinIO (local) / AWS S3 (production)",
+        "transcoding": "ffmpeg via Celery worker \u2014 HLS adaptive bitrate (360p, 720p, 1080p)",
+        "access_control": "Pre-signed URLs with 1-hour TTL; invalidated on course unenrollment",
+        "formats_accepted": [
+          "mp4",
+          "mov",
+          "avi",
+          "mkv",
+          "webm"
+        ],
+        "caption_formats": [
+          "WebVTT",
+          "SRT (auto-converted to VTT)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Multipart upload handles files up to 10 GB without timeout",
+        "Transcoding Celery task produces HLS playlist and 3 renditions within 2x video duration",
+        "Signed URLs expire after 1 hour and return 403 after expiry (verified in tests)",
+        "VTT captions served alongside HLS manifest for WCAG 2.1 1.2.2 (Captions) compliance",
+        "Storage quota enforced \u2014 upload returns 413 when instructor quota exceeded",
+        "Thumbnail extracted at 5-second mark for all uploaded videos"
+      ],
+      "depends_on": [
+        9,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement quiz engine backend. Features: question bank (MCQ, multi-select, true/false, short answer, drag-and-drop ordering), randomized question pools, time limits, attempt limits, partial scoring, automated grading for objective questions, instructor grading queue for subjective, and question import/export via QTI 2.1 format.",
+      "payload": {
+        "deliverables": [
+          "backend/app/quizzes/"
+        ],
+        "question_types": [
+          "MCQ",
+          "multi_select",
+          "true_false",
+          "short_answer",
+          "ordering"
+        ],
+        "grading_modes": [
+          "auto (MCQ/multi_select/true_false/ordering)",
+          "manual (short_answer)"
+        ],
+        "qti_version": "QTI 2.1",
+        "features": [
+          "randomized_question_order",
+          "randomized_answer_order",
+          "question_pools",
+          "time_limit",
+          "attempt_limit",
+          "partial_credit"
+        ]
+      },
+      "acceptance_criteria": [
+        "All five question types can be created, edited, and deleted via API",
+        "Randomization applies per-attempt with a seeded RNG (reproducible for review)",
+        "Auto-grading produces correct score for MCQ, multi-select, true/false, and ordering types",
+        "QTI 2.1 import parses a standard QTI package and creates quiz_definitions and quiz_questions",
+        "Attempt limit enforcement returns 409 when exceeded",
+        "Short answer submissions added to instructor grading queue with notification event emitted"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement progress tracking and xAPI statement backend. Store xAPI 1.0.3 statements (actor, verb, object, result, context) emitted from video player, quiz completion, SCORM runtime, and course completion events. Compute course completion percentage, module completion status, quiz scores, and time-on-task. Expose progress summary endpoints. Emit xAPI to external LRS if configured (xAPI endpoint URL + credentials in settings).",
+      "payload": {
+        "deliverables": [
+          "backend/app/progress/",
+          "backend/app/xapi/"
+        ],
+        "xapi_verbs": [
+          "launched",
+          "completed",
+          "passed",
+          "failed",
+          "progressed",
+          "answered",
+          "experienced"
+        ],
+        "completion_logic": "All required modules completed AND all required quizzes passed",
+        "external_lrs_support": "Forward statements to external LRS via HTTP POST if LRS_ENDPOINT configured",
+        "progress_fields": [
+          "completion_percentage",
+          "modules_completed",
+          "time_on_task_seconds",
+          "quiz_scores",
+          "last_accessed"
+        ]
+      },
+      "acceptance_criteria": [
+        "xAPI statements validate against xAPI 1.0.3 schema before storage",
+        "Completion percentage recomputes correctly when module completion status changes",
+        "Progress summary endpoint returns all fields within 200ms for a course with 50 modules (load tested)",
+        "External LRS forwarding retries up to 3 times with exponential backoff on failure",
+        "FERPA audit: xAPI statements accessible only to the statement actor, their instructors, and admins",
+        "Integration test confirms completion status triggers certificate eligibility flag"
+      ],
+      "depends_on": [
+        10,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement SCORM 1.2 and SCORM 2004 (3rd/4th edition) runtime backend. Features: SCORM package upload and extraction (ZIP validation, manifest parsing), hosted SCORM player endpoint, CMI data model persistence (cmi.core for 1.2, cmi.* for 2004), LMSInitialize/LMSGetValue/LMSSetValue/LMSCommit/LMSFinish API, session management, and SCORM completion/score extraction feeding the progress tracker.",
+      "payload": {
+        "deliverables": [
+          "backend/app/scorm/",
+          "backend/app/scorm/runtime_api.py"
+        ],
+        "scorm_versions": [
+          "SCORM_1.2",
+          "SCORM_2004_3rd",
+          "SCORM_2004_4th"
+        ],
+        "cmi_persistence": "PostgreSQL scorm_runtime_data table \u2014 full CMI tree as JSONB",
+        "package_validation": "Parse imsmanifest.xml, validate entrypoint, reject malformed packages",
+        "session_model": "One session per learner per SCO per attempt; resumable"
+      },
+      "acceptance_criteria": [
+        "SCORM 1.2 ADL test suite passes for LMSInitialize, LMSGetValue, LMSSetValue, LMSCommit, LMSFinish",
+        "SCORM 2004 cmi.completion_status and cmi.success_status correctly extracted and stored",
+        "Invalid SCORM packages (missing manifest, invalid XML) rejected with descriptive error",
+        "Sessions are resumable: LMSGetValue returns persisted CMI values after page reload",
+        "Completion/score extracted from SCORM runtime feeds xapi_statements and progress tracker",
+        "Package extraction sandboxed \u2014 path traversal attacks blocked (no `../` in extracted paths)"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement LTI 1.3 integration backend. Features: LTI 1.3 OIDC login flow, resource link launch, Names and Role Provisioning Service (NRPS) for roster sync, Assignment and Grade Services (AGS) for grade passback, dynamic registration, and LTI Advantage security model (signed JWTs, JWKS endpoint). Support multiple LTI platform registrations (Canvas, Moodle, Blackboard).",
+      "payload": {
+        "deliverables": [
+          "backend/app/lti/"
+        ],
+        "lti_version": "LTI 1.3 + LTI Advantage",
+        "services": [
+          "OIDC_login",
+          "resource_link_launch",
+          "NRPS",
+          "AGS",
+          "dynamic_registration"
+        ],
+        "lti_library": "PyLTI1p3",
+        "platforms_tested": [
+          "Canvas",
+          "Moodle",
+          "Blackboard"
+        ],
+        "grade_passback": "AGS LineItem creation + Score submission after quiz completion or manual grade"
+      },
+      "acceptance_criteria": [
+        "LTI 1.3 OIDC flow completes successfully against a local Moodle instance in Docker",
+        "JWKS endpoint at `/.well-known/jwks.json` returns valid public keys for platform verification",
+        "NRPS roster sync imports learners into course enrollment from platform roster",
+        "AGS grade passback submits score to platform within 5 seconds of quiz grading",
+        "Multiple LTI platform registrations supported \u2014 each with independent key pairs",
+        "Dynamic registration endpoint conforms to IMS Global LTI DR specification"
+      ],
+      "depends_on": [
+        13,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement certificate generation backend. Features: PDF certificate generation (WeasyPrint/ReportLab) from customizable HTML templates, cryptographic signing (RSA SHA-256) for tamper detection, unique verification UUID with public verification URL, batch issuance for bulk completions, email delivery (SendGrid), and certificate revocation. Trigger certificate issuance on course completion event.",
+      "payload": {
+        "deliverables": [
+          "backend/app/certificates/",
+          "worker/tasks/certificate.py"
+        ],
+        "pdf_engine": "WeasyPrint (HTML/CSS to PDF)",
+        "signing": "RSA SHA-256 signature embedded in PDF metadata and stored in certificates table",
+        "verification_url": "GET /certificates/{uuid}/verify \u2014 returns JSON with learner, course, date, validity",
+        "template_variables": [
+          "learner_name",
+          "course_name",
+          "completion_date",
+          "instructor_name",
+          "organization_logo"
+        ],
+        "delivery": "Celery async task \u2192 SendGrid transactional email with PDF attachment"
+      },
+      "acceptance_criteria": [
+        "Certificate PDF generated within 3 seconds of completion event trigger",
+        "RSA signature verifiable via `/certificates/{uuid}/verify` endpoint \u2014 returns `valid: true`",
+        "Tampered PDF (modified learner name) returns `valid: false` from verification endpoint",
+        "Certificate email delivered with PDF attachment \u2014 verified via SendGrid event webhook in tests",
+        "Revocation marks certificate as invalid in DB and verification endpoint returns `revoked: true`",
+        "Template renders correctly with Unicode characters (i18n learner names)"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build the frontend shell: React Router 6 routing, authentication context (JWT storage in httpOnly cookie), role-based route guards, global layout (sidebar nav, header, breadcrumbs), theme system, and API client (TanStack Query + typed fetch from OpenAPI spec). Implement learner dashboard, course catalog with search/filter, and course enrollment flow.",
+      "payload": {
+        "deliverables": [
+          "frontend/src/app/",
+          "frontend/src/layouts/",
+          "frontend/src/pages/dashboard/",
+          "frontend/src/pages/catalog/"
+        ],
+        "routing": "React Router 6 with lazy-loaded routes",
+        "auth_storage": "httpOnly cookie via backend /auth/token \u2014 no localStorage for JWT",
+        "api_client": "TanStack Query v5 with generated types from openapi.yaml (openapi-ts)",
+        "state_management": "Zustand for UI state; TanStack Query for server state"
+      },
+      "acceptance_criteria": [
+        "Unauthenticated users redirected to /login from any protected route",
+        "Role-based route guards prevent learners from accessing /admin/* and /instructor/*",
+        "JWT stored in httpOnly cookie \u2014 not accessible via `document.cookie` in browser console",
+        "Course catalog renders 100 courses with virtual scrolling and no layout shift",
+        "Search filters by title, category, and instructor with debounced API call (300ms)",
+        "Lighthouse accessibility score \u2265 90 on dashboard and catalog pages"
+      ],
+      "depends_on": [
+        9,
+        8,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the course builder UI for instructors. Features: drag-and-drop module ordering (dnd-kit), rich text editor (TipTap) for lesson content, video upload with chunked upload progress indicator, quiz builder (question type selector, option editor, answer key), SCORM package upload with validation feedback, prerequisite picker, and course settings (enrollment mode, pricing, certificates). Implement draft/publish workflow.",
+      "payload": {
+        "deliverables": [
+          "frontend/src/pages/course-builder/"
+        ],
+        "dnd_library": "dnd-kit (accessible drag-and-drop)",
+        "rich_text": "TipTap 2 (ProseMirror) with image, table, and code block extensions",
+        "video_upload": "Chunked multipart upload with progress bar and resumable upload support",
+        "quiz_builder": "Visual question editor with live preview of learner experience"
+      },
+      "acceptance_criteria": [
+        "Drag-and-drop module reorder works with keyboard (arrow keys) for WCAG 2.1 compliance",
+        "Rich text editor content round-trips cleanly (save and reload preserves all formatting)",
+        "Video upload shows real-time progress and handles network interruption with resume",
+        "Quiz builder validates at least one correct answer is marked before saving",
+        "SCORM package upload shows manifest summary (title, SCO count) after successful parse",
+        "Draft course not visible to learners until explicitly published \u2014 confirmed by API test"
+      ],
+      "depends_on": [
+        10,
+        11,
+        12,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build the course player UI for learners. Components: HLS video player (Video.js or Plyr) with adaptive bitrate, VTT caption toggle, playback speed controls, resume-from-position, SCORM player iframe with SCORM API bridge (JavaScript LMSInitialize/LMSGetValue bridge to backend), progress sidebar showing module completion, and lesson navigation with keyboard shortcuts.",
+      "payload": {
+        "deliverables": [
+          "frontend/src/pages/course-player/",
+          "frontend/src/components/scorm-player/"
+        ],
+        "video_player": "Video.js 8 with HLS.js for adaptive streaming",
+        "scorm_bridge": "JavaScript SCORM API (window.API / window.API_1484_11) proxying to backend via fetch",
+        "caption_support": "VTT caption track loaded from signed URL \u2014 toggle button in player controls",
+        "keyboard_shortcuts": "Space (play/pause), M (mute), C (captions), F (fullscreen), \u2190/\u2192 (seek 10s)"
+      },
+      "acceptance_criteria": [
+        "HLS player auto-selects bitrate based on network conditions (tested with Chrome DevTools throttling)",
+        "VTT captions display correctly and are toggleable \u2014 satisfies WCAG 2.1 SC 1.2.2",
+        "Video position persisted every 30 seconds \u2014 player resumes from last position on reload",
+        "SCORM API bridge passes SCORM 1.2 ADL conformance test suite in browser automation",
+        "All keyboard shortcuts work when player is focused \u2014 verified with keyboard-only navigation test",
+        "Player controls accessible via screen reader (ARIA labels on all buttons)"
+      ],
+      "depends_on": [
+        11,
+        14,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the quiz attempt UI. Features: timed quiz countdown with auto-submit, question navigation panel, MCQ/multi-select/true-false/ordering input components, answer persistence (save on every answer for crash recovery), results screen with score, correct answers review (if instructor-enabled), and instructor grading UI for short-answer submissions.",
+      "payload": {
+        "deliverables": [
+          "frontend/src/pages/quiz/"
+        ],
+        "timer": "Countdown timer synced with server-side time_limit \u2014 auto-submits at 0",
+        "answer_persistence": "PATCH /quizzes/attempts/{id}/answers on each answer \u2014 resume on refresh",
+        "results_screen": "Score, pass/fail status, time taken, and per-question review (if allowed)",
+        "grading_ui": "Instructor view: list of pending short-answer submissions with text input for score/feedback"
+      },
+      "acceptance_criteria": [
+        "Timer auto-submits quiz and shows results when countdown reaches zero",
+        "Refreshing mid-quiz restores all previously entered answers from server",
+        "Results screen shows correct answers only when instructor has enabled answer review",
+        "Ordering question supports touch drag-and-drop on mobile devices",
+        "Instructor grading queue paginates 20 submissions per page with filter by quiz",
+        "Lighthouse accessibility score \u2265 90 on quiz attempt page"
+      ],
+      "depends_on": [
+        12,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build the learner progress dashboard and certificate viewer. Features: per-course completion ring chart, module-level checklist, time-on-task summary, quiz score history, certificate gallery with download and share links, public certificate verification page, and instructor analytics view (cohort completion rates, quiz score distributions, video drop-off heatmap).",
+      "payload": {
+        "deliverables": [
+          "frontend/src/pages/progress/",
+          "frontend/src/pages/certificates/"
+        ],
+        "charts": "Recharts (completion rings, score distributions, time series)",
+        "certificate_viewer": "PDF preview via iframe + download button + copy shareable link",
+        "public_verification": "GET /certificates/{uuid}/verify \u2014 unauthenticated public page showing validity badge",
+        "instructor_analytics": "Cohort completion %, average score per quiz, video drop-off timestamp histogram"
+      },
+      "acceptance_criteria": [
+        "Completion ring accurately reflects server-side completion_percentage within one polling cycle (10s)",
+        "Certificate PDF downloadable and opens in browser PDF viewer",
+        "Public verification page loads without authentication and shows green/red validity badge",
+        "Instructor analytics charts load within 2 seconds for a cohort of 500 learners",
+        "Time-on-task summary matches sum of xAPI `progressed` statement durations (validated against API)",
+        "All chart colors meet WCAG 2.1 contrast requirements (not relying on color alone)"
+      ],
+      "depends_on": [
+        13,
+        16,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "LOCALIZATION",
+      "description": "Implement i18n infrastructure for lms_platform. Integrate react-i18next on the frontend and Babel (gettext) or similar on the backend for server-side strings. Extract all user-facing strings to translation files. Implement locale detection (Accept-Language header, user preference), RTL layout support (CSS logical properties), and date/number formatting per locale. Seed translations for English (en-US), Spanish (es), French (fr), and Arabic (ar, RTL).",
+      "payload": {
+        "deliverables": [
+          "frontend/public/locales/",
+          "backend/app/i18n/",
+          "localization/translation_keys.json"
+        ],
+        "frontend_library": "react-i18next with ICU message format",
+        "locale_detection": "User preference stored in profile \u2192 Accept-Language header fallback \u2192 en-US default",
+        "rtl_support": "CSS logical properties (margin-inline-start, padding-inline-end) throughout",
+        "initial_locales": [
+          "en-US",
+          "es",
+          "fr",
+          "ar"
+        ],
+        "date_format": "Intl.DateTimeFormat per locale; backend uses Python babel"
+      },
+      "acceptance_criteria": [
+        "All user-facing strings extracted \u2014 zero hardcoded English strings in components",
+        "Switching to Arabic locale flips layout direction to RTL with no layout breakage",
+        "Date and number formatting correct for all 4 initial locales (e.g., comma vs. period decimal)",
+        "Missing translation keys fall back to en-US without throwing errors",
+        "Translation coverage report shows \u2265 95% of keys translated for es and fr locales",
+        "WCAG 2.1 SC 3.1.1 (Language of Page) implemented \u2014 lang attribute updated on locale switch"
+      ],
+      "depends_on": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write comprehensive unit and integration tests for all backend services. Coverage targets: auth (\u226595%), courses (\u226590%), quiz engine (\u226590%), progress/xAPI (\u226585%), SCORM runtime (\u226585%), LTI (\u226585%), certificates (\u226590%). Use pytest with a test Postgres instance (pytest-asyncio, factory_boy for fixtures). Include parameterized tests for SCORM 1.2 vs. 2004 CMI data model differences.",
+      "payload": {
+        "deliverables": [
+          "backend/tests/"
+        ],
+        "test_framework": "pytest 8, pytest-asyncio, httpx (async test client), factory_boy",
+        "coverage_tool": "pytest-cov with branch coverage",
+        "test_db": "Separate Postgres test DB \u2014 reset per test session via Alembic",
+        "fixture_strategy": "factory_boy model factories for users, courses, quizzes, attempts, xapi statements"
+      },
+      "acceptance_criteria": [
+        "Coverage thresholds met per service (see description)",
+        "All SCORM ADL test suite scenarios covered as parameterized test cases",
+        "LTI tests use a mock LTI platform (recorded HTTP cassettes via pytest-recording)",
+        "Tests run in under 3 minutes on CI with parallel execution (`pytest -n auto`)",
+        "No tests rely on external network calls \u2014 all external services mocked or cassette-recorded",
+        "CI fails if coverage drops below thresholds (enforced via `--cov-fail-under`)"
+      ],
+      "depends_on": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "TESTS",
+      "description": "Write frontend unit and component tests. Test all interactive components: quiz attempt flow (timer, auto-submit, answer persistence), SCORM bridge (LMSInitialize/LMSGetValue/LMSSetValue/LMSFinish call sequence), video player controls, course builder drag-and-drop, and certificate verification badge. Use Vitest + React Testing Library. Add Playwright E2E tests for the critical learner journey: enroll \u2192 watch video \u2192 take quiz \u2192 receive certificate.",
+      "payload": {
+        "deliverables": [
+          "frontend/src/__tests__/",
+          "e2e/"
+        ],
+        "unit_framework": "Vitest + React Testing Library",
+        "e2e_framework": "Playwright 1.44",
+        "e2e_scenarios": [
+          "full_learner_journey",
+          "scorm_launch_and_complete",
+          "lti_launch_from_canvas",
+          "quiz_timeout_auto_submit",
+          "certificate_download"
+        ],
+        "coverage_target": "\u2265 80% line coverage on frontend components"
+      },
+      "acceptance_criteria": [
+        "All 5 E2E scenarios pass against a local full-stack Docker Compose environment",
+        "SCORM bridge test confirms correct call sequence using a spy on window.API",
+        "Quiz timer auto-submit E2E test verifies results screen shown after countdown",
+        "Frontend component coverage \u2265 80%",
+        "Playwright tests run headless in CI and produce video artifacts on failure",
+        "Accessibility checks integrated into E2E tests using `@axe-core/playwright`"
+      ],
+      "depends_on": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions), containerization (Docker multi-stage builds), and production infrastructure (AWS ECS Fargate or Kubernetes). Pipeline: lint \u2192 test \u2192 build \u2192 push to ECR \u2192 deploy to staging \u2192 smoke test \u2192 manual gate \u2192 deploy to production. Add monitoring (CloudWatch/Datadog), alerting (PagerDuty), and log aggregation (CloudWatch Logs Insights). Configure Redis and Postgres managed services for production.",
+      "payload": {
+        "deliverables": [
+          "infra/",
+          ".github/workflows/ci.yml",
+          ".github/workflows/deploy.yml",
+          "Dockerfile",
+          "docker-compose.prod.yml"
+        ],
+        "ci_steps": [
+          "lint (Ruff+ESLint)",
+          "unit_tests",
+          "integration_tests",
+          "build_images",
+          "push_ECR",
+          "deploy_staging",
+          "smoke_test",
+          "manual_approval_gate",
+          "deploy_production"
+        ],
+        "infra": "AWS ECS Fargate (backend + worker) + RDS Postgres + ElastiCache Redis + S3/CloudFront (video CDN)",
+        "monitoring": "Datadog APM + CloudWatch metrics + PagerDuty alerts for p95 latency > 2s and error_rate > 1%",
+        "scaling": "ECS auto-scaling on CPU > 70% \u2014 min 2, max 20 tasks"
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs on every PR and blocks merge on test failure or coverage drop",
+        "Docker images build in under 5 minutes with layer caching",
+        "Staging deployment triggered automatically on merge to `main`",
+        "Production deployment requires manual approval in GitHub Actions environment",
+        "Datadog dashboard shows p50/p95/p99 latency and error rate for all API endpoints",
+        "PagerDuty alert fires within 2 minutes of error rate exceeding 1% in production"
+      ],
+      "depends_on": [
+        23,
+        24
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "SECURITY",
+      "description": "Conduct security review of the built system. Perform OWASP Top 10 verification, penetration test plan execution for: JWT token leakage, SCORM package path traversal, LTI JWT replay attacks, video signed URL bypass, FERPA PII over-exposure, and CSRF on grade passback. Produce SBOM (Software Bill of Materials). Verify dependency CVEs with `safety check` and `npm audit`.",
+      "payload": {
+        "deliverables": [
+          "security/pentest_report.md",
+          "security/sbom.json",
+          "security/vulnerability_remediation.md"
+        ],
+        "test_areas": [
+          "JWT_token_security",
+          "SCORM_path_traversal",
+          "LTI_JWT_replay",
+          "video_URL_bypass",
+          "FERPA_PII_exposure",
+          "CSRF_grade_passback",
+          "SQL_injection_quiz_inputs",
+          "XSS_rich_text_editor"
+        ],
+        "tools": [
+          "OWASP ZAP",
+          "Trivy (container scanning)",
+          "safety (Python CVEs)",
+          "npm audit"
+        ],
+        "sbom_format": "CycloneDX 1.5 JSON"
+      },
+      "acceptance_criteria": [
+        "All OWASP Top 10 items tested and documented with pass/fail/mitigated status",
+        "SCORM path traversal: uploading a ZIP with `../` paths is blocked \u2014 returns 422",
+        "LTI JWT replay: reusing a launch JWT after expiry returns 401",
+        "SBOM generated in CycloneDX format with all direct and transitive dependencies",
+        "Zero HIGH or CRITICAL CVEs in production dependencies (or documented accepted risk)",
+        "Penetration test report reviewed and all CRITICAL/HIGH findings remediated before production deploy"
+      ],
+      "depends_on": [
+        23,
+        24
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 27,
+      "task_type": "COMPLIANCE",
+      "description": "Produce final compliance evidence artifacts. WCAG 2.1 AA: automated axe-core scan + manual keyboard and screen reader testing report. FERPA: data flow diagram, access control matrix, third-party data sharing agreement templates, and incident response procedure for data breach. COPPA: documented age-gate implementation, parental consent audit log, and data minimization report for under-13 users.",
+      "payload": {
+        "deliverables": [
+          "compliance/wcag_audit_report.md",
+          "compliance/ferpa_evidence_package/",
+          "compliance/coppa_evidence_package/"
+        ],
+        "wcag_tools": [
+          "axe-core automated scan (all pages)",
+          "NVDA + Chrome manual test",
+          "keyboard-only navigation test session recording"
+        ],
+        "ferpa_deliverables": [
+          "data_flow_diagram.png",
+          "access_control_matrix.xlsx",
+          "third_party_dpa_template.docx",
+          "breach_response_procedure.md"
+        ],
+        "coppa_deliverables": [
+          "age_gate_implementation_evidence.md",
+          "parental_consent_audit_log_query.sql",
+          "data_minimization_report.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "axe-core automated scan reports zero WCAG 2.1 AA violations across all application pages",
+        "Manual keyboard-only navigation test confirms all interactive elements reachable and operable",
+        "FERPA data flow diagram reviewed by legal \u2014 all PII fields and access paths documented",
+        "COPPA audit log query demonstrates parental consent recorded for every under-13 user account",
+        "Data minimization report shows under-13 users have no unnecessary PII collected",
+        "Compliance evidence package organized and ready for audit review"
+      ],
+      "depends_on": [
+        22,
+        24,
+        26
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 28,
+      "task_type": "QA",
+      "description": "Execute full QA test plan. Produce test execution report covering: functional test cases for all features (course builder, video, quiz, SCORM 1.2/2004, LTI 1.3, certificates, progress tracking), regression test suite, exploratory testing sessions, cross-browser compatibility (Chrome, Firefox, Safari, Edge), and mobile responsiveness testing (iOS Safari, Android Chrome). Log and triage all defects.",
+      "payload": {
+        "deliverables": [
+          "qa/test_plan.md",
+          "qa/test_execution_report.md",
+          "qa/defect_log.csv"
+        ],
+        "browsers": [
+          "Chrome 124",
+          "Firefox 125",
+          "Safari 17",
+          "Edge 124"
+        ],
+        "mobile": [
+          "iOS 17 Safari (iPhone 14)",
+          "Android 14 Chrome (Pixel 8)"
+        ],
+        "test_case_count_estimate": 180,
+        "scorm_conformance": "Run ADL SCORM 1.2 and 2004 conformance test suites",
+        "lti_conformance": "IMS Global LTI 1.3 certification checklist"
+      },
+      "acceptance_criteria": [
+        "\u2265 95% of test cases executed and passed before production sign-off",
+        "Zero P0/P1 defects open at production release",
+        "SCORM 1.2 ADL conformance test suite: 100% pass rate",
+        "LTI 1.3 IMS Global certification checklist: 100% pass rate",
+        "Cross-browser testing shows no layout breakage or functional failures in listed browsers",
+        "Mobile testing confirms all learner flows usable on iOS and Android without horizontal scroll"
+      ],
+      "depends_on": [
+        22,
+        23,
+        24
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 29,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute system-level integration and performance tests. Load test with k6: 500 concurrent learners watching video + 200 concurrent SCORM sessions + 100 concurrent quiz submissions. Verify autoscaling behavior. Test LTI grade passback under load. Test xAPI statement ingestion at 1000 statements/minute. Measure and document p95 latency for all critical endpoints.",
+      "payload": {
+        "deliverables": [
+          "system_tests/load_test_results.html",
+          "system_tests/performance_report.md"
+        ],
+        "load_test_tool": "k6",
+        "scenarios": [
+          "500 concurrent HLS video streams via CloudFront",
+          "200 concurrent SCORM sessions with CMI read/write",
+          "100 concurrent quiz submissions with auto-grade",
+          "1000 xAPI statements/minute sustained for 10 minutes",
+          "50 simultaneous LTI grade passbacks"
+        ],
+        "sla_targets": {
+          "API_p95_latency": "< 500ms",
+          "video_start_time": "< 3s",
+          "certificate_generation": "< 5s",
+          "SCORM_commit_p95": "< 200ms"
+        }
+      },
+      "acceptance_criteria": [
+        "All SLA targets met under specified load scenarios",
+        "ECS autoscaling triggers and completes scale-out within 2 minutes of load increase",
+        "Zero 5xx errors during load test (5xx rate < 0.1% acceptable)",
+        "SCORM session data integrity verified \u2014 no CMI data loss under concurrent write load",
+        "xAPI ingestion handles 1000 statements/min with queue depth remaining bounded",
+        "Performance report documents p50/p95/p99 for all tested endpoints"
+      ],
+      "depends_on": [
+        25,
+        28
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 30,
+      "task_type": "TRAINING",
+      "description": "Create user guides, onboarding materials, and training content for all three personas. Learner guide: enroll, watch, take quiz, download certificate. Instructor guide: build a course, upload video, create SCORM package, configure quizzes, view analytics. Admin guide: manage users, configure LTI integrations, manage certificates, FERPA data requests, COPPA consent management. Produce video walkthroughs (Loom) and in-app onboarding tooltips.",
+      "payload": {
+        "deliverables": [
+          "docs/learner_guide.md",
+          "docs/instructor_guide.md",
+          "docs/admin_guide.md",
+          "docs/lti_integration_guide.md",
+          "docs/scorm_authoring_guide.md"
+        ],
+        "video_walkthroughs": [
+          "learner_getting_started.mp4",
+          "instructor_course_builder.mp4",
+          "admin_lti_setup.mp4"
+        ],
+        "in_app_tooltips": "Shepherd.js guided tours for first-time learner and instructor onboarding",
+        "lti_guide_content": "Step-by-step for Canvas, Moodle, and Blackboard \u2014 with screenshots"
+      },
+      "acceptance_criteria": [
+        "All three persona guides cover every major workflow end-to-end",
+        "LTI integration guide tested against Canvas sandbox \u2014 all steps accurate",
+        "SCORM authoring guide tested with Articulate Storyline and Adobe Captivate exports",
+        "Video walkthroughs captioned (VTT) for WCAG 1.2.2 compliance",
+        "In-app Shepherd.js tour triggers on first login and covers \u2265 5 key actions per persona",
+        "Docs reviewed by one representative from each persona group \u2014 feedback incorporated"
+      ],
+      "depends_on": [
+        27,
+        28
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 31,
+      "task_type": "DOCS",
+      "description": "Produce technical documentation: API reference (auto-generated from OpenAPI spec via Redoc/Stoplight), architecture decision records (ADRs) for SCORM runtime design, LTI 1.3 security model, xAPI statement schema, and video CDN architecture. Write a developer contribution guide, local setup guide, and deployment runbook. Document the FERPA data handling procedures for engineering.",
+      "payload": {
+        "deliverables": [
+          "docs/api-reference/",
+          "docs/adr/",
+          "docs/CONTRIBUTING.md",
+          "docs/LOCAL_SETUP.md",
+          "docs/DEPLOYMENT_RUNBOOK.md",
+          "docs/FERPA_DATA_HANDLING.md"
+        ],
+        "api_doc_tool": "Redoc (static) + Stoplight (interactive, for integration partners)",
+        "adr_topics": [
+          "SCORM_runtime_CMI_storage",
+          "LTI_1.3_JWT_security",
+          "xAPI_statement_schema",
+          "HLS_video_CDN",
+          "certificate_signing_scheme"
+        ],
+        "runbook_sections": [
+          "deployment_steps",
+          "rollback_procedure",
+          "database_migration",
+          "incident_response",
+          "FERPA_data_deletion_request"
+        ]
+      },
+      "acceptance_criteria": [
+        "API reference generated from openapi.yaml and covers all endpoints with request/response examples",
+        "Five ADRs written with Context/Decision/Consequences structure",
+        "Local setup guide: new developer achieves running system in under 30 minutes (timed test)",
+        "Deployment runbook covers rollback to previous ECS task definition in \u2264 5 steps",
+        "FERPA data deletion procedure documents exactly which tables and fields to purge and how to verify",
+        "CONTRIBUTING.md includes branch naming, PR template, and test coverage requirements"
+      ],
+      "depends_on": [
+        29,
+        30
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 31,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 62,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 62,
+        "final_review": {
+          "score": 62,
+          "flaws": [
+            "CRITICAL \u2014 SCORM JS API synchronous/async mismatch: Step 19 proposes proxying LMSInitialize/LMSGetValue/LMSSetValue to the backend via fetch(). SCORM 1.2 and 2004 JavaScript APIs are synchronous \u2014 the calling SCO expects an immediate return value. Async fetch breaks this contract entirely. The ADL conformance test suite will fail. The bridge must use synchronous postMessage with a SharedArrayBuffer or run in the same JavaScript context as the SCO content, not a fetch proxy.",
+            "CRITICAL \u2014 SCORM package XSS via same-origin serving: Steps 14 and 19 never specify where extracted SCORM packages are served from. If served from the same origin as the LMS application, arbitrary SCORM package JavaScript runs in the LMS origin and can make fully-authenticated requests as the logged-in user (despite httpOnly cookies protecting against document.cookie access). SCORM content must be sandboxed to a separate origin (subdomain + CSP) with postMessage-only communication to the bridge.",
+            "CRITICAL \u2014 WeasyPrint cannot cryptographically sign PDFs: Step 16 specifies 'RSA SHA-256 signature embedded in PDF metadata' using WeasyPrint. WeasyPrint is an HTML-to-PDF renderer with no PDF signing capability. Achieving verifiable tamper-evidence requires a separate signing layer (PyHanko, pdfrw, or an external signing service). The acceptance criteria ('tampered PDF returns valid: false') cannot be met with WeasyPrint alone. This is a fundamental library mismatch.",
+            "CRITICAL \u2014 COPPA 'verifiable parental consent' is not just an email flow: Step 9's COPPA implementation sends a parental consent email. The FTC's COPPA Rule (16 CFR 312.5) requires 'verifiable' consent \u2014 a credit card transaction, video call, signed form, or government ID in many cases. An email link does not meet the verifiable consent standard for operators collecting personal data from under-13 users. This exposes the platform to FTC enforcement action.",
+            "HIGH \u2014 HLS video signed URLs do not protect content: Step 11 generates 1-hour signed URLs per video. HLS streams consist of a manifest (.m3u8) plus hundreds of individual .ts segment files. A learner can download the manifest and all segments within the 1-hour window and retain them indefinitely, or share the segment URLs. Token-authenticated streaming (per-segment signed URLs or a streaming proxy that validates enrollment on each request) is required for meaningful access control.",
+            "HIGH \u2014 SCORM 2004 conformance test suite completely absent: Step 23 acceptance criteria cover 'SCORM ADL test suite scenarios' but only explicitly reference 1.2. Step 28 mentions 'ADL SCORM 1.2 and 2004 conformance test suites' but Step 14 acceptance criteria only validate '1.2 ADL test suite passes.' SCORM 2004 has a separate API (Initialize('') vs LMSInitialize(''), cmi.completion_status vs cmi.core.lesson_status) requiring its own test execution. Treating them as equivalent will produce a non-conformant 2004 implementation.",
+            "HIGH \u2014 GDPR entirely absent: FERPA and COPPA are US-specific. Any LMS deployed to EU learners (or processing EU resident data from a US institution) requires GDPR compliance: lawful basis for processing, data subject access requests, right to erasure (beyond just COPPA deletion), data portability, DPA agreements with all processors, and breach notification within 72 hours. The traceability matrix in Step 4 has no GDPR row. This is a blocking issue for any European deployment or institution with EU students.",
+            "HIGH \u2014 No dedicated transcoding infrastructure: Step 11 runs ffmpeg via Celery on shared workers alongside email, certificate, and grade passback tasks. A single 10 GB video upload can pin a worker thread for 30-60 minutes, starving time-sensitive tasks (LTI grade passback has a 5-second SLA in Step 15). No separate queue routing for CPU-bound transcode tasks vs. IO-bound async tasks, no dedicated worker pool sizing, no transcode job timeout or dead-letter handling.",
+            "HIGH \u2014 LTI OIDC state parameter session affinity: The LTI 1.3 OIDC login flow stores state and nonce in the server session between the login initiation request and the launch redirect. With multiple ECS tasks and no explicit session affinity, the callback may land on a different task instance that has no record of the state parameter, causing all LTI launches to fail under load. The plan notes Redis is available but never specifies that LTI session state must be stored in Redis, not in-process.",
+            "MEDIUM \u2014 QTI 2.1 import is massively underscoped: Step 12 allocates one acceptance criterion ('parses a standard QTI package') to QTI 2.1 import. QTI 2.1 is a 500+ page specification covering interaction types, response processing templates, outcome declarations, template variables, stylesheet handling, and asset bundling. A production-grade QTI importer is a multi-month effort. No mention of which QTI interaction types are in scope, which are not, or how out-of-scope types degrade.",
+            "MEDIUM \u2014 xapi_statements table will become a hot-write bottleneck: At 1000 statements/minute sustained (Step 29), this table accumulates 1.44M rows/day. No table partitioning (by date or user), no archival strategy, and the indexes (user_id+course_id) will cause write amplification on insert-heavy workloads. PostgreSQL JSONB with no partitioning at this write rate will degrade within weeks in production.",
+            "MEDIUM \u2014 Missing search infrastructure for course catalog: Step 17 requires search by title, category, and instructor with debounced API calls. No search backend is specified \u2014 no pg_trgm extension, no full-text search index, no Elasticsearch/OpenSearch. PostgreSQL ILIKE queries on unindexed text columns will not scale to a large course catalog.",
+            "MEDIUM \u2014 LTI dynamic registration has no approval gate: Step 15 implements dynamic registration (IMS LTI DR spec). Any party who knows the registration endpoint URL can register an LTI platform. Without an admin approval step for new registrations, a malicious actor can register a fake platform and attempt to exploit the OIDC flow. The plan has no mention of registration review, allowlisting, or admin notification."
+          ],
+          "suggestions": [
+            "Replace the fetch-based SCORM JS bridge with a postMessage + SharedArrayBuffer synchronous bridge pattern, OR serve all SCORM content through a same-origin iframe (different subdomain) that has the SCORM API object in its window scope and communicates with the main LMS via postMessage. Research Rustici Engine's open-source reference implementation for prior art.",
+            "Serve extracted SCORM packages exclusively from a dedicated sandboxed subdomain (e.g., scorm-content.yourdomain.com) with a strict Content-Security-Policy that blocks external network requests and disallows eval. Use postMessage for all SCORM API calls between the iframe and the host page.",
+            "Replace WeasyPrint-only PDF signing with a two-stage pipeline: WeasyPrint generates the PDF bytes, then PyHanko applies a PAdES-compliant RSA signature. Store the public certificate in the certificates table so the /verify endpoint can validate the embedded signature without holding private key material in the application tier.",
+            "Replace the parental consent email flow with a proper verifiable consent mechanism: credit card microcharge, electronic signature via DocuSign/HelloSign, or a notarized offline form. Consult an FTC COPPA specialist before launch \u2014 the email-only approach is a documented enforcement trigger.",
+            "Add an HLS token authentication proxy (e.g., nginx with auth_request, or CloudFront signed cookies that validate enrollment server-side on every .ts segment request). Per-segment signed URLs add overhead but are the only reliable way to prevent URL sharing.",
+            "Add a GDPR compliance step (Step 4.5) covering: lawful basis mapping for all processing activities, DSAR workflow (data subject access + erasure requests within 30 days), DPA templates for all sub-processors, data residency configuration for EU-hosted deployments, and breach notification playbook.",
+            "Split the Celery worker into at minimum two separate queues: `transcode` (CPU-bound, separate worker process pool, 2-4 workers) and `default` (IO-bound tasks: email, certificates, grade passback, xAPI forwarding). ECS should deploy these as separate task definitions with independent scaling policies.",
+            "Add PostgreSQL table partitioning for xapi_statements by created_at (monthly range partitions) and define a 90-day archival policy to cold storage (S3 Parquet via pg_partman). Add a separate timeseries-optimized write path (TimescaleDB or a lightweight queue buffer) if the 1000/min sustained rate is a real requirement.",
+            "Add pg_trgm (trigram) GIN index on courses.title and courses.description for fuzzy full-text search, or provision OpenSearch for more advanced catalog search. Specify this as infrastructure in Step 7/8.",
+            "Add an admin registration approval screen for LTI Dynamic Registration. New registrations should be created in a 'pending' state, email the admin, and only become active after admin review."
+          ],
+          "missing": [
+            "SCORM package sandboxed serving architecture \u2014 where extracted packages live, what origin they're served from, and how the JS SCORM API bridge works synchronously across the iframe boundary",
+            "GDPR compliance: lawful basis, DSAR workflow, right to erasure, data portability, DPA templates, 72-hour breach notification",
+            "Celery queue topology: separate queues for CPU-bound (transcode) vs IO-bound tasks, worker sizing, dead-letter queue for failed transcode jobs",
+            "xapi_statements partitioning and archival strategy for high-volume write scenarios",
+            "Course catalog search infrastructure (pg_trgm or OpenSearch)",
+            "Email deliverability setup: SPF, DKIM, DMARC for certificate delivery domain",
+            "Video CDN token authentication for HLS segment-level access control",
+            "Multitenancy decision: is this single-tenant SaaS, multi-tenant SaaS, or self-hosted? Affects schema isolation, branding, LTI registration scoping, and FERPA boundaries",
+            "Rate limiting middleware implementation (mentioned in OpenAPI spec step but never implemented in any backend step)",
+            "Database backup/DR: RTO/RPO targets, RDS automated backup configuration, cross-region replication for production",
+            "SCORM 2004 ADL conformance test execution plan (separate from 1.2)",
+            "QTI 2.1 scope boundary: which interaction types are in-scope for MVP vs. deferred",
+            "Real-time notifications (instructor grading queue, quiz submission alerts) \u2014 polling at 10s is specified but no push infrastructure (WebSocket or SSE) is designed",
+            "Video transcoding failure and retry handling: what happens to the upload when ffmpeg fails, how the instructor is notified, dead-letter queue",
+            "WeasyPrint PDF signing gap: no mention of PyHanko or equivalent PDF signing library"
+          ],
+          "security_risks": [
+            "SCORM content XSS via same-origin serving: if extracted SCORM packages are served from the LMS application origin, malicious SCORM JavaScript executes in the authenticated LMS context and can make credentialed API requests as the logged-in user, exfiltrate enrollment data, or tamper with grade records. Severity: CRITICAL.",
+            "LTI JWT replay window: Step 15 acceptance criteria test 'reusing a launch JWT after expiry returns 401' \u2014 but the nonce must also be validated and persisted to prevent replay within the JWT validity window (typically 5 minutes). Nonce storage and single-use enforcement are not explicitly designed.",
+            "SCORM package ZIP bomb and large file extraction: Step 14 validates path traversal but does not mention extraction size limits. A malicious SCORM ZIP could contain a 10 GB decompressed payload from a 10 MB archive, exhausting disk space on the application server. Add extraction size limits and per-instructor storage quotas pre-extraction.",
+            "Rich text editor XSS (TipTap/ProseMirror): Step 18 uses TipTap for lesson content. TipTap outputs HTML that will be rendered by learner browsers. The backend must sanitize HTML through a strict allowlist (DOMPurify server-side equivalent, e.g., bleach for Python) before storage and before serving. The plan has no explicit HTML sanitization step.",
+            "Certificate UUID predictability: if certificate verification UUIDs are sequential or time-based (UUID v1/v4), there's no additional access control on the public /certificates/{uuid}/verify endpoint \u2014 anyone who can guess a UUID can enumerate all issued certificates and verify learner completion. Use UUID v4 (random) and confirm this is specified in the schema.",
+            "Video signed URL parameter tampering: a learner could attempt to modify the signed URL parameters (user_id, course_id) after obtaining a valid URL for one course to access video for another. The signing scheme must include all authorization parameters in the HMAC payload \u2014 the plan does not specify what is signed.",
+            "Admin impersonation audit bypass: Step 9 logs impersonation start/end, but does not specify whether all actions taken during an impersonation session are attributed to the impersonator in the audit log. If impersonated actions are logged under the victim's user_id, FERPA audit trails become unreliable and impersonation abuse is undetectable.",
+            "LTI Dynamic Registration endpoint exposure: as noted, open dynamic registration without admin approval allows any actor to register a platform and probe the OIDC flow for vulnerabilities. Should require at minimum a pre-shared registration token."
+          ],
+          "summary": "This is an impressively detailed 31-step plan that covers the full SDLC for a complex LMS. The coverage of SCORM, LTI, xAPI, FERPA, COPPA, and WCAG in a single coherent plan is genuinely rare and commendable. However, there are three critical architectural failures that will block production readiness regardless of how well the rest is executed: (1) the SCORM JavaScript API bridge design is fundamentally incompatible with the synchronous contract SCORM content expects \u2014 the ADL test suite will not pass; (2) SCORM package serving from the same origin creates a critical XSS vulnerability that undermines all authentication and FERPA controls; and (3) the PDF signing scheme specifies WeasyPrint as both the renderer and signer, a library that has no signing capability. Beyond these blockers, the absence of GDPR for what will inevitably be an international product, the underscoped QTI 2.1 importer, the missing HLS segment-level access control, and the xAPI table write scalability gap represent significant rework items before a production launch. The score of 62 reflects solid engineering intent with critical implementation gaps that require architectural decisions, not just code fixes.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 62,
+            "flaws": [
+              "CRITICAL \u2014 SCORM JS API synchronous/async mismatch: Step 19 proposes proxying LMSInitialize/LMSGetValue/LMSSetValue to the backend via fetch(). SCORM 1.2 and 2004 JavaScript APIs are synchronous \u2014 the calling SCO expects an immediate return value. Async fetch breaks this contract entirely. The ADL conformance test suite will fail. The bridge must use synchronous postMessage with a SharedArrayBuffer or run in the same JavaScript context as the SCO content, not a fetch proxy.",
+              "CRITICAL \u2014 SCORM package XSS via same-origin serving: Steps 14 and 19 never specify where extracted SCORM packages are served from. If served from the same origin as the LMS application, arbitrary SCORM package JavaScript runs in the LMS origin and can make fully-authenticated requests as the logged-in user (despite httpOnly cookies protecting against document.cookie access). SCORM content must be sandboxed to a separate origin (subdomain + CSP) with postMessage-only communication to the bridge.",
+              "CRITICAL \u2014 WeasyPrint cannot cryptographically sign PDFs: Step 16 specifies 'RSA SHA-256 signature embedded in PDF metadata' using WeasyPrint. WeasyPrint is an HTML-to-PDF renderer with no PDF signing capability. Achieving verifiable tamper-evidence requires a separate signing layer (PyHanko, pdfrw, or an external signing service). The acceptance criteria ('tampered PDF returns valid: false') cannot be met with WeasyPrint alone. This is a fundamental library mismatch.",
+              "CRITICAL \u2014 COPPA 'verifiable parental consent' is not just an email flow: Step 9's COPPA implementation sends a parental consent email. The FTC's COPPA Rule (16 CFR 312.5) requires 'verifiable' consent \u2014 a credit card transaction, video call, signed form, or government ID in many cases. An email link does not meet the verifiable consent standard for operators collecting personal data from under-13 users. This exposes the platform to FTC enforcement action.",
+              "HIGH \u2014 HLS video signed URLs do not protect content: Step 11 generates 1-hour signed URLs per video. HLS streams consist of a manifest (.m3u8) plus hundreds of individual .ts segment files. A learner can download the manifest and all segments within the 1-hour window and retain them indefinitely, or share the segment URLs. Token-authenticated streaming (per-segment signed URLs or a streaming proxy that validates enrollment on each request) is required for meaningful access control.",
+              "HIGH \u2014 SCORM 2004 conformance test suite completely absent: Step 23 acceptance criteria cover 'SCORM ADL test suite scenarios' but only explicitly reference 1.2. Step 28 mentions 'ADL SCORM 1.2 and 2004 conformance test suites' but Step 14 acceptance criteria only validate '1.2 ADL test suite passes.' SCORM 2004 has a separate API (Initialize('') vs LMSInitialize(''), cmi.completion_status vs cmi.core.lesson_status) requiring its own test execution. Treating them as equivalent will produce a non-conformant 2004 implementation.",
+              "HIGH \u2014 GDPR entirely absent: FERPA and COPPA are US-specific. Any LMS deployed to EU learners (or processing EU resident data from a US institution) requires GDPR compliance: lawful basis for processing, data subject access requests, right to erasure (beyond just COPPA deletion), data portability, DPA agreements with all processors, and breach notification within 72 hours. The traceability matrix in Step 4 has no GDPR row. This is a blocking issue for any European deployment or institution with EU students.",
+              "HIGH \u2014 No dedicated transcoding infrastructure: Step 11 runs ffmpeg via Celery on shared workers alongside email, certificate, and grade passback tasks. A single 10 GB video upload can pin a worker thread for 30-60 minutes, starving time-sensitive tasks (LTI grade passback has a 5-second SLA in Step 15). No separate queue routing for CPU-bound transcode tasks vs. IO-bound async tasks, no dedicated worker pool sizing, no transcode job timeout or dead-letter handling.",
+              "HIGH \u2014 LTI OIDC state parameter session affinity: The LTI 1.3 OIDC login flow stores state and nonce in the server session between the login initiation request and the launch redirect. With multiple ECS tasks and no explicit session affinity, the callback may land on a different task instance that has no record of the state parameter, causing all LTI launches to fail under load. The plan notes Redis is available but never specifies that LTI session state must be stored in Redis, not in-process.",
+              "MEDIUM \u2014 QTI 2.1 import is massively underscoped: Step 12 allocates one acceptance criterion ('parses a standard QTI package') to QTI 2.1 import. QTI 2.1 is a 500+ page specification covering interaction types, response processing templates, outcome declarations, template variables, stylesheet handling, and asset bundling. A production-grade QTI importer is a multi-month effort. No mention of which QTI interaction types are in scope, which are not, or how out-of-scope types degrade.",
+              "MEDIUM \u2014 xapi_statements table will become a hot-write bottleneck: At 1000 statements/minute sustained (Step 29), this table accumulates 1.44M rows/day. No table partitioning (by date or user), no archival strategy, and the indexes (user_id+course_id) will cause write amplification on insert-heavy workloads. PostgreSQL JSONB with no partitioning at this write rate will degrade within weeks in production.",
+              "MEDIUM \u2014 Missing search infrastructure for course catalog: Step 17 requires search by title, category, and instructor with debounced API calls. No search backend is specified \u2014 no pg_trgm extension, no full-text search index, no Elasticsearch/OpenSearch. PostgreSQL ILIKE queries on unindexed text columns will not scale to a large course catalog.",
+              "MEDIUM \u2014 LTI dynamic registration has no approval gate: Step 15 implements dynamic registration (IMS LTI DR spec). Any party who knows the registration endpoint URL can register an LTI platform. Without an admin approval step for new registrations, a malicious actor can register a fake platform and attempt to exploit the OIDC flow. The plan has no mention of registration review, allowlisting, or admin notification."
+            ],
+            "suggestions": [
+              "Replace the fetch-based SCORM JS bridge with a postMessage + SharedArrayBuffer synchronous bridge pattern, OR serve all SCORM content through a same-origin iframe (different subdomain) that has the SCORM API object in its window scope and communicates with the main LMS via postMessage. Research Rustici Engine's open-source reference implementation for prior art.",
+              "Serve extracted SCORM packages exclusively from a dedicated sandboxed subdomain (e.g., scorm-content.yourdomain.com) with a strict Content-Security-Policy that blocks external network requests and disallows eval. Use postMessage for all SCORM API calls between the iframe and the host page.",
+              "Replace WeasyPrint-only PDF signing with a two-stage pipeline: WeasyPrint generates the PDF bytes, then PyHanko applies a PAdES-compliant RSA signature. Store the public certificate in the certificates table so the /verify endpoint can validate the embedded signature without holding private key material in the application tier.",
+              "Replace the parental consent email flow with a proper verifiable consent mechanism: credit card microcharge, electronic signature via DocuSign/HelloSign, or a notarized offline form. Consult an FTC COPPA specialist before launch \u2014 the email-only approach is a documented enforcement trigger.",
+              "Add an HLS token authentication proxy (e.g., nginx with auth_request, or CloudFront signed cookies that validate enrollment server-side on every .ts segment request). Per-segment signed URLs add overhead but are the only reliable way to prevent URL sharing.",
+              "Add a GDPR compliance step (Step 4.5) covering: lawful basis mapping for all processing activities, DSAR workflow (data subject access + erasure requests within 30 days), DPA templates for all sub-processors, data residency configuration for EU-hosted deployments, and breach notification playbook.",
+              "Split the Celery worker into at minimum two separate queues: `transcode` (CPU-bound, separate worker process pool, 2-4 workers) and `default` (IO-bound tasks: email, certificates, grade passback, xAPI forwarding). ECS should deploy these as separate task definitions with independent scaling policies.",
+              "Add PostgreSQL table partitioning for xapi_statements by created_at (monthly range partitions) and define a 90-day archival policy to cold storage (S3 Parquet via pg_partman). Add a separate timeseries-optimized write path (TimescaleDB or a lightweight queue buffer) if the 1000/min sustained rate is a real requirement.",
+              "Add pg_trgm (trigram) GIN index on courses.title and courses.description for fuzzy full-text search, or provision OpenSearch for more advanced catalog search. Specify this as infrastructure in Step 7/8.",
+              "Add an admin registration approval screen for LTI Dynamic Registration. New registrations should be created in a 'pending' state, email the admin, and only become active after admin review."
+            ],
+            "missing": [
+              "SCORM package sandboxed serving architecture \u2014 where extracted packages live, what origin they're served from, and how the JS SCORM API bridge works synchronously across the iframe boundary",
+              "GDPR compliance: lawful basis, DSAR workflow, right to erasure, data portability, DPA templates, 72-hour breach notification",
+              "Celery queue topology: separate queues for CPU-bound (transcode) vs IO-bound tasks, worker sizing, dead-letter queue for failed transcode jobs",
+              "xapi_statements partitioning and archival strategy for high-volume write scenarios",
+              "Course catalog search infrastructure (pg_trgm or OpenSearch)",
+              "Email deliverability setup: SPF, DKIM, DMARC for certificate delivery domain",
+              "Video CDN token authentication for HLS segment-level access control",
+              "Multitenancy decision: is this single-tenant SaaS, multi-tenant SaaS, or self-hosted? Affects schema isolation, branding, LTI registration scoping, and FERPA boundaries",
+              "Rate limiting middleware implementation (mentioned in OpenAPI spec step but never implemented in any backend step)",
+              "Database backup/DR: RTO/RPO targets, RDS automated backup configuration, cross-region replication for production",
+              "SCORM 2004 ADL conformance test execution plan (separate from 1.2)",
+              "QTI 2.1 scope boundary: which interaction types are in-scope for MVP vs. deferred",
+              "Real-time notifications (instructor grading queue, quiz submission alerts) \u2014 polling at 10s is specified but no push infrastructure (WebSocket or SSE) is designed",
+              "Video transcoding failure and retry handling: what happens to the upload when ffmpeg fails, how the instructor is notified, dead-letter queue",
+              "WeasyPrint PDF signing gap: no mention of PyHanko or equivalent PDF signing library"
+            ],
+            "security_risks": [
+              "SCORM content XSS via same-origin serving: if extracted SCORM packages are served from the LMS application origin, malicious SCORM JavaScript executes in the authenticated LMS context and can make credentialed API requests as the logged-in user, exfiltrate enrollment data, or tamper with grade records. Severity: CRITICAL.",
+              "LTI JWT replay window: Step 15 acceptance criteria test 'reusing a launch JWT after expiry returns 401' \u2014 but the nonce must also be validated and persisted to prevent replay within the JWT validity window (typically 5 minutes). Nonce storage and single-use enforcement are not explicitly designed.",
+              "SCORM package ZIP bomb and large file extraction: Step 14 validates path traversal but does not mention extraction size limits. A malicious SCORM ZIP could contain a 10 GB decompressed payload from a 10 MB archive, exhausting disk space on the application server. Add extraction size limits and per-instructor storage quotas pre-extraction.",
+              "Rich text editor XSS (TipTap/ProseMirror): Step 18 uses TipTap for lesson content. TipTap outputs HTML that will be rendered by learner browsers. The backend must sanitize HTML through a strict allowlist (DOMPurify server-side equivalent, e.g., bleach for Python) before storage and before serving. The plan has no explicit HTML sanitization step.",
+              "Certificate UUID predictability: if certificate verification UUIDs are sequential or time-based (UUID v1/v4), there's no additional access control on the public /certificates/{uuid}/verify endpoint \u2014 anyone who can guess a UUID can enumerate all issued certificates and verify learner completion. Use UUID v4 (random) and confirm this is specified in the schema.",
+              "Video signed URL parameter tampering: a learner could attempt to modify the signed URL parameters (user_id, course_id) after obtaining a valid URL for one course to access video for another. The signing scheme must include all authorization parameters in the HMAC payload \u2014 the plan does not specify what is signed.",
+              "Admin impersonation audit bypass: Step 9 logs impersonation start/end, but does not specify whether all actions taken during an impersonation session are attributed to the impersonator in the audit log. If impersonated actions are logged under the victim's user_id, FERPA audit trails become unreliable and impersonation abuse is undetectable.",
+              "LTI Dynamic Registration endpoint exposure: as noted, open dynamic registration without admin approval allows any actor to register a platform and probe the OIDC flow for vulnerabilities. Should require at minimum a pre-shared registration token."
+            ],
+            "summary": "This is an impressively detailed 31-step plan that covers the full SDLC for a complex LMS. The coverage of SCORM, LTI, xAPI, FERPA, COPPA, and WCAG in a single coherent plan is genuinely rare and commendable. However, there are three critical architectural failures that will block production readiness regardless of how well the rest is executed: (1) the SCORM JavaScript API bridge design is fundamentally incompatible with the synchronous contract SCORM content expects \u2014 the ADL test suite will not pass; (2) SCORM package serving from the same origin creates a critical XSS vulnerability that undermines all authentication and FERPA controls; and (3) the PDF signing scheme specifies WeasyPrint as both the renderer and signer, a library that has no signing capability. Beyond these blockers, the absence of GDPR for what will inevitably be an international product, the underscoped QTI 2.1 importer, the missing HLS segment-level access control, and the xAPI table write scalability gap represent significant rework items before a production launch. The score of 62 reflects solid engineering intent with critical implementation gaps that require architectural decisions, not just code fixes.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T09:13:17.169352+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 266.11,
+    "critic_plan": 137.93
+  }
+}

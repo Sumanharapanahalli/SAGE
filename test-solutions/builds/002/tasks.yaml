@@ -1,0 +1,388 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define product requirements and user needs for closed-loop insulin
+      pump controller
+    agent_role: planner
+    acceptance_criteria:
+    - User Needs Document covers at least 30 distinct user needs
+    - Product Requirements Specification contains fully traceable, verifiable requirements
+    - Intended Use Statement reviewed and signed off by clinical stakeholder
+    - All requirements tagged with regulatory source (FDA/ISO)
+    - Document version-controlled in DHF
+    depends_on: []
+  REGULATORY:
+    description: Develop regulatory strategy and submission pathway for FDA Class
+      III PMA
+    agent_role: analyst
+    acceptance_criteria:
+    - Regulatory strategy document identifies all applicable FDA guidance documents
+    - Standards compliance matrix maps each standard to product design requirements
+    - Pre-submission meeting agenda drafted with at least 10 key questions for FDA
+    - Predetermined Change Control Plan framework established for ML algorithm updates
+    - Regulatory timeline milestones defined with go/no-go gates
+    depends_on: []
+  LEGAL:
+    description: Establish IP landscape review, patent clearance, and regulatory compliance
+      legal framework
+    agent_role: analyst
+    acceptance_criteria:
+    - Freedom-to-operate analysis covers at least 50 relevant patents
+    - HIPAA compliance checklist completed for mobile app and backend
+    - GDPR assessment completed for EU market consideration
+    - IP filing strategy identifies at least 3 patentable innovations
+    - Data use agreements templates drafted for clinical sites
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Conduct competitive analysis and market assessment for closed-loop
+      insulin delivery market
+    agent_role: analyst
+    acceptance_criteria:
+    - Competitive analysis covers at least 6 commercially available closed-loop systems
+    - Market sizing estimate includes TAM, SAM, SOM with cited sources
+    - Reimbursement codes (CPT, HCPCS) identified for device and CGM components
+    - Feature gap analysis identifies at least 5 differentiating product opportunities
+    - Key opinion leader list contains at least 10 endocrinologists
+    depends_on: []
+  SAFETY:
+    description: Perform preliminary hazard analysis and establish risk management
+      plan per ISO 14971
+    agent_role: analyst
+    acceptance_criteria:
+    - Risk Management Plan approved per ISO 14971:2019 Section 4
+    - At least 40 preliminary hazards identified across all categories
+    - Risk acceptability criteria defined with quantitative thresholds
+    - Severity levels defined with clinical justification (1-5 scale)
+    - Risk Management File structure established and version-controlled in DHF
+    - Residual risk policy documented and justified
+    - ISO 14971 risk management file complete
+    - Residual risk acceptable
+    depends_on:
+    - 1
+    - 2
+  COMPLIANCE:
+    description: Establish Design History File structure and IEC 62304 software development
+      lifecycle plan
+    agent_role: analyst
+    acceptance_criteria:
+    - DHF index covers all 21 CFR Part 820.30 design control elements
+    - Software classified as IEC 62304 Class C with documented justification
+    - Software Development Plan approved and references all applicable IEC 62304 clauses
+    - Configuration management plan defines branching strategy, release tagging, and
+      traceability
+    - Problem resolution process defines severity levels and resolution timelines
+    - All document templates created and stored in version-controlled DHF
+    - DHF (Design History File) structure created
+    - V&V protocol drafted
+    depends_on:
+    - 1
+    - 2
+  PRODUCT_MGMT:
+    description: Define system architecture, interface specifications, and design
+      inputs for all subsystems
+    agent_role: planner
+    acceptance_criteria:
+    - System Architecture Document includes block diagram with all subsystem interfaces
+    - Interface Control Document specifies all data formats, protocols, and timing
+      requirements
+    - Software Architecture Specification addresses IEC 62304 Section 5.3 requirements
+    - 'Latency budget defined: CGM reading to pump actuation within 30 seconds'
+    - Fault tolerance architecture defined for all single points of failure
+    - Architecture reviewed and approved by systems, firmware, and software leads
+    depends_on:
+    - 1
+    - 5
+    - 6
+  UX_DESIGN:
+    description: Design patient-facing mobile app UX with usability engineering per
+      IEC 62366
+    agent_role: developer
+    acceptance_criteria:
+    - Intended User Profile documents at least 3 distinct user groups with characteristics
+    - Use specification identifies all critical tasks with use error consequences
+    - At least 20 screen wireframes covering primary user flows
+    - Formative usability evaluation protocol approved for at least 2 evaluation rounds
+    - Critical task scenarios defined for summative evaluation
+    - Alarm hierarchy defined per IEC 60601-1-8 requirements
+    depends_on:
+    - 1
+    - 7
+  PCB_DESIGN:
+    description: 'Design PCB schematic for pump controller board: microcontroller,
+      power management, BLE, motor driver'
+    agent_role: developer
+    acceptance_criteria:
+    - Schematic passes DRC with zero errors
+    - BOM includes primary and secondary approved suppliers for all components
+    - Power budget analysis shows 72-hour battery life at typical usage
+    - EMC design guidelines (ground planes, decoupling, trace routing) documented
+    - IEC 60601-1 essential performance requirements addressed in schematic
+    - Schematic reviewed and approved by hardware lead and safety engineer
+    depends_on:
+    - 7
+  HARDWARE_SIM:
+    description: Develop high-fidelity pump actuator simulation model for HIL testing
+    agent_role: developer
+    acceptance_criteria:
+    - Simulation model validated against real pump datasheet specifications
+    - Occlusion fault injection triggers within 500ms of blockage simulation
+    - Flow rate accuracy within 2% across full operating range in simulation
+    - Model runs in real-time at 100Hz update rate
+    - Simulation interface documented for HIL test harness integration
+    - At least 5 fault scenarios implemented and validated
+    depends_on:
+    - 7
+    - 9
+  FIRMWARE:
+    description: Implement RTOS kernel, HAL layer, and bootloader for STM32H7 pump
+      controller
+    agent_role: developer
+    acceptance_criteria:
+    - FreeRTOS task architecture documented with priority assignments and stack sizes
+    - All HAL drivers pass loopback self-test on target hardware or simulation
+    - Bootloader verifies firmware signature before execution and rejects tampered
+      images
+    - Watchdog timer configured for maximum 100ms timeout with safe-state handler
+    - MISRA C 2012 mandatory rules compliance verified by static analysis tool
+    - Memory protection unit configured to isolate safety-critical tasks
+    - All critical tasks meet deadline monitoring requirements with logged violations
+    - IEC 62304 software class documented
+    - SOUP components listed
+    depends_on:
+    - 9
+    - 10
+    - 11
+  ML_MODEL:
+    description: Develop and validate predictive glucose dosing ML model for advisory
+      insulin recommendations
+    agent_role: developer
+    acceptance_criteria:
+    - Model achieves RMSE under 15 mg/dL on held-out test set
+    - Hypoglycemia prediction sensitivity above 90% at 30-minute horizon on test set
+    - Model card completed per FDA AI/ML Software as Medical Device guidance
+    - Predetermined Change Control Plan defines retraining triggers and validation
+      requirements
+    - Quantized model fits within STM32H7 RAM and flash constraints
+    - Inference latency under 100ms on target microcontroller
+    - Training pipeline is reproducible with fixed random seeds and documented environment
+    depends_on:
+    - 11
+    - 15
+  BACKEND:
+    description: Implement cloud backend API for device data ingestion, patient management,
+      and clinical dashboard
+    agent_role: developer
+    acceptance_criteria:
+    - Device data ingestion endpoint handles 1000 concurrent device connections
+    - All endpoints return responses within 200ms at 95th percentile under load
+    - RBAC enforces patient, caregiver, clinician, and admin role separation
+    - HIPAA audit log captures all PHI access events with user, timestamp, and action
+    - FHIR R4 Observation resources generated correctly for glucose and insulin events
+    - API documentation complete with OpenAPI 3.0 spec
+    - Authentication tokens expire after 8 hours with secure refresh mechanism
+    depends_on:
+    - 7
+    - 6
+  DATA:
+    description: Design and implement glucose data pipeline, time-series storage,
+      and analytics processing
+    agent_role: developer
+    acceptance_criteria:
+    - Kafka pipeline ingests glucose readings with end-to-end latency under 5 seconds
+    - TimescaleDB queries for 90-day patient history return within 2 seconds
+    - Data retention policy enforces 7-year minimum per 21 CFR Part 820
+    - De-identification pipeline validated per HIPAA Safe Harbor method
+    - Batch analytics jobs complete nightly processing within 4-hour window
+    - Data pipeline disaster recovery tested with RTO under 4 hours
+    depends_on:
+    - 17
+  FRONTEND:
+    description: Develop iOS and Android patient mobile app with glucose monitoring,
+      insulin management, and alert handling
+    agent_role: developer
+    acceptance_criteria:
+    - Glucose trend graph renders 24-hour history within 2 seconds of app launch
+    - Bolus calculator requires two-tap confirmation before sending dose command
+    - Critical alarm screen wakes device from lock screen and plays audible alert
+    - Offline mode displays cached data with clear staleness indicator after 5 minutes
+    - App achieves WCAG 2.1 AA accessibility score in automated audit
+    - All primary user flows completed in usability walkthrough without critical errors
+    - App bundle size under 50MB for initial install
+    depends_on:
+    - 8
+    - 17
+    - 19
+  INFRA:
+    description: Design and provision cloud infrastructure with medical-grade availability
+      and disaster recovery
+    agent_role: developer
+    acceptance_criteria:
+    - All infrastructure defined as Terraform code with no manual console provisioning
+    - Multi-AZ deployment verified with AZ failure simulation test
+    - RDS automated backups configured with 35-day retention and tested restore
+    - VPC security groups allow only required ports with deny-all default
+    - HIPAA BAA checklist completed for all AWS services storing PHI
+    - Disaster recovery RTO under 4 hours validated in tabletop exercise
+    - Infrastructure deployment pipeline runs in under 30 minutes
+    depends_on:
+    - 17
+  DEVOPS:
+    description: Implement CI/CD pipeline with separate firmware, backend, and mobile
+      app build and release workflows
+    agent_role: developer
+    acceptance_criteria:
+    - Firmware build pipeline produces signed binary with HSM-managed key in under
+      10 minutes
+    - Static analysis (MISRA C 2012 mandatory rules) gates block merge on new violations
+    - Backend deployment pipeline achieves zero-downtime rolling update
+    - Mobile app pipeline produces TestFlight and internal track builds on each main
+      branch commit
+    - All pipelines enforce branch protection requiring passing tests before merge
+    - Release tags automatically generate changelog from conventional commit messages
+    - Pipeline artifacts stored with immutable versioning for audit trail
+    depends_on:
+    - 12
+    - 17
+    - 20
+    - 21
+  SECURITY:
+    description: Conduct comprehensive threat model and cybersecurity risk assessment
+      per FDA cybersecurity guidance
+    agent_role: analyst
+    acceptance_criteria:
+    - STRIDE analysis completed for all 6 attack surfaces with at least 30 threat
+      scenarios
+    - All Critical and High severity threats have defined mitigations
+    - SBOM generated in SPDX format covering all firmware and software dependencies
+    - Cryptographic design review confirms AES-256 for data at rest, TLS 1.3 for data
+      in transit
+    - Penetration test plan covers OWASP Top 10 API risks and BLE-specific attacks
+    - Postmarket monitoring plan defines vulnerability disclosure and patching SLA
+    - Cybersecurity risk assessment integrated into ISO 14971 risk management file
+    depends_on:
+    - 15
+    - 17
+    - 20
+  EMBEDDED_TEST:
+    description: Develop HIL test specification, firmware unit test suite, and software
+      integration test harness
+    agent_role: developer
+    acceptance_criteria:
+    - HIL test specification traces every firmware requirement to at least one test
+      case
+    - Firmware unit test suite achieves 90% line coverage and 85% branch coverage
+    - All 6 fault injection scenarios execute and verify correct safe-state response
+    - Integration test harness runs full glucose-to-insulin delivery cycle end-to-end
+    - Performance tests verify all task deadlines met under maximum load
+    - Test results report generated automatically in JUnit XML format for CI integration
+    - 100% of safety requirements covered by at least one verified test case
+    depends_on:
+    - 15
+    - 16
+    - 10
+    - 11
+  QA:
+    description: Execute firmware unit tests, integration tests, and HIL test campaigns
+      against build
+    agent_role: analyst
+    acceptance_criteria:
+    - All unit tests pass with zero failures before HIL campaign begins
+    - Code coverage report confirms 90% line and 85% branch coverage
+    - HIL campaign executes all specified test cases with less than 2% blocked
+    - Zero open Critical or High severity defects at test phase completion
+    - All 6 fault injection scenarios produce correct safe-state outcomes
+    - Test execution report approved by quality engineer and stored in DHF
+    - Regression baseline established for future build comparisons
+    depends_on:
+    - 24
+    - 22
+  SYSTEM_TEST:
+    description: Execute end-to-end system integration test campaign across firmware,
+      backend, and mobile app
+    agent_role: analyst
+    acceptance_criteria:
+    - All 8 system test scenarios execute successfully end-to-end
+    - 'Hypoglycemia auto-suspend scenario completes: CGM reading to pump suspend within
+      15 seconds'
+    - Caregiver escalation alert delivered within 30 seconds of missed patient acknowledgment
+    - OTA firmware update completes successfully with signature verification and rollback
+      tested
+    - System test report traces all executed tests to requirements in traceability
+      matrix
+    - Zero open Critical defects and fewer than 5 open High defects at completion
+    - User acceptance test protocol signed off by clinical advisor
+    depends_on:
+    - 25
+    - 26
+    - 19
+    - 20
+  DOCS:
+    description: Author clinical evaluation report, instructions for use, and labeling
+      per FDA and ISO requirements
+    agent_role: developer
+    acceptance_criteria:
+    - IFU reviewed by usability engineering to confirm alignment with use specification
+    - IFU reading level verified at or below 8th grade using Flesch-Kincaid tool
+    - All ISO 15223-1 symbols used correctly with reference to published standard
+    - Labeling artwork reviewed against 21 CFR Part 801 requirements with no gaps
+    - Spanish translation reviewed by qualified medical translator
+    - Clinical evaluation report framework aligned with MEDDEV 2.7/1 Rev 4 structure
+    - Patient training curriculum covers all critical tasks from usability specification
+    depends_on:
+    - 27
+    - 8
+  TESTS:
+    description: Execute final validation test suite including software V&V, usability
+      validation, and interoperability testing
+    agent_role: analyst
+    acceptance_criteria:
+    - Software Validation Report covers all validation requirements per IEC 62304
+      Section 5.8
+    - Summative usability evaluation completes with zero critical use errors across
+      all 15 participants
+    - All critical tasks completed successfully by at least 95% of participants
+    - Penetration test report shows zero exploitable Critical vulnerabilities
+    - EMC pre-compliance test passes Class B emissions limits
+    - Interoperability confirmed with at least 2 commercially available CGM systems
+    - Validation Summary Report signed by quality director and stored in DHF
+    depends_on:
+    - 27
+    - 31
+    - 23
+  TRAINING:
+    description: Develop and deliver training materials for manufacturing, clinical
+      staff, and patient support teams
+    agent_role: developer
+    acceptance_criteria:
+    - Manufacturing training curriculum covers all critical assembly and inspection
+      steps
+    - Clinical specialist certification program includes competency assessment with
+      passing threshold of 85%
+    - All training materials reviewed and approved by subject matter experts
+    - Training records system captures completion and assessment scores per 21 CFR
+      Part 820.25
+    - Helpdesk training guide covers top 20 anticipated patient support scenarios
+    - Training effectiveness measured via knowledge check with minimum 80% pass rate
+      across all audiences
+    - eLearning modules SCORM compliant and tested in at least 2 LMS platforms
+    depends_on:
+    - 31
+    - 33
+  OPERATIONS:
+    description: Author production operations runbooks, postmarket surveillance plan,
+      and incident response procedures
+    agent_role: analyst
+    acceptance_criteria:
+    - Cloud operations runbook covers all services with escalation paths for each
+      failure mode
+    - MDR procedure defines reportability decision tree per 21 CFR Part 803 requirements
+    - Postmarket surveillance plan defines data collection methods, frequency, and
+      review triggers
+    - Field safety corrective action procedure aligns with ISO 13485 Section 8.3 requirements
+    - OTA firmware update runbook includes rollback procedure tested in staging environment
+    - Security incident response runbook defines 24-hour containment SLA for Critical
+      vulnerabilities
+    - All runbooks reviewed by operations lead and quality assurance before go-live
+    depends_on:
+    - 33
+    - 22
+    - 32

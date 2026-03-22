@@ -1,0 +1,277 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the dropshipping automation market: competitor platforms
+      (AutoDS, DSers, Zendrop), AliExpress/1688 API ecosystem, target merchant personas,
+      pricing benchmarks, and go-to-market positioning for dropshipping_automation.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers ≥5 platforms with feature/pricing comparison
+    - At least 3 distinct merchant personas defined with jobs-to-be-done
+    - GTM strategy includes channel prioritization and 90-day launch plan
+    - AliExpress and 1688 API capability gaps documented
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements: product import workflows, order forwarding
+      rules, tracking sync logic, margin calculation formula, and multi-store federation
+      model. Produce user stories and process flow diagrams.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories cover all 5 core domains with acceptance criteria per story
+    - Process flows include happy path and error/exception paths
+    - Multi-store model defines isolation boundaries and shared-resource rules
+    - Margin calculator formula validated against real AliExpress pricing examples
+    depends_on:
+    - 1
+  FINANCIAL:
+    description: 'Build financial model: SaaS pricing tiers (per-store, per-order,
+      or hybrid), unit economics (CAC, LTV, gross margin), revenue projections for
+      12/24/36 months, and cost breakdown for AliExpress/1688 API usage fees.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - At least 3 pricing tiers modeled with margin analysis per tier
+    - Break-even analysis shows month and required customer count
+    - AliExpress/1688 API cost per 1000 orders quantified
+    - PCI DSS compliance cost factored into financial model
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, AliExpress/1688 reseller
+      compliance terms, GDPR/CCPA data handling clauses, and merchant agreement for
+      multi-store usage. Review IP implications of scraping vs. official API usage.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Terms of Service covers liability limitations for order forwarding failures
+    - Privacy Policy is GDPR and CCPA compliant with explicit data retention periods
+    - Merchant agreement defines SLA obligations and acceptable use policy
+    - IP review concludes whether 1688 product data usage requires licensing
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 2
+  SECURITY:
+    description: 'Produce threat model for dropshipping_automation: API key storage
+      for merchant stores (Shopify/WooCommerce tokens), AliExpress/1688 credentials
+      vault, payment data flow (PCI DSS scope), order data isolation between tenants,
+      and OWASP Top 10 review plan.'
+    agent_role: critic
+    acceptance_criteria:
+    - STRIDE threat model completed for all 5 scoped areas
+    - PCI DSS scope defined — confirm whether platform is SAQ-A or SAQ-D
+    - API key vault design specifies encryption-at-rest algorithm and rotation policy
+    - Multi-tenant isolation controls prevent cross-store data leakage
+    - SBOM generated for all planned third-party dependencies
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'Produce PCI DSS compliance artifacts: data flow diagram showing
+      cardholder data boundaries, control mapping to PCI DSS v4 requirements, and
+      V&V protocol for payment tokenization. Confirm platform qualifies for SAQ-A
+      by offloading payment processing to Stripe/PayPal.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Data flow diagram shows no cardholder data stored on platform servers
+    - All applicable PCI DSS v4 requirements mapped to implemented or compensating
+      controls
+    - SAQ-A qualification confirmed in writing or alternative SAQ type justified
+    - V&V protocol covers tokenization, encryption-in-transit, and access control
+      tests
+    depends_on:
+    - 5
+  UX_DESIGN:
+    description: 'Conduct user research with dropshipping merchants and produce wireframes
+      for: onboarding flow, product import wizard (AliExpress/1688 URL → store listing),
+      order management dashboard, tracking sync view, margin calculator UI, and multi-store
+      switcher.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 8 screen areas at low-fidelity
+    - Product import wizard handles both URL paste and bulk CSV import flows
+    - Margin calculator wireframe shows real-time cost breakdown (product cost + shipping
+      + platform fees + desired margin = sell price)
+    - Multi-store switcher supports ≥3 stores without UI degradation
+    - Accessibility audit confirms WCAG 2.1 AA targets per screen
+    - Design system defines color tokens, typography, and component library selection
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design PostgreSQL schema for dropshipping_automation: tenants (multi-store),
+      stores, products (with AliExpress/1688 source metadata), orders, order_line_items,
+      tracking_events, margin_rules, and api_credentials (encrypted). Write migrations
+      using Alembic.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables have created_at, updated_at, and soft-delete (deleted_at) columns
+    - api_credentials encrypted at column level using pgcrypto — plaintext never stored
+    - Multi-tenant isolation enforced by tenant_id foreign key on every table
+    - Alembic migrations are reversible (down() implemented)
+    - Indexes exist on order status, store_id, product source_id, tracking carrier+number
+    - Schema passes normalization review (3NF minimum)
+    depends_on:
+    - 2
+    - 5
+  API:
+    description: 'Design OpenAPI 3.1 spec for all dropshipping_automation REST endpoints:
+      auth (JWT + API key), store CRUD, product import (AliExpress/1688), product
+      catalog, order management, order forwarding trigger, tracking sync, margin calculator,
+      and webhook receivers (Shopify/WooCommerce).'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors using openapi-validator
+    - All endpoints define request/response schemas with examples
+    - Error responses follow RFC 7807 Problem Details format
+    - Rate limiting headers documented on import and forward endpoints
+    - Webhook receiver endpoints define HMAC signature verification requirement
+    - Pagination defined for catalog and order list endpoints
+    depends_on:
+    - 8
+  CONFIG:
+    description: 'Set up project scaffold: monorepo structure (backend FastAPI + frontend
+      React), Docker Compose for local dev (Postgres, Redis, Celery worker, API),
+      environment variable management (.env.example), and agentic pattern config for
+      the coordinator pattern used by order-forwarding and tracking-sync agents.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up starts all services with no manual steps beyond .env copy
+    - make dev starts both API and frontend with hot reload
+    - Coordinator agent config declares specialist routing rules in YAML
+    - .env.example documents every required variable with description
+    - pyproject.toml pinned to Python 3.12, all deps version-locked
+    depends_on:
+    - 9
+  BACKEND:
+    description: 'Implement authentication and multi-tenant store management: JWT
+      auth, API key issuance, tenant context middleware, store CRUD endpoints, and
+      encrypted credential storage for Shopify/WooCommerce/Etsy store tokens.'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT tokens expire in 15 minutes; refresh tokens in 7 days
+    - API keys hashed with bcrypt before storage — plaintext never persisted
+    - Tenant middleware injects tenant_id into all DB queries automatically
+    - Store credentials round-trip encrypted — decrypted only in memory during use
+    - 'Rate limiting applied: 10 auth attempts/minute per IP'
+    depends_on:
+    - 10
+  AGENTIC:
+    description: 'Implement the ReAct-pattern monitoring agent for order forwarding
+      anomaly detection: observes order forwarding success rate, tracks AliExpress
+      API error patterns, raises human-review proposals for abnormal failure spikes,
+      and self-corrects retry strategy based on observed API behavior.'
+    agent_role: developer
+    acceptance_criteria:
+    - Agent runs as a Celery beat task every 10 minutes
+    - ReAct loop produces Thought→Action→Observation trace stored in audit log
+    - Human-review proposal created (not auto-executed) when success rate drops below
+      85%
+    - Agent adjusts retry backoff based on observed AliExpress 429 rate — logged as
+      self-correction
+    - Proposal store entry includes full ReAct trace as evidence
+    depends_on:
+    - 15
+    - 16
+  FRONTEND:
+    description: 'Build React frontend: app shell, routing, auth pages (login/register),
+      and shared layout (sidebar, header with store switcher, notification bell).'
+    agent_role: developer
+    acceptance_criteria:
+    - Login and register pages match wireframes from step 7
+    - JWT stored in httpOnly cookie — not localStorage
+    - Store switcher in header updates global store context and refreshes data
+    - Unauthenticated routes redirect to /login
+    - App shell renders in ≤2s on 4G connection (Lighthouse performance ≥80)
+    depends_on:
+    - 11
+    - 7
+  QA:
+    description: 'Design QA test plan for dropshipping_automation: test cases for
+      product import (AliExpress and 1688), order forwarding (happy path, retry, duplicate),
+      tracking sync, margin calculation accuracy, and multi-store isolation. Define
+      regression suite and exploratory testing charter.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test cases cover ≥90% of user stories from step 2
+    - 'Order forwarding test cases include: success, AliExpress API failure, duplicate
+      webhook, and manual trigger'
+    - Multi-store isolation test cases verify data cannot leak between tenants
+    - Margin calculation accuracy tested against ≥10 real AliExpress product examples
+    - Regression suite runnable in CI under 20 minutes
+    depends_on:
+    - 2
+    - 9
+  TESTS:
+    description: 'Write backend unit and integration tests: auth (JWT, API key), product
+      import (mocked AliExpress/1688 API), margin calculator (formula correctness),
+      order forwarding state machine, tracking sync, and multi-tenant DB isolation.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All test files pass with pytest --strict-markers
+    - Coverage report shows ≥80% on backend src/
+    - Multi-tenant isolation test asserts one tenant cannot read another's orders
+    - Margin calculator tests cover all three rule types with boundary values
+    - Order forwarding tests use mocked AliExpress API — no live API calls in CI
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 23
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test: full order lifecycle from Shopify
+      webhook → AliExpress order placement → tracking sync → fulfillment update, using
+      a staging AliExpress sandbox account. Load test order forwarding at 100 concurrent
+      orders.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full order lifecycle completes in ≤90s end-to-end in staging
+    - 100 concurrent order forwards complete with ≥95% success rate
+    - 500-item bulk import completes without OOM or timeout errors
+    - Tracking sync processes 50 orders within one Celery beat cycle (4h window)
+    - No cross-tenant data exposure observed in multi-store system test
+    depends_on:
+    - 24
+    - 25
+  DEVOPS:
+    description: Set up CI/CD pipeline (GitHub Actions), container build and push
+      (ECR/DockerHub), staging and production environment configs, database migration
+      automation, Celery worker deployment, and monitoring stack (Prometheus + Grafana
+      dashboards for order forwarding metrics).
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and blocks merge on test failure
+    - Alembic migrations run automatically as a pre-deploy step
+    - Staging deploy triggered on merge to main; production deploy requires manual
+      approval
+    - Grafana dashboard shows real-time order_forwarding_success_rate
+    - Alert fires to PagerDuty/Slack when success_rate < 85% for >15min
+    - Rollback procedure documented and tested in staging
+    depends_on:
+    - 26
+  OPERATIONS:
+    description: 'Write operational runbooks: AliExpress API outage response, order
+      forwarding failure escalation, tracking sync degradation, database failover
+      procedure, Celery worker restart, and SLA definitions for each core workflow.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Each runbook has: trigger condition, diagnosis steps, remediation steps, and
+      escalation path'
+    - AliExpress API outage runbook includes fallback to manual forwarding mode
+    - SLA definitions cover latency, freshness, and availability with measurement
+      method
+    - Incident response defines severity levels (P1/P2/P3) with response time targets
+    - Capacity plan estimates resource needs at 1k, 10k, and 100k orders/day
+    depends_on:
+    - 27
+  DOCS:
+    description: 'Write developer and merchant documentation: API reference (from
+      OpenAPI spec), merchant onboarding guide (store connection, first product import,
+      first automated order), webhook setup guides for Shopify and WooCommerce, and
+      architecture decision records (ADRs).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from OpenAPI spec — no manual duplication
+    - Merchant onboarding guide walkable in ≤15 minutes by a non-technical user
+    - Webhook setup guides include screenshots and Shopify/WooCommerce admin paths
+    - Each ADR documents context, decision, and consequences
+    - Docs site buildable with mkdocs or equivalent static generator
+    depends_on:
+    - 27

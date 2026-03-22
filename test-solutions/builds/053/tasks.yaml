@@ -1,0 +1,318 @@
+task_types:
+  CONFIG:
+    description: 'Initialize the agriculture_monitoring solution scaffold: directory
+      structure, YAML configs (project.yaml, prompts.yaml, tasks.yaml), toolchain
+      configs for embedded (ARM GCC, CMake), Python venv for backend/ML, and Node.js
+      for frontend. Set firmware build targets for STM32/ESP32.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml, prompts.yaml, and tasks.yaml are valid and pass SAGE YAML validation
+    - CMake build system compiles a hello-world firmware for ESP32-S3 without errors
+    - '`make venv` succeeds and all Python dependencies install cleanly'
+    - Frontend `npm install` succeeds with no peer-dependency errors
+    - .env.example documents all required environment variables
+    depends_on: []
+  SECURITY:
+    description: 'Produce a threat model (STRIDE) for the full system: sensor nodes,
+      gateway, cloud backend, and dashboard. Identify attack surfaces (MQTT broker,
+      OTA update channel, REST API, NDVI image upload). Define security controls per
+      IEC 62443 SL-1/SL-2. Generate SBOM for firmware and backend dependencies.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All 6 STRIDE threat categories covered with at least one mitigating control
+      each
+    - SBOM generated for firmware and backend in SPDX format
+    - IEC 62443 security controls matrix maps each threat to a specific countermeasure
+    - OTA update channel threat explicitly addresses firmware signing requirement
+    - Document reviewed and signed off by safety_engineer
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Establish IEC 62443 compliance evidence package: zone/conduit model,
+      security lifecycle plan, patch management policy, and incident response procedure.
+      Create a traceability matrix linking security requirements to implementation
+      tasks.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Zone/conduit diagram covers all four network zones with defined trust boundaries
+    - Traceability matrix links every IEC 62443 clause to at least one implementation
+      task or evidence artifact
+    - Patch management policy specifies maximum days-to-patch per severity level
+    - Incident response procedure defines roles and escalation paths
+    - Artifacts stored in compliance/ directory and referenced in project.yaml
+    depends_on:
+    - 2
+  PCB_DESIGN:
+    description: 'Design the soil moisture + environmental sensor node PCB: ESP32-S3
+      MCU, capacitive soil moisture sensor interface (ADC), DHT22 temperature/humidity,
+      4G/LoRa radio module, LiPo battery management (TP4056), and solar charging input.
+      Generate schematic, BOM, and DRC-clean layout.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - KiCad DRC passes with zero errors and zero unconnected nets
+    - BOM includes part numbers, quantities, and supplier links for all components
+    - Gerber files pass online DFM check (JLCPCB or equivalent)
+    - Power budget analysis shows >72h battery life at 15-min sampling interval
+    - Schematic reviewed and annotated with test points for all critical signals
+    depends_on:
+    - 1
+  FIRMWARE:
+    description: 'Implement ESP32-S3 firmware for the soil moisture sensor node: FreeRTOS
+      tasks for ADC sampling (soil moisture, temperature, humidity, light), deep-sleep
+      power management (15-min wake cycle), LoRa/MQTT data transmission with TLS 1.2,
+      signed OTA update support, and sensor calibration routines.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - Firmware compiles cleanly for ESP32-S3 target with zero warnings at -Wall
+    - Deep sleep current draw < 50µA measured via INA219
+    - MQTT publish succeeds with TLS 1.2 mutual authentication to broker
+    - OTA update rejects unsigned firmware with explicit error log
+    - Soil moisture reading reproducibility < 2% across 10 consecutive samples
+    - All FreeRTOS tasks have defined stack sizes and priority levels documented
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 4
+  DATABASE:
+    description: 'Design and implement the time-series and relational database schema:
+      PostgreSQL + TimescaleDB for sensor telemetry (soil moisture, weather, irrigation
+      events), PostGIS extension for field zone geospatial data, and object metadata
+      table for NDVI images. Include migration scripts and seed data for development.'
+    agent_role: developer
+    acceptance_criteria:
+    - All Alembic migrations apply cleanly on a fresh PostgreSQL 16 instance
+    - TimescaleDB hypertables created with 1-day chunk intervals for all telemetry
+      tables
+    - PostGIS geometry columns accept GeoJSON polygon input for field zones
+    - Indexes on (node_id, timestamp) yield query times < 50ms for 30-day range queries
+    - Seed data script populates all tables and is idempotent on re-run
+    - Schema ER diagram generated and stored in docs/database_schema.png
+    depends_on:
+    - 1
+  BACKEND:
+    description: 'Build the FastAPI backend service: MQTT subscriber ingesting sensor
+      telemetry into TimescaleDB, REST endpoints for sensor data retrieval, field
+      zone management, irrigation schedule CRUD, NDVI image metadata, and yield predictions.
+      Implement JWT authentication, rate limiting, and structured logging.'
+    agent_role: developer
+    acceptance_criteria:
+    - MQTT subscriber processes 100 sensor messages/sec without dropping events
+    - All REST endpoints return correct HTTP status codes per OpenAPI spec
+    - JWT validation rejects expired and tampered tokens with 401 responses
+    - Rate limiter enforces 100 req/min per authenticated user
+    - Structured logs include trace_id, user_id, and request duration for every request
+    - '`make test-api` passes all endpoint integration tests against a live test database'
+    depends_on:
+    - 9
+  API:
+    description: 'Produce the complete OpenAPI 3.1 specification for all agriculture_monitoring
+      REST endpoints: sensor telemetry, field zones, irrigation scheduling, NDVI image
+      metadata, yield predictions, and auth. Include request/response schemas, error
+      codes, and example payloads.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates cleanly with `openapi-generator validate`
+    - Every endpoint has at least one request example and one response example
+    - All error responses (400, 401, 403, 404, 422, 500) documented with schema
+    - Spec is auto-generated from FastAPI route decorators and kept in sync with implementation
+    - Static ReDoc HTML renders all endpoints browsable without a live server
+    depends_on:
+    - 10
+  DATA:
+    description: 'Build the sensor data pipeline: raw MQTT telemetry → validation
+      → normalization → TimescaleDB ingest → 15-min and 1-hour downsampled continuous
+      aggregates. Implement anomaly detection for out-of-range sensor readings (soil
+      moisture > 100%, temperature spikes) and dead-node alerting.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Pipeline processes 1000 simulated sensor events with zero data loss under load
+      test
+    - 'Out-of-range readings are flagged with `anomaly: true` and logged to alerts
+      table'
+    - 15-min and 1-hour continuous aggregates materialize within 5s of data insertion
+    - Dead-node alert fires within 35 minutes of last heartbeat (5 min tolerance)
+    - Validation rejects malformed JSON payloads with structured error log entries
+    - Data pipeline throughput benchmarked and result stored in docs/performance_benchmarks.md
+    depends_on:
+    - 10
+  ML_MODEL:
+    description: 'Train and deploy an NDVI-based crop health classification model:
+      binary healthy/stressed classifier using NDVI statistics + weather context features,
+      trained on publicly available crop NDVI datasets. Export as ONNX, deploy as
+      a FastAPI inference microservice, and integrate with the main backend.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model achieves >= 85% accuracy and >= 0.80 F1 score on held-out test set
+    - ONNX export validates with onnxruntime and produces identical predictions to
+      training framework
+    - Inference endpoint responds in < 200ms for single prediction requests
+    - Model card (model_card.md) documents training data, metrics, and known limitations
+    - Unit tests cover feature preprocessing pipeline with known input/output pairs
+    - Model version tracked in MLflow or equivalent experiment tracker
+    depends_on:
+    - 8
+    - 12
+  FRONTEND:
+    description: 'Build the React 18 + TypeScript dashboard: field map view (Leaflet.js
+      with GeoJSON zones), real-time sensor telemetry charts (Recharts), NDVI heatmap
+      viewer, irrigation schedule calendar, yield prediction panel, and alert inbox.
+      Implement JWT-based auth flow and WebSocket for live sensor updates.'
+    agent_role: developer
+    acceptance_criteria:
+    - Field map renders GeoJSON field zones with correct coordinates on Leaflet
+    - Sensor charts update in real-time via WebSocket with < 2s latency
+    - NDVI heatmap displays uploaded PNG overlaid on field map with opacity control
+    - Irrigation scheduler allows creating, editing, and deleting schedules with date/time
+      picker
+    - Yield prediction panel renders point estimate and confidence interval as chart
+    - Lighthouse performance score >= 80 on desktop; all pages load < 3s on 4G throttle
+    - JWT tokens stored in httpOnly cookies, not localStorage
+    depends_on:
+    - 11
+  UX_DESIGN:
+    description: 'Produce UX wireframes and interaction design for the farmer-facing
+      dashboard: field map interaction model, sensor alert workflow, irrigation manual
+      override flow, and NDVI interpretation guide. Conduct accessibility audit (WCAG
+      2.1 AA) on implemented frontend.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 7 frontend pages with annotated interaction states
+    - Irrigation manual override flow is completable in <= 3 clicks from the field
+      map
+    - NDVI interpretation guide uses color-blind-safe palette validated with Colour
+      Contrast Analyser
+    - axe-core audit reports zero critical and zero serious accessibility violations
+      on all pages
+    - Wireframes reviewed and approved by at least one representative farmer persona
+    depends_on:
+    - 15
+  EMBEDDED_TEST:
+    description: 'Write HIL (Hardware-in-the-Loop) test specifications and firmware
+      unit tests: soil moisture ADC calibration test, LoRa packet integrity test under
+      RF attenuation, irrigation relay timing accuracy test, OTA update success/rollback
+      test, and NDVI capture synchronization test. Implement firmware unit tests with
+      Unity framework.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unity test suite achieves >= 90% branch coverage of firmware business logic
+    - HIL test plan documents setup, procedure, pass/fail criteria for each test case
+    - OTA rollback test confirms device boots previous firmware after simulated failed
+      update
+    - Relay timing test confirms valve open/close latency < 150ms across all 8 zones
+    - LoRa RF margin test passes at -10dB simulated path loss attenuation
+    - All HIL tests have documented expected vs. actual results format
+    depends_on:
+    - 5
+    - 6
+    - 7
+    - 8
+  TESTS:
+    description: 'Write backend unit and integration tests: pytest suite for all API
+      endpoints (sensor ingest, irrigation CRUD, NDVI metadata, yield predictions),
+      MQTT subscriber integration test with Mosquitto test broker, data pipeline anomaly
+      detection tests, and ML model inference contract tests.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest suite achieves >= 85% line coverage across backend src/
+    - MQTT integration test sends 500 messages and verifies all stored in TimescaleDB
+    - All API endpoint tests assert correct status codes, response schemas, and error
+      cases
+    - ML inference contract tests assert prediction output schema stability across
+      model versions
+    - Tests run in < 3 minutes in CI with parallel workers
+    - '`make test` exits with code 0 on clean main branch'
+    depends_on:
+    - 10
+    - 12
+    - 13
+    - 14
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system integration tests: simulated sensor node
+      → MQTT broker → backend ingest → DB → API → frontend data flow, full irrigation
+      cycle (schedule trigger → valve open → flow measurement → valve close → event
+      log), and NDVI capture → ML inference → dashboard display pipeline.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 5 E2E scenarios pass 5 consecutive runs without flakiness
+    - Sensor data appears on frontend dashboard within 5s of simulated transmission
+    - Irrigation cycle completes end-to-end and event appears in audit log within
+      10s
+    - NDVI analysis pipeline produces dashboard heatmap within 60s of simulated capture
+    - 'Load test: 50 concurrent sensor nodes at 1 msg/min sustains < 5% error rate
+      over 10 minutes'
+    - System test report generated and stored as CI artifact
+    depends_on:
+    - 15
+    - 17
+    - 18
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): firmware build + Unity test
+      stage, backend pytest + coverage gate, frontend lint + Playwright E2E stage,
+      Docker image build and push to GHCR, and deployment to staging environment.
+      Add Prometheus + Grafana monitoring and Alertmanager for production.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline completes in < 15 minutes for a standard PR
+    - Coverage gate fails the pipeline if backend coverage drops below 85%
+    - Docker images tagged with git SHA and pushed to GHCR on every main branch merge
+    - Prometheus scrapes backend `/metrics` endpoint and Grafana dashboard displays
+      sensor ingest rate
+    - Alertmanager fires Slack notification when MQTT ingest error rate exceeds 1%
+      for 5 minutes
+    - Staging deployment is fully automated on merge to main with zero manual steps
+    depends_on:
+    - 18
+    - 19
+  INFRA:
+    description: 'Provision production infrastructure via Terraform: VPC with public/private
+      subnets, ECS Fargate for backend and ML inference services, RDS PostgreSQL 16
+      with TimescaleDB extension, S3 bucket for NDVI images, IoT Core MQTT broker
+      (or self-hosted Mosquitto on EC2), and CloudFront CDN for frontend.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`terraform plan` produces zero errors on a clean AWS account with correct variables'
+    - '`terraform apply` provisions all resources in < 20 minutes'
+    - RDS instance has TimescaleDB extension enabled and accessible from ECS tasks
+      only (no public endpoint)
+    - S3 bucket has versioning enabled, public access blocked, and bucket policy requiring
+      TLS
+    - All resources tagged with Environment, Project, and ManagedBy tags
+    - Terraform state stored in S3 backend with DynamoDB state lock
+    depends_on:
+    - 20
+  SAFETY:
+    description: 'Conduct FMEA and hazard analysis for the irrigation automation system:
+      identify failure modes (valve stuck open causing waterlogging, sensor failure
+      causing over/under-irrigation, controller power loss during active cycle). Assign
+      severity/probability ratings and define mitigating safeguards.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - FMEA covers all identified failure modes with Severity, Occurrence, and Detection
+      ratings
+    - Any RPN > 100 has a defined corrective action and responsibility owner
+    - Hazard analysis identifies at least 5 hazardous events with severity classification
+    - Safety requirements derived from FMEA are traceable to firmware safety interlocks
+    - Document reviewed and signed by safety_engineer
+    - Safety requirements referenced in traceability matrix from step 3
+    depends_on:
+    - 7
+  DOCS:
+    description: 'Produce complete project documentation: system architecture diagram,
+      firmware developer guide (build + flash + debug workflow), API reference (auto-generated
+      from OpenAPI), field deployment guide (sensor node installation + calibration),
+      and operator manual for the dashboard.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Architecture diagram shows all system components and data flows end-to-end
+    - Firmware dev guide enables a new developer to build and flash firmware from
+      scratch following written steps only
+    - Field deployment guide includes illustrated sensor node mounting instructions
+      and calibration procedure
+    - Operator manual covers all 7 dashboard pages with annotated screenshots
+    - All documentation spell-checked and cross-linked (no broken internal links)
+    - README includes quick-start instructions that work on a fresh Ubuntu 22.04 machine
+    depends_on:
+    - 19
+    - 21

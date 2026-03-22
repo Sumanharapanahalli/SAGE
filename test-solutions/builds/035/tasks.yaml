@@ -1,0 +1,361 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the real-time document collaboration market: competitors
+      (Google Docs, Notion, Confluence, Quip), pricing benchmarks, differentiators,
+      and go-to-market positioning for the AI writing assistant angle.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers at least 6 competitors with feature, pricing, and
+      positioning columns
+    - Differentiation narrative clearly articulates AI writing assistant as primary
+      wedge
+    - GTM strategy identifies at least 2 beachhead segments with TAM/SAM estimates
+    - Pricing benchmark table produced with free/pro/enterprise tier recommendations
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements, user personas, process flows, and
+      ROI model for the document collaboration platform. Identify primary user journeys:
+      solo writer, team collaborator, admin/IT buyer.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 4 user personas documented with goals, pain points, and success metrics
+    - All 5 core process flows diagrammed with swim-lane notation
+    - User stories written in Given/When/Then format covering all major features
+    - ROI model includes payback period, cost-of-collaboration-inefficiency baseline,
+      and projected savings
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce the Product Requirements Document (PRD), feature roadmap
+      (v1 MVP → v2 → v3), prioritization matrix (RICE scoring), and success metrics
+      (activation rate, DAU/MAU, collaboration sessions per user).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all MVP features with acceptance criteria per feature
+    - RICE scores assigned to all features; top 10 ranked unambiguously
+    - Three-milestone roadmap with target dates and exit criteria per milestone
+    - Success metrics dashboard spec includes data sources and calculation methods
+    depends_on:
+    - 1
+    - 2
+  UX_DESIGN:
+    description: Conduct user research synthesis, produce wireframes for all core
+      screens, define interaction design patterns for real-time collaboration indicators
+      (cursors, presence, conflict resolution), and run accessibility audit against
+      WCAG 2.1 AA.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes produced for all 7 screens at medium fidelity
+    - 'Real-time collaboration UX patterns documented with states: idle, editing,
+      conflict'
+    - Component library spec defined (typography, color tokens, spacing system)
+    - Accessibility audit checklist completed; all critical failures flagged with
+      remediation notes
+    - User research synthesis includes at least 5 usability findings mapped to design
+      decisions
+    depends_on:
+    - 2
+    - 3
+  FINANCIAL:
+    description: Build a financial model covering infrastructure costs, headcount,
+      pricing strategy (freemium + seats + enterprise), revenue projections for 36
+      months, and unit economics (CAC, LTV, gross margin per tier).
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Three-scenario model (conservative, base, optimistic) for 36-month revenue projection
+    - 'Unit economics computed per tier: CAC, LTV, LTV:CAC ratio, payback period'
+    - AI writing assistant cost-per-use modeled with token consumption estimates
+    - Break-even analysis identifies month of contribution-margin positivity
+    - Infrastructure cost scaling curve modeled against user growth milestones
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+    - 3
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), data
+      processing agreement (DPA) template for enterprise, IP ownership clauses for
+      AI-generated content, and open-source license inventory.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers acceptable use, account termination, and dispute resolution
+    - Privacy policy addresses data collection, retention, deletion rights (GDPR Art.
+      17), and CCPA opt-out
+    - DPA template includes SCCs and sub-processor list
+    - AI content IP clause explicitly assigns generated content ownership to the user
+    - OSS license inventory lists all dependencies with license type; GPL conflicts
+      flagged
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on: []
+  COMPLIANCE:
+    description: 'Plan SOC 2 Type I readiness: map controls to Trust Service Criteria
+      (Security, Availability, Confidentiality), produce control matrix, identify
+      evidence artifacts needed, and define audit preparation timeline.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Control matrix maps all SOC 2 CC criteria to specific technical and procedural
+      controls
+    - Evidence artifact list specifies owner, collection method, and review cadence
+      per control
+    - Gap analysis identifies controls not yet implemented with priority ranking
+    - Audit readiness timeline targets SOC 2 Type I report within 6 months of launch
+    depends_on:
+    - 6
+  API:
+    description: 'Design the full API contract: OpenAPI 3.1 spec covering documents
+      CRUD, real-time collaboration WebSocket protocol, version history, comments,
+      permissions, templates, and AI assistant endpoints. Define error codes, rate
+      limits, and pagination standards.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec produced and validated with no schema errors
+    - 'WebSocket message protocol documented with op types: insert, delete, retain,
+      cursor, presence'
+    - All endpoints include request/response examples, error codes, and rate limit
+      headers
+    - Pagination standard (cursor-based) applied consistently across list endpoints
+    - AI assistant endpoint spec includes streaming response support (SSE)
+    depends_on:
+    - 3
+    - 4
+  DATABASE:
+    description: 'Design the database schema: documents (content as CRDT/OT delta
+      log), users, workspaces, permissions (RBAC), version snapshots, comments (anchored
+      to document positions), templates, and AI interaction logs.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD produced covering all tables with cardinality annotations
+    - document_ops table designed as append-only immutable log for CRDT/OT replay
+    - Permissions model supports owner/editor/commenter/viewer roles at workspace
+      and document level
+    - All migrations are idempotent and reversible (up/down scripts)
+    - Indexes defined for all foreign keys and high-frequency query patterns
+    - Schema passes normalization review (3NF minimum, denormalization justified where
+      used)
+    depends_on:
+    - 8
+  CONFIG:
+    description: 'Set up the SAGE solution configuration for document_collaboration:
+      project.yaml (solution manifest), prompts.yaml (AI assistant and analyst roles),
+      tasks.yaml (task type registry). Configure the Multi-Agent Coordinator agentic
+      pattern for the AI writing assistant subsystem.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml validates against SAGE schema with no errors
+    - prompts.yaml defines AI writing assistant coordinator role and all 4 specialist
+      sub-agent prompts
+    - tasks.yaml registers all task types needed for the solution
+    - SAGE backend starts successfully with PROJECT=document_collaboration
+    - Coordinator pattern config documented with routing logic per request type
+    depends_on:
+    - 3
+  INFRA:
+    description: 'Define infrastructure architecture: containerized backend (Docker),
+      managed PostgreSQL + Redis, WebSocket-capable load balancer (sticky sessions
+      or pub/sub fan-out), CDN for static assets, object storage for document exports,
+      and IaC (Terraform or Pulumi).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform modules produced for all AWS services with variable parameterization
+      per environment
+    - Docker images for backend and frontend build successfully with no vulnerabilities
+      (CRITICAL/HIGH)
+    - 'WebSocket scaling design documented: Redis pub/sub fan-out across API instances'
+    - CDN cache policy defined with correct cache-control headers for static vs dynamic
+      content
+    - Disaster recovery RPO/RTO targets defined and infrastructure designed to meet
+      them
+    depends_on:
+    - 9
+    - 10
+  SECURITY:
+    description: Produce threat model (STRIDE), define security controls for real-time
+      collaboration (WebSocket auth, op validation, DoS protection), encryption requirements
+      (TLS 1.3, AES-256 at rest), RBAC enforcement design, and pen test scope document.
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 threat categories for each of the 5 critical
+      surfaces
+    - Security controls matrix maps each threat to a mitigating control with implementation
+      status
+    - AI prompt injection attack vectors documented with input sanitization strategy
+    - Pen test scope document ready for third-party security firm engagement
+    - Encryption-at-rest and in-transit requirements specified for all data stores
+    depends_on:
+    - 8
+    - 11
+  BACKEND:
+    description: 'Implement the core backend: FastAPI (or Node.js/Express) application
+      with user auth (JWT + OAuth2), workspace and document CRUD, PostgreSQL ORM layer,
+      Redis client, background job queue, and foundational middleware (logging, error
+      handling, tenant isolation).'
+    agent_role: developer
+    acceptance_criteria:
+    - All auth endpoints return correct tokens and refresh correctly
+    - Document CRUD endpoints conform to OpenAPI spec (step 8) — schema validated
+    - All database operations use async ORM with connection pooling
+    - Structured JSON logs emitted for every request with trace_id, user_id, duration_ms
+    - Health check endpoint returns 200 with DB and Redis connectivity status
+    - Unit tests cover auth flows and CRUD operations with >80% coverage
+    depends_on:
+    - 9
+    - 11
+  AGENTIC:
+    description: 'Implement the AI writing assistant using the Multi-Agent Coordinator
+      pattern: coordinator decomposes user requests and routes to specialist sub-agents
+      (SuggestionAgent, RewriteAgent, SummarizeAgent, GrammarAgent). Each sub-agent
+      uses the ReAct loop. Streaming responses via SSE. Prompt injection guardrails
+      applied at coordinator level.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes 'suggest next sentence', 'rewrite as formal', 'summarize',
+      and 'fix grammar' requests to correct specialist
+    - SSE stream delivers first token within 800ms (P95)
+    - Prompt injection attempts (e.g., 'ignore previous instructions') are detected
+      and rejected
+    - AI suggestions include accept/reject actions that write to audit log
+    - AI interaction log records request type, token usage, latency, and acceptance
+      outcome per interaction
+    - Context window correctly includes surrounding text without exceeding model limit
+    depends_on:
+    - 13
+    - 10
+  FRONTEND:
+    description: 'Build the React (TypeScript) application shell: routing, auth flows
+      (login/signup/OAuth), workspace dashboard, document list, and layout components.
+      Implement the rich text editor using ProseMirror or TipTap with collaborative
+      extensions (y-prosemirror/y-tiptap).'
+    agent_role: developer
+    acceptance_criteria:
+    - Auth flow completes OAuth login and stores JWT in httpOnly cookie
+    - Dashboard lists all workspace documents with last-modified, collaborators, and
+      share status
+    - Rich text editor renders headings, lists, bold/italic/underline, links, and
+      code blocks
+    - CRDT sync connects to WebSocket and reflects remote edits in <100ms visually
+    - Editor is keyboard-navigable and passes basic accessibility checks (ARIA roles,
+      focus management)
+    - Lighthouse performance score >85 on document editor page
+    depends_on:
+    - 4
+    - 14
+    - 16
+  DEVOPS:
+    description: 'Set up CI/CD pipelines (GitHub Actions): lint, test, build, Docker
+      image push, Terraform plan on PR, Terraform apply on merge to main, staging
+      auto-deploy, production deploy with manual approval gate. Configure observability:
+      CloudWatch metrics, structured log ingestion, uptime monitoring, and alerting.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline completes in <10 minutes for a typical PR
+    - Terraform plan output posted as PR comment automatically
+    - Production deploy requires manual approval from at least 1 reviewer in GitHub
+      Actions
+    - Zero-downtime rolling deployment verified (no 5xx during deploy in smoke test)
+    - 'CloudWatch dashboard shows: active WS connections, p50/p95/p99 op latency,
+      error rate'
+    - PagerDuty alert fires within 2 minutes of error rate exceeding 1% for 5 minutes
+    depends_on:
+    - 11
+    - 13
+    - 18
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for backend services
+      (auth, permissions, CRDT ops, AI coordinator), integration tests for API endpoints
+      against a real test database, and frontend component tests (Vitest + Testing
+      Library).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Backend unit test coverage ≥80% on all service modules
+    - All 6 integration test scenarios pass against a real PostgreSQL + Redis test
+      instance
+    - WebSocket integration test validates concurrent op convergence for 2 simulated
+      clients
+    - Frontend component tests cover all interactive components with >75% branch coverage
+    - All tests run in CI pipeline and block merge on failure
+    - Test runtime <5 minutes for unit tests, <15 minutes for integration tests
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests: full collaboration session (2 users,
+      concurrent edits, cursor presence, comments, version restore), permissions enforcement
+      across roles, AI assistant pipeline, and performance test (100 concurrent document
+      sessions via k6 or Locust).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 'Two-user Playwright scenario: both users see each other''s cursors and edits
+      converge correctly'
+    - 'Viewer role: all edit/comment actions blocked at UI and API level'
+    - 'Share link: expired link returns 410; password-protected link requires correct
+      password'
+    - 'AI assistant: Playwright test verifies streaming response renders and accept
+      inserts into editor'
+    - 'k6 load test: p99 op latency <200ms at 100 concurrent sessions with <0.1% error
+      rate'
+    - All E2E tests pass in CI staging environment before production deploy gate
+    depends_on:
+    - 19
+    - 20
+    - 21
+    - 22
+    - 23
+  OPERATIONS:
+    description: 'Write operational runbooks: service startup/shutdown, database failover,
+      Redis cache eviction incident, WebSocket capacity scaling, AI provider failover
+      (primary → fallback LLM), and incident response playbooks. Define SLAs per tier
+      and capacity planning model.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Every runbook has: trigger condition, step-by-step procedure, rollback steps,
+      and post-incident checklist'
+    - AI provider failover runbook covers primary LLM down → fallback LLM switch with
+      <30s interruption
+    - SLA definitions include measurement methodology, exclusions, and credit policy
+      per tier
+    - Capacity planning model predicts infrastructure scaling needs at 10x, 50x, 100x
+      current load
+    - On-call rotation configured in PagerDuty with escalation policy documented
+    depends_on:
+    - 22
+    - 24
+  DOCS:
+    description: Produce API documentation (auto-generated from OpenAPI spec + narrative
+      guides), architecture decision records (ADRs) for CRDT choice, auth design,
+      AI coordinator pattern, and a developer onboarding guide for contributors.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API docs site renders all endpoints with interactive try-it-out
+    - All 4 ADRs document context, decision, and consequences sections
+    - 'Developer onboarding: new contributor can run the full stack locally in <15
+      minutes following README'
+    - Architecture diagram (C4 level 2) included in docs showing all major components
+      and data flows
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  TRAINING:
+    description: 'Create user-facing onboarding materials: interactive in-app product
+      tour (new user first-run), help center articles for all major features, and
+      a ''Getting Started'' video script covering document creation, sharing, and
+      AI assistant usage.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - In-app tour is dismissible and restartable; progress persisted in user profile
+    - All 5 help articles published with screenshots and step-by-step instructions
+    - Video script covers all 3 topics (create, share, AI) within 3-minute target
+      runtime
+    - Help center articles pass readability check (Flesch-Kincaid grade ≤10)
+    depends_on:
+    - 21
+    - 27

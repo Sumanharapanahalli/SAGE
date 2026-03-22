@@ -1,0 +1,1005 @@
+{
+  "run_id": "269107b5-fb3d-4ef0-8fd8-b9c9ff39eb36",
+  "solution_name": "pet_care",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T10:35:51.644801+00:00",
+  "updated_at": "2026-03-22T10:40:28.399056+00:00",
+  "product_description": "Pet care app with vet appointment booking, vaccination reminders, pet health records, pet sitter marketplace, lost pet alerts, and community forums.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the pet care app market: competitor landscape (Rover, Wag, PetDesk, Vetster), user segments (pet owners, vets, sitters), pricing models, and go-to-market strategy for pet_care launch.",
+      "payload": {
+        "competitors": [
+          "Rover",
+          "Wag",
+          "PetDesk",
+          "Vetster",
+          "BabelBark"
+        ],
+        "segments": [
+          "pet_owners",
+          "veterinarians",
+          "pet_sitters",
+          "shelters"
+        ],
+        "focus_areas": [
+          "appointment_booking",
+          "marketplace_fees",
+          "subscription_models",
+          "lost_pet_networks"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix covers at least 5 apps with feature, pricing, and rating comparison",
+        "At least 3 distinct user personas defined with goals and pain points",
+        "Go-to-market strategy documented with channel prioritization",
+        "Monetization model recommended (freemium, commission, subscription) with rationale"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the Product Requirements Document (PRD) for pet_care covering all six feature areas: vet booking, vaccination reminders, health records, sitter marketplace, lost pet alerts, and community forums. Define MVP scope, roadmap phases, and success metrics.",
+      "payload": {
+        "features": [
+          "vet_appointment_booking",
+          "vaccination_reminders",
+          "pet_health_records",
+          "pet_sitter_marketplace",
+          "lost_pet_alerts",
+          "community_forums"
+        ],
+        "mvp_phase": 1,
+        "kpis": [
+          "DAU",
+          "booking_conversion_rate",
+          "sitter_retention",
+          "alert_response_time"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all six features with user stories and acceptance criteria per feature",
+        "MVP vs V2 scope explicitly defined and justified",
+        "Success metrics defined with baseline targets for each KPI",
+        "Roadmap contains at least 3 phased milestones with milestone exit criteria"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes for all primary flows: onboarding/pet profile setup, vet appointment booking, vaccination reminder configuration, health record upload/view, sitter marketplace search and booking, lost pet alert creation, and forum browsing.",
+      "payload": {
+        "research_methods": [
+          "user_interviews",
+          "survey",
+          "competitive_ux_audit"
+        ],
+        "deliverables": [
+          "user_journey_maps",
+          "wireframes",
+          "component_library_spec",
+          "accessibility_checklist"
+        ],
+        "platforms": [
+          "iOS",
+          "Android",
+          "web"
+        ]
+      },
+      "acceptance_criteria": [
+        "User journey maps completed for all 6 feature flows",
+        "Low-fidelity wireframes cover all primary screens (min 30 screens)",
+        "Accessibility audit confirms WCAG 2.1 AA compliance plan",
+        "Component library spec defined for design system handoff",
+        "App store screenshot mockups prepared",
+        "Onboarding flow under 3 steps"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 specification for all pet_care backend endpoints: auth, pet profiles, vet booking, vaccinations, health records, sitter marketplace, lost pet alerts, community forums, and notifications.",
+      "payload": {
+        "spec_format": "openapi_3.1",
+        "auth_strategy": "JWT + OAuth2 (Google, Apple)",
+        "endpoints_groups": [
+          "auth",
+          "users",
+          "pets",
+          "vets",
+          "appointments",
+          "vaccinations",
+          "health_records",
+          "sitters",
+          "marketplace_listings",
+          "lost_pet",
+          "forums",
+          "notifications",
+          "media_upload"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec passes validation with zero errors",
+        "All 6 feature domains have full CRUD endpoint definitions",
+        "Auth flows documented with token refresh and OAuth2 callback paths",
+        "Error schema standardized across all endpoints (RFC 7807 Problem Details)"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 5,
+      "task_type": "DATABASE",
+      "description": "Design and implement the PostgreSQL schema for pet_care: users, pets, vet_profiles, appointments, vaccination_records, health_documents, sitter_profiles, marketplace_listings, bookings, lost_pet_alerts, forum_posts, and notifications. Include indexes, FK constraints, and migration files.",
+      "payload": {
+        "engine": "PostgreSQL 16",
+        "migration_tool": "Alembic",
+        "tables": [
+          "users",
+          "pets",
+          "vet_profiles",
+          "vet_availability_slots",
+          "appointments",
+          "vaccination_records",
+          "health_documents",
+          "sitter_profiles",
+          "marketplace_listings",
+          "bookings",
+          "reviews",
+          "lost_pet_alerts",
+          "alert_responses",
+          "forum_categories",
+          "forum_posts",
+          "forum_comments",
+          "notifications",
+          "push_tokens"
+        ],
+        "soft_delete": true,
+        "audit_timestamps": true
+      },
+      "acceptance_criteria": [
+        "All tables created with correct FK constraints and indexes",
+        "Alembic migration runs cleanly from empty schema",
+        "Soft-delete pattern (deleted_at) applied to all user-facing tables",
+        "ERD diagram generated and committed to docs/",
+        "Seed script populates test fixtures for all tables"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "CONFIG",
+      "description": "Set up the SAGE solution configuration for pet_care: scaffold project.yaml, prompts.yaml, and tasks.yaml defining agent roles (vet_booking_agent, reminder_agent, marketplace_agent, alert_agent), active modules, and theme branding.",
+      "payload": {
+        "solution_name": "pet_care",
+        "agent_roles": [
+          "vet_booking_agent",
+          "reminder_scheduler_agent",
+          "marketplace_matching_agent",
+          "lost_pet_alert_agent",
+          "health_record_analyst"
+        ],
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "developer",
+          "monitor",
+          "improvements",
+          "knowledge",
+          "audit"
+        ],
+        "agentic_pattern": "coordinator"
+      },
+      "acceptance_criteria": [
+        "project.yaml passes SAGE YAML validation",
+        "prompts.yaml defines system prompts for all 5 agent roles",
+        "tasks.yaml registers all task types needed for pet_care domain",
+        "make run PROJECT=pet_care starts without errors",
+        "Theme branding applied (sidebar colors, badge colors defined)"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "INFRA",
+      "description": "Set up Docker Compose for local development (API, PostgreSQL, Redis for job queues, MinIO for file storage), and production-ready Dockerfile for the backend. Configure environment variable management and secrets handling.",
+      "payload": {
+        "services": [
+          "api",
+          "postgres",
+          "redis",
+          "minio",
+          "celery_worker"
+        ],
+        "container_registry": "ghcr.io",
+        "env_management": ".env + docker secrets",
+        "healthchecks": true
+      },
+      "acceptance_criteria": [
+        "docker compose up starts all services cleanly",
+        "All service healthchecks pass within 60 seconds",
+        "MinIO bucket auto-provisioned for pet health documents and profile photos",
+        "API container starts and responds to GET /health within 5 seconds",
+        "No secrets committed to version control"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Build core backend services: user authentication (JWT + OAuth2 Google/Apple), pet profile management (CRUD, multi-pet per user), file upload service for health documents and photos, and push notification infrastructure (FCM + APNs via Expo).",
+      "payload": {
+        "framework": "FastAPI",
+        "auth": [
+          "JWT",
+          "OAuth2_Google",
+          "OAuth2_Apple"
+        ],
+        "file_storage": "MinIO S3-compatible",
+        "push": "Expo Push Notifications (FCM + APNs)",
+        "background_tasks": "Celery + Redis"
+      },
+      "acceptance_criteria": [
+        "User registration, login, token refresh, and OAuth2 flows all return correct responses",
+        "Pet CRUD endpoints enforce ownership (user can only access own pets)",
+        "File upload accepts JPEG/PNG/PDF up to 20MB and stores in MinIO with signed URLs",
+        "Push notification test endpoint successfully delivers to a registered device token",
+        "All endpoints return proper 401/403 on unauthorized access"
+      ],
+      "depends_on": [
+        5,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Build the vet appointment booking service: vet profile management, availability slot generation, appointment creation/cancellation/rescheduling, calendar sync (iCal export), and automated email/push confirmation and reminder notifications.",
+      "payload": {
+        "slot_strategy": "time_block_generation",
+        "calendar_export": "iCal RFC 5545",
+        "notifications": [
+          "email_confirmation",
+          "24h_push_reminder",
+          "1h_push_reminder"
+        ],
+        "cancellation_policy": "configurable_per_vet"
+      },
+      "acceptance_criteria": [
+        "Vet can set weekly availability template and block-off dates",
+        "Booking creates appointment and deducts slot atomically (no double-booking)",
+        "Cancellation triggers refund-placeholder hook and notification within 5 seconds",
+        "iCal export renders correctly in Google Calendar and Apple Calendar",
+        "Reminder jobs are scheduled in Celery and fire within 60 seconds of target time in test"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Build vaccination reminder service: vaccination record CRUD, recurring reminder scheduling per vaccine type (configurable interval), overdue detection, and batch notification dispatch. Build pet health records service: document upload, categorization, vet-shared access tokens.",
+      "payload": {
+        "reminder_engine": "Celery beat periodic tasks",
+        "vaccine_types": "configurable from admin + custom",
+        "health_record_sharing": "time-limited signed URL tokens",
+        "overdue_thresholds": "configurable per vaccine"
+      },
+      "acceptance_criteria": [
+        "Vaccination record creation auto-schedules next reminder based on vaccine interval",
+        "Overdue detection job runs daily and flags records past due date",
+        "Push + email reminder fires on scheduled date within 5-minute window",
+        "Health record share token expires after configured TTL and returns 403 after expiry",
+        "Vet can view shared records via token without requiring app login"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build the pet sitter marketplace: sitter profile management (bio, rates, availability, certifications), listing search with geo-filter and filters (pet type, service type), booking flow with escrow payment placeholder, two-way review system, and background check flag.",
+      "payload": {
+        "search": "PostGIS geo-radius query",
+        "filters": [
+          "pet_type",
+          "service_type",
+          "rating",
+          "price_range",
+          "availability"
+        ],
+        "payment": "Stripe Connect (escrow placeholder)",
+        "reviews": "bidirectional_post_booking",
+        "moderation": "report_flag + admin_review"
+      },
+      "acceptance_criteria": [
+        "Sitter search returns results within 50km radius sorted by relevance",
+        "Geo-filter returns correct results for lat/lng + radius combinations",
+        "Booking flow creates pending booking and notifies sitter within 5 seconds",
+        "Review can only be submitted after booking completion (enforced server-side)",
+        "Sitter rating recomputed correctly after each review (rolling average)"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build lost pet alert service: alert creation with pet photo + last known location (geo-point), broadcast radius notification to nearby app users, sighting reporting flow, and alert resolution. Build community forums: categories, threaded posts, comments, upvotes, moderation flags.",
+      "payload": {
+        "alert_broadcast": "PostGIS radius push to nearby users",
+        "sighting_flow": "photo + geo-point + description",
+        "forum_features": [
+          "categories",
+          "threaded_comments",
+          "upvotes",
+          "user_mentions",
+          "moderation_queue"
+        ],
+        "forum_search": "PostgreSQL full-text search"
+      },
+      "acceptance_criteria": [
+        "Lost pet alert broadcasts push to all users within configured radius within 30 seconds",
+        "Sighting report notifies alert creator immediately",
+        "Alert marked resolved removes it from active feed",
+        "Forum post search returns results for keyword queries using FTS index",
+        "Moderation flag sends alert to admin queue and hides post after threshold flag count"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "AGENTIC",
+      "description": "Implement coordinator agentic pattern for pet_care: a central PetCareCoordinator decomposes incoming tasks (health anomaly detected, overdue vaccine, lost pet nearby) and routes to specialist agents (health_record_analyst for anomaly review, reminder_scheduler_agent for missed vaccines, lost_pet_alert_agent for proximity matching). Use ReAct loop within each specialist.",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator": "PetCareCoordinator",
+        "specialists": [
+          "health_record_analyst",
+          "reminder_scheduler_agent",
+          "marketplace_matching_agent",
+          "lost_pet_alert_agent"
+        ],
+        "hitl_gates": [
+          "health_anomaly_flagged",
+          "alert_broadcast_above_50km"
+        ],
+        "memory_backend": "chroma_vector_store"
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly routes health anomaly task to health_record_analyst",
+        "Coordinator correctly routes overdue vaccine task to reminder_scheduler_agent",
+        "HITL gate pauses execution for health_anomaly and creates SAGE proposal",
+        "Each specialist agent uses ReAct Thought\u2192Action\u2192Observation loop (logged)",
+        "Vector store retrieves prior similar cases to enrich agent context"
+      ],
+      "depends_on": [
+        6,
+        10,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FRONTEND",
+      "description": "Build the React Native (Expo) mobile app foundation: navigation shell (React Navigation), auth screens (login, register, OAuth buttons), onboarding flow (pet profile creation wizard), and global design system (colors, typography, component primitives) derived from UX spec.",
+      "payload": {
+        "framework": "React Native + Expo SDK 51",
+        "navigation": "React Navigation v6 (stack + bottom tabs)",
+        "state_management": "Zustand",
+        "design_system": "custom + NativeWind (Tailwind for RN)",
+        "platforms": [
+          "iOS",
+          "Android"
+        ]
+      },
+      "acceptance_criteria": [
+        "App launches on iOS and Android simulators without errors",
+        "Auth flow (register \u2192 verify email \u2192 onboarding) completes end-to-end",
+        "Pet profile creation wizard saves pet and navigates to home tab",
+        "Design system components (Button, Input, Card, Avatar) render consistently on both platforms",
+        "OAuth2 Google login completes and returns valid JWT"
+      ],
+      "depends_on": [
+        3,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Build vet appointment booking UI: vet search/browse with specialty filter, vet profile page, availability calendar picker, appointment confirmation screen, and My Appointments dashboard with upcoming/past tabs and cancellation flow.",
+      "payload": {
+        "calendar_component": "custom slot grid",
+        "vet_search": "list + map toggle view",
+        "appointment_states": [
+          "pending",
+          "confirmed",
+          "completed",
+          "cancelled"
+        ]
+      },
+      "acceptance_criteria": [
+        "Vet search renders list of results with specialty and distance filters applied",
+        "Availability calendar shows booked vs available slots visually distinct",
+        "Booking confirmation screen shows all appointment details before final submit",
+        "My Appointments shows correct upcoming/past segmentation",
+        "Cancellation flow shows policy and confirms before API call"
+      ],
+      "depends_on": [
+        9,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build vaccination reminder UI: per-pet vaccine list with due dates and status badges, add/edit vaccination record form with photo upload, reminder settings screen (notification time, advance days), and overdue banner on home screen.",
+      "payload": {
+        "overdue_visual": "red badge + home screen banner",
+        "upcoming_visual": "amber badge within 7 days",
+        "photo_capture": "camera + gallery picker"
+      },
+      "acceptance_criteria": [
+        "Vaccine list shows correct status badges (up-to-date / due-soon / overdue) per record",
+        "Add record form validates required fields and uploads photo to MinIO on submit",
+        "Reminder settings persist and reflect in Celery job schedule",
+        "Overdue banner appears on home screen when any pet has overdue vaccines",
+        "Health record detail view renders uploaded PDF/image inline"
+      ],
+      "depends_on": [
+        10,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build pet sitter marketplace UI: sitter browse screen with map and list toggle, filter drawer, sitter profile page with reviews, booking request flow, My Bookings (owner and sitter views), and in-app chat stub between owner and sitter.",
+      "payload": {
+        "map": "react-native-maps",
+        "chat_stub": "REST polling (WebSocket upgrade in V2)",
+        "booking_states": [
+          "pending",
+          "accepted",
+          "active",
+          "completed",
+          "cancelled"
+        ]
+      },
+      "acceptance_criteria": [
+        "Map view renders sitter pins within geo-radius correctly",
+        "Filter drawer applies pet type, service type, and price range filters reactively",
+        "Sitter profile shows rating, reviews, and availability calendar",
+        "Booking request flow reaches confirmed state end-to-end",
+        "Chat shows message thread between owner and sitter with timestamps"
+      ],
+      "depends_on": [
+        11,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build lost pet alert UI: create alert flow (pet selector, last seen location picker on map, photo upload, description), active alerts map showing nearby lost pets, sighting submission form, and community forums screen (category list, thread view, compose post/comment).",
+      "payload": {
+        "alert_map": "react-native-maps cluster markers",
+        "location_picker": "map tap + GPS current location",
+        "forum_rendering": "flat list with pagination"
+      },
+      "acceptance_criteria": [
+        "Create alert flow completes with photo + map pin + description and submits successfully",
+        "Nearby lost pets appear on map within configured radius",
+        "Sighting submission attaches photo and geo-point and notifies alert owner",
+        "Forum category list loads and navigates to thread view",
+        "Compose post/comment submits and appears in thread without full reload"
+      ],
+      "depends_on": [
+        12,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "SECURITY",
+      "description": "Perform security review of pet_care backend: threat model for user data (health records, location data, payment info), input validation audit, auth token hardening, file upload security (MIME validation, virus scan stub), rate limiting, and GDPR data access/deletion endpoints.",
+      "payload": {
+        "threat_model_framework": "STRIDE",
+        "sensitive_data": [
+          "health_records",
+          "location_data",
+          "payment_tokens",
+          "pet_photos"
+        ],
+        "compliance_targets": [
+          "GDPR",
+          "CCPA"
+        ],
+        "rate_limiting": "Redis sliding window per user/IP"
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model documented for all 6 feature areas",
+        "All file uploads validate MIME type server-side and reject non-image/PDF inputs",
+        "Rate limiting enforced on auth endpoints (max 5 attempts per minute per IP)",
+        "GET /users/me/export returns all user data as GDPR data export",
+        "DELETE /users/me triggers full data deletion cascade within 30 days (logged)",
+        "JWT tokens expire in 1 hour with 7-day refresh token rotation"
+      ],
+      "depends_on": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, and marketplace-specific Sitter Agreement for pet_care. Cover user data handling (health records, location), GDPR/CCPA rights, marketplace transaction terms, lost pet alert liability disclaimer, and community forum content moderation policy.",
+      "payload": {
+        "documents": [
+          "terms_of_service",
+          "privacy_policy",
+          "sitter_marketplace_agreement",
+          "lost_pet_disclaimer",
+          "community_guidelines"
+        ],
+        "jurisdictions": [
+          "US",
+          "EU",
+          "UK"
+        ],
+        "data_retention": "health_records 7 years, location_data 90 days"
+      },
+      "acceptance_criteria": [
+        "Privacy Policy covers all data types collected (health records, location, payment) with legal basis",
+        "GDPR Section enumerates all data subject rights with exercise instructions",
+        "Sitter Agreement covers liability, background check disclosure, and payment terms",
+        "Lost pet disclaimer limits platform liability for alert outcomes",
+        "Community Guidelines specify prohibited content and moderation process"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 21,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure for pet_care React Native app using i18next + react-i18next. Extract all UI strings to en.json base locale. Configure locale detection (device language). Set up translation config for es, fr, de, pt as initial target locales.",
+      "payload": {
+        "library": "i18next + react-i18next",
+        "base_locale": "en",
+        "target_locales": [
+          "es",
+          "fr",
+          "de",
+          "pt"
+        ],
+        "string_extraction": "i18next-scanner",
+        "pluralization": true,
+        "date_formats": "date-fns locale adapters"
+      },
+      "acceptance_criteria": [
+        "All visible UI strings extracted to en.json (zero hardcoded strings in components)",
+        "App renders correctly when device locale set to es, fr, de, pt (using placeholder translations)",
+        "Date/time formatting respects locale conventions (DD/MM/YYYY vs MM/DD/YYYY)",
+        "i18next-scanner CI check fails build if new hardcoded strings are introduced",
+        "Pluralization rules verified for vaccine count strings in at least 3 locales",
+        "Top 5 target locales identified",
+        "Store listing translated"
+      ],
+      "depends_on": [
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 22,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all backend services: auth flows, pet CRUD, vet booking (including double-booking prevention), vaccination reminder scheduling, marketplace search, lost pet alert broadcast, and forum endpoints. Target 80% line coverage.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio",
+        "database": "PostgreSQL test instance (no mocks)",
+        "coverage_target": 80,
+        "fixtures": "factory_boy for model factories",
+        "celery_testing": "celery eager mode"
+      },
+      "acceptance_criteria": [
+        "pytest suite passes with zero failures",
+        "Line coverage >= 80% across src/",
+        "Double-booking prevention test: concurrent booking requests result in exactly one success",
+        "Reminder scheduling test: Celery task fires within simulated time window",
+        "Geo-radius search test: returns correct sitters within 10km, excludes those at 15km",
+        "Auth tests cover valid login, expired token, invalid token, and OAuth2 callback"
+      ],
+      "depends_on": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "QA",
+      "description": "Define and execute QA test plan for pet_care: functional test cases per feature area, edge cases (no vets available, lost pet alert with no nearby users, marketplace with no sitters), regression checklist, and exploratory testing session report.",
+      "payload": {
+        "test_areas": [
+          "vet_booking",
+          "vaccination_reminders",
+          "health_records",
+          "sitter_marketplace",
+          "lost_pet_alerts",
+          "community_forums"
+        ],
+        "edge_cases": true,
+        "devices": [
+          "iPhone 15",
+          "Pixel 8",
+          "iPad Air"
+        ],
+        "test_management": "test_cases in markdown + results log"
+      },
+      "acceptance_criteria": [
+        "Test plan document covers all 6 feature areas with min 10 test cases each",
+        "Edge case scenarios documented and tested (empty states, no-results, offline mode)",
+        "All P0/P1 test cases pass before release candidate",
+        "Exploratory testing session report lists discovered bugs with severity ratings",
+        "Regression checklist defined for all critical user journeys"
+      ],
+      "depends_on": [
+        15,
+        16,
+        17,
+        18
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline: GitHub Actions workflows for backend (lint, test, build Docker image, push to GHCR), frontend (lint, type-check, Expo EAS build), and deployment to staging (Railway or Render). Configure monitoring with Sentry (errors) and basic uptime checks.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "backend_deploy": "Railway (staging) + Docker",
+        "frontend_build": "Expo EAS Build",
+        "error_tracking": "Sentry (backend + RN)",
+        "uptime_monitoring": "UptimeRobot",
+        "branch_strategy": "main \u2192 staging auto-deploy, tags \u2192 production"
+      },
+      "acceptance_criteria": [
+        "Push to main triggers backend test suite, build, and staging deploy within 5 minutes",
+        "EAS Build produces .ipa and .apk for staging on push to main",
+        "Sentry DSN configured and test error captured from both backend and RN app",
+        "Staging environment passes all /health endpoint checks post-deploy",
+        "CI fails and blocks merge on test failures or lint errors"
+      ],
+      "depends_on": [
+        7,
+        22
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "TRAINING",
+      "description": "Produce user onboarding and help documentation for pet_care: in-app onboarding tooltips script, help center articles for all 6 features, vet onboarding guide (how to set up profile and availability), sitter onboarding guide, and App Store / Google Play listing copy.",
+      "payload": {
+        "help_center_tool": "Notion or Intercom",
+        "articles_per_feature": 3,
+        "in_app_tooltips": "per key screen (min 15 tooltip scripts)",
+        "app_store_copy": {
+          "title": true,
+          "subtitle": true,
+          "description": true,
+          "keywords": true,
+          "screenshots_script": true
+        }
+      },
+      "acceptance_criteria": [
+        "Help center has minimum 18 articles (3 per feature area) with screenshots",
+        "Vet onboarding guide covers profile creation, availability setup, and first booking",
+        "Sitter onboarding guide covers profile creation, background check step, and first booking",
+        "App Store description is under 4000 characters and highlights all 6 features",
+        "In-app tooltip scripts delivered for minimum 15 key screens"
+      ],
+      "depends_on": [
+        3,
+        23
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 26,
+      "task_type": "DATA",
+      "description": "Design analytics data pipeline for pet_care: define event schema (app_open, booking_created, reminder_dismissed, alert_created, forum_post_created), instrument Expo analytics or Segment, and create dashboard queries for KPI tracking (DAU, booking conversion, alert response time).",
+      "payload": {
+        "analytics_platform": "Segment \u2192 BigQuery",
+        "events": [
+          "app_open",
+          "pet_created",
+          "booking_created",
+          "booking_cancelled",
+          "reminder_dismissed",
+          "reminder_actioned",
+          "alert_created",
+          "sighting_submitted",
+          "forum_post_created",
+          "sitter_booked"
+        ],
+        "kpi_dashboards": [
+          "DAU",
+          "booking_funnel",
+          "alert_response_time",
+          "marketplace_gmv"
+        ]
+      },
+      "acceptance_criteria": [
+        "Event schema documented with all properties per event type",
+        "Segment tracking calls instrumented in RN app for all defined events",
+        "BigQuery tables receive events within 1 hour of instrumentation",
+        "KPI dashboard renders DAU, booking conversion rate, and alert response time",
+        "Funnel analysis for booking flow (search \u2192 view \u2192 book \u2192 confirm) queryable"
+      ],
+      "depends_on": [
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 27,
+      "task_type": "TESTS",
+      "description": "Write end-to-end tests for critical user journeys using Detox (React Native): new user onboarding + pet creation, complete vet booking flow, vaccination reminder setup, sitter search and booking request, lost pet alert creation, and forum post creation.",
+      "payload": {
+        "framework": "Detox",
+        "platforms": [
+          "iOS simulator",
+          "Android emulator"
+        ],
+        "journeys": [
+          "onboarding_pet_creation",
+          "vet_booking_end_to_end",
+          "vaccination_reminder_setup",
+          "sitter_booking_request",
+          "lost_pet_alert_create",
+          "forum_post_create"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 6 Detox journeys pass on both iOS simulator and Android emulator",
+        "Each journey test completes within 120 seconds",
+        "E2E tests run in CI on EAS Build environment",
+        "Test artifacts (screenshots on failure) uploaded to CI storage",
+        "Zero flaky tests (3 consecutive clean runs required)"
+      ],
+      "depends_on": [
+        22,
+        23
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: API reference (auto-generated from OpenAPI spec via Redoc), backend architecture overview, SAGE agent configuration guide for pet_care, deployment runbook, and contributing guide for the solution repo.",
+      "payload": {
+        "api_docs": "Redoc from OpenAPI spec",
+        "architecture_diagram": "Mermaid C4 container diagram",
+        "deployment_runbook": "step-by-step Railway + EAS deploy",
+        "agent_config_guide": "how to extend pet_care YAML configs"
+      },
+      "acceptance_criteria": [
+        "Redoc site renders all endpoints with request/response examples",
+        "Architecture diagram accurately reflects backend, database, workers, and storage components",
+        "Deployment runbook tested: a new engineer can deploy staging from scratch following it",
+        "SAGE agent config guide explains how to add a new specialist agent role",
+        "Contributing guide covers branch naming, PR template, and test requirements"
+      ],
+      "depends_on": [
+        13,
+        24
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 28,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 52,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 52,
+        "final_review": {
+          "score": 52,
+          "flaws": [
+            "Payment is a 'Stripe Connect placeholder' across the entire plan \u2014 the sitter marketplace cannot function as a business without actual escrow, payout scheduling, dispute handling, and platform fee collection. No step ever implements real payments. The marketplace KPI 'marketplace_gmv' is untrackable if no money moves.",
+            "PostGIS is required in Steps 11 and 12 for geo-radius queries but is never enabled. Step 5 (database schema) uses plain PostgreSQL 16 with no PostGIS extension, and Step 7 (Docker Compose) has no PostGIS-enabled image. Both steps will fail at runtime with 'function st_dwithin does not exist'.",
+            "Vet credential verification is entirely absent. The app allows booking appointments with 'veterinarians' who are never credentialed against any licensing body (AVMA, state boards). Any user can create a vet profile and accept bookings. This is a legal liability and trust-destroying gap \u2014 not a V2 item.",
+            "Background check in Step 11 is described as a 'background check flag' \u2014 a boolean with no actual integration (Checkr, Evident, Sterling). Marketing a sitter marketplace with implied safety guarantees backed by a flag a sitter can self-report is a liability trap and likely a regulatory violation in several US states.",
+            "Lost pet alert broadcast in Step 12 has no rate limiting or abuse prevention. A single user can trigger unlimited broadcasts to thousands of nearby users. No per-user broadcast quota, no cooldown, no admin throttle. This is a spam vector that will burn push notification opt-in rates.",
+            "Apple Sign-In implementation is listed in Step 8 acceptance criteria as 'OAuth2 Google login completes' only \u2014 Apple login is never explicitly tested. Apple's App Store guidelines mandate that any app offering third-party login must include Sign in with Apple. Missing this will cause App Store rejection.",
+            "The Celery beat single process is a SPOF for vaccination reminders and booking confirmations. Step 10 schedules all reminder jobs via Celery beat but the Docker Compose has one celery_worker with no beat scheduler separation, no redundancy, and no mention of what happens when it crashes \u2014 all reminders silently drop.",
+            "Step 13's HITL gate on 'alert_broadcast_above_50km' blocks lost pet broadcasts in real-time for large search areas. A lost pet in a rural area needs a large radius. Requiring human approval before broadcast introduces minutes-to-hours of latency in a time-critical emergency flow. This gate will be bypassed or disabled in production.",
+            "Step 21 (Localization) has acceptance criteria including 'Top 5 target locales identified' and 'Store listing translated' \u2014 these are market strategy decisions that belong in Step 1 (market research) or Step 2 (PRD), not after the entire frontend is built. Retrofitting i18n after 5 frontend steps almost always misses strings.",
+            "No real-time capability exists in the plan. Step 17 acknowledges the chat stub using REST polling, but polling-based chat in a sitter-owner booking context where timely responses affect booking acceptance is a significant UX failure. Sitter acceptance windows are time-sensitive. No WebSocket, SSE, or Firebase Realtime upgrade path is scoped.",
+            "MinIO is used for both local dev and production file storage with no distinction. S3-compatible but MinIO in production requires separate HA setup, backup strategy, and object lifecycle policies. The plan treats MinIO as if it's a fully managed S3 \u2014 it is not.",
+            "Step 20 assigns legally binding documents (Terms of Service, Sitter Marketplace Agreement, Privacy Policy) to an 'agent role: legal_advisor' AI agent. AI-generated legal documents for a live marketplace handling financial transactions and location data across US/EU/UK jurisdictions are not legally sufficient without attorney review. This acceptance criterion cannot be signed off by an AI."
+          ],
+          "suggestions": [
+            "Add a dedicated PAYMENTS step between Steps 11 and 13 covering actual Stripe Connect integration: platform account creation, connected account onboarding for sitters, escrow hold on booking, payout release post-service, dispute webhook handling, and 1099-K tax reporting for sitters above $600/year (US IRS requirement).",
+            "Fix Step 5 and Step 7 immediately: change PostgreSQL Docker image to 'postgis/postgis:16-3.4' and add 'CREATE EXTENSION IF NOT EXISTS postgis;' to the first Alembic migration. Add a PostGIS connection test to the healthcheck.",
+            "Add a VET VERIFICATION step (between Steps 6 and 8): integrate with a veterinary licensing API or implement a manual document review queue. At minimum, require license number input and display 'Unverified' badge until reviewed. Without this, the entire booking feature is legally exposed.",
+            "Replace the background check flag in Step 11 with a real integration stub: integrate Checkr's API (they have a sandbox), or at minimum build the webhook receiver for check completion, implement the pending/clear/consider status states, and block sitter profile activation until check completes.",
+            "Add rate limiting to the lost pet alert broadcast endpoint: max 3 active alerts per user, 24-hour cooldown per alert area, admin override path. Add dead-letter queue monitoring for failed push deliveries to ensure alerts aren't silently dropped.",
+            "Add a separate Celery beat service in Docker Compose: 'celery_beat' container running 'celery -A app beat', separate from the worker. Add liveness probe checking the beat's heartbeat table. Add a test that verifies the beat schedule survives a worker restart.",
+            "Move locale targeting to Step 2 (PRD). In Step 21, change the criteria to 'zero hardcoded strings' and 'CI scanner passes' only \u2014 locale selection and store listing translation are product decisions, not engineering decisions.",
+            "Add load testing as a step before Step 24 (CI/CD). Use Locust or k6 to simulate concurrent booking creation (test double-booking prevention under load), concurrent lost pet alert creation, and geo-radius query performance under 100 concurrent searches. PostgreSQL geo-queries degrade significantly without proper indexing under concurrency.",
+            "Step 8 acceptance criteria must add: 'Apple Sign-In completes on iOS and returns valid JWT' \u2014 not just Google. Test on physical device or TestFlight, not just simulator, since Apple Sign-In behaves differently in simulators.",
+            "For the SAGE agentic layer (Step 13), define what the coordinator does when the HITL gate is triggered and the human doesn't respond within N minutes. Lost pet alerts cannot wait indefinitely. Add a timeout escalation path: auto-approve after 5 minutes with audit log entry, or fallback to smaller radius broadcast."
+          ],
+          "missing": [
+            "Stripe Connect implementation \u2014 the plan has zero steps covering actual payment processing, payout scheduling, platform fees, refund flows, or tax reporting. The marketplace GMV KPI is meaningless without it.",
+            "App Store / Google Play submission process \u2014 the plan ends at CI/CD but never covers TestFlight beta, App Store Connect setup, review submission, expected 2-7 day review cycle, common rejection reasons (Apple sign-in, privacy labels, content moderation), or launch checklist.",
+            "Vet credential verification integration \u2014 no API, no document review queue, no licensing body lookup, no 'verified vet' vs 'unverified' state machine.",
+            "Real background check integration for sitters \u2014 currently a flag. No Checkr/Sterling API, no webhook for check completion, no status state machine.",
+            "In-app purchase / subscription implementation \u2014 Step 1 recommends a monetization model but no step implements it. No RevenueCat, no StoreKit 2, no Google Play Billing, no subscription management.",
+            "Database connection pooling configuration \u2014 PgBouncer or SQLAlchemy pool settings. Under concurrent mobile load, each FastAPI worker opens its own connection. No pooling strategy defined.",
+            "CDN for media delivery \u2014 pet photos and health documents are served from MinIO via signed URLs with no CDN layer. High-latency health record retrieval on mobile degrades perceived quality significantly.",
+            "Push notification token lifecycle management \u2014 invalid token handling (Expo SDK returns 'DeviceNotRegistered' errors), token rotation on app reinstall, and per-user multi-device token fan-out. Not addressed anywhere.",
+            "Forum content moderation tooling \u2014 the moderation queue is mentioned but no admin UI, no moderator role, no content policy enforcement tooling. 'Hides post after threshold' is gameable and insufficient.",
+            "Offline mode handling in the React Native app \u2014 Step 23 mentions 'offline mode' as an edge case but no step implements offline-first behavior, local caching, or sync-on-reconnect logic.",
+            "Data migration / backups strategy \u2014 no Postgres backup schedule, no point-in-time recovery setup, no MinIO bucket replication. A production app storing pet health records with 7-year retention has no backup plan.",
+            "Attorney review of legal documents \u2014 Step 20 generates documents via AI but has no step for legal counsel review before publication."
+          ],
+          "security_risks": [
+            "Health document signed URLs from MinIO have configurable TTL (Step 10) but no audit trail of who accessed them and when. A shared URL forwarded by a vet to an unauthorized party is undetectable. Add access logging and consider short-lived tokens (< 15 minutes) for sensitive documents.",
+            "Geo-location data stored for lost pet alerts and sitter search contains precise user coordinates. Step 19 lists location_data with 90-day retention, but real-time location of a user reporting a lost pet near their home address is PII that can reveal home location. No data minimization strategy (bounding box vs exact point) is defined.",
+            "Forum user mentions (Step 12) are an XSS vector if not sanitized server-side before storage and client-side before render. React Native's Text component doesn't execute scripts, but if forum content is ever rendered in a WebView (common for rich text), unsanitized mentions become XSS.",
+            "File upload MIME validation (Step 19) relies on Content-Type header which is client-controlled. Server-side magic byte validation (python-magic or equivalent) is not specified. A malicious file with a .jpg extension and PHP/shell content can bypass MIME checks.",
+            "The 'virus scan stub' in Step 19 is never implemented \u2014 it's explicitly a stub. Pet health documents are user-uploaded files stored in MinIO and later served to vets. No actual malware scanning (ClamAV, VirusTotal API) means the document pipeline is a malware distribution vector.",
+            "Stripe Connect webhook endpoints (when implemented) must validate the Stripe-Signature header with HMAC verification. Given payment is a placeholder, there is no step reminding the implementer to add webhook signature validation. Unsigned webhook endpoints allow fake payment confirmations.",
+            "JWT refresh token rotation (7-day, Step 19) with no token family tracking means a stolen refresh token can be used indefinitely until explicit revocation. No refresh token family invalidation-on-reuse detection specified.",
+            "The sitter marketplace booking flow creates a financial transaction record tied to real user identity. No step defines PCI DSS scope analysis \u2014 even with Stripe handling card data, the booking metadata (amount, timing, user IDs) constitutes payment record data with retention and access control requirements.",
+            "Community forum moderation queue (Step 12) is accessible to 'admin' but no step defines the admin role, admin authentication hardening, or separation of duties between forum moderators and system administrators. Admin panel is a high-value attack target with no specific hardening."
+          ],
+          "summary": "This plan is architecturally coherent and covers the right domains \u2014 market research through deployment \u2014 but contains several production-blocking gaps that would prevent the app from launching as a functioning business. The two most critical failures are: (1) payment is a placeholder across all 28 steps, making the sitter marketplace (one of six core features and the primary revenue source) entirely non-functional, and (2) vet credential verification is absent, exposing the platform to impersonation liability the moment a booking is made with an uncredentialed 'vet.' The background check system is a boolean flag with no actual integration, which creates false safety guarantees for a marketplace that will market itself as safe for pet care. On the technical side, PostGIS is required but never enabled (runtime failure guaranteed), the Celery beat single process is a SPOF for all reminder functionality, and the lost pet broadcast has no abuse prevention. The plan reads as if written by someone who knows the domain well but has not shipped a two-sided marketplace before \u2014 the hardest parts (payments, trust/safety, credential verification) are deferred or mislabeled as 'placeholders' without acknowledging they are gating features. A score of 52 reflects that the scaffolding is solid but the load-bearing walls are missing. Do not proceed to implementation without a dedicated payments sprint and a vet/sitter trust-and-safety design session.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 52,
+            "flaws": [
+              "Payment is a 'Stripe Connect placeholder' across the entire plan \u2014 the sitter marketplace cannot function as a business without actual escrow, payout scheduling, dispute handling, and platform fee collection. No step ever implements real payments. The marketplace KPI 'marketplace_gmv' is untrackable if no money moves.",
+              "PostGIS is required in Steps 11 and 12 for geo-radius queries but is never enabled. Step 5 (database schema) uses plain PostgreSQL 16 with no PostGIS extension, and Step 7 (Docker Compose) has no PostGIS-enabled image. Both steps will fail at runtime with 'function st_dwithin does not exist'.",
+              "Vet credential verification is entirely absent. The app allows booking appointments with 'veterinarians' who are never credentialed against any licensing body (AVMA, state boards). Any user can create a vet profile and accept bookings. This is a legal liability and trust-destroying gap \u2014 not a V2 item.",
+              "Background check in Step 11 is described as a 'background check flag' \u2014 a boolean with no actual integration (Checkr, Evident, Sterling). Marketing a sitter marketplace with implied safety guarantees backed by a flag a sitter can self-report is a liability trap and likely a regulatory violation in several US states.",
+              "Lost pet alert broadcast in Step 12 has no rate limiting or abuse prevention. A single user can trigger unlimited broadcasts to thousands of nearby users. No per-user broadcast quota, no cooldown, no admin throttle. This is a spam vector that will burn push notification opt-in rates.",
+              "Apple Sign-In implementation is listed in Step 8 acceptance criteria as 'OAuth2 Google login completes' only \u2014 Apple login is never explicitly tested. Apple's App Store guidelines mandate that any app offering third-party login must include Sign in with Apple. Missing this will cause App Store rejection.",
+              "The Celery beat single process is a SPOF for vaccination reminders and booking confirmations. Step 10 schedules all reminder jobs via Celery beat but the Docker Compose has one celery_worker with no beat scheduler separation, no redundancy, and no mention of what happens when it crashes \u2014 all reminders silently drop.",
+              "Step 13's HITL gate on 'alert_broadcast_above_50km' blocks lost pet broadcasts in real-time for large search areas. A lost pet in a rural area needs a large radius. Requiring human approval before broadcast introduces minutes-to-hours of latency in a time-critical emergency flow. This gate will be bypassed or disabled in production.",
+              "Step 21 (Localization) has acceptance criteria including 'Top 5 target locales identified' and 'Store listing translated' \u2014 these are market strategy decisions that belong in Step 1 (market research) or Step 2 (PRD), not after the entire frontend is built. Retrofitting i18n after 5 frontend steps almost always misses strings.",
+              "No real-time capability exists in the plan. Step 17 acknowledges the chat stub using REST polling, but polling-based chat in a sitter-owner booking context where timely responses affect booking acceptance is a significant UX failure. Sitter acceptance windows are time-sensitive. No WebSocket, SSE, or Firebase Realtime upgrade path is scoped.",
+              "MinIO is used for both local dev and production file storage with no distinction. S3-compatible but MinIO in production requires separate HA setup, backup strategy, and object lifecycle policies. The plan treats MinIO as if it's a fully managed S3 \u2014 it is not.",
+              "Step 20 assigns legally binding documents (Terms of Service, Sitter Marketplace Agreement, Privacy Policy) to an 'agent role: legal_advisor' AI agent. AI-generated legal documents for a live marketplace handling financial transactions and location data across US/EU/UK jurisdictions are not legally sufficient without attorney review. This acceptance criterion cannot be signed off by an AI."
+            ],
+            "suggestions": [
+              "Add a dedicated PAYMENTS step between Steps 11 and 13 covering actual Stripe Connect integration: platform account creation, connected account onboarding for sitters, escrow hold on booking, payout release post-service, dispute webhook handling, and 1099-K tax reporting for sitters above $600/year (US IRS requirement).",
+              "Fix Step 5 and Step 7 immediately: change PostgreSQL Docker image to 'postgis/postgis:16-3.4' and add 'CREATE EXTENSION IF NOT EXISTS postgis;' to the first Alembic migration. Add a PostGIS connection test to the healthcheck.",
+              "Add a VET VERIFICATION step (between Steps 6 and 8): integrate with a veterinary licensing API or implement a manual document review queue. At minimum, require license number input and display 'Unverified' badge until reviewed. Without this, the entire booking feature is legally exposed.",
+              "Replace the background check flag in Step 11 with a real integration stub: integrate Checkr's API (they have a sandbox), or at minimum build the webhook receiver for check completion, implement the pending/clear/consider status states, and block sitter profile activation until check completes.",
+              "Add rate limiting to the lost pet alert broadcast endpoint: max 3 active alerts per user, 24-hour cooldown per alert area, admin override path. Add dead-letter queue monitoring for failed push deliveries to ensure alerts aren't silently dropped.",
+              "Add a separate Celery beat service in Docker Compose: 'celery_beat' container running 'celery -A app beat', separate from the worker. Add liveness probe checking the beat's heartbeat table. Add a test that verifies the beat schedule survives a worker restart.",
+              "Move locale targeting to Step 2 (PRD). In Step 21, change the criteria to 'zero hardcoded strings' and 'CI scanner passes' only \u2014 locale selection and store listing translation are product decisions, not engineering decisions.",
+              "Add load testing as a step before Step 24 (CI/CD). Use Locust or k6 to simulate concurrent booking creation (test double-booking prevention under load), concurrent lost pet alert creation, and geo-radius query performance under 100 concurrent searches. PostgreSQL geo-queries degrade significantly without proper indexing under concurrency.",
+              "Step 8 acceptance criteria must add: 'Apple Sign-In completes on iOS and returns valid JWT' \u2014 not just Google. Test on physical device or TestFlight, not just simulator, since Apple Sign-In behaves differently in simulators.",
+              "For the SAGE agentic layer (Step 13), define what the coordinator does when the HITL gate is triggered and the human doesn't respond within N minutes. Lost pet alerts cannot wait indefinitely. Add a timeout escalation path: auto-approve after 5 minutes with audit log entry, or fallback to smaller radius broadcast."
+            ],
+            "missing": [
+              "Stripe Connect implementation \u2014 the plan has zero steps covering actual payment processing, payout scheduling, platform fees, refund flows, or tax reporting. The marketplace GMV KPI is meaningless without it.",
+              "App Store / Google Play submission process \u2014 the plan ends at CI/CD but never covers TestFlight beta, App Store Connect setup, review submission, expected 2-7 day review cycle, common rejection reasons (Apple sign-in, privacy labels, content moderation), or launch checklist.",
+              "Vet credential verification integration \u2014 no API, no document review queue, no licensing body lookup, no 'verified vet' vs 'unverified' state machine.",
+              "Real background check integration for sitters \u2014 currently a flag. No Checkr/Sterling API, no webhook for check completion, no status state machine.",
+              "In-app purchase / subscription implementation \u2014 Step 1 recommends a monetization model but no step implements it. No RevenueCat, no StoreKit 2, no Google Play Billing, no subscription management.",
+              "Database connection pooling configuration \u2014 PgBouncer or SQLAlchemy pool settings. Under concurrent mobile load, each FastAPI worker opens its own connection. No pooling strategy defined.",
+              "CDN for media delivery \u2014 pet photos and health documents are served from MinIO via signed URLs with no CDN layer. High-latency health record retrieval on mobile degrades perceived quality significantly.",
+              "Push notification token lifecycle management \u2014 invalid token handling (Expo SDK returns 'DeviceNotRegistered' errors), token rotation on app reinstall, and per-user multi-device token fan-out. Not addressed anywhere.",
+              "Forum content moderation tooling \u2014 the moderation queue is mentioned but no admin UI, no moderator role, no content policy enforcement tooling. 'Hides post after threshold' is gameable and insufficient.",
+              "Offline mode handling in the React Native app \u2014 Step 23 mentions 'offline mode' as an edge case but no step implements offline-first behavior, local caching, or sync-on-reconnect logic.",
+              "Data migration / backups strategy \u2014 no Postgres backup schedule, no point-in-time recovery setup, no MinIO bucket replication. A production app storing pet health records with 7-year retention has no backup plan.",
+              "Attorney review of legal documents \u2014 Step 20 generates documents via AI but has no step for legal counsel review before publication."
+            ],
+            "security_risks": [
+              "Health document signed URLs from MinIO have configurable TTL (Step 10) but no audit trail of who accessed them and when. A shared URL forwarded by a vet to an unauthorized party is undetectable. Add access logging and consider short-lived tokens (< 15 minutes) for sensitive documents.",
+              "Geo-location data stored for lost pet alerts and sitter search contains precise user coordinates. Step 19 lists location_data with 90-day retention, but real-time location of a user reporting a lost pet near their home address is PII that can reveal home location. No data minimization strategy (bounding box vs exact point) is defined.",
+              "Forum user mentions (Step 12) are an XSS vector if not sanitized server-side before storage and client-side before render. React Native's Text component doesn't execute scripts, but if forum content is ever rendered in a WebView (common for rich text), unsanitized mentions become XSS.",
+              "File upload MIME validation (Step 19) relies on Content-Type header which is client-controlled. Server-side magic byte validation (python-magic or equivalent) is not specified. A malicious file with a .jpg extension and PHP/shell content can bypass MIME checks.",
+              "The 'virus scan stub' in Step 19 is never implemented \u2014 it's explicitly a stub. Pet health documents are user-uploaded files stored in MinIO and later served to vets. No actual malware scanning (ClamAV, VirusTotal API) means the document pipeline is a malware distribution vector.",
+              "Stripe Connect webhook endpoints (when implemented) must validate the Stripe-Signature header with HMAC verification. Given payment is a placeholder, there is no step reminding the implementer to add webhook signature validation. Unsigned webhook endpoints allow fake payment confirmations.",
+              "JWT refresh token rotation (7-day, Step 19) with no token family tracking means a stolen refresh token can be used indefinitely until explicit revocation. No refresh token family invalidation-on-reuse detection specified.",
+              "The sitter marketplace booking flow creates a financial transaction record tied to real user identity. No step defines PCI DSS scope analysis \u2014 even with Stripe handling card data, the booking metadata (amount, timing, user IDs) constitutes payment record data with retention and access control requirements.",
+              "Community forum moderation queue (Step 12) is accessible to 'admin' but no step defines the admin role, admin authentication hardening, or separation of duties between forum moderators and system administrators. Admin panel is a high-value attack target with no specific hardening."
+            ],
+            "summary": "This plan is architecturally coherent and covers the right domains \u2014 market research through deployment \u2014 but contains several production-blocking gaps that would prevent the app from launching as a functioning business. The two most critical failures are: (1) payment is a placeholder across all 28 steps, making the sitter marketplace (one of six core features and the primary revenue source) entirely non-functional, and (2) vet credential verification is absent, exposing the platform to impersonation liability the moment a booking is made with an uncredentialed 'vet.' The background check system is a boolean flag with no actual integration, which creates false safety guarantees for a marketplace that will market itself as safe for pet care. On the technical side, PostGIS is required but never enabled (runtime failure guaranteed), the Celery beat single process is a SPOF for all reminder functionality, and the lost pet broadcast has no abuse prevention. The plan reads as if written by someone who knows the domain well but has not shipped a two-sided marketplace before \u2014 the hardest parts (payments, trust/safety, credential verification) are deferred or mislabeled as 'placeholders' without acknowledging they are gating features. A score of 52 reflects that the scaffolding is solid but the load-bearing walls are missing. Do not proceed to implementation without a dedicated payments sprint and a vet/sitter trust-and-safety design session.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T10:40:28.399041+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 148.35,
+    "critic_plan": 128.4
+  }
+}

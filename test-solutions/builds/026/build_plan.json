@@ -1,0 +1,1259 @@
+{
+  "run_id": "1c023e80-7e7f-4b29-89c0-5cf738565f4c",
+  "status": {
+    "run_id": "1c023e80-7e7f-4b29-89c0-5cf738565f4c",
+    "solution_name": "obd_diagnostics_app",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T00:42:03.186437+00:00",
+    "updated_at": "2026-03-22T00:47:54.662829+00:00",
+    "product_description": "OBD-II vehicle diagnostics mobile app with DTC code reading, live sensor data, maintenance scheduling, and mechanic marketplace integration.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Conduct market analysis for OBD-II diagnostics app: competitor landscape (Torque Pro, FIXD, BlueDriver, CarMD), TAM/SAM/SOM sizing, user segments (DIY mechanics, fleet managers, everyday drivers), mechanic marketplace dynamics, and go-to-market positioning.",
+        "payload": {
+          "competitors": [
+            "Torque Pro",
+            "FIXD",
+            "BlueDriver",
+            "CarMD",
+            "OBD Auto Doctor"
+          ],
+          "segments": [
+            "DIY enthusiasts",
+            "fleet operators",
+            "everyday drivers",
+            "independent mechanics"
+          ],
+          "deliverables": [
+            "competitor matrix",
+            "market sizing model",
+            "positioning brief"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitor matrix covers \u22658 apps with feature/pricing/rating breakdown",
+          "TAM/SAM/SOM calculated with cited data sources",
+          "3 distinct user personas defined with jobs-to-be-done",
+          "Mechanic marketplace revenue model benchmarked against Fiverr/TaskRabbit models",
+          "GTM strategy document approved by product lead"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user stories, and process flows for OBD-II app: DTC reading flow, live sensor dashboard, maintenance scheduling engine, mechanic marketplace booking flow, and notification system. Produce ROI analysis.",
+        "payload": {
+          "flows": [
+            "DTC scan \u2192 decode \u2192 recommend fix",
+            "live sensor polling loop",
+            "maintenance schedule CRUD",
+            "mechanic search \u2192 book \u2192 pay \u2192 review"
+          ],
+          "roi_inputs": [
+            "subscription revenue",
+            "marketplace commission",
+            "data licensing"
+          ],
+          "deliverables": [
+            "BRD",
+            "user story map",
+            "ROI model",
+            "process flow diagrams"
+          ]
+        },
+        "acceptance_criteria": [
+          "BRD covers all 4 core feature areas with MoSCoW prioritization",
+          "\u226540 user stories written in Given/When/Then format",
+          "Process flow diagrams cover happy path + 3 error paths per flow",
+          "ROI break-even timeline calculated for 3 scenarios (pessimistic/base/optimistic)",
+          "Stakeholder sign-off recorded",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Create product requirements document, phased roadmap (MVP \u2192 v1.1 \u2192 v2.0), feature prioritization matrix, and success metrics (DAU, DTC scans/day, marketplace GMV, maintenance schedule completion rate).",
+        "payload": {
+          "mvp_scope": [
+            "DTC reading",
+            "basic live data (RPM/coolant/MAF)",
+            "maintenance log",
+            "mechanic directory"
+          ],
+          "v1_1_scope": [
+            "full PIDs live dashboard",
+            "push maintenance reminders",
+            "in-app mechanic booking + payment"
+          ],
+          "v2_scope": [
+            "AI fault prediction",
+            "fleet management",
+            "OEM data integration"
+          ],
+          "metrics": [
+            "DAU",
+            "scan_events_per_day",
+            "marketplace_GMV",
+            "churn_rate"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD reviewed and signed off by engineering lead",
+          "Roadmap spans 18 months with quarterly milestones",
+          "Each feature has a priority score (RICE or WSJF)",
+          "Success metrics have baseline targets and measurement methodology defined",
+          "MVP feature set fits within 12-week build estimate"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 4,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model: subscription pricing tiers (free/pro/fleet), marketplace commission structure (10-15%), 3-year P&L projection, unit economics (CAC/LTV), infrastructure cost model, and funding requirements.",
+        "payload": {
+          "revenue_streams": [
+            "freemium subscription",
+            "marketplace commission",
+            "OBD adapter hardware bundle",
+            "anonymized fleet data licensing"
+          ],
+          "pricing_tiers": [
+            "Free (5 scans/mo)",
+            "Pro $9.99/mo",
+            "Fleet $49/mo/vehicle"
+          ],
+          "commission_rate": 0.12,
+          "projection_years": 3
+        },
+        "acceptance_criteria": [
+          "3-year P&L model with monthly granularity for Year 1",
+          "LTV:CAC ratio \u22653:1 in base scenario",
+          "Infrastructure cost model tied to user count milestones",
+          "Break-even month identified in all 3 scenarios",
+          "Model reviewed by financial_analyst and product_manager",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 5,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), mechanic marketplace terms, vehicle data handling policy, and IP review of OBD-II protocol usage (SAE J1979/J1939 licensing constraints).",
+        "payload": {
+          "standards": [
+            "GDPR",
+            "CCPA",
+            "SAE J1979",
+            "SAE J1939",
+            "UNECE R155"
+          ],
+          "documents": [
+            "ToS",
+            "Privacy Policy",
+            "Mechanic Partner Agreement",
+            "Data Processing Agreement",
+            "IP Review"
+          ],
+          "data_types": [
+            "VIN",
+            "DTC codes",
+            "GPS/location",
+            "driving behavior",
+            "payment info"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy explicitly lists all collected vehicle and personal data categories",
+          "SAE J1979/J1939 usage reviewed \u2014 no unlicensed reproduction of code tables",
+          "GDPR Article 30 processing register created",
+          "Mechanic Partner Agreement includes liability caps and insurance requirements",
+          "Legal review sign-off documented",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 6,
+        "task_type": "SAFETY",
+        "description": "Perform safety analysis per ISO 26262 and ISO 14971 (if health monitoring features present): FMEA for OBD-II adapter connection failures, fault trees for incorrect DTC display, hazard analysis for driver distraction from live dashboard, and UNECE R155 cybersecurity threat model for vehicle data channel.",
+        "payload": {
+          "standards": [
+            "ISO 26262",
+            "UNECE R155",
+            "UNECE R156"
+          ],
+          "hazards": [
+            "incorrect DTC code displayed \u2192 wrong repair action",
+            "live dashboard driver distraction",
+            "unauthorized vehicle ECU write commands",
+            "OBD port denial-of-service"
+          ],
+          "fmea_components": [
+            "BLE/OBD adapter",
+            "DTC decoder",
+            "live data poller",
+            "mechanic recommendation engine"
+          ],
+          "deliverables": [
+            "FMEA table",
+            "fault tree diagrams",
+            "hazard log",
+            "R155 threat catalog"
+          ]
+        },
+        "acceptance_criteria": [
+          "FMEA covers \u226520 failure modes with severity/occurrence/detection ratings",
+          "All Safety Goal violations classified per ASIL A-D",
+          "UNECE R155 threat catalog maps each threat to a mitigation control",
+          "Driver distraction mitigations documented (no input while vehicle moving policy)",
+          "Safety analysis reviewed and signed by safety_engineer",
+          "ASIL level determined for each function",
+          "Fault tree analysis complete"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 7,
+        "task_type": "COMPLIANCE",
+        "description": "Produce compliance artifacts for UNECE R155/R156 (cybersecurity/OTA), SOC 2 Type I readiness checklist, and AUTOSAR-aligned OBD-II interface documentation. Create traceability matrix linking safety requirements to implementation.",
+        "payload": {
+          "standards": [
+            "UNECE R155",
+            "UNECE R156",
+            "SOC 2 Type I",
+            "AUTOSAR CP"
+          ],
+          "artifacts": [
+            "CSMS policy doc",
+            "OTA update security policy",
+            "SOC 2 control mapping",
+            "requirements traceability matrix"
+          ],
+          "traceability_sources": [
+            "safety requirements",
+            "security controls",
+            "test cases"
+          ]
+        },
+        "acceptance_criteria": [
+          "R155 CSMS document covers all 7 mandatory cybersecurity process areas",
+          "R156 OTA update policy defines rollback procedure and integrity verification",
+          "SOC 2 control mapping covers CC6-CC9 (logical access + change management)",
+          "Traceability matrix links every safety requirement to \u22651 test case",
+          "Compliance artifacts reviewed by regulatory_specialist"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 8,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research (5 interviews per persona), create information architecture, wireframes for all screens (DTC scan, live dashboard, maintenance calendar, mechanic marketplace), interaction design spec, and accessibility audit (WCAG 2.1 AA). Design OBD adapter pairing onboarding flow.",
+        "payload": {
+          "personas": [
+            "DIY mechanic",
+            "daily driver",
+            "fleet manager"
+          ],
+          "screens": [
+            "home/vehicle health score",
+            "DTC scan result",
+            "live sensor dashboard",
+            "maintenance calendar",
+            "mechanic search/map",
+            "booking/payment",
+            "review system",
+            "settings/adapter pairing"
+          ],
+          "accessibility_target": "WCAG 2.1 AA",
+          "tools": [
+            "Figma"
+          ]
+        },
+        "acceptance_criteria": [
+          "\u226515 user research insights documented from interviews",
+          "Full Figma prototype covering all screens with interactive flows",
+          "Accessibility audit report \u2014 zero critical WCAG 2.1 AA violations",
+          "Live dashboard passes cognitive load review (\u22647 data points primary view)",
+          "Adapter pairing onboarding completable in <3 minutes by test users",
+          "Design system (colors, typography, components) documented in Figma"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 9,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema: vehicles table (VIN, make, model, year), DTC_events (code, description, severity, timestamp, resolved), sensor_readings (time-series: PID, value, unit), maintenance_records, mechanics, bookings, reviews, users. Set up PostgreSQL with TimescaleDB extension for sensor time-series.",
+        "payload": {
+          "primary_db": "PostgreSQL 16 + TimescaleDB",
+          "tables": [
+            "users",
+            "vehicles",
+            "dtc_events",
+            "sensor_readings (hypertable)",
+            "maintenance_schedules",
+            "maintenance_records",
+            "mechanics",
+            "mechanic_services",
+            "bookings",
+            "payments",
+            "reviews"
+          ],
+          "migrations_tool": "Alembic",
+          "indexes": [
+            "VIN lookup",
+            "DTC code lookup",
+            "sensor_readings time-range",
+            "mechanic geospatial (PostGIS)"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD diagram covers all tables with FK relationships",
+          "TimescaleDB hypertable created for sensor_readings with 7-day chunks",
+          "PostGIS extension enabled for mechanic geospatial search",
+          "All migrations idempotent and reversible",
+          "Seed data script populates 10 vehicles, 50 DTC codes, 20 mechanics for dev/test",
+          "Query for 30-day sensor history returns in <200ms for 1M rows"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "HARDWARE_SIM",
+        "description": "Build OBD-II hardware simulation model: virtual ECU responding to SAE J1979 Mode 01-09 PIDs over simulated ELM327 AT command interface. Implement SimPy-based vehicle simulator with fault injection (DTC trigger, sensor drift, adapter disconnect) for HIL testing without physical hardware.",
+        "payload": {
+          "simulation_framework": "SimPy + Python",
+          "interface": "ELM327 AT command emulator over TCP socket",
+          "supported_modes": [
+            "Mode 01 (live data)",
+            "Mode 03 (stored DTCs)",
+            "Mode 04 (clear DTCs)",
+            "Mode 09 (VIN)"
+          ],
+          "pids": [
+            "0x0C RPM",
+            "0x0D Speed",
+            "0x05 Coolant Temp",
+            "0x11 Throttle",
+            "0x2F Fuel Level",
+            "0x0B MAP"
+          ],
+          "fault_injection": [
+            "DTC P0300 (random misfire)",
+            "sensor timeout",
+            "adapter BLE disconnect",
+            "CAN bus flood"
+          ]
+        },
+        "acceptance_criteria": [
+          "Virtual ECU responds to all Mode 01-09 AT commands per SAE J1979",
+          "Simulated RPM/speed values follow realistic drive cycle (EPA FTP-75)",
+          "Fault injection API triggers any DTC code on demand via REST call",
+          "Simulator runs as Docker container, connectable by app backend",
+          "Latency per PID response <50ms (matching real ELM327 behavior)",
+          "Concurrent connection test: 10 simultaneous clients without errors"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "FIRMWARE",
+        "description": "Implement OBD-II BLE adapter firmware (ESP32-based): BLE GATT service for mobile communication, OBD-II CAN bus interface (ISO 15765-4), ELM327-compatible AT command parser, SAE J1979 PID request/response handler, and OTA firmware update capability (UNECE R156 compliant with signature verification).",
+        "payload": {
+          "mcu": "ESP32-S3",
+          "rtos": "FreeRTOS",
+          "interfaces": [
+            "BLE 5.0 GATT",
+            "CAN 2.0B (ISO 15765-4)",
+            "OTA via HTTPS"
+          ],
+          "protocols": [
+            "SAE J1979 Mode 01-09",
+            "SAE J1939 (heavy vehicle)",
+            "ELM327 AT command set"
+          ],
+          "ota_security": "RSA-2048 signature + SHA-256 manifest",
+          "hal_libs": [
+            "esp-idf CAN driver",
+            "NimBLE stack"
+          ]
+        },
+        "acceptance_criteria": [
+          "BLE GATT service exposes OBD characteristic UUID with notify+write properties",
+          "All SAE J1979 Mode 01 PIDs (mandatory set) respond correctly",
+          "OTA update verifies firmware signature before flashing \u2014 rejects tampered binaries",
+          "Firmware handles CAN bus errors (off-bus, frame loss) without crash",
+          "FreeRTOS task watermarks show \u226520% stack headroom under full load",
+          "Power consumption <50mA during active polling (OBD-II port powered)",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 spec for all backend endpoints: vehicle management, DTC scan, live sensor streaming (SSE), maintenance CRUD, mechanic search (geo), booking lifecycle, payment webhooks, push notification triggers, and OTA firmware update distribution.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "endpoint_groups": [
+            "/vehicles (CRUD + VIN decode)",
+            "/scan/dtc (trigger + results)",
+            "/scan/live (SSE stream)",
+            "/maintenance (schedule CRUD + reminders)",
+            "/mechanics (search, profile, availability)",
+            "/bookings (create, confirm, cancel, complete)",
+            "/payments (intent, webhook, refund)",
+            "/reviews (submit, list)",
+            "/firmware (version check, download URL)",
+            "/notifications (preferences, test)"
+          ],
+          "auth": "JWT + OAuth2 (Google/Apple Sign-In)"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors via swagger-cli",
+          "All endpoints have request/response schemas with examples",
+          "Authentication schemes defined for public vs. authenticated endpoints",
+          "SSE /scan/live documented with event schema (pid, value, unit, timestamp)",
+          "Mechanic search endpoint documents geo-radius parameter and PostGIS query",
+          "Spec reviewed and approved by frontend lead before backend implementation"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "CONFIG",
+        "description": "Set up SAGE solution configuration: create obd_diagnostics_app solution with project.yaml (agent manifest, active modules, theme), prompts.yaml (analyst/developer/safety engineer roles with automotive domain context), and tasks.yaml (DTC analysis, sensor anomaly detection, maintenance recommendation, mechanic matching task types). Configure coordinator agentic pattern for multi-specialist orchestration.",
+        "payload": {
+          "solution_name": "obd_diagnostics_app",
+          "agentic_pattern": "coordinator",
+          "active_modules": [
+            "dashboard",
+            "analyst",
+            "developer",
+            "improvements",
+            "knowledge",
+            "audit",
+            "integrations"
+          ],
+          "custom_roles": [
+            "obd_protocol_specialist",
+            "automotive_safety_analyst",
+            "mechanic_marketplace_agent"
+          ],
+          "task_types": [
+            "dtc_analysis",
+            "sensor_anomaly_detection",
+            "maintenance_recommendation",
+            "mechanic_matching",
+            "ota_risk_assessment"
+          ],
+          "theme": {
+            "sidebar_bg": "#0f172a",
+            "badge_bg": "#1e40af",
+            "badge_text": "#93c5fd"
+          }
+        },
+        "acceptance_criteria": [
+          "project.yaml validates and loads without errors via POST /config/switch",
+          "prompts.yaml defines system prompts for all 3 custom agent roles",
+          "tasks.yaml registers all 5 custom task types with routing rules",
+          "Coordinator pattern wires: analyst \u2192 safety_analyst \u2192 developer flow",
+          "Solution boots cleanly: make run PROJECT=obd_diagnostics_app exits with no errors",
+          "Active modules render correctly in sidebar UI"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement FastAPI backend: vehicle management service (VIN decoder via NHTSA API), DTC scan coordinator (BLE adapter session management, ELM327 command dispatch), live sensor SSE streaming, DTC code lookup (OBDII-CODES.COM / local SQLite DTC DB), maintenance schedule engine (mileage + time-based rules), and mechanic search with PostGIS geo-radius.",
+        "payload": {
+          "framework": "FastAPI + Python 3.12",
+          "key_services": [
+            "VehicleService (VIN decode, CRUD)",
+            "OBDSessionManager (ELM327 BLE proxy, connection pool)",
+            "DTCService (code lookup, severity classification, repair hints)",
+            "SensorStreamService (SSE, PID polling, TimescaleDB write)",
+            "MaintenanceEngine (schedule rules, reminder scheduler)",
+            "MechanicSearchService (PostGIS radius, availability, rating sort)"
+          ],
+          "external_apis": [
+            "NHTSA vPIC (VIN decode)",
+            "Stripe (payments)",
+            "Firebase (push notifications)",
+            "Twilio (SMS reminders)"
+          ],
+          "dtc_database": "SQLite with 20,000+ DTC codes (P/B/C/U codes)"
+        },
+        "acceptance_criteria": [
+          "VIN decode returns make/model/year/engine for valid VINs in <500ms",
+          "OBD session supports concurrent BLE connections per user (one active session)",
+          "SSE /scan/live streams PID data at \u22651Hz update rate",
+          "DTC lookup returns description + severity + top-3 repair suggestions for \u226595% of P-codes",
+          "Mechanic geo-search returns results within specified radius sorted by rating",
+          "All endpoints return correct HTTP status codes with RFC 7807 error bodies",
+          "API handles OBD adapter disconnect gracefully (session cleanup within 30s)"
+        ],
+        "depends_on": [
+          12,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement mechanic marketplace backend: booking lifecycle state machine (pending\u2192confirmed\u2192in_progress\u2192completed/cancelled), payment processing (Stripe Connect for mechanic payouts), review and rating system, mechanic onboarding and verification workflow, and service catalog management.",
+        "payload": {
+          "booking_states": [
+            "pending",
+            "confirmed",
+            "in_progress",
+            "completed",
+            "cancelled",
+            "disputed"
+          ],
+          "payment_flow": "Stripe Connect (platform collects, mechanic receives minus 12% commission)",
+          "verification": [
+            "identity check (Stripe Identity)",
+            "certification upload",
+            "insurance verification"
+          ],
+          "payout_schedule": "weekly rolling payouts",
+          "dispute_resolution": "72h escalation window with ops team"
+        },
+        "acceptance_criteria": [
+          "Booking state machine rejects invalid transitions (e.g., completed\u2192pending)",
+          "Stripe Connect webhooks processed idempotently (duplicate events ignored)",
+          "Payment captured only after booking confirmed by mechanic",
+          "Mechanic payout triggered automatically on booking completion",
+          "Review can only be submitted by verified booking participant",
+          "Commission calculation correct to 2 decimal places for all test cases"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build React Native (Expo) mobile app: vehicle health home screen, BLE adapter pairing flow, DTC scan screen with animated scanner + code results, live sensor dashboard (real-time charts \u2014 Victory Native), maintenance calendar, mechanic map (react-native-maps + clustering), booking flow, and in-app payment (Stripe React Native).",
+        "payload": {
+          "framework": "React Native (Expo SDK 51) + TypeScript",
+          "navigation": "Expo Router (file-based)",
+          "state": "Zustand + React Query (TanStack Query v5)",
+          "charts": "Victory Native XL",
+          "maps": "react-native-maps + supercluster",
+          "ble": "react-native-ble-plx",
+          "payments": "@stripe/stripe-react-native",
+          "screens": [
+            "Home (vehicle health score + DTC alert badge)",
+            "Scanner (BLE connect \u2192 scan \u2192 DTC results list)",
+            "DTC Detail (code, description, severity badge, repair suggestions)",
+            "Live Dashboard (6-PID real-time chart grid)",
+            "Maintenance (calendar view + add/edit record)",
+            "Mechanic Map (clustered pins, filter sheet)",
+            "Mechanic Profile (services, ratings, book CTA)",
+            "Booking Flow (date/time picker, service selection, payment)",
+            "My Bookings (upcoming + history)",
+            "Settings (adapter management, notifications, account)"
+          ]
+        },
+        "acceptance_criteria": [
+          "BLE pairing completes in <10s on Android 12+ and iOS 16+ in test environment",
+          "DTC scan results render within 3s of adapter connection",
+          "Live dashboard updates all 6 PIDs at \u22651Hz without frame drops (\u226560fps Hermes)",
+          "Mechanic map renders 500 pins without jank (supercluster active)",
+          "Payment flow completes end-to-end in staging Stripe environment",
+          "All screens pass snapshot tests",
+          "App size \u226450MB (Android APK), \u2264100MB (iOS IPA)"
+        ],
+        "depends_on": [
+          8,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build mechanic partner web portal (React + TypeScript): dashboard (upcoming bookings, earnings summary), availability calendar management, service catalog editor, payout history, customer review display, and mechanic profile editor. Integrate with backend marketplace APIs.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "ui": "shadcn/ui + Tailwind CSS",
+          "auth": "JWT (separate mechanic auth scope)",
+          "key_pages": [
+            "Dashboard",
+            "Bookings",
+            "Calendar",
+            "Services",
+            "Earnings",
+            "Profile",
+            "Reviews"
+          ]
+        },
+        "acceptance_criteria": [
+          "Mechanic can block/unblock availability slots in calendar",
+          "Earnings page shows gross/net split with commission line item",
+          "Booking cards show customer vehicle, DTC context, and service requested",
+          "Profile editor updates reflect in customer-facing search within 60s",
+          "Web portal passes Lighthouse accessibility score \u226590",
+          "All pages render correctly on 1280px+ desktop viewport"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "AGENTIC",
+        "description": "Implement AI diagnostic assistant using coordinator pattern: OBD analyst agent reads DTC codes + sensor history from TimescaleDB, safety analyst agent validates against FMEA risk table, developer agent generates repair action plan with parts list and estimated cost. HITL gate before sending repair recommendation to user.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": [
+            {
+              "role": "obd_protocol_specialist",
+              "task": "decode DTC + retrieve correlated sensor readings"
+            },
+            {
+              "role": "automotive_safety_analyst",
+              "task": "classify repair urgency against FMEA severity table"
+            },
+            {
+              "role": "mechanic_marketplace_agent",
+              "task": "match qualified mechanics and estimate repair cost"
+            }
+          ],
+          "hitl_gates": [
+            "repair recommendation before push to user",
+            "mechanic match before booking proposal"
+          ],
+          "context_retrieval": "vector store search for prior DTC patterns on same vehicle make/model"
+        },
+        "acceptance_criteria": [
+          "Coordinator routes DTC to all 3 specialist agents in parallel wave",
+          "Safety analyst correctly classifies P0300 as HIGH urgency, P0420 as MEDIUM",
+          "Repair recommendation includes: root cause, parts needed, estimated cost range, urgency level",
+          "HITL gate creates proposal in SAGE approval queue before sending to user",
+          "Vector store retrieval enriches context with \u22653 prior similar cases when available",
+          "End-to-end diagnostic cycle completes within 30s for stored DTC analysis"
+        ],
+        "depends_on": [
+          14,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "SECURITY",
+        "description": "Security review and implementation: OBD session authentication (prevent unauthorized vehicle data access), BLE communication encryption (AES-128 per session key), API threat model (OWASP Top 10), VIN/PII data encryption at rest (AES-256), UNECE R155 cybersecurity controls implementation, and penetration test plan for OBD-II channel.",
+        "payload": {
+          "standards": [
+            "UNECE R155",
+            "OWASP Mobile Top 10",
+            "SOC 2 CC6"
+          ],
+          "controls": [
+            "BLE session key exchange (ECDH)",
+            "VIN + sensor data encrypted at rest (AES-256-GCM)",
+            "API rate limiting (100 req/min per user)",
+            "JWT rotation + refresh token revocation",
+            "OBD write command allowlist (read-only by default)",
+            "Mechanic data access scoping (own bookings only)"
+          ],
+          "pentest_scope": [
+            "BLE sniffing",
+            "API fuzzing",
+            "JWT tampering",
+            "OBD replay attack"
+          ]
+        },
+        "acceptance_criteria": [
+          "BLE session key unique per connection \u2014 replay attack simulation fails",
+          "OBD write commands blocked unless vehicle owner explicitly enables (off by default)",
+          "API fuzzer (OWASP ZAP) finds zero high/critical vulnerabilities",
+          "VIN data encrypted in PostgreSQL using pgcrypto \u2014 plaintext not in query logs",
+          "Penetration test plan covers all 4 attack vectors with pass/fail criteria",
+          "R155 cybersecurity controls mapped to implementation with evidence artifacts"
+        ],
+        "depends_on": [
+          14,
+          11
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write HIL test specs and firmware unit tests for OBD-II adapter: BLE GATT characteristic tests, ELM327 AT command parser unit tests, SAE J1979 PID response validation, CAN bus error recovery tests, OTA update integrity verification, and fault injection test suite using the SimPy vehicle simulator.",
+        "payload": {
+          "test_framework": "Unity (firmware C) + pytest (HIL integration)",
+          "hil_simulator": "SimPy ECU simulator from step 10",
+          "test_suites": [
+            "BLE GATT: connect, discover, notify, disconnect",
+            "AT parser: all ELM327 commands + malformed input",
+            "PID handler: all mandatory Mode 01 PIDs + boundary values",
+            "CAN error recovery: bus-off, frame timeout, arbitration loss",
+            "OTA: valid update, tampered binary (expect reject), rollback"
+          ]
+        },
+        "acceptance_criteria": [
+          "Firmware unit test coverage \u226580% (functions) for AT parser and PID handler",
+          "All mandatory SAE J1979 Mode 01 PIDs return correct values in HIL sim",
+          "OTA tampered binary test: firmware refuses update with error code logged",
+          "CAN bus-off recovery: firmware reconnects within 5s of bus restoration",
+          "HIL test suite runs fully automated in CI (no physical hardware required)",
+          "Test report generated in JUnit XML format for CI integration"
+        ],
+        "depends_on": [
+          11,
+          10
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "TESTS",
+        "description": "Write backend unit and integration tests: DTC lookup service (all code categories), maintenance schedule engine (mileage + time rules), booking state machine (all transitions + rejection cases), payment webhook idempotency, VIN decoder, mechanic geo-search accuracy, and SAGE agent coordinator flow.",
+        "payload": {
+          "framework": "pytest + httpx (async) + factory_boy",
+          "coverage_target": "85% line coverage",
+          "test_categories": [
+            "unit: DTC lookup, maintenance rules, state machine",
+            "integration: booking flow end-to-end, payment webhooks",
+            "contract: OpenAPI spec compliance (schemathesis)",
+            "performance: sensor write throughput, geo-search latency"
+          ],
+          "fixtures": [
+            "test PostgreSQL + TimescaleDB (testcontainers)",
+            "Stripe test mode"
+          ]
+        },
+        "acceptance_criteria": [
+          "pytest --cov reports \u226585% line coverage for src/",
+          "All booking state machine transitions tested (valid + invalid)",
+          "Stripe webhook idempotency: duplicate event delivery handled correctly",
+          "Schemathesis contract tests pass against OpenAPI spec with no violations",
+          "Sensor write throughput test: 10,000 rows/sec sustained for 60s",
+          "Geo-search test: results within 10km radius are complete and sorted by rating"
+        ],
+        "depends_on": [
+          14,
+          15
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write React Native mobile app tests: unit tests (Zustand store, utility functions), component tests (Jest + RNTL), E2E tests (Maestro) covering BLE pairing flow, DTC scan, live dashboard, mechanic booking, and payment.",
+        "payload": {
+          "unit_framework": "Jest + React Native Testing Library",
+          "e2e_framework": "Maestro",
+          "e2e_flows": [
+            "Onboarding \u2192 VIN entry \u2192 adapter pair",
+            "DTC scan \u2192 view code \u2192 read description",
+            "Live dashboard \u2192 all 6 PIDs updating",
+            "Mechanic search \u2192 view profile \u2192 book \u2192 pay",
+            "Maintenance \u2192 add record \u2192 set reminder"
+          ],
+          "mock_strategy": "BLE and payment mocked in unit/component; Maestro tests against staging backend + BLE sim"
+        },
+        "acceptance_criteria": [
+          "Jest coverage \u226580% for Zustand store and utility modules",
+          "All 5 Maestro E2E flows pass on Android emulator (API 34) and iOS simulator (17)",
+          "Snapshot tests created for all 10 key screens",
+          "No accessibility failures detected by jest-axe in component tests",
+          "CI runs E2E suite on every PR merge to main"
+        ],
+        "depends_on": [
+          16
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute system-level integration test suite: full DTC scan flow (mobile \u2192 BLE sim \u2192 backend \u2192 DB \u2192 push notification), booking lifecycle (create\u2192confirm\u2192complete\u2192payout), OTA firmware update distribution, multi-user concurrent scan sessions, and load test (500 concurrent SSE streams).",
+        "payload": {
+          "environment": "staging with SimPy BLE simulator",
+          "load_test_tool": "k6",
+          "scenarios": [
+            "Full DTC scan pipeline: <10s end-to-end",
+            "Booking lifecycle: all 6 state transitions in sequence",
+            "OTA distribution: firmware served to 100 concurrent adapters",
+            "500 concurrent SSE streams: CPU <70%, p99 latency <2s",
+            "Database failover: replica promotion within 30s"
+          ]
+        },
+        "acceptance_criteria": [
+          "Full DTC scan pipeline completes in <10s (95th percentile)",
+          "500 concurrent SSE streams: server CPU <70%, memory <4GB",
+          "All booking state transitions complete without data integrity violations",
+          "OTA distribution: 100 concurrent firmware downloads complete without 5xx errors",
+          "Database replica promotion test: app reconnects within 30s",
+          "System test report published with pass/fail per scenario"
+        ],
+        "depends_on": [
+          21,
+          22,
+          20
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 24,
+        "task_type": "INFRA",
+        "description": "Set up infrastructure: Kubernetes cluster (EKS), PostgreSQL RDS with TimescaleDB, Redis (session + cache), S3 (firmware binaries + receipts), CloudFront CDN, VPC with private subnets for DB, Terraform IaC for all resources, and environment separation (dev/staging/prod).",
+        "payload": {
+          "cloud": "AWS",
+          "iac_tool": "Terraform",
+          "services": [
+            "EKS (backend + API pods, HPA enabled)",
+            "RDS PostgreSQL 16 + TimescaleDB extension",
+            "ElastiCache Redis 7",
+            "S3 (firmware binaries, presigned OTA URLs)",
+            "CloudFront (CDN for static assets)",
+            "Route53 (api.obdapp.com, portal.obdapp.com)",
+            "ACM (TLS certificates)",
+            "KMS (encryption keys for PII)"
+          ],
+          "environments": [
+            "dev",
+            "staging",
+            "prod"
+          ]
+        },
+        "acceptance_criteria": [
+          "Terraform plan applies with zero errors in all 3 environments",
+          "RDS TimescaleDB accessible from EKS pods only (no public endpoint)",
+          "S3 firmware bucket has presigned URL generation \u2014 no public read",
+          "KMS key rotation enabled for PII encryption keys",
+          "CloudFront distribution serves assets with cache-control headers",
+          "All resources tagged with environment, team, and cost-center tags"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipelines: GitHub Actions for backend (lint \u2192 test \u2192 build \u2192 push ECR \u2192 deploy EKS), React Native (lint \u2192 unit test \u2192 E2E \u2192 EAS build), firmware (compile \u2192 unit test \u2192 OTA package sign \u2192 S3 upload). Implement GitOps with ArgoCD for Kubernetes deployments.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "cd_platform": "ArgoCD (GitOps)",
+          "mobile_build": "Expo EAS Build",
+          "firmware_build": "esp-idf Docker container",
+          "stages": {
+            "backend": [
+              "ruff lint",
+              "pytest",
+              "docker build",
+              "ECR push",
+              "ArgoCD sync"
+            ],
+            "mobile": [
+              "ESLint",
+              "Jest",
+              "Maestro E2E (staging)",
+              "EAS Build",
+              "App Store / Play Store submit"
+            ],
+            "firmware": [
+              "idf.py build",
+              "Unity tests",
+              "codesign (RSA-2048)",
+              "S3 upload",
+              "OTA version manifest update"
+            ]
+          },
+          "secrets_manager": "AWS Secrets Manager"
+        },
+        "acceptance_criteria": [
+          "Backend pipeline: PR \u2192 production deploy in <15 minutes",
+          "Firmware pipeline: build + sign + S3 upload completes in <10 minutes",
+          "Mobile pipeline: EAS Build triggered automatically on main merge",
+          "ArgoCD syncs Kubernetes manifests within 2 minutes of Git push",
+          "Firmware codesign uses AWS KMS \u2014 private key never touches pipeline runner",
+          "Secrets Manager integration: no plaintext credentials in pipeline YAML"
+        ],
+        "depends_on": [
+          24
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "OPERATIONS",
+        "description": "Create operational runbooks: OBD session leak remediation, database failover procedure, payment dispute escalation, mechanic fraud detection response, firmware OTA rollback procedure, and incident response playbook. Define SLAs and on-call rotation.",
+        "payload": {
+          "slas": {
+            "api_availability": "99.9% monthly",
+            "dtc_scan_p95_latency": "<10s",
+            "booking_confirmation": "<2min",
+            "payment_processing": "<30s"
+          },
+          "runbooks": [
+            "OBD session leak: detect \u2192 kill stale sessions \u2192 alert",
+            "RDS failover: promote replica \u2192 update DNS \u2192 verify",
+            "Payment dispute: Stripe dashboard \u2192 ops review \u2192 72h resolution",
+            "OTA rollback: revert S3 manifest \u2192 push previous version",
+            "Mechanic fraud: flag account \u2192 freeze payouts \u2192 manual review"
+          ],
+          "alerting": "PagerDuty with 15min on-call escalation"
+        },
+        "acceptance_criteria": [
+          "Each runbook has: trigger condition, step-by-step procedure, rollback, and owner",
+          "SLA targets entered into monitoring system as alert thresholds",
+          "Runbook for OBD session leak tested in staging environment",
+          "PagerDuty escalation policy defined (L1\u2192L2 in 15min, L2\u2192manager in 30min)",
+          "Incident response playbook covers Sev1/Sev2/Sev3 classification criteria",
+          "Runbooks stored in Git (not a wiki) and linked from SAGE knowledge base"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 27,
+        "task_type": "DEVOPS",
+        "description": "Set up observability stack: Prometheus + Grafana (backend metrics: scan latency, active BLE sessions, DTC lookup hit rate, booking conversion), AWS CloudWatch (EKS, RDS), Sentry (mobile crash reporting), DataDog APM traces for OBD session lifecycle, and custom dashboard for OTA adoption rate.",
+        "payload": {
+          "metrics_stack": "Prometheus + Grafana",
+          "apm": "DataDog",
+          "crash_reporting": "Sentry (React Native + FastAPI)",
+          "log_aggregation": "AWS CloudWatch Logs + Loki",
+          "key_dashboards": [
+            "OBD Session Health (active connections, error rate, latency)",
+            "DTC Scan Funnel (connect \u2192 scan \u2192 results \u2192 action)",
+            "Marketplace Health (bookings/hr, conversion rate, GMV)",
+            "Infrastructure (CPU, memory, DB connections, cache hit rate)",
+            "OTA Adoption (adapter fleet version distribution)"
+          ],
+          "alerts": [
+            "error rate >1%",
+            "p99 scan latency >30s",
+            "DB connection pool >80%",
+            "payment failure rate >0.5%"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 5 Grafana dashboards deployed and rendering live data in staging",
+          "Sentry captures React Native JS errors and FastAPI exceptions with stack traces",
+          "DataDog APM trace shows full OBD scan lifecycle (BLE \u2192 backend \u2192 DB \u2192 SSE)",
+          "All 4 alert rules firing correctly in test (synthetic metric injection)",
+          "OTA adoption dashboard shows per-firmware-version device count",
+          "Log retention: 90 days CloudWatch, 30 days Loki hot tier"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 28,
+        "task_type": "QA",
+        "description": "Execute QA test plan: exploratory testing of all user flows on physical Android and iOS devices, regression suite execution, accessibility audit of mobile app (iOS VoiceOver + Android TalkBack), performance profiling (React Native Flipper), and sign-off test report.",
+        "payload": {
+          "devices": [
+            "Samsung Galaxy S24 (Android 14)",
+            "Google Pixel 7 (Android 13)",
+            "iPhone 15 Pro (iOS 17)",
+            "iPhone 12 (iOS 16)"
+          ],
+          "test_types": [
+            "exploratory",
+            "regression",
+            "accessibility (VoiceOver/TalkBack)",
+            "performance (Flipper profiler)",
+            "usability (5-user think-aloud)"
+          ],
+          "acceptance_criteria_source": "user stories from step 2"
+        },
+        "acceptance_criteria": [
+          "All user stories from BRD marked as Pass/Fail in test report",
+          "Zero P0/P1 bugs open at QA sign-off",
+          "VoiceOver and TalkBack: all interactive elements have accessible labels",
+          "Flipper profiler: <16ms frame render time on all tested devices (60fps target)",
+          "Usability test: 4/5 users complete DTC scan flow without assistance",
+          "QA sign-off report submitted with test coverage summary"
+        ],
+        "depends_on": [
+          23
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 29,
+        "task_type": "DOCS",
+        "description": "Write technical documentation: API reference (auto-generated from OpenAPI + Mintlify), OBD adapter firmware flashing guide, backend architecture decision records (ADRs), SAGE solution configuration guide for obd_diagnostics_app, and mechanic partner integration guide.",
+        "payload": {
+          "tools": [
+            "Mintlify (API docs)",
+            "MkDocs (internal docs)",
+            "ADR template"
+          ],
+          "documents": [
+            "API Reference (generated from OpenAPI spec)",
+            "Firmware Flashing Guide (ESP32 + esptool.py)",
+            "ADRs: TimescaleDB choice, ELM327 protocol, Stripe Connect model",
+            "SAGE solution config guide",
+            "Mechanic Partner API Integration Guide"
+          ]
+        },
+        "acceptance_criteria": [
+          "API reference deployed at docs.obdapp.com and covers all endpoints",
+          "Firmware flashing guide tested by engineer unfamiliar with ESP32",
+          "3 ADRs written covering key architectural decisions",
+          "SAGE solution guide covers: how to add a new task type, how to add a custom agent role",
+          "Mechanic Partner guide enables 3rd-party integration without eng support"
+        ],
+        "depends_on": [
+          28
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 30,
+        "task_type": "TRAINING",
+        "description": "Create user onboarding materials: in-app onboarding tour (5-step tooltip flow), help center articles (DTC codes explained, how to pair adapter, booking a mechanic, maintenance reminders), mechanic partner onboarding video script, and app store listing copy (screenshots, description, keywords).",
+        "payload": {
+          "channels": [
+            "in-app tooltip tour",
+            "help center (Intercom)",
+            "App Store / Play Store listing",
+            "mechanic onboarding video"
+          ],
+          "help_articles": [
+            "Understanding DTC codes",
+            "How to pair your OBD-II adapter",
+            "Reading live sensor data",
+            "Setting up maintenance reminders",
+            "Finding and booking a mechanic"
+          ],
+          "app_store_assets": [
+            "6 iOS screenshots",
+            "8 Android screenshots",
+            "feature graphic",
+            "150-word description",
+            "keyword list"
+          ]
+        },
+        "acceptance_criteria": [
+          "In-app tour covers 5 key features, skippable, shown only on first launch",
+          "Help center has \u22658 articles, all searchable by keyword",
+          "App store description passes Apple and Google content guidelines review",
+          "Mechanic onboarding video script covers: profile setup, calendar, payouts (<5min runtime)",
+          "All materials reviewed for accuracy against final product behavior"
+        ],
+        "depends_on": [
+          28
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 30,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "ISO 26262 does not apply to aftermarket diagnostic apps. It governs OEM road vehicle E/E system development. Applying ASIL classification to a third-party OBD app will waste months on inapplicable compliance work and produce artifacts that provide false assurance. Same problem with AUTOSAR CP \u2014 that is an OEM ECU framework, not an aftermarket BLE adapter standard.",
+              "ISO 14971 is a medical device standard. It has zero applicability here unless the app is making clinical health claims. Listing it in the safety step signals a fundamental misreading of the standard.",
+              "UNECE R155/R156 bind vehicle manufacturers (OEMs) seeking type approval, not third-party software vendors. An OBD diagnostics app does not require a CSMS under R155. Building a full CSMS policy document for a startup app is a resource sink based on a compliance scope error.",
+              "The backend 'OBDSessionManager (ELM327 BLE proxy, connection pool)' is architecturally incorrect. BLE is a direct radio connection between the mobile device and the adapter \u2014 the cloud backend cannot hold BLE connections. This must be a mobile-side session manager that relays OBD data to the backend via REST or WebSocket. If this flaw propagates to implementation, the core scan flow will not work.",
+              "TimescaleDB on AWS RDS is not straightforward. RDS does not grant superuser access required for TimescaleDB installation via the standard extension mechanism. The plan needs Timescale Cloud, a self-managed PostgreSQL on EC2, or an explicit workaround. Discovering this during Step 24 infra setup will block Step 9 schema work retroactively.",
+              "The SimPy BLE simulator (Step 10) emulates ELM327 over a TCP socket, not over BLE. The React Native app uses react-native-ble-plx which requires a real BLE radio or a BLE hardware simulator. Maestro E2E tests in Step 22 that depend on 'BLE sim' will fail at this gap \u2014 there is no BLE-level simulation layer in the plan.",
+              "Manufacturer-specific DTC codes (P1xxx\u2013P3xxx, B-codes, C-codes, U-codes) are proprietary to each OEM. Distributing 20,000+ DTC descriptions in a SQLite DB without OEM licensing agreements exposes the product to IP infringement. Standard SAE P0xxx codes are public; everything else is not.",
+              "iOS background BLE mode is severely restricted by Apple. Sustained live sensor polling at 1Hz in the background is not permitted under standard BLE background modes. This fundamentally breaks the live dashboard use case when the app is backgrounded. The plan has no mitigation.",
+              "NHTSA vPIC has no SLA, is periodically unavailable, and has gaps for pre-1980 vehicles, imports not sold in the US, and grey-market VINs. Using it as the sole VIN decoder with a <500ms acceptance criterion will fail during NHTSA outages. No fallback decoder is specified.",
+              "Stripe Connect for a mechanic marketplace triggers money transmitter licensing considerations in multiple US states. The plan identifies commission structure and payouts but omits the legal analysis of whether the platform is acting as a payment facilitator requiring state-level licensing or exemption filings. This is not covered in the legal step.",
+              "No hardware design step exists. Step 11 implements firmware for an ESP32-S3 adapter, but there is no step for PCB schematic, BOM, FCC Part 15 / CE BLE certification, OBD-II 16-pin connector compliance, or manufacturing. If this product ships a physical adapter, the plan is missing its entire hardware layer. If it relies on third-party adapters, the firmware step is misscoped.",
+              "The database schema (Step 9) has no fleet/organization tables, yet fleet management is a named user segment and a v2 roadmap item. Fleet operators need vehicle_groups, organizations, driver assignments, and fleet_users. Retrofitting this onto a live schema is expensive.",
+              "Step 15 adds a disputed booking state with a '72h escalation to ops team' but no ops team is staffed or budgeted in the plan. Marketplace disputes require human judgment and will arrive from day one of launch. There is no fraud detection implementation step \u2014 only a fraud runbook."
+            ],
+            "suggestions": [
+              "Replace ISO 26262 with a targeted product liability and consumer safety analysis: identify hazards (wrong repair advice \u2192 unsafe repair \u2192 injury), document risk mitigations (disclaimers, severity classification, 'consult a professional' gates), and reference ISO/IEC 25010 software quality model instead.",
+              "Replace the UNECE R155 CSMS requirement with a proportionate cybersecurity controls document aligned to OWASP MASVS and NIST CSF. This achieves the actual security goal without inapplicable regulatory overhead.",
+              "Redesign the OBD session architecture: mobile app owns the BLE connection and runs an on-device ELM327 session manager. Data is relayed to the backend via WebSocket or chunked REST. The backend SSE endpoint rebroadcasts to the frontend. This is the correct topology for BLE-mediated vehicle data.",
+              "Replace RDS + manual TimescaleDB with Timescale Cloud (managed) or rewrite Step 9 to use RDS with vanilla PostgreSQL partitioning + BRIN indexes on timestamp columns as a TimescaleDB-free alternative that works reliably on RDS.",
+              "Add a BLE hardware-in-the-loop simulation layer: nRF52840-DK running a GATT server emulator, or use Android BLE emulation via a dedicated test device running a BLE peripheral app. Document this as a test fixture in Step 10 so Steps 20 and 22 can actually execute.",
+              "Add a DTC licensing step before Step 9: audit which codes are SAE public domain vs. OEM proprietary, source a licensed DTC database (Mitchell 1, Snap-on, ALLDATA have licensed datasets), or restrict the app to SAE standard codes only for MVP.",
+              "Add iOS BLE background entitlement research to Step 8/16: determine if use-peripheral mode + local notifications can satisfy the live dashboard use case, or require the app to be foregrounded during scanning (most production OBD apps do this).",
+              "Add a hardware design workstream as a parallel track to firmware (Step 11): PCB design, component selection, FCC/CE pre-certification test plan, and contract manufacturer evaluation. This is a prerequisite for any physical product.",
+              "Add a legal step specifically for Stripe Connect compliance: money transmitter license analysis per state, 1099-K reporting requirements for mechanic payouts, and consumer protection obligations for payment disputes.",
+              "Add a mechanic background check integration (Checkr or similar) to Step 15 verification flow. A marketplace that dispatches strangers to customers' vehicles without background checks creates significant liability and will face App Store scrutiny.",
+              "Add SAE J1979-2 (UDS-based OBD for 2023+ vehicles) to the firmware and backend scope, or explicitly scope it out with a documented decision. Torque Pro and BlueDriver already support this \u2014 ignoring it cedes the newest vehicle segment."
+            ],
+            "missing": [
+              "Hardware design and manufacturing workstream (PCB, BOM, FCC/CE certification, OBD connector compliance) \u2014 absent entirely if this is a hardware+software product",
+              "Applicable compliance framework for the actual regulatory exposure: CCPA/GDPR data residency for EU users, COPPA if minors can use the app, and PCI DSS scope assessment for payment card handling via Stripe",
+              "DTC database licensing strategy and IP clearance for manufacturer-specific codes",
+              "iOS App Store hardware accessory compliance (MFi program review, BLE accessory guidelines, payment processing rules for apps with physical hardware)",
+              "Fleet data model: organization, fleet_vehicles, driver_assignment tables missing from Step 9 schema despite fleet being a defined user segment",
+              "Fraud detection implementation (not just a runbook): automated flagging of fake reviews, payout fraud, and mechanic account takeover \u2014 must be built, not just responded to",
+              "SAE J1979-2 / ISO 15031-5 UDS compatibility for 2023+ vehicles",
+              "Data residency and cross-border data transfer mechanism for GDPR (SCCs, adequacy decision) if EU users are in scope",
+              "Mechanic background check integration (Checkr, Veriff, or equivalent)",
+              "App Store / Google Play policy review step before development start \u2014 both stores have specific policies for apps connecting to hardware and processing payments that can cause rejection",
+              "On-call staffing plan and ops team definition \u2014 referenced in Step 26 but never provisioned",
+              "OBD adapter partnership strategy: are they manufacturing the adapter, white-labeling an existing one (Veepeak, OBDLink), or supporting third-party adapters? This decision changes scope of Steps 11 and 20 entirely"
+            ],
+            "security_risks": [
+              "BLE session key exchange (ECDH) described in Step 19 is correct in principle, but the plan does not address key pinning on the mobile side or GATT service UUID obfuscation. An attacker with a BLE sniffer can enumerate GATT services, identify the OBD characteristic, and inject AT commands if the session key exchange is not enforced before any command is accepted.",
+              "OBD Mode 04 (clear DTCs) is a write command. Mode 27 (security access) and manufacturer-specific modes can actuate actuators or unlock ECU programming. The 'read-only by default' allowlist in Step 19 must explicitly enumerate every blocked command \u2014 a 'deny unknown' policy is required, not just blocking known writes. The current plan is insufficiently specific.",
+              "VIN stored encrypted via pgcrypto: pgcrypto column-level encryption does not prevent application-layer leaks. If the FastAPI service is compromised, it decrypts VINs in memory on every query. Application-level encryption is not a substitute for proper data classification and need-to-know access controls. The plan conflates encryption with access control.",
+              "NHTSA vPIC VIN decode in Step 14 passes raw user-supplied VINs to an external API. No input sanitization or VIN format validation is specified before the external call. A malformed VIN or SSRF-crafted input could be forwarded to NHTSA's endpoint.",
+              "JWT rotation is mentioned in Step 19 but the refresh token revocation mechanism is not detailed. Without a token revocation list or short-lived access tokens backed by a revocation store, a stolen refresh token grants indefinite access. This is especially critical given the vehicle data and payment scope.",
+              "Stripe webhook processing in Step 15 specifies idempotency but does not mention Stripe webhook signature verification (stripe-signature header). Without signature verification, any actor can POST fake payment confirmation events to trigger mechanic payouts.",
+              "Firmware OTA via 'HTTPS + RSA-2048 signature' in Step 11: the plan does not specify how the signing key is protected in the CI/CD pipeline. Step 25 mentions 'AWS KMS for firmware codesign' which is correct, but the acceptance criteria in Step 11 do not cross-reference this requirement, leaving a gap where a non-KMS signing approach could pass Step 11 review.",
+              "The React Native app stores JWT tokens \u2014 the plan does not specify secure storage (iOS Keychain / Android Keystore via react-native-keychain). AsyncStorage is insecure for auth tokens and is the default in many RN setups. This is an OWASP Mobile M1 violation.",
+              "PostGIS geospatial mechanic search exposes approximate user location on every search query. No location fuzzing or radius obfuscation is specified. A malicious mechanic who creates multiple accounts can triangulate a user's home address through repeated search queries from different positions."
+            ],
+            "summary": "This is an ambitious, well-structured plan that covers the full product lifecycle and demonstrates genuine domain knowledge in OBD-II protocols, marketplace mechanics, and mobile development. However, it has two categories of fatal flaw that require rework before execution. First, the compliance scope is systematically wrong: ISO 26262, ISO 14971, UNECE R155/R156, and AUTOSAR CP are OEM automotive standards that do not apply to an aftermarket consumer app. Applying them will consume 20-30% of the budget generating artifacts that provide no legal protection and mislead the team about their actual obligations. Replace with proportionate product liability analysis, OWASP MASVS, and GDPR/CCPA scope review. Second, the core architecture has a structural flaw: the backend cannot hold BLE connections, making the 'OBDSessionManager BLE proxy' in Step 14 unimplementable as written. This must be redesigned as a mobile-side session manager before any backend work begins. Beyond these, three high-severity gaps \u2014 TimescaleDB on RDS incompatibility, the missing BLE simulation layer for E2E tests, and DTC code IP licensing \u2014 will cause expensive late-stage failures. The security section is directionally correct but leaves critical gaps in token storage, webhook signature verification, and OBD write command enforcement. Score 54: the plan has a solid foundation and the right instincts, but the compliance misdirection and architectural flaw require targeted rework on Steps 6, 7, 11, 13, and 14 before greenlit execution.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "ISO 26262 does not apply to aftermarket diagnostic apps. It governs OEM road vehicle E/E system development. Applying ASIL classification to a third-party OBD app will waste months on inapplicable compliance work and produce artifacts that provide false assurance. Same problem with AUTOSAR CP \u2014 that is an OEM ECU framework, not an aftermarket BLE adapter standard.",
+                "ISO 14971 is a medical device standard. It has zero applicability here unless the app is making clinical health claims. Listing it in the safety step signals a fundamental misreading of the standard.",
+                "UNECE R155/R156 bind vehicle manufacturers (OEMs) seeking type approval, not third-party software vendors. An OBD diagnostics app does not require a CSMS under R155. Building a full CSMS policy document for a startup app is a resource sink based on a compliance scope error.",
+                "The backend 'OBDSessionManager (ELM327 BLE proxy, connection pool)' is architecturally incorrect. BLE is a direct radio connection between the mobile device and the adapter \u2014 the cloud backend cannot hold BLE connections. This must be a mobile-side session manager that relays OBD data to the backend via REST or WebSocket. If this flaw propagates to implementation, the core scan flow will not work.",
+                "TimescaleDB on AWS RDS is not straightforward. RDS does not grant superuser access required for TimescaleDB installation via the standard extension mechanism. The plan needs Timescale Cloud, a self-managed PostgreSQL on EC2, or an explicit workaround. Discovering this during Step 24 infra setup will block Step 9 schema work retroactively.",
+                "The SimPy BLE simulator (Step 10) emulates ELM327 over a TCP socket, not over BLE. The React Native app uses react-native-ble-plx which requires a real BLE radio or a BLE hardware simulator. Maestro E2E tests in Step 22 that depend on 'BLE sim' will fail at this gap \u2014 there is no BLE-level simulation layer in the plan.",
+                "Manufacturer-specific DTC codes (P1xxx\u2013P3xxx, B-codes, C-codes, U-codes) are proprietary to each OEM. Distributing 20,000+ DTC descriptions in a SQLite DB without OEM licensing agreements exposes the product to IP infringement. Standard SAE P0xxx codes are public; everything else is not.",
+                "iOS background BLE mode is severely restricted by Apple. Sustained live sensor polling at 1Hz in the background is not permitted under standard BLE background modes. This fundamentally breaks the live dashboard use case when the app is backgrounded. The plan has no mitigation.",
+                "NHTSA vPIC has no SLA, is periodically unavailable, and has gaps for pre-1980 vehicles, imports not sold in the US, and grey-market VINs. Using it as the sole VIN decoder with a <500ms acceptance criterion will fail during NHTSA outages. No fallback decoder is specified.",
+                "Stripe Connect for a mechanic marketplace triggers money transmitter licensing considerations in multiple US states. The plan identifies commission structure and payouts but omits the legal analysis of whether the platform is acting as a payment facilitator requiring state-level licensing or exemption filings. This is not covered in the legal step.",
+                "No hardware design step exists. Step 11 implements firmware for an ESP32-S3 adapter, but there is no step for PCB schematic, BOM, FCC Part 15 / CE BLE certification, OBD-II 16-pin connector compliance, or manufacturing. If this product ships a physical adapter, the plan is missing its entire hardware layer. If it relies on third-party adapters, the firmware step is misscoped.",
+                "The database schema (Step 9) has no fleet/organization tables, yet fleet management is a named user segment and a v2 roadmap item. Fleet operators need vehicle_groups, organizations, driver assignments, and fleet_users. Retrofitting this onto a live schema is expensive.",
+                "Step 15 adds a disputed booking state with a '72h escalation to ops team' but no ops team is staffed or budgeted in the plan. Marketplace disputes require human judgment and will arrive from day one of launch. There is no fraud detection implementation step \u2014 only a fraud runbook."
+              ],
+              "suggestions": [
+                "Replace ISO 26262 with a targeted product liability and consumer safety analysis: identify hazards (wrong repair advice \u2192 unsafe repair \u2192 injury), document risk mitigations (disclaimers, severity classification, 'consult a professional' gates), and reference ISO/IEC 25010 software quality model instead.",
+                "Replace the UNECE R155 CSMS requirement with a proportionate cybersecurity controls document aligned to OWASP MASVS and NIST CSF. This achieves the actual security goal without inapplicable regulatory overhead.",
+                "Redesign the OBD session architecture: mobile app owns the BLE connection and runs an on-device ELM327 session manager. Data is relayed to the backend via WebSocket or chunked REST. The backend SSE endpoint rebroadcasts to the frontend. This is the correct topology for BLE-mediated vehicle data.",
+                "Replace RDS + manual TimescaleDB with Timescale Cloud (managed) or rewrite Step 9 to use RDS with vanilla PostgreSQL partitioning + BRIN indexes on timestamp columns as a TimescaleDB-free alternative that works reliably on RDS.",
+                "Add a BLE hardware-in-the-loop simulation layer: nRF52840-DK running a GATT server emulator, or use Android BLE emulation via a dedicated test device running a BLE peripheral app. Document this as a test fixture in Step 10 so Steps 20 and 22 can actually execute.",
+                "Add a DTC licensing step before Step 9: audit which codes are SAE public domain vs. OEM proprietary, source a licensed DTC database (Mitchell 1, Snap-on, ALLDATA have licensed datasets), or restrict the app to SAE standard codes only for MVP.",
+                "Add iOS BLE background entitlement research to Step 8/16: determine if use-peripheral mode + local notifications can satisfy the live dashboard use case, or require the app to be foregrounded during scanning (most production OBD apps do this).",
+                "Add a hardware design workstream as a parallel track to firmware (Step 11): PCB design, component selection, FCC/CE pre-certification test plan, and contract manufacturer evaluation. This is a prerequisite for any physical product.",
+                "Add a legal step specifically for Stripe Connect compliance: money transmitter license analysis per state, 1099-K reporting requirements for mechanic payouts, and consumer protection obligations for payment disputes.",
+                "Add a mechanic background check integration (Checkr or similar) to Step 15 verification flow. A marketplace that dispatches strangers to customers' vehicles without background checks creates significant liability and will face App Store scrutiny.",
+                "Add SAE J1979-2 (UDS-based OBD for 2023+ vehicles) to the firmware and backend scope, or explicitly scope it out with a documented decision. Torque Pro and BlueDriver already support this \u2014 ignoring it cedes the newest vehicle segment."
+              ],
+              "missing": [
+                "Hardware design and manufacturing workstream (PCB, BOM, FCC/CE certification, OBD connector compliance) \u2014 absent entirely if this is a hardware+software product",
+                "Applicable compliance framework for the actual regulatory exposure: CCPA/GDPR data residency for EU users, COPPA if minors can use the app, and PCI DSS scope assessment for payment card handling via Stripe",
+                "DTC database licensing strategy and IP clearance for manufacturer-specific codes",
+                "iOS App Store hardware accessory compliance (MFi program review, BLE accessory guidelines, payment processing rules for apps with physical hardware)",
+                "Fleet data model: organization, fleet_vehicles, driver_assignment tables missing from Step 9 schema despite fleet being a defined user segment",
+                "Fraud detection implementation (not just a runbook): automated flagging of fake reviews, payout fraud, and mechanic account takeover \u2014 must be built, not just responded to",
+                "SAE J1979-2 / ISO 15031-5 UDS compatibility for 2023+ vehicles",
+                "Data residency and cross-border data transfer mechanism for GDPR (SCCs, adequacy decision) if EU users are in scope",
+                "Mechanic background check integration (Checkr, Veriff, or equivalent)",
+                "App Store / Google Play policy review step before development start \u2014 both stores have specific policies for apps connecting to hardware and processing payments that can cause rejection",
+                "On-call staffing plan and ops team definition \u2014 referenced in Step 26 but never provisioned",
+                "OBD adapter partnership strategy: are they manufacturing the adapter, white-labeling an existing one (Veepeak, OBDLink), or supporting third-party adapters? This decision changes scope of Steps 11 and 20 entirely"
+              ],
+              "security_risks": [
+                "BLE session key exchange (ECDH) described in Step 19 is correct in principle, but the plan does not address key pinning on the mobile side or GATT service UUID obfuscation. An attacker with a BLE sniffer can enumerate GATT services, identify the OBD characteristic, and inject AT commands if the session key exchange is not enforced before any command is accepted.",
+                "OBD Mode 04 (clear DTCs) is a write command. Mode 27 (security access) and manufacturer-specific modes can actuate actuators or unlock ECU programming. The 'read-only by default' allowlist in Step 19 must explicitly enumerate every blocked command \u2014 a 'deny unknown' policy is required, not just blocking known writes. The current plan is insufficiently specific.",
+                "VIN stored encrypted via pgcrypto: pgcrypto column-level encryption does not prevent application-layer leaks. If the FastAPI service is compromised, it decrypts VINs in memory on every query. Application-level encryption is not a substitute for proper data classification and need-to-know access controls. The plan conflates encryption with access control.",
+                "NHTSA vPIC VIN decode in Step 14 passes raw user-supplied VINs to an external API. No input sanitization or VIN format validation is specified before the external call. A malformed VIN or SSRF-crafted input could be forwarded to NHTSA's endpoint.",
+                "JWT rotation is mentioned in Step 19 but the refresh token revocation mechanism is not detailed. Without a token revocation list or short-lived access tokens backed by a revocation store, a stolen refresh token grants indefinite access. This is especially critical given the vehicle data and payment scope.",
+                "Stripe webhook processing in Step 15 specifies idempotency but does not mention Stripe webhook signature verification (stripe-signature header). Without signature verification, any actor can POST fake payment confirmation events to trigger mechanic payouts.",
+                "Firmware OTA via 'HTTPS + RSA-2048 signature' in Step 11: the plan does not specify how the signing key is protected in the CI/CD pipeline. Step 25 mentions 'AWS KMS for firmware codesign' which is correct, but the acceptance criteria in Step 11 do not cross-reference this requirement, leaving a gap where a non-KMS signing approach could pass Step 11 review.",
+                "The React Native app stores JWT tokens \u2014 the plan does not specify secure storage (iOS Keychain / Android Keystore via react-native-keychain). AsyncStorage is insecure for auth tokens and is the default in many RN setups. This is an OWASP Mobile M1 violation.",
+                "PostGIS geospatial mechanic search exposes approximate user location on every search query. No location fuzzing or radius obfuscation is specified. A malicious mechanic who creates multiple accounts can triangulate a user's home address through repeated search queries from different positions."
+              ],
+              "summary": "This is an ambitious, well-structured plan that covers the full product lifecycle and demonstrates genuine domain knowledge in OBD-II protocols, marketplace mechanics, and mobile development. However, it has two categories of fatal flaw that require rework before execution. First, the compliance scope is systematically wrong: ISO 26262, ISO 14971, UNECE R155/R156, and AUTOSAR CP are OEM automotive standards that do not apply to an aftermarket consumer app. Applying them will consume 20-30% of the budget generating artifacts that provide no legal protection and mislead the team about their actual obligations. Replace with proportionate product liability analysis, OWASP MASVS, and GDPR/CCPA scope review. Second, the core architecture has a structural flaw: the backend cannot hold BLE connections, making the 'OBDSessionManager BLE proxy' in Step 14 unimplementable as written. This must be redesigned as a mobile-side session manager before any backend work begins. Beyond these, three high-severity gaps \u2014 TimescaleDB on RDS incompatibility, the missing BLE simulation layer for E2E tests, and DTC code IP licensing \u2014 will cause expensive late-stage failures. The security section is directionally correct but leaves critical gaps in token storage, webhook signature verification, and OBD write command enforcement. Score 54: the plan has a solid foundation and the right instincts, but the compliance misdirection and architectural flaw require targeted rework on Steps 6, 7, 11, 13, and 14 before greenlit execution.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T00:47:54.662816+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 222.13,
+      "critic_plan": 129.35
+    }
+  }
+}

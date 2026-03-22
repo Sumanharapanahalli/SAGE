@@ -1,0 +1,1139 @@
+{
+  "run_id": "53e50f82-e182-4d7e-865d-c05e6194de4b",
+  "solution_name": "workflow_automation",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T11:11:10.435942+00:00",
+  "updated_at": "2026-03-22T11:15:29.869147+00:00",
+  "product_description": "Enterprise workflow automation platform with visual flow builder, 200+ app connectors, conditional logic, error handling, and execution monitoring.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user personas, core use cases, and ROI model for the enterprise workflow automation platform. Document process flows for key user journeys: flow creation, connector setup, monitoring, and error resolution.",
+      "payload": {
+        "deliverables": [
+          "BRD",
+          "user_personas",
+          "process_flow_diagrams",
+          "ROI_model"
+        ],
+        "stakeholders": [
+          "enterprise_ops_teams",
+          "IT_admins",
+          "business_users"
+        ],
+        "focus_areas": [
+          "visual_flow_builder_ux",
+          "connector_marketplace",
+          "enterprise_security",
+          "audit_trail"
+        ]
+      },
+      "acceptance_criteria": [
+        "BRD covers at minimum: flow builder, connector library, conditional logic, error handling, monitoring",
+        "At least 3 distinct user personas documented with goals and pain points",
+        "ROI model includes time-saved metrics vs. manual workflow execution",
+        "Process flows validated against 5+ real enterprise workflow patterns",
+        "Integration points with existing systems mapped",
+        "Migration plan drafted"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the Product Requirements Document, MVP vs. full roadmap, feature prioritization matrix (MoSCoW), and success metrics (DAU, flows executed/day, connector adoption rate, MTTR for failed flows).",
+      "payload": {
+        "roadmap_horizons": [
+          "MVP_v1",
+          "GA_v2",
+          "scale_v3"
+        ],
+        "prioritization_method": "MoSCoW",
+        "kpis": [
+          "flows_executed_per_day",
+          "connector_adoption_rate",
+          "flow_builder_time_to_first_flow",
+          "MTTR_failed_flows"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all features: flow builder, 200+ connectors, conditional logic, error handling, execution monitoring",
+        "MVP scope clearly delineated with justification",
+        "Success metrics are quantifiable and have baseline targets",
+        "Roadmap approved by product stakeholders"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Competitive analysis of Zapier, Make, n8n, Workato, and Tray.io. Identify differentiation opportunities in enterprise segment: pricing, connector depth, on-premise support, compliance posture.",
+      "payload": {
+        "competitors": [
+          "Zapier",
+          "Make",
+          "n8n",
+          "Workato",
+          "Tray.io"
+        ],
+        "analysis_dimensions": [
+          "pricing",
+          "connector_count",
+          "enterprise_features",
+          "compliance",
+          "deployment_models"
+        ]
+      },
+      "acceptance_criteria": [
+        "Feature comparison matrix covers all 5 competitors across 10+ dimensions",
+        "Identified at least 3 clear differentiation opportunities",
+        "Pricing analysis includes per-seat, consumption-based, and flat-rate models",
+        "Positioning statement drafted based on findings"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 4,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (DPA), connector vendor licensing review, and open-source dependency license audit.",
+      "payload": {
+        "documents": [
+          "ToS",
+          "privacy_policy",
+          "DPA",
+          "vendor_license_review",
+          "OSS_license_audit"
+        ],
+        "compliance_targets": [
+          "GDPR",
+          "CCPA",
+          "ISO_27001",
+          "SOC_2"
+        ],
+        "connector_licensing": "review_third_party_API_ToS_for_200_connectors"
+      },
+      "acceptance_criteria": [
+        "ToS and Privacy Policy reviewed by legal counsel",
+        "DPA template covers EU/US data residency requirements",
+        "OSS license audit flags any GPL/AGPL dependencies in commercial distribution",
+        "Connector usage rights confirmed for top-50 connectors at minimum"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 5,
+      "task_type": "SECURITY",
+      "description": "Produce threat model (STRIDE), define security architecture for credential vault (connector OAuth tokens, API keys), tenant isolation model, RBAC design, and penetration test plan. Map controls to ISO 27001 Annex A and SOC 2 Trust Services Criteria.",
+      "payload": {
+        "threat_model_methodology": "STRIDE",
+        "security_controls": [
+          "credential_vault",
+          "tenant_isolation",
+          "RBAC",
+          "audit_logging",
+          "secret_rotation"
+        ],
+        "standards_mapping": [
+          "ISO_27001_Annex_A",
+          "SOC_2_TSC"
+        ],
+        "pen_test_scope": [
+          "flow_builder_API",
+          "connector_auth_flows",
+          "execution_engine",
+          "monitoring_endpoints"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all 5 system components",
+        "Credential vault design uses envelope encryption (AES-256 + KMS)",
+        "RBAC matrix covers: admin, flow_builder, viewer, connector_manager roles",
+        "SOC 2 CC6.x and CC7.x controls mapped to implementation artifacts",
+        "Pen test plan scoped and signed off"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "UX_DESIGN",
+      "description": "Design the visual flow builder canvas (drag-and-drop nodes, edge connectors, zoom/pan), connector picker, conditional logic editor (branch/merge/loop nodes), execution history timeline, and error detail panel. Produce wireframes and a clickable Figma prototype.",
+      "payload": {
+        "screens": [
+          "flow_canvas",
+          "connector_picker",
+          "node_config_panel",
+          "conditional_logic_editor",
+          "execution_history",
+          "error_detail_panel",
+          "monitoring_dashboard"
+        ],
+        "design_principles": [
+          "canvas_spatial_affordance",
+          "progressive_disclosure",
+          "keyboard_accessibility"
+        ],
+        "accessibility_standard": "WCAG_2.1_AA"
+      },
+      "acceptance_criteria": [
+        "All 7 screens have high-fidelity wireframes",
+        "Clickable Figma prototype covers the primary flow: create flow \u2192 add connector \u2192 add condition \u2192 save \u2192 monitor",
+        "Usability test with 5 target users \u2014 task completion rate \u2265 80% for 'create a 3-step flow'",
+        "WCAG 2.1 AA checklist completed for all screens"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design the multi-tenant database schema: flows, steps, connectors, credentials (encrypted), executions, execution_logs, schedules, teams, and audit_events. Include migration scripts, indexing strategy for execution queries, and data retention policies.",
+      "payload": {
+        "tables": [
+          "tenants",
+          "users",
+          "teams",
+          "roles",
+          "flows",
+          "flow_versions",
+          "steps",
+          "connectors",
+          "credentials",
+          "executions",
+          "execution_steps",
+          "schedules",
+          "audit_events"
+        ],
+        "db_engine": "PostgreSQL",
+        "multi_tenancy_model": "row_level_security",
+        "encryption": "column_level_for_credentials"
+      },
+      "acceptance_criteria": [
+        "ERD covers all entities with FK relationships",
+        "Row-level security policies enforce tenant isolation \u2014 verified by cross-tenant query test",
+        "Credential columns use pgcrypto or equivalent column-level encryption",
+        "Execution log table has composite index on (tenant_id, flow_id, started_at)",
+        "Migration scripts are idempotent and tested on clean schema"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design the OpenAPI 3.1 contract for all platform endpoints: flow CRUD, step management, connector registry, credential vault, execution trigger and status, schedule management, monitoring/metrics, and webhook ingress.",
+      "payload": {
+        "endpoint_groups": [
+          "flows",
+          "steps",
+          "connectors",
+          "credentials",
+          "executions",
+          "schedules",
+          "webhooks",
+          "monitoring",
+          "teams",
+          "audit"
+        ],
+        "auth_scheme": "OAuth2_with_PKCE + API_keys_for_service_accounts",
+        "versioning": "URI_versioning_v1",
+        "pagination": "cursor_based"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec passes linting with zero errors (Spectral ruleset)",
+        "All endpoints include request/response schemas with examples",
+        "Auth flows documented for both OAuth2 and API key paths",
+        "Breaking-change policy documented in spec header"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "CONFIG",
+      "description": "Set up the monorepo structure (backend, frontend, connectors, infra), language toolchains (Python/FastAPI for execution engine, TypeScript/React for UI, Go for connector runtime), environment config management (per-environment secrets via Vault/AWS SSM), and local dev bootstrap script.",
+      "payload": {
+        "repo_structure": "monorepo",
+        "backend_stack": "Python_FastAPI",
+        "frontend_stack": "TypeScript_React_18",
+        "connector_runtime": "Go",
+        "secret_management": "HashiCorp_Vault",
+        "local_dev": "docker_compose",
+        "agentic_pattern": "coordinator"
+      },
+      "acceptance_criteria": [
+        "`make bootstrap` produces a running local environment in under 5 minutes",
+        "All services start via `docker-compose up` with zero manual steps",
+        "Secrets loaded from Vault \u2014 no plaintext credentials in any config file",
+        "Monorepo lint, type-check, and test commands all pass on clean checkout"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement the core execution engine: DAG-based flow runner, step scheduler, retry/backoff with configurable policies, dead-letter queue for permanently failed steps, and parallel branch executor. Use Multi-Agent Parallel Execution pattern for independent branches.",
+      "payload": {
+        "execution_model": "DAG",
+        "parallelism": "async_task_queue_Celery_or_Temporal",
+        "retry_policy": "exponential_backoff_configurable_per_step",
+        "dead_letter_queue": "yes",
+        "agentic_pattern": "multi_agent_parallel",
+        "branch_isolation": "per_execution_context"
+      },
+      "acceptance_criteria": [
+        "Engine executes a 10-step linear flow end-to-end with all step outputs persisted",
+        "Parallel branches execute concurrently \u2014 measured with timing assertions",
+        "Retry with exponential backoff triggers on transient connector errors (HTTP 429, 503)",
+        "Dead-letter queue captures steps that exhaust retries \u2014 payload preserved for replay",
+        "Execution context is isolated per tenant (no cross-tenant state leak)"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build the conditional logic engine: expression evaluator (JSON Logic or CEL), branch resolver, loop constructs (for-each, while-condition), merge/join gates, and filter nodes. Support data-mapping with JSONPath/JMESPath transforms.",
+      "payload": {
+        "expression_language": "CEL_with_JSONPath_transforms",
+        "node_types": [
+          "if_branch",
+          "switch_case",
+          "for_each_loop",
+          "while_loop",
+          "merge_join",
+          "filter",
+          "transform"
+        ],
+        "data_mapping": "JMESPath",
+        "sandboxing": "expression_eval_in_isolated_context"
+      },
+      "acceptance_criteria": [
+        "If/else branch correctly routes execution based on previous step output",
+        "For-each loop processes each item in an array as independent sub-execution",
+        "Expression evaluator rejects unsafe expressions (no arbitrary code execution)",
+        "Transform node maps nested JSON structures using JMESPath \u2014 10 test cases pass",
+        "Merge/join gate waits for all parallel branches before continuing"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement the connector framework: base connector interface, OAuth2/API key auth handlers, connector configuration schema (JSON Schema), request/response normalisation, rate-limit aware throttling, and the connector SDK for third-party developers.",
+      "payload": {
+        "connector_interface": "abstract_base_class_with_execute_auth_validate_methods",
+        "auth_types": [
+          "oauth2_pkce",
+          "oauth2_client_credentials",
+          "api_key_header",
+          "api_key_query",
+          "basic_auth",
+          "JWT"
+        ],
+        "schema_validation": "JSON_Schema_draft_7",
+        "rate_limiting": "token_bucket_per_connector_per_tenant",
+        "sdk_packaging": "Python_package_for_third_party_connectors"
+      },
+      "acceptance_criteria": [
+        "Base connector interface enforces execute(), validate_config(), and get_auth_url() methods",
+        "OAuth2 PKCE flow completes end-to-end for a test connector",
+        "Rate limiter throttles requests when connector limit is reached \u2014 verified with load test",
+        "Connector SDK docs include a 'hello world' connector buildable in under 30 minutes",
+        "Config schema validation rejects malformed connector configs with descriptive errors"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Build the first 20 high-priority connectors (Slack, Gmail, GitHub, Salesforce, HubSpot, Jira, Google Sheets, Dropbox, S3, PostgreSQL, MySQL, HTTP/Webhook, Stripe, Twilio, SendGrid, Notion, Airtable, Zendesk, Microsoft Teams, ServiceNow) using the connector framework.",
+      "payload": {
+        "connector_batch": "tier_1_top_20",
+        "test_coverage": "unit_and_integration_per_connector",
+        "credential_storage": "vault_encrypted_per_tenant"
+      },
+      "acceptance_criteria": [
+        "All 20 connectors implement the base connector interface",
+        "Each connector has at minimum 3 actions and 1 trigger",
+        "Integration tests run against sandbox/test accounts for each connector",
+        "Credential storage verified: plaintext secrets never logged or stored unencrypted",
+        "Each connector has a config schema with field-level descriptions"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Build out connectors 21\u2013200+: batch implementation of remaining connectors grouped by category (CRM, ITSM, storage, communication, databases, payments, analytics, HR, marketing, DevOps). Automate connector scaffolding from OpenAPI spec ingestion.",
+      "payload": {
+        "connector_count_target": 200,
+        "auto_scaffolding": "OpenAPI_spec_to_connector_code_generator",
+        "categories": [
+          "CRM",
+          "ITSM",
+          "storage",
+          "communication",
+          "databases",
+          "payments",
+          "analytics",
+          "HR",
+          "marketing",
+          "DevOps",
+          "ERP",
+          "security"
+        ],
+        "quality_gate": "critic_agent_review_per_batch_of_10"
+      },
+      "acceptance_criteria": [
+        "200+ connectors registered in the connector registry",
+        "Auto-scaffolding generates 80%+ of boilerplate from a valid OpenAPI spec",
+        "Each connector passes the connector contract test suite (auth, execute, error_handling)",
+        "Connector registry searchable by name, category, and auth type",
+        "Zero hardcoded credentials in any connector implementation"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement the error handling subsystem: error classification (transient vs. permanent), configurable error handlers per step (retry, skip, fail-flow, branch-to-error-handler), error notification routing (email/Slack/webhook), and flow-level error recovery strategies.",
+      "payload": {
+        "error_classes": [
+          "transient_network",
+          "auth_failure",
+          "rate_limit",
+          "schema_mismatch",
+          "timeout",
+          "permanent_failure"
+        ],
+        "handler_types": [
+          "retry_with_backoff",
+          "skip_and_continue",
+          "fail_flow",
+          "route_to_error_branch"
+        ],
+        "notification_channels": [
+          "email",
+          "Slack",
+          "webhook",
+          "PagerDuty"
+        ],
+        "recovery_strategies": [
+          "manual_replay",
+          "automatic_replay_on_fix",
+          "partial_rerun_from_step"
+        ]
+      },
+      "acceptance_criteria": [
+        "Error classification correctly categorises 10 test error scenarios",
+        "Per-step error handler config is persisted and applied at execution time",
+        "Notification fires within 30 seconds of a permanent flow failure",
+        "Manual replay from a specific step replays only remaining steps \u2014 prior outputs reused",
+        "Error branch routing successfully diverts flow to an alternate path on step failure"
+      ],
+      "depends_on": [
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Build the execution monitoring service: real-time execution state machine, step-level timing and output capture, execution history store with search/filter, metrics aggregation (success rate, P95 latency, error rate per flow/connector), and streaming execution log via SSE.",
+      "payload": {
+        "state_machine": "execution_states: pending queued running paused failed succeeded",
+        "metrics_store": "TimescaleDB_or_Prometheus",
+        "history_retention": "configurable_per_tenant_90d_default",
+        "streaming": "SSE_for_live_execution_updates",
+        "search": "full_text_on_execution_logs_with_Elasticsearch"
+      },
+      "acceptance_criteria": [
+        "Execution state transitions are atomic and persisted \u2014 no lost state on crash",
+        "SSE stream delivers step-completion events within 500ms of actual completion",
+        "Metrics dashboard shows success rate, P95 latency, and error rate per flow",
+        "Execution history search returns results in under 200ms for 1M+ log entries",
+        "Execution logs retained per configured policy \u2014 older entries auto-archived"
+      ],
+      "depends_on": [
+        10,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "BACKEND",
+      "description": "Implement the schedule engine: cron-based triggers, interval triggers, event/webhook triggers, timezone-aware scheduling, schedule conflict detection, and schedule health monitoring (missed run detection).",
+      "payload": {
+        "trigger_types": [
+          "cron",
+          "interval",
+          "webhook_inbound",
+          "event_subscription"
+        ],
+        "timezone_support": "IANA_timezone_database",
+        "scheduler_backend": "Celery_Beat_or_Temporal_Schedules",
+        "missed_run_policy": "skip_or_catchup_configurable"
+      },
+      "acceptance_criteria": [
+        "Cron trigger fires within 5 seconds of scheduled time under normal load",
+        "Timezone-aware scheduling correctly handles DST transitions",
+        "Missed run detection alerts operator within 5 minutes of a missed schedule",
+        "Webhook trigger validates HMAC signature before enqueuing execution",
+        "Schedule conflict detection warns when two schedules would fire the same flow simultaneously"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the visual flow builder canvas: React Flow-based drag-and-drop editor, node palette, connector search, node configuration side panel, canvas zoom/pan/minimap, flow version history viewer, undo/redo, and keyboard shortcuts.",
+      "payload": {
+        "canvas_library": "React_Flow",
+        "node_types": [
+          "trigger",
+          "action",
+          "condition",
+          "loop",
+          "transform",
+          "error_handler",
+          "delay"
+        ],
+        "features": [
+          "drag_drop",
+          "zoom_pan_minimap",
+          "undo_redo",
+          "keyboard_shortcuts",
+          "version_history",
+          "auto_layout"
+        ],
+        "state_management": "Zustand"
+      },
+      "acceptance_criteria": [
+        "Flow canvas renders 100-node flows without visible lag (< 16ms frame time)",
+        "Drag-and-drop from palette to canvas creates a configured node",
+        "Undo/redo works across 20 sequential operations",
+        "Connector search returns results as user types (debounced, < 100ms)",
+        "Auto-layout arranges nodes into a readable DAG on demand",
+        "Canvas state auto-saves every 30 seconds"
+      ],
+      "depends_on": [
+        6,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build the execution monitoring dashboard: live execution list with status badges, step-by-step execution trace viewer, real-time log stream panel (SSE), execution metrics charts (success rate, duration histogram, error breakdown), and flow health scorecard.",
+      "payload": {
+        "charts_library": "Recharts_or_Visx",
+        "real_time_updates": "SSE_consumer",
+        "views": [
+          "execution_list",
+          "execution_trace",
+          "live_logs",
+          "metrics_dashboard",
+          "flow_health_scorecard"
+        ]
+      },
+      "acceptance_criteria": [
+        "Execution list updates in real-time as new executions start/complete",
+        "Execution trace shows each step's status, duration, input, and output",
+        "Live log panel streams logs without page reload",
+        "Metrics charts refresh every 30 seconds without full re-render",
+        "Flow health scorecard shows 7-day success rate and trend"
+      ],
+      "depends_on": [
+        16,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the connector marketplace UI: browsable connector catalog with category filters, connector detail page (actions, triggers, auth setup, changelog), credential manager, and connector usage analytics per tenant.",
+      "payload": {
+        "views": [
+          "connector_catalog",
+          "connector_detail",
+          "credential_manager",
+          "connector_analytics"
+        ],
+        "search": "client_side_fuzzy_search_Fuse.js",
+        "featured_connectors": "curated_list_configurable_in_CMS"
+      },
+      "acceptance_criteria": [
+        "Catalog displays 200+ connectors with category filter and search",
+        "Connector detail page shows all available actions and triggers with parameter descriptions",
+        "Credential setup wizard completes OAuth2 flow in-browser without redirect issues",
+        "Usage analytics shows which connectors are used most in tenant's flows",
+        "Connector catalog loads in under 1 second (client-side search with preloaded index)"
+      ],
+      "depends_on": [
+        14,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build team management, RBAC UI, audit log viewer, usage/billing dashboard, and tenant settings panel. Implement SSO configuration page (SAML 2.0 / OIDC).",
+      "payload": {
+        "views": [
+          "team_management",
+          "role_assignments",
+          "audit_log",
+          "usage_billing",
+          "tenant_settings",
+          "sso_config"
+        ],
+        "sso_protocols": [
+          "SAML_2.0",
+          "OIDC"
+        ]
+      },
+      "acceptance_criteria": [
+        "Admin can create/edit/delete roles and assign to users",
+        "Audit log is searchable and filterable by event type, user, and date range",
+        "Usage dashboard shows API calls, executions, and connector usage for billing period",
+        "SSO configuration wizard validates SAML metadata before saving",
+        "Role changes take effect on next request \u2014 no stale permissions cached > 60 seconds"
+      ],
+      "depends_on": [
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "AGENTIC",
+      "description": "Implement the AI Flow Assistant using the Review and Critique (Actor-Critic) pattern: an LLM-powered assistant that suggests next steps in a flow, detects common misconfiguration patterns, and critiques drafted flows for error-handling gaps and performance anti-patterns.",
+      "payload": {
+        "agentic_pattern": "review_and_critique",
+        "generator_agent": "flow_suggestion_agent",
+        "critic_agent": "flow_quality_critic",
+        "acceptance_criteria_threshold": "quality_score_>=_0.8",
+        "features": [
+          "next_step_suggestion",
+          "misconfiguration_detection",
+          "error_handling_gap_analysis",
+          "performance_anti_pattern_detection"
+        ]
+      },
+      "acceptance_criteria": [
+        "Flow assistant suggests relevant next steps based on current flow context in < 2 seconds",
+        "Critic agent identifies missing error handlers on HTTP action nodes",
+        "Suggestion quality score \u2265 0.8 on a held-out test set of 50 real flow patterns",
+        "HITL gate: suggestions are proposals \u2014 user must explicitly accept before applying to flow",
+        "No hallucinated connector names or actions in suggestions"
+      ],
+      "depends_on": [
+        11,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 23,
+      "task_type": "COMPLIANCE",
+      "description": "Produce ISO 27001 Statement of Applicability (SoA), SOC 2 Type II readiness assessment, information security policies (ISMS), data classification policy, incident response plan, and vulnerability management policy.",
+      "payload": {
+        "standards": [
+          "ISO_27001",
+          "SOC_2_Type_II"
+        ],
+        "artifacts": [
+          "SoA",
+          "ISMS_policies",
+          "data_classification",
+          "incident_response_plan",
+          "vulnerability_mgmt_policy",
+          "access_control_policy",
+          "change_management_policy"
+        ],
+        "evidence_automation": "audit_log_exports_for_CC6_CC7_CC8"
+      },
+      "acceptance_criteria": [
+        "SoA documents all 93 ISO 27001 Annex A controls with in-scope/out-of-scope justification",
+        "SOC 2 readiness gap assessment lists all open items with owners and due dates",
+        "Incident response plan tested via tabletop exercise \u2014 debrief report produced",
+        "Data classification policy covers all data types in the platform schema",
+        "Audit log export covers all SOC 2 CC6.x control evidence requirements"
+      ],
+      "depends_on": [
+        5,
+        7
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 24,
+      "task_type": "DEVOPS",
+      "description": "Build CI/CD pipelines (GitHub Actions): lint \u2192 unit test \u2192 integration test \u2192 build \u2192 SAST/DAST scan \u2192 staging deploy \u2192 smoke test \u2192 production deploy with canary rollout. Set up observability stack (Prometheus + Grafana + Loki + OpenTelemetry), alerting runbooks, and SLO dashboards.",
+      "payload": {
+        "ci_platform": "GitHub_Actions",
+        "pipeline_stages": [
+          "lint",
+          "unit_test",
+          "integration_test",
+          "build",
+          "SAST_DAST",
+          "staging_deploy",
+          "smoke_test",
+          "canary_deploy",
+          "production_promote"
+        ],
+        "observability": [
+          "Prometheus",
+          "Grafana",
+          "Loki",
+          "OpenTelemetry"
+        ],
+        "slos": [
+          "api_availability_99.9",
+          "flow_execution_P95_<5s",
+          "connector_auth_P95_<2s"
+        ]
+      },
+      "acceptance_criteria": [
+        "Full pipeline completes in under 15 minutes for a typical PR",
+        "SAST scan blocks merge on high/critical findings",
+        "Canary deployment routes 10% traffic before full promotion",
+        "SLO dashboards show error budget burn rate with alerting at 5% burn",
+        "Rollback pipeline executes in under 3 minutes"
+      ],
+      "depends_on": [
+        9,
+        16
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "INFRA",
+      "description": "Provision production infrastructure via Terraform: multi-AZ Kubernetes cluster, managed PostgreSQL + TimescaleDB, Redis (task queue + cache), Elasticsearch, Vault (credential store), CDN, WAF, and VPC network segmentation. Define IaC modules for dev/staging/prod parity.",
+      "payload": {
+        "iac_tool": "Terraform",
+        "cloud": "AWS_or_GCP_configurable",
+        "services": [
+          "EKS/GKE",
+          "RDS_PostgreSQL",
+          "ElastiCache_Redis",
+          "Elasticsearch",
+          "HashiCorp_Vault",
+          "CloudFront/CloudFlare",
+          "WAF",
+          "VPC"
+        ],
+        "environments": [
+          "dev",
+          "staging",
+          "production"
+        ],
+        "HA": "multi_AZ_with_auto_failover"
+      },
+      "acceptance_criteria": [
+        "`terraform apply` provisions a complete environment from scratch with zero manual steps",
+        "Multi-AZ failover tested: primary DB failure results in < 30s failover",
+        "WAF rules block OWASP Top 10 attack patterns \u2014 verified with automated scan",
+        "Dev/staging/prod use identical module configs \u2014 only sizing parameters differ",
+        "Vault unsealing is automated via AWS KMS auto-unseal"
+      ],
+      "depends_on": [
+        24
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "QA",
+      "description": "Design the master test plan: unit test strategy (\u2265 80% coverage), integration test strategy (connector contract tests, API contract tests), performance test plan (execution engine under load), security test plan, and regression suite coverage map.",
+      "payload": {
+        "test_levels": [
+          "unit",
+          "integration",
+          "contract",
+          "performance",
+          "security",
+          "regression"
+        ],
+        "coverage_targets": {
+          "unit": "80%",
+          "integration": "all_connector_contracts",
+          "API_contract": "all_OpenAPI_endpoints"
+        },
+        "tools": [
+          "pytest",
+          "Jest",
+          "k6_for_load",
+          "OWASP_ZAP_for_security"
+        ]
+      },
+      "acceptance_criteria": [
+        "Master test plan approved covering all 6 test levels",
+        "Coverage targets documented and enforced in CI pipeline",
+        "Test environment provisioning script creates isolated test data per run",
+        "Defect triage process defined: severity levels, SLA per severity, escalation path",
+        "Regression suite covers all P0 user journeys"
+      ],
+      "depends_on": [
+        8,
+        10
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "TESTS",
+      "description": "Write unit tests for the execution engine, conditional logic engine, connector framework, error handler, and schedule engine. Achieve \u2265 80% line coverage. Include property-based tests for the expression evaluator.",
+      "payload": {
+        "test_framework": "pytest",
+        "coverage_tool": "pytest-cov",
+        "property_based": "Hypothesis_for_expression_evaluator",
+        "mocking": "unittest.mock_for_external_connector_calls"
+      },
+      "acceptance_criteria": [
+        "Overall unit test coverage \u2265 80% (enforced in CI)",
+        "Execution engine: all state transitions covered",
+        "Expression evaluator: 100 property-based test cases with no failures",
+        "Connector framework: auth flows, rate limiting, and error classification all tested",
+        "All tests pass in < 2 minutes in CI"
+      ],
+      "depends_on": [
+        10,
+        11,
+        12,
+        15,
+        17
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "SYSTEM_TEST",
+      "description": "Build end-to-end system test suite: 20 golden-path flow scenarios spanning multiple connectors and conditional logic, multi-tenant isolation validation, execution monitoring verification, schedule trigger accuracy tests, and load test (1000 concurrent executions).",
+      "payload": {
+        "e2e_scenarios": 20,
+        "load_test_tool": "k6",
+        "load_target": "1000_concurrent_executions",
+        "isolation_tests": "cross_tenant_data_leak_detection",
+        "schedule_accuracy_test": "within_5s_of_cron_time"
+      },
+      "acceptance_criteria": [
+        "All 20 golden-path scenarios pass in staging environment",
+        "Cross-tenant isolation test: 0 data leaks across 10 tenant boundary test cases",
+        "Load test: P95 execution start latency < 500ms at 1000 concurrent executions",
+        "Schedule accuracy: 100 consecutive cron triggers fire within 5 seconds of scheduled time",
+        "Error recovery scenario: flow resumes correctly after simulated connector outage",
+        "Load test simulates expected concurrent users",
+        "Failover scenario tested"
+      ],
+      "depends_on": [
+        14,
+        15,
+        16,
+        17,
+        24
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 29,
+      "task_type": "OPERATIONS",
+      "description": "Write SLA definitions (99.9% uptime, < 5s P95 execution latency), operational runbooks (incident response, on-call escalation, flow execution stuck recovery, connector auth refresh, DB failover), capacity planning model, and disaster recovery plan.",
+      "payload": {
+        "sla_targets": {
+          "uptime": "99.9%",
+          "execution_P95": "<5s",
+          "connector_auth_P95": "<2s"
+        },
+        "runbooks": [
+          "incident_response",
+          "on_call_escalation",
+          "stuck_execution_recovery",
+          "connector_auth_refresh",
+          "DB_failover",
+          "scale_up_procedure"
+        ],
+        "DR_rto": "4h",
+        "DR_rpo": "1h"
+      },
+      "acceptance_criteria": [
+        "SLA document signed off with measurable SLOs and error budgets",
+        "Each runbook has a step-by-step procedure testable via tabletop",
+        "DR plan tested: restore from backup completes within 4-hour RTO",
+        "Capacity model covers 3x current peak load with headroom calculations",
+        "On-call rotation and escalation path documented and communicated"
+      ],
+      "depends_on": [
+        24,
+        25
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 30,
+      "task_type": "TRAINING",
+      "description": "Produce user-facing documentation: Getting Started guide, visual flow builder tutorial, connector setup guides for top-20 connectors, conditional logic cookbook, error handling best practices, API reference, and 5 video walkthroughs.",
+      "payload": {
+        "docs_platform": "Docusaurus_or_GitBook",
+        "content": [
+          "getting_started",
+          "flow_builder_tutorial",
+          "connector_setup_guides_x20",
+          "conditional_logic_cookbook",
+          "error_handling_best_practices",
+          "API_reference",
+          "admin_guide",
+          "SSO_setup_guide"
+        ],
+        "video_count": 5,
+        "in_app_tooltips": "context_sensitive_per_UI_panel"
+      },
+      "acceptance_criteria": [
+        "Getting Started guide takes a new user from signup to first running flow in under 15 minutes",
+        "All 20 tier-1 connector setup guides reviewed for accuracy against live connectors",
+        "API reference auto-generated from OpenAPI spec and kept in sync via CI",
+        "5 video walkthroughs cover: create flow, add connector, conditional logic, error handling, monitoring",
+        "In-app tooltips cover all node configuration fields",
+        "Admin guide separate from end-user guide",
+        "Role-based training paths defined"
+      ],
+      "depends_on": [
+        19,
+        20,
+        22
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 31,
+      "task_type": "FINANCIAL",
+      "description": "Build the pricing model: consumption-based (executions/month), per-seat, and enterprise flat-rate tiers. Model unit economics (infra cost per 1M executions, connector API cost pass-through), break-even analysis, and billing integration design (Stripe).",
+      "payload": {
+        "pricing_tiers": [
+          "starter_free",
+          "growth_consumption",
+          "business_per_seat",
+          "enterprise_flat_rate"
+        ],
+        "billing_integration": "Stripe",
+        "unit_economics_model": "cost_per_1M_executions",
+        "metering": "execution_count_connector_calls_active_users"
+      },
+      "acceptance_criteria": [
+        "Three-tier pricing model with clear feature gates between tiers",
+        "Unit economics model shows cost per 1M executions at 3 scale levels",
+        "Break-even analysis at each pricing tier documented",
+        "Stripe billing integration handles subscription creation, metered usage, and invoicing",
+        "Usage metering captures execution count per tenant per billing period"
+      ],
+      "depends_on": [
+        3,
+        16
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 32,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure for the React frontend (i18next), extract all UI strings to translation keys, and produce initial translations for English, Spanish, French, German, and Japanese.",
+      "payload": {
+        "i18n_library": "i18next_react-i18next",
+        "initial_locales": [
+          "en",
+          "es",
+          "fr",
+          "de",
+          "ja"
+        ],
+        "string_extraction": "automated_via_i18next_parser",
+        "rtl_support": "prepared_but_not_activated"
+      },
+      "acceptance_criteria": [
+        "Zero hardcoded UI strings \u2014 all text rendered via i18next keys",
+        "Locale switching works at runtime without page reload",
+        "All 5 locales have 100% string coverage (no fallback to English keys in non-English mode)",
+        "CI fails if a new hardcoded string is introduced (automated string extraction check)",
+        "Date, number, and currency formatting uses locale-aware formatters"
+      ],
+      "depends_on": [
+        18,
+        19,
+        20,
+        21
+      ],
+      "agent_role": "localization_engineer"
+    }
+  ],
+  "task_count": 32,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 58,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 58,
+        "final_review": {
+          "score": 58,
+          "flaws": [
+            "Step 25 (Infra) depends on Step 24 (CI/CD) \u2014 this is backwards. You cannot run a CI/CD pipeline that deploys to infrastructure that doesn't exist yet. Terraform provisioning must precede pipeline construction, not follow it.",
+            "Step 28 (System Tests) lists depends_on [14,15,16,17,24] but omits Step 25 (Infra). System tests in staging require production-equivalent infrastructure to be provisioned first.",
+            "The Celery vs Temporal decision is punted with 'or' syntax in steps 10 and 17. These are architecturally incompatible execution models with different failure semantics, replay guarantees, and operational overhead. Leaving this unresolved creates a fork in the entire execution engine implementation.",
+            "Step 14's 200+ connector target is catastrophically underscoped as a single task. Salesforce alone requires navigating 4 OAuth flows, 2 API versions, governor limits, and a SOAP fallback. ServiceNow requires tenant-specific instance URLs. Microsoft Graph requires multi-tenant Azure app registration. Auto-scaffolding from OpenAPI specs covers maybe 30% of real connector complexity \u2014 the '80% boilerplate' claim is fiction for enterprise APIs.",
+            "Step 23 (Compliance \u2014 ISO 27001 SoA, SOC 2 readiness) depends only on Steps 5 and 7. It should depend on steps 10-21 since you cannot write an accurate Statement of Applicability for a system that hasn't been built yet. The SoA documents controls as-implemented, not as-designed.",
+            "No step for connector versioning or API change management. When Salesforce deprecates an API version or GitHub changes a webhook payload schema, every flow using that connector silently breaks. This is the #1 operational failure mode for platforms like this and it has zero coverage in the plan.",
+            "Billing infrastructure (Step 31) comes after system tests (Step 28). If metered billing is a product requirement \u2014 and it is, given the consumption-based tier \u2014 usage metering must be instrumented in the execution engine (Step 10) from day one. Retrofitting metering into a built execution engine is a significant rework.",
+            "The plan mentions on-premise deployment as a competitive differentiator (Step 3) but contains zero implementation steps for Helm charts, air-gapped Vault setup, or self-hosted connector registry. This is a promised feature with no delivery path.",
+            "React Flow 100-node canvas at <16ms frame time is achievable in isolation but the plan adds undo/redo (Zustand), auto-save every 30s, and real-time collaboration state. No performance budget is allocated for the combined load. React Flow has documented edge virtualization issues above ~150 nodes with complex edge routing."
+          ],
+          "suggestions": [
+            "Resolve Celery vs Temporal before Step 9. Run a spike (2-3 days): implement a 3-step flow with error handling and replay in both, measure operational complexity. Temporal wins on durability guarantees; Celery wins on simplicity. Pick one and delete the other from the plan.",
+            "Split Step 14 into at minimum 5 sub-tasks with dedicated owners per API category. Assign a 'connector contract test harness' sub-task first \u2014 a standard test fixture that validates auth, pagination, rate limit handling, and error normalization for any connector. Build all 200+ against it, not after it.",
+            "Flip the dependency: Step 25 (Infra) should be Step 24, and current Step 24 (CI/CD pipelines) should be Step 25. Alternatively, split infra into 'minimal dev infra' (precedes CI/CD) and 'production infra' (follows CI/CD pipeline validation).",
+            "Add an explicit 'connector health monitoring' step: a background job that pings each connector's auth endpoint on a schedule, detects API schema drift by diffing against the stored JSON Schema, and alerts when a connector's error rate spikes. Without this, 200+ connectors become a silent maintenance liability.",
+            "Add execution payload encryption as a distinct database requirement. Credentials are encrypted (Step 7), but flow execution payloads can contain PII from connector responses (email bodies, CRM records, payment data). Column-level encryption or application-level encryption of step_outputs is required for GDPR Article 32 compliance.",
+            "Move billing metering instrumentation to Step 10 (execution engine). Add a 'emit metering event' call at execution completion. The Step 31 Stripe integration can come later, but the metering data must be captured from execution #1 or you have no historical billing data to reconstruct.",
+            "Add an SSRF protection layer to the HTTP/Webhook connector and any connector that accepts user-supplied URLs. Without it, any tenant can use the HTTP connector to probe your internal VPC: hitting Vault's API, the metadata endpoint (169.254.169.254), or internal Kubernetes service IPs."
+          ],
+          "missing": [
+            "Connector versioning strategy: how do you handle breaking changes in an upstream API without invalidating every flow that uses that connector? Semantic versioning for connectors + migration guide per breaking change is standard practice and entirely absent.",
+            "OAuth token refresh concurrency control: when 10 parallel flow executions hit a connector whose token has expired, all 10 will attempt a token refresh simultaneously, causing a thundering herd against the connector's token endpoint. A distributed lock per credential is required.",
+            "Data residency implementation step: GDPR and enterprise buyers require EU data to stay in EU. The plan mentions this in legal (Step 4) and infra (Step 25) but has no implementation step for geo-routing execution data, per-tenant region selection, or cross-region replication controls.",
+            "Webhook replay attack mitigation: Step 17 requires HMAC signature validation but does not require timestamp validation or nonce tracking. Without replay protection, an attacker who captures a valid signed webhook payload can trigger arbitrary flow executions indefinitely.",
+            "Database connection pooling (PgBouncer or pgpool): at 1000 concurrent executions (Step 28 load target), each with 3-5 DB operations, PostgreSQL will be saturated without a connection pooler. This is an infrastructure component missing from Step 25.",
+            "Flow import/export and portability: enterprise buyers require the ability to export flows as JSON/YAML for version control, disaster recovery, and environment promotion (staging \u2192 production). Absent from all 32 steps.",
+            "Connector SDK versioning and backward compatibility policy: third-party connector developers (Step 12) need a stable interface contract with a deprecation timeline. Without this, every framework change breaks third-party connectors.",
+            "Step-level timeout configuration: a connector that hangs indefinitely will block a Celery worker or Temporal workflow indefinitely. Per-step timeouts with configurable defaults are absent from the execution engine spec.",
+            "Multi-region active-active or active-passive topology decision: the infra step specifies multi-AZ (single region) but enterprise SLAs at 99.9%+ often require multi-region. This architectural decision affects database replication strategy, Vault HA topology, and Kubernetes federation \u2014 it must be decided before Step 25."
+          ],
+          "security_risks": [
+            "SSRF via HTTP connector: no egress filtering mentioned anywhere. A malicious or misconfigured flow can use the HTTP connector to exfiltrate data from internal services, hit cloud metadata endpoints, or probe Vault's API. Mitigate with an egress proxy that blocks RFC 1918 addresses and cloud metadata IPs.",
+            "Expression injection via CEL: Step 11 mandates 'expression eval in isolated context' but CEL's Go implementation has had sandbox escapes, and the Python CEL implementations have varying security postures. If the sandboxing is implemented incorrectly, any flow builder can execute arbitrary code on the execution engine worker.",
+            "Connector OAuth token exfiltration: Vault stores tokens per-tenant, but the execution engine must decrypt them at runtime. If execution worker memory is dumped (OOM, core dump, debug endpoint), all in-flight OAuth tokens are exposed. Secure enclave or token proxy pattern is the mitigation.",
+            "Cross-tenant timing oracle via execution metrics: even with RLS, if the metrics endpoint exposes P95 latency by connector globally (not per-tenant), an attacker can infer what connectors other tenants are using and roughly when their flows execute.",
+            "Connector callback URL hijacking: OAuth flows require a redirect URI. If the callback URL validation is lenient (prefix match instead of exact match), an attacker can redirect another tenant's OAuth completion to their own endpoint and steal the authorization code.",
+            "Execution log data retention vs right-to-erasure conflict: execution logs contain step inputs/outputs which may include personal data. The 90-day default retention (Step 16) conflicts with GDPR Article 17 right-to-erasure requests, which must be honored within 30 days. No GDPR erasure implementation step exists."
+          ],
+          "summary": "This plan demonstrates solid architectural instincts \u2014 PostgreSQL + RLS for multi-tenancy, envelope encryption for credentials, DAG-based execution, actor-critic AI assistant \u2014 but it fails on scope realism and several critical dependency ordering errors. The 200+ connector target is the plan's most dangerous fiction: real enterprise connectors (Salesforce, SAP, ServiceNow, Microsoft Graph) each represent weeks of engineering, not items in a batch task. The Celery-vs-Temporal non-decision creates a branching path through the most critical subsystem in the product. Three security gaps (SSRF, OAuth token concurrency, webhook replay) are production-blocking for enterprise buyers. The infra/CI-CD dependency inversion would cause a pipeline configuration sprint that has nowhere to deploy to. Stripped to a realistic MVP scope \u2014 flow builder, top-20 connectors, core execution engine, basic monitoring, single-region deployment \u2014 this is a 68-point plan. As written, presenting 200+ connectors, ISO 27001, SOC 2 Type II, and multi-region HA as a coherent deliverable sequence, it scores 58: the core is buildable, but the scope promises will cause the project to stall at Step 14 and never recover.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 58,
+            "flaws": [
+              "Step 25 (Infra) depends on Step 24 (CI/CD) \u2014 this is backwards. You cannot run a CI/CD pipeline that deploys to infrastructure that doesn't exist yet. Terraform provisioning must precede pipeline construction, not follow it.",
+              "Step 28 (System Tests) lists depends_on [14,15,16,17,24] but omits Step 25 (Infra). System tests in staging require production-equivalent infrastructure to be provisioned first.",
+              "The Celery vs Temporal decision is punted with 'or' syntax in steps 10 and 17. These are architecturally incompatible execution models with different failure semantics, replay guarantees, and operational overhead. Leaving this unresolved creates a fork in the entire execution engine implementation.",
+              "Step 14's 200+ connector target is catastrophically underscoped as a single task. Salesforce alone requires navigating 4 OAuth flows, 2 API versions, governor limits, and a SOAP fallback. ServiceNow requires tenant-specific instance URLs. Microsoft Graph requires multi-tenant Azure app registration. Auto-scaffolding from OpenAPI specs covers maybe 30% of real connector complexity \u2014 the '80% boilerplate' claim is fiction for enterprise APIs.",
+              "Step 23 (Compliance \u2014 ISO 27001 SoA, SOC 2 readiness) depends only on Steps 5 and 7. It should depend on steps 10-21 since you cannot write an accurate Statement of Applicability for a system that hasn't been built yet. The SoA documents controls as-implemented, not as-designed.",
+              "No step for connector versioning or API change management. When Salesforce deprecates an API version or GitHub changes a webhook payload schema, every flow using that connector silently breaks. This is the #1 operational failure mode for platforms like this and it has zero coverage in the plan.",
+              "Billing infrastructure (Step 31) comes after system tests (Step 28). If metered billing is a product requirement \u2014 and it is, given the consumption-based tier \u2014 usage metering must be instrumented in the execution engine (Step 10) from day one. Retrofitting metering into a built execution engine is a significant rework.",
+              "The plan mentions on-premise deployment as a competitive differentiator (Step 3) but contains zero implementation steps for Helm charts, air-gapped Vault setup, or self-hosted connector registry. This is a promised feature with no delivery path.",
+              "React Flow 100-node canvas at <16ms frame time is achievable in isolation but the plan adds undo/redo (Zustand), auto-save every 30s, and real-time collaboration state. No performance budget is allocated for the combined load. React Flow has documented edge virtualization issues above ~150 nodes with complex edge routing."
+            ],
+            "suggestions": [
+              "Resolve Celery vs Temporal before Step 9. Run a spike (2-3 days): implement a 3-step flow with error handling and replay in both, measure operational complexity. Temporal wins on durability guarantees; Celery wins on simplicity. Pick one and delete the other from the plan.",
+              "Split Step 14 into at minimum 5 sub-tasks with dedicated owners per API category. Assign a 'connector contract test harness' sub-task first \u2014 a standard test fixture that validates auth, pagination, rate limit handling, and error normalization for any connector. Build all 200+ against it, not after it.",
+              "Flip the dependency: Step 25 (Infra) should be Step 24, and current Step 24 (CI/CD pipelines) should be Step 25. Alternatively, split infra into 'minimal dev infra' (precedes CI/CD) and 'production infra' (follows CI/CD pipeline validation).",
+              "Add an explicit 'connector health monitoring' step: a background job that pings each connector's auth endpoint on a schedule, detects API schema drift by diffing against the stored JSON Schema, and alerts when a connector's error rate spikes. Without this, 200+ connectors become a silent maintenance liability.",
+              "Add execution payload encryption as a distinct database requirement. Credentials are encrypted (Step 7), but flow execution payloads can contain PII from connector responses (email bodies, CRM records, payment data). Column-level encryption or application-level encryption of step_outputs is required for GDPR Article 32 compliance.",
+              "Move billing metering instrumentation to Step 10 (execution engine). Add a 'emit metering event' call at execution completion. The Step 31 Stripe integration can come later, but the metering data must be captured from execution #1 or you have no historical billing data to reconstruct.",
+              "Add an SSRF protection layer to the HTTP/Webhook connector and any connector that accepts user-supplied URLs. Without it, any tenant can use the HTTP connector to probe your internal VPC: hitting Vault's API, the metadata endpoint (169.254.169.254), or internal Kubernetes service IPs."
+            ],
+            "missing": [
+              "Connector versioning strategy: how do you handle breaking changes in an upstream API without invalidating every flow that uses that connector? Semantic versioning for connectors + migration guide per breaking change is standard practice and entirely absent.",
+              "OAuth token refresh concurrency control: when 10 parallel flow executions hit a connector whose token has expired, all 10 will attempt a token refresh simultaneously, causing a thundering herd against the connector's token endpoint. A distributed lock per credential is required.",
+              "Data residency implementation step: GDPR and enterprise buyers require EU data to stay in EU. The plan mentions this in legal (Step 4) and infra (Step 25) but has no implementation step for geo-routing execution data, per-tenant region selection, or cross-region replication controls.",
+              "Webhook replay attack mitigation: Step 17 requires HMAC signature validation but does not require timestamp validation or nonce tracking. Without replay protection, an attacker who captures a valid signed webhook payload can trigger arbitrary flow executions indefinitely.",
+              "Database connection pooling (PgBouncer or pgpool): at 1000 concurrent executions (Step 28 load target), each with 3-5 DB operations, PostgreSQL will be saturated without a connection pooler. This is an infrastructure component missing from Step 25.",
+              "Flow import/export and portability: enterprise buyers require the ability to export flows as JSON/YAML for version control, disaster recovery, and environment promotion (staging \u2192 production). Absent from all 32 steps.",
+              "Connector SDK versioning and backward compatibility policy: third-party connector developers (Step 12) need a stable interface contract with a deprecation timeline. Without this, every framework change breaks third-party connectors.",
+              "Step-level timeout configuration: a connector that hangs indefinitely will block a Celery worker or Temporal workflow indefinitely. Per-step timeouts with configurable defaults are absent from the execution engine spec.",
+              "Multi-region active-active or active-passive topology decision: the infra step specifies multi-AZ (single region) but enterprise SLAs at 99.9%+ often require multi-region. This architectural decision affects database replication strategy, Vault HA topology, and Kubernetes federation \u2014 it must be decided before Step 25."
+            ],
+            "security_risks": [
+              "SSRF via HTTP connector: no egress filtering mentioned anywhere. A malicious or misconfigured flow can use the HTTP connector to exfiltrate data from internal services, hit cloud metadata endpoints, or probe Vault's API. Mitigate with an egress proxy that blocks RFC 1918 addresses and cloud metadata IPs.",
+              "Expression injection via CEL: Step 11 mandates 'expression eval in isolated context' but CEL's Go implementation has had sandbox escapes, and the Python CEL implementations have varying security postures. If the sandboxing is implemented incorrectly, any flow builder can execute arbitrary code on the execution engine worker.",
+              "Connector OAuth token exfiltration: Vault stores tokens per-tenant, but the execution engine must decrypt them at runtime. If execution worker memory is dumped (OOM, core dump, debug endpoint), all in-flight OAuth tokens are exposed. Secure enclave or token proxy pattern is the mitigation.",
+              "Cross-tenant timing oracle via execution metrics: even with RLS, if the metrics endpoint exposes P95 latency by connector globally (not per-tenant), an attacker can infer what connectors other tenants are using and roughly when their flows execute.",
+              "Connector callback URL hijacking: OAuth flows require a redirect URI. If the callback URL validation is lenient (prefix match instead of exact match), an attacker can redirect another tenant's OAuth completion to their own endpoint and steal the authorization code.",
+              "Execution log data retention vs right-to-erasure conflict: execution logs contain step inputs/outputs which may include personal data. The 90-day default retention (Step 16) conflicts with GDPR Article 17 right-to-erasure requests, which must be honored within 30 days. No GDPR erasure implementation step exists."
+            ],
+            "summary": "This plan demonstrates solid architectural instincts \u2014 PostgreSQL + RLS for multi-tenancy, envelope encryption for credentials, DAG-based execution, actor-critic AI assistant \u2014 but it fails on scope realism and several critical dependency ordering errors. The 200+ connector target is the plan's most dangerous fiction: real enterprise connectors (Salesforce, SAP, ServiceNow, Microsoft Graph) each represent weeks of engineering, not items in a batch task. The Celery-vs-Temporal non-decision creates a branching path through the most critical subsystem in the product. Three security gaps (SSRF, OAuth token concurrency, webhook replay) are production-blocking for enterprise buyers. The infra/CI-CD dependency inversion would cause a pipeline configuration sprint that has nowhere to deploy to. Stripped to a realistic MVP scope \u2014 flow builder, top-20 connectors, core execution engine, basic monitoring, single-region deployment \u2014 this is a 68-point plan. As written, presenting 200+ connectors, ISO 27001, SOC 2 Type II, and multi-region HA as a coherent deliverable sequence, it scores 58: the core is buildable, but the scope promises will cause the project to stall at Step 14 and never recover.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T11:15:29.869135+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 161.48,
+    "critic_plan": 97.95
+  }
+}

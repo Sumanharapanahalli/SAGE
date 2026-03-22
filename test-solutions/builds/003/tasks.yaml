@@ -1,0 +1,370 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define product requirements: user personas (patient, provider, admin),
+      core workflows (booking, consultation, prescribing, EHR access), regulatory
+      scope, and HIPAA-covered entity classification.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - PRD covers all three personas with at least 10 user stories each
+    - 'Process flows documented for: registration, scheduling, video consult, e-prescription,
+      EHR pull'
+    - HIPAA covered entity vs business associate roles clearly defined
+    - PHI data elements enumerated and mapped to workflows
+    depends_on: []
+  SECURITY:
+    description: 'Produce HIPAA Security Rule threat model: PHI data flow diagram,
+      threat catalog, encryption-at-rest and in-transit requirements, access control
+      matrix, audit logging requirements, breach notification plan, and Software Bill
+      of Materials (SBOM).'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Data flow diagram covers all PHI touch points including third-party integrations
+    - STRIDE threat model completed for each PHI boundary crossing
+    - 'Encryption requirements specified: AES-256 at rest, TLS 1.3 in transit, E2E
+      for video'
+    - RBAC matrix covers patient, provider, admin, billing roles with least-privilege
+    - SBOM generated with all dependencies and known CVE scan
+    - 'Breach notification SLA defined: ≤60 days per HIPAA, ≤72 hours for HITECH'
+    - PHI encryption at rest and in transit
+    - Access audit logging enabled
+    depends_on:
+    - 1
+  LEGAL:
+    description: 'Draft legal documents: Terms of Service, Privacy Policy (HIPAA Notice
+      of Privacy Practices), Business Associate Agreements (BAA) templates for vendors,
+      consent forms for video recording and AI analysis, e-prescription legal compliance
+      (DEA for controlled substances), and software licensing review.'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Notice of Privacy Practices meets 45 CFR §164.520 requirements
+    - BAA template covers all HIPAA-required provisions per 45 CFR §164.308(b)
+    - Consent forms are plain-language, versioned, and auditable
+    - DEA requirements for e-prescribing controlled substances documented (EPCS compliance)
+    - State-by-state telemedicine prescribing restrictions documented for 50 states
+    depends_on:
+    - 1
+    - 2
+  COMPLIANCE:
+    description: 'Build HIPAA compliance framework: risk assessment (per 45 CFR §164.308(a)(1)),
+      policies and procedures library, PHI inventory register, BAA tracker, workforce
+      training plan, contingency plan, and audit control design. Map all artifacts
+      to HIPAA Administrative, Physical, and Technical Safeguards.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Risk assessment covers all 18 PHI identifiers with likelihood/impact scoring
+    - Policies library covers all 9 HIPAA administrative safeguard standards
+    - Physical safeguard controls documented for cloud infrastructure
+    - Technical safeguard controls mapped to implementation tasks
+    - Traceability matrix links each HIPAA requirement to a control and an artifact
+    - Contingency/disaster recovery plan with RPO ≤4h, RTO ≤24h targets
+    depends_on:
+    - 2
+    - 3
+  UX_DESIGN:
+    description: 'Design end-to-end UX: patient portal (registration, scheduling,
+      waiting room, consultation, health records view), provider portal (schedule
+      management, patient queue, prescription pad, EHR view), and admin portal. Include
+      accessibility audit targeting WCAG 2.1 AA. Design AI symptom checker conversation
+      flow.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - 'All critical flows have hi-fi mockups: registration, booking, waiting room,
+      video call, prescription, EHR view'
+    - 'Design system defined: color tokens, typography, spacing, component library'
+    - WCAG 2.1 AA checklist completed for all pages
+    - Symptom checker conversation map covers ≥50 chief complaint entry points
+    - Provider prescription pad UX reviewed for DEA EPCS compliance
+    - Mobile-responsive breakpoints defined for all patient-facing screens
+    depends_on:
+    - 1
+  DATABASE:
+    description: 'Design HIPAA-compliant database schema: patients, providers, appointments,
+      encounters, prescriptions, EHR records (FHIR R4 resources), audit logs, consent
+      records, AI symptom sessions. Implement field-level encryption for PHI columns,
+      row-level security, and partition strategy for audit tables.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all entities with FHIR R4 resource alignment documented
+    - PHI columns (DOB, SSN, diagnosis codes, prescriptions) encrypted at field level
+    - Row-level security policies prevent cross-patient data access
+    - 'Audit log table captures: user_id, action, resource_type, resource_id, timestamp,
+      ip_address, phi_accessed'
+    - Alembic migrations run cleanly from empty DB to full schema
+    - Indexes defined for appointment scheduling, patient search, and FHIR queries
+    depends_on:
+    - 2
+    - 4
+  INFRA:
+    description: 'Provision HIPAA-eligible cloud infrastructure: HIPAA-BAA-covered
+      AWS services (ECS Fargate, RDS PostgreSQL with encryption, ElastiCache, S3 with
+      server-side encryption, CloudTrail, KMS, WAF, VPC with private subnets, ALB,
+      Secrets Manager). Set up environments: dev, staging, prod. Configure VPN for
+      provider access.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - AWS BAA signed and documented for all HIPAA-eligible services used
+    - All PHI stored only in HIPAA-eligible services with encryption enabled
+    - VPC configured with private subnets, no direct internet access to databases
+    - CloudTrail enabled in all regions with log integrity validation
+    - KMS CMK created for PHI encryption with key rotation enabled
+    - 'WAF rules deployed: SQL injection, XSS, rate limiting, geo-restriction as needed'
+    - Terraform state stored in encrypted S3 with state locking
+    - Secrets Manager used for all credentials — zero hardcoded secrets
+    depends_on:
+    - 4
+  CONFIG:
+    description: 'Configure the AI agentic pattern for the symptom checker: Multi-Agent
+      Coordinator pattern with a triage coordinator routing to specialist agents (cardiology,
+      respiratory, general medicine). Set up LLM integration with prompt templates,
+      medical safety guardrails, and human-escalation fallback. Configure SAGE solution
+      YAML for telehealth_platform.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml defines telehealth_platform with HIPAA compliance tier and active
+      modules
+    - prompts.yaml defines system prompts for each specialist agent with medical safety
+      disclaimers
+    - tasks.yaml registers symptom_check, triage_escalate, provider_handoff task types
+    - Coordinator routes to correct specialist based on symptom category with ≥90%
+      accuracy on test set
+    - Emergency keyword detection triggers immediate 911/ER escalation message
+    - No agent response contains a definitive diagnosis — all outputs are informational
+    - Agentic pattern config tested end-to-end in dev environment
+    depends_on:
+    - 1
+    - 2
+  BACKEND:
+    description: 'Build authentication and authorization service: OAuth 2.0 / OIDC
+      with MFA, session management with configurable timeout (HIPAA §164.312(a)(2)(iii)),
+      RBAC enforcement middleware, PHI access audit logging, rate limiting, and brute-force
+      protection.'
+    agent_role: developer
+    acceptance_criteria:
+    - MFA enforced for all provider and admin accounts
+    - Session auto-timeout at 15 minutes of inactivity per HIPAA guidance
+    - Every PHI access generates an audit log entry with user, resource, timestamp
+    - RBAC middleware prevents cross-role data access with 403 responses
+    - Account lockout after 5 failed login attempts with notification
+    - Password policy enforces complexity, history (last 12), and 90-day rotation
+      for providers
+    - JWT tokens signed with RS256, short expiry (15min access, 8h refresh)
+    depends_on:
+    - 6
+    - 7
+  ML_MODEL:
+    description: 'Build AI symptom checker model pipeline: train/fine-tune clinical
+      NLP model on symptom-condition datasets (MIMIC-III, Symptom2Disease), implement
+      the Multi-Agent Coordinator agentic pattern with specialist agents, output structured
+      triage recommendations with confidence scores and evidence citations, and integrate
+      emergency escalation detection.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Triage accuracy ≥85% on held-out clinical vignette test set
+    - Emergency conditions (MI, stroke, sepsis) detected with recall ≥98%
+    - All outputs include mandatory medical disclaimer — enforced at API level
+    - Confidence scores calibrated (Platt scaling or isotonic regression)
+    - Model never returns a single definitive diagnosis — always a differential
+    - Latency ≤3 seconds for 95th percentile symptom checker response
+    - PHI inputs to LLM anonymized before transmission, re-identified in response
+      mapping
+    depends_on:
+    - 8
+    - 9
+  FRONTEND:
+    description: 'Build patient portal: registration and onboarding flow with consent
+      capture, appointment booking with provider search and availability calendar,
+      video waiting room and consultation UI (WebRTC), health records viewer (FHIR
+      resources rendered), prescription history, and AI symptom checker chat interface.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'Patient registration captures: demographics, insurance, consent (NPP, video,
+      AI), emergency contact'
+    - Appointment booking shows real-time provider availability with specialty filter
+    - 'Video consultation UI shows: local video preview, remote video, mute/camera
+      toggle, leave button, chat'
+    - 'FHIR health records viewer renders: medications, allergies, conditions, lab
+      results, visit notes'
+    - Symptom checker chat UI streams responses with typing indicator
+    - All pages pass axe accessibility scan with zero critical violations
+    - Lighthouse performance score ≥85 on mobile for all patient pages
+    depends_on:
+    - 5
+    - 11
+    - 14
+  DEVOPS:
+    description: 'Set up CI/CD pipelines: GitHub Actions with SAST (Semgrep), DAST
+      (OWASP ZAP), dependency vulnerability scanning (Snyk), container image scanning
+      (Trivy), automated HIPAA control validation, test gates (unit + integration),
+      blue/green deployment to ECS, automated rollback, and PagerDuty alerting.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - 'Pipeline blocks merge on: SAST critical findings, dependency CVE high/critical,
+      failing tests'
+    - Container images scanned for CVEs before push to ECR — pipeline fails on critical
+      CVEs
+    - Blue/green deployment achieves zero-downtime releases with health check gate
+    - Automated rollback triggers within 5 minutes if health check fails post-deploy
+    - 'PagerDuty alerts fire for: error rate >1%, latency p95 >1s, database connection
+      failures'
+    - 'HIPAA control check verifies: CloudTrail enabled, S3 encryption on, KMS rotation
+      active'
+    - Pipeline run time ≤15 minutes for full build, test, scan, deploy cycle
+    depends_on:
+    - 7
+    - 9
+    - 10
+  REGULATORY:
+    description: 'Prepare HIPAA compliance evidence package: completed risk assessment,
+      policies and procedures sign-off, workforce training completion records, BAA
+      inventory, penetration test report, vulnerability management records, access
+      review certification, and incident response test results. Map to OCR audit protocol.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Risk assessment signed by covered entity Privacy/Security Officer
+    - All 75 OCR audit protocol items have evidence artifact linked
+    - BAA inventory covers 100% of vendors processing PHI
+    - Penetration test conducted by qualified third party with findings remediated
+    - Access review certification completed within last 90 days
+    - Incident response tabletop exercise completed with results documented
+    - 'Evidence package organized per OCR audit categories: Administrative, Physical,
+      Technical'
+    - HIPAA risk assessment complete
+    - BAA template prepared
+    depends_on:
+    - 4
+    - 7
+    - 9
+    - 18
+  QA:
+    description: 'Develop comprehensive QA test plan: test strategy, test cases for
+      all critical clinical workflows (booking, video, e-prescribe, EHR sync, symptom
+      checker), PHI access control validation matrix, FHIR compliance test cases,
+      negative testing (unauthorized access attempts), and UAT acceptance criteria
+      with provider and patient test groups.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all critical workflows with happy path and at least 3 negative
+      scenarios each
+    - 'PHI access control matrix validated: each role tested to confirm it cannot
+      access other roles'' PHI'
+    - FHIR resource validation tests run against HAPI FHIR validator with zero critical
+      errors
+    - 'Security test cases include: SQL injection, XSS, IDOR, session hijacking, broken
+      auth attempts'
+    - UAT test script written for provider and patient personas with pass/fail criteria
+    - 'Performance test scenarios defined: 100 concurrent video sessions, 500 concurrent
+      API calls'
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+  TESTS:
+    description: 'Implement automated test suite: unit tests for all backend services
+      (auth, scheduling, prescription, FHIR, symptom checker), integration tests for
+      video session lifecycle, EHR sync, and e-prescription flow, contract tests for
+      FHIR API compliance, and security regression tests.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥85% for all backend service modules
+    - 'Integration tests cover complete flows: registration→book→video→note→prescribe'
+    - All tests use synthetic PHI — zero real patient data in test fixtures
+    - FHIR contract tests pass against HAPI FHIR R4 validator
+    - 'Auth tests verify: token expiry, MFA bypass attempts fail, role escalation
+      attempts fail'
+    - CI pipeline runs full suite and fails build on any test regression
+    - Test execution time ≤10 minutes for unit suite, ≤20 minutes for integration
+      suite
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 20
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite: full patient journey (register→symptom
+      check→book appointment→video consult→receive prescription→view EHR update),
+      load test with 100 concurrent video sessions, failover test (RDS failover, ECS
+      task failure), disaster recovery drill, and security penetration test.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full patient journey E2E test passes in staging environment end-to-end
+    - 100 concurrent video sessions maintain ≥95% call quality score (MOS ≥3.5)
+    - Load test shows API p95 latency ≤500ms at 500 concurrent users
+    - RDS failover completes within 60 seconds with zero data loss
+    - Disaster recovery drill achieves RTO ≤24h and RPO ≤4h
+    - Penetration test finds zero critical or high severity vulnerabilities unmitigated
+    - 'All HIPAA access control tests pass: no cross-patient data leakage detected'
+    depends_on:
+    - 15
+    - 16
+    - 17
+    - 18
+    - 21
+  OPERATIONS:
+    description: 'Create operational runbooks: incident response playbook (PHI breach,
+      service outage, video degradation), SLA definitions (99.9% uptime, ≤2h PHI breach
+      notification response), on-call rotation setup, capacity planning model, database
+      backup and restore procedures, and HIPAA breach investigation checklist.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'PHI breach runbook covers: detection, containment, assessment, notification
+      (patients + OCR within 60 days), documentation'
+    - 'Service outage runbook includes: severity classification, escalation tree,
+      communication templates, rollback steps'
+    - 'SLAs defined and documented: 99.9% uptime (8.7h/year downtime budget), ≤2h
+      incident acknowledgment'
+    - Backup restore procedure tested — RTO and RPO targets verified by drill
+    - On-call rotation configured in PagerDuty with escalation policies
+    - Capacity model projects resource needs at 10x, 50x, 100x current patient volume
+    depends_on:
+    - 18
+    - 19
+    - 22
+  TRAINING:
+    description: 'Produce HIPAA workforce training and user onboarding materials:
+      mandatory HIPAA training course for all staff (Privacy Rule, Security Rule,
+      breach reporting), provider onboarding guide (platform workflow, e-prescribing,
+      video best practices), patient help center, admin operations guide, and video
+      walkthrough scripts.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - 'HIPAA training course covers: PHI definition, minimum necessary standard, breach
+      reporting, patient rights'
+    - Training completion tracked per employee with signed attestation and date
+    - Provider onboarding guide covers all platform workflows with annotated screenshots
+    - 'Patient help center has articles for: account setup, booking, video troubleshooting,
+      records access, privacy rights'
+    - Video walkthrough scripts reviewed by clinical advisor for accuracy
+    - All training materials reviewed by legal advisor for HIPAA compliance accuracy
+    depends_on:
+    - 3
+    - 4
+    - 15
+    - 16
+    - 17
+  DOCS:
+    description: 'Produce technical documentation: API reference (OpenAPI with FHIR
+      resource schemas), architecture decision records (ADRs) for key design choices,
+      HIPAA technical safeguards implementation guide, developer onboarding README,
+      EHR integration guide, and deployment runbook.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec covers all endpoints with request/response schemas and auth requirements
+    - ADR written for each major architecture decision with context, decision, and
+      consequences
+    - HIPAA technical safeguards guide maps each control to implementation location
+      in codebase
+    - Developer README enables new engineer to run full stack locally in ≤30 minutes
+    - EHR integration guide documents SMART on FHIR launch, scopes, and error handling
+    - All documentation reviewed and approved before production go-live
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14

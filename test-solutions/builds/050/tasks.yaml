@@ -1,0 +1,363 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements and user stories for the returns and
+      exchange management platform. Map end-to-end return lifecycle: customer initiates
+      return → label generated → warehouse receives → inspection → refund/exchange
+      issued. Identify all actor types: end customer, warehouse staff, finance team,
+      admin.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All actor types have documented user stories with acceptance criteria
+    - End-to-end return lifecycle is mapped with decision points and branching logic
+    - ROI analysis includes projected reduction in manual processing time and return
+      fraud rates
+    - Business rules for refund eligibility (time window, condition, reason codes)
+      are enumerated
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Analyze the returns management SaaS market. Profile competitors (Loop
+      Returns, Returnly, Happy Returns, AfterShip Returns). Identify differentiation
+      opportunities in warehouse integration depth and analytics fidelity. Define
+      target customer segments (SMB e-commerce, mid-market retail).
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covers at minimum 5 direct competitors across 20+
+      feature dimensions
+    - Addressable market size estimated with source citations
+    - Go-to-market strategy includes channel mix, ICP definition, and launch sequencing
+    - Differentiation narrative is validated against at least 3 customer interview
+      summaries
+    depends_on: []
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all platform surfaces:
+      customer self-service return portal, warehouse operator receiving UI, finance
+      refund review dashboard, and admin analytics dashboard. Ensure WCAG 2.1 AA accessibility
+      compliance throughout.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - 'Customer portal wireframes cover: return initiation, reason selection, label
+      download, status tracking'
+    - 'Warehouse UI wireframes cover: scan-to-receive, item condition grading, exception
+      flagging'
+    - All interactive components pass WCAG 2.1 AA contrast and keyboard navigation
+      requirements
+    - Usability test with at least 5 participants conducted on key flows before handoff
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Produce the Product Requirements Document, prioritized roadmap (MVP
+      vs. post-launch), and success metrics framework. Define MVP scope: return initiation,
+      prepaid label generation, warehouse receiving confirmation, automatic refund
+      to original payment method, basic analytics.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD has acceptance criteria for every MVP feature
+    - Roadmap distinguishes MVP (v1) from v2 and v3 with rationale for sequencing
+    - Success metrics are SMART (specific, measurable, achievable, relevant, time-bound)
+    - MVP scope is signed off as feasible against engineering estimates
+    depends_on:
+    - 1
+    - 2
+  FINANCIAL:
+    description: Build financial model covering SaaS pricing tiers (per-return volume
+      bands), unit economics (CAC, LTV, gross margin), 3-year P&L projection, and
+      cost breakdown for infrastructure, label postage subsidies, and support operations.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Three pricing tiers modeled with break-even volume per tier
+    - 3-year P&L projection includes sensitivity analysis on key assumptions
+    - LTV:CAC ratio targets defined for each customer segment
+    - Label postage cost model accounts for carrier rate cards (USPS, UPS, FedEx)
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 2
+    - 4
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (for merchant customers), and return policy template merchants can white-label.
+      Review IP exposure on label generation integrations with carrier APIs. Ensure
+      GDPR/CCPA compliance requirements are captured for data retention and deletion.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers refund SLA commitments, fraud liability allocation, and API rate
+      limits
+    - Privacy policy enumerates all PII collected (customer name, address, email,
+      payment token) with retention periods
+    - DPA is GDPR Article 28 compliant with sub-processor list
+    - GDPR right-to-erasure flow is documented and mapped to data deletion endpoints
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 1
+  SECURITY:
+    description: 'Produce threat model using STRIDE methodology for all platform surfaces.
+      Identify high-risk attack vectors: return fraud automation, label generation
+      abuse, payment refund manipulation, warehouse scan spoofing. Define security
+      controls, pen test scope, and SBOM requirements.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis completed for all 5 threat surfaces
+    - Return fraud threat vectors enumerated with mitigations (rate limiting, ML scoring,
+      manual review queues)
+    - Payment refund flow secured against replay attacks and IDOR
+    - SBOM lists all third-party dependencies with known CVE status
+    - Pen test scope document ready for external vendor engagement
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Produce PCI DSS scoping document (cardholder data environment boundaries)
+      and SOC 2 Type II readiness assessment. Map controls to Trust Service Criteria.
+      Since payment tokens (not raw card data) are stored, confirm PCI scope reduction
+      via tokenization architecture. Generate evidence collection plan.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - PCI DSS CDE boundary defined and tokenization architecture confirmed as scope-reducing
+    - SOC 2 control gaps identified with remediation owners and target dates
+    - Evidence collection plan maps each control to automated vs. manual evidence
+      sources
+    - Traceability matrix links business requirements to compliance controls
+    depends_on:
+    - 6
+    - 7
+  DATABASE:
+    description: 'Design and implement the core database schema: returns, return_line_items,
+      exchange_orders, labels, warehouse_receipts, refund_transactions, merchants,
+      customers. Include audit log tables, soft-delete patterns, and PII-tagged columns
+      for GDPR compliance. Write migration scripts.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables have created_at, updated_at, deleted_at (soft delete) columns
+    - PII columns (customer_email, customer_address) are tagged with comments for
+      data map
+    - Row-level security policies isolate merchant data at the database level
+    - Return status history stored as append-only event log (not mutable status column)
+    - Migration scripts are idempotent and include rollback procedures
+    depends_on:
+    - 1
+    - 4
+  API:
+    description: 'Design the full OpenAPI 3.1 specification for the platform API.
+      Surfaces: Merchant API (return policy config, webhooks, reporting), Customer
+      Portal API (return initiation, status, label download), Warehouse API (scan-to-receive,
+      grading, exceptions), Finance API (refund queue, approval, batch export).'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors against openapi-spec-validator
+    - All endpoints have request/response examples and error response schemas
+    - 'Webhook event catalog covers: return.created, return.received, refund.issued,
+      exchange.created'
+    - Rate limit headers documented on all merchant-facing endpoints
+    - API versioning strategy defined (URI versioning v1/)
+    depends_on:
+    - 1
+    - 3
+    - 4
+  CONFIG:
+    description: 'Set up development environment, project structure, and toolchain
+      for a monorepo containing: backend (Python/FastAPI), frontend (React/TypeScript),
+      and infrastructure (Terraform). Configure linting, pre-commit hooks, secrets
+      management (Vault/AWS Secrets Manager), and environment promotion (dev/staging/prod).
+      Configure agentic pattern: coordinator with specialist agents for return fraud
+      scoring, label routing, and refund decisioning.'
+    agent_role: developer
+    acceptance_criteria:
+    - '`make dev` spins up full local stack (API, DB, Redis, frontend) via docker-compose'
+    - 'Pre-commit hooks enforce: ruff lint, mypy type check, prettier format, secret
+      scanning'
+    - Environment variables documented in .env.example with no real secrets
+    - Agentic coordinator pattern scaffolded with agent registry and task routing
+      config
+    depends_on:
+    - 4
+    - 9
+    - 10
+  DEVOPS:
+    description: 'Build CI/CD pipelines (GitHub Actions), containerization (Docker),
+      and AWS infrastructure provisioning (Terraform). Stages: test → lint → build
+      → deploy to staging → smoke test → promote to prod. Include branch protection,
+      deployment approvals for prod, and rollback procedures.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs in under 10 minutes for a typical PR
+    - Production deployments require manual approval step in GitHub Actions
+    - Terraform plan is generated and posted as PR comment on infra changes
+    - 'Rollback procedure documented and tested: previous ECS task definition restores
+      in under 5 minutes'
+    - Secrets never appear in CI logs (masked via GitHub Actions secrets)
+    depends_on:
+    - 11
+  BACKEND:
+    description: 'Implement core backend services: authentication/authorization (OAuth2
+      + API keys), merchant management, return policy engine (configurable eligibility
+      rules: return window, item conditions, reason codes, non-returnable SKUs), and
+      customer return initiation flow.'
+    agent_role: developer
+    acceptance_criteria:
+    - Policy engine evaluates return eligibility in under 50ms p99
+    - Merchant API key rotation supported without downtime
+    - Return initiation creates return record, sets status to PENDING_LABEL, emits
+      return.created webhook
+    - All API endpoints return RFC 7807 Problem Details on error
+    - OAuth2 PKCE flow implemented for customer portal with CSRF protection
+    depends_on:
+    - 9
+    - 10
+    - 11
+  FRONTEND:
+    description: 'Build the customer self-service return portal: return initiation
+      form (order lookup, item selection, reason selection), return policy eligibility
+      display, label download page, return status tracker, and exchange selection
+      UI. Must be embeddable as iframe for merchant storefronts.'
+    agent_role: developer
+    acceptance_criteria:
+    - Portal loads in under 2 seconds on 4G connection (Lighthouse performance score
+      >= 85)
+    - Order lookup works by order number + email or order number + zip code
+    - Return eligibility clearly communicated when return window has expired
+    - Label download provides both PDF (desktop) and QR code (mobile) options
+    - White-label theming applied via merchant CSS variable overrides with no code
+      changes
+    - WCAG 2.1 AA accessibility audit passes (axe-core zero violations)
+    depends_on:
+    - 3
+    - 10
+    - 13
+  AGENTIC:
+    description: 'Implement the coordinator-pattern agentic AI system for automated
+      return decision-making. Coordinator receives return + warehouse receipt → dispatches
+      to: (1) FraudScorerAgent (ReAct pattern: checks customer return history, IP,
+      order value), (2) RefundDecisionAgent (policy lookup + condition discount calculation),
+      (3) LabelRoutingAgent (carrier rate shopping). Coordinator synthesizes outputs
+      into approved/flagged decision with trace_id for audit.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator dispatches all three specialist agents in parallel (wave execution)
+      for each return evaluation
+    - FraudScorerAgent produces score with reasoning trace logged to audit_log
+    - Returns with fraud_score > 75 placed in manual review queue — never auto-approved
+    - RefundDecisionAgent output reviewed by critic agent before coordinator accepts
+      it
+    - Full coordinator decision trace stored with return record for SOC 2 evidence
+    - Coordinator completes evaluation in under 8 seconds p95 for non-flagged returns
+    depends_on:
+    - 13
+    - 15
+    - 16
+  TESTS:
+    description: 'Write comprehensive unit and integration tests for all backend services:
+      policy engine edge cases, label generation mocks, warehouse receiving state
+      machine, refund calculation accuracy, fraud scorer thresholds, analytics aggregation
+      correctness, and all API endpoint contracts.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage >= 90% on all service modules
+    - 'Policy engine tested for: expired window, excluded SKU, over-value limit, valid
+      return'
+    - 'Refund calculation tested for: full refund, condition-discounted refund, store
+      credit conversion'
+    - 'Fraud scorer tested with: known-good customer, high-velocity returner, mismatched
+      IP'
+    - All API contracts tested against OpenAPI spec using schemathesis
+    - Tests run in CI under 3 minutes via pytest-xdist parallelization
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 21
+  QA:
+    description: Produce QA test plan covering functional, regression, and exploratory
+      testing for all user-facing flows. Define test case matrix for customer portal,
+      warehouse UI, merchant dashboard, and refund workflows. Execute test cases against
+      staging environment and produce test execution report.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test case matrix covers 100% of MVP user stories from PRD
+    - All P0 and P1 defects resolved before production launch
+    - Cross-browser test executed on Chrome, Firefox, Safari, Edge — no functional
+      regressions
+    - Mobile responsive test confirms customer portal usable on 375px viewport
+    - Exploratory testing session (2 hours) conducted by tester unfamiliar with the
+      system
+    depends_on:
+    - 18
+    - 19
+    - 20
+    - 22
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests covering complete return lifecycles:
+      (1) customer initiates → label generated → warehouse scans → auto-refund issued,
+      (2) high-fraud return → flagged → manual review → approved → refund, (3) exchange
+      return → exchange order created in Shopify → label generated, (4) load test:
+      500 concurrent return initiations.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 5 lifecycle scenarios pass without manual intervention
+    - Load test sustains 1000 return initiations/minute with p95 latency under 3 seconds
+    - No data leakage between merchant tenants in multi-tenant load test
+    - 'Carrier API failover tested: EasyPost timeout triggers fallback carrier selection'
+    - 'Webhook delivery tested: 100% of return events delivered within 30 seconds
+      under load'
+    depends_on:
+    - 22
+    - 23
+  OPERATIONS:
+    description: 'Produce operational runbooks, define SLAs, set up monitoring and
+      alerting (Datadog or CloudWatch), and create incident response playbooks for:
+      label generation service outage, payment processor downtime, warehouse receiving
+      backlog, and fraud spike events.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'All 4 runbooks include: detection criteria, immediate mitigation steps, escalation
+      path, and post-mortem template'
+    - 'Datadog dashboards cover: API latency, error rates, queue depths, refund pipeline
+      throughput'
+    - PagerDuty alerts configured for all P0 conditions with on-call rotation defined
+    - SLA definitions include measurement methodology and credit calculation for breaches
+    - Runbooks tested in staging via tabletop exercises before production launch
+    depends_on:
+    - 12
+    - 24
+  DOCS:
+    description: 'Produce complete technical documentation: API reference (auto-generated
+      from OpenAPI spec + narrative guides), merchant integration guide (Shopify setup,
+      webhook configuration, SDK quickstart), warehouse operator setup guide, and
+      architecture decision records (ADRs) for key design choices.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated directly from openapi.yaml — no manual duplication
+    - Merchant quickstart guide enables a developer with Shopify access to send first
+      test return in under 30 minutes
+    - 'Warehouse setup guide covers: hardware requirements, network setup, scanner
+      pairing, and first-scan walkthrough'
+    - 'ADRs written for: database choice, tokenization approach, coordinator agent
+      pattern, label carrier selection'
+    depends_on:
+    - 10
+    - 18
+    - 19
+    - 20
+  TRAINING:
+    description: 'Create training materials for three user groups: (1) warehouse operators
+      — video walkthrough of scan-to-receive and condition grading, (2) merchant administrators
+      — onboarding video and configuration guide, (3) finance team — refund queue
+      management and CSV export guide. Include in-app onboarding tooltips.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Warehouse operator guide validated by at least one warehouse operator completing
+      scan-to-receive without assistance
+    - 'Merchant admin onboarding covers: return policy setup, label settings, webhook
+      configuration, team invitation'
+    - In-app tooltips implemented for all first-time user flows (guided by ux_designer
+      wireframes)
+    - FAQ covers top 10 support questions identified during QA testing
+    depends_on:
+    - 23
+    - 28

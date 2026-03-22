@@ -1,0 +1,1305 @@
+{
+  "run_id": "afce760a-b2e9-4a01-a76a-6922b18f76d1",
+  "status": {
+    "run_id": "afce760a-b2e9-4a01-a76a-6922b18f76d1",
+    "solution_name": "event_platform",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T10:40:33.083066+00:00",
+    "updated_at": "2026-03-22T10:45:35.916783+00:00",
+    "product_description": "Event discovery and ticketing platform with event creation, ticket sales, seating charts, check-in app, and post-event analytics.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze event discovery and ticketing market: competitors (Eventbrite, Ticketmaster, Dice), pricing models, market size, and positioning opportunities for event_platform.",
+        "payload": {
+          "competitors": [
+            "Eventbrite",
+            "Ticketmaster",
+            "Dice",
+            "Tixr",
+            "AXS"
+          ],
+          "focus_areas": [
+            "pricing_models",
+            "fee_structures",
+            "discovery_algorithms",
+            "organizer_tools",
+            "market_size"
+          ],
+          "deliverables": [
+            "competitive_matrix",
+            "market_sizing_report",
+            "positioning_recommendation"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitive matrix covers at least 5 competitors across 10+ feature dimensions",
+          "Market sizing includes TAM/SAM/SOM with cited sources",
+          "Positioning recommendation identifies at least 2 defensible differentiators",
+          "Report delivered as structured markdown document"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user personas (event organizer, attendee, venue manager, check-in staff), user stories, and process flows for all platform capabilities.",
+        "payload": {
+          "personas": [
+            "event_organizer",
+            "attendee",
+            "venue_manager",
+            "checkin_staff",
+            "platform_admin"
+          ],
+          "process_flows": [
+            "event_creation",
+            "ticket_purchase",
+            "seating_selection",
+            "check_in",
+            "refund",
+            "analytics_review"
+          ],
+          "deliverables": [
+            "user_story_map",
+            "process_flow_diagrams",
+            "acceptance_criteria_doc",
+            "roi_analysis"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 5 personas defined with goals, pain points, and key jobs-to-be-done",
+          "User story map covers all 6 process flows end-to-end",
+          "Each user story has definition-of-done and acceptance criteria",
+          "ROI analysis includes organizer fee model and break-even projection",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce the product requirements document (PRD), phased roadmap (MVP \u2192 GA \u2192 Growth), feature prioritization using RICE scoring, and success metrics (KPIs).",
+        "payload": {
+          "phases": {
+            "mvp": [
+              "event_creation",
+              "ticket_sales",
+              "basic_seating",
+              "qr_checkin",
+              "basic_analytics"
+            ],
+            "ga": [
+              "advanced_seating_charts",
+              "mobile_checkin_app",
+              "promo_codes",
+              "waitlist",
+              "post_event_analytics"
+            ],
+            "growth": [
+              "discovery_feed",
+              "social_sharing",
+              "organizer_dashboard_v2",
+              "multi_currency",
+              "white_label"
+            ]
+          },
+          "success_metrics": [
+            "gmv",
+            "take_rate",
+            "organizer_retention",
+            "ticket_conversion_rate",
+            "checkin_speed_p95"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all MVP features with functional and non-functional requirements",
+          "Roadmap has 3 phases with clear entry/exit criteria",
+          "All features RICE-scored; top-20 MVP features identified",
+          "KPI dashboard spec defined with measurement methodology for each metric"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 4,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes for all core flows: event discovery, event creation wizard, seating chart selection, checkout, mobile check-in, and organizer analytics dashboard.",
+        "payload": {
+          "research_methods": [
+            "competitive_teardown",
+            "user_interviews_x5",
+            "card_sorting"
+          ],
+          "wireframe_flows": [
+            "discovery_homepage",
+            "event_detail_page",
+            "seating_chart_selector",
+            "checkout_funnel",
+            "organizer_event_creation_wizard",
+            "mobile_checkin_scanner",
+            "post_event_analytics_dashboard"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA",
+          "tooling": "Figma"
+        },
+        "acceptance_criteria": [
+          "User research summary from minimum 5 participant interviews",
+          "Wireframes cover all 7 flows at medium fidelity",
+          "Seating chart selector supports general admission, reserved, and mixed configurations",
+          "Checkout funnel is 3 steps or fewer (select \u2192 details \u2192 pay)",
+          "Accessibility audit checklist completed; no critical violations",
+          "Design tokens (color, typography, spacing) documented in Figma",
+          "App store screenshot mockups prepared",
+          "Onboarding flow under 3 steps"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 5,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model: pricing strategy (service fees, organizer tiers), payment processing cost model, revenue projections (3-year), and payout structure for organizers.",
+        "payload": {
+          "fee_models": [
+            "percentage_per_ticket",
+            "flat_fee_per_order",
+            "organizer_subscription_tiers"
+          ],
+          "cost_inputs": [
+            "stripe_processing_fees",
+            "infrastructure_costs",
+            "support_costs"
+          ],
+          "projections_years": 3,
+          "payout_models": [
+            "instant_payout",
+            "post_event_payout",
+            "rolling_payout"
+          ]
+        },
+        "acceptance_criteria": [
+          "Financial model in spreadsheet with adjustable assumptions",
+          "Three organizer pricing tiers defined (free, pro, enterprise) with feature gates",
+          "Unit economics calculated: CAC, LTV, gross margin per ticket",
+          "Payout schedule logic documented covering fraud hold periods",
+          "Break-even analysis shows path to profitability under base-case assumptions",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 6,
+        "task_type": "LEGAL",
+        "description": "Draft terms of service, privacy policy, organizer agreement, and ticket purchase agreement. Review PCI DSS scope and data retention obligations.",
+        "payload": {
+          "documents": [
+            "terms_of_service",
+            "privacy_policy",
+            "organizer_agreement",
+            "ticket_purchase_terms",
+            "cookie_policy",
+            "refund_policy"
+          ],
+          "compliance_frameworks": [
+            "GDPR",
+            "CCPA",
+            "PCI_DSS_scope_assessment"
+          ],
+          "ip_review": [
+            "trademark_check_event_platform",
+            "open_source_license_audit"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 6 legal documents drafted and reviewed",
+          "GDPR data subject rights (access, deletion, portability) addressed in privacy policy",
+          "PCI DSS scope documented \u2014 confirm cardholder data environment boundaries",
+          "Organizer agreement covers revenue share, refund responsibility, and prohibited events",
+          "Open source license audit lists all dependencies and flags any copyleft conflicts",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 7,
+        "task_type": "COMPLIANCE",
+        "description": "Produce SOC 2 readiness artifacts: control inventory, trust service criteria mapping (Security, Availability, Confidentiality), evidence collection plan, and vendor risk assessment.",
+        "payload": {
+          "standard": "SOC 2 Type I (initial), Type II (12-month observation window)",
+          "trust_criteria": [
+            "CC_Security",
+            "A_Availability",
+            "C_Confidentiality"
+          ],
+          "artifacts": [
+            "control_inventory_spreadsheet",
+            "tsc_mapping_matrix",
+            "evidence_collection_calendar",
+            "vendor_risk_register",
+            "incident_response_plan",
+            "access_review_procedure"
+          ]
+        },
+        "acceptance_criteria": [
+          "Control inventory lists at minimum 40 controls mapped to TSC criteria",
+          "Evidence collection calendar covers 12-month observation period with owners assigned",
+          "Vendor risk register includes all third-party processors (Stripe, AWS, etc.) with risk ratings",
+          "Incident response plan defines P1-P3 severity levels and escalation paths",
+          "Access review procedure specifies quarterly review cadence"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 8,
+        "task_type": "CONFIG",
+        "description": "Set up the event_platform solution scaffold: monorepo structure, environment configs, secrets management, local development docker-compose, and agentic AI pattern configuration (Multi-Agent Coordinator for platform intelligence).",
+        "payload": {
+          "repo_structure": {
+            "apps": [
+              "api",
+              "web",
+              "mobile-checkin",
+              "worker"
+            ],
+            "packages": [
+              "db",
+              "shared-types",
+              "ui-kit",
+              "analytics"
+            ]
+          },
+          "agentic_pattern": "coordinator",
+          "coordinator_agents": [
+            "event_analyst",
+            "recommendation_engine",
+            "fraud_detector",
+            "pricing_optimizer"
+          ],
+          "env_management": "doppler",
+          "local_dev": "docker-compose with postgres, redis, stripe-cli mock",
+          "secrets": [
+            "DATABASE_URL",
+            "STRIPE_SECRET_KEY",
+            "STRIPE_WEBHOOK_SECRET",
+            "JWT_SECRET",
+            "S3_BUCKET"
+          ]
+        },
+        "acceptance_criteria": [
+          "Monorepo initializes with `npm install` and all packages resolve",
+          "docker-compose up starts all local services (postgres, redis, stripe-mock) in under 60s",
+          "Environment variable schema validated at startup; missing vars fail fast with clear error",
+          "Coordinator pattern config file created with agent role definitions",
+          "`npm run dev` starts API and web with hot reload"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "DATABASE",
+        "description": "Design and implement the database schema: events, venues, seating_charts, sections, seats, ticket_types, orders, tickets, check_ins, users, organizers, and analytics_events tables with migrations.",
+        "payload": {
+          "database": "PostgreSQL 15",
+          "orm": "Prisma",
+          "core_tables": [
+            "users",
+            "organizers",
+            "venues",
+            "events",
+            "ticket_types",
+            "seating_charts",
+            "sections",
+            "seats",
+            "orders",
+            "order_items",
+            "tickets",
+            "check_ins",
+            "promo_codes",
+            "payouts",
+            "analytics_events"
+          ],
+          "indexes": [
+            "events.start_at",
+            "events.location_geo",
+            "tickets.qr_code",
+            "orders.status"
+          ],
+          "soft_delete": true,
+          "audit_fields": [
+            "created_at",
+            "updated_at",
+            "deleted_at"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 15 tables created with correct FK relationships and cascades",
+          "Prisma migrations run cleanly on fresh database",
+          "Seating chart schema supports hierarchical venue \u2192 section \u2192 row \u2192 seat",
+          "QR code column on tickets has unique index",
+          "Seed script populates representative test data for all tables",
+          "Database diagram (ERD) generated and committed to docs/"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specification for all platform endpoints: events CRUD, ticket types, seating chart management, order/checkout, check-in, analytics, and organizer management.",
+        "payload": {
+          "endpoint_groups": [
+            "POST/GET/PATCH/DELETE /events",
+            "GET /events/discover (geo, category, date filters)",
+            "GET/POST /events/{id}/ticket-types",
+            "GET /venues/{id}/seating-chart",
+            "POST /orders (reserve seats + create order)",
+            "POST /orders/{id}/confirm (payment intent)",
+            "GET /tickets/{qr_code} (check-in lookup)",
+            "POST /check-ins",
+            "GET /events/{id}/analytics",
+            "POST/GET /organizers",
+            "GET /organizers/{id}/payouts"
+          ],
+          "auth": "JWT Bearer + API keys for organizer integrations",
+          "versioning": "/v1/ prefix",
+          "pagination": "cursor-based"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec is valid (passes swagger-parser validation)",
+          "All endpoints documented with request/response schemas and error codes",
+          "Authentication requirements specified per endpoint",
+          "Seat reservation endpoint documents optimistic locking strategy (seat hold TTL)",
+          "Discover endpoint documents all filter parameters with examples"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement core backend services: authentication (JWT + OAuth), event management, venue and seating chart engine, ticket type configuration, and organizer onboarding.",
+        "payload": {
+          "framework": "Node.js + Fastify",
+          "language": "TypeScript",
+          "services": [
+            "AuthService (JWT, OAuth Google/Apple, refresh tokens)",
+            "EventService (CRUD, slug generation, image upload to S3)",
+            "VenueService (venue CRUD, seating chart import from SVG/JSON)",
+            "SeatingChartService (section/row/seat management, capacity calc)",
+            "TicketTypeService (pricing tiers, capacity limits, sale windows)",
+            "OrganizerService (onboarding, verification, tier management)"
+          ],
+          "file_storage": "AWS S3 for images and seating chart assets"
+        },
+        "acceptance_criteria": [
+          "All 6 services implement full CRUD with proper error handling",
+          "JWT access tokens expire in 15min; refresh tokens in 30 days",
+          "Seating chart service correctly calculates available capacity across sections",
+          "Event slugs are unique and URL-safe",
+          "S3 presigned URLs used for all file uploads (no server-side proxying)",
+          "All endpoints return typed responses matching OpenAPI spec"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement ticketing engine: seat reservation with Redis-backed hold system (10-min TTL), order creation, Stripe payment integration, ticket generation (QR codes), and webhook handling.",
+        "payload": {
+          "reservation_system": {
+            "hold_backend": "Redis with TTL",
+            "hold_duration_seconds": 600,
+            "concurrency_strategy": "optimistic_locking + Redis atomic ops"
+          },
+          "payment": {
+            "provider": "Stripe",
+            "flow": "PaymentIntent + webhook confirmation",
+            "supported_methods": [
+              "card",
+              "apple_pay",
+              "google_pay"
+            ]
+          },
+          "ticket_generation": {
+            "qr_format": "UUID v4 encoded as QR",
+            "pdf_generation": "pdf-lib",
+            "email_delivery": "Resend"
+          }
+        },
+        "acceptance_criteria": [
+          "Concurrent seat reservation stress test: 100 simultaneous requests for last seat, exactly 1 succeeds",
+          "Held seats auto-release after 600s via Redis TTL expiry worker",
+          "Stripe webhook processes payment_intent.succeeded and updates order to CONFIRMED",
+          "Stripe webhook processes payment_intent.payment_failed and releases holds",
+          "QR code generated per ticket and unique across all tickets",
+          "Ticket PDF emailed to buyer within 30s of payment confirmation",
+          "Idempotent order creation (duplicate Stripe webhook does not double-fulfill)"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement check-in service, post-event analytics aggregation pipeline, and organizer payout calculation service.",
+        "payload": {
+          "checkin_service": {
+            "lookup_method": "QR code scan \u2192 ticket validation",
+            "validation_checks": [
+              "ticket_exists",
+              "event_match",
+              "not_already_used",
+              "not_refunded"
+            ],
+            "response_time_target_ms": 200
+          },
+          "analytics_pipeline": {
+            "events_tracked": [
+              "ticket_view",
+              "seat_selected",
+              "checkout_started",
+              "payment_complete",
+              "checkin_scanned"
+            ],
+            "aggregations": [
+              "tickets_sold",
+              "revenue_by_type",
+              "checkin_rate",
+              "sales_over_time",
+              "conversion_funnel"
+            ],
+            "storage": "PostgreSQL analytics_events + materialized views"
+          },
+          "payout_service": {
+            "calculation": "gross_sales - platform_fee - stripe_fees",
+            "schedule": "T+2 post event",
+            "method": "Stripe Connect payouts"
+          }
+        },
+        "acceptance_criteria": [
+          "Check-in lookup responds in under 200ms at p95 for valid QR codes",
+          "Already-used ticket returns clear error with first check-in timestamp",
+          "Analytics materialized views refresh on schedule (every 15min during event)",
+          "Payout calculation matches expected amount in test fixtures (to cent precision)",
+          "Organizer payout initiated via Stripe Connect and status tracked in payouts table"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "FRONTEND",
+        "description": "Build the event discovery and detail pages: homepage with search/filter, event cards, event detail page with description, ticket type selector, and organizer profile.",
+        "payload": {
+          "framework": "Next.js 14 (App Router)",
+          "language": "TypeScript",
+          "styling": "Tailwind CSS + shadcn/ui",
+          "pages": [
+            "/ \u2014 discovery homepage (search, category filters, date range, location)",
+            "/events/[slug] \u2014 event detail (hero image, description, ticket types, map)",
+            "/organizers/[id] \u2014 organizer profile with past/upcoming events"
+          ],
+          "seo": "generateMetadata per page, OpenGraph tags, JSON-LD Event schema"
+        },
+        "acceptance_criteria": [
+          "Discovery homepage renders event cards with server-side data",
+          "Search filters (keyword, category, date, location radius) update results without full page reload",
+          "Event detail page renders in under 2s (LCP) on simulated 4G",
+          "JSON-LD Event schema validates in Google Rich Results Test",
+          "Organizer profile lists events paginated with infinite scroll"
+        ],
+        "depends_on": [
+          4,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build interactive seating chart UI: SVG-based seat map renderer, section highlighting, seat selection with hold feedback, and seat status legend.",
+        "payload": {
+          "rendering": "SVG with React state overlay",
+          "seat_states": [
+            "available",
+            "held_by_me",
+            "held_by_other",
+            "sold",
+            "reserved",
+            "disabled"
+          ],
+          "features": [
+            "zoom and pan on large venue maps",
+            "section-level price tooltip",
+            "multi-seat selection up to per-order limit",
+            "real-time availability polling every 10s",
+            "mobile touch support"
+          ]
+        },
+        "acceptance_criteria": [
+          "Seat map renders venues with up to 5,000 seats without performance degradation",
+          "Seat state changes (hold taken by another user) reflected within 10s via polling",
+          "Selected seats show price summary in sticky footer",
+          "Touch pinch-zoom works on iOS Safari and Android Chrome",
+          "Seat selection blocked once per-order limit reached with clear error message"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build checkout funnel: seat review, attendee details form, Stripe Elements payment form, order confirmation page, and ticket delivery confirmation.",
+        "payload": {
+          "steps": [
+            "review_seats",
+            "attendee_details",
+            "payment",
+            "confirmation"
+          ],
+          "payment_ui": "Stripe Elements (Card + Apple/Google Pay)",
+          "features": [
+            "hold countdown timer in header",
+            "promo code input with validation",
+            "order summary sticky sidebar",
+            "email ticket delivery confirmation screen"
+          ]
+        },
+        "acceptance_criteria": [
+          "Checkout completes in 3 steps (review \u2192 details \u2192 pay)",
+          "Hold countdown timer visible; redirects to event page on expiry",
+          "Stripe Elements loads and processes test card 4242424242424242 successfully",
+          "Apple Pay / Google Pay button visible on supported devices",
+          "Promo code reduces total and shows discount line item",
+          "Confirmation page shows all tickets with QR codes and download PDF link"
+        ],
+        "depends_on": [
+          15,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build organizer dashboard: event creation wizard, ticket type management, seating chart builder, sales overview, and attendee list with export.",
+        "payload": {
+          "pages": [
+            "/dashboard \u2014 organizer overview (upcoming events, revenue summary)",
+            "/dashboard/events/new \u2014 multi-step event creation wizard",
+            "/dashboard/events/[id] \u2014 event management (ticket types, seating, promo codes)",
+            "/dashboard/events/[id]/attendees \u2014 attendee list with check-in status and CSV export",
+            "/dashboard/payouts \u2014 payout history and upcoming schedule"
+          ],
+          "event_creation_steps": [
+            "basic_info",
+            "date_location",
+            "ticket_types",
+            "seating_chart",
+            "publish"
+          ]
+        },
+        "acceptance_criteria": [
+          "Event creation wizard saves draft between steps (no data loss on back navigation)",
+          "Organizer can define up to 10 ticket types per event with independent pricing and capacity",
+          "Attendee list sortable by name, ticket type, check-in status; exports to CSV within 5s for up to 10,000 rows",
+          "Revenue summary updates within 15min of ticket sales",
+          "Payout history shows per-payout breakdown of gross, fees, and net"
+        ],
+        "depends_on": [
+          13,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build post-event analytics dashboard for organizers: sales over time chart, conversion funnel, check-in rate, revenue by ticket type, and demographic breakdown.",
+        "payload": {
+          "charts": [
+            "sales_over_time (line, hourly/daily granularity)",
+            "revenue_by_ticket_type (donut)",
+            "conversion_funnel (view \u2192 select \u2192 checkout \u2192 purchase)",
+            "checkin_rate_gauge",
+            "ticket_sales_heatmap (by day/hour of week)"
+          ],
+          "library": "Recharts",
+          "export": "PDF report generation, CSV data export"
+        },
+        "acceptance_criteria": [
+          "All 5 chart types render with real data from analytics API",
+          "Date range picker filters all charts simultaneously",
+          "PDF report export completes in under 10s and includes all visible charts",
+          "Charts are accessible (ARIA labels, keyboard navigation) per WCAG 2.1 AA",
+          "Dashboard loads in under 3s with up to 6 months of event data"
+        ],
+        "depends_on": [
+          17,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build mobile check-in Progressive Web App (PWA): QR code scanner using device camera, check-in result display (success/error), offline queue for poor connectivity, and event stats view.",
+        "payload": {
+          "type": "PWA (Next.js + service worker)",
+          "scanner": "html5-qrcode library (camera access)",
+          "offline_strategy": "IndexedDB queue; sync when connectivity restored",
+          "ui": [
+            "scan screen with camera viewfinder",
+            "success screen (attendee name, ticket type, green flash)",
+            "error screen (already used, invalid, wrong event \u2014 red flash)",
+            "stats screen (total checked in / total sold)"
+          ],
+          "auth": "staff login with limited scope JWT"
+        },
+        "acceptance_criteria": [
+          "QR scanner activates camera and decodes QR within 1s of framing",
+          "Check-in result displayed within 200ms of valid scan (API p95)",
+          "Offline mode queues scans in IndexedDB and syncs on reconnect",
+          "Duplicate scan within same session shows clear 'already scanned' warning",
+          "Staff JWT has read-only event scope and check-in write scope only",
+          "PWA installable on iOS and Android home screen"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "LOCALIZATION",
+        "description": "Set up i18n for web and mobile check-in app: locale detection, translation pipeline, RTL support, currency and date formatting per locale.",
+        "payload": {
+          "library": "next-intl",
+          "initial_locales": [
+            "en-US",
+            "es-ES",
+            "fr-FR",
+            "de-DE",
+            "ar-SA"
+          ],
+          "rtl_locales": [
+            "ar-SA"
+          ],
+          "formatting": {
+            "currency": "Intl.NumberFormat per locale",
+            "dates": "Intl.DateTimeFormat per locale",
+            "timezones": "event timezone displayed alongside local time"
+          },
+          "translation_workflow": "extraction \u2192 POEditor \u2192 import"
+        },
+        "acceptance_criteria": [
+          "All user-facing strings extracted to locale JSON files (zero hardcoded strings)",
+          "ar-SA locale renders with RTL layout and mirrored navigation",
+          "Currency displays in locale-appropriate format (\u20ac1.234,56 for de-DE)",
+          "Event time shown in event's timezone with viewer's local time in parentheses",
+          "Language switcher functional in header with preference persisted to user profile",
+          "Top 5 target locales identified",
+          "Store listing translated"
+        ],
+        "depends_on": [
+          16,
+          17
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "AGENTIC",
+        "description": "Implement Multi-Agent Coordinator pattern for platform intelligence: event recommendation agent, fraud detection agent, and dynamic pricing suggestion agent coordinated by a central router.",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator": "PlatformIntelligenceCoordinator",
+          "specialist_agents": [
+            {
+              "name": "RecommendationAgent",
+              "role": "Personalized event discovery based on purchase history, browsing, location",
+              "tools": [
+                "vector_similarity_search",
+                "event_catalog_query",
+                "user_preference_lookup"
+              ]
+            },
+            {
+              "name": "FraudDetectionAgent",
+              "role": "Flag suspicious orders (bulk buying, card testing, scalping patterns)",
+              "tools": [
+                "order_history_query",
+                "velocity_check",
+                "ip_reputation_lookup"
+              ]
+            },
+            {
+              "name": "PricingSuggestionAgent",
+              "role": "Suggest dynamic pricing for organizers based on demand signals",
+              "tools": [
+                "sales_velocity_query",
+                "competitor_price_lookup",
+                "historical_sellout_analysis"
+              ]
+            }
+          ],
+          "hitl_gates": [
+            "fraud_flag_review",
+            "pricing_suggestion_approval"
+          ]
+        },
+        "acceptance_criteria": [
+          "Coordinator routes requests to correct specialist agent based on task type",
+          "RecommendationAgent returns ranked event list with relevance scores",
+          "FraudDetectionAgent flags orders above risk threshold and queues for HITL review",
+          "PricingSuggestionAgent suggestions require organizer approval before applying",
+          "All agent actions logged to audit trail with trace_id",
+          "Coordinator gracefully handles specialist agent timeout (fallback to non-personalized results)"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 22,
+        "task_type": "SECURITY",
+        "description": "Perform security review: threat model for payment flows and ticket QR codes, OWASP Top 10 assessment, PCI DSS scope validation, and rate limiting implementation.",
+        "payload": {
+          "threat_model_scope": [
+            "checkout_flow",
+            "qr_ticket_forgery",
+            "seat_hold_abuse",
+            "organizer_account_takeover"
+          ],
+          "controls_to_implement": [
+            "rate limiting on checkout and check-in endpoints (Redis token bucket)",
+            "QR code signing with HMAC to prevent forgery",
+            "CSRF protection on all state-changing endpoints",
+            "Content Security Policy headers",
+            "SQL injection prevention audit (parameterized queries)",
+            "Stripe webhook signature verification"
+          ],
+          "pci_dss": "SAQ A (Stripe hosted fields) \u2014 no card data touches our servers"
+        },
+        "acceptance_criteria": [
+          "Threat model document covers all 4 threat areas with mitigations",
+          "Rate limiting tested: checkout endpoint blocks after 10 requests/min per IP",
+          "QR codes signed with HMAC-SHA256; forged QR rejected by check-in service",
+          "Stripe webhook endpoint rejects requests with invalid signatures",
+          "OWASP Top 10 checklist completed with evidence for each item",
+          "PCI DSS SAQ A completed confirming no cardholder data stored"
+        ],
+        "depends_on": [
+          12,
+          19
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 23,
+        "task_type": "DATA",
+        "description": "Build analytics data pipeline: event tracking ingestion endpoint, analytics_events table writes, materialized view refresh jobs, and organizer reporting aggregation.",
+        "payload": {
+          "ingestion": "POST /analytics/events (batched, max 100 events/request)",
+          "tracked_events": [
+            "page_view",
+            "ticket_type_view",
+            "seat_selected",
+            "checkout_started",
+            "payment_complete",
+            "checkin_scanned"
+          ],
+          "aggregation_jobs": {
+            "runner": "pg-boss (PostgreSQL-backed job queue)",
+            "schedules": {
+              "sales_summary": "every 15min",
+              "funnel_metrics": "every hour",
+              "post_event_report": "T+1h after event end"
+            }
+          }
+        },
+        "acceptance_criteria": [
+          "Analytics ingestion endpoint accepts batches of up to 100 events and persists all",
+          "All 6 event types tracked end-to-end from frontend to database",
+          "Sales summary materialized view refreshes within 15min of ticket purchase",
+          "Post-event report job triggers automatically 1 hour after event end_time",
+          "Funnel conversion rates calculable from stored event data"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 24,
+        "task_type": "INFRA",
+        "description": "Set up AWS infrastructure: ECS Fargate for API and workers, RDS PostgreSQL, ElastiCache Redis, S3 + CloudFront for assets, and Vercel for Next.js frontend.",
+        "payload": {
+          "iac": "Terraform",
+          "services": {
+            "api": "ECS Fargate (auto-scaling 2-20 tasks, CPU 70% target)",
+            "worker": "ECS Fargate (queue processor, separate task definition)",
+            "database": "RDS PostgreSQL 15 Multi-AZ, db.t3.medium",
+            "cache": "ElastiCache Redis 7 cluster mode",
+            "storage": "S3 + CloudFront (event images, ticket PDFs)",
+            "frontend": "Vercel (Next.js edge deployment)"
+          },
+          "networking": "VPC with private subnets for RDS/Redis, NAT Gateway",
+          "dns": "Route 53 with health checks"
+        },
+        "acceptance_criteria": [
+          "Terraform plan applies without errors to staging environment",
+          "API auto-scales from 2 to 5 tasks under load test simulating 500 concurrent users",
+          "RDS failover completes in under 60s (Multi-AZ test)",
+          "CloudFront serves S3 assets with cache-hit ratio above 80%",
+          "All services in private subnets; no direct internet access to RDS or Redis"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipelines, monitoring, alerting, and SRE runbooks for event_platform.",
+        "payload": {
+          "ci_cd": {
+            "platform": "GitHub Actions",
+            "pipelines": [
+              "PR: lint + type-check + unit tests + integration tests",
+              "main: build + push Docker image to ECR + deploy to staging",
+              "release tag: deploy to production with blue-green"
+            ]
+          },
+          "monitoring": {
+            "platform": "Datadog",
+            "dashboards": [
+              "api_latency_p50_p95_p99",
+              "checkout_conversion",
+              "checkin_throughput",
+              "error_rate_by_endpoint"
+            ]
+          },
+          "alerts": [
+            "p95 latency > 500ms for 5min",
+            "checkout error rate > 1% for 2min",
+            "RDS CPU > 80% for 10min",
+            "worker queue depth > 1000 for 10min"
+          ],
+          "sre": [
+            "deployment_runbook",
+            "incident_response_runbook",
+            "database_failover_runbook",
+            "rollback_procedure"
+          ]
+        },
+        "acceptance_criteria": [
+          "PR pipeline completes in under 8 minutes",
+          "Blue-green production deployment achieves zero downtime (tested with k6 load)",
+          "All 4 alert thresholds configured in Datadog and tested with synthetic traffic",
+          "4 SRE runbooks reviewed and approved by engineering lead",
+          "Rollback procedure tested: production rollback completes in under 5 minutes"
+        ],
+        "depends_on": [
+          24
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "TESTS",
+        "description": "Write comprehensive unit and integration tests: backend service tests, API endpoint tests, ticketing engine concurrency tests, and frontend component tests.",
+        "payload": {
+          "backend_framework": "Vitest + Supertest",
+          "frontend_framework": "Vitest + React Testing Library",
+          "coverage_target": "80% line coverage on src/",
+          "critical_test_suites": [
+            "seat reservation concurrency (100 concurrent holds, 1 seat)",
+            "Stripe webhook idempotency",
+            "QR code HMAC validation",
+            "checkout funnel happy path",
+            "check-in duplicate scan rejection",
+            "analytics aggregation correctness"
+          ]
+        },
+        "acceptance_criteria": [
+          "All critical test suites pass in CI",
+          "80% line coverage achieved on backend src/",
+          "Concurrency test proves exactly 1 successful reservation out of 100 simultaneous attempts",
+          "Stripe webhook idempotency test confirms double-delivery does not double-fulfill orders",
+          "Frontend component tests cover all checkout funnel steps",
+          "Test run completes in under 5 minutes in CI"
+        ],
+        "depends_on": [
+          12,
+          13,
+          16
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 27,
+        "task_type": "QA",
+        "description": "Create QA test plan, exploratory testing sessions for all user flows, edge case catalog, and bug tracking integration.",
+        "payload": {
+          "test_plan_scope": [
+            "event_discovery",
+            "ticket_purchase",
+            "seating_chart",
+            "checkout",
+            "check_in",
+            "organizer_dashboard",
+            "analytics"
+          ],
+          "exploratory_sessions": [
+            "high-demand event: simultaneous seat selection stress",
+            "mobile check-in: offline then reconnect flow",
+            "organizer: event with mixed GA and reserved seating",
+            "attendee: purchase \u2192 refund \u2192 repurchase"
+          ],
+          "edge_cases": [
+            "last ticket sold during checkout",
+            "payment failure after seat hold",
+            "event cancelled after tickets sold",
+            "venue capacity change after tickets sold",
+            "timezone edge case: event at midnight DST change"
+          ],
+          "bug_tracker": "GitHub Issues with labels: critical/high/medium/low"
+        },
+        "acceptance_criteria": [
+          "Test plan covers all 7 flow areas with test cases per flow",
+          "All 4 exploratory sessions completed with written findings",
+          "All 5 edge cases tested and results documented",
+          "Zero open critical bugs at launch",
+          "Bug triage process defined with SLA per severity"
+        ],
+        "depends_on": [
+          26
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 28,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system tests: full event lifecycle (create \u2192 sell \u2192 check-in \u2192 analytics), load testing for peak event on-sale scenarios, and disaster recovery test.",
+        "payload": {
+          "e2e_framework": "Playwright",
+          "e2e_scenarios": [
+            "organizer creates event, publishes, attendee discovers and purchases, staff checks in",
+            "high-demand on-sale: 500 concurrent users, 100 tickets available",
+            "organizer views post-event analytics after event ends"
+          ],
+          "load_test": {
+            "tool": "k6",
+            "scenario": "500 concurrent users hitting checkout for 100-ticket event",
+            "pass_criteria": "p95 < 2s, zero data integrity errors, correct sold-out state"
+          },
+          "dr_test": "RDS failover, verify API recovers within 60s"
+        },
+        "acceptance_criteria": [
+          "All 3 E2E scenarios pass on staging environment",
+          "Load test: p95 response time under 2s with 500 concurrent users",
+          "Load test: exactly sold_out tickets sold (no oversell) after 500-user stress",
+          "DR test: API health check recovers within 60s of RDS failover",
+          "E2E tests run in CI on every deploy to staging"
+        ],
+        "depends_on": [
+          27,
+          25
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 29,
+        "task_type": "OPERATIONS",
+        "description": "Define operational runbooks, SLA targets, on-call rotation, incident response procedures, and capacity planning model for event_platform.",
+        "payload": {
+          "sla_targets": {
+            "api_availability": "99.9% monthly",
+            "checkout_p95_latency_ms": 500,
+            "checkin_p95_latency_ms": 200,
+            "ticket_email_delivery_minutes": 5
+          },
+          "runbooks": [
+            "payment_failure_spike",
+            "database_cpu_high",
+            "redis_memory_full",
+            "worker_queue_backlog",
+            "event_on_sale_traffic_surge",
+            "ticket_oversell_incident"
+          ],
+          "on_call": "PagerDuty rotation, 2-person primary/secondary",
+          "capacity_planning": "model for 10x traffic spike during major event on-sale"
+        },
+        "acceptance_criteria": [
+          "SLA targets documented and approved by product and engineering leads",
+          "All 6 runbooks written with step-by-step remediation and escalation paths",
+          "On-call rotation configured in PagerDuty with alert routing rules",
+          "Capacity model shows infrastructure handles 10x normal load with auto-scaling",
+          "Post-incident review template created"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 30,
+        "task_type": "TRAINING",
+        "description": "Create user guides and training materials: organizer onboarding guide, check-in staff quick-start guide, attendee FAQ, and platform admin runbook.",
+        "payload": {
+          "documents": [
+            "organizer_getting_started_guide (event creation to first ticket sold)",
+            "seating_chart_setup_guide (import, configure, publish)",
+            "checkin_staff_quick_start (PWA install, scanner use, troubleshooting)",
+            "attendee_faq (tickets, refunds, transfers, accessibility)",
+            "platform_admin_guide (user management, fraud review, payout management)"
+          ],
+          "formats": [
+            "web docs (Docusaurus)",
+            "in-app tooltips",
+            "short video scripts (Loom)"
+          ],
+          "locales": [
+            "en-US",
+            "es-ES",
+            "fr-FR"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 5 documents published to docs site",
+          "Organizer guide covers full event creation wizard with screenshots",
+          "Check-in staff guide installable as PDF for offline reference",
+          "Attendee FAQ addresses top 10 support ticket categories (derived from beta feedback)",
+          "All documents available in 3 locales",
+          "In-app tooltip copy reviewed and approved by UX designer"
+        ],
+        "depends_on": [
+          20,
+          19
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 31,
+        "task_type": "DOCS",
+        "description": "Produce technical documentation: API reference (auto-generated from OpenAPI), architecture decision records (ADRs), deployment guide, and developer onboarding README.",
+        "payload": {
+          "api_docs": "Redoc generated from OpenAPI spec, hosted at /docs",
+          "adrs": [
+            "ADR-001: PostgreSQL over NoSQL for ticketing (ACID guarantees)",
+            "ADR-002: Redis seat holds over DB-level locking (performance)",
+            "ADR-003: Stripe Connect for organizer payouts",
+            "ADR-004: Next.js App Router for SEO and performance"
+          ],
+          "deployment_guide": "covers staging and production deploy, rollback, secrets rotation",
+          "readme": "repo structure, local setup in under 10 commands, test execution"
+        },
+        "acceptance_criteria": [
+          "API reference hosted and searchable at /docs",
+          "All 4 ADRs written with context, decision, and consequences sections",
+          "Deployment guide tested by team member with no prior context (onboarding test)",
+          "README: new developer running `npm install && docker-compose up && npm run dev` reaches working app in under 15 minutes"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 31,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 63,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 63,
+          "final_review": {
+            "score": 63,
+            "flaws": [
+              "QR code security design is split across two non-adjacent steps: tickets generated as 'UUID v4 encoded as QR' in Step 12, check-in service built in Step 13, but HMAC signing only added in Step 22. The check-in service will be built without HMAC validation and requires rework after the security review \u2014 a guaranteed integration defect.",
+              "Seat reservation has a dual-source-of-truth problem. Step 12 specifies 'optimistic locking + Redis atomic ops' simultaneously. If Redis says a seat is held but the DB optimistic lock fails, these two systems diverge. No reconciliation strategy is defined. Under high concurrency, this will produce phantom holds or double-sells.",
+              "Redis TTL expiry for seat holds relies on keyspace notifications or a polling worker, but neither mechanism is specified. Redis keyspace notifications are unreliable under memory pressure and disabled by default on ElastiCache. If TTL expiry silently fails, held seats never release \u2014 event sells out with uncompleted orders.",
+              "Refund flow is listed as a core process in Step 2, tested as an edge case in Step 27, and required by Step 6 legal docs \u2014 but has zero implementation steps. No backend step covers Stripe refund API calls, inventory restoration, partial refunds, or organizer-initiated refunds. This is not an omission; it's a missing feature for a ticketing platform.",
+              "Event cancellation after tickets sold is listed as an edge case in Step 27 but never implemented. Bulk refund triggering, attendee notification, organizer tooling, and fund return logic are all absent from implementation steps.",
+              "SVG seating chart import (Step 11) is architecturally underspecified. No mapping strategy between SVG element IDs and the DB seat table. No handling for malformed or non-standard SVG. No mention of tooling. This is 2-3 weeks of edge-case work disguised as one bullet point.",
+              "Step 15 targets 5,000 seats with 'SVG with React state overlay' \u2014 no virtualization, WebGL, or canvas fallback mentioned. 5,000 DOM elements with React re-renders on seat state changes will freeze on mid-range mobile devices. The 10-second polling will trigger full re-renders on maps with thousands of seats.",
+              "Offline check-in conflict resolution is undefined. The acceptance criteria only checks 'duplicate scan within same session' \u2014 not across devices. Two staff members scanning the same QR offline then syncing will both succeed. The sync logic in Step 19 has no merge/conflict semantics.",
+              "PostGIS is never mentioned despite geo-radius event discovery being a core feature (Step 10, 14). A plain btree index on a lat/lon pair column will not support efficient radius queries at scale. Without PostGIS geography types, 'location_geo' indexing is ambiguous and likely incorrect.",
+              "Promo codes are in the GA phase roadmap (Step 3) and the checkout UI (Step 16) but have no backend implementation step. No promo code creation API, validation service, single-use enforcement, or bulk generation is planned. The frontend Step 16 acceptance criteria requires promo code functionality that does not exist in the backend steps.",
+              "Payout architecture ignores chargebacks. T+2 post-event payouts with no chargeback reserve period means organizers can withdraw funds before the dispute window closes (typically 30-180 days for card disputes). A single large chargeback event will create a negative balance. Stripe Connect requires platform-level liability coverage decisions here.",
+              "KYC/KYB for organizer onboarding is absent. Step 11 has OrganizerService with 'onboarding, verification, tier management' but no mechanism is described. Stripe Connect requires identity verification for payouts. Skipping this creates a fraud vector and Stripe compliance violation.",
+              "Waitlist is listed in the GA phase (Step 3) but has no implementation step in either backend (Steps 11-13) or frontend (Steps 14-19). If GA acceptance criteria includes waitlist, the build will fail.",
+              "Database connection pooling under load is unaddressed. Step 28 tests 500 concurrent users \u2014 each with active transactions for seat holds \u2014 against RDS with no mention of PgBouncer or pg-pool configuration. PostgreSQL has a default max_connections of 100-200; 500 concurrent Fastify workers will exhaust the connection pool."
+            ],
+            "suggestions": [
+              "Redesign the QR code format decision as a single ADR before Step 9 (database) and enforce HMAC-signed tokens from day one in Step 12. The check-in service in Step 13 must be built against the final QR spec, not retrofitted in Step 22.",
+              "Collapse the seat reservation strategy to a single approach: Redis as the authoritative hold store with Lua scripts for atomic check-and-set, with PostgreSQL updated only on order confirmation. Remove 'optimistic locking' from Step 12 to eliminate the dual-source problem.",
+              "Add a dedicated Step 12.5 or sub-task for refund and cancellation flows: Stripe refund API, inventory restoration transaction, partial refund logic, organizer bulk-cancel with attendee notification.",
+              "Replace SVG seat map rendering with a canvas-based renderer (Konva.js or Pixi.js) for venues over 500 seats. Reserve SVG for small venues. Add a seat map virtualization strategy to the Step 15 acceptance criteria.",
+              "Add PostGIS to the Step 9 database schema. Use geography(Point, 4326) column type for event locations and a GiST index. Update Step 10 API spec to document the radius filter using ST_DWithin.",
+              "Define an offline check-in merge strategy in Step 19: server-side last-write-wins with server timestamp as tiebreaker, plus a conflict log that supervisors can review. Change the acceptance criteria from 'same session' to 'cross-device duplicate scan rejected after sync'.",
+              "Add a chargeback reserve hold to the payout model in Step 5 and Step 13: hold a percentage (e.g., 5%) for 90 days post-event, or use Stripe's built-in reserve feature for new organizers.",
+              "Move promo code backend implementation into Step 12 or add a Step 12.5 covering promo code CRUD, validation middleware, usage tracking, and single-use enforcement. Step 16 frontend depends on this existing.",
+              "Specify PgBouncer (transaction mode) in Step 24 infrastructure. Set pool size to match RDS max_connections. Add connection pool exhaustion as a Step 28 load test failure condition.",
+              "Add GDPR right-to-erasure and data portability as explicit backend tasks. A ticketing platform with PII (names, emails, purchase history) needs a /users/:id/export and /users/:id/delete endpoint with cascade logic before launch."
+            ],
+            "missing": [
+              "Refund flow implementation (Stripe refund API, inventory restoration, partial refund, organizer-initiated refund) \u2014 entirely absent from implementation steps",
+              "Event cancellation flow (bulk refund trigger, attendee notification pipeline, organizer cancellation tools)",
+              "Ticket transfer feature \u2014 referenced in QA edge cases (Step 27) but no implementation step exists",
+              "KYC/KYB organizer verification \u2014 required by Stripe Connect for payouts, not mentioned anywhere",
+              "Chargeback reserve and negative balance handling in payout model",
+              "PostGIS extension and geography column type for geo-radius search",
+              "Promo code backend service (creation, validation, single-use enforcement, bulk generation)",
+              "Waitlist backend and frontend implementation despite being in GA phase scope",
+              "GDPR right-to-erasure and data portability endpoints",
+              "Database connection pooling strategy (PgBouncer) for high-concurrency scenarios",
+              "Notification/email service beyond ticket delivery \u2014 event reminders, updates, cancellations, waitlist triggers",
+              "Redis keyspace notification reliability strategy or explicit TTL expiry worker for seat hold release",
+              "Organizer KPI alerting \u2014 no mention of alerting organizers when sales milestones are hit or when fraud is flagged against their event",
+              "Accessibility audit tooling integration (axe-core in CI) \u2014 Step 4 specifies WCAG 2.1 AA but no automated enforcement in the CI pipeline (Step 25)"
+            ],
+            "security_risks": [
+              "QR codes generated as plain UUID v4 in Step 12 before HMAC signing is added in Step 22 \u2014 tickets issued during this window are forgeable. If any QR codes are emailed before Step 22 is complete, they must be regenerated.",
+              "IP-only rate limiting (Step 22) is trivially bypassed with distributed IPs or residential proxies. Scalping bots operate exactly this way. No account-level rate limiting, device fingerprinting, or CAPTCHA for high-demand on-sale events.",
+              "Stripe webhook endpoint in Step 12 must verify signatures before any processing \u2014 if this is not in the first iteration of the webhook handler (easy to defer), payment_intent.succeeded can be spoofed to confirm orders without payment.",
+              "SVG import for seating charts (Step 11) is an XXE injection vector. Parsing untrusted SVG without disabling external entities allows server-side file read or SSRF. No mention of SVG sanitization.",
+              "Organizer account takeover is listed as a threat model area (Step 22) but OAuth (Google/Apple) in Step 11 provides no MFA for organizers managing high-value events. A compromised organizer account can reroute payouts via Stripe Connect.",
+              "JWT refresh token rotation strategy unspecified. Step 11 sets refresh token TTL at 30 days but does not mention token rotation on use or revocation on logout. A stolen refresh token is valid for 30 days.",
+              "Analytics ingestion endpoint (Step 23, POST /analytics/events, batched up to 100 events) has no authentication requirement specified. An unauthenticated batch analytics endpoint is a data poisoning vector that will corrupt organizer revenue reporting.",
+              "Offline IndexedDB check-in data in Step 19 stores ticket validation results client-side. On a shared or compromised check-in device, this cache leaks attendee PII (names, ticket types) and reveals which QR codes have been scanned \u2014 useful for cloning."
+            ],
+            "summary": "This is a well-structured, comprehensive plan that covers the full product lifecycle from market research to SRE runbooks. The technical stack choices are sound, the dependency graph is mostly correct, and the acceptance criteria are specific and measurable. However, the plan has three categories of genuine failure: (1) a critical design sequencing error where QR code generation precedes QR code security design, meaning the check-in service will be built against an insecure spec and require rework; (2) missing entire feature implementations \u2014 refunds, event cancellation, and promo codes are referenced in business requirements and QA steps but have no engineering implementation steps, guaranteeing scope debt; and (3) unaddressed scaling hazards in the seat reservation concurrency model, SVG rendering at 5,000 seats, and database connection exhaustion under load test conditions. The plan is strong enough to reach a functional demo but has too many gaps to ship a production ticketing platform without rework. Addressing the refund flow, QR security sequencing, PostGIS for geo-search, and connection pooling would raise confidence significantly. Current score reflects a plan that will produce a working prototype but will stall before production readiness.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 63,
+              "flaws": [
+                "QR code security design is split across two non-adjacent steps: tickets generated as 'UUID v4 encoded as QR' in Step 12, check-in service built in Step 13, but HMAC signing only added in Step 22. The check-in service will be built without HMAC validation and requires rework after the security review \u2014 a guaranteed integration defect.",
+                "Seat reservation has a dual-source-of-truth problem. Step 12 specifies 'optimistic locking + Redis atomic ops' simultaneously. If Redis says a seat is held but the DB optimistic lock fails, these two systems diverge. No reconciliation strategy is defined. Under high concurrency, this will produce phantom holds or double-sells.",
+                "Redis TTL expiry for seat holds relies on keyspace notifications or a polling worker, but neither mechanism is specified. Redis keyspace notifications are unreliable under memory pressure and disabled by default on ElastiCache. If TTL expiry silently fails, held seats never release \u2014 event sells out with uncompleted orders.",
+                "Refund flow is listed as a core process in Step 2, tested as an edge case in Step 27, and required by Step 6 legal docs \u2014 but has zero implementation steps. No backend step covers Stripe refund API calls, inventory restoration, partial refunds, or organizer-initiated refunds. This is not an omission; it's a missing feature for a ticketing platform.",
+                "Event cancellation after tickets sold is listed as an edge case in Step 27 but never implemented. Bulk refund triggering, attendee notification, organizer tooling, and fund return logic are all absent from implementation steps.",
+                "SVG seating chart import (Step 11) is architecturally underspecified. No mapping strategy between SVG element IDs and the DB seat table. No handling for malformed or non-standard SVG. No mention of tooling. This is 2-3 weeks of edge-case work disguised as one bullet point.",
+                "Step 15 targets 5,000 seats with 'SVG with React state overlay' \u2014 no virtualization, WebGL, or canvas fallback mentioned. 5,000 DOM elements with React re-renders on seat state changes will freeze on mid-range mobile devices. The 10-second polling will trigger full re-renders on maps with thousands of seats.",
+                "Offline check-in conflict resolution is undefined. The acceptance criteria only checks 'duplicate scan within same session' \u2014 not across devices. Two staff members scanning the same QR offline then syncing will both succeed. The sync logic in Step 19 has no merge/conflict semantics.",
+                "PostGIS is never mentioned despite geo-radius event discovery being a core feature (Step 10, 14). A plain btree index on a lat/lon pair column will not support efficient radius queries at scale. Without PostGIS geography types, 'location_geo' indexing is ambiguous and likely incorrect.",
+                "Promo codes are in the GA phase roadmap (Step 3) and the checkout UI (Step 16) but have no backend implementation step. No promo code creation API, validation service, single-use enforcement, or bulk generation is planned. The frontend Step 16 acceptance criteria requires promo code functionality that does not exist in the backend steps.",
+                "Payout architecture ignores chargebacks. T+2 post-event payouts with no chargeback reserve period means organizers can withdraw funds before the dispute window closes (typically 30-180 days for card disputes). A single large chargeback event will create a negative balance. Stripe Connect requires platform-level liability coverage decisions here.",
+                "KYC/KYB for organizer onboarding is absent. Step 11 has OrganizerService with 'onboarding, verification, tier management' but no mechanism is described. Stripe Connect requires identity verification for payouts. Skipping this creates a fraud vector and Stripe compliance violation.",
+                "Waitlist is listed in the GA phase (Step 3) but has no implementation step in either backend (Steps 11-13) or frontend (Steps 14-19). If GA acceptance criteria includes waitlist, the build will fail.",
+                "Database connection pooling under load is unaddressed. Step 28 tests 500 concurrent users \u2014 each with active transactions for seat holds \u2014 against RDS with no mention of PgBouncer or pg-pool configuration. PostgreSQL has a default max_connections of 100-200; 500 concurrent Fastify workers will exhaust the connection pool."
+              ],
+              "suggestions": [
+                "Redesign the QR code format decision as a single ADR before Step 9 (database) and enforce HMAC-signed tokens from day one in Step 12. The check-in service in Step 13 must be built against the final QR spec, not retrofitted in Step 22.",
+                "Collapse the seat reservation strategy to a single approach: Redis as the authoritative hold store with Lua scripts for atomic check-and-set, with PostgreSQL updated only on order confirmation. Remove 'optimistic locking' from Step 12 to eliminate the dual-source problem.",
+                "Add a dedicated Step 12.5 or sub-task for refund and cancellation flows: Stripe refund API, inventory restoration transaction, partial refund logic, organizer bulk-cancel with attendee notification.",
+                "Replace SVG seat map rendering with a canvas-based renderer (Konva.js or Pixi.js) for venues over 500 seats. Reserve SVG for small venues. Add a seat map virtualization strategy to the Step 15 acceptance criteria.",
+                "Add PostGIS to the Step 9 database schema. Use geography(Point, 4326) column type for event locations and a GiST index. Update Step 10 API spec to document the radius filter using ST_DWithin.",
+                "Define an offline check-in merge strategy in Step 19: server-side last-write-wins with server timestamp as tiebreaker, plus a conflict log that supervisors can review. Change the acceptance criteria from 'same session' to 'cross-device duplicate scan rejected after sync'.",
+                "Add a chargeback reserve hold to the payout model in Step 5 and Step 13: hold a percentage (e.g., 5%) for 90 days post-event, or use Stripe's built-in reserve feature for new organizers.",
+                "Move promo code backend implementation into Step 12 or add a Step 12.5 covering promo code CRUD, validation middleware, usage tracking, and single-use enforcement. Step 16 frontend depends on this existing.",
+                "Specify PgBouncer (transaction mode) in Step 24 infrastructure. Set pool size to match RDS max_connections. Add connection pool exhaustion as a Step 28 load test failure condition.",
+                "Add GDPR right-to-erasure and data portability as explicit backend tasks. A ticketing platform with PII (names, emails, purchase history) needs a /users/:id/export and /users/:id/delete endpoint with cascade logic before launch."
+              ],
+              "missing": [
+                "Refund flow implementation (Stripe refund API, inventory restoration, partial refund, organizer-initiated refund) \u2014 entirely absent from implementation steps",
+                "Event cancellation flow (bulk refund trigger, attendee notification pipeline, organizer cancellation tools)",
+                "Ticket transfer feature \u2014 referenced in QA edge cases (Step 27) but no implementation step exists",
+                "KYC/KYB organizer verification \u2014 required by Stripe Connect for payouts, not mentioned anywhere",
+                "Chargeback reserve and negative balance handling in payout model",
+                "PostGIS extension and geography column type for geo-radius search",
+                "Promo code backend service (creation, validation, single-use enforcement, bulk generation)",
+                "Waitlist backend and frontend implementation despite being in GA phase scope",
+                "GDPR right-to-erasure and data portability endpoints",
+                "Database connection pooling strategy (PgBouncer) for high-concurrency scenarios",
+                "Notification/email service beyond ticket delivery \u2014 event reminders, updates, cancellations, waitlist triggers",
+                "Redis keyspace notification reliability strategy or explicit TTL expiry worker for seat hold release",
+                "Organizer KPI alerting \u2014 no mention of alerting organizers when sales milestones are hit or when fraud is flagged against their event",
+                "Accessibility audit tooling integration (axe-core in CI) \u2014 Step 4 specifies WCAG 2.1 AA but no automated enforcement in the CI pipeline (Step 25)"
+              ],
+              "security_risks": [
+                "QR codes generated as plain UUID v4 in Step 12 before HMAC signing is added in Step 22 \u2014 tickets issued during this window are forgeable. If any QR codes are emailed before Step 22 is complete, they must be regenerated.",
+                "IP-only rate limiting (Step 22) is trivially bypassed with distributed IPs or residential proxies. Scalping bots operate exactly this way. No account-level rate limiting, device fingerprinting, or CAPTCHA for high-demand on-sale events.",
+                "Stripe webhook endpoint in Step 12 must verify signatures before any processing \u2014 if this is not in the first iteration of the webhook handler (easy to defer), payment_intent.succeeded can be spoofed to confirm orders without payment.",
+                "SVG import for seating charts (Step 11) is an XXE injection vector. Parsing untrusted SVG without disabling external entities allows server-side file read or SSRF. No mention of SVG sanitization.",
+                "Organizer account takeover is listed as a threat model area (Step 22) but OAuth (Google/Apple) in Step 11 provides no MFA for organizers managing high-value events. A compromised organizer account can reroute payouts via Stripe Connect.",
+                "JWT refresh token rotation strategy unspecified. Step 11 sets refresh token TTL at 30 days but does not mention token rotation on use or revocation on logout. A stolen refresh token is valid for 30 days.",
+                "Analytics ingestion endpoint (Step 23, POST /analytics/events, batched up to 100 events) has no authentication requirement specified. An unauthenticated batch analytics endpoint is a data poisoning vector that will corrupt organizer revenue reporting.",
+                "Offline IndexedDB check-in data in Step 19 stores ticket validation results client-side. On a shared or compromised check-in device, this cache leaks attendee PII (names, ticket types) and reveals which QR codes have been scanned \u2014 useful for cloning."
+              ],
+              "summary": "This is a well-structured, comprehensive plan that covers the full product lifecycle from market research to SRE runbooks. The technical stack choices are sound, the dependency graph is mostly correct, and the acceptance criteria are specific and measurable. However, the plan has three categories of genuine failure: (1) a critical design sequencing error where QR code generation precedes QR code security design, meaning the check-in service will be built against an insecure spec and require rework; (2) missing entire feature implementations \u2014 refunds, event cancellation, and promo codes are referenced in business requirements and QA steps but have no engineering implementation steps, guaranteeing scope debt; and (3) unaddressed scaling hazards in the seat reservation concurrency model, SVG rendering at 5,000 seats, and database connection exhaustion under load test conditions. The plan is strong enough to reach a functional demo but has too many gaps to ship a production ticketing platform without rework. Addressing the refund flow, QR security sequencing, PostGIS for geo-search, and connection pooling would raise confidence significantly. Current score reflects a plan that will produce a working prototype but will stall before production readiness.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T10:45:35.916761+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 195.03,
+      "critic_plan": 107.8
+    }
+  }
+}

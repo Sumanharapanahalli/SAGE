@@ -1,0 +1,292 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the HR management software market: key competitors (Workday,
+      BambooHR, Rippling, Gusto), pricing models, feature gaps, target segments (SMB
+      vs enterprise), and go-to-market positioning for hr_management.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covering all 6 core modules is complete
+    - Pricing benchmarks for SMB and enterprise tiers documented
+    - At least 3 differentiation opportunities identified
+    - Target ICP (Ideal Customer Profile) defined with firmographic criteria
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Elicit and document business requirements for all six modules: employee
+      onboarding, PTO tracking, performance reviews, payroll integration, org chart,
+      and compliance reporting. Produce user stories with acceptance criteria and
+      process flow diagrams.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories written for all 5 personas across all 6 modules (minimum 40 stories)
+    - Process flow diagrams cover happy path and error paths for each module
+    - Functional requirements document reviewed and sign-off obtained
+    - Non-functional requirements (performance, availability, scale) specified
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on: []
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, and Data Processing Agreement.
+      Review employment law obligations (GDPR, CCPA, FLSA, ADA) as they apply to HR
+      data handling, payroll processing, and employee record retention requirements.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy covers all employee PII categories collected and processed
+    - Data retention schedule defined per regulation (FLSA 3yr, tax records 7yr, etc.)
+    - DPA template ready for enterprise customer agreements
+    - Right-to-erasure workflow defined (with payroll record carve-out)
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on: []
+  FINANCIAL:
+    description: Build financial model covering SaaS pricing tiers (per-seat, per-company-size),
+      COGS breakdown (infrastructure, support, compliance), customer acquisition cost,
+      LTV, and 3-year revenue projection for hr_management.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Pricing tiers defined with per-seat rates for all three bands
+    - COGS per customer per tier calculated including infra, support, compliance costs
+    - CAC and LTV modeled with payback period under 18 months for growth tier
+    - Break-even analysis shows path to profitability with assumptions documented
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Produce the Product Requirements Document (PRD), prioritized feature
+      roadmap (MoSCoW), success metrics (OKRs), and MVP scope definition for hr_management.
+      Define v1.0 as the deliverable scope for this build.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all 6 modules with must-have vs nice-to-have distinction
+    - MVP scope is achievable with defined team within build timeline
+    - OKRs defined for 30/60/90 days post-launch
+    - Roadmap beyond v1.0 documented with at least 2 future quarters planned
+    depends_on:
+    - 2
+    - 4
+  UX_DESIGN:
+    description: Conduct user research synthesis (from business requirements), produce
+      information architecture, wireframes for all 6 modules, interactive prototype
+      for onboarding and PTO flows, and accessibility audit checklist (WCAG 2.1 AA).
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Information architecture covers all pages and navigation paths
+    - Wireframes reviewed with at least 2 representative users from each persona
+    - Hi-fi prototype covers complete employee onboarding flow end-to-end
+    - Accessibility checklist passes for color contrast, keyboard nav, ARIA labels
+    - Design tokens defined for colors, typography, spacing
+    depends_on:
+    - 2
+    - 5
+  COMPLIANCE:
+    description: Map SOC 2 Type II controls to the hr_management system. Identify
+      applicable Trust Service Criteria (Security, Availability, Confidentiality,
+      Privacy). Produce control inventory, evidence collection plan, and gap analysis
+      against current architecture.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All applicable SOC 2 CC controls mapped with control owner and evidence type
+    - Evidence collection plan specifies automated vs manual evidence sources
+    - Gap analysis identifies all controls requiring implementation before audit
+    - Data classification matrix covers all data types in the system
+    depends_on:
+    - 3
+    - 5
+  DATABASE:
+    description: Design the PostgreSQL database schema for hr_management covering
+      all 6 modules. Include entity-relationship diagram, indexing strategy, row-level
+      security (RLS) for multi-tenant isolation, audit trail tables, and migration
+      scripts.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all 6 modules with foreign key relationships documented
+    - RLS policies enforce tenant isolation — cross-tenant query returns zero rows
+    - Audit trigger fires on INSERT/UPDATE/DELETE for all PII-containing tables
+    - All Alembic migrations run cleanly from empty DB to full schema
+    - Indexes defined for all foreign keys and common query predicates
+    depends_on:
+    - 5
+    - 7
+  API:
+    description: Design the OpenAPI 3.1 specification for all hr_management REST endpoints
+      covering employee CRUD, onboarding workflow, PTO request lifecycle, performance
+      review cycle, payroll integration hooks, org chart queries, and compliance report
+      generation.
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors via openapi-validator
+    - All endpoints specify auth requirements and role permissions
+    - Request/response schemas defined for all 6 module endpoint groups
+    - Error response schemas standardized (RFC 7807 Problem Details)
+    - Payroll integration endpoints document webhook contract for external providers
+    depends_on:
+    - 5
+    - 7
+  CONFIG:
+    description: 'Initialize the hr_management project repository: monorepo structure
+      (backend/frontend/infra), Python FastAPI backend scaffold, React + TypeScript
+      frontend scaffold, Docker Compose for local dev (Postgres, Redis, LocalStack),
+      pre-commit hooks, linting, and environment variable management.'
+    agent_role: developer
+    acceptance_criteria:
+    - docker compose up starts all services with zero manual steps
+    - Backend server starts and returns 200 on GET /health
+    - Frontend dev server starts and renders root page
+    - Pre-commit hooks run linting and type-check on staged files
+    - Environment variable template (.env.example) covers all required secrets
+    depends_on:
+    - 8
+    - 9
+  SECURITY:
+    description: Produce threat model (STRIDE) for hr_management, covering authentication,
+      payroll data access, PII at rest and in transit, multi-tenant isolation, and
+      API security. Define security controls required for SOC 2 CC6 (Logical Access)
+      and CC7 (System Operations).
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis covers all 6 threat surfaces with mitigations defined
+    - 'Encryption requirements specified: AES-256 at rest, TLS 1.3 in transit'
+    - MFA requirement documented for HR admin and payroll admin roles
+    - Penetration test scope and methodology documented
+    - SOC 2 CC6/CC7 controls mapped to implemented security measures
+    depends_on:
+    - 7
+    - 9
+  BACKEND:
+    description: 'Implement the employee onboarding module: new hire workflow engine
+      (multi-step wizard state machine), document collection tracking, checklist assignment
+      engine, equipment request integration, IT provisioning webhooks, and e-signature
+      placeholder.'
+    agent_role: developer
+    acceptance_criteria:
+    - State machine transitions are valid — invalid transitions return 422
+    - New hire invitation sends email with secure onboarding link
+    - Checklist completion tracked per step with timestamp and actor
+    - IT provisioning webhook fires on state transition to it_provisioned
+    - All onboarding data persists to audit log for SOC 2 evidence
+    depends_on:
+    - 10
+  FRONTEND:
+    description: 'Build the React frontend shell: app router (React Router v6), authenticated
+      layout (sidebar nav, header, breadcrumbs), RBAC-aware navigation (menu items
+      gated by role), global state management (Zustand), API client with auth interceptor,
+      and design system implementation from UX tokens.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'Auth flow: login → JWT stored in httpOnly cookie → refresh on expiry'
+    - Navigation items hidden/shown based on user role (RBAC enforced client-side
+      AND server-side)
+    - API client automatically attaches auth header and refreshes on 401
+    - Design tokens applied — all colors, spacing, typography from UX spec
+    - App loads and renders within 2 seconds on standard connection (Lighthouse performance
+      > 85)
+    depends_on:
+    - 6
+    - 10
+  TESTS:
+    description: 'Write unit and integration tests for all backend modules: onboarding
+      state machine, PTO accrual engine, payroll adapter, org chart hierarchy queries,
+      compliance report generators. Include property-based tests for accrual and payroll
+      calculations.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Overall backend test coverage >= 85%
+    - PTO accrual engine has 100% branch coverage with property-based tests
+    - Payroll calculation tests verify gross/net/deduction math with known fixtures
+    - All state machine transitions tested including invalid transition rejection
+    - Integration tests run against real Postgres (no mocking the DB)
+    depends_on:
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+  QA:
+    description: 'Design and execute QA test plan: test case inventory for all 6 modules,
+      regression test suite, negative testing (boundary conditions, invalid inputs),
+      role-based access control verification matrix, and data isolation testing between
+      tenants.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test case inventory covers all 6 modules with positive and negative cases
+    - RBAC matrix tested — each role can access only permitted endpoints
+    - Tenant isolation verified — no API returns data from another tenant
+    - All P0/P1 defects resolved before system test phase
+    - QA sign-off document produced with pass/fail summary per module
+    depends_on:
+    - 25
+    - 26
+  DEVOPS:
+    description: Set up CI/CD pipeline (GitHub Actions), containerized deployment
+      (Docker + Kubernetes), environment promotion (dev → staging → prod), database
+      migration automation, secret management (Vault/AWS Secrets Manager), and SOC
+      2 CC7 monitoring and alerting.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs lint, type-check, unit tests, and E2E tests on every PR
+    - Deployment to staging is automated on merge to main
+    - Production deployment requires manual approval gate in GitHub Actions
+    - Alembic migrations run automatically as Kubernetes job pre-deploy
+    - Alerts fire within 5 minutes for p99 latency > 2s or error rate > 1%
+    - All deployment events logged with actor, timestamp, and changeset (SOC 2 CC7)
+    depends_on:
+    - 27
+  SYSTEM_TEST:
+    description: 'Execute system-level integration and performance testing: full E2E
+      scenario testing across all 6 modules in staging, load test (500 concurrent
+      users, 10,000 employee dataset), payroll provider webhook integration test,
+      and data migration test from CSV.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All E2E scenarios pass in staging with production-equivalent data volume
+    - p95 API response time < 500ms under 500 concurrent users
+    - Org chart renders 10,000 node dataset without timeout
+    - Payroll webhook roundtrip completes in under 30 seconds end-to-end
+    - Bulk CSV import of 10,000 employees completes within 60 seconds
+    depends_on:
+    - 27
+    - 28
+  OPERATIONS:
+    description: 'Produce operational runbooks: incident response playbook, on-call
+      rotation setup, SLA definitions (99.9% uptime SLA, RTO/RPO targets), database
+      backup and recovery procedures, payroll provider failover runbook, and capacity
+      planning model.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Incident response runbook covers P0/P1/P2 severity with escalation paths
+    - Database restore procedure tested — recovery verified within RTO target
+    - SLA definitions include measurement methodology and credit terms
+    - Payroll failover runbook covers all 3 supported providers
+    - GDPR data export runbook produces compliant export within 30 days SLA
+    depends_on:
+    - 28
+  DOCS:
+    description: 'Produce developer and administrator documentation: API reference
+      (auto-generated from OpenAPI spec), architecture decision records (ADRs) for
+      key design choices, deployment guide, integration guide for payroll providers,
+      and data model reference.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference published at /docs with interactive try-it-out for all endpoints
+    - ADRs written for all 4 key architectural decisions with context/decision/consequences
+    - Deployment guide tested — fresh environment deployment succeeds following docs
+      only
+    - Payroll integration guide provides working curl examples for all webhook contracts
+    - Data model reference includes ERD and field-level descriptions for all tables
+    depends_on:
+    - 29
+    - 30
+  TRAINING:
+    description: 'Produce end-user training materials: HR admin guide, manager guide,
+      employee self-service guide, payroll admin guide, and compliance officer reporting
+      guide. Include video script outlines for onboarding and PTO flows.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Each guide covers all relevant features for that persona with step-by-step screenshots
+    - Video scripts are self-contained — presenter can record without additional context
+    - In-app help tooltips added for all non-obvious form fields
+    - Training materials reviewed by a representative user from each persona
+    - All guides available in the product under Help menu on launch day
+    depends_on:
+    - 29

@@ -1,0 +1,71 @@
+project_name: medical_imaging_ai
+display_name: Medical Imaging Ai
+version: 1.0.0
+domain: medtech
+description: AI-powered medical imaging analysis for chest X-rays detecting pneumonia,
+  tuberculosis, and lung nodules. DICOM integration, FDA 510(k) pathway, De Novo classification
+  for ML/AI SaMD.
+detected_domains: []
+compliance_standards:
+- FDA 510(k)
+- IEC 62304
+- ISO 13485
+- ISO 14971
+- DICOM
+task_types:
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FRONTEND
+- INFRA
+- LEGAL
+- ML_MODEL
+- PRODUCT_MGMT
+- QA
+- REGULATORY
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- legal_advisor
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

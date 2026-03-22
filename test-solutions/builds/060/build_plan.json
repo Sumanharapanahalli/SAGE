@@ -1,0 +1,866 @@
+{
+  "run_id": "c150b8ad-7935-4ff9-8a9b-972528b5ce09",
+  "status": {
+    "run_id": "c150b8ad-7935-4ff9-8a9b-972528b5ce09",
+    "solution_name": "noise_monitoring",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T08:18:33.977132+00:00",
+    "updated_at": "2026-03-22T08:24:17.014463+00:00",
+    "product_description": "Environmental noise monitoring IoT network with decibel sensors, frequency analysis, source identification, compliance reporting, and citizen complaint correlation.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "CONFIG",
+        "description": "Initialize the noise_monitoring solution scaffold: toolchain setup (ARM-GCC cross-compiler, PlatformIO/CMake for firmware), Python monorepo layout for backend services, MQTT broker (Mosquitto) config, environment variable templates, and IEC 62443 zone definitions in config files.",
+        "payload": {
+          "solution_name": "noise_monitoring",
+          "directories": [
+            "firmware/",
+            "backend/",
+            "frontend/",
+            "ml/",
+            "infra/",
+            "compliance/",
+            "tests/"
+          ],
+          "toolchain": "arm-none-eabi-gcc + PlatformIO",
+          "broker": "Mosquitto 2.x",
+          "config_files": [
+            ".env.template",
+            "platformio.ini",
+            "docker-compose.yml",
+            "config/zones.yaml"
+          ],
+          "standards": [
+            "IEC 62443"
+          ]
+        },
+        "acceptance_criteria": [
+          "Running `pio run` in firmware/ compiles without errors on a clean checkout",
+          "docker-compose up starts MQTT broker and backend skeleton",
+          "All secrets are environment variables \u2014 no hardcoded credentials in any config file",
+          "IEC 62443 security zone definitions (Level 1\u20133) are declared in config/zones.yaml",
+          "README contains first-run instructions that a new engineer can follow in under 10 minutes"
+        ],
+        "depends_on": [],
+        "agent_role": "developer"
+      },
+      {
+        "step": 2,
+        "task_type": "SAFETY",
+        "description": "Produce a hazard analysis and risk assessment for the IoT sensor network: sensor failure modes (stuck readings, calibration drift, power loss), data integrity hazards (spoofed readings, replay attacks), and environmental hazards (outdoor weatherproofing). Output FMEA table with severity/probability/RPN scores and mitigation actions.",
+        "payload": {
+          "method": "FMEA",
+          "scope": [
+            "sensor_node",
+            "gateway",
+            "cloud_backend",
+            "citizen_complaint_portal"
+          ],
+          "standards_reference": [
+            "IEC 62443-3-2",
+            "ISO 31000"
+          ],
+          "output": "compliance/fmea_noise_monitoring.xlsx"
+        },
+        "acceptance_criteria": [
+          "FMEA covers at minimum 20 distinct failure modes across sensor, gateway, and cloud tiers",
+          "Every failure mode has a documented mitigation or design control",
+          "All RPNs above 100 have a MANDATORY mitigation assigned and tracked",
+          "Document is reviewable by a regulatory specialist within 30 minutes"
+        ],
+        "depends_on": [],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 3,
+        "task_type": "DATABASE",
+        "description": "Design and implement the time-series and relational database schema: sensor_nodes table, noise_readings (dB level, frequency spectrum blob, timestamp, GPS), source_classifications, compliance_thresholds (zone + time-of-day limits), citizen_complaints (linked to sensor + time window), and audit_log. Use TimescaleDB (PostgreSQL extension) for time-series efficiency.",
+        "payload": {
+          "engine": "PostgreSQL 16 + TimescaleDB",
+          "hypertables": [
+            "noise_readings",
+            "frequency_snapshots"
+          ],
+          "relational_tables": [
+            "sensor_nodes",
+            "source_classifications",
+            "compliance_thresholds",
+            "citizen_complaints",
+            "audit_log"
+          ],
+          "migrations_tool": "Alembic",
+          "seed_data": "compliance thresholds per WHO and EU Noise Directive defaults"
+        },
+        "acceptance_criteria": [
+          "All migrations run cleanly from scratch with `alembic upgrade head`",
+          "noise_readings hypertable partitions by week and retains 2 years of data without manual intervention",
+          "citizen_complaints table has a foreign key constraint linking to sensor_nodes and a time_window range column",
+          "Seed data populates WHO day/night dB thresholds for residential, commercial, and industrial zones",
+          "All tables have appropriate indexes; EXPLAIN ANALYZE on a 1M row query returns < 50 ms"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 4,
+        "task_type": "API",
+        "description": "Design the full OpenAPI 3.1 specification for the noise monitoring platform: sensor data ingestion (MQTT bridge + REST fallback), noise reading query endpoints, compliance report generation, citizen complaint submission and correlation, source identification results, and admin sensor management. Define auth schemes (JWT for web clients, mutual TLS for devices).",
+        "payload": {
+          "spec_file": "backend/openapi.yaml",
+          "auth": [
+            "JWT (RS256)",
+            "mTLS for IoT devices"
+          ],
+          "key_endpoints": [
+            "POST /sensors/{id}/readings",
+            "GET /sensors/{id}/readings?from=&to=&resolution=",
+            "GET /compliance/report?zone=&period=",
+            "POST /complaints",
+            "GET /complaints/{id}/correlation",
+            "GET /sources/identified?sensor=&window=",
+            "POST /admin/sensors",
+            "GET /health"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates cleanly with `redocly lint`",
+          "Every endpoint has request/response schemas, error codes, and auth requirements documented",
+          "mTLS device auth flow is documented with certificate provisioning steps",
+          "Spec is imported into Postman collection and all example requests are valid"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 5,
+        "task_type": "SECURITY",
+        "description": "Perform threat modeling (STRIDE) for the full IoT stack: sensor nodes, MQTT broker, cloud backend, and citizen portal. Map threats to IEC 62443 security levels. Produce: threat model document, SBOM for firmware dependencies, network segmentation diagram (OT/IT zones), certificate lifecycle plan (device provisioning, rotation, revocation), and penetration test plan.",
+        "payload": {
+          "methodology": "STRIDE",
+          "standards": [
+            "IEC 62443-2-1",
+            "IEC 62443-3-3",
+            "OWASP IoT Top 10"
+          ],
+          "outputs": [
+            "compliance/threat_model.md",
+            "compliance/sbom.json (CycloneDX format)",
+            "compliance/network_zones.drawio",
+            "compliance/cert_lifecycle_plan.md",
+            "compliance/pentest_plan.md"
+          ],
+          "security_levels_targeted": "SL-2 for field devices, SL-3 for cloud backend"
+        },
+        "acceptance_criteria": [
+          "All 6 STRIDE categories have at least 3 documented threats for the IoT layer",
+          "SBOM lists all firmware libraries with version and known CVE status",
+          "Network diagram shows physical separation between sensor OT zone and IT cloud zone",
+          "Certificate lifecycle plan covers provisioning, 1-year rotation, and emergency revocation within 1 hour",
+          "Penetration test plan includes at minimum: MQTT auth bypass, sensor data spoofing, replay attack, and backend API fuzzing scenarios",
+          "Device identity provisioned",
+          "Firmware signing enabled"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "FIRMWARE",
+        "description": "Implement sensor node firmware in C (FreeRTOS): HAL drivers for I2S digital MEMS microphone (e.g., INMP441), dB(A) computation task (IIR A-weighting filter), raw PCM ring buffer, FFT task producing 1/3-octave band spectrum, MQTT publish over TLS (lwIP + mbedTLS), and OTA update support. Target ESP32-S3 or STM32H7.",
+        "payload": {
+          "target_mcu": "ESP32-S3 (primary) / STM32H7 (alt)",
+          "rtos": "FreeRTOS 10.x",
+          "sensor_interface": "I2S (INMP441 or ICS-43434 MEMS microphone)",
+          "dsp": "A-weighting IIR filter + 1024-point FFT \u2192 1/3-octave bands",
+          "connectivity": "Wi-Fi (TLS 1.3) + MQTT 3.1.1",
+          "ota": "ESP-IDF OTA partition scheme or STM32 bootloader",
+          "tasks": [
+            "mic_capture_task",
+            "dba_compute_task",
+            "fft_task",
+            "mqtt_publish_task",
+            "ota_task",
+            "watchdog_task"
+          ],
+          "publish_interval_s": 1
+        },
+        "acceptance_criteria": [
+          "dB(A) reading matches calibrated reference meter within \u00b11.5 dB at 94 dB SPL 1 kHz test tone",
+          "FFT task produces 31-band 1/3-octave spectrum at 1 Hz update rate without task starvation",
+          "MQTT publishes JSON payload (sensor_id, timestamp_utc, dba, spectrum[]) over TLS within 500 ms of measurement",
+          "OTA update completes from a test firmware binary in under 90 seconds and rolls back on CRC failure",
+          "Watchdog task resets the MCU if MQTT publish task is blocked > 30 s",
+          "Memory usage leaves at least 20% heap free under worst-case load",
+          "OTA update mechanism implemented",
+          "Watchdog timer configured"
+        ],
+        "depends_on": [
+          1,
+          3
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 7,
+        "task_type": "FIRMWARE",
+        "description": "Implement sensor node security hardening in firmware: mutual TLS certificate injection at provisioning, flash encryption, secure boot chain verification, NVS encryption for stored credentials, and a hardware unique ID bound device certificate. Integrate with the certificate lifecycle plan from Step 5.",
+        "payload": {
+          "flash_encryption": "AES-256 XTS (ESP32-S3 efuse-based)",
+          "secure_boot": "RSA-3072 signature chain",
+          "credential_storage": "NVS encrypted partition",
+          "cert_injection": "factory provisioning script via USB serial",
+          "device_identity": "hardware UID fused into device certificate CN"
+        },
+        "acceptance_criteria": [
+          "Firmware refuses to boot if secure boot signature verification fails",
+          "NVS credentials are unreadable via JTAG after flash encryption is enabled",
+          "Provisioning script generates a unique device cert, signs it with the CA, and writes it to NVS in under 60 seconds",
+          "Device rejects MQTT connection if broker certificate CN does not match pinned value",
+          "IEC 62443 SL-2 device requirements checklist shows 100% coverage for implemented controls",
+          "OTA update mechanism implemented",
+          "Watchdog timer configured"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Build the data ingestion backend service: MQTT subscriber (Eclipse Paho) that validates device certificates, deserializes JSON payloads, validates dB range and spectrum shape, writes to TimescaleDB via SQLAlchemy async, and emits events to an internal event bus (Redis Streams) for downstream ML and compliance services.",
+        "payload": {
+          "language": "Python 3.12",
+          "framework": "FastAPI + asyncio",
+          "mqtt_client": "aiomqtt (async Paho wrapper)",
+          "db_orm": "SQLAlchemy 2.x async + asyncpg",
+          "event_bus": "Redis Streams",
+          "validation": "Pydantic v2 schemas matching OpenAPI spec from Step 4",
+          "input_validation": "dB range 0\u2013140, spectrum array length 31, timestamp within 60 s of server clock"
+        },
+        "acceptance_criteria": [
+          "Service ingests 500 concurrent MQTT sensor messages/second without message loss at p99",
+          "Invalid payloads are rejected and written to a dead-letter stream with error reason",
+          "Every ingested reading is committed to TimescaleDB and confirmed on Redis Streams within 200 ms",
+          "Service recovers automatically after MQTT broker restart without message loss (MQTT QoS 1)",
+          "Unit tests cover: valid payload, out-of-range dB, malformed JSON, timestamp drift > 60 s"
+        ],
+        "depends_on": [
+          3,
+          4,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "ML_MODEL",
+        "description": "Build the noise source identification ML pipeline: collect/label training data (traffic, HVAC, construction, industrial, nature, music/entertainment), train a CNN or gradient-boosted classifier on 1/3-octave spectrograms, export to ONNX for inference, and deploy as a microservice consuming Redis Stream events and writing source_classifications back to the database.",
+        "payload": {
+          "input_features": "31-band 1/3-octave spectrum (1 Hz frames, 10 s window)",
+          "target_classes": [
+            "traffic",
+            "construction",
+            "hvac",
+            "industrial",
+            "music_entertainment",
+            "nature",
+            "unknown"
+          ],
+          "model_types": [
+            "CNN on log-mel spectrogram",
+            "XGBoost on statistical features (baseline)"
+          ],
+          "export_format": "ONNX Runtime",
+          "training_data": "ESC-50 + UrbanSound8K + domain-specific labeled captures",
+          "inference_latency_target_ms": 50,
+          "output": "ml/noise_classifier.onnx"
+        },
+        "acceptance_criteria": [
+          "Classifier achieves \u2265 82% macro F1 on held-out test set across all 7 classes",
+          "ONNX inference latency is < 50 ms per 10 s window on CPU (single core)",
+          "Model card documents training data sources, class distribution, and known failure modes",
+          "Inference microservice reads from Redis Streams and writes classification + confidence to source_classifications table",
+          "Confidence threshold below 0.6 stores result as 'unknown' rather than a wrong label"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 10,
+        "task_type": "DATA",
+        "description": "Build the compliance analytics pipeline: scheduled job that aggregates noise_readings per sensor per compliance zone into hourly/daily statistics (Leq, Lmax, L10, L90), compares against compliance_thresholds, flags exceedances, and materializes results into a compliance_events table used by the reporting API.",
+        "payload": {
+          "scheduler": "APScheduler or Celery Beat",
+          "metrics": [
+            "Leq (equivalent continuous level)",
+            "Lmax",
+            "L10",
+            "L90",
+            "number of exceedance events"
+          ],
+          "granularity": [
+            "hourly",
+            "daily",
+            "weekly"
+          ],
+          "threshold_sources": [
+            "WHO Environmental Noise Guidelines 2018",
+            "EU Directive 2002/49/EC"
+          ],
+          "output_table": "compliance_events",
+          "alerting": "emit compliance_violation event to Redis Streams when threshold exceeded"
+        },
+        "acceptance_criteria": [
+          "Leq computation matches ISO 1996-1 formula verified against reference dataset",
+          "Hourly aggregation job completes in < 10 s for 1000 active sensors",
+          "Compliance exceedance events are written within 5 minutes of the measurement period ending",
+          "Redis Streams event is emitted for every new exceedance, consumed by alerting service",
+          "Backfill job correctly re-computes historical stats when compliance_thresholds are updated"
+        ],
+        "depends_on": [
+          8,
+          3
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build the citizen complaint correlation service: REST API for complaint submission (location, time, description, optional audio clip), spatial-temporal matching to sensor readings within configurable radius (default 500 m) and time window (\u00b115 min), linkage to identified noise source, and correlation score output. Implement as a FastAPI router module.",
+        "payload": {
+          "geo_library": "PostGIS (ST_DWithin for spatial query)",
+          "correlation_algorithm": "spatial-temporal overlap score (distance decay \u00d7 time overlap)",
+          "complaint_schema": "location (lat/lon), reported_at, description, severity (1\u20135), contact_email (optional), audio_clip_url (optional)",
+          "output": "correlation_score (0.0\u20131.0), matched_readings[], matched_source_class",
+          "privacy": "PII fields encrypted at rest (contact_email AES-256); audio clips stored in object storage with signed URLs"
+        },
+        "acceptance_criteria": [
+          "Spatial query correctly matches complaints to sensors within 500 m using PostGIS",
+          "Correlation service returns results in < 300 ms for a complaint with 50 candidate sensor readings",
+          "Complaints with no matching sensor readings within radius/window return correlation_score = 0 and empty lists",
+          "PII encryption verified: contact_email is unreadable in direct DB query without decryption key",
+          "API endpoint is documented in OpenAPI spec and matches Step 4 contract"
+        ],
+        "depends_on": [
+          8,
+          9,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "AGENTIC",
+        "description": "Implement a Multi-Agent Coordinator pattern for automated environmental analysis: a coordinator agent receives compliance violation events and citizen complaints, routes to a Noise Analyst agent (root cause analysis using historical readings + source classifications), an Enforcement Recommender agent (generates regulatory action proposals), and a Citizen Communication agent (drafts acknowledgement responses). All enforcement proposals go through HITL approval before dispatch.",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator_triggers": [
+            "compliance_violation event on Redis Streams",
+            "new citizen complaint with correlation_score > 0.7"
+          ],
+          "specialist_agents": [
+            {
+              "role": "noise_analyst",
+              "input": "compliance_event + 7-day historical readings",
+              "output": "root cause analysis + contributing sources"
+            },
+            {
+              "role": "enforcement_recommender",
+              "input": "analyst output + local noise ordinance thresholds",
+              "output": "enforcement action proposal (HITL required)"
+            },
+            {
+              "role": "citizen_communicator",
+              "input": "complaint + correlation result + analyst summary",
+              "output": "draft acknowledgement email (HITL required before send)"
+            }
+          ],
+          "hitl_gate": "enforcement and citizen communication proposals require human approval",
+          "memory": "vector store indexed on past violations, source patterns, enforcement outcomes"
+        },
+        "acceptance_criteria": [
+          "Coordinator correctly routes a compliance violation event to noise_analyst within 5 s of event emission",
+          "Enforcement proposals are created in the SAGE approval queue and NOT executed until approved",
+          "Citizen communication drafts are created in approval queue and NOT sent until approved",
+          "Analyst agent retrieves relevant historical readings from vector store (top-5 similar past events)",
+          "End-to-end flow from compliance event to approval queue entry completes in < 30 s",
+          "Integration test simulates a violation event and verifies all 3 specialist agents produce outputs"
+        ],
+        "depends_on": [
+          10,
+          11,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build the compliance reporting API and report generation engine: parameterized queries for time-range + zone + sensor selection, PDF/CSV export of Leq statistics, exceedance tables, source breakdown, and complaint correlation summary. Include a scheduled weekly regulatory report email distribution.",
+        "payload": {
+          "report_formats": [
+            "PDF (WeasyPrint)",
+            "CSV",
+            "JSON"
+          ],
+          "report_sections": [
+            "executive summary",
+            "Leq/Lmax statistics table",
+            "exceedance event log",
+            "source identification breakdown",
+            "citizen complaint correlation table",
+            "sensor health status"
+          ],
+          "scheduled_report": "weekly email via SendGrid/SMTP with PDF attachment",
+          "template_engine": "Jinja2",
+          "output_endpoints": [
+            "GET /compliance/report",
+            "GET /compliance/report/download"
+          ]
+        },
+        "acceptance_criteria": [
+          "PDF report generates in < 5 s for a 30-day window with 100 sensors",
+          "All statutory metrics (Leq, Lmax, L10, L90) are present and correctly computed in the report",
+          "CSV export is importable into Excel without data corruption",
+          "Weekly scheduled report email is sent to configured recipients every Monday 06:00 local time",
+          "Report includes a machine-readable JSON summary suitable for submission to regulatory APIs"
+        ],
+        "depends_on": [
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "FRONTEND",
+        "description": "Build the real-time noise monitoring dashboard: interactive map (Leaflet.js) showing sensor locations color-coded by current dB level, time-series chart (Recharts) of dB(A) over selectable period, 1/3-octave spectrum bar chart for selected sensor, compliance status badges, and a live feed of recent exceedance events.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "mapping": "Leaflet.js with custom dB heatmap overlay",
+          "charts": "Recharts (time-series + bar chart)",
+          "state_management": "React Query for server state + Zustand for UI state",
+          "real_time": "Server-Sent Events (SSE) for live dB updates",
+          "color_scale": "green (< 55 dB) \u2192 yellow (55\u201370 dB) \u2192 red (> 70 dB)",
+          "pages": [
+            "/ (dashboard/map)",
+            "/sensors/:id (sensor detail)",
+            "/compliance (reports)",
+            "/complaints (citizen portal)",
+            "/admin"
+          ]
+        },
+        "acceptance_criteria": [
+          "Map renders 500 sensor markers at 60 fps on a standard laptop Chrome browser",
+          "SSE connection updates sensor color on map within 2 s of a new reading arriving",
+          "Spectrum bar chart updates when user clicks a sensor marker without page reload",
+          "Compliance badges correctly reflect current exceedance status from the compliance_events table",
+          "Dashboard is usable on 768 px wide tablet viewport (responsive layout)"
+        ],
+        "depends_on": [
+          4,
+          8,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build the citizen complaint portal: public-facing form (no login required) for submitting noise complaints with GPS capture or map pin, severity rating, free-text description, and optional audio recording (Web Audio API). Display complaint status and correlation result after submission. Build admin view for reviewing, approving, and responding to complaints.",
+        "payload": {
+          "public_form": "Next.js static export or React standalone page",
+          "geo_capture": "Browser Geolocation API + Leaflet map pin fallback",
+          "audio_recording": "MediaRecorder API \u2192 MP3, max 60 s",
+          "status_tracking": "complaint ID + status polling endpoint",
+          "admin_view": "data table with filter by date/zone/status, approval action, draft response editor",
+          "accessibility": "WCAG 2.1 AA compliance"
+        },
+        "acceptance_criteria": [
+          "Complaint form submits successfully on Chrome, Firefox, and Safari mobile",
+          "GPS capture works on mobile and falls back gracefully to map pin if permission denied",
+          "Audio recording captures up to 60 s and shows waveform preview before submission",
+          "Submitted complaint ID is displayed immediately and status is retrievable via polling",
+          "Admin view loads and filters 10 000 complaint records in < 2 s",
+          "Automated accessibility scan (axe-core) returns zero critical violations"
+        ],
+        "depends_on": [
+          11,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Design and implement hardware-in-the-loop (HIL) test harness for sensor nodes: audio signal generator (DDS or soundcard loopback) injecting reference tones and pink noise, automated measurement of dB(A) accuracy, A-weighting filter frequency response, FFT band accuracy, MQTT publish latency, OTA update flow, and power consumption profiling.",
+        "payload": {
+          "test_harness": "Python test runner + pyserial + paho-mqtt",
+          "signal_source": "PC soundcard loopback or AD9833 DDS module",
+          "reference_signals": [
+            "94 dB SPL 1 kHz pure tone",
+            "pink noise",
+            "multi-tone (125 Hz, 500 Hz, 2 kHz, 8 kHz)",
+            "impulse"
+          ],
+          "metrics_captured": [
+            "dB(A) accuracy",
+            "A-weighting response at 10 frequencies",
+            "FFT band center accuracy",
+            "MQTT latency",
+            "OTA flash time",
+            "current draw (mA) at idle/active"
+          ],
+          "test_report": "tests/hil/hil_report.html (pytest-html)"
+        },
+        "acceptance_criteria": [
+          "HIL test suite runs fully automated without manual intervention in < 20 minutes",
+          "dB(A) accuracy test passes with \u00b1 1.5 dB tolerance at 94 dB 1 kHz reference",
+          "A-weighting frequency response matches IEC 61672 Class 2 tolerance at all 10 test frequencies",
+          "MQTT publish latency test confirms 95th percentile < 500 ms over 1000 consecutive publishes",
+          "OTA test confirms successful update and rollback-on-failure behavior",
+          "All test results are written to hil_report.html and archived in CI artifacts"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "COMPLIANCE",
+        "description": "Produce IEC 62443 compliance artifacts for the noise monitoring IoT system: Security Level target justification (SL-2 for field, SL-3 for cloud), security requirements specification (SRS) mapped to IEC 62443-3-3 system requirements, zone and conduit model documentation, supplier security assessment checklist for MEMS sensor and MCU vendors, and a compliance traceability matrix linking requirements to implementation and tests.",
+        "payload": {
+          "standard": "IEC 62443",
+          "target_security_levels": {
+            "field_devices": "SL-2",
+            "cloud_backend": "SL-3"
+          },
+          "deliverables": [
+            "compliance/iec62443_sl_justification.md",
+            "compliance/security_requirements_spec.md",
+            "compliance/zone_conduit_model.drawio",
+            "compliance/supplier_assessment_checklist.xlsx",
+            "compliance/traceability_matrix.xlsx"
+          ],
+          "traceability_columns": [
+            "IEC 62443 Requirement ID",
+            "Description",
+            "Implementation Reference (file:line)",
+            "Test Reference (step number)",
+            "Status"
+          ]
+        },
+        "acceptance_criteria": [
+          "Traceability matrix covers 100% of mandatory IEC 62443-3-3 FR requirements for SL-2",
+          "Every requirement row links to at least one implementation reference and one test reference",
+          "Zone and conduit model is reviewed by the safety_engineer and regulatory_specialist and has no unmitigated conduit crossings",
+          "Supplier assessment checklist is completed for at least 2 key component vendors",
+          "Compliance package is audit-ready: a reviewer unfamiliar with the project can trace any requirement to its implementation in < 5 minutes"
+        ],
+        "depends_on": [
+          5,
+          7,
+          16
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 18,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines, container orchestration, and observability: GitHub Actions pipelines for firmware CI (cross-compile + HIL smoke test gate), backend CI (pytest + linting), and frontend CI (vitest + playwright e2e). Docker Compose for local dev; Kubernetes Helm chart for production. Prometheus + Grafana for sensor ingestion metrics, API latency, and compliance event alerting. PagerDuty integration for critical exceedance alerts.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "firmware_ci": "cross-compile gate + HIL smoke test (if HIL runner available)",
+          "backend_ci": "pytest, ruff, mypy, docker build",
+          "frontend_ci": "vitest unit tests, playwright e2e, lighthouse CI",
+          "container_orchestration": "Kubernetes + Helm (production), Docker Compose (local)",
+          "observability": "Prometheus metrics on /metrics, Grafana dashboards, structured JSON logs (structlog)",
+          "alerting": "PagerDuty for: sensor data gap > 5 min, compliance violation, backend error rate > 1%"
+        },
+        "acceptance_criteria": [
+          "Every PR triggers all three CI pipelines; merge is blocked if any pipeline fails",
+          "Firmware cross-compile step produces a valid .bin artifact and publishes it as a CI artifact",
+          "Helm chart deploys to a test cluster with `helm install` without errors",
+          "Grafana dashboard shows live ingestion rate, p99 API latency, and active sensor count",
+          "PagerDuty alert fires within 5 minutes of a simulated sensor data gap",
+          "Production deployment achieves zero-downtime rolling update via Kubernetes RollingUpdate strategy"
+        ],
+        "depends_on": [
+          8,
+          14,
+          16
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "QA",
+        "description": "Develop the quality assurance test plan covering all system tiers: sensor accuracy acceptance testing procedure, backend API test matrix, compliance calculation verification, ML source classification test cases, citizen complaint correlation edge cases, and UI regression test suite. Includes traceability from test cases back to requirements.",
+        "payload": {
+          "test_levels": [
+            "unit",
+            "integration",
+            "system",
+            "acceptance",
+            "regression"
+          ],
+          "test_tools": {
+            "backend": "pytest + hypothesis",
+            "frontend": "vitest + playwright",
+            "api": "schemathesis (OpenAPI fuzzing)",
+            "ml": "pytest + sklearn metrics"
+          },
+          "coverage_targets": {
+            "backend_unit": "85%",
+            "api_contracts": "100% endpoints",
+            "ml_f1": "\u2265 82%",
+            "compliance_calc": "100% formula coverage"
+          },
+          "test_plan_output": "tests/QA_TEST_PLAN.md"
+        },
+        "acceptance_criteria": [
+          "Test plan documents test cases for all 8 endpoints in the OpenAPI spec",
+          "Compliance calculation tests verify Leq formula against 5 hand-calculated reference datasets",
+          "Hypothesis property-based tests cover dB range boundaries (0, 140, negative, non-numeric)",
+          "Playwright e2e covers the full citizen complaint submission flow on mobile viewport",
+          "OpenAPI fuzzing (schemathesis) returns no 5xx errors on the ingestion endpoint under random valid inputs"
+        ],
+        "depends_on": [
+          13,
+          15,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system integration tests across the full stack: simulate 50 virtual sensor nodes publishing realistic noise data (traffic scenario), verify data flow from MQTT \u2192 ingestion \u2192 TimescaleDB \u2192 ML classification \u2192 compliance computation \u2192 dashboard SSE update. Run a full citizen complaint scenario through to correlation and HITL approval queue. Measure system throughput and latency under load.",
+        "payload": {
+          "sensor_simulator": "Python script using aiomqtt to publish 50 sensor streams at 1 Hz",
+          "test_scenarios": [
+            "normal_operation: 50 sensors, mixed readings, 1 Hz, 30 min",
+            "compliance_violation: 10 sensors exceed threshold for 10 min, verify compliance_events",
+            "citizen_complaint: submit complaint, verify correlation returns matched readings",
+            "sensor_dropout: kill 5 sensors mid-test, verify gap alert fires",
+            "ota_update: push firmware update to 3 simulated nodes, verify success"
+          ],
+          "load_test": "Locust: 200 concurrent API users, 10 min ramp, target < 200 ms p95 on GET /compliance/report"
+        },
+        "acceptance_criteria": [
+          "50-sensor simulation runs for 30 minutes with 0 message loss verified via sequence numbers",
+          "Compliance violation scenario produces compliance_events within 5 minutes of threshold breach",
+          "Citizen complaint correlates to correct sensor readings with correlation_score > 0.7 for co-located scenario",
+          "Sensor dropout alert fires in PagerDuty within 5 minutes of simulated dropout",
+          "Load test: p95 API latency < 200 ms at 200 concurrent users; error rate < 0.1%",
+          "All system test results are captured in a structured report and linked in CI artifacts"
+        ],
+        "depends_on": [
+          18,
+          19,
+          12
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 21,
+        "task_type": "DOCS",
+        "description": "Produce the complete technical documentation set: system architecture diagram (C4 model levels 1\u20133), sensor node hardware setup and calibration guide, API reference (auto-generated from OpenAPI spec via Redoc), operator runbook (deployment, scaling, sensor provisioning), compliance report interpretation guide for regulatory officers, and citizen portal user guide.",
+        "payload": {
+          "architecture_tool": "Structurizr DSL (C4 model)",
+          "api_docs": "Redoc static site generated from openapi.yaml",
+          "documents": [
+            "docs/architecture/c4_model.dsl",
+            "docs/hardware/sensor_setup_calibration.md",
+            "docs/api/index.html (Redoc)",
+            "docs/operations/runbook.md",
+            "docs/compliance/report_interpretation_guide.md",
+            "docs/user/citizen_portal_guide.md"
+          ],
+          "doc_site": "MkDocs Material theme, published to GitHub Pages"
+        },
+        "acceptance_criteria": [
+          "C4 diagrams cover system context, container, and component levels without ambiguity",
+          "Sensor calibration guide includes step-by-step procedure with photos/diagrams for a technician with no prior SAGE knowledge",
+          "API reference is generated automatically from openapi.yaml and stays in sync via CI",
+          "Runbook covers: first deploy, adding a new sensor zone, responding to PagerDuty alert, and rotating device certificates",
+          "MkDocs site builds without warnings and deploys to GitHub Pages on every main branch push"
+        ],
+        "depends_on": [
+          17,
+          18,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 21,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 63,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 63,
+          "final_review": {
+            "score": 63,
+            "flaws": [
+              "Step 8: mTLS device certificate validation is assigned to the Python ingestion service, but it MUST be enforced at the Mosquitto broker layer (via `use_identity_as_username` + `require_certificate true`). If the broker accepts plaintext or password-auth fallback, the application-layer check is irrelevant \u2014 attackers never reach it.",
+              "Step 6/10: No NTP synchronisation strategy in firmware. The compliance pipeline computes Leq over calendar hours and day/night periods. If a sensor clock drifts 3\u20135 minutes (common on embedded Wi-Fi), readings land in the wrong compliance period, producing legally incorrect reports. This is a fundamental correctness flaw.",
+              "Step 10: Timezone handling is entirely absent. WHO and EU Directive 2002/49/EC thresholds differentiate day (07:00\u201323:00) and night periods. 'Hourly aggregation' in UTC means sensors in different zones will have wrong period assignments. For a compliance system submitted to regulators, this is disqualifying.",
+              "Step 10: No specification of how Leq is computed when a sensor has gaps (offline, dropout). A sensor offline for 20 minutes in an hour produces a systematically lower Leq than reality. The plan must define whether gaps are excluded, interpolated, or flagged \u2014 ISO 1996-1 does not allow silent omission.",
+              "Step 9 (ML): 'Domain-specific labeled captures' is hand-wavy. ESC-50 and UrbanSound8K are academic datasets recorded in controlled conditions and do not represent outdoor MEMS microphone frequency response, wind noise, or rain artefacts. Without real-world captures from the actual hardware, the 82% F1 target is unvalidated and likely overoptimistic in deployment.",
+              "Step 9 (ML): No model drift detection or retraining pipeline. Urban noise patterns change seasonally and with land-use changes. A classifier trained in summer will degrade on winter data (HVAC loads, different traffic patterns). There is no mechanism to detect or respond to this degradation.",
+              "Step 13: Compliance reports have no digital signature or reproducibility guarantee. If a report is disputed in a regulatory proceeding 18 months later, there is no mechanism to prove the report reflects the data as it existed at generation time. Reports must either be immutably archived or signed with a timestamp authority.",
+              "Step 14: 500 Leaflet.js markers at 60 fps on a standard laptop is not achievable without marker clustering (e.g., Leaflet.markercluster) or canvas-based rendering. Leaflet DOM markers degrade to ~10 fps at 200+ markers in Chrome. The acceptance criterion will fail on real hardware.",
+              "Step 3: `frequency_spectrum blob` in the schema description is a red flag. If it is a true binary blob, frequency data cannot be queried, indexed, or aggregated at the database layer. It must be JSONB or a PostgreSQL float array for the ML and compliance pipeline to function without deserialising every row.",
+              "Step 18: 'HIL smoke test (if HIL runner available)' is a conditional gate that makes firmware CI meaningless. If the HIL runner is unavailable, firmware merges with no hardware validation. Either commit to a dedicated HIL runner in CI or explicitly document that firmware changes require manual HIL sign-off \u2014 do not leave it conditional.",
+              "Step 7: The plan does not address what happens when a device is returned for repair after eFuse burning. Burned eFuses on ESP32-S3 are irreversible. A returned device with burned fuses cannot be reflashed with a new identity without board-level rework. There is no RMA/repair workflow.",
+              "Step 15: Public complaint submission endpoint has no CAPTCHA, rate limiting, or bot protection specified. A trivial script can flood the database with fake complaints, polluting the compliance correlation dataset and generating false enforcement recommendations."
+            ],
+            "suggestions": [
+              "Add NTP sync as a mandatory firmware task that runs at boot and periodically. Reject (or flag) readings where the local clock diverges from NTP by more than 2 seconds. Log clock-sync events to the audit trail.",
+              "Store all timestamps in UTC in the database, but add a `timezone` column to `sensor_nodes` and compute day/night compliance periods using the sensor's local timezone via PostgreSQL `AT TIME ZONE`. Test with sensors in UTC\u00b112 boundary conditions.",
+              "Change `frequency_spectrum` in `noise_readings` from blob to `REAL[]` (PostgreSQL array) or JSONB. This enables `unnest()` aggregations and TimescaleDB continuous aggregates on frequency bands without full row deserialisation.",
+              "Move mTLS enforcement to Mosquitto: set `require_certificate true`, `use_identity_as_username true`, and configure the CA cert in `mosquitto.conf`. The ingestion service should trust the broker's assertion that the connection is authenticated.",
+              "Define a gap-handling policy for Leq aggregation. Recommended: flag any hourly aggregation with >10% sensor gap as `INCOMPLETE` and exclude it from compliance calculations; include it in the audit log as a data quality event.",
+              "Replace the 500-marker Leaflet acceptance criterion with: 'renders 500 sensors using marker clustering at zoom < 12; unclusters to individual markers at zoom \u2265 14; repaints in < 100 ms on cluster state change'. Use Leaflet.markercluster or migrate to deck.gl ScatterplotLayer for heatmap scale.",
+              "Add a model serving version column to `source_classifications` so that every classification is traceable to the exact ONNX model that produced it. This is required for auditability when the model is retrained.",
+              "Add a data drift monitor (e.g., Evidently AI) that computes feature distribution statistics weekly and alerts when KL-divergence on any 1/3-octave band exceeds a threshold. Trigger manual retraining review above the threshold.",
+              "Generate compliance reports with a SHA-256 hash of the underlying query parameters and result set, stored in the `audit_log`. Optionally sign with a server-side RSA key. This enables future reproducibility verification.",
+              "Add `POST /complaints` rate limiting at the API gateway level: max 5 requests per IP per minute, with CAPTCHA challenge above 2 submissions per session. Store IP hash (not raw IP) to satisfy GDPR.",
+              "Add a `GDPR` section to Step 11: specify retention period for complaints (recommended: 3 years for regulatory correlation, then anonymise), implement a soft-delete with anonymisation on right-to-erasure request, and document the lawful basis for processing contact_email.",
+              "Step 18 is missing a staging environment. Add a `staging` namespace in Kubernetes that mirrors production topology. System tests (Step 20) should run against staging, not a separate test cluster, to catch environment-specific failures."
+            ],
+            "missing": [
+              "NTP/PTP time synchronisation specification for firmware and its interaction with compliance period boundaries",
+              "Timezone-aware compliance threshold evaluation \u2014 the plan computes in UTC implicitly",
+              "Sensor gap handling policy and its impact on Leq computation (ISO 1996-1 conformance requires explicit treatment)",
+              "Model retraining pipeline: trigger criteria, data labelling workflow, validation gate before promotion to production",
+              "Concept/data drift monitoring for the ML classifier",
+              "GDPR data retention and right-to-erasure implementation for citizen_complaints",
+              "Report reproducibility and tamper-evidence mechanism (hash or digital signature)",
+              "RMA/repair workflow for devices with burned eFuses",
+              "Secrets management solution for Kubernetes production (Vault, External Secrets Operator, or Sealed Secrets \u2014 env vars are insufficient in K8s)",
+              "Staging environment between CI and production",
+              "Incident response and patch management procedure (mandatory IEC 62443-2-1 SR 6.1 requirement \u2014 its absence will fail the compliance audit in Step 17)",
+              "Backup and disaster recovery plan for TimescaleDB and Redis",
+              "Acoustic housing/weatherproofing specification \u2014 firmware accuracy targets are meaningless without a defined acoustic enclosure; outdoor MEMS performance is enclosure-dependent",
+              "Factory calibration procedure and calibration certificate template for each sensor node",
+              "API versioning strategy (v1/v2 path prefix or Accept header) \u2014 the OpenAPI spec has none, making future breaking changes impossible to deploy without downtime"
+            ],
+            "security_risks": [
+              "MQTT broker accepting connections without broker-enforced mTLS: if Mosquitto is misconfigured, the application-layer cert check in Step 8 is a dead letter. Sensor impersonation becomes trivial. Verify with `mosquitto_pub --insecure` against the broker \u2014 if it connects, the mTLS is not enforced.",
+              "Public `/complaints` endpoint with no rate limiting or bot protection is a direct injection vector into the compliance dataset. Fake complaints with high correlation scores (crafted GPS coordinates near sensors) will generate false enforcement recommendations routed to the HITL queue, creating analyst fatigue and potential regulatory liability.",
+              "Kubernetes secrets for database credentials, Redis passwords, and mTLS CA keys: if stored as standard K8s Secrets (base64-encoded), any user with `get secrets` RBAC permission or etcd access has all credentials. The plan specifies no Vault or equivalent. This is a common production breach vector.",
+              "Audio clip uploads to object storage: the plan mentions signed URLs but does not specify who can generate them, with what expiry, or what access controls prevent unauthenticated access to audio files containing potentially identifiable environmental sounds. Public bucket misconfiguration risk.",
+              "OTA update signing: Step 6 specifies OTA but Step 7 specifies secure boot with RSA-3072. The plan does not explicitly state that OTA firmware images must be signed with the same key chain as secure boot. An unsigned OTA image accepted by the bootloader would bypass the entire secure boot guarantee.",
+              "Redis Streams has no authentication configured in the plan. If Redis is accessible within the cluster without a password (`requirepass`), any compromised microservice can inject arbitrary events into the compliance pipeline, triggering false enforcement recommendations.",
+              "The enforcement recommender agent (Step 12) uses 'local noise ordinance thresholds' with no specified source. If this data is fetched from an external URL or mutable config file, an attacker who controls that source can manipulate enforcement recommendations before HITL review, creating a prompt-injection-equivalent risk at the data layer."
+            ],
+            "summary": "This is a technically ambitious and structurally coherent plan that correctly identifies the major system components and chooses appropriate technology at each layer. The security posture (STRIDE + IEC 62443 + mTLS + secure boot) and compliance approach (FMEA, traceability matrix, SL-2/SL-3 targets) demonstrate genuine domain knowledge. However, the plan has a cluster of correctness-critical gaps that would cause failures before a regulator or in production: NTP/timezone handling is entirely absent, making the compliance calculations legally unreliable; the Leq gap-handling policy is unspecified, leaving ISO 1996-1 conformance undefined; the ML pipeline has no drift detection or retraining path; and certificate enforcement is placed at the wrong architectural layer. These are not polish issues \u2014 they are foundational correctness and auditability failures that a regulatory reviewer would flag immediately. The public complaint endpoint and Kubernetes secrets management are active security liabilities as written. The plan scores 63: the architecture is right, the technology choices are defensible, and a skilled team could build this, but it requires a focused remediation pass on time/timezone correctness, the ML lifecycle, and the security layer assignments before any implementation begins.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 63,
+              "flaws": [
+                "Step 8: mTLS device certificate validation is assigned to the Python ingestion service, but it MUST be enforced at the Mosquitto broker layer (via `use_identity_as_username` + `require_certificate true`). If the broker accepts plaintext or password-auth fallback, the application-layer check is irrelevant \u2014 attackers never reach it.",
+                "Step 6/10: No NTP synchronisation strategy in firmware. The compliance pipeline computes Leq over calendar hours and day/night periods. If a sensor clock drifts 3\u20135 minutes (common on embedded Wi-Fi), readings land in the wrong compliance period, producing legally incorrect reports. This is a fundamental correctness flaw.",
+                "Step 10: Timezone handling is entirely absent. WHO and EU Directive 2002/49/EC thresholds differentiate day (07:00\u201323:00) and night periods. 'Hourly aggregation' in UTC means sensors in different zones will have wrong period assignments. For a compliance system submitted to regulators, this is disqualifying.",
+                "Step 10: No specification of how Leq is computed when a sensor has gaps (offline, dropout). A sensor offline for 20 minutes in an hour produces a systematically lower Leq than reality. The plan must define whether gaps are excluded, interpolated, or flagged \u2014 ISO 1996-1 does not allow silent omission.",
+                "Step 9 (ML): 'Domain-specific labeled captures' is hand-wavy. ESC-50 and UrbanSound8K are academic datasets recorded in controlled conditions and do not represent outdoor MEMS microphone frequency response, wind noise, or rain artefacts. Without real-world captures from the actual hardware, the 82% F1 target is unvalidated and likely overoptimistic in deployment.",
+                "Step 9 (ML): No model drift detection or retraining pipeline. Urban noise patterns change seasonally and with land-use changes. A classifier trained in summer will degrade on winter data (HVAC loads, different traffic patterns). There is no mechanism to detect or respond to this degradation.",
+                "Step 13: Compliance reports have no digital signature or reproducibility guarantee. If a report is disputed in a regulatory proceeding 18 months later, there is no mechanism to prove the report reflects the data as it existed at generation time. Reports must either be immutably archived or signed with a timestamp authority.",
+                "Step 14: 500 Leaflet.js markers at 60 fps on a standard laptop is not achievable without marker clustering (e.g., Leaflet.markercluster) or canvas-based rendering. Leaflet DOM markers degrade to ~10 fps at 200+ markers in Chrome. The acceptance criterion will fail on real hardware.",
+                "Step 3: `frequency_spectrum blob` in the schema description is a red flag. If it is a true binary blob, frequency data cannot be queried, indexed, or aggregated at the database layer. It must be JSONB or a PostgreSQL float array for the ML and compliance pipeline to function without deserialising every row.",
+                "Step 18: 'HIL smoke test (if HIL runner available)' is a conditional gate that makes firmware CI meaningless. If the HIL runner is unavailable, firmware merges with no hardware validation. Either commit to a dedicated HIL runner in CI or explicitly document that firmware changes require manual HIL sign-off \u2014 do not leave it conditional.",
+                "Step 7: The plan does not address what happens when a device is returned for repair after eFuse burning. Burned eFuses on ESP32-S3 are irreversible. A returned device with burned fuses cannot be reflashed with a new identity without board-level rework. There is no RMA/repair workflow.",
+                "Step 15: Public complaint submission endpoint has no CAPTCHA, rate limiting, or bot protection specified. A trivial script can flood the database with fake complaints, polluting the compliance correlation dataset and generating false enforcement recommendations."
+              ],
+              "suggestions": [
+                "Add NTP sync as a mandatory firmware task that runs at boot and periodically. Reject (or flag) readings where the local clock diverges from NTP by more than 2 seconds. Log clock-sync events to the audit trail.",
+                "Store all timestamps in UTC in the database, but add a `timezone` column to `sensor_nodes` and compute day/night compliance periods using the sensor's local timezone via PostgreSQL `AT TIME ZONE`. Test with sensors in UTC\u00b112 boundary conditions.",
+                "Change `frequency_spectrum` in `noise_readings` from blob to `REAL[]` (PostgreSQL array) or JSONB. This enables `unnest()` aggregations and TimescaleDB continuous aggregates on frequency bands without full row deserialisation.",
+                "Move mTLS enforcement to Mosquitto: set `require_certificate true`, `use_identity_as_username true`, and configure the CA cert in `mosquitto.conf`. The ingestion service should trust the broker's assertion that the connection is authenticated.",
+                "Define a gap-handling policy for Leq aggregation. Recommended: flag any hourly aggregation with >10% sensor gap as `INCOMPLETE` and exclude it from compliance calculations; include it in the audit log as a data quality event.",
+                "Replace the 500-marker Leaflet acceptance criterion with: 'renders 500 sensors using marker clustering at zoom < 12; unclusters to individual markers at zoom \u2265 14; repaints in < 100 ms on cluster state change'. Use Leaflet.markercluster or migrate to deck.gl ScatterplotLayer for heatmap scale.",
+                "Add a model serving version column to `source_classifications` so that every classification is traceable to the exact ONNX model that produced it. This is required for auditability when the model is retrained.",
+                "Add a data drift monitor (e.g., Evidently AI) that computes feature distribution statistics weekly and alerts when KL-divergence on any 1/3-octave band exceeds a threshold. Trigger manual retraining review above the threshold.",
+                "Generate compliance reports with a SHA-256 hash of the underlying query parameters and result set, stored in the `audit_log`. Optionally sign with a server-side RSA key. This enables future reproducibility verification.",
+                "Add `POST /complaints` rate limiting at the API gateway level: max 5 requests per IP per minute, with CAPTCHA challenge above 2 submissions per session. Store IP hash (not raw IP) to satisfy GDPR.",
+                "Add a `GDPR` section to Step 11: specify retention period for complaints (recommended: 3 years for regulatory correlation, then anonymise), implement a soft-delete with anonymisation on right-to-erasure request, and document the lawful basis for processing contact_email.",
+                "Step 18 is missing a staging environment. Add a `staging` namespace in Kubernetes that mirrors production topology. System tests (Step 20) should run against staging, not a separate test cluster, to catch environment-specific failures."
+              ],
+              "missing": [
+                "NTP/PTP time synchronisation specification for firmware and its interaction with compliance period boundaries",
+                "Timezone-aware compliance threshold evaluation \u2014 the plan computes in UTC implicitly",
+                "Sensor gap handling policy and its impact on Leq computation (ISO 1996-1 conformance requires explicit treatment)",
+                "Model retraining pipeline: trigger criteria, data labelling workflow, validation gate before promotion to production",
+                "Concept/data drift monitoring for the ML classifier",
+                "GDPR data retention and right-to-erasure implementation for citizen_complaints",
+                "Report reproducibility and tamper-evidence mechanism (hash or digital signature)",
+                "RMA/repair workflow for devices with burned eFuses",
+                "Secrets management solution for Kubernetes production (Vault, External Secrets Operator, or Sealed Secrets \u2014 env vars are insufficient in K8s)",
+                "Staging environment between CI and production",
+                "Incident response and patch management procedure (mandatory IEC 62443-2-1 SR 6.1 requirement \u2014 its absence will fail the compliance audit in Step 17)",
+                "Backup and disaster recovery plan for TimescaleDB and Redis",
+                "Acoustic housing/weatherproofing specification \u2014 firmware accuracy targets are meaningless without a defined acoustic enclosure; outdoor MEMS performance is enclosure-dependent",
+                "Factory calibration procedure and calibration certificate template for each sensor node",
+                "API versioning strategy (v1/v2 path prefix or Accept header) \u2014 the OpenAPI spec has none, making future breaking changes impossible to deploy without downtime"
+              ],
+              "security_risks": [
+                "MQTT broker accepting connections without broker-enforced mTLS: if Mosquitto is misconfigured, the application-layer cert check in Step 8 is a dead letter. Sensor impersonation becomes trivial. Verify with `mosquitto_pub --insecure` against the broker \u2014 if it connects, the mTLS is not enforced.",
+                "Public `/complaints` endpoint with no rate limiting or bot protection is a direct injection vector into the compliance dataset. Fake complaints with high correlation scores (crafted GPS coordinates near sensors) will generate false enforcement recommendations routed to the HITL queue, creating analyst fatigue and potential regulatory liability.",
+                "Kubernetes secrets for database credentials, Redis passwords, and mTLS CA keys: if stored as standard K8s Secrets (base64-encoded), any user with `get secrets` RBAC permission or etcd access has all credentials. The plan specifies no Vault or equivalent. This is a common production breach vector.",
+                "Audio clip uploads to object storage: the plan mentions signed URLs but does not specify who can generate them, with what expiry, or what access controls prevent unauthenticated access to audio files containing potentially identifiable environmental sounds. Public bucket misconfiguration risk.",
+                "OTA update signing: Step 6 specifies OTA but Step 7 specifies secure boot with RSA-3072. The plan does not explicitly state that OTA firmware images must be signed with the same key chain as secure boot. An unsigned OTA image accepted by the bootloader would bypass the entire secure boot guarantee.",
+                "Redis Streams has no authentication configured in the plan. If Redis is accessible within the cluster without a password (`requirepass`), any compromised microservice can inject arbitrary events into the compliance pipeline, triggering false enforcement recommendations.",
+                "The enforcement recommender agent (Step 12) uses 'local noise ordinance thresholds' with no specified source. If this data is fetched from an external URL or mutable config file, an attacker who controls that source can manipulate enforcement recommendations before HITL review, creating a prompt-injection-equivalent risk at the data layer."
+              ],
+              "summary": "This is a technically ambitious and structurally coherent plan that correctly identifies the major system components and chooses appropriate technology at each layer. The security posture (STRIDE + IEC 62443 + mTLS + secure boot) and compliance approach (FMEA, traceability matrix, SL-2/SL-3 targets) demonstrate genuine domain knowledge. However, the plan has a cluster of correctness-critical gaps that would cause failures before a regulator or in production: NTP/timezone handling is entirely absent, making the compliance calculations legally unreliable; the Leq gap-handling policy is unspecified, leaving ISO 1996-1 conformance undefined; the ML pipeline has no drift detection or retraining path; and certificate enforcement is placed at the wrong architectural layer. These are not polish issues \u2014 they are foundational correctness and auditability failures that a regulatory reviewer would flag immediately. The public complaint endpoint and Kubernetes secrets management are active security liabilities as written. The plan scores 63: the architecture is right, the technology choices are defensible, and a skilled team could build this, but it requires a focused remediation pass on time/timezone correctness, the ML lifecycle, and the security layer assignments before any implementation begins.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T08:24:17.014452+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 192.38,
+      "critic_plan": 150.66
+    }
+  }
+}

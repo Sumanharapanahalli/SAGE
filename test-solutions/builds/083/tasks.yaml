@@ -1,0 +1,227 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the dating app market: competitor landscape (Tinder, Bumble,
+      Hinge), user demographics, monetization benchmarks, and differentiation opportunities
+      for dating_app.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers at least 5 apps across pricing, features, and safety
+    - Positioning statement articulates a unique differentiator for dating_app
+    - TAM/SAM/SOM estimate is documented with cited sources
+    - Premium tier benchmarks (price points, conversion rates) are included
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Define the product requirements document (PRD): user stories for
+      profile creation, photo verification, matching, chat/video, safety, and premium.
+      Set success metrics and V1 roadmap.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - User stories written for all 6 core feature areas with acceptance criteria
+    - V1 scope explicitly defined with out-of-scope items listed
+    - Success metrics are measurable with baseline targets defined
+    - Roadmap covers V1 launch + 2 follow-on milestones
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all major flows:
+      onboarding, profile setup, swipe/discovery, match queue, chat, video call, safety
+      reporting, and paywall. Include accessibility audit.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover 100% of flows listed in the PRD
+    - Accessibility checklist passes WCAG 2.1 AA for contrast, tap target sizes, and
+      screen reader labels
+    - User journey maps include emotional states and pain points at each step
+    - Design system tokens (color, type, spacing) are documented
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  SECURITY:
+    description: 'Produce threat model and security architecture for dating_app: identity
+      verification threat vectors, photo abuse, location spoofing, chat privacy, video
+      call interception, and payment fraud.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 feature domains
+    - Data classification matrix labels all PII fields with retention policy
+    - Security requirements are tagged to specific backend components
+    - OWASP Mobile Top 10 risks are addressed in the requirements
+    depends_on:
+    - 2
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, and community guidelines
+      for dating_app. Cover GDPR/CCPA compliance, age verification requirements, content
+      moderation obligations, and subscription cancellation policy.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all GDPR Article 13 disclosure requirements
+    - CCPA opt-out mechanism is specified in the privacy flow
+    - Age verification (18+) is explicitly required in onboarding flow
+    - Subscription cancellation terms comply with app store guidelines (Apple/Google)
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design the database schema for dating_app: users, profiles, photos,
+      matches, messages, video_sessions, blocks, reports, subscriptions, and audit_log
+      tables. Include indexing strategy for geo-queries and matching.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables have primary keys, foreign keys, and NOT NULL constraints defined
+    - Geospatial queries (users within N km) execute under 50ms on 1M row dataset
+    - Soft-delete pattern applied to users, matches, and messages for GDPR erasure
+      compliance
+    - Migration files are idempotent and reversible
+    depends_on:
+    - 4
+    - 5
+  CONFIG:
+    description: 'Set up the project monorepo structure, dev environment, CI/CD skeleton,
+      and environment configs for dating_app. Configure agentic pattern: Multi-Agent
+      Coordinator for orchestrating matching, moderation, and notification agents.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Monorepo initializes with `make dev` and all services start locally
+    - Coordinator agent config registers all 3 specialist agents with routing rules
+    - Environment configs externalize all secrets (no hardcoded credentials)
+    - Pre-commit hooks enforce lint and type checks
+    depends_on:
+    - 6
+  BACKEND:
+    description: 'Build authentication and user management service: registration,
+      email/phone OTP verification, JWT token issuance, refresh token rotation, session
+      management, and account deletion (GDPR right-to-erasure).'
+    agent_role: developer
+    acceptance_criteria:
+    - OTP codes expire after 10 minutes and are single-use
+    - JWT access tokens expire in 15 minutes; refresh tokens in 30 days
+    - Account deletion cascades soft-delete to all PII within 30 days per GDPR
+    - All auth endpoints return standardized error codes with no stack traces in production
+    depends_on:
+    - 6
+    - 7
+  FRONTEND:
+    description: 'Build React Native (Expo) onboarding and auth screens: splash, registration,
+      OTP verification, and login. Implement deep linking for magic link auth.'
+    agent_role: developer
+    acceptance_criteria:
+    - OTP input auto-advances between digits and auto-submits on last digit
+    - Registration form shows inline validation errors without full page re-render
+    - Deep link from email/SMS opens app directly to OTP verification screen
+    - Splash screen resolves auth state and routes to correct screen in under 1.5
+      seconds
+    depends_on:
+    - 8
+    - 3
+  LOCALIZATION:
+    description: Set up i18n infrastructure with react-i18next (mobile) and extract
+      all UI strings. Produce translation-ready JSON files for English (base) and
+      prepare scaffolding for Spanish, French, Portuguese, and German.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - Zero hardcoded strings in any React Native component (enforced by i18n-lint)
+    - Translation JSON files are structured by feature namespace (auth, chat, safety,
+      premium)
+    - Date/time formatting uses locale-aware Intl.DateTimeFormat
+    - Missing translation keys fall back to en-US without crash
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+    - 21
+    - 22
+  INFRA:
+    description: 'Provision production infrastructure: AWS ECS Fargate for backend,
+      RDS PostgreSQL with PostGIS, ElastiCache Redis, S3 + CloudFront, Twilio TURN,
+      ALB with WAF, and staging environment mirror.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan produces zero manual changes after initial apply
+    - RDS is in private subnet with no public endpoint
+    - WAF rules block SQL injection, XSS, and rate-limit /auth endpoints to 10 req/min
+      per IP
+    - Staging environment is identical to production (same instance types, same config)
+    - Data residency routing sends EU users to eu-west-1 via Route 53 geolocation
+    depends_on:
+    - 7
+  DEVOPS:
+    description: 'Set up CI/CD pipelines: GitHub Actions for backend (lint, test,
+      Docker build, ECS deploy), Expo EAS Build for mobile (TestFlight + Play Console),
+      automated staging deploy on PR merge, and production deploy gate.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Backend CI pipeline completes in under 5 minutes
+    - Production deploy requires explicit manual approval in GitHub Actions
+    - EAS Build produces signed IPA and AAB artifacts for each release
+    - Failed deploys trigger Slack alert with commit SHA and error summary
+    - Rollback to previous ECS task definition takes under 2 minutes
+    depends_on:
+    - 24
+  QA:
+    description: 'Create the quality assurance test plan: test case catalog for all
+      features, edge case matrix (zero matches, network failure, expired subscription
+      mid-session), exploratory testing charters, and bug severity classification.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test case catalog covers 100% of user stories from the PRD
+    - Edge case matrix includes at least 3 cases per major feature area
+    - Bug severity classification criteria are documented and agreed with product
+    - Regression test suite is identified for each release cycle
+    depends_on:
+    - 2
+    - 3
+  TESTS:
+    description: 'Write backend unit and integration tests: auth service, profile
+      service, matching algorithm, chat WebSocket, safety service, and subscription
+      feature gating. Minimum 80% line coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All tests pass in CI with no flakiness over 10 consecutive runs
+    - Line coverage >= 80% reported in CI artifact
+    - 'Matching algorithm tests cover: geo filter, preference filter, mutual match
+      detection'
+    - 'Stripe webhook tests cover: subscription created, renewed, cancelled, payment
+      failed'
+    - Chat WebSocket test simulates 100 concurrent connections without message loss
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  TRAINING:
+    description: Produce user-facing onboarding guides, in-app tooltip copy, support
+      FAQ, and internal moderation team runbook for reviewing reports and managing
+      bans.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - FAQ covers top 20 support topics identified from competitor app reviews
+    - Moderation runbook defines decision criteria for each report category
+    - In-app tooltips are written at reading level Grade 8 or below
+    - Safety Tips page is accessible from profile settings and onboarding flow
+    depends_on:
+    - 5
+    - 26
+  SYSTEM_TEST:
+    description: 'Execute full system integration testing: end-to-end user journey
+      from registration to video call, load testing matching endpoint (1000 concurrent
+      users), WebSocket chat stress test, and payment flow validation in Stripe test
+      mode.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full user journey E2E passes without errors on staging environment
+    - Matching endpoint handles 1000 concurrent requests with p95 < 300ms
+    - Zero message loss under 500 concurrent WebSocket connections
+    - All Stripe test-mode payment flows (success, decline, refund, webhook) pass
+    - No P0 or P1 bugs open at end of system test cycle
+    depends_on:
+    - 27
+    - 28
+    - 25

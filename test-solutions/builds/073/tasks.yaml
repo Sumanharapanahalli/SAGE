@@ -1,0 +1,345 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas (students, instructors,
+      employers), and core process flows for the coding bootcamp platform. Map out
+      enrollment funnel, learning journey, job placement pipeline, and ROI model.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 30 user stories written in Given/When/Then format covering all 4 personas
+    - End-to-end process flow diagrams for enrollment, learning, and job placement
+      exist
+    - ROI model includes student acquisition cost, completion rate assumptions, and
+      placement revenue projections
+    - Stakeholder map approved by product lead
+    depends_on: []
+  MARKET_RESEARCH:
+    description: 'Analyze the coding bootcamp market: competitor platforms (Codecademy,
+      LeetCode, Replit Teams), differentiation opportunities, pricing benchmarks,
+      and employer partnership models.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers at least 5 platforms across 8 dimensions
+    - Pricing benchmark table produced with free/paid tier analysis
+    - At least 3 differentiation opportunities identified and scored by feasibility
+    - Employer partnership model recommendations documented
+    depends_on: []
+  UX_DESIGN:
+    description: Conduct user research (interviews and surveys) with prospective students,
+      instructors, and hiring managers. Produce personas, empathy maps, and key JTBD
+      (Jobs-To-Be-Done) for each role.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - At least 3 validated personas with photo, goals, pain points, and tech comfort
+      level
+    - Empathy maps completed for student and instructor personas
+    - JTBD statements defined for all core platform interactions
+    - WCAG 2.1 AA accessibility requirements captured as UX constraints
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Write the full Product Requirements Document (PRD), define OKRs,
+      create a phased roadmap (MVP → v1 → v2), and establish success metrics for browser
+      IDE, auto-grading, code review bot, curriculum, and job placement modules.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all 5 core modules with functional and non-functional requirements
+    - Each phase has clearly defined MVP scope and exit criteria
+    - Success metrics are measurable with baseline and target values defined
+    - Roadmap reviewed and signed off by stakeholders
+    depends_on:
+    - 1
+    - 2
+    - 3
+  COMPLIANCE:
+    description: Produce compliance plan and evidence artifacts for COPPA (users under
+      13), FERPA (student educational records), and WCAG 2.1 AA. Define data handling
+      policies, parental consent flows, and accessibility audit schedule.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Data flow diagram maps every PII/student-record touch point with storage location
+      and retention period
+    - COPPA age-gate and parental consent flow documented and legally reviewed
+    - FERPA data inventory lists all student records, access controls, and disclosure
+      rules
+    - WCAG 2.1 AA checklist maps every UI module to specific success criteria
+    - Privacy Impact Assessment signed off by legal_advisor
+    depends_on:
+    - 1
+    - 4
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Student Data Agreement, and
+      Employer Partner Agreement. Ensure COPPA, FERPA, and GDPR clauses are included.
+      Review IP ownership for student-submitted projects.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - All 4 legal documents drafted and reviewed by legal_advisor
+    - Privacy Policy is GDPR/COPPA/FERPA compliant with clear data subject rights
+      section
+    - Student IP ownership clause explicitly grants students ownership of project
+      code they write
+    - Employer agreement defines permissible use of student data for recruitment
+    - FERPA/COPPA compliance if minors involved
+    depends_on:
+    - 5
+  DATABASE:
+    description: Design the full database schema covering users, courses, lessons,
+      projects, submissions, grades, code reviews, job listings, placement records,
+      and audit logs. Produce ERD, migration scripts, and seed data.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD reviewed and approved covering all entities with FK relationships
+    - All PII fields annotated with FERPA/COPPA classification in schema comments
+    - Alembic migrations run successfully on clean PostgreSQL instance
+    - Seed data includes 2 sample courses, 10 lessons, 3 projects, and 5 demo users
+    - Indexes defined for all foreign keys and high-frequency query columns
+    depends_on:
+    - 4
+    - 5
+  API:
+    description: 'Design the OpenAPI specification for all backend services: auth,
+      user management, curriculum CRUD, submission pipeline, grading webhook, code-review
+      bot endpoints, job listings, placement tracking, and instructor/employer APIs.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors using swagger-cli
+    - All endpoints have request/response schemas with example values
+    - Auth scheme documented with role-based access (student, instructor, employer,
+      admin)
+    - Grading webhook endpoint specifies callback contract for async auto-grading
+      results
+    - Code review bot endpoints support streaming responses via SSE
+    depends_on:
+    - 4
+    - 8
+  CONFIG:
+    description: 'Bootstrap the monorepo structure: initialize frontend (React + TypeScript
+      + Vite), backend (FastAPI + Python), and shared config. Set up environment variable
+      management, Docker Compose for local dev, and pre-commit hooks.'
+    agent_role: developer
+    acceptance_criteria:
+    - '`make dev` starts all services (backend :8000, frontend :5173, postgres :5432)
+      in under 60s'
+    - Pre-commit hooks enforce lint + format on every commit
+    - '`.env.example` documents every required environment variable with descriptions'
+    - OpenAPI client is auto-generated from openapi.yaml and committed to frontend/src/api/
+    depends_on:
+    - 9
+  INFRA:
+    description: 'Design and implement cloud infrastructure: Kubernetes cluster (EKS/GKE),
+      PostgreSQL RDS, Redis for session/queue, S3 for submission artifacts, CDN for
+      static assets, and VPC network segmentation. Produce Terraform modules.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan completes without errors for all 3 environments
+    - VPC has public/private subnet separation; backend and DB in private subnets
+      only
+    - RDS has automated backups enabled with 7-day retention
+    - WAF rules block OWASP Top 10 attack patterns
+    - S3 bucket has server-side encryption and public access blocked
+    depends_on:
+    - 10
+  SECURITY:
+    description: Produce threat model, security architecture review, and penetration
+      test plan. Cover auth flows, IDE sandbox isolation, student data access controls,
+      and code execution sandbox security.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 5 focus areas with mitigations mapped
+    - 'Code execution sandbox isolation verified: student code cannot access host
+      filesystem or network'
+    - RBAC matrix confirms students cannot access other students' submission data
+    - SBOM generated listing all direct and transitive dependencies with CVE scan
+      results
+    - Pentest plan approved with scope, methodology, and remediation SLA defined
+    depends_on:
+    - 10
+    - 11
+  BACKEND:
+    description: 'Implement core backend services: authentication (JWT + OAuth2 with
+      Google/GitHub), user management with RBAC, course/lesson CRUD, and the foundational
+      project-submission pipeline.'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT tokens expire in 15 minutes with refresh token rotation
+    - OAuth2 login works for both Google and GitHub providers
+    - 'RBAC enforced: instructors can only CRUD their own courses; students cannot
+      modify grades'
+    - All endpoints emit structured audit log events to audit_logs table
+    - Course and lesson CRUD passes API contract tests against openapi.yaml
+    depends_on:
+    - 9
+    - 10
+  AGENTIC:
+    description: Design and implement the Code Review Bot using the review_and_critique
+      agentic pattern. Generator agent analyzes student code for correctness, style,
+      and best practices. Critic agent scores review quality and iterates until threshold.
+      Delivers structured inline comments.
+    agent_role: developer
+    acceptance_criteria:
+    - Code review generated within 45 seconds of trigger for files under 500 lines
+    - Critic scores >= 0.85 before review delivered to student (verified by unit test)
+    - Reviews include line-specific inline comments (not just summary)
+    - 'Bot tone passes pedagogical tone audit: encouraging, specific, actionable'
+    - Review retrieves prior feedback from vector memory to avoid repetition for returning
+      students
+    - HITL gate available for instructors to approve/edit bot reviews before student
+      sees them
+    depends_on:
+    - 15
+    - 13
+  FRONTEND:
+    description: 'Build the core frontend shell: routing (React Router), global state
+      management (Zustand), auth context, design system integration (Tailwind + component
+      library), and skeleton layouts for all pages.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 12 routes render without errors in dev and prod builds
+    - Auth context correctly gates protected routes; unauthenticated users redirected
+      to login
+    - 'WCAG 2.1 AA: axe-core scan returns 0 critical violations on all skeleton pages'
+    - Tailwind design tokens match Figma design system (colors, spacing, typography)
+    - Lighthouse accessibility score >= 90 on student_dashboard
+    depends_on:
+    - 7
+    - 10
+  LOCALIZATION:
+    description: Set up i18n infrastructure (react-i18next + i18next-backend), extract
+      all UI strings to locale files, configure locale detection, and produce initial
+      translations for English (base), Spanish, and Portuguese.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - Zero hardcoded UI strings in React components; all extracted to locale JSON
+      files
+    - Locale auto-detected from browser Accept-Language header with manual override
+      in settings
+    - Spanish and Portuguese translations cover 100% of navigation and error message
+      keys
+    - Legal notices (COPPA consent, FERPA disclosure) translated and reviewed by legal_advisor
+      for each locale
+    - 'RTL layout tested (Arabic placeholder): layout does not break'
+    - i18next missing key handler logs warning to console in dev; falls back to en-US
+    depends_on:
+    - 19
+    - 21
+    - 22
+    - 23
+  DEVOPS:
+    description: 'Implement CI/CD pipelines (GitHub Actions): lint, test, build, Docker
+      image push, Terraform plan/apply, Kubernetes rolling deploy, and smoke test
+      gate. Set up monitoring (Prometheus + Grafana) and alerting (PagerDuty).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline completes in under 10 minutes for a standard PR
+    - Prod deploy requires staging smoke tests to pass (enforced gate)
+    - Grafana dashboards cover API latency, grading queue depth, IDE session count,
+      and 5xx error rate
+    - PagerDuty alert fires within 2 minutes when error rate > 1% for 5 consecutive
+      minutes
+    - Rolling deploy achieves zero-downtime for backend and frontend independently
+    - Terraform plan runs on every PR targeting infra/ directory; apply requires manual
+      approval
+    depends_on:
+    - 11
+    - 13
+    - 14
+    - 15
+  TESTS:
+    description: 'Write comprehensive unit and integration tests for all backend modules:
+      auth, grading engine, code review bot, curriculum graph, placement tracker,
+      and IDE session manager.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest --cov reports >= 85% line coverage across all backend modules
+    - Integration tests use testcontainers (real DB) — no mock databases
+    - 'Grading engine tests cover: correct output, wrong output, timeout, OOM, all
+      4 languages'
+    - 'Auth tests cover: valid login, expired token, wrong role, COPPA age-gate enforcement'
+    - Contract tests validate all API responses against openapi.yaml schema
+    - All tests pass in CI within 5 minutes
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  QA:
+    description: Produce the master QA test plan, execute structured test cycles (functional,
+      regression, accessibility, performance, security), and generate test execution
+      reports for all platform modules.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 5 test types with entry/exit criteria defined
+    - Functional test cases achieve >= 95% pass rate before release
+    - 'Accessibility audit: 0 WCAG 2.1 AA critical violations across all pages'
+    - Manual screen reader test completed with NVDA (Windows) and VoiceOver (Mac)
+      on student dashboard
+    - 'Performance benchmarks: 95th percentile page load < 2s, IDE load < 3s measured
+      with Playwright'
+    - Test execution report includes defect log with severity classification and resolution
+      status
+    depends_on:
+    - 26
+    - 27
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system integration tests simulating full student
+      and instructor lifecycle: enroll → complete lessons → submit project → receive
+      grade → get code review → apply for job → placement recorded.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full student lifecycle scenario completes without error from registration to
+      placement record
+    - '100 concurrent IDE sessions: P99 session start time < 5 seconds; zero sandbox
+      escapes'
+    - '50 simultaneous grading jobs: all complete within 90 seconds; no grade data
+      cross-contamination'
+    - 'Code review bot quality sampling: critic score >= 0.85 verified on 20 sampled
+      reviews'
+    - 'Load test: API sustains 500 RPS with P99 latency < 500ms and error rate < 0.1%'
+    - All system tests documented in report with pass/fail status and reproduction
+      steps for failures
+    depends_on:
+    - 28
+    - 25
+  TRAINING:
+    description: Produce user guides, onboarding video scripts, and training materials
+      for students, instructors, and employer partners. Include IDE quick-start guide,
+      curriculum authoring guide, and placement portal walkthrough.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - 'Student getting started guide: new user can complete first lesson within 30
+      minutes following the guide alone'
+    - IDE quickstart covers run, stop, file creation, and terminal usage with annotated
+      screenshots
+    - Instructor authoring guide covers course creation, lesson types, project rubric
+      setup, and grade override
+    - Employer portal walkthrough covers job posting, candidate review, and FERPA
+      consent verification
+    - All guides reviewed by a non-technical user; comprehension issues resolved
+    - Flesch-Kincaid grade level <= 10 for all user-facing guides (verified with readability
+      tool)
+    depends_on:
+    - 20
+    - 21
+    - 22
+    - 23
+  DOCS:
+    description: 'Write developer documentation: architecture overview, API reference
+      (auto-generated from OpenAPI), local dev setup guide, contribution guide, database
+      schema docs, and deployment runbook.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - New developer can clone repo and run `make dev` successfully following local
+      dev setup guide alone
+    - API reference auto-generated from openapi.yaml and published on every main branch
+      merge
+    - Architecture overview includes C4 context and container diagrams
+    - Deployment runbook covers full prod deploy, rollback procedure, and post-deploy
+      smoke test steps
+    - 'ADR directory contains decision records for: IDE sandbox strategy, grading
+      async model, FERPA consent UX'
+    - MkDocs site builds without warnings in CI
+    depends_on:
+    - 29
+    - 30

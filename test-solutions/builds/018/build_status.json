@@ -1,0 +1,1500 @@
+{
+  "run_id": "4e825b66-0bb8-4011-a5dc-5725e34141a5",
+  "solution_name": "micro_lending_platform",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-21T23:55:30.270691+00:00",
+  "updated_at": "2026-03-22T00:01:14.565956+00:00",
+  "product_description": "Micro-lending platform for emerging markets with alternative credit scoring (mobile data, utility payments), automated disbursement, and collection management.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze emerging market micro-lending landscape: target geographies, competitor products (M-Pesa, Branch, Tala, FairMoney), regulatory environments, and borrower personas. Identify top 3 markets for initial launch.",
+      "payload": {
+        "deliverables": [
+          "competitor_matrix.md",
+          "target_market_report.md",
+          "borrower_persona_profiles.md"
+        ],
+        "markets_to_cover": [
+          "Sub-Saharan Africa",
+          "Southeast Asia",
+          "South Asia",
+          "Latin America"
+        ],
+        "competitors": [
+          "Branch",
+          "Tala",
+          "FairMoney",
+          "Carbon",
+          "Jumo"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix covers at least 8 competitors with feature/pricing breakdown",
+        "3 borrower personas defined with income range, device type, data availability",
+        "Top 3 launch markets ranked with regulatory risk score",
+        "TAM/SAM/SOM estimates provided per market"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements: loan products (nano, micro, SME), repayment schedules, interest rate models, default thresholds, collection tiers, and agent network model for cash disbursement in low-connectivity markets.",
+      "payload": {
+        "loan_products": [
+          "nano_loan_<$50",
+          "micro_loan_$50-$500",
+          "sme_loan_$500-$5000"
+        ],
+        "repayment_types": [
+          "daily",
+          "weekly",
+          "biweekly",
+          "monthly"
+        ],
+        "revenue_model": [
+          "interest_income",
+          "origination_fee",
+          "late_fee"
+        ],
+        "collection_tiers": [
+          "automated_reminder",
+          "agent_call",
+          "field_collection",
+          "write_off"
+        ]
+      },
+      "acceptance_criteria": [
+        "All loan product specs documented with min/max amounts, tenors, and APR ranges",
+        "Business rules for credit score thresholds documented per product tier",
+        "Collection escalation workflow defined with SLA per tier",
+        "Revenue model with unit economics for break-even analysis"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "REGULATORY",
+      "description": "Map applicable regulations per target market: money lending licenses, mobile money regulations, data privacy laws (NDPR Nigeria, PDPA Thailand, PDPB India), KYC/AML requirements (FATF), and consumer protection rules. Produce regulatory gap analysis.",
+      "payload": {
+        "standards": [
+          "PCI DSS",
+          "SOC 2",
+          "SOX"
+        ],
+        "regulatory_bodies": [
+          "CBN Nigeria",
+          "RBI India",
+          "Bank of Ghana",
+          "BSP Philippines"
+        ],
+        "compliance_areas": [
+          "KYC_AML",
+          "data_privacy",
+          "lending_license",
+          "consumer_protection",
+          "interest_rate_caps"
+        ]
+      },
+      "acceptance_criteria": [
+        "Regulatory requirement matrix covering all 3 target markets",
+        "KYC/AML requirement checklist with data fields required per jurisdiction",
+        "Interest rate cap constraints documented per market",
+        "License acquisition checklist and estimated timeline per market",
+        "Data residency requirements mapped to infrastructure decisions"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 4,
+      "task_type": "LEGAL",
+      "description": "Draft legal framework: terms of service, loan agreements, privacy policy, data processing agreements, agent network contracts, and IP ownership structure. Ensure GDPR/local privacy law compliance.",
+      "payload": {
+        "documents": [
+          "terms_of_service",
+          "loan_agreement_template",
+          "privacy_policy",
+          "dpa_template",
+          "agent_contract"
+        ],
+        "jurisdictions": [
+          "Nigeria",
+          "Kenya",
+          "Philippines"
+        ]
+      },
+      "acceptance_criteria": [
+        "Loan agreement template reviewed for enforceability in each target jurisdiction",
+        "Privacy policy covers all data collection points including mobile metadata",
+        "Data processing agreement template compliant with applicable privacy laws",
+        "Agent network contract defines liability, float management, and commission structure"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 5,
+      "task_type": "FINANCIAL",
+      "description": "Build financial model: unit economics per loan product, cost of capital, provisioning model, expected loss curves, pricing sensitivity analysis, and 3-year P&L projection with break-even analysis.",
+      "payload": {
+        "model_outputs": [
+          "unit_economics_model.xlsx",
+          "pricing_sensitivity.xlsx",
+          "3yr_pl_projection.xlsx",
+          "provisioning_model.xlsx"
+        ],
+        "key_metrics": [
+          "net_interest_margin",
+          "cost_of_risk",
+          "operating_expense_ratio",
+          "return_on_equity"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit economics model shows LTV/CAC ratio per product tier",
+        "Provisioning model includes vintage analysis structure with expected loss by DPD bucket",
+        "Break-even loan volume calculated per market with sensitivity ranges",
+        "3-year P&L projection includes conservative, base, and optimistic scenarios"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 6,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product requirements document (PRD): alternative credit scoring engine spec (mobile usage patterns, utility payment history, social graph signals), loan lifecycle states, borrower app features, lender dashboard features, and admin panel requirements.",
+      "payload": {
+        "modules": [
+          "credit_scoring_engine",
+          "loan_origination",
+          "disbursement_engine",
+          "repayment_tracking",
+          "collection_management",
+          "borrower_mobile_app",
+          "lender_dashboard",
+          "admin_panel"
+        ],
+        "credit_signals": [
+          "call_duration_patterns",
+          "app_usage_frequency",
+          "mobile_money_txn_history",
+          "utility_payment_history",
+          "social_graph_centrality",
+          "device_metadata"
+        ],
+        "mvp_scope": "Phase 1 \u2014 nano and micro loans, mobile app (Android), basic dashboard"
+      },
+      "acceptance_criteria": [
+        "PRD covers all 8 modules with user stories and acceptance criteria",
+        "Credit scoring signal list approved with data collection consent flow",
+        "Loan lifecycle state machine diagram produced (draft\u2192approved\u2192disbursed\u2192active\u2192closed/defaulted)",
+        "MVP feature set vs future phases clearly delineated",
+        "Success metrics defined per module (activation rate, approval rate, default rate, repayment rate)"
+      ],
+      "depends_on": [
+        2,
+        3
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 7,
+      "task_type": "SECURITY",
+      "description": "Produce threat model and security architecture for the platform: STRIDE analysis on loan origination, disbursement, and repayment flows; PCI DSS scoping for payment card data; define encryption-at-rest and in-transit requirements; API security model; fraud detection touchpoints.",
+      "payload": {
+        "frameworks": [
+          "STRIDE",
+          "OWASP_Top10",
+          "PCI_DSS_v4"
+        ],
+        "threat_surfaces": [
+          "mobile_app",
+          "api_gateway",
+          "credit_scoring_pipeline",
+          "disbursement_service",
+          "mobile_money_integration",
+          "admin_panel"
+        ],
+        "deliverables": [
+          "threat_model.md",
+          "security_architecture.md",
+          "pci_dss_scope.md",
+          "sbom_template.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all 6 threat surfaces with mitigations",
+        "PCI DSS cardholder data environment (CDE) scope defined and minimized",
+        "Encryption standards specified: AES-256 at rest, TLS 1.3 in transit",
+        "API authentication model defined: OAuth 2.0 + JWT with refresh token rotation",
+        "Fraud signal list documented: device fingerprint, velocity checks, geo-anomalies",
+        "SBOM template created for dependency tracking",
+        "PCI DSS SAQ completed",
+        "Encryption at rest and in transit"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "UX_DESIGN",
+      "description": "Design borrower mobile app UX (low-literacy optimized, Android-first, USSD fallback) and lender/admin dashboard wireframes. Include onboarding flow, loan application flow, repayment flow, and collection agent interface.",
+      "payload": {
+        "screens": [
+          "onboarding_kyc",
+          "credit_consent",
+          "loan_application",
+          "approval_result",
+          "disbursement_confirmation",
+          "repayment_schedule",
+          "make_payment",
+          "loan_history",
+          "collection_agent_dashboard",
+          "lender_portfolio_dashboard",
+          "admin_panel"
+        ],
+        "accessibility": [
+          "low_literacy_icons",
+          "vernacular_language_support",
+          "offline_mode_indicators"
+        ],
+        "tools": [
+          "Figma"
+        ]
+      },
+      "acceptance_criteria": [
+        "Borrower app wireframes for all 8 core screens with annotated interaction flows",
+        "Lender dashboard wireframes showing portfolio health, default rates, and cohort analysis",
+        "Admin panel wireframes for user management, product config, and compliance reporting",
+        "USSD flow diagram for feature-phone fallback",
+        "Accessibility audit checklist passed: contrast ratio, icon-based navigation, <3-tap critical paths",
+        "Usability testing plan with 5 representative borrower personas"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 9,
+      "task_type": "DATABASE",
+      "description": "Design and implement the core database schema: borrowers, loans, repayments, credit scores, mobile data signals, disbursements, collection events, agent network, audit log, and tenant/market configuration tables. Implement migrations using Alembic (PostgreSQL).",
+      "payload": {
+        "database": "PostgreSQL 15",
+        "orm": "SQLAlchemy",
+        "migration_tool": "Alembic",
+        "core_tables": [
+          "borrowers",
+          "kyc_documents",
+          "credit_profiles",
+          "mobile_signals",
+          "utility_payments",
+          "loans",
+          "loan_products",
+          "disbursements",
+          "repayment_schedules",
+          "repayment_events",
+          "collection_cases",
+          "collection_events",
+          "agents",
+          "mobile_money_accounts",
+          "audit_log",
+          "market_config"
+        ],
+        "schema_features": [
+          "soft_deletes",
+          "created_at/updated_at_everywhere",
+          "tenant_id_column",
+          "row_level_security",
+          "JSONB_for_signal_data"
+        ]
+      },
+      "acceptance_criteria": [
+        "ERD diagram produced covering all 16 core tables with relationships",
+        "All migrations run cleanly from scratch on PostgreSQL 15",
+        "Indexes created for all foreign keys and high-cardinality query paths",
+        "Row-level security policies implemented for multi-market tenant isolation",
+        "PII fields identified and encrypted at column level (borrower name, phone, NIN)",
+        "Seed data script populates all lookup tables and creates test borrowers",
+        "Schema passes normalization review (3NF minimum)",
+        "Transaction isolation level documented",
+        "Audit trail on all writes"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "ML_MODEL",
+      "description": "Build the alternative credit scoring engine: feature engineering pipeline from mobile data signals and utility payments, gradient boosting model (XGBoost/LightGBM), scorecard calibration, model explainability (SHAP), bias audit across demographic groups, and real-time scoring API.",
+      "payload": {
+        "signals": [
+          "call_frequency",
+          "sms_patterns",
+          "mobile_money_inflow_outflow",
+          "utility_payment_consistency",
+          "app_engagement_score",
+          "device_age",
+          "contact_book_size"
+        ],
+        "model_type": "gradient_boosting",
+        "libraries": [
+          "XGBoost",
+          "LightGBM",
+          "SHAP",
+          "scikit-learn",
+          "pandas",
+          "mlflow"
+        ],
+        "outputs": [
+          "credit_score_0_1000",
+          "risk_tier_A_E",
+          "decline_reason_codes"
+        ],
+        "mlflow_tracking": true,
+        "retraining_schedule": "monthly"
+      },
+      "acceptance_criteria": [
+        "Feature engineering pipeline handles missing signals gracefully with documented imputation strategy",
+        "Model AUC-ROC >= 0.72 on holdout validation set",
+        "SHAP explainability output provides top 5 factors per decision for regulatory disclosure",
+        "Bias audit confirms no demographic group has >10% disparity in approval rate vs statistical base",
+        "Model versioned in MLflow with performance metrics logged",
+        "Real-time scoring API responds in <200ms p99 for single borrower",
+        "Model card documentation produced for regulatory review"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 11,
+      "task_type": "AGENTIC",
+      "description": "Implement the credit decisioning agent using the review_and_critique pattern: CreditAnalystAgent (generator) produces a loan decision with score breakdown and recommended terms; CreditCriticAgent reviews for policy compliance, regulatory constraints, and fairness; loop iterates until confidence threshold met. Strict HITL gate for edge cases (score in 400-500 band).",
+      "payload": {
+        "pattern": "review_and_critique",
+        "agents": {
+          "generator": "CreditAnalystAgent",
+          "critic": "CreditCriticAgent"
+        },
+        "hitl_trigger": "score_band_400_500_or_fraud_flag",
+        "max_iterations": 3,
+        "confidence_threshold": 0.85,
+        "tools": [
+          "credit_score_api",
+          "kyc_verification_api",
+          "blacklist_check",
+          "bureau_lookup"
+        ]
+      },
+      "acceptance_criteria": [
+        "CreditAnalystAgent generates structured decision JSON with score, tier, approved amount, and rate",
+        "CreditCriticAgent validates against all product policy rules and regulatory constraints",
+        "HITL approval queue triggered for all edge-case decisions (score 400-500 band)",
+        "Critic feedback stored in audit log with trace_id for regulatory inspection",
+        "Average decisioning time <5s for auto-approve/decline path",
+        "All HITL decisions logged with human reviewer ID and decision rationale"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build the core loan origination service: borrower registration, KYC document upload and verification orchestration, consent management, loan application submission, product eligibility check, and origination state machine. Python/FastAPI.",
+      "payload": {
+        "framework": "FastAPI",
+        "language": "Python 3.11",
+        "state_machine_library": "transitions",
+        "loan_states": [
+          "draft",
+          "submitted",
+          "kyc_pending",
+          "kyc_verified",
+          "scoring",
+          "decision_pending",
+          "approved",
+          "rejected",
+          "disbursement_pending",
+          "active",
+          "delinquent",
+          "defaulted",
+          "closed"
+        ],
+        "integrations": [
+          "kyc_provider_api",
+          "credit_bureau_api",
+          "mobile_money_provider"
+        ],
+        "endpoints": [
+          "POST /borrowers",
+          "POST /borrowers/{id}/kyc",
+          "POST /loans/apply",
+          "GET /loans/{id}",
+          "GET /loans/{id}/status"
+        ]
+      },
+      "acceptance_criteria": [
+        "All loan lifecycle state transitions enforced by state machine with invalid transition rejection",
+        "KYC document upload supports JPEG/PNG/PDF with virus scan before storage",
+        "Consent management stores explicit consent records with timestamp and IP for each data type collected",
+        "Product eligibility check validates borrower against all active product rules",
+        "All API endpoints return structured JSON errors with error_code and user-friendly message",
+        "OpenAPI spec auto-generated and accurate",
+        "Loan origination service handles 100 concurrent applications without degradation"
+      ],
+      "depends_on": [
+        9,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Build the disbursement engine: multi-provider mobile money integration (M-Pesa Daraja, MTN MoMo, Airtel Money, bank transfer fallback), idempotent disbursement transactions, retry with exponential backoff, reconciliation job, and disbursement audit trail.",
+      "payload": {
+        "providers": [
+          "mpesa_daraja",
+          "mtn_momo",
+          "airtel_money",
+          "bank_transfer_via_flutterwave"
+        ],
+        "pattern": "idempotency_key_per_disbursement",
+        "retry_policy": "exponential_backoff_max_3",
+        "reconciliation": "daily_batch_job",
+        "endpoints": [
+          "POST /disbursements",
+          "GET /disbursements/{id}",
+          "POST /disbursements/{id}/retry"
+        ]
+      },
+      "acceptance_criteria": [
+        "Idempotency enforced: duplicate disbursement request with same key returns existing result without double-send",
+        "All 4 provider integrations tested with sandbox APIs",
+        "Disbursement failure triggers automatic retry up to 3 times with exponential backoff",
+        "After 3 failures, disbursement moves to manual_review state and ops team alerted",
+        "Daily reconciliation job matches platform records to provider settlement reports with discrepancy alerting",
+        "Every disbursement event written to immutable audit log with provider reference ID",
+        "Disbursement service is idempotent and safe to replay"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Build repayment tracking and collection management service: repayment schedule generation, payment receipt processing (mobile money callbacks), overdue detection engine, automated SMS/push reminder system, and collection case lifecycle management.",
+      "payload": {
+        "repayment_schedule_types": [
+          "equal_installments",
+          "reducing_balance",
+          "bullet"
+        ],
+        "collection_tiers": [
+          {
+            "tier": 1,
+            "dpd": "1-7",
+            "action": "automated_sms_push"
+          },
+          {
+            "tier": 2,
+            "dpd": "8-30",
+            "action": "agent_call_queue"
+          },
+          {
+            "tier": 3,
+            "dpd": "31-90",
+            "action": "field_collection"
+          },
+          {
+            "tier": 4,
+            "dpd": "90+",
+            "action": "write_off_review"
+          }
+        ],
+        "sms_provider": "Twilio/Africa's_Talking",
+        "endpoints": [
+          "POST /repayments/callback",
+          "GET /loans/{id}/schedule",
+          "POST /collection-cases",
+          "GET /collection-cases"
+        ]
+      },
+      "acceptance_criteria": [
+        "Repayment schedule generated correctly for all 3 schedule types with APR validation",
+        "Mobile money payment callbacks processed idempotently and loan balance updated in real-time",
+        "Overdue detection job runs daily and escalates to correct collection tier by DPD",
+        "Automated SMS reminders sent 3, 1 day before and on due date \u2014 no duplicates",
+        "Collection case created automatically at DPD 8 and assigned to available agent",
+        "Collection agent can log call outcome, promise-to-pay date, and notes via API",
+        "Write-off recommendation generated automatically at DPD 90+ with provisioning calculation"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "AGENTIC",
+      "description": "Implement the collections intelligence agent using the multi_agent_sequential pattern: RiskAnalystAgent scores delinquent accounts \u2192 CollectionStrategyAgent selects optimal contact channel and message \u2192 OutcomeTrackerAgent records result and updates behavioral model. Agent learns from repayment outcomes to improve collection strategy over time.",
+      "payload": {
+        "pattern": "multi_agent_sequential",
+        "agents": [
+          "RiskAnalystAgent",
+          "CollectionStrategyAgent",
+          "OutcomeTrackerAgent"
+        ],
+        "learning_mechanism": "vector_store_feedback_loop",
+        "personalization_signals": [
+          "payment_history_pattern",
+          "preferred_contact_time",
+          "channel_response_rate",
+          "promise_kept_rate"
+        ],
+        "channels": [
+          "sms",
+          "push_notification",
+          "whatsapp",
+          "ivr_call",
+          "agent_call"
+        ]
+      },
+      "acceptance_criteria": [
+        "RiskAnalystAgent produces delinquency risk score and behavioral profile per borrower",
+        "CollectionStrategyAgent selects channel and message template based on borrower profile",
+        "Outcome from each contact attempt fed back into vector store within 24 hours",
+        "System demonstrates improving promise-kept rate over 3 simulated cohorts in testing",
+        "All agent decisions logged with full trace for compliance audit",
+        "Collection agent workload balanced \u2014 no agent has >150 active cases simultaneously"
+      ],
+      "depends_on": [
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Build API gateway layer: authentication service (OAuth 2.0 + JWT), rate limiting, request validation, multi-market routing, API versioning, and webhook management for mobile money provider callbacks.",
+      "payload": {
+        "auth": "OAuth2_JWT_refresh_rotation",
+        "rate_limiting": "per_user_per_endpoint_sliding_window",
+        "gateway": "FastAPI with nginx upstream",
+        "api_versioning": "URL_prefix_v1_v2",
+        "webhook_endpoints": [
+          "POST /webhooks/mpesa",
+          "POST /webhooks/mtn-momo",
+          "POST /webhooks/airtel",
+          "POST /webhooks/sms-delivery"
+        ]
+      },
+      "acceptance_criteria": [
+        "JWT tokens expire in 15 minutes; refresh tokens in 7 days with rotation on use",
+        "Rate limiting enforced: 60 req/min per user, 10 req/min on auth endpoints",
+        "Webhook endpoints validate provider signatures before processing",
+        "API versioning allows v1 and v2 to coexist during migration window",
+        "All incoming requests logged with correlation_id for distributed tracing",
+        "Authentication service issues role-based tokens: borrower, agent, lender, admin"
+      ],
+      "depends_on": [
+        12,
+        13,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build borrower Android mobile app (React Native): onboarding + KYC flow, loan application, approval notification, disbursement confirmation, repayment schedule view, payment initiation, and loan history. Optimized for low-end Android devices and intermittent connectivity.",
+      "payload": {
+        "framework": "React Native 0.73",
+        "target": "Android 8+",
+        "offline_support": "Redux Persist + sync queue",
+        "i18n": [
+          "en",
+          "sw_KE",
+          "ha_NG",
+          "fil_PH"
+        ],
+        "push_notifications": "Firebase FCM",
+        "biometrics": "fingerprint_face_for_loan_approval",
+        "screens": [
+          "splash",
+          "onboarding_3_steps",
+          "kyc_document_capture",
+          "loan_application",
+          "approval_result",
+          "disbursement_confirmation",
+          "home_dashboard",
+          "repayment_schedule",
+          "make_payment",
+          "loan_history",
+          "profile_settings"
+        ]
+      },
+      "acceptance_criteria": [
+        "App runs on Android 8+ on low-end device (2GB RAM, Snapdragon 430 equivalent)",
+        "KYC document capture uses device camera with quality validation (blur, brightness checks)",
+        "Offline mode queues actions and syncs on connectivity restore",
+        "All 4 languages complete with no untranslated strings in production build",
+        "Biometric auth implemented for payment confirmation with fallback to PIN",
+        "App bundle size <25MB",
+        "Critical path (apply\u2192decision) completable in <3 minutes on 3G connection",
+        "Accessibility: all interactive elements have content descriptions"
+      ],
+      "depends_on": [
+        16,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build lender/investor dashboard (React + TypeScript): portfolio overview, cohort analysis, loan book health metrics, default rate trends, collection performance, disbursement reconciliation, and compliance reports.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "charts": "Recharts",
+        "tables": "TanStack Table",
+        "state_management": "Zustand",
+        "key_dashboards": [
+          "portfolio_overview",
+          "cohort_performance",
+          "collection_funnel",
+          "disbursement_reconciliation",
+          "credit_score_distribution",
+          "market_breakdown"
+        ],
+        "export": "CSV and PDF report export"
+      },
+      "acceptance_criteria": [
+        "Portfolio overview loads in <2s with up to 100K loans in portfolio",
+        "Cohort analysis displays vintage curves with selectable cohort size (weekly/monthly)",
+        "All charts have data export to CSV",
+        "PDF report generation covers regulatory reporting requirements per market",
+        "Dashboard refreshes automatically every 5 minutes",
+        "Role-based access: lender sees only their portfolio; admin sees all"
+      ],
+      "depends_on": [
+        16,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build admin panel (React + TypeScript): user management, loan product configuration, credit policy rules editor, market configuration, KYC review queue, compliance report generation, system health monitoring, and agent network management.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "key_sections": [
+          "user_management",
+          "product_config",
+          "policy_rules_editor",
+          "kyc_review_queue",
+          "compliance_reports",
+          "system_health",
+          "agent_management",
+          "write_off_review"
+        ],
+        "audit_log_viewer": true,
+        "role_management": [
+          "super_admin",
+          "compliance_officer",
+          "risk_manager",
+          "operations_agent",
+          "collection_agent"
+        ]
+      },
+      "acceptance_criteria": [
+        "KYC review queue shows documents with accept/reject/escalate actions",
+        "Product config editor allows creating new loan products without code deployment",
+        "Policy rules editor allows adjusting credit score thresholds with change history log",
+        "Compliance report generator produces PCI DSS, SOC 2, and SOX-required report formats",
+        "Audit log viewer supports full-text search and date range filtering",
+        "Role management enforces least-privilege: collection agent cannot access product config",
+        "System health panel shows real-time API latency, queue depth, and provider status"
+      ],
+      "depends_on": [
+        16,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "COMPLIANCE",
+      "description": "Produce PCI DSS v4 compliance artifacts: cardholder data flow diagrams, network segmentation documentation, access control matrix, encryption key management procedure, vulnerability management plan, and security awareness training records.",
+      "payload": {
+        "standard": "PCI DSS v4.0",
+        "deliverables": [
+          "cardholder_data_flow_diagram.pdf",
+          "network_segmentation_doc.md",
+          "access_control_matrix.xlsx",
+          "key_management_procedure.md",
+          "vulnerability_management_plan.md",
+          "security_training_records_template.xlsx"
+        ],
+        "requirements_coverage": [
+          "req_1_network_security",
+          "req_3_account_data_protect",
+          "req_4_encryption_transit",
+          "req_7_access_control",
+          "req_8_auth",
+          "req_10_logging",
+          "req_11_security_testing"
+        ]
+      },
+      "acceptance_criteria": [
+        "Cardholder data flow diagram reviewed and approved by QSA-equivalent reviewer",
+        "Network segmentation confirms CDE is isolated from all non-CDE systems",
+        "Access control matrix covers all system components with principle of least privilege",
+        "Key management procedure covers key generation, rotation (annual), revocation, and destruction",
+        "Vulnerability management plan includes monthly internal scan and quarterly external scan schedule",
+        "All PCI DSS v4 requirements mapped to platform controls with evidence pointers"
+      ],
+      "depends_on": [
+        7,
+        16
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 21,
+      "task_type": "COMPLIANCE",
+      "description": "Produce SOC 2 Type II readiness artifacts: Trust Service Criteria mapping (Security, Availability, Confidentiality), control matrix, evidence collection procedures, vendor risk assessment, and incident response plan.",
+      "payload": {
+        "standard": "SOC 2 Type II",
+        "trust_service_criteria": [
+          "CC6_logical_access",
+          "CC7_system_operations",
+          "CC8_change_management",
+          "CC9_risk_mitigation",
+          "A1_availability",
+          "C1_confidentiality"
+        ],
+        "deliverables": [
+          "soc2_control_matrix.xlsx",
+          "evidence_collection_calendar.md",
+          "vendor_risk_assessment.xlsx",
+          "incident_response_plan.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 5 Trust Service Criteria mapped to platform controls with evidence type and owner",
+        "Evidence collection calendar covers 12-month observation period with quarterly checkpoints",
+        "Vendor risk assessment covers all third-party integrations (mobile money, KYC, cloud)",
+        "Incident response plan covers detection, containment, eradication, recovery, and post-mortem",
+        "Control gaps identified with remediation owners and timelines"
+      ],
+      "depends_on": [
+        20
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 22,
+      "task_type": "COMPLIANCE",
+      "description": "Produce SOX-relevant financial controls documentation: loan origination control points, disbursement approval controls, financial reporting data lineage, segregation of duties matrix, and management review procedures.",
+      "payload": {
+        "standard": "SOX",
+        "focus_areas": [
+          "revenue_recognition",
+          "loan_loss_provisioning",
+          "disbursement_controls",
+          "financial_reporting_integrity"
+        ],
+        "deliverables": [
+          "internal_controls_matrix.xlsx",
+          "segregation_of_duties_matrix.xlsx",
+          "data_lineage_diagram.md",
+          "management_review_procedure.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Internal controls matrix covers all financial reporting processes with control type (preventive/detective)",
+        "Segregation of duties matrix confirms no single user can initiate and approve disbursements",
+        "Data lineage diagram traces each financial metric from source transaction to report",
+        "Management review procedures cover monthly close, quarterly provisioning, and annual audit",
+        "Automated controls in platform code documented with test evidence"
+      ],
+      "depends_on": [
+        21
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "DATA",
+      "description": "Build the data pipeline: real-time event streaming (loan events \u2192 Kafka), ETL for mobile signal ingestion (daily batch), data warehouse schema (dbt + BigQuery/Redshift), analytics views for portfolio reporting, and credit model feature store.",
+      "payload": {
+        "streaming": "Apache Kafka",
+        "batch_etl": "Apache Airflow",
+        "warehouse": "BigQuery or Redshift",
+        "transformation": "dbt",
+        "feature_store": "Feast or custom Redis-backed store",
+        "key_pipelines": [
+          "loan_events_stream",
+          "mobile_signal_ingestion",
+          "repayment_events_stream",
+          "collection_outcomes_etl",
+          "feature_store_refresh"
+        ]
+      },
+      "acceptance_criteria": [
+        "Loan event stream processes 1000 events/second with <500ms end-to-end latency",
+        "Mobile signal ingestion pipeline runs nightly with data quality checks and alerting on failure",
+        "dbt models produce all analytics views needed for lender dashboard without direct DB queries",
+        "Feature store refreshes credit scoring features within 1 hour of new mobile data availability",
+        "Data lineage tracked in dbt for all warehouse models",
+        "PII fields masked in analytics warehouse (tokenized borrower ID, no raw phone numbers)"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 24,
+      "task_type": "INFRA",
+      "description": "Set up cloud infrastructure (AWS or GCP): multi-region deployment for target markets, Kubernetes cluster, PostgreSQL RDS with read replicas, Redis cluster, Kafka managed service, S3/GCS for document storage, CloudFront/CDN, VPC with private subnets, and WAF configuration.",
+      "payload": {
+        "cloud": "AWS or GCP",
+        "iac_tool": "Terraform",
+        "container_orchestration": "Kubernetes (EKS or GKE)",
+        "regions": [
+          "af-south-1 (Cape Town)",
+          "ap-southeast-1 (Singapore)",
+          "eu-west-1 (Ireland for GDPR)"
+        ],
+        "services": [
+          "RDS PostgreSQL",
+          "ElastiCache Redis",
+          "MSK Kafka",
+          "S3",
+          "CloudFront",
+          "WAF",
+          "Secrets Manager",
+          "KMS"
+        ],
+        "data_residency": "per_market_region_enforcement"
+      },
+      "acceptance_criteria": [
+        "Terraform modules produce reproducible infrastructure from scratch in <30 minutes",
+        "All compute in private subnets; only API gateway and CDN publicly accessible",
+        "PostgreSQL RDS has automated backups with 7-day retention and tested restore procedure",
+        "KMS manages all encryption keys for PCI DSS compliance",
+        "WAF configured with OWASP Core Rule Set + custom rules for lending API patterns",
+        "Data residency enforced: Nigerian borrower data stored only in af-south-1",
+        "Multi-AZ deployment for all stateful services"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "DEVOPS",
+      "description": "Build CI/CD pipeline: GitHub Actions workflows for backend (pytest, security scan, Docker build, deploy to K8s), mobile app (React Native build, APK signing, Play Store upload), and infrastructure (terraform plan/apply with approval gate). Include SAST, dependency scanning, and container scanning.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "pipelines": [
+          "backend_ci_cd",
+          "mobile_app_ci_cd",
+          "infrastructure_ci_cd",
+          "ml_model_ci_cd"
+        ],
+        "security_tools": [
+          "Bandit (SAST)",
+          "Safety (dependency scan)",
+          "Trivy (container scan)",
+          "Semgrep (SAST)"
+        ],
+        "environments": [
+          "dev",
+          "staging",
+          "prod"
+        ],
+        "deployment_strategy": "blue_green for backend, canary for mobile app updates"
+      },
+      "acceptance_criteria": [
+        "Backend CI pipeline runs pytest, Bandit, Safety, and Trivy \u2014 fails on any HIGH/CRITICAL finding",
+        "Mobile app CI builds signed APK for staging and uploads to Play Store internal track automatically",
+        "Infrastructure changes require manual approval in GitHub Actions before terraform apply to prod",
+        "ML model pipeline runs retraining, evaluation, and deploys only if AUC-ROC >= 0.72",
+        "Blue-green deployment enables zero-downtime backend updates",
+        "Pipeline run time <15 minutes for backend CI from commit to staging deploy",
+        "All secrets managed via GitHub Secrets + AWS Secrets Manager, never in code"
+      ],
+      "depends_on": [
+        24
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "DEVOPS",
+      "description": "Set up observability stack: Prometheus + Grafana for metrics, ELK/Loki for logs, Jaeger for distributed tracing, PagerDuty for alerting. Define SLIs/SLOs for all critical services and create runbooks for top 10 incident scenarios.",
+      "payload": {
+        "metrics": "Prometheus + Grafana",
+        "logging": "ELK Stack or Grafana Loki",
+        "tracing": "Jaeger or AWS X-Ray",
+        "alerting": "PagerDuty",
+        "key_slos": [
+          {
+            "service": "loan_origination",
+            "slo": "99.9% success rate, p99 <3s"
+          },
+          {
+            "service": "disbursement",
+            "slo": "99.95% success rate, p99 <10s"
+          },
+          {
+            "service": "credit_scoring",
+            "slo": "99.9% success rate, p99 <500ms"
+          },
+          {
+            "service": "mobile_app_api",
+            "slo": "99.9% availability, p99 <1s"
+          }
+        ]
+      },
+      "acceptance_criteria": [
+        "All 4 critical service SLOs have Grafana dashboards with burn rate alerts",
+        "PagerDuty escalation policy covers 24/7 on-call rotation",
+        "Distributed tracing captures full request path from mobile app to database",
+        "Log aggregation captures structured JSON logs from all services with correlation_id",
+        "Runbooks written for: disbursement provider down, credit scoring timeout, DB failover, KYC provider outage",
+        "Error budget alerting triggers at 5% burn rate (fast burn)"
+      ],
+      "depends_on": [
+        25
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "TESTS",
+      "description": "Write comprehensive test suite: unit tests for all business logic (credit scoring, state machine, repayment calculations), integration tests for all API endpoints, contract tests for mobile money provider integrations, and property-based tests for financial calculations.",
+      "payload": {
+        "framework": "pytest",
+        "coverage_target": "85%",
+        "test_types": [
+          "unit",
+          "integration",
+          "contract",
+          "property_based"
+        ],
+        "property_based_tool": "Hypothesis",
+        "contract_testing": "Pact",
+        "factories": "factory_boy",
+        "key_test_suites": [
+          "credit_scoring_engine",
+          "loan_state_machine",
+          "disbursement_service",
+          "repayment_calculator",
+          "collection_escalation",
+          "api_endpoints",
+          "mobile_money_contracts"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test coverage >= 85% across all backend services",
+        "All loan state machine transitions tested including invalid transition rejection",
+        "Repayment calculation tests use property-based testing with 1000+ generated cases",
+        "Contract tests for all 4 mobile money providers run in CI with provider sandbox",
+        "Integration tests cover full loan lifecycle: apply\u2192score\u2192approve\u2192disburse\u2192repay\u2192close",
+        "Test suite runs in <10 minutes in CI",
+        "No flaky tests: all tests pass consistently across 3 sequential CI runs"
+      ],
+      "depends_on": [
+        13,
+        14,
+        15
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "TESTS",
+      "description": "Write mobile app test suite: Jest unit tests for components, Detox E2E tests for critical user journeys (apply for loan, make repayment), and accessibility tests. Write frontend unit tests for dashboard components.",
+      "payload": {
+        "unit_framework": "Jest + React Native Testing Library",
+        "e2e_framework": "Detox",
+        "e2e_scenarios": [
+          "new_borrower_onboarding_to_first_loan",
+          "returning_borrower_makes_repayment",
+          "failed_kyc_retry_flow",
+          "offline_mode_sync"
+        ],
+        "accessibility_tool": "jest-axe",
+        "coverage_target": "75%"
+      },
+      "acceptance_criteria": [
+        "Unit test coverage >= 75% for mobile app components",
+        "All 4 E2E scenarios pass on Android emulator (API 28 and API 33)",
+        "Accessibility tests pass for all primary screens",
+        "E2E tests run in CI on every PR targeting main branch",
+        "Dashboard frontend unit tests cover all chart data transformation functions"
+      ],
+      "depends_on": [
+        17,
+        18,
+        19
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 29,
+      "task_type": "SECURITY",
+      "description": "Execute security testing: OWASP ZAP dynamic scan on all API endpoints, static analysis of mobile app for hardcoded secrets and insecure storage, mobile money webhook signature bypass test, SQL injection and auth bypass penetration testing. Produce findings report with CVSS scores.",
+      "payload": {
+        "tools": [
+          "OWASP ZAP",
+          "MobSF",
+          "Bandit",
+          "sqlmap (controlled)",
+          "Burp Suite Community"
+        ],
+        "test_scope": [
+          "api_gateway",
+          "loan_origination_api",
+          "disbursement_api",
+          "webhook_endpoints",
+          "mobile_app_apk",
+          "admin_panel"
+        ],
+        "deliverables": [
+          "pentest_report.md",
+          "cvss_findings_tracker.xlsx",
+          "remediation_plan.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "OWASP ZAP scan completed on all API endpoints with zero HIGH/CRITICAL findings in final report",
+        "MobSF scan of APK shows no hardcoded credentials, no insecure data storage findings",
+        "Webhook signature validation tested and confirmed resistant to bypass",
+        "SQL injection tests confirm parameterized queries prevent all injection vectors",
+        "All CRITICAL findings remediated before staging deployment",
+        "HIGH findings have remediation plan with owner and deadline",
+        "SBOM generated for all production dependencies",
+        "PCI DSS SAQ completed",
+        "Encryption at rest and in transit"
+      ],
+      "depends_on": [
+        27,
+        25
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 30,
+      "task_type": "LOCALIZATION",
+      "description": "Implement i18n for mobile app and dashboard: extract all user-facing strings, set up translation pipeline, provide translations for Swahili (Kenya), Hausa (Nigeria), and Filipino. Implement right-to-left layout support as future-proofing.",
+      "payload": {
+        "mobile_i18n": "react-i18next",
+        "web_i18n": "react-i18next",
+        "languages": [
+          {
+            "code": "en",
+            "name": "English"
+          },
+          {
+            "code": "sw_KE",
+            "name": "Swahili (Kenya)"
+          },
+          {
+            "code": "ha_NG",
+            "name": "Hausa (Nigeria)"
+          },
+          {
+            "code": "fil_PH",
+            "name": "Filipino (Philippines)"
+          }
+        ],
+        "translation_platform": "Lokalise or Crowdin",
+        "string_count_estimate": 450
+      },
+      "acceptance_criteria": [
+        "Zero hardcoded user-facing strings in mobile app or web app code",
+        "All 4 languages complete (no fallback to English in production builds)",
+        "Number formatting (currency, dates) correct per locale",
+        "Language selection persists across app restarts",
+        "Translation pipeline allows non-developer translators to update strings without code changes"
+      ],
+      "depends_on": [
+        17,
+        18
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 31,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: loan lifecycle operations (manual state override, bulk status update), disbursement failure resolution, collection agent onboarding, daily reconciliation procedures, end-of-day financial close, and regulatory reporting generation.",
+      "payload": {
+        "runbooks": [
+          "disbursement_failure_resolution.md",
+          "kyc_review_escalation.md",
+          "daily_reconciliation.md",
+          "collection_agent_onboarding.md",
+          "month_end_close.md",
+          "regulatory_report_generation.md",
+          "data_breach_response.md"
+        ],
+        "sla_targets": {
+          "kyc_review": "4 hours business hours",
+          "disbursement_failure_resolution": "2 hours",
+          "collection_case_first_contact": "24 hours from DPD 8"
+        }
+      },
+      "acceptance_criteria": [
+        "All 7 runbooks reviewed and signed off by operations team lead",
+        "Runbooks include screenshots of admin panel for each manual step",
+        "SLA targets documented with escalation path if breached",
+        "Data breach response runbook covers notification timelines per jurisdiction (72h GDPR, etc.)",
+        "Regulatory reporting runbook includes report formats and submission instructions per market"
+      ],
+      "depends_on": [
+        19,
+        26
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 32,
+      "task_type": "TRAINING",
+      "description": "Produce training materials: borrower onboarding video scripts (4 languages), collection agent training program, KYC review officer training, and lender dashboard user guide.",
+      "payload": {
+        "materials": [
+          "borrower_app_walkthrough_video_scripts",
+          "collection_agent_training_module",
+          "kyc_officer_training_module",
+          "lender_dashboard_user_guide"
+        ],
+        "formats": [
+          "PDF guides",
+          "video scripts",
+          "interactive Loom walkthroughs"
+        ],
+        "languages": [
+          "en",
+          "sw_KE",
+          "ha_NG",
+          "fil_PH"
+        ]
+      },
+      "acceptance_criteria": [
+        "Borrower video script covers app install, KYC, loan application, and repayment in <5 minutes",
+        "Collection agent training covers system usage, regulatory compliance, and ethical collection practices",
+        "KYC officer training covers document verification standards and rejection criteria",
+        "Lender dashboard guide covers all charts and report types with annotated screenshots",
+        "All materials reviewed by a representative from each target market"
+      ],
+      "depends_on": [
+        31
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 33,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: API reference (OpenAPI + Markdown), architecture decision records (ADRs), credit model card, data dictionary, developer onboarding guide, and security architecture document.",
+      "payload": {
+        "deliverables": [
+          "api_reference.md",
+          "architecture_decisions/",
+          "model_card.md",
+          "data_dictionary.xlsx",
+          "developer_onboarding.md",
+          "security_architecture.md"
+        ],
+        "adr_topics": [
+          "ADR-001 PostgreSQL over NoSQL for loan data",
+          "ADR-002 Kafka for event streaming",
+          "ADR-003 React Native over Flutter",
+          "ADR-004 XGBoost over neural net for credit scoring explainability"
+        ],
+        "api_docs_tool": "Redoc + Swagger UI"
+      },
+      "acceptance_criteria": [
+        "API reference auto-generated from OpenAPI spec and covers 100% of endpoints",
+        "4 ADRs written covering major technology decisions with alternatives considered",
+        "Model card documents training data, performance metrics, limitations, and fairness analysis",
+        "Data dictionary covers all database columns with type, description, and PII classification",
+        "Developer onboarding guide enables new engineer to run full stack locally in <30 minutes"
+      ],
+      "depends_on": [
+        27,
+        29
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 34,
+      "task_type": "QA",
+      "description": "Execute system-level QA: test plan covering all loan product types across all markets, regulatory compliance test cases (KYC rejection scenarios, interest rate cap enforcement, consent management), performance testing at target scale (10K concurrent users), and user acceptance testing coordination.",
+      "payload": {
+        "test_plan_scope": [
+          "all_loan_products",
+          "all_markets",
+          "all_user_roles",
+          "all_collection_tiers"
+        ],
+        "compliance_test_cases": [
+          "kyc_rejection_flows",
+          "interest_rate_cap_enforcement",
+          "consent_withdrawal",
+          "data_deletion_request",
+          "audit_log_completeness"
+        ],
+        "performance_targets": {
+          "concurrent_users": 10000,
+          "loan_applications_per_minute": 500,
+          "disbursements_per_minute": 200
+        },
+        "load_testing_tool": "k6 or Locust"
+      },
+      "acceptance_criteria": [
+        "QA test plan covers 200+ test cases across functional, compliance, and edge-case scenarios",
+        "All compliance test cases pass with documented evidence for regulatory submission",
+        "Load test confirms system handles 10K concurrent users with SLOs maintained",
+        "500 loan applications/minute sustained for 30 minutes without degradation",
+        "UAT sign-off obtained from representative borrowers in each target market",
+        "Zero critical bugs, <5 high-severity bugs open at launch clearance"
+      ],
+      "depends_on": [
+        27,
+        28,
+        29
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 35,
+      "task_type": "CONFIG",
+      "description": "Configure SAGE solution YAML for micro_lending_platform: project.yaml with credit and fintech domain configuration, prompts.yaml with specialist agent roles (credit analyst, collection strategist, compliance monitor, disbursement ops), and tasks.yaml with full task type registry for lending domain operations.",
+      "payload": {
+        "solution_name": "micro_lending_platform",
+        "files": [
+          "project.yaml",
+          "prompts.yaml",
+          "tasks.yaml"
+        ],
+        "agent_roles": [
+          "credit_analyst",
+          "collection_strategist",
+          "compliance_monitor",
+          "disbursement_ops",
+          "risk_manager",
+          "kyc_reviewer"
+        ],
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "developer",
+          "improvements",
+          "approvals",
+          "knowledge",
+          "audit",
+          "workflows"
+        ],
+        "hitl_level": "strict",
+        "agentic_pattern": "human_in_the_loop",
+        "compliance_standards": [
+          "PCI DSS",
+          "SOC 2",
+          "SOX"
+        ]
+      },
+      "acceptance_criteria": [
+        "project.yaml loads without validation errors via SAGE config endpoint",
+        "All 6 agent roles defined in prompts.yaml with domain-appropriate system prompts",
+        "tasks.yaml covers all 32 task types needed for lending domain operations",
+        "active_modules list matches the modules built in steps 17-19",
+        "HITL level set to strict \u2014 all loan decisions and disbursements require approval",
+        "make run PROJECT=micro_lending_platform starts without errors"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "developer"
+    }
+  ],
+  "task_count": 35,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 57,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 57,
+        "final_review": {
+          "score": 57,
+          "flaws": [
+            "ML cold-start problem is unaddressed: a new market entrant has zero labeled loan repayment history. XGBoost/LightGBM requires thousands of completed loan outcomes (default/repaid) to train on. The plan never explains where this training data comes from. Without it, AUC-ROC >= 0.72 is not achievable at launch.",
+            "Google Play Store banned call log and SMS permission access for most app categories in 2019. 'call_duration_patterns' and 'sms_patterns' as credit signals cannot be collected via a Play Store app. Apps attempting this are removed. This kills 2 of 7 credit signals and invalidates the mobile data scoring thesis on Android.",
+            "Social graph centrality and contact book size have been explicitly flagged as proxy discriminators by CBN (Nigeria), and are legally contested in Philippines and Kenya. Using them risks regulatory rejection at launch and discriminatory lending lawsuits. These signals are not legally safe.",
+            "Data residency for Nigerian borrowers in af-south-1 (AWS Cape Town, South Africa) likely does not satisfy CBN data localization policy which requires Nigerian customer data to be stored within Nigeria. AWS has no Nigeria region. This is a fundamental infrastructure conflict with regulatory requirements.",
+            "Step 5 (Financial Model) only depends on Step 2. It does not depend on Step 3 (Regulatory). Interest rate caps \u2014 which are legally enforced in Nigeria (CBN), Kenya (CRB/CBK), and Philippines (SEC) \u2014 directly constrain the APR ranges in the unit economics model. A financial model built before regulatory caps are known is invalid.",
+            "USSD fallback flow is specified in UX wireframes (Step 8) but there is no corresponding backend implementation step. USSD is a completely different protocol from REST/HTTP \u2014 it requires a USSD gateway integration (Africa's Talking, Infobip), session state management, and a dedicated backend handler. None of this is in any backend step.",
+            "Step 16 (API Gateway) is placed AFTER Steps 12, 13, 14 (origination, disbursement, repayment services). The API gateway is the front door \u2014 building three backend services before the authentication, rate limiting, and routing layer is designed creates integration debt and security gaps that must be retrofitted.",
+            "Step 23 (Data Pipeline) has a contradictory acceptance criteria: feature store must refresh 'within 1 hour of new mobile data availability' but mobile signal ingestion runs as a 'nightly batch.' You cannot achieve hourly feature freshness from a daily batch pipeline. The architecture is internally inconsistent.",
+            "Step 7 and Step 29 (both security tasks) are assigned to 'regulatory_specialist' not a security engineer. STRIDE threat modeling and penetration testing are distinct disciplines from compliance documentation. A regulatory specialist does not perform ZAP scans, MobSF analysis, or write CVSS findings.",
+            "The React Native app bundle size acceptance criteria of '<25MB' is not achievable with React Native 0.73, 4 full i18n language bundles, KYC camera capture, Redux Persist, Firebase FCM, biometrics, and offline sync. React Native baseline is 8-12MB before any app code. This criteria will be failed and then silently dropped.",
+            "Step 3 (Regulatory) lists RBI India as a regulatory body but India is not in the target markets. The target markets are Nigeria, Kenya, and Philippines. Regulatory mapping for India is wasted effort and suggests the regulatory analysis template was not properly customized.",
+            "No sanctions screening is specified anywhere in the plan. OFAC, UN Security Council, and local sanctions lists must be checked at onboarding and on an ongoing basis. This is a hard AML/KYC requirement in all three target markets and its absence is a compliance blocker."
+          ],
+          "suggestions": [
+            "Add a Step 0 or sub-task to Step 10 that explicitly addresses the ML cold-start problem: options include purchasing synthetic bureau data, running a pilot loan program with manual underwriting to generate labeled training data, or licensing a pre-trained base model from a credit bureau. Without this, Step 10 cannot ship.",
+            "Replace call log and SMS signals immediately with Play Store-permissible alternatives: mobile money transaction history via USSD/API (user-initiated), repayment behavior on other platforms (with consent), utility payment consistency via direct API integration with KPLC/Abuja Electricity, and device stability signals (OS update frequency, storage patterns). These are all legally collectible.",
+            "Move Step 3 (Regulatory) to a dependency of Step 5 (Financial Model). Interest rate caps must be known before unit economics are modeled. In Kenya, APR on digital loans is effectively capped by disclosure requirements. In Philippines, SEC caps at 6% per month on principal.",
+            "Add a separate backend implementation step for USSD gateway integration. Assign it after Step 12 (loan origination), specify Africa's Talking or Infobip as the provider, and require session state management in Redis. USSD sessions are 180-second timeout constrained \u2014 the entire loan application flow must be redesigned for this constraint.",
+            "For Nigeria data residency: either negotiate CBN data residency exemption with legal counsel, use a local Nigerian data center (Rack Centre, MDXi), or co-locate infrastructure in-country. This must be resolved before Step 24 infrastructure is provisioned.",
+            "Add sanctions screening as a sub-requirement in Step 3 and implement it as a dedicated check in Step 12 (loan origination). Integrate with a provider like ComplyAdvantage, Dow Jones Risk, or Refinitiv World-Check. Screen at onboarding and re-screen monthly.",
+            "Move Step 16 (API Gateway) to depend on Step 7 (Security) and run in parallel with Step 12, not after it. Build the auth layer first, then wire origination, disbursement, and repayment services into it \u2014 not the reverse.",
+            "In Step 10, add model monitoring and drift detection as acceptance criteria, not just monthly retraining. Specify a drift detection metric (PSI on score distribution, feature drift on key signals) with an alert threshold. Monthly retraining on a schedule without drift monitoring will silently degrade on portfolio shift.",
+            "Add credit bureau reporting as a requirement. CBN in Nigeria, CRB in Kenya, and CIC in Philippines all require digital lenders to report both positive and negative payment data. This is legally mandatory and affects borrower credit history. It needs a backend service and data pipeline step.",
+            "Add adverse action notice generation to Step 11 (credit decisioning agent). In all three jurisdictions, declined borrowers are legally entitled to a plain-language explanation of why they were declined. SHAP output in Step 10 must be translated into human-readable decline reason codes and surfaced in the borrower app."
+          ],
+          "missing": [
+            "ML training data acquisition strategy \u2014 the foundational blocker for the entire credit scoring module. No plan for cold-start.",
+            "Sanctions screening implementation (OFAC, UN, CBN watchlists, BSP watchlists) \u2014 legally mandatory AML control.",
+            "Credit bureau reporting pipeline \u2014 mandatory in Nigeria (CBN), Kenya (CRB regulations), Philippines (CIC Act).",
+            "USSD backend implementation step \u2014 UX wireframes exist but no server-side USSD handler is planned.",
+            "FX risk management strategy \u2014 multi-currency operations across NGN, KES, PHP with significant volatility. No hedging or FX exposure tracking mentioned.",
+            "Certificate pinning for the mobile app \u2014 critical for a financial app handling loan disbursements and KYC data.",
+            "AML transaction monitoring system \u2014 KYC at onboarding is insufficient. Ongoing transaction monitoring for structuring, layering, and placement is required under FATF Recommendation 10 and all three target market AML laws.",
+            "Model governance and fairness testing schedule \u2014 the bias audit in Step 10 is a one-time check. Ongoing fairness monitoring as the model retrains monthly is required for regulatory defensibility.",
+            "Data deletion/right-to-erasure implementation \u2014 GDPR and local equivalents (NDPR Nigeria, DPA Philippines) require technical implementation of deletion workflows. Only privacy policy drafting (Step 4) is addressed, not technical implementation.",
+            "Disaster recovery plan with defined RTO/RPO \u2014 no recovery time or recovery point objectives defined for any service. For a disbursement platform, this is a critical operational gap.",
+            "Mobile money provider rate limits and quotas \u2014 M-Pesa Daraja, MTN MoMo all have strict API rate limits. Load testing (Step 34) against the platform does not account for provider-side throttling.",
+            "Escrow/float account management for agent cash disbursement network \u2014 the agent network model (Step 2) defines float management as a contract concern but no treasury/float management system is planned.",
+            "Step 35 (SAGE config) placed last is backwards \u2014 SAGE framework configuration should be Step 1 to establish the agentic infrastructure before any domain development begins."
+          ],
+          "security_risks": [
+            "KYC document upload (Step 12) specifies virus scanning but does not specify the scanning provider, quarantine workflow, or what happens to a flagged document. 'Virus scan before storage' is not an implementation \u2014 it is a wish. A malicious APK uploaded as a KYC document that bypasses scanning could reach internal storage.",
+            "Mobile money webhook endpoints (Step 16) must validate provider signatures. Step 16 lists this as a requirement but Step 13 (disbursement engine) is built before Step 16 (API gateway) \u2014 meaning the webhook callback handlers may be built without the signature validation layer in place during development, creating a race condition in testing coverage.",
+            "The credit decisioning agent (Step 11) accepts tool calls to credit_score_api, kyc_verification_api, blacklist_check, and bureau_lookup. No mention of prompt injection defenses on agent inputs. A malicious borrower who controls any input field (employer name, address) that feeds into the LLM context could attempt prompt injection to manipulate the credit decision.",
+            "Row-level security in PostgreSQL (Step 9) is listed as a schema feature but RLS policies interact poorly with connection pooling (PgBouncer in transaction mode bypasses RLS session variables). The plan does not address this known PostgreSQL RLS + pooler incompatibility. At scale, this could silently expose cross-tenant data.",
+            "The ML feature store (Step 23) is refreshed via a pipeline but no access controls on feature store reads are specified. A compromised credit scoring service could read arbitrary borrower feature vectors. Feature store access must be authenticated and scoped per service.",
+            "Admin panel (Step 19) includes a 'policy rules editor' that allows adjusting credit score thresholds without code deployment. This is a high-privilege, high-risk capability. If an admin account is compromised, an attacker can open the credit gate to all applicants. Step 7 threat model does not list the admin panel as a threat surface despite it being the highest-impact attack vector.",
+            "The biometric auth for payment confirmation (Step 17) falls back to PIN. No specification of PIN brute-force lockout policy, secure PIN storage mechanism (not in SharedPreferences), or what happens when biometric enrollment data is available on a stolen device.",
+            "Mobile app certificate pinning is absent. A financial app in emerging markets is a high-value target for on-path attacks on public WiFi. Without certificate pinning, all API traffic \u2014 including KYC document uploads and loan disbursement confirmations \u2014 is interceptable by a MITM on the same network."
+          ],
+          "summary": "This plan demonstrates serious domain knowledge and covers the right categories for a regulated fintech platform \u2014 the dependency graph is mostly sound, compliance frameworks are named correctly, and the agentic architecture is coherently designed. However, it contains several critical production blockers that would prevent launch or trigger regulatory rejection. The most severe is the ML cold-start problem: a new market entrant cannot train a credit scoring model without historical loan repayment data, yet the plan treats model training as a purely technical exercise with no data acquisition strategy. The second critical flaw is the use of SMS and call log signals \u2014 these are legally uncollectable on Android via Play Store, which kills the mobile data scoring thesis at the platform layer. The Nigeria data residency requirement cannot be satisfied with AWS Cape Town, and this is a hard regulatory constraint, not a tunable one. Legally problematic signals (social graph, contact book) create discriminatory lending exposure in all three target markets. The USSD backend is designed in wireframes but never implemented in code. At 57/100, this plan requires fundamental rework on the ML data strategy, credit signal selection, Nigeria infrastructure, and USSD implementation before it can be considered production-ready for a regulated financial services context.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 57,
+            "flaws": [
+              "ML cold-start problem is unaddressed: a new market entrant has zero labeled loan repayment history. XGBoost/LightGBM requires thousands of completed loan outcomes (default/repaid) to train on. The plan never explains where this training data comes from. Without it, AUC-ROC >= 0.72 is not achievable at launch.",
+              "Google Play Store banned call log and SMS permission access for most app categories in 2019. 'call_duration_patterns' and 'sms_patterns' as credit signals cannot be collected via a Play Store app. Apps attempting this are removed. This kills 2 of 7 credit signals and invalidates the mobile data scoring thesis on Android.",
+              "Social graph centrality and contact book size have been explicitly flagged as proxy discriminators by CBN (Nigeria), and are legally contested in Philippines and Kenya. Using them risks regulatory rejection at launch and discriminatory lending lawsuits. These signals are not legally safe.",
+              "Data residency for Nigerian borrowers in af-south-1 (AWS Cape Town, South Africa) likely does not satisfy CBN data localization policy which requires Nigerian customer data to be stored within Nigeria. AWS has no Nigeria region. This is a fundamental infrastructure conflict with regulatory requirements.",
+              "Step 5 (Financial Model) only depends on Step 2. It does not depend on Step 3 (Regulatory). Interest rate caps \u2014 which are legally enforced in Nigeria (CBN), Kenya (CRB/CBK), and Philippines (SEC) \u2014 directly constrain the APR ranges in the unit economics model. A financial model built before regulatory caps are known is invalid.",
+              "USSD fallback flow is specified in UX wireframes (Step 8) but there is no corresponding backend implementation step. USSD is a completely different protocol from REST/HTTP \u2014 it requires a USSD gateway integration (Africa's Talking, Infobip), session state management, and a dedicated backend handler. None of this is in any backend step.",
+              "Step 16 (API Gateway) is placed AFTER Steps 12, 13, 14 (origination, disbursement, repayment services). The API gateway is the front door \u2014 building three backend services before the authentication, rate limiting, and routing layer is designed creates integration debt and security gaps that must be retrofitted.",
+              "Step 23 (Data Pipeline) has a contradictory acceptance criteria: feature store must refresh 'within 1 hour of new mobile data availability' but mobile signal ingestion runs as a 'nightly batch.' You cannot achieve hourly feature freshness from a daily batch pipeline. The architecture is internally inconsistent.",
+              "Step 7 and Step 29 (both security tasks) are assigned to 'regulatory_specialist' not a security engineer. STRIDE threat modeling and penetration testing are distinct disciplines from compliance documentation. A regulatory specialist does not perform ZAP scans, MobSF analysis, or write CVSS findings.",
+              "The React Native app bundle size acceptance criteria of '<25MB' is not achievable with React Native 0.73, 4 full i18n language bundles, KYC camera capture, Redux Persist, Firebase FCM, biometrics, and offline sync. React Native baseline is 8-12MB before any app code. This criteria will be failed and then silently dropped.",
+              "Step 3 (Regulatory) lists RBI India as a regulatory body but India is not in the target markets. The target markets are Nigeria, Kenya, and Philippines. Regulatory mapping for India is wasted effort and suggests the regulatory analysis template was not properly customized.",
+              "No sanctions screening is specified anywhere in the plan. OFAC, UN Security Council, and local sanctions lists must be checked at onboarding and on an ongoing basis. This is a hard AML/KYC requirement in all three target markets and its absence is a compliance blocker."
+            ],
+            "suggestions": [
+              "Add a Step 0 or sub-task to Step 10 that explicitly addresses the ML cold-start problem: options include purchasing synthetic bureau data, running a pilot loan program with manual underwriting to generate labeled training data, or licensing a pre-trained base model from a credit bureau. Without this, Step 10 cannot ship.",
+              "Replace call log and SMS signals immediately with Play Store-permissible alternatives: mobile money transaction history via USSD/API (user-initiated), repayment behavior on other platforms (with consent), utility payment consistency via direct API integration with KPLC/Abuja Electricity, and device stability signals (OS update frequency, storage patterns). These are all legally collectible.",
+              "Move Step 3 (Regulatory) to a dependency of Step 5 (Financial Model). Interest rate caps must be known before unit economics are modeled. In Kenya, APR on digital loans is effectively capped by disclosure requirements. In Philippines, SEC caps at 6% per month on principal.",
+              "Add a separate backend implementation step for USSD gateway integration. Assign it after Step 12 (loan origination), specify Africa's Talking or Infobip as the provider, and require session state management in Redis. USSD sessions are 180-second timeout constrained \u2014 the entire loan application flow must be redesigned for this constraint.",
+              "For Nigeria data residency: either negotiate CBN data residency exemption with legal counsel, use a local Nigerian data center (Rack Centre, MDXi), or co-locate infrastructure in-country. This must be resolved before Step 24 infrastructure is provisioned.",
+              "Add sanctions screening as a sub-requirement in Step 3 and implement it as a dedicated check in Step 12 (loan origination). Integrate with a provider like ComplyAdvantage, Dow Jones Risk, or Refinitiv World-Check. Screen at onboarding and re-screen monthly.",
+              "Move Step 16 (API Gateway) to depend on Step 7 (Security) and run in parallel with Step 12, not after it. Build the auth layer first, then wire origination, disbursement, and repayment services into it \u2014 not the reverse.",
+              "In Step 10, add model monitoring and drift detection as acceptance criteria, not just monthly retraining. Specify a drift detection metric (PSI on score distribution, feature drift on key signals) with an alert threshold. Monthly retraining on a schedule without drift monitoring will silently degrade on portfolio shift.",
+              "Add credit bureau reporting as a requirement. CBN in Nigeria, CRB in Kenya, and CIC in Philippines all require digital lenders to report both positive and negative payment data. This is legally mandatory and affects borrower credit history. It needs a backend service and data pipeline step.",
+              "Add adverse action notice generation to Step 11 (credit decisioning agent). In all three jurisdictions, declined borrowers are legally entitled to a plain-language explanation of why they were declined. SHAP output in Step 10 must be translated into human-readable decline reason codes and surfaced in the borrower app."
+            ],
+            "missing": [
+              "ML training data acquisition strategy \u2014 the foundational blocker for the entire credit scoring module. No plan for cold-start.",
+              "Sanctions screening implementation (OFAC, UN, CBN watchlists, BSP watchlists) \u2014 legally mandatory AML control.",
+              "Credit bureau reporting pipeline \u2014 mandatory in Nigeria (CBN), Kenya (CRB regulations), Philippines (CIC Act).",
+              "USSD backend implementation step \u2014 UX wireframes exist but no server-side USSD handler is planned.",
+              "FX risk management strategy \u2014 multi-currency operations across NGN, KES, PHP with significant volatility. No hedging or FX exposure tracking mentioned.",
+              "Certificate pinning for the mobile app \u2014 critical for a financial app handling loan disbursements and KYC data.",
+              "AML transaction monitoring system \u2014 KYC at onboarding is insufficient. Ongoing transaction monitoring for structuring, layering, and placement is required under FATF Recommendation 10 and all three target market AML laws.",
+              "Model governance and fairness testing schedule \u2014 the bias audit in Step 10 is a one-time check. Ongoing fairness monitoring as the model retrains monthly is required for regulatory defensibility.",
+              "Data deletion/right-to-erasure implementation \u2014 GDPR and local equivalents (NDPR Nigeria, DPA Philippines) require technical implementation of deletion workflows. Only privacy policy drafting (Step 4) is addressed, not technical implementation.",
+              "Disaster recovery plan with defined RTO/RPO \u2014 no recovery time or recovery point objectives defined for any service. For a disbursement platform, this is a critical operational gap.",
+              "Mobile money provider rate limits and quotas \u2014 M-Pesa Daraja, MTN MoMo all have strict API rate limits. Load testing (Step 34) against the platform does not account for provider-side throttling.",
+              "Escrow/float account management for agent cash disbursement network \u2014 the agent network model (Step 2) defines float management as a contract concern but no treasury/float management system is planned.",
+              "Step 35 (SAGE config) placed last is backwards \u2014 SAGE framework configuration should be Step 1 to establish the agentic infrastructure before any domain development begins."
+            ],
+            "security_risks": [
+              "KYC document upload (Step 12) specifies virus scanning but does not specify the scanning provider, quarantine workflow, or what happens to a flagged document. 'Virus scan before storage' is not an implementation \u2014 it is a wish. A malicious APK uploaded as a KYC document that bypasses scanning could reach internal storage.",
+              "Mobile money webhook endpoints (Step 16) must validate provider signatures. Step 16 lists this as a requirement but Step 13 (disbursement engine) is built before Step 16 (API gateway) \u2014 meaning the webhook callback handlers may be built without the signature validation layer in place during development, creating a race condition in testing coverage.",
+              "The credit decisioning agent (Step 11) accepts tool calls to credit_score_api, kyc_verification_api, blacklist_check, and bureau_lookup. No mention of prompt injection defenses on agent inputs. A malicious borrower who controls any input field (employer name, address) that feeds into the LLM context could attempt prompt injection to manipulate the credit decision.",
+              "Row-level security in PostgreSQL (Step 9) is listed as a schema feature but RLS policies interact poorly with connection pooling (PgBouncer in transaction mode bypasses RLS session variables). The plan does not address this known PostgreSQL RLS + pooler incompatibility. At scale, this could silently expose cross-tenant data.",
+              "The ML feature store (Step 23) is refreshed via a pipeline but no access controls on feature store reads are specified. A compromised credit scoring service could read arbitrary borrower feature vectors. Feature store access must be authenticated and scoped per service.",
+              "Admin panel (Step 19) includes a 'policy rules editor' that allows adjusting credit score thresholds without code deployment. This is a high-privilege, high-risk capability. If an admin account is compromised, an attacker can open the credit gate to all applicants. Step 7 threat model does not list the admin panel as a threat surface despite it being the highest-impact attack vector.",
+              "The biometric auth for payment confirmation (Step 17) falls back to PIN. No specification of PIN brute-force lockout policy, secure PIN storage mechanism (not in SharedPreferences), or what happens when biometric enrollment data is available on a stolen device.",
+              "Mobile app certificate pinning is absent. A financial app in emerging markets is a high-value target for on-path attacks on public WiFi. Without certificate pinning, all API traffic \u2014 including KYC document uploads and loan disbursement confirmations \u2014 is interceptable by a MITM on the same network."
+            ],
+            "summary": "This plan demonstrates serious domain knowledge and covers the right categories for a regulated fintech platform \u2014 the dependency graph is mostly sound, compliance frameworks are named correctly, and the agentic architecture is coherently designed. However, it contains several critical production blockers that would prevent launch or trigger regulatory rejection. The most severe is the ML cold-start problem: a new market entrant cannot train a credit scoring model without historical loan repayment data, yet the plan treats model training as a purely technical exercise with no data acquisition strategy. The second critical flaw is the use of SMS and call log signals \u2014 these are legally uncollectable on Android via Play Store, which kills the mobile data scoring thesis at the platform layer. The Nigeria data residency requirement cannot be satisfied with AWS Cape Town, and this is a hard regulatory constraint, not a tunable one. Legally problematic signals (social graph, contact book) create discriminatory lending exposure in all three target markets. The USSD backend is designed in wireframes but never implemented in code. At 57/100, this plan requires fundamental rework on the ML data strategy, credit signal selection, Nigeria infrastructure, and USSD implementation before it can be considered production-ready for a regulated financial services context.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T00:01:14.565943+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 207.77,
+    "critic_plan": 136.52
+  }
+}

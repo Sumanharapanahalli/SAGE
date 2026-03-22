@@ -1,0 +1,60 @@
+project_name: energy_management
+display_name: Energy Management
+version: 1.0.0
+domain: iot
+description: Building energy management system with smart meter integration, HVAC
+  optimization, solar panel monitoring, demand response, and carbon footprint tracking.
+detected_domains: []
+compliance_standards:
+- IEC 62443
+- ISO 50001
+- ENERGY STAR
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- ML_MODEL
+- PRODUCT_MGMT
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- UX_DESIGN
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- firmware_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

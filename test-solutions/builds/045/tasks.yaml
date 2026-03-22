@@ -1,0 +1,287 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze grocery delivery market: competitor landscape (Instacart,
+      DoorDash, Gopuff), pricing models, slot-based vs on-demand positioning, and
+      regional demand signals.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers at least 5 platforms with feature, pricing, and GTM
+      comparison
+    - Market sizing includes TAM/SAM/SOM with cited sources
+    - Positioning brief recommends a differentiated angle for grocery_delivery
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define end-to-end business requirements: customer ordering flow,
+      shopper pick-and-pack flow, substitution rules, slot-based scheduling windows,
+      and inventory sync processes. Produce user stories and process flow diagrams.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories cover all 5 actor types with acceptance criteria per story
+    - Process flows include happy path and at least 3 exception paths (OOS, late shopper,
+      failed delivery)
+    - ROI analysis includes unit economics per order at target volume
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Produce the Product Requirements Document (PRD), feature roadmap
+      (MVP vs v2), and success metrics (fill rate, on-time delivery %, substitution
+      acceptance rate, DAU).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all MVP features with priority (P0/P1/P2), owner, and success metric
+    - Roadmap has at least 3 milestones with dates and go/no-go criteria
+    - All KPIs have baseline target values and measurement methodology defined
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: Conduct user research and produce wireframes for customer app (browse,
+      cart, slot picker, substitution approval, order tracking) and shopper app (task
+      list, scan-to-pick, substitution workflow, proof-of-delivery). Include accessibility
+      audit (WCAG 2.1 AA).
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all listed screens for both apps at medium-fidelity
+    - Interaction spec defines all state transitions including error and empty states
+    - Accessibility audit covers color contrast, touch target sizes, and screen reader
+      labels
+    depends_on:
+    - 3
+  FINANCIAL:
+    description: 'Build financial model: unit economics per order, shopper pay model
+      (hourly vs per-order), delivery fee structure, slot-based surge pricing logic,
+      and 18-month P&L projection.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Unit economics model shows contribution margin per order across 3 scenarios
+    - Pricing strategy defines slot window pricing tiers with rationale
+    - P&L projection includes sensitivity analysis on order volume and basket size
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 2
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (CCPA/GDPR compliant), Shopper
+      Independent Contractor Agreement, and IP ownership review for route optimization
+      and substitution logic.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy explicitly covers location tracking, purchase history, and payment
+      data retention
+    - Shopper agreement clearly defines contractor vs employee classification risk
+      mitigations
+    - IP review confirms no open-source license conflicts in route optimization dependencies
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 3
+  SECURITY:
+    description: Produce threat model (STRIDE), PCI DSS scope diagram, SOC 2 control
+      mapping, and penetration test plan covering customer app, shopper app, API gateway,
+      and payment flows.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 5 scope areas with mitigations mapped
+    - PCI DSS scope diagram identifies CDE boundary and all in-scope systems
+    - SOC 2 control matrix maps all Trust Service Criteria to planned controls
+    - SBOM lists all third-party dependencies with known CVE status
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 3
+  COMPLIANCE:
+    description: Produce PCI DSS evidence artifacts (encryption at rest/transit policy,
+      tokenization design, access control matrix) and SOC 2 readiness checklist for
+      audit preparation.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Encryption policy covers AES-256 at rest and TLS 1.3 in transit for all cardholder
+      data
+    - Tokenization architecture document describes payment vault integration and token
+      lifecycle
+    - SOC 2 readiness checklist has no open P0 gaps before go-live
+    depends_on:
+    - 7
+  CONFIG:
+    description: 'Initialize grocery_delivery solution scaffold: directory structure,
+      project.yaml (active modules, theme), prompts.yaml (analyst, developer, monitor,
+      planner roles), tasks.yaml (32 task types). Set up monorepo with packages for
+      backend, customer-app, shopper-app, admin-web.'
+    agent_role: developer
+    acceptance_criteria:
+    - solutions/grocery_delivery/ contains valid project.yaml, prompts.yaml, and tasks.yaml
+    - make run PROJECT=grocery_delivery starts without errors
+    - Monorepo root package.json defines all workspace packages
+    - Python venv activates and all base deps install cleanly
+    depends_on:
+    - 4
+  DATABASE:
+    description: 'Design and implement PostgreSQL schema for: users (customers, shoppers),
+      stores, inventory (products, stock levels, zones), orders, order_items, substitutions,
+      delivery_slots, routes, and audit_events. Include Redis schema for real-time
+      inventory locks and slot availability.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all core tables with FK relationships and cardinality labels
+    - All tables have created_at/updated_at and soft-delete support
+    - Redis schema doc defines TTL and eviction policy per key pattern
+    - Migration runs cleanly on a fresh PostgreSQL 16 instance
+    - Seed data populates at least 1 test store with 100 products and 2 delivery slots
+    depends_on:
+    - 9
+  API:
+    description: 'Design OpenAPI 3.1 spec for all backend endpoints: auth (JWT + refresh),
+      catalog (search, product detail), cart, order lifecycle, inventory (read/write/lock),
+      substitution proposals, delivery slots, shopper task management, route assignments,
+      and admin operations.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors against OpenAPI 3.1 schema
+    - All endpoints have request/response schemas, error codes, and auth requirements
+    - WebSocket event catalog covers order_state_changed, shopper_location_updated,
+      slot_taken
+    - SSE event catalog covers inventory_updated, product_oos events
+    depends_on:
+    - 10
+  BACKEND:
+    description: 'Build core FastAPI backend: auth service (JWT, OAuth2, shopper/customer
+      role separation), catalog service (full-text search via pgvector/pg_trgm), cart
+      service with Redis session, and order lifecycle state machine (pending→confirmed→picking→in_transit→delivered).'
+    agent_role: developer
+    acceptance_criteria:
+    - Auth endpoints issue valid JWTs with role claims and refresh flow works end-to-end
+    - Catalog search returns results in <200ms for 100k product catalog
+    - Cart persists across sessions via Redis with TTL of 7 days
+    - Order state machine rejects invalid transitions and emits audit events on every
+      transition
+    - All endpoints return structured error responses matching OpenAPI spec
+    depends_on:
+    - 11
+  FRONTEND:
+    description: 'Build customer React Native app: home feed (store selection, featured
+      products), product search and browse, cart management, slot picker UI, checkout
+      with Stripe Payment Element, substitution approval modal, live order tracking
+      map, and order history.'
+    agent_role: developer
+    acceptance_criteria:
+    - All screens render correctly on iOS 17+ and Android 14+
+    - Slot picker shows real-time availability updates without manual refresh
+    - Substitution approval modal shows side-by-side product comparison with price
+      diff
+    - Live tracking map updates shopper position every 10 seconds
+    - Stripe Payment Element renders and processes test payments successfully
+    depends_on:
+    - 11
+    - 4
+  INFRA:
+    description: 'Set up cloud infrastructure on AWS: EKS cluster for backend services,
+      RDS PostgreSQL 16 with read replica, ElastiCache Redis cluster, S3 for product
+      images and POD photos, CloudFront CDN, ALB with WAF, VPC with private subnets,
+      and Terraform IaC.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - terraform plan runs without errors and terraform apply completes in a clean
+      environment
+    - EKS cluster auto-scales between 2 and 20 nodes based on CPU/memory
+    - RDS Multi-AZ failover completes within 60 seconds
+    - WAF blocks OWASP Top 10 attack patterns in test
+    - All resources tagged with environment, service, and cost-center tags
+    depends_on:
+    - 9
+  DEVOPS:
+    description: 'Build CI/CD pipelines: GitHub Actions for backend (lint, test, build
+      Docker image, push to ECR, deploy to EKS), React Native build pipeline (EAS
+      Build for iOS/Android), admin web pipeline (Vite build + S3 deploy), and automated
+      rollback on health check failure.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Backend pipeline completes in under 8 minutes from push to deployed
+    - Mobile pipeline produces signed iOS and Android builds without manual intervention
+    - Automated rollback triggers and completes within 3 minutes of health check failure
+    - Datadog dashboard shows p50/p95/p99 latency per endpoint
+    - PagerDuty alert fires within 2 minutes of error rate exceeding threshold
+    depends_on:
+    - 21
+  OPERATIONS:
+    description: 'Produce operational runbooks: on-call escalation paths, incident
+      severity matrix (P1-P4), slot capacity emergency expansion procedure, inventory
+      sync failure recovery, route optimizer failover to basic greedy algorithm, and
+      SLA definitions.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Each runbook has a decision tree, step-by-step remediation, and rollback path
+    - SLA definitions cover availability, order fulfillment rate, and ETA accuracy
+    - Capacity planning process document defines triggers for adding slot windows
+    - Route optimizer failover runbook verified by dry-run test
+    depends_on:
+    - 22
+  QA:
+    description: 'Produce QA test plan, test case catalog, and execute test cycles
+      for: checkout flow, substitution approval, slot booking under concurrency, inventory
+      real-time sync, route assignment, and payment capture/refund.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test case catalog covers 100% of P0 user stories with at least one test per
+      AC
+    - Load test simulates 500 concurrent users placing orders without degradation
+      beyond p95 <2s
+    - Substitution approval tested under concurrent OOS for same product (no duplicate
+      proposals)
+    - OWASP ZAP scan shows no High or Critical findings
+    - Test execution report shows pass rate >95% before launch sign-off
+    depends_on:
+    - 18
+    - 19
+    - 20
+  TESTS:
+    description: 'Write unit and integration test suites for all backend services:
+      inventory locking, substitution engine ranking, slot availability under concurrency,
+      route optimizer output validation, payment service Stripe mock, and order state
+      machine transitions.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest runs cleanly with no failures on a fresh checkout
+    - Coverage report shows ≥85% line coverage for src/ excluding migrations
+    - Concurrent inventory lock test verifies exactly N reservations succeed for stock
+      of N
+    - Order state machine test verifies all invalid transitions raise InvalidStateTransition
+    - Stripe webhook test verifies signature validation rejects tampered payloads
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+  AGENTIC:
+    description: 'Implement the coordinator multi-agent pattern for the substitution
+      and demand intelligence layer: central coordinator decomposes incoming OOS events,
+      routes to specialist agents (substitution ranker, customer preference analyst,
+      allergy checker), aggregates results, and proposes final substitution with confidence
+      score.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes OOS event to all 3 specialist agents in parallel
+    - Final proposal aggregates all agent outputs within 500ms
+    - Confidence score correctly flags proposals requiring customer approval
+    - HITL gate creates notification event for customer approval when triggered
+    - Coordinator traced in audit log with all agent contributions visible
+    depends_on:
+    - 14
+  DOCS:
+    description: 'Produce developer documentation: API reference (auto-generated from
+      OpenAPI), architecture decision records (ADRs) for key choices (OR-Tools vs
+      custom, Redis locking strategy, Stripe SAQ-A scope), local development setup
+      guide, and solution YAML configuration guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference auto-generated from openapi.yaml with no missing endpoint documentation
+    - Local dev setup guide tested on a clean machine with documented prerequisites
+      only
+    - Each ADR includes context, decision, consequences, and alternatives considered
+    - README covers project purpose, quick start, and links to all major docs sections
+    depends_on:
+    - 25
+    - 24

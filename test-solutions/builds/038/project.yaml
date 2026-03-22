@@ -1,0 +1,65 @@
+project_name: scheduling_app
+display_name: Scheduling App
+version: 1.0.0
+domain: saas
+description: Appointment scheduling SaaS with calendar sync, booking pages, team scheduling,
+  payment collection, reminders, and CRM integration.
+detected_domains: []
+compliance_standards:
+- SOC 2
+- GDPR
+- PCI DSS
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FINANCIAL
+- FRONTEND
+- LEGAL
+- MARKET_RESEARCH
+- OPERATIONS
+- PRODUCT_MGMT
+- SECURITY
+- TESTS
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- financial_analyst
+- legal_advisor
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

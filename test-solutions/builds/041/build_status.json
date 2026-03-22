@@ -1,0 +1,1273 @@
+{
+  "run_id": "64cf5cf8-0be9-46fb-9b15-0cbb55af27c1",
+  "solution_name": "marketplace_platform",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T05:39:47.467864+00:00",
+  "updated_at": "2026-03-22T05:44:25.868369+00:00",
+  "product_description": "Multi-vendor ecommerce marketplace with seller onboarding, product listings, order management, payment splitting, reviews, and dispute resolution.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze multi-vendor marketplace landscape: competitor analysis (Amazon, Etsy, eBay, Shopify Markets), pricing models, seller acquisition costs, GMV benchmarks, and differentiation opportunities.",
+      "payload": {
+        "competitors": [
+          "Amazon Marketplace",
+          "Etsy",
+          "eBay",
+          "Shopify Markets",
+          "Faire"
+        ],
+        "research_areas": [
+          "seller_fees",
+          "buyer_trust_signals",
+          "dispute_resolution_models",
+          "payment_split_mechanics"
+        ],
+        "deliverables": [
+          "competitive_matrix",
+          "positioning_doc",
+          "go_to_market_strategy"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive matrix covers at least 5 platforms with fee structures, features, and seller NPS data",
+        "Positioning document identifies at least 3 defensible differentiators",
+        "GTM strategy defines target seller verticals, buyer acquisition channels, and launch geography"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user stories, and process flows for all marketplace actors: buyers, sellers, admins. Cover seller onboarding, product listing lifecycle, order flow, payment splitting, review submission, and dispute escalation.",
+      "payload": {
+        "actors": [
+          "buyer",
+          "seller",
+          "marketplace_admin",
+          "finance_ops"
+        ],
+        "core_flows": [
+          "seller_onboarding",
+          "product_listing",
+          "checkout",
+          "order_fulfillment",
+          "payment_split",
+          "review_submission",
+          "dispute_open_resolve"
+        ],
+        "deliverables": [
+          "BRD",
+          "user_stories",
+          "process_flow_diagrams",
+          "ROI_model"
+        ]
+      },
+      "acceptance_criteria": [
+        "BRD covers all actor roles with explicit permissions matrix",
+        "Each core flow has a swim-lane diagram with happy path and at least 2 edge cases",
+        "User stories follow INVEST criteria and are mapped to acceptance tests",
+        "ROI model includes seller lifetime value, take rate sensitivity analysis, and break-even GMV",
+        "Pricing tiers defined",
+        "Churn risk factors identified"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "FINANCIAL",
+      "description": "Build financial model: take rate structure, payment processing cost pass-through, seller subscription tiers, dispute chargeback reserve, revenue projections, and unit economics per seller cohort.",
+      "payload": {
+        "fee_structures": [
+          "percentage_take_rate",
+          "flat_listing_fee",
+          "subscription_tier",
+          "promoted_listing"
+        ],
+        "cost_components": [
+          "payment_processing",
+          "chargeback_reserve",
+          "hosting",
+          "support_ops"
+        ],
+        "deliverables": [
+          "financial_model_spreadsheet",
+          "pricing_strategy_doc",
+          "chargeback_reserve_policy"
+        ]
+      },
+      "acceptance_criteria": [
+        "Financial model projects 3-year P&L with GMV scenarios (base, bull, bear)",
+        "Pricing strategy document defines take rate by seller tier with competitive justification",
+        "Chargeback reserve policy specifies reserve percentage and replenishment rules",
+        "Unit economics show CAC, LTV, and payback period per seller segment",
+        "MRR/ARR projections modeled",
+        "CAC and LTV estimated"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 4,
+      "task_type": "LEGAL",
+      "description": "Draft legal framework: marketplace Terms of Service, Seller Agreement, Buyer Protection Policy, Privacy Policy (GDPR/CCPA compliant), dispute resolution terms, and IP/DMCA takedown policy.",
+      "payload": {
+        "documents": [
+          "marketplace_tos",
+          "seller_agreement",
+          "buyer_protection_policy",
+          "privacy_policy",
+          "dispute_resolution_terms",
+          "dmca_policy"
+        ],
+        "jurisdictions": [
+          "US",
+          "EU"
+        ],
+        "compliance_flags": [
+          "GDPR",
+          "CCPA",
+          "PCI_DSS_liability_clauses"
+        ]
+      },
+      "acceptance_criteria": [
+        "Seller Agreement covers commission structure, payout schedule, account suspension terms, and IP warranties",
+        "Privacy Policy satisfies GDPR Article 13/14 disclosure requirements and CCPA opt-out rights",
+        "Dispute resolution terms define SLA timelines, evidence submission rules, and binding arbitration clause",
+        "DMCA policy includes counter-notification procedure and repeat-infringer termination policy",
+        "Subscription terms cover cancellation and refunds",
+        "Data processing agreement drafted",
+        "Return/refund policy drafted",
+        "Consumer protection compliance checked"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 5,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce Product Requirements Document, phased roadmap (MVP \u2192 v1 \u2192 v2), prioritized backlog, and success metrics framework (GMV, seller activation rate, dispute rate, NPS).",
+      "payload": {
+        "phases": {
+          "MVP": [
+            "seller_onboarding",
+            "product_listings",
+            "cart_checkout",
+            "basic_order_mgmt",
+            "stripe_connect_payout"
+          ],
+          "v1": [
+            "review_system",
+            "dispute_resolution",
+            "seller_analytics_dashboard",
+            "promoted_listings"
+          ],
+          "v2": [
+            "multi_currency",
+            "seller_subscription_tiers",
+            "AI_fraud_detection",
+            "bulk_import"
+          ]
+        },
+        "success_metrics": [
+          "GMV_monthly",
+          "seller_activation_rate",
+          "order_dispute_rate",
+          "buyer_NPS",
+          "seller_NPS"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all MVP features with user stories, wireframe references, and acceptance criteria",
+        "Roadmap has clear phase gates with measurable exit criteria",
+        "Backlog is MoSCoW-prioritized with effort estimates",
+        "Success metrics have baseline targets and measurement methodology defined"
+      ],
+      "depends_on": [
+        2,
+        3
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 6,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes and interaction designs for all core flows: seller onboarding wizard, product listing editor, buyer checkout, order tracking, review submission, and dispute portal.",
+      "payload": {
+        "research_methods": [
+          "user_interviews",
+          "competitor_UX_audit",
+          "card_sorting"
+        ],
+        "deliverables": [
+          "information_architecture",
+          "lo-fi_wireframes",
+          "hi-fi_mockups",
+          "design_system_tokens",
+          "accessibility_audit"
+        ],
+        "key_screens": [
+          "seller_onboarding_wizard",
+          "listing_editor",
+          "storefront",
+          "cart_checkout",
+          "order_dashboard",
+          "review_modal",
+          "dispute_portal"
+        ]
+      },
+      "acceptance_criteria": [
+        "Information architecture covers all page types with navigation hierarchy",
+        "Hi-fi mockups exist for all key screens in mobile and desktop viewports",
+        "Design system defines color tokens, typography scale, spacing system, and component library",
+        "Accessibility audit confirms WCAG 2.1 AA compliance for all interactive elements",
+        "Seller onboarding wizard passes usability test with 5 representative users achieving >80% task completion"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 7,
+      "task_type": "SECURITY",
+      "description": "Produce threat model, PCI DSS scoping document, SOC 2 control mapping, penetration test plan, and SBOM. Cover payment data flows, seller identity verification, and dispute evidence storage.",
+      "payload": {
+        "frameworks": [
+          "PCI_DSS_v4",
+          "SOC_2_Type_II"
+        ],
+        "threat_model_scope": [
+          "payment_flows",
+          "seller_KYC_data",
+          "buyer_PII",
+          "dispute_evidence_uploads",
+          "admin_portal"
+        ],
+        "deliverables": [
+          "STRIDE_threat_model",
+          "PCI_DSS_SAQ",
+          "SOC2_control_matrix",
+          "pentest_plan",
+          "SBOM"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model identifies threats for all data flows with CVSS risk ratings",
+        "PCI DSS SAQ-D scoping document identifies all CDE components and out-of-scope boundaries",
+        "SOC 2 control matrix maps all Trust Service Criteria (Security, Availability, Confidentiality) to implemented controls",
+        "Penetration test plan covers OWASP Top 10, authentication bypass, IDOR, and payment flow tampering",
+        "SBOM lists all third-party dependencies with CVE scan results",
+        "Payment flow PCI compliant",
+        "Fraud detection rules defined"
+      ],
+      "depends_on": [
+        4,
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "COMPLIANCE",
+      "description": "Produce PCI DSS and SOC 2 compliance evidence artifacts: data flow diagrams, encryption-at-rest/transit policy, access control matrix, incident response plan, and audit log specification.",
+      "payload": {
+        "pci_artifacts": [
+          "cardholder_data_flow_diagram",
+          "network_segmentation_diagram",
+          "encryption_policy",
+          "key_management_policy"
+        ],
+        "soc2_artifacts": [
+          "access_control_matrix",
+          "change_management_policy",
+          "incident_response_plan",
+          "vendor_risk_assessment"
+        ],
+        "audit_log_spec": [
+          "events_to_log",
+          "retention_period",
+          "tamper_evidence_controls"
+        ]
+      },
+      "acceptance_criteria": [
+        "Cardholder data flow diagram traces all PAN touchpoints and confirms no storage of raw card data",
+        "Encryption policy mandates TLS 1.2+ in transit and AES-256 at rest for all PII and payment data",
+        "Access control matrix documents RBAC roles (buyer, seller, admin, finance_ops) with least-privilege justification",
+        "Incident response plan defines severity classification, notification SLAs (72h GDPR breach notice), and runbook steps",
+        "Audit log spec covers all CRUD events on orders, payments, disputes, and user accounts with 12-month retention"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 9,
+      "task_type": "DATABASE",
+      "description": "Design normalized database schema for marketplace: users, seller_profiles, products, product_variants, orders, order_items, payments, payment_splits, reviews, disputes, and audit_events tables.",
+      "payload": {
+        "engine": "PostgreSQL 16",
+        "tables": [
+          "users",
+          "seller_profiles",
+          "seller_kyc_documents",
+          "products",
+          "product_variants",
+          "product_images",
+          "categories",
+          "carts",
+          "cart_items",
+          "orders",
+          "order_items",
+          "order_status_history",
+          "payments",
+          "payment_splits",
+          "payouts",
+          "reviews",
+          "review_votes",
+          "disputes",
+          "dispute_messages",
+          "dispute_evidence",
+          "audit_events"
+        ],
+        "deliverables": [
+          "ERD",
+          "migration_scripts",
+          "seed_data",
+          "index_strategy"
+        ]
+      },
+      "acceptance_criteria": [
+        "ERD covers all tables with foreign key relationships, nullability, and enum constraints documented",
+        "Migrations are idempotent and reversible (up/down)",
+        "Payment and order tables enforce referential integrity preventing orphaned payment_splits",
+        "Index strategy document covers all high-cardinality query patterns (seller product lookup, order history, dispute search)",
+        "Seed data provides realistic test fixtures for all roles and flow states"
+      ],
+      "depends_on": [
+        5,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 specification for all marketplace endpoints: auth, seller onboarding, product CRUD, cart/checkout, order management, payment webhooks, reviews, and dispute endpoints.",
+      "payload": {
+        "endpoint_groups": [
+          "auth",
+          "sellers",
+          "products",
+          "categories",
+          "cart",
+          "orders",
+          "payments",
+          "payouts",
+          "reviews",
+          "disputes",
+          "admin",
+          "webhooks"
+        ],
+        "auth_scheme": "JWT + refresh tokens, OAuth2 for seller SSO",
+        "versioning": "URL prefix /api/v1/",
+        "deliverables": [
+          "openapi_spec.yaml",
+          "postman_collection",
+          "error_code_registry"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates with no errors against OAS 3.1 schema",
+        "All endpoints document request/response schemas, error codes, and authentication requirements",
+        "Webhook endpoints document signature verification (Stripe-style HMAC)",
+        "Error code registry maps all 4xx/5xx codes to user-facing messages and resolution steps",
+        "Postman collection includes example requests for all happy-path and error flows"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "CONFIG",
+      "description": "Set up monorepo structure, toolchain, environment configuration, and agentic AI pattern configuration. Configure coordinator pattern for marketplace AI features (fraud detection routing, dispute triage).",
+      "payload": {
+        "repo_structure": "monorepo with packages: api, web, worker, shared",
+        "stack": {
+          "backend": "Python 3.12 + FastAPI",
+          "frontend": "React 18 + TypeScript + Vite",
+          "worker": "Celery + Redis",
+          "database": "PostgreSQL 16",
+          "cache": "Redis 7",
+          "storage": "S3-compatible (product images, dispute evidence)",
+          "payments": "Stripe Connect"
+        },
+        "agentic_pattern": "coordinator",
+        "agentic_components": [
+          "coordinator_agent",
+          "fraud_detection_specialist",
+          "dispute_triage_specialist",
+          "task_router",
+          "result_merger"
+        ],
+        "environment_files": [
+          ".env.example",
+          "docker-compose.yml",
+          "docker-compose.test.yml"
+        ]
+      },
+      "acceptance_criteria": [
+        "Monorepo boots with single `docker-compose up` command",
+        "All environment variables documented in .env.example with descriptions and example values",
+        "Coordinator agent pattern scaffolded with router, specialist stubs, and result merger",
+        "Pre-commit hooks enforce linting (ruff, eslint), type checking (mypy, tsc), and secret scanning",
+        "README documents local setup in under 10 steps"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement authentication and seller onboarding service: JWT auth, OAuth2, seller registration, KYC document upload, identity verification webhook integration (Stripe Identity or Persona), and seller profile management.",
+      "payload": {
+        "modules": [
+          "auth_service",
+          "seller_onboarding_service",
+          "kyc_service"
+        ],
+        "kyc_provider": "Stripe Identity",
+        "features": [
+          "email_password_registration",
+          "OAuth2_google",
+          "JWT_refresh_rotation",
+          "seller_kyc_submission",
+          "kyc_webhook_handler",
+          "seller_profile_CRUD",
+          "bank_account_connection_stripe_connect"
+        ]
+      },
+      "acceptance_criteria": [
+        "JWT access tokens expire in 15 minutes; refresh tokens rotate on use with 30-day expiry",
+        "Password hashing uses bcrypt with cost factor \u226512",
+        "KYC webhook idempotently updates seller verification status and triggers payout enablement",
+        "Seller profile CRUD enforces ownership (seller can only edit own profile)",
+        "All auth endpoints rate-limited (login: 5/min, registration: 3/min per IP)"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement product catalog service: category management, product CRUD with variant support, image upload to S3, search indexing (Elasticsearch or PostgreSQL full-text), and inventory management.",
+      "payload": {
+        "modules": [
+          "catalog_service",
+          "inventory_service",
+          "search_service",
+          "image_service"
+        ],
+        "features": [
+          "product_CRUD",
+          "variant_matrix",
+          "bulk_import_CSV",
+          "image_upload_S3",
+          "full_text_search",
+          "category_tree",
+          "inventory_tracking",
+          "low_stock_alerts"
+        ]
+      },
+      "acceptance_criteria": [
+        "Product CRUD enforces seller ownership and validates required fields (title, price, category, at least one image)",
+        "Variant matrix supports up to 3 option dimensions (e.g., size, color, material) with individual SKU and price override",
+        "Image upload validates MIME type (JPEG/PNG/WebP only), enforces 10MB limit, and generates thumbnail on upload",
+        "Full-text search returns results in <200ms for catalog up to 1M products",
+        "Inventory decrement is atomic (row-level lock) preventing oversell under concurrent orders"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement cart, checkout, and order management service: cart persistence, multi-seller order splitting, tax calculation, order state machine, fulfillment tracking, and cancellation/refund logic.",
+      "payload": {
+        "modules": [
+          "cart_service",
+          "checkout_service",
+          "order_service",
+          "tax_service",
+          "fulfillment_service"
+        ],
+        "order_states": [
+          "pending_payment",
+          "paid",
+          "processing",
+          "shipped",
+          "delivered",
+          "cancelled",
+          "refunded",
+          "disputed"
+        ],
+        "features": [
+          "cart_CRUD",
+          "multi_seller_cart",
+          "order_split_by_seller",
+          "tax_calculation_TaxJar",
+          "order_state_machine",
+          "shipping_label_generation",
+          "cancellation_window",
+          "refund_initiation"
+        ]
+      },
+      "acceptance_criteria": [
+        "Order split correctly groups cart items by seller into separate sub-orders",
+        "Order state machine enforces valid transitions and rejects invalid state changes",
+        "Tax calculation integrates TaxJar API with fallback to flat-rate if API unavailable",
+        "Cancellation is allowed within 1 hour of payment for unshipped orders",
+        "Refund initiation creates dispute or direct refund based on order state and seller response"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement payment service with Stripe Connect: payment intent creation, 3DS handling, payment splitting across sellers, platform fee deduction, payout scheduling, and webhook event processing.",
+      "payload": {
+        "provider": "Stripe Connect (Express accounts)",
+        "modules": [
+          "payment_service",
+          "payout_service",
+          "webhook_handler"
+        ],
+        "features": [
+          "payment_intent_creation",
+          "3DS_authentication",
+          "payment_split_stripe_transfer",
+          "platform_fee_application",
+          "payout_schedule_weekly",
+          "stripe_webhook_processing",
+          "refund_management",
+          "dispute_evidence_submission_to_stripe"
+        ]
+      },
+      "acceptance_criteria": [
+        "Payment intent created with idempotency key per order preventing duplicate charges",
+        "Stripe transfer to seller account deducted by platform take rate with fee recorded in payment_splits table",
+        "Webhook handler verifies Stripe signature before processing any event",
+        "Webhook events are idempotent (duplicate delivery does not double-process)",
+        "Payout schedule respects seller's configured payout frequency and minimum payout threshold",
+        "Refund reverses seller transfer proportionally and restores platform fee"
+      ],
+      "depends_on": [
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement review and rating service: buyer-verified-purchase review submission, seller response, review moderation (AI-assisted), aggregate rating calculation, and review voting.",
+      "payload": {
+        "modules": [
+          "review_service",
+          "moderation_service"
+        ],
+        "features": [
+          "verified_purchase_check",
+          "review_CRUD",
+          "seller_response",
+          "AI_moderation_toxicity_check",
+          "aggregate_rating_calculation",
+          "helpful_vote",
+          "admin_review_removal"
+        ]
+      },
+      "acceptance_criteria": [
+        "Only buyers with a delivered order for the product can submit a review",
+        "Review submission triggers async AI moderation; review hidden until approved or 24h passes without action",
+        "Seller response limited to one response per review, visible alongside review",
+        "Aggregate rating recalculated on each review submission using running average stored on product",
+        "Admin can remove review with mandatory reason logged to audit_events"
+      ],
+      "depends_on": [
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "BACKEND",
+      "description": "Implement dispute resolution service: dispute opening by buyer, seller response window, evidence upload, mediator assignment, resolution workflow, and automated escalation with payment hold integration.",
+      "payload": {
+        "modules": [
+          "dispute_service",
+          "evidence_service",
+          "mediator_service"
+        ],
+        "workflow_states": [
+          "opened",
+          "seller_response_pending",
+          "evidence_review",
+          "mediation",
+          "resolved_buyer_favor",
+          "resolved_seller_favor",
+          "escalated_to_stripe"
+        ],
+        "features": [
+          "dispute_open_with_reason",
+          "seller_response_48h_window",
+          "evidence_upload_S3",
+          "mediator_assignment",
+          "payment_hold_on_open",
+          "auto_escalate_no_response",
+          "resolution_notification",
+          "stripe_chargeback_sync"
+        ]
+      },
+      "acceptance_criteria": [
+        "Dispute can only be opened within 30 days of delivery confirmation",
+        "Payment held automatically when dispute opened; released to winning party on resolution",
+        "Seller response window is 48 hours; auto-escalates to mediator if no response",
+        "Evidence uploads validated for file type (PDF, JPEG, PNG) and 20MB size limit",
+        "Resolution notification sent to both parties via email within 5 minutes of decision",
+        "Dispute outcome synced to Stripe for chargeback evidence if buyer escalates to card issuer"
+      ],
+      "depends_on": [
+        15,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "BACKEND",
+      "description": "Implement seller analytics and admin dashboard APIs: seller revenue dashboard, order metrics, payout history, platform-wide GMV reporting, seller performance scores, and admin moderation tools.",
+      "payload": {
+        "modules": [
+          "analytics_service",
+          "admin_service"
+        ],
+        "seller_metrics": [
+          "GMV_by_period",
+          "order_count",
+          "avg_order_value",
+          "dispute_rate",
+          "review_score",
+          "payout_history"
+        ],
+        "admin_features": [
+          "platform_GMV_dashboard",
+          "seller_management",
+          "product_moderation",
+          "dispute_queue",
+          "user_suspension",
+          "payout_override"
+        ]
+      },
+      "acceptance_criteria": [
+        "Seller dashboard aggregates are pre-computed in background job and cached; <100ms response time",
+        "Admin platform dashboard shows real-time GMV, active sellers, pending disputes with 1-minute staleness",
+        "Seller performance score computed from dispute rate, review score, and fulfillment speed; updated daily",
+        "Admin product moderation supports bulk approve/reject with reason",
+        "All admin actions logged to audit_events with admin user ID and timestamp"
+      ],
+      "depends_on": [
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "AGENTIC",
+      "description": "Implement coordinator agentic pattern for dispute triage and fraud detection: coordinator routes incoming disputes and suspicious transactions to specialist agents (dispute_triage_specialist, fraud_detection_specialist) and merges recommendations for human review.",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_triggers": [
+          "dispute_opened",
+          "high_value_order",
+          "new_seller_first_sale",
+          "unusual_transaction_velocity"
+        ],
+        "specialist_agents": {
+          "fraud_detection_specialist": "Analyzes order patterns, device fingerprints, and velocity signals using ReAct loop",
+          "dispute_triage_specialist": "Classifies dispute type, assesses evidence quality, recommends resolution"
+        },
+        "output": "structured_recommendation_for_mediator_HITL_approval",
+        "hitl_gate": "mediator reviews AI recommendation before final resolution decision"
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly routes dispute events to dispute_triage_specialist and fraud signals to fraud_detection_specialist",
+        "Each specialist agent uses ReAct reasoning loop with at least 3 Thought\u2192Action\u2192Observation cycles",
+        "Coordinator merges specialist outputs into a structured recommendation with confidence score",
+        "HITL approval gate holds recommendation in queue until mediator approves or overrides",
+        "All agent reasoning traces logged to audit_events with trace_id linking to originating dispute or order"
+      ],
+      "depends_on": [
+        17,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build buyer-facing storefront: homepage with featured products, category browsing, product detail page, search results, cart, multi-step checkout (address, shipping, payment), and order confirmation.",
+      "payload": {
+        "pages": [
+          "home",
+          "category",
+          "search",
+          "product_detail",
+          "cart",
+          "checkout_address",
+          "checkout_shipping",
+          "checkout_payment",
+          "order_confirmation"
+        ],
+        "components": [
+          "product_card",
+          "product_gallery",
+          "variant_selector",
+          "cart_drawer",
+          "checkout_stepper",
+          "stripe_elements_integration",
+          "order_summary_widget"
+        ]
+      },
+      "acceptance_criteria": [
+        "Product detail page renders above-the-fold content in <1.5s LCP on 4G throttle",
+        "Variant selector dynamically updates price, image, and stock status without page reload",
+        "Cart drawer persists state across page navigations using localStorage + server sync",
+        "Checkout stepper validates each step before advancing and supports back-navigation without data loss",
+        "Stripe Elements renders in checkout with 3DS redirect handling and error display",
+        "All buyer pages pass Lighthouse accessibility score \u226590"
+      ],
+      "depends_on": [
+        6,
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build seller dashboard: onboarding wizard (business info, KYC, bank account), product listing manager, order management panel, analytics dashboard, payout history, and dispute response interface.",
+      "payload": {
+        "pages": [
+          "seller_onboarding_wizard",
+          "seller_dashboard",
+          "product_manager",
+          "order_manager",
+          "analytics",
+          "payout_history",
+          "dispute_response"
+        ],
+        "components": [
+          "onboarding_progress_stepper",
+          "product_editor_form",
+          "variant_matrix_builder",
+          "image_upload_drag_drop",
+          "order_status_timeline",
+          "revenue_chart",
+          "dispute_evidence_uploader"
+        ]
+      },
+      "acceptance_criteria": [
+        "Onboarding wizard persists progress between sessions; seller can resume from last completed step",
+        "Product editor validates all required fields with inline error messages before submission",
+        "Image upload shows progress, validates type/size client-side before upload, and displays thumbnails",
+        "Analytics dashboard charts render correctly for date ranges: 7d, 30d, 90d, custom",
+        "Dispute response interface shows buyer's evidence and allows seller to upload counter-evidence with 2000-char response"
+      ],
+      "depends_on": [
+        6,
+        12,
+        13,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "FRONTEND",
+      "description": "Build buyer account area: order history with tracking, review submission modal, dispute portal (open dispute, track status, submit evidence), and notification preferences.",
+      "payload": {
+        "pages": [
+          "account_orders",
+          "order_detail",
+          "dispute_portal",
+          "notification_settings"
+        ],
+        "components": [
+          "order_card",
+          "tracking_timeline",
+          "review_submission_modal",
+          "star_rating_input",
+          "dispute_wizard",
+          "evidence_upload",
+          "dispute_status_tracker"
+        ]
+      },
+      "acceptance_criteria": [
+        "Order history paginates with infinite scroll and filters by status",
+        "Review modal only activates for delivered orders and enforces 20-1000 char description",
+        "Dispute wizard validates reason selection and requires at least one evidence attachment",
+        "Dispute status tracker polls API every 30s and renders state transitions in real-time",
+        "Notification preferences persist immediately via API on toggle change"
+      ],
+      "depends_on": [
+        16,
+        17,
+        20
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 23,
+      "task_type": "FRONTEND",
+      "description": "Build admin panel: platform GMV dashboard, seller approval queue, product moderation queue, dispute management interface, user management, and payout controls.",
+      "payload": {
+        "pages": [
+          "admin_dashboard",
+          "admin_sellers",
+          "admin_products",
+          "admin_disputes",
+          "admin_users",
+          "admin_payouts"
+        ],
+        "components": [
+          "GMV_metrics_cards",
+          "seller_approval_table",
+          "product_moderation_card",
+          "dispute_timeline_view",
+          "ai_recommendation_panel",
+          "user_action_menu"
+        ]
+      },
+      "acceptance_criteria": [
+        "Admin dashboard shows live GMV, dispute count, and pending approvals with auto-refresh every 60s",
+        "Seller approval queue displays KYC status, business info, and Stripe Identity result with approve/reject actions",
+        "Dispute management view shows AI coordinator recommendation with confidence score and HITL approve/override control",
+        "All admin actions require re-authentication (step-up auth) for destructive operations (user suspension, payout override)",
+        "Admin panel restricted to users with admin role enforced both API and UI route guard"
+      ],
+      "depends_on": [
+        18,
+        19,
+        21
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 24,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline, container orchestration, monitoring, alerting, and SRE runbooks for the marketplace platform.",
+      "payload": {
+        "ci_cd": "GitHub Actions",
+        "container_platform": "Docker + Kubernetes (EKS or GKE)",
+        "monitoring": "Prometheus + Grafana",
+        "logging": "ELK stack (Elasticsearch, Logstash, Kibana)",
+        "alerting": "PagerDuty",
+        "pipelines": [
+          "lint_typecheck",
+          "unit_tests",
+          "integration_tests",
+          "security_scan_SAST",
+          "docker_build_push",
+          "staging_deploy",
+          "smoke_tests",
+          "production_deploy_canary"
+        ],
+        "runbooks": [
+          "incident_response",
+          "database_failover",
+          "payment_outage",
+          "scaling_runbook"
+        ]
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs on every PR and blocks merge on test failure, lint error, or SAST critical finding",
+        "Production deploy uses canary strategy with 5% traffic shift and automatic rollback on error rate >1%",
+        "Prometheus alerts configured for: p99 API latency >500ms, error rate >0.1%, payment webhook queue depth >100",
+        "PagerDuty routing configured for severity: P1 (payment outage) \u2192 on-call engineer <5min, P2 \u2192 15min",
+        "All runbooks tested in staging with documented recovery time objective (RTO) per scenario"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "INFRA",
+      "description": "Provision cloud infrastructure: VPC with public/private subnets, RDS PostgreSQL Multi-AZ, ElastiCache Redis cluster, S3 buckets with lifecycle policies, Stripe webhook endpoint, and network security groups.",
+      "payload": {
+        "iac_tool": "Terraform",
+        "components": [
+          "VPC_with_subnets",
+          "RDS_postgres_multiAZ",
+          "elasticache_redis",
+          "S3_product_images",
+          "S3_dispute_evidence",
+          "ALB",
+          "EKS_cluster",
+          "IAM_roles_least_privilege",
+          "WAF_rules"
+        ],
+        "environments": [
+          "staging",
+          "production"
+        ],
+        "pci_network_segmentation": "CDE in isolated subnet with no direct internet access"
+      },
+      "acceptance_criteria": [
+        "Terraform plan applies cleanly to both staging and production with no manual steps",
+        "RDS deployed Multi-AZ with automated backups retained 30 days and point-in-time recovery enabled",
+        "S3 buckets have versioning enabled, public access blocked, and server-side encryption (AES-256)",
+        "CDE subnet has no outbound internet route; payment service communicates to Stripe via NAT gateway only",
+        "WAF rules block OWASP Top 10 patterns and rate-limit at 1000 req/min per IP"
+      ],
+      "depends_on": [
+        24
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "QA",
+      "description": "Produce QA test plan, test case suite, and test execution reports covering functional testing of all marketplace flows, regression suite, and exploratory testing charters.",
+      "payload": {
+        "test_types": [
+          "functional",
+          "regression",
+          "exploratory",
+          "negative_testing",
+          "boundary_value"
+        ],
+        "coverage_areas": [
+          "seller_onboarding",
+          "product_listing",
+          "checkout",
+          "payment_split",
+          "refund",
+          "review",
+          "dispute"
+        ],
+        "deliverables": [
+          "test_plan_document",
+          "test_case_suite",
+          "defect_triage_process",
+          "QA_exit_criteria"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan defines scope, entry/exit criteria, risk-based prioritization, and defect severity matrix",
+        "Test case suite covers all happy paths and documented edge cases from BRD",
+        "Negative test cases cover invalid input, unauthorized access attempts, and concurrent operation conflicts",
+        "QA exit criteria require zero open P1/P2 defects and <5 open P3 defects before release",
+        "Defect triage process defines SLA: P1 fix in 4h, P2 in 24h, P3 in sprint"
+      ],
+      "depends_on": [
+        5,
+        10
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "TESTS",
+      "description": "Write comprehensive unit and integration tests for all backend services: auth, catalog, orders, payments, reviews, disputes, and agentic coordinator.",
+      "payload": {
+        "frameworks": [
+          "pytest",
+          "factory_boy",
+          "pytest-asyncio"
+        ],
+        "test_categories": {
+          "unit": [
+            "service_layer_logic",
+            "order_state_machine_transitions",
+            "payment_split_calculations",
+            "dispute_escalation_rules"
+          ],
+          "integration": [
+            "API_endpoint_contracts",
+            "stripe_webhook_processing",
+            "database_transaction_integrity",
+            "coordinator_agent_routing"
+          ]
+        },
+        "coverage_target": "\u226585% line coverage on src/"
+      },
+      "acceptance_criteria": [
+        "Unit tests cover all service layer functions including error branches",
+        "Order state machine tests cover all valid transitions and assert rejection of all invalid transitions",
+        "Payment split tests verify platform fee calculation for multiple seller scenarios with rounding edge cases",
+        "Integration tests use test database transactions that roll back after each test",
+        "CI enforces \u226585% line coverage and fails build on regression below threshold"
+      ],
+      "depends_on": [
+        17,
+        18
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "TESTS",
+      "description": "Write end-to-end tests using Playwright covering critical buyer and seller flows: full purchase journey, seller onboarding, dispute submission, and review posting.",
+      "payload": {
+        "framework": "Playwright",
+        "e2e_flows": [
+          "buyer_signup_to_order_completion",
+          "seller_onboarding_to_first_sale",
+          "dispute_open_to_resolution",
+          "review_submission_and_seller_response",
+          "admin_seller_approval"
+        ],
+        "environments": [
+          "staging"
+        ]
+      },
+      "acceptance_criteria": [
+        "Full purchase journey test covers signup, product search, add to cart, checkout, payment (Stripe test mode), and order confirmation",
+        "Seller onboarding test covers registration through KYC mock approval to product listing",
+        "All E2E tests run in CI against staging environment on every main branch merge",
+        "E2E tests use page object model pattern with no hardcoded selectors in test bodies",
+        "Test run produces video artifacts on failure for debugging"
+      ],
+      "depends_on": [
+        22,
+        23,
+        27
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 29,
+      "task_type": "OPERATIONS",
+      "description": "Produce operational runbooks, SLA definitions, incident response procedures, and capacity planning model for the marketplace platform.",
+      "payload": {
+        "runbooks": [
+          "payment_service_degradation",
+          "database_failover",
+          "dispute_queue_backlog",
+          "seller_payout_failure",
+          "fraud_spike_response"
+        ],
+        "sla_definitions": {
+          "api_availability": "99.9% monthly uptime",
+          "checkout_p99_latency": "<500ms",
+          "dispute_response_SLA": "mediator assigned within 2 business days",
+          "payout_SLA": "weekly, T+2 banking days"
+        },
+        "capacity_model": "GMV-based scaling triggers for API, worker, and database tiers"
+      },
+      "acceptance_criteria": [
+        "Each runbook has prerequisite checklist, step-by-step instructions, and rollback procedure",
+        "SLA definitions specify measurement methodology, exclusion windows, and breach notification process",
+        "Incident response procedure defines severity classification matrix and escalation chain",
+        "Capacity model specifies auto-scaling thresholds backed by load test data",
+        "All runbooks reviewed and signed off by at least one on-call engineer"
+      ],
+      "depends_on": [
+        25
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 30,
+      "task_type": "DOCS",
+      "description": "Produce developer documentation: API reference (auto-generated from OpenAPI), seller integration guide, webhook integration guide, local development setup guide, and architecture decision records.",
+      "payload": {
+        "deliverables": [
+          "api_reference_site",
+          "seller_integration_guide",
+          "webhook_guide",
+          "local_dev_setup",
+          "architecture_decision_records"
+        ],
+        "tools": [
+          "Mintlify or Docusaurus for API docs site",
+          "ADR template for architecture decisions"
+        ]
+      },
+      "acceptance_criteria": [
+        "API reference site generated from OpenAPI spec with working try-it-now for all endpoints",
+        "Seller integration guide covers onboarding, first product listing, and first payout end-to-end",
+        "Webhook guide documents all event types, payload schemas, retry behavior, and signature verification code samples in Python, Node, and PHP",
+        "Local dev setup guide gets a new developer running the full stack in <30 minutes (validated with new hire test)",
+        "ADRs documented for: database engine choice, payment provider selection, dispute workflow design, agentic coordinator pattern"
+      ],
+      "depends_on": [
+        28,
+        29
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 30,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "Step 17 mandates 'payment held automatically when dispute opened' \u2014 with Stripe Connect Express, once funds are transferred to a seller's connected account, you cannot hold them. You'd need to reverse the transfer or use destination charges with manual capture, which fundamentally changes the payment architecture in step 15. This is a day-one blocker for dispute resolution.",
+            "Step 14 specifies 'Tax calculation with fallback to flat-rate if TaxJar API unavailable' \u2014 applying an incorrect flat rate when TaxJar is down is a legal liability in nexus states. The correct fallback is to block checkout and surface a payment-unavailable message, not to guess at tax rates.",
+            "Step 13 lists 'Elasticsearch or PostgreSQL full-text search' as interchangeable \u2014 at 1M products with <200ms SLA, PostgreSQL FTS is borderline without aggressive denormalization and tuning. Picking one at implementation time is a risky defer; the acceptance criteria demand Elasticsearch-tier performance from a system that may ship with pgvector-style FTS.",
+            "Step 19's agentic fraud detection specifies 'ReAct loop with at least 3 cycles' with no definition of what tools the agents have, what data they query, or what constitutes a hallucination safeguard. 'At least 3 cycles' is a ritual requirement, not a functional one. A stuck ReAct loop blocks a dispute.",
+            "The dependency chain forces steps 12\u201319 into a strict serial sequence, making the total backend delivery window ~8 sequential sprints. Steps 13 (catalog) and 12 (auth) have no data dependency \u2014 they could parallelize. This is a scheduling flaw, not just inefficiency.",
+            "Step 15 does not specify idempotency key scope: idempotency key 'per order' is insufficient for multi-seller carts that split into sub-orders. If payment intent creation fails mid-split, partial sub-order charges may exist with no recovery path defined.",
+            "Step 17 specifies 'mediator assignment' with no staffing model, routing logic, or SLA for how long mediator assignment itself takes. If this is human staff, you need a queue depth / capacity model. If automated, the criteria are silent on it.",
+            "Review fraud vectors are unaddressed in step 16: sellers buying their own products to self-review, coordinated review bombing by competitors. 'Verified purchase check' prevents neither.",
+            "Step 28's E2E tests use 'Stripe test mode' \u2014 Stripe test mode does not exercise 3DS redirect handling or webhook delivery timing realistically. Production 3DS abandonment rates are 15-30%; this is untested.",
+            "Steps 20\u201323 (all frontend) depend on backend steps that are themselves deeply sequential. Frontend development cannot realistically begin until step 19 completes, making the total timeline much longer than the step count implies."
+          ],
+          "suggestions": [
+            "Redesign the payment architecture to use Stripe Connect destination charges with delayed capture, or maintain a platform-side escrow balance using Stripe's 'on_behalf_of' + manual payouts. This is the only way to implement dispute holds cleanly without reversing already-transferred funds.",
+            "Replace the TaxJar flat-rate fallback with a circuit breaker that degrades to 'checkout unavailable, tax service down' with a user-facing error. Add TaxJar to the P1 monitoring alert list alongside payment webhooks.",
+            "Commit to Elasticsearch from step 13, not 'Elasticsearch or PostgreSQL FTS.' Accept the operational cost. PostgreSQL FTS at 1M products with faceted filtering will not hit the <200ms SLA without a dedicated search cluster anyway.",
+            "Add a load testing step between steps 27 and 28 \u2014 k6 or Locust suite targeting: 500 concurrent checkouts, 10K product search queries/min, and webhook burst of 1K/min. The p99 <500ms and <200ms search SLAs have no validation path without this.",
+            "Add an email/notification service step (SES or SendGrid) as part of step 11 configuration. At least 8 downstream steps (KYC approval, order confirmation, dispute notifications, payout failures, moderation results) require transactional email with no service specified.",
+            "Specify PgBouncer or RDS Proxy in step 25 infra. FastAPI with async SQLAlchemy under 500 concurrent requests will exhaust PostgreSQL's default connection limit (100) without a pooler.",
+            "Add a GDPR technical implementation step covering: right-to-erasure cascade (anonymize user PII in orders/reviews without breaking referential integrity), data export endpoint, and consent management for marketing. The legal docs in step 4 are useless without the engineering to back them.",
+            "Add cart inventory reservation with TTL (e.g., 15-minute hold on add-to-cart or at checkout initiation) to the step 14 acceptance criteria. Without reservation, race conditions between inventory decrement and payment confirmation will cause oversell on high-demand SKUs.",
+            "Define the mediator role concretely in step 17: headcount model, routing queue implementation (simple round-robin or skills-based), and escalation if no mediator is available within SLA. This is currently a workflow with a ghost actor.",
+            "Parallelize steps 12 (auth) and 13 (catalog) \u2014 they share only the database schema from step 9. Running them in parallel reduces backend critical path by one step and enables seller onboarding frontend to start earlier."
+          ],
+          "missing": [
+            "Money transmission licensing analysis: in the US, acting as a payment intermediary and holding funds (especially for dispute escrow) may require state-level money transmitter licenses in 40+ states. This is not a legal edge case \u2014 it has shut down marketplaces post-launch. No step addresses this.",
+            "Email/transactional notification service: SES, SendGrid, or equivalent \u2014 referenced implicitly by 8+ steps but never specced, configured, or given acceptance criteria.",
+            "CDN for product images and static assets: S3 is specified for storage, but no CloudFront or equivalent distribution layer. Global image load times will be unacceptable without it, and the LCP <1.5s criterion in step 20 is unlikely to pass without CDN.",
+            "Background job specification: Celery + Redis is in the stack (step 11) but no step defines queue topology, retry policies, dead letter queue handling, or job idempotency contracts. At least payment webhook processing and payout scheduling are Celery-dependent.",
+            "Seller payout failure handling: what happens when a payout fails (invalid bank account, Stripe transfer failure)? No retry strategy, seller notification, hold logic, or support escalation path is defined in any step.",
+            "Feature flag system: no gradual rollout mechanism for new marketplace features, A/B testing for conversion optimization, or kill switches for payment provider degradation. Critical for a platform with active sellers.",
+            "Load/performance testing: the plan has unit, integration, and E2E tests but no dedicated load test step. SLA targets (p99 <500ms, search <200ms) are acceptance criteria with no test to validate them.",
+            "Webhook reliability for Stripe: no specification of idempotent webhook processing for out-of-order delivery, extended Stripe outages (webhooks can be delayed hours), or manual replay capability. Multiple core flows (payment confirmation, KYC, payout) are webhook-driven.",
+            "Staging data anonymization strategy: E2E tests run against staging (step 28) but no mention of how realistic data is generated or how production data anonymization works for staging refresh.",
+            "Multi-seller cart edge cases in refunds: if a buyer orders from 3 sellers and wants to refund only one item, the refund path through Stripe Connect (reverse one transfer, recalculate platform fee) is not addressed in any step's acceptance criteria."
+          ],
+          "security_risks": [
+            "IDOR on dispute evidence uploads (step 17): S3 presigned URL generation must validate that the requesting user is a party to the dispute. If the URL is generated from a dispute ID without ownership check, any authenticated user can retrieve another party's evidence.",
+            "Stripe webhook replay attacks: step 15 specifies signature verification, but does not specify timestamp validation (Stripe recommends rejecting webhooks older than 5 minutes). Without timestamp checking, replayed old webhooks can re-process completed payments.",
+            "JWT refresh token theft: step 12 specifies 30-day refresh token expiry with rotation, but no mention of refresh token family invalidation (if a stolen token is used, the entire family should be invalidated). Without family tracking, stolen tokens can be used silently.",
+            "Admin step-up auth (step 23) is specified only for 'destructive operations' with no definition of what constitutes destructive. Payout override and user suspension are listed \u2014 but product moderation bulk actions affecting thousands of sellers are equally high-impact and not gated.",
+            "AI coordinator outputs (step 19) fed directly to mediator UI without sanitization: if dispute evidence or order data contains prompt injection payloads, and the coordinator LLM reflects user content in its reasoning trace, the mediator panel may display injected content. No XSS/injection sanitization on LLM output is specified.",
+            "S3 dispute evidence buckets: public access blocked is specified, but no mention of bucket policy preventing cross-account access, no mention of pre-signed URL expiry for evidence access, and no mention of virus scanning on uploaded files (PDF/JPEG uploads are an injection vector).",
+            "Seller KYC documents stored in S3 (implied by step 12): PCI DSS and GDPR both require strict access controls and audit logging for identity documents. No separate bucket policy, no access logging, and no retention/deletion policy for KYC docs is specified.",
+            "Rate limiting scope is too narrow: step 12 rate-limits auth endpoints only. Product creation, review submission, and dispute opening are all abuse vectors with no rate limiting specified \u2014 enabling listing spam, review flooding, and dispute denial-of-service against sellers."
+          ],
+          "summary": "This is an ambitious, well-structured plan that demonstrates genuine marketplace domain knowledge \u2014 the Stripe Connect architecture, HITL gates on AI recommendations, and PCI DSS scoping are all correct directional choices. However, three issues alone would cause production failures: (1) the dispute payment hold mechanism is architecturally incompatible with Stripe Connect Express as described \u2014 funds already transferred cannot be frozen without transfer reversal or a fundamentally different payment flow; (2) the tax fallback to flat-rate exposes the platform to multi-state tax liability the moment TaxJar goes down; and (3) no money transmission licensing analysis exists despite the platform holding funds in escrow during disputes. Beyond these blockers, the plan has a pervasive infrastructure gap \u2014 no email service, no CDN, no load testing, no background job specification \u2014 that will surface as critical bugs within weeks of launch. The sequential dependency chain from steps 12\u201319 also implies a much longer delivery timeline than the step count suggests. For an MVP scope this would score in the low 60s; as a production marketplace handling real payments it needs to resolve at minimum the Stripe dispute architecture, tax fallback, and money transmission questions before the score can exceed 75.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "Step 17 mandates 'payment held automatically when dispute opened' \u2014 with Stripe Connect Express, once funds are transferred to a seller's connected account, you cannot hold them. You'd need to reverse the transfer or use destination charges with manual capture, which fundamentally changes the payment architecture in step 15. This is a day-one blocker for dispute resolution.",
+              "Step 14 specifies 'Tax calculation with fallback to flat-rate if TaxJar API unavailable' \u2014 applying an incorrect flat rate when TaxJar is down is a legal liability in nexus states. The correct fallback is to block checkout and surface a payment-unavailable message, not to guess at tax rates.",
+              "Step 13 lists 'Elasticsearch or PostgreSQL full-text search' as interchangeable \u2014 at 1M products with <200ms SLA, PostgreSQL FTS is borderline without aggressive denormalization and tuning. Picking one at implementation time is a risky defer; the acceptance criteria demand Elasticsearch-tier performance from a system that may ship with pgvector-style FTS.",
+              "Step 19's agentic fraud detection specifies 'ReAct loop with at least 3 cycles' with no definition of what tools the agents have, what data they query, or what constitutes a hallucination safeguard. 'At least 3 cycles' is a ritual requirement, not a functional one. A stuck ReAct loop blocks a dispute.",
+              "The dependency chain forces steps 12\u201319 into a strict serial sequence, making the total backend delivery window ~8 sequential sprints. Steps 13 (catalog) and 12 (auth) have no data dependency \u2014 they could parallelize. This is a scheduling flaw, not just inefficiency.",
+              "Step 15 does not specify idempotency key scope: idempotency key 'per order' is insufficient for multi-seller carts that split into sub-orders. If payment intent creation fails mid-split, partial sub-order charges may exist with no recovery path defined.",
+              "Step 17 specifies 'mediator assignment' with no staffing model, routing logic, or SLA for how long mediator assignment itself takes. If this is human staff, you need a queue depth / capacity model. If automated, the criteria are silent on it.",
+              "Review fraud vectors are unaddressed in step 16: sellers buying their own products to self-review, coordinated review bombing by competitors. 'Verified purchase check' prevents neither.",
+              "Step 28's E2E tests use 'Stripe test mode' \u2014 Stripe test mode does not exercise 3DS redirect handling or webhook delivery timing realistically. Production 3DS abandonment rates are 15-30%; this is untested.",
+              "Steps 20\u201323 (all frontend) depend on backend steps that are themselves deeply sequential. Frontend development cannot realistically begin until step 19 completes, making the total timeline much longer than the step count implies."
+            ],
+            "suggestions": [
+              "Redesign the payment architecture to use Stripe Connect destination charges with delayed capture, or maintain a platform-side escrow balance using Stripe's 'on_behalf_of' + manual payouts. This is the only way to implement dispute holds cleanly without reversing already-transferred funds.",
+              "Replace the TaxJar flat-rate fallback with a circuit breaker that degrades to 'checkout unavailable, tax service down' with a user-facing error. Add TaxJar to the P1 monitoring alert list alongside payment webhooks.",
+              "Commit to Elasticsearch from step 13, not 'Elasticsearch or PostgreSQL FTS.' Accept the operational cost. PostgreSQL FTS at 1M products with faceted filtering will not hit the <200ms SLA without a dedicated search cluster anyway.",
+              "Add a load testing step between steps 27 and 28 \u2014 k6 or Locust suite targeting: 500 concurrent checkouts, 10K product search queries/min, and webhook burst of 1K/min. The p99 <500ms and <200ms search SLAs have no validation path without this.",
+              "Add an email/notification service step (SES or SendGrid) as part of step 11 configuration. At least 8 downstream steps (KYC approval, order confirmation, dispute notifications, payout failures, moderation results) require transactional email with no service specified.",
+              "Specify PgBouncer or RDS Proxy in step 25 infra. FastAPI with async SQLAlchemy under 500 concurrent requests will exhaust PostgreSQL's default connection limit (100) without a pooler.",
+              "Add a GDPR technical implementation step covering: right-to-erasure cascade (anonymize user PII in orders/reviews without breaking referential integrity), data export endpoint, and consent management for marketing. The legal docs in step 4 are useless without the engineering to back them.",
+              "Add cart inventory reservation with TTL (e.g., 15-minute hold on add-to-cart or at checkout initiation) to the step 14 acceptance criteria. Without reservation, race conditions between inventory decrement and payment confirmation will cause oversell on high-demand SKUs.",
+              "Define the mediator role concretely in step 17: headcount model, routing queue implementation (simple round-robin or skills-based), and escalation if no mediator is available within SLA. This is currently a workflow with a ghost actor.",
+              "Parallelize steps 12 (auth) and 13 (catalog) \u2014 they share only the database schema from step 9. Running them in parallel reduces backend critical path by one step and enables seller onboarding frontend to start earlier."
+            ],
+            "missing": [
+              "Money transmission licensing analysis: in the US, acting as a payment intermediary and holding funds (especially for dispute escrow) may require state-level money transmitter licenses in 40+ states. This is not a legal edge case \u2014 it has shut down marketplaces post-launch. No step addresses this.",
+              "Email/transactional notification service: SES, SendGrid, or equivalent \u2014 referenced implicitly by 8+ steps but never specced, configured, or given acceptance criteria.",
+              "CDN for product images and static assets: S3 is specified for storage, but no CloudFront or equivalent distribution layer. Global image load times will be unacceptable without it, and the LCP <1.5s criterion in step 20 is unlikely to pass without CDN.",
+              "Background job specification: Celery + Redis is in the stack (step 11) but no step defines queue topology, retry policies, dead letter queue handling, or job idempotency contracts. At least payment webhook processing and payout scheduling are Celery-dependent.",
+              "Seller payout failure handling: what happens when a payout fails (invalid bank account, Stripe transfer failure)? No retry strategy, seller notification, hold logic, or support escalation path is defined in any step.",
+              "Feature flag system: no gradual rollout mechanism for new marketplace features, A/B testing for conversion optimization, or kill switches for payment provider degradation. Critical for a platform with active sellers.",
+              "Load/performance testing: the plan has unit, integration, and E2E tests but no dedicated load test step. SLA targets (p99 <500ms, search <200ms) are acceptance criteria with no test to validate them.",
+              "Webhook reliability for Stripe: no specification of idempotent webhook processing for out-of-order delivery, extended Stripe outages (webhooks can be delayed hours), or manual replay capability. Multiple core flows (payment confirmation, KYC, payout) are webhook-driven.",
+              "Staging data anonymization strategy: E2E tests run against staging (step 28) but no mention of how realistic data is generated or how production data anonymization works for staging refresh.",
+              "Multi-seller cart edge cases in refunds: if a buyer orders from 3 sellers and wants to refund only one item, the refund path through Stripe Connect (reverse one transfer, recalculate platform fee) is not addressed in any step's acceptance criteria."
+            ],
+            "security_risks": [
+              "IDOR on dispute evidence uploads (step 17): S3 presigned URL generation must validate that the requesting user is a party to the dispute. If the URL is generated from a dispute ID without ownership check, any authenticated user can retrieve another party's evidence.",
+              "Stripe webhook replay attacks: step 15 specifies signature verification, but does not specify timestamp validation (Stripe recommends rejecting webhooks older than 5 minutes). Without timestamp checking, replayed old webhooks can re-process completed payments.",
+              "JWT refresh token theft: step 12 specifies 30-day refresh token expiry with rotation, but no mention of refresh token family invalidation (if a stolen token is used, the entire family should be invalidated). Without family tracking, stolen tokens can be used silently.",
+              "Admin step-up auth (step 23) is specified only for 'destructive operations' with no definition of what constitutes destructive. Payout override and user suspension are listed \u2014 but product moderation bulk actions affecting thousands of sellers are equally high-impact and not gated.",
+              "AI coordinator outputs (step 19) fed directly to mediator UI without sanitization: if dispute evidence or order data contains prompt injection payloads, and the coordinator LLM reflects user content in its reasoning trace, the mediator panel may display injected content. No XSS/injection sanitization on LLM output is specified.",
+              "S3 dispute evidence buckets: public access blocked is specified, but no mention of bucket policy preventing cross-account access, no mention of pre-signed URL expiry for evidence access, and no mention of virus scanning on uploaded files (PDF/JPEG uploads are an injection vector).",
+              "Seller KYC documents stored in S3 (implied by step 12): PCI DSS and GDPR both require strict access controls and audit logging for identity documents. No separate bucket policy, no access logging, and no retention/deletion policy for KYC docs is specified.",
+              "Rate limiting scope is too narrow: step 12 rate-limits auth endpoints only. Product creation, review submission, and dispute opening are all abuse vectors with no rate limiting specified \u2014 enabling listing spam, review flooding, and dispute denial-of-service against sellers."
+            ],
+            "summary": "This is an ambitious, well-structured plan that demonstrates genuine marketplace domain knowledge \u2014 the Stripe Connect architecture, HITL gates on AI recommendations, and PCI DSS scoping are all correct directional choices. However, three issues alone would cause production failures: (1) the dispute payment hold mechanism is architecturally incompatible with Stripe Connect Express as described \u2014 funds already transferred cannot be frozen without transfer reversal or a fundamentally different payment flow; (2) the tax fallback to flat-rate exposes the platform to multi-state tax liability the moment TaxJar goes down; and (3) no money transmission licensing analysis exists despite the platform holding funds in escrow during disputes. Beyond these blockers, the plan has a pervasive infrastructure gap \u2014 no email service, no CDN, no load testing, no background job specification \u2014 that will surface as critical bugs within weeks of launch. The sequential dependency chain from steps 12\u201319 also implies a much longer delivery timeline than the step count suggests. For an MVP scope this would score in the low 60s; as a production marketplace handling real payments it needs to resolve at minimum the Stripe dispute architecture, tax fallback, and money transmission questions before the score can exceed 75.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T05:44:25.868349+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 160.57,
+    "critic_plan": 117.83
+  }
+}

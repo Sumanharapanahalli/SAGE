@@ -1,0 +1,343 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define product requirements, user personas, and core use cases for
+      the mental health companion chatbot including CBT exercise catalog, mood tracking
+      flows, and crisis detection thresholds.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories cover CBT exercises, mood logging, crisis detection, and hotline
+      routing
+    - Crisis detection thresholds are explicitly defined with escalation tiers
+    - Non-medical-device scope is documented with clear wellness boundary statement
+    - All personas have defined happy paths and failure paths
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Research mental health chatbot landscape, competitor positioning,
+      regulatory environment for wellness apps, and safe messaging guidelines from
+      SAMHSA and AFSP.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix completed covering CBT, crisis, mood tracking
+    - Safe messaging guidelines summarized and mapped to product features
+    - Wellness vs. medical device distinction documented per FTC guidance
+    - Emergency hotline resource list compiled (988, Crisis Text Line, international
+      equivalents)
+    depends_on: []
+  LEGAL:
+    description: Draft terms of service, privacy policy, disclaimer language, and
+      data processing agreements. Establish wellness (not medical device) scope, liability
+      limitations, and mandatory crisis routing disclosures.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS explicitly states product is not a medical device and not a substitute for
+      professional care
+    - Privacy policy covers data minimization, retention limits, and user deletion
+      rights
+    - Crisis routing disclosure explains when and how hotlines are surfaced
+    - Data processing agreement covers any third-party LLM providers
+    - Legal review sign-off documented
+    depends_on:
+    - 1
+    - 2
+  REGULATORY:
+    description: Map product to FTC wellness app guidance, SAMHSA safe messaging rules,
+      Apple/Google mental health app policies. Produce standards traceability matrix
+      confirming non-device classification and HIPAA applicability assessment.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - HIPAA applicability assessment determines whether app qualifies as covered entity
+      or business associate
+    - Non-device classification rationale documented with FTC/FDA boundary analysis
+    - SAMHSA safe messaging compliance checklist completed
+    - Traceability matrix links every regulatory requirement to a product feature
+      or control
+    - HIPAA risk assessment complete
+    - BAA template prepared
+    depends_on:
+    - 3
+  SAFETY:
+    description: Perform hazard analysis and risk assessment for crisis detection
+      failures, false negatives in distress identification, hotline routing errors,
+      and AI-generated harmful content. Produce FMEA and safety control matrix.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - FMEA covers all identified hazards with severity, probability, and detectability
+      scores
+    - Missed crisis detection (false negative) classified as highest severity with
+      mitigations defined
+    - LLM output guardrails identified as a required safety control
+    - Safety control matrix maps each risk to a product feature, test, or process
+      control
+    - Residual risk acceptability documented
+    depends_on:
+    - 1
+    - 4
+  COMPLIANCE:
+    description: 'Produce HIPAA/HITECH compliance artifacts: risk analysis, workforce
+      training plan, BAA template, minimum necessary data policy, and breach notification
+      procedure.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - HIPAA risk analysis covers all PHI data flows including mood logs and chat history
+    - BAA template ready for third-party LLM and storage providers
+    - Data minimization policy specifies what is collected, retention periods, and
+      deletion
+    - Breach notification procedure covers 60-day HHS notification window
+    - PHI data flow diagram approved by legal
+    depends_on:
+    - 4
+    - 5
+  SECURITY:
+    description: Produce threat model (STRIDE), penetration test plan, SBOM, encryption-at-rest/in-transit
+      spec, and access control design. Cover LLM prompt injection risks specific to
+      mental health context.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - 'STRIDE threat model covers all system components: frontend, API, LLM gateway,
+      database, crisis router'
+    - Prompt injection attack vectors specific to mental health manipulation documented
+      with mitigations
+    - SBOM lists all dependencies with license and known CVE status
+    - Encryption spec mandates TLS 1.3 in transit, AES-256 at rest for all chat/mood
+      data
+    - Crisis bypass jailbreak scenario tested and mitigated in design
+    - PHI encryption at rest and in transit
+    - Access audit logging enabled
+    depends_on:
+    - 5
+    - 6
+  UX_DESIGN:
+    description: Design user flows, wireframes, and interaction patterns for onboarding,
+      CBT exercise sessions, mood check-ins, crisis escalation UI, and emergency hotline
+      surfacing. Follow safe messaging design guidelines.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Onboarding flow includes informed consent and wellness disclaimer before first
+      use
+    - Crisis escalation UI surfaces hotline within 2 taps from any screen
+    - CBT exercise flows tested with at least 3 representative users for comprehension
+    - Mood check-in takes under 60 seconds to complete
+    - All screens pass WCAG 2.1 AA contrast and labeling checks
+    - Safe messaging design review completed against AFSP/SAMHSA guidelines
+    depends_on:
+    - 1
+    - 2
+    - 5
+  PRODUCT_MGMT:
+    description: Define MVP feature set, launch roadmap, success metrics (engagement,
+      crisis routing accuracy, CBT completion rate), and HITL approval gates for AI-generated
+      content changes.
+    agent_role: product_manager
+    acceptance_criteria:
+    - MVP feature list approved by stakeholders with explicit out-of-scope items listed
+    - Success metrics have baseline targets and measurement methodology defined
+    - 'HITL gate points identified: AI prompt changes, crisis threshold changes, new
+      CBT content'
+    - Roadmap covers MVP, v1.1 (personalization), v1.2 (clinician dashboard) phases
+    depends_on:
+    - 1
+    - 8
+  CONFIG:
+    description: 'Set up the mental_health_chatbot SAGE solution scaffold with project.yaml,
+      prompts.yaml, tasks.yaml. Configure multi-agent coordinator pattern with specialist
+      agents: CBT Coach, Mood Analyzer, Crisis Detector, Safety Guard.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml created with solution metadata, active_modules, and theme
+    - prompts.yaml defines system prompts for all 5 specialist agent roles
+    - tasks.yaml registers all task types including crisis_routing and cbt_session
+    - HITL gates configured in SAGE approval store for prompt and threshold changes
+    - make run PROJECT=mental_health_chatbot starts without errors
+    depends_on:
+    - 9
+  DATABASE:
+    description: Design and implement database schema for users, mood logs, CBT session
+      history, crisis events, audit trail, and hotline routing records. Enforce HIPAA
+      data minimization and encryption requirements.
+    agent_role: developer
+    acceptance_criteria:
+    - Schema includes all tables with correct foreign keys and indexes
+    - PHI fields (chat content, mood scores) encrypted at column level
+    - Crisis events table captures timestamp, detection_score, routing_action, and
+      outcome
+    - Consent records table stores version, timestamp, and user acknowledgment hash
+    - Data retention policies implemented via scheduled deletion jobs
+    - Migrations run cleanly on fresh database
+    depends_on:
+    - 6
+    - 7
+  BACKEND:
+    description: 'Build the FastAPI backend: user auth (JWT + MFA), mood logging endpoints,
+      CBT session management, LLM gateway integration with safety guardrails, crisis
+      detection service, and hotline routing logic.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints require authentication except /health and /crisis/emergency
+    - Crisis detection service achieves >95% recall on held-out crisis phrase test
+      set
+    - Hotline router selects correct regional hotline based on user locale
+    - LLM output passes safety content filter before returning to client
+    - Jailbreak detector blocks attempts to bypass crisis detection via prompt manipulation
+    - Audit log writes an immutable event for every crisis detection trigger
+    - All PHI transmitted only over TLS; no PHI in server logs
+    depends_on:
+    - 10
+    - 11
+  AGENTIC:
+    description: 'Implement the multi-agent coordinator pattern for the chatbot core:
+      Coordinator routes user messages to CBT Coach, Mood Analyzer, or Crisis Detector.
+      Crisis Detector output always passes through Safety Guardrail before response.
+      Implement ReAct loops for CBT Coach.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes >98% of test messages to appropriate specialist
+      agent
+    - Safety Guardrail intercepts 100% of LLM outputs before delivery to user
+    - Crisis Detector escalation tiers produce correct routing actions for each tier
+    - CBT Coach ReAct loop completes a full 5-step breathing exercise with state persistence
+    - Acute crisis tier always triggers hotline routing within 2 seconds
+    - HITL approval gate blocks crisis threshold changes until human approves in SAGE
+    depends_on:
+    - 12
+  FRONTEND:
+    description: 'Build React Native (cross-platform iOS/Android) app: onboarding
+      with consent, chat interface, mood check-in widget, CBT exercise player, crisis
+      card UI, history dashboard, and settings.'
+    agent_role: developer
+    acceptance_criteria:
+    - Onboarding displays full consent text with scroll-to-bottom before 'I Agree'
+      is enabled
+    - Crisis card renders within 500ms of crisis detection and shows tap-to-call button
+    - Chat interface streams LLM responses with typing indicator
+    - Mood check-in widget completes in under 60 seconds
+    - CBT exercise player tracks step completion and resumes on app relaunch
+    - All screens pass Expo Accessibility Inspector with no critical violations
+    - App builds and runs on iOS 15+ and Android 10+
+    depends_on:
+    - 8
+    - 12
+  INFRA:
+    description: 'Set up HIPAA-eligible cloud infrastructure: VPC, encrypted RDS,
+      secrets manager, WAF, CloudTrail audit logging, container orchestration, and
+      CI/CD pipeline with security scanning.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All data at rest encrypted with AWS KMS customer-managed key
+    - VPC flow logs enabled and retained for 7 years
+    - CloudTrail enabled in all regions with log integrity validation
+    - CI/CD pipeline blocks deployment if Snyk finds critical CVEs
+    - RDS accessible only from private subnet; no public endpoint
+    - AWS BAA signed confirming HIPAA-eligible service usage
+    - Infrastructure as Code (Terraform) passes tfsec security scan
+    depends_on:
+    - 7
+    - 11
+  DEVOPS:
+    description: 'Configure monitoring, alerting, and SRE practices: uptime monitoring,
+      crisis routing success rate alerts, LLM latency SLOs, PagerDuty on-call, log
+      aggregation with PHI scrubbing.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Crisis routing failure triggers PagerDuty P0 within 60 seconds
+    - All logs scrubbed of PHI before leaving the VPC
+    - SLO dashboards display real-time error budget burn rate
+    - Runbooks linked from every alert definition
+    - Synthetic canary tests run crisis routing flow every 5 minutes
+    depends_on:
+    - 15
+  TESTS:
+    description: 'Write unit and integration tests for: crisis detection classifier
+      (precision/recall), CBT session state machine, mood trend analysis, hotline
+      router locale logic, safety guardrail content filter, and auth flows.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Crisis detector tests achieve >95% recall and >85% precision on labeled dataset
+    - Safety guardrail tests block 100% of known harmful output patterns
+    - Hotline router correctly maps all 50 US states + 10 international locales
+    - All state machine transitions covered with no dead states
+    - Overall test coverage >80% for backend services
+    - Tests run in CI under 10 minutes
+    depends_on:
+    - 12
+    - 13
+  QA:
+    description: Develop QA test plan covering functional, regression, accessibility,
+      safe messaging compliance, and crisis flow testing. Define test case designs
+      for all critical user journeys.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers 100% of MVP user stories with at least one test case each
+    - Crisis flow test cases cover all 4 escalation tiers
+    - Safe messaging compliance checklist integrated as required test gate for every
+      release
+    - Accessibility test cases cover screen reader, keyboard navigation, and high
+      contrast
+    - QA sign-off required before any production release
+    depends_on:
+    - 9
+    - 17
+  SYSTEM_TEST:
+    description: Execute end-to-end system integration tests covering the full user
+      journey from onboarding through crisis routing, including multi-agent coordinator
+      flow, LLM safety guardrail, database persistence, and hotline routing.
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 7 E2E scenarios pass on staging with zero critical failures
+    - Crisis routing latency <2s measured from trigger phrase to hotline card render
+    - 100 concurrent user load test completes with <1% error rate
+    - Jailbreak scenario blocked in 100% of 20 tested adversarial inputs
+    - 'Data deletion verified: database query returns zero rows for deleted user after
+      24h'
+    - System test report signed off by QA lead and safety engineer
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 18
+  OPERATIONS:
+    description: 'Write operational runbooks for: crisis routing service outage, LLM
+      provider failover, PHI breach response, on-call escalation paths, capacity planning
+      model, and SLA definitions.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Crisis routing outage runbook has RTO of 15 minutes with tested failover procedure
+    - PHI breach runbook maps to HIPAA 60-day HHS notification requirement
+    - LLM provider failover tested and verified via SAGE /llm/switch in staging
+    - Capacity planning model projects cost and performance at 10k, 100k, 1M users
+    - All runbooks reviewed by on-call engineer and operations manager
+    depends_on:
+    - 16
+    - 19
+  TRAINING:
+    description: Produce user onboarding guide, in-app help content, crisis resource
+      guide, HIPAA workforce training for internal staff, and content moderation team
+      playbook for escalated crisis cases.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - User onboarding guide covers first-time setup, consent, and how to reach crisis
+      help
+    - Crisis resource guide covers US (988), UK (Samaritans), AU (Lifeline), and 5
+      other locales
+    - HIPAA workforce training completed and signed by all staff with PHI access before
+      launch
+    - Content moderation playbook defines response SLA of <1 hour for flagged crisis
+      cases
+    - In-app help content reviewed by UX designer for tone adherence to safe messaging
+      guidelines
+    depends_on:
+    - 8
+    - 19
+    - 20
+  DOCS:
+    description: 'Write technical documentation: API reference, architecture decision
+      records (ADRs) for crisis detection design, agent coordinator design doc, database
+      schema docs, and security architecture doc.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec documents all endpoints including crisis routing response format
+    - ADRs capture decision context, alternatives considered, and rationale
+    - Security architecture doc reviewed by security engineer
+    - All docs committed to repo and linked from README
+    depends_on:
+    - 13
+    - 19

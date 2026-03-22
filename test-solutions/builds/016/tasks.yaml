@@ -1,0 +1,268 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user stories, and process flows for
+      the insurance claims lifecycle — intake, photo upload, fraud scoring, liability
+      assessment, and settlement recommendation.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All actor roles documented with their goals and pain points
+    - End-to-end claims lifecycle mapped with decision points
+    - Acceptance thresholds defined for fraud score, damage estimate, and settlement
+      amount
+    - 'Edge cases documented: total loss, disputed liability, multi-party claims'
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce the product requirements document (PRD), define success metrics
+      (claims cycle time, fraud catch rate, settlement accuracy), and prioritize the
+      MVP feature set.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved with in-scope and out-of-scope features explicitly listed
+    - Quantitative success metrics defined with baseline and target values
+    - 'MVP scope locked: damage analysis + fraud flag + settlement recommendation'
+    - RACI matrix defined for human-approval gates
+    depends_on:
+    - 1
+  SECURITY:
+    description: Produce threat model, STRIDE analysis, penetration test plan, and
+      SBOM for the insurance claims platform. Address PII (claimant data), PCI DSS
+      (payment for settlements), and SOC 2 controls.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - 'All data flows classified: PII, PCI, internal'
+    - STRIDE threats enumerated per component with mitigations assigned
+    - SBOM generated covering all runtime dependencies
+    - Pen test plan covers authentication, upload injection, payment bypass, model
+      inversion
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Produce compliance artifacts for PCI DSS, SOC 2, and SOX: risk matrix,
+      traceability matrix, V&V protocol templates, and audit evidence checklist.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Every functional requirement linked to at least one compliance control
+    - Risk matrix covers likelihood × impact for all identified threats
+    - V&V protocol includes test IDs that map back to requirements
+    - Audit evidence checklist approved by compliance officer
+    depends_on:
+    - 3
+  UX_DESIGN:
+    description: 'Design wireframes and interaction flows for: claimant self-service
+      portal (photo upload, status tracking), adjuster workbench (AI recommendations,
+      override workflow), and fraud analyst dashboard.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All primary user journeys wireframed end-to-end
+    - AI recommendation cards show confidence scores and explainability
+    - Human override UI clearly distinguishes AI suggestion from final decision
+    - Accessibility audit passes WCAG 2.1 AA for all primary flows
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design and implement the database schema: claims, claimants, policies,
+      photos, damage_assessments, fraud_scores, liability_assessments, settlements,
+      audit_events. Includes migrations and seed data.'
+    agent_role: developer
+    acceptance_criteria:
+    - All PII columns encrypted at rest with column-level encryption
+    - Foreign key constraints enforce referential integrity
+    - Audit_events table captures every state transition with actor, timestamp, reason
+    - Migrations are idempotent and reversible
+    - Seed data covers 50+ representative claim scenarios including fraud cases
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 1
+    - 4
+  DATA:
+    description: 'Build data pipelines for: ingesting historical claims data, labeling
+      damage severity from photos, computing fraud feature vectors, and feeding the
+      analytics schema for reporting.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - ETL pipeline processes 10k historical claims with < 5% error rate
+    - Photo feature vectors extracted and stored in feature store within 30s per image
+    - Fraud feature pipeline produces ≥ 25 engineered features per claim
+    - dbt models tested with schema tests and data freshness assertions
+    - Analytics mart refreshes on daily schedule with SLA alerting
+    depends_on:
+    - 6
+  ML_MODEL:
+    description: Train and evaluate the damage photo analysis model (computer vision
+      — severity classification and repair cost estimation) using transfer learning
+      on vehicle/property damage datasets.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Damage severity classification F1 ≥ 0.82 on held-out test set
+    - Cost estimate within ±15% of adjuster-verified amount on 80% of cases
+    - Model card documents training data, known biases, and performance across claim
+      types
+    - Grad-CAM heatmaps generated per inference for explainability
+    - Model versioned in MLflow with reproducible training run
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 7
+  CONFIG:
+    description: 'Configure the multi-agent coordinator pattern for the claims processing
+      pipeline. The coordinator routes each claim through: photo-analysis agent →
+      fraud-detection agent → liability-assessment agent → settlement-recommendation
+      agent with HITL gates.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator routes claims to all four specialist agents in correct dependency
+      order
+    - HITL gate triggers on fraud_score > 0.6, settlement > $25k, or total_loss classification
+    - Agent outputs include trace_id for full audit chain
+    - Config files allow threshold adjustment without code changes
+    depends_on:
+    - 10
+  BACKEND:
+    description: 'Build the core FastAPI backend: claims CRUD, photo upload (S3 presigned
+      URLs), async ML inference pipeline, proposal/approval store, settlement payment
+      initiation, and webhook handlers.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints return typed Pydantic response models
+    - Photo upload uses presigned S3 URLs — backend never streams file bytes
+    - Async ML pipeline triggered on photo upload, result stored on completion
+    - All state transitions written to audit_events table atomically
+    - API returns 400 with structured error body for all validation failures
+    - Authentication via JWT with role-based access (claimant, adjuster, fraud_analyst,
+      admin)
+    depends_on:
+    - 6
+    - 11
+  API:
+    description: Produce the OpenAPI specification for the insurance claims API, including
+      request/response schemas, authentication requirements, error codes, and webhook
+      contracts.
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints documented with example requests and responses
+    - 'Error codes enumerated: 400 validation, 401 auth, 403 forbidden, 404 not found,
+      422 unprocessable, 500 internal'
+    - Webhook payloads documented with retry and signing specifications
+    - Postman collection passes automated schema validation
+    - OpenAPI spec passes spectral linting with zero errors
+    depends_on:
+    - 12
+  FRONTEND:
+    description: 'Build the claimant self-service portal: claim submission wizard,
+      drag-and-drop photo upload with preview, real-time processing status, AI assessment
+      display, and settlement offer acceptance flow.'
+    agent_role: developer
+    acceptance_criteria:
+    - Claim submission wizard completes in ≤ 5 steps with progress indicator
+    - Photo upload supports drag-and-drop, multiple files, shows upload progress
+    - AI assessment card shows damage severity, cost estimate, and confidence score
+    - Settlement offer card clearly distinguishes AI recommendation from final offer
+    - All interactive elements meet WCAG 2.1 AA contrast and keyboard navigation requirements
+    depends_on:
+    - 5
+    - 13
+  INFRA:
+    description: 'Set up Docker Compose for local development and Kubernetes manifests
+      for production: API server, Celery workers, ML inference service, PostgreSQL,
+      Redis, S3-compatible storage, Airflow, and MLflow.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`docker-compose up` starts all services and API health check passes within
+      60 seconds'
+    - Helm charts parameterized for staging and production environments
+    - ML inference service scales independently from the API service
+    - Secrets managed via environment variables — no hardcoded credentials in any
+      config file
+    - Resource limits defined for all containers
+    depends_on:
+    - 12
+  DEVOPS:
+    description: 'Implement CI/CD pipelines: automated testing, Docker image build
+      and push, ML model validation gate, staging deployment, and production promotion
+      with rollback capability.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and must pass before merge
+    - ML model validation gate blocks deployment if performance degrades beyond threshold
+    - Production deployment requires manual approval step in GitHub Actions
+    - Rollback to previous version executable via single pipeline trigger
+    - Pipeline completes in ≤ 15 minutes for standard code changes
+    depends_on:
+    - 17
+  TESTS:
+    description: Write unit tests for all backend services, ML model inference wrappers,
+      fraud feature engineering pipeline, settlement calculation engine, and HITL
+      approval workflow.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test suite passes with 0 failures on clean checkout
+    - Line coverage ≥ 85% on all backend modules
+    - ML inference tests use fixture inputs and assert output schema + value ranges
+    - 'Settlement calculation tests cover edge cases: $0 liability, policy cap exceeded,
+      multi-party split'
+    - HITL workflow tests verify proposals are created and require approval before
+      execution
+    depends_on:
+    - 12
+    - 10
+  SYSTEM_TEST:
+    description: 'Execute system-level performance and load tests: simulate 500 concurrent
+      claim submissions, ML pipeline throughput under load, and settlement payment
+      processing latency.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - API p95 latency ≤ 500ms at 500 concurrent users
+    - ML inference p95 ≤ 3000ms for photo analysis under load
+    - Error rate ≤ 0.1% under peak load scenario
+    - System recovers to baseline performance within 60 seconds after load spike ends
+    - Performance baseline JSON committed for regression comparison in CI
+    depends_on:
+    - 20
+    - 18
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response for ML model degradation,
+      fraud system outage, payment processing failure, and PII data breach. Define
+      SLAs and on-call escalation paths.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Each runbook includes: detection criteria, immediate actions, escalation path,
+      and post-incident review steps'
+    - SLA definitions include measurement methodology and consequence of breach
+    - 'Monitoring dashboards cover: API latency, ML model drift, fraud flag volume,
+      settlement queue depth'
+    - PII breach runbook aligns with regulatory notification timelines (72h GDPR,
+      applicable state laws)
+    depends_on:
+    - 18
+  DOCS:
+    description: 'Produce technical and user-facing documentation: API reference (auto-generated
+      from OpenAPI), architecture decision records (ADRs), ML model cards, and adjuster
+      user guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from OpenAPI spec and renders correctly in docs site
+    - 'Each ADR documents: context, decision, alternatives considered, and consequences'
+    - 'All three model cards include: intended use, training data description, performance
+      metrics, known limitations, and fairness considerations'
+    - Adjuster user guide covers all primary workflows with screenshots
+    - 'README includes: local setup in ≤ 10 commands, architecture diagram, and environment
+      variable reference'
+    depends_on:
+    - 23
+    - 13
+  TRAINING:
+    description: 'Develop training materials for adjusters, fraud analysts, and compliance
+      officers covering: how to interpret AI recommendations, when to override, how
+      to use the HITL approval queue, and model limitations.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Training materials cover all three audience roles with role-specific content
+    - Override procedures documented with real examples of legitimate override reasons
+    - Model limitations section clearly states what the AI cannot reliably assess
+    - Quick reference card fits on one printed page per role
+    - Training materials reviewed and approved by product and compliance teams
+    depends_on:
+    - 25

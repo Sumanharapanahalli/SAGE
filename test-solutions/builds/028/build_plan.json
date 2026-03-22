@@ -1,0 +1,1133 @@
+{
+  "run_id": "15368a49-0c8f-44b0-ac3b-300eaf09dea7",
+  "status": {
+    "run_id": "15368a49-0c8f-44b0-ac3b-300eaf09dea7",
+    "solution_name": "autonomous_parking",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T00:53:12.523102+00:00",
+    "updated_at": "2026-03-22T00:58:01.082950+00:00",
+    "product_description": "Automated valet parking system with ultrasonic sensor mapping, path planning, low-speed maneuver control, and mobile app for remote parking/retrieval. ISO 26262 ASIL B.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "SAFETY",
+        "description": "Conduct hazard analysis and risk assessment (HARA) for automated valet parking per ISO 26262 ASIL B. Identify all hazardous events (unintended motion, sensor failure, communication loss, obstacle detection failure), assign ASIL levels, and define safety goals.",
+        "payload": {
+          "standard": "ISO 26262",
+          "asil_target": "ASIL B",
+          "methods": [
+            "HARA",
+            "FMEA",
+            "fault tree analysis"
+          ],
+          "hazard_categories": [
+            "unintended_acceleration",
+            "unintended_steering",
+            "sensor_blackout",
+            "remote_command_spoofing",
+            "pedestrian_detection_failure"
+          ],
+          "output_artifacts": [
+            "HARA_report.xlsx",
+            "safety_goals.md",
+            "ASIL_classification_matrix.xlsx"
+          ]
+        },
+        "acceptance_criteria": [
+          "All hazardous events identified with severity, exposure, and controllability ratings",
+          "ASIL B confirmed for primary motion control functions",
+          "Minimum 10 safety goals defined with functional safety requirements",
+          "FMEA covers all sensor and actuator failure modes",
+          "Fault tree analysis completed for top-level hazard: unintended vehicle motion",
+          "ASIL level determined for each function",
+          "Fault tree analysis complete"
+        ],
+        "depends_on": [],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document (PRD) for the autonomous_parking system: functional requirements for sensor coverage, parking maneuver types (parallel, perpendicular, angle), retrieval flow, mobile app commands, latency budgets, and system constraints (speed limits \u226410 km/h, geofencing).",
+        "payload": {
+          "solution_name": "autonomous_parking",
+          "requirement_categories": [
+            "functional",
+            "non_functional",
+            "safety",
+            "interface",
+            "performance"
+          ],
+          "maneuver_types": [
+            "parallel",
+            "perpendicular",
+            "angled"
+          ],
+          "speed_limit_kmh": 10,
+          "sensor_types": [
+            "ultrasonic",
+            "camera_optional"
+          ],
+          "output_artifacts": [
+            "PRD_autonomous_parking.md",
+            "system_requirements_spec.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "All functional requirements traced to safety goals from step 1",
+          "Non-functional requirements include latency (<200ms sensor-to-actuator), reliability (99.9% uptime), and availability targets",
+          "Interface requirements defined for mobile app \u2194 vehicle ECU \u2194 parking infrastructure",
+          "PRD reviewed and signed off by safety_engineer and product_manager"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "COMPLIANCE",
+        "description": "Establish the ISO 26262 Safety Case framework: create the Design History File (DHF) skeleton, functional safety concept, safety requirements specification, and traceability matrix linking HARA safety goals \u2192 functional safety requirements \u2192 technical safety requirements \u2192 implementation.",
+        "payload": {
+          "standard": "ISO 26262",
+          "asil": "ASIL B",
+          "artifacts": [
+            "DHF_skeleton",
+            "functional_safety_concept",
+            "safety_requirements_spec",
+            "traceability_matrix"
+          ],
+          "tools": [
+            "DOORS_NG_compatible_xlsx",
+            "requirement_IDs"
+          ],
+          "work_products": [
+            "ISO26262_Part3_concept",
+            "ISO26262_Part4_system",
+            "ISO26262_Part6_software"
+          ]
+        },
+        "acceptance_criteria": [
+          "DHF skeleton covers all ISO 26262 Part 2 management work products",
+          "Functional safety concept addresses all safety goals from HARA",
+          "Traceability matrix maps every safety goal to at least one technical safety requirement",
+          "Safety requirements spec reviewed for completeness and consistency",
+          "Document control (version, author, review status) applied to all artifacts"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 4,
+        "task_type": "SECURITY",
+        "description": "Perform threat analysis and risk assessment (TARA) per UNECE R155/R156 and ISO/SAE 21434. Model attack surfaces: mobile app \u2194 cloud, cloud \u2194 vehicle OTA, CAN bus injection. Define cybersecurity goals and secure-by-design requirements.",
+        "payload": {
+          "standards": [
+            "UNECE_R155",
+            "UNECE_R156",
+            "ISO_SAE_21434"
+          ],
+          "attack_surfaces": [
+            "mobile_to_cloud_API",
+            "OTA_update_channel",
+            "BLE_proximity",
+            "CAN_bus",
+            "ultrasonic_spoofing"
+          ],
+          "methods": [
+            "STRIDE",
+            "TARA"
+          ],
+          "output_artifacts": [
+            "TARA_report.md",
+            "cybersecurity_goals.md",
+            "secure_comms_spec.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE analysis completed for all identified attack surfaces",
+          "Cybersecurity risk ratings assigned (CAL 1\u20134 per ISO/SAE 21434)",
+          "Secure boot, signed OTA, and encrypted BLE/TLS requirements specified",
+          "CAN bus access control requirements defined",
+          "TARA report traceable to cybersecurity goals"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Design mobile app UX for remote parking and retrieval: park command flow, retrieval request, real-time vehicle status display, proximity authentication, emergency stop button placement, and accessibility compliance (WCAG 2.1 AA).",
+        "payload": {
+          "platform": [
+            "iOS",
+            "Android"
+          ],
+          "key_flows": [
+            "initiate_park",
+            "retrieve_vehicle",
+            "monitor_status",
+            "emergency_stop",
+            "auth_flow"
+          ],
+          "safety_ui_requirements": [
+            "prominent_emergency_stop",
+            "confirmation_dialogs_for_motion_commands",
+            "proximity_auth_within_50m"
+          ],
+          "output_artifacts": [
+            "wireframes.figma",
+            "interaction_spec.md",
+            "accessibility_audit.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all 5 key user flows",
+          "Emergency stop reachable within 1 tap from any active session screen",
+          "Confirmation dialog required before any vehicle motion command",
+          "Proximity authentication (Bluetooth/GPS geofence) designed and specified",
+          "Accessibility audit passes WCAG 2.1 AA for critical action elements"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "HARDWARE_SIM",
+        "description": "Build simulation models for the ultrasonic sensor array: HC-SR04 timing model in SystemC/Python, sensor cone geometry (15\u00b0 half-angle, 2\u2013400cm range), multi-sensor interference model, and 2D occupancy grid map builder. Include a simulated parking lot environment with static and dynamic obstacles.",
+        "payload": {
+          "sensor_model": "HC-SR04_ultrasonic",
+          "simulation_language": "Python_with_SystemC_bindings",
+          "sensor_count": 8,
+          "range_cm": {
+            "min": 2,
+            "max": 400
+          },
+          "cone_half_angle_deg": 15,
+          "environment": "2D_parking_lot_20x10m",
+          "obstacles": [
+            "static_pillars",
+            "parked_vehicles",
+            "moving_pedestrians"
+          ],
+          "output_artifacts": [
+            "sensor_sim.py",
+            "occupancy_grid.py",
+            "parking_env_sim.py",
+            "sim_testbench.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Sensor model produces distance readings within \u00b11% of HC-SR04 datasheet values",
+          "Multi-sensor 360\u00b0 coverage verified with no blind spots >20cm at vehicle corners",
+          "Occupancy grid updates at \u226510Hz with 8 sensors active",
+          "Simulation handles pedestrian crossing scenario without false-negative obstacle detection",
+          "Testbench runs 100 randomized parking lot configurations without crash"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "DATABASE",
+        "description": "Design database schema for parking lot management: lot map (spaces, levels, dimensions), vehicle sessions (park/retrieve events, duration, position history), reservation system, and audit log for all remote commands (ISO 26262 traceability). PostgreSQL with PostGIS for spatial queries.",
+        "payload": {
+          "database": "PostgreSQL_with_PostGIS",
+          "tables": [
+            "parking_lots",
+            "parking_spaces",
+            "vehicle_sessions",
+            "remote_commands_audit",
+            "sensor_snapshots",
+            "user_accounts",
+            "reservations"
+          ],
+          "spatial_fields": [
+            "space_geometry",
+            "vehicle_position_history"
+          ],
+          "compliance_fields": [
+            "command_timestamp",
+            "command_source",
+            "approval_token",
+            "operator_id"
+          ],
+          "output_artifacts": [
+            "schema.sql",
+            "migrations/001_initial.sql",
+            "seed_data.sql",
+            "erd.png"
+          ]
+        },
+        "acceptance_criteria": [
+          "Schema normalized to 3NF with PostGIS geometry columns for space and position data",
+          "Audit log table is append-only (no UPDATE/DELETE) with row-level security",
+          "All remote command records include timestamp, source IP, user_id, and HMAC token",
+          "Migrations idempotent and reversible",
+          "ERD reviewed and approved"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "FIRMWARE",
+        "description": "Implement ultrasonic sensor HAL layer: GPIO trigger/echo timing using hardware timer capture (TIM), interrupt-driven echo measurement, DMA-based multi-sensor round-robin polling, and distance calculation with temperature compensation. Target: STM32F4 / FreeRTOS.",
+        "payload": {
+          "mcu": "STM32F4xx",
+          "rtos": "FreeRTOS",
+          "sensors": 8,
+          "interface": "GPIO_timer_capture",
+          "polling_mode": "DMA_round_robin",
+          "temperature_compensation": true,
+          "output_artifacts": [
+            "hal_ultrasonic.c",
+            "hal_ultrasonic.h",
+            "sensor_task.c",
+            "CMakeLists.txt"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 8 sensors polled at \u226510Hz without CPU busy-wait",
+          "Distance accuracy \u00b11cm over 2\u2013400cm range at 25\u00b0C",
+          "Temperature compensation applied using configurable Celsius input",
+          "HAL compiles cleanly with zero warnings under ARM-GCC with -Wall -Wextra",
+          "FreeRTOS sensor task has stack overflow guard and watchdog feed",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "FIRMWARE",
+        "description": "Implement occupancy grid RTOS task: consumes sensor readings from HAL, builds 2D binary occupancy grid (5cm resolution), applies Bayesian update rule for confidence scoring, publishes grid over CAN bus frame or UART JSON for path planner consumption.",
+        "payload": {
+          "grid_resolution_cm": 5,
+          "grid_area_m": "10x10",
+          "update_algorithm": "Bayesian_occupancy",
+          "output_bus": "CAN_2.0B",
+          "frame_format": "SAGE_OG_FRAME_v1",
+          "rtos_task_priority": "HIGH",
+          "output_artifacts": [
+            "occupancy_grid_task.c",
+            "occupancy_grid_task.h",
+            "can_publisher.c"
+          ]
+        },
+        "acceptance_criteria": [
+          "Grid updates at \u226510Hz under full sensor load",
+          "Bayesian confidence correctly decays obstacle probability when no echo returns",
+          "CAN frame published within 5ms of grid update",
+          "RTOS task stack usage measured and within allocated budget",
+          "Grid correctly distinguishes free, occupied, and unknown cells",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "FIRMWARE",
+        "description": "Implement path planning module (A* with kinematic constraints): reads occupancy grid, computes collision-free path from current position to target space, generates waypoint list respecting vehicle turning radius (min 3m), and validates path before execution. Runs on embedded MCU or companion SBC.",
+        "payload": {
+          "algorithm": "A_star_with_kinematic_constraints",
+          "min_turning_radius_m": 3,
+          "waypoint_spacing_m": 0.1,
+          "safety_margin_cm": 20,
+          "platform": "STM32H7_or_Raspberry_Pi4",
+          "output_artifacts": [
+            "path_planner.c",
+            "path_planner.h",
+            "kinematic_model.c",
+            "path_validator.c"
+          ]
+        },
+        "acceptance_criteria": [
+          "Path planner finds valid path in <100ms for 10x10m grid",
+          "All waypoints maintain \u226520cm clearance from occupied cells",
+          "Kinematic constraints enforced: no waypoint requires turning radius <3m",
+          "Path validator rejects plans with clearance violations before motion starts",
+          "Replanning triggered automatically when new obstacles detected mid-maneuver",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "FIRMWARE",
+        "description": "Implement low-speed maneuver control RTOS task: pure-pursuit lateral controller tracking waypoints at \u226410 km/h, longitudinal PID speed controller with obstacle-proximity speed scaling, emergency stop handler (EStop) triggered by proximity threshold or remote command, and CAN interface to drive-by-wire actuators.",
+        "payload": {
+          "lateral_controller": "pure_pursuit",
+          "longitudinal_controller": "PID",
+          "max_speed_kmh": 10,
+          "estop_distance_cm": 30,
+          "estop_latency_target_ms": 50,
+          "actuator_interface": "CAN_2.0B_DBW",
+          "safety_feature": "watchdog_with_brake_fallback",
+          "output_artifacts": [
+            "motion_controller.c",
+            "motion_controller.h",
+            "estop_handler.c",
+            "pid_controller.c",
+            "pure_pursuit.c"
+          ]
+        },
+        "acceptance_criteria": [
+          "Vehicle tracks waypoints with lateral error <5cm at 5 km/h on straight path",
+          "Speed scales to 0 at obstacle <30cm within 50ms of detection",
+          "EStop command via CAN halts all motion within 50ms",
+          "Watchdog triggers brake actuator if motion task fails to checkin within 100ms",
+          "No actuator command issued without valid occupancy grid update within last 200ms",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "FIRMWARE",
+        "description": "Implement vehicle communication gateway firmware: BLE/Wi-Fi module interface for receiving authenticated remote park/retrieve commands from mobile app, command HMAC validation, session token management, relay to motion controller via internal CAN, and heartbeat keep-alive with automatic EStop on loss.",
+        "payload": {
+          "comms_module": "ESP32_or_SIM7600",
+          "protocols": [
+            "BLE_5.0",
+            "TLS_1.3_MQTT"
+          ],
+          "auth": "HMAC_SHA256_session_token",
+          "heartbeat_interval_ms": 500,
+          "comms_loss_estop_timeout_ms": 1500,
+          "output_artifacts": [
+            "comms_gateway.c",
+            "comms_gateway.h",
+            "auth_validator.c",
+            "mqtt_client.c"
+          ]
+        },
+        "acceptance_criteria": [
+          "Commands with invalid HMAC are silently dropped and logged",
+          "Session token expires after 30 minutes of inactivity",
+          "EStop triggered automatically if heartbeat missed for >1500ms",
+          "All received commands logged with timestamp and source to audit UART/flash",
+          "TLS 1.3 mutual authentication verified with test certificate chain",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          11,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build parking management backend service (FastAPI/Python): REST + WebSocket API for mobile app, vehicle telemetry ingestion endpoint, parking space occupancy state machine, remote command dispatcher with HMAC signing, MQTT broker bridge to vehicle gateway, and session lifecycle management.",
+        "payload": {
+          "framework": "FastAPI",
+          "language": "Python_3.11",
+          "message_broker": "MQTT_via_Mosquitto",
+          "auth": "JWT_plus_HMAC_command_signing",
+          "endpoints": [
+            "POST /sessions/park",
+            "POST /sessions/retrieve",
+            "POST /sessions/{id}/estop",
+            "GET /sessions/{id}/status",
+            "GET /lots/{id}/map",
+            "WS /sessions/{id}/telemetry"
+          ],
+          "agentic_pattern": "human_in_the_loop",
+          "output_artifacts": [
+            "main.py",
+            "routers/sessions.py",
+            "routers/lots.py",
+            "services/command_dispatcher.py",
+            "services/mqtt_bridge.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "All endpoints return correct status codes and OpenAPI schema validated",
+          "EStop POST endpoint responds in <100ms end-to-end",
+          "HMAC-signed commands forwarded to vehicle MQTT topic within 200ms",
+          "WebSocket telemetry streams sensor data at 2Hz to connected mobile clients",
+          "Session state machine correctly transitions: IDLE\u2192PARKING\u2192PARKED\u2192RETRIEVING\u2192IDLE",
+          "JWT auth required on all non-health endpoints"
+        ],
+        "depends_on": [
+          7,
+          12,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "API",
+        "description": "Define and document the complete OpenAPI 3.1 specification for the autonomous_parking backend: all REST endpoints, WebSocket contract, error schemas, authentication flows (JWT + HMAC), and MQTT topic structure for vehicle gateway integration.",
+        "payload": {
+          "spec_format": "OpenAPI_3.1",
+          "auth_schemes": [
+            "BearerAuth_JWT",
+            "HMAC_command_signing"
+          ],
+          "output_artifacts": [
+            "openapi.yaml",
+            "mqtt_topics.md",
+            "api_changelog.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors against OpenAPI 3.1 schema",
+          "All request/response bodies have complete schema definitions with examples",
+          "MQTT topic structure documented with QoS levels and payload schemas",
+          "Authentication flow diagrams included for mobile\u2192cloud and cloud\u2192vehicle paths",
+          "Spec reviewed by security_engineer against TARA findings from step 4"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build React Native mobile app (iOS + Android): park/retrieve command screens, real-time vehicle position map view (2D parking lot overlay), session status display, proximity BLE authentication, emergency stop floating action button, and push notification for session events.",
+        "payload": {
+          "framework": "React_Native_0.73",
+          "language": "TypeScript",
+          "key_screens": [
+            "HomeScreen",
+            "ParkScreen",
+            "RetrieveScreen",
+            "SessionMapScreen",
+            "SettingsScreen"
+          ],
+          "real_time": "WebSocket_telemetry_overlay",
+          "auth": "JWT_plus_BLE_proximity",
+          "push_notifications": "FCM_APNs",
+          "output_artifacts": [
+            "src/screens/",
+            "src/components/",
+            "src/services/api.ts",
+            "src/services/ble.ts"
+          ]
+        },
+        "acceptance_criteria": [
+          "Park and retrieve commands require explicit confirmation dialog before sending",
+          "Emergency stop FAB visible on all active session screens, triggers within 1 tap",
+          "Real-time map renders vehicle position updates within 1s of telemetry receipt",
+          "BLE proximity check prevents commands when device >50m from vehicle",
+          "Push notification delivered within 10s of session state change",
+          "App passes WCAG 2.1 AA contrast checks on all interactive elements"
+        ],
+        "depends_on": [
+          5,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "CONFIG",
+        "description": "Configure SAGE autonomous_parking solution YAML files (project.yaml, prompts.yaml, tasks.yaml): define agent roles (safety_engineer, firmware_dev, motion_controller_specialist), active modules, HITL approval gates for motion commands, and agentic pattern setup (human_in_the_loop coordinator for motion approvals).",
+        "payload": {
+          "solution_name": "autonomous_parking",
+          "agentic_pattern": "human_in_the_loop",
+          "hitl_level": "strict",
+          "approval_required_tasks": [
+            "motion_command",
+            "firmware_deploy",
+            "path_plan_execution",
+            "estop_override"
+          ],
+          "active_modules": [
+            "dashboard",
+            "analyst",
+            "improvements",
+            "audit",
+            "approvals",
+            "queue"
+          ],
+          "output_artifacts": [
+            "solutions/autonomous_parking/project.yaml",
+            "solutions/autonomous_parking/prompts.yaml",
+            "solutions/autonomous_parking/tasks.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "project.yaml loads without validation errors via GET /config/yaml/project",
+          "All motion command task types require human approval in tasks.yaml",
+          "Agent roles defined in prompts.yaml with domain-appropriate system prompts",
+          "active_modules list verified against MODULE_REGISTRY in web/src/registry/modules.ts",
+          "HITL gate configured as strict: no motion command executes without approval token"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write firmware unit tests for HAL and occupancy grid modules: sensor timing accuracy, distance calculation edge cases, occupancy grid Bayesian update, path planner collision avoidance, PID controller response, and EStop latency. Use Unity test framework on-target and host-side mocks.",
+        "payload": {
+          "test_framework": "Unity_C",
+          "coverage_target_percent": 80,
+          "test_modules": [
+            "hal_ultrasonic",
+            "occupancy_grid_task",
+            "path_planner",
+            "pid_controller",
+            "pure_pursuit",
+            "estop_handler",
+            "auth_validator"
+          ],
+          "host_mocks": [
+            "CAN_bus_mock",
+            "GPIO_timer_mock",
+            "FreeRTOS_mock"
+          ],
+          "output_artifacts": [
+            "tests/unit/test_hal_ultrasonic.c",
+            "tests/unit/test_occupancy_grid.c",
+            "tests/unit/test_path_planner.c",
+            "tests/unit/test_motion_controller.c",
+            "tests/unit/test_auth_validator.c"
+          ]
+        },
+        "acceptance_criteria": [
+          "All unit tests pass on host with mocks and on-target STM32",
+          "\u226580% line coverage across all tested firmware modules",
+          "EStop latency test verifies <50ms response in 1000 iterations",
+          "Auth validator rejects 100% of tampered HMAC payloads in fuzz test (1000 cases)",
+          "Path planner unit test verifies 0 clearance violations across 50 grid configurations"
+        ],
+        "depends_on": [
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "HARDWARE_SIM",
+        "description": "Build hardware-in-the-loop (HIL) simulation testbench: integrate STM32 firmware with the parking lot simulator from step 6, vehicle dynamics model (bicycle model), and virtual drive-by-wire actuators. Execute automated parking maneuver scenarios end-to-end in simulation.",
+        "payload": {
+          "hil_platform": "QEMU_STM32_or_Renode",
+          "vehicle_model": "bicycle_kinematic_model",
+          "scenarios": [
+            "parallel_park_clear",
+            "perpendicular_park_tight",
+            "retrieval_with_pedestrian",
+            "comms_loss_estop",
+            "sensor_failure_degraded"
+          ],
+          "sim_timestep_ms": 10,
+          "output_artifacts": [
+            "hil/hil_testbench.py",
+            "hil/vehicle_dynamics.py",
+            "hil/scenarios/",
+            "hil/run_all.sh"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 5 maneuver scenarios complete successfully in simulation with zero collisions",
+          "Comms-loss scenario triggers EStop within 1500ms of heartbeat loss",
+          "Single sensor failure causes graceful speed reduction, not hard fault",
+          "HIL testbench runs unattended and produces pass/fail JUnit XML report",
+          "Vehicle position error <10cm at end of park maneuver vs. target space center"
+        ],
+        "depends_on": [
+          6,
+          11,
+          12,
+          17
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 19,
+        "task_type": "TESTS",
+        "description": "Write backend unit and integration tests: session state machine transitions, command dispatcher HMAC signing, MQTT bridge message routing, telemetry WebSocket streaming, database CRUD operations, and JWT authentication. Use pytest with testcontainers for PostgreSQL and Mosquitto.",
+        "payload": {
+          "test_framework": "pytest",
+          "coverage_target_percent": 85,
+          "test_categories": [
+            "unit",
+            "integration"
+          ],
+          "tools": [
+            "testcontainers",
+            "httpx_async_client",
+            "pytest_asyncio",
+            "faker"
+          ],
+          "output_artifacts": [
+            "tests/test_sessions.py",
+            "tests/test_command_dispatcher.py",
+            "tests/test_mqtt_bridge.py",
+            "tests/test_auth.py",
+            "tests/test_websocket.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "\u226585% line coverage on all backend service modules",
+          "All 7 session state transitions tested including error paths",
+          "HMAC signing verified: tampered command rejected with 401",
+          "WebSocket test confirms telemetry delivery latency <500ms",
+          "Integration tests run against real PostgreSQL and MQTT via testcontainers",
+          "CI pipeline fails on any test regression"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "SYSTEM_TEST",
+        "description": "Design and execute system-level integration test suite: mobile app \u2192 backend \u2192 MQTT \u2192 firmware HIL end-to-end park and retrieve scenarios, failsafe validation (EStop, comms loss, sensor blackout), performance tests (command latency <200ms), and multi-session concurrency tests.",
+        "payload": {
+          "test_scope": "end_to_end",
+          "scenarios": [
+            "full_park_happy_path",
+            "full_retrieve_happy_path",
+            "estop_from_mobile_mid_maneuver",
+            "comms_loss_during_park",
+            "obstacle_appears_mid_path",
+            "concurrent_two_vehicle_sessions",
+            "invalid_auth_command_rejected"
+          ],
+          "performance_targets": {
+            "command_latency_ms": 200,
+            "estop_latency_ms": 500,
+            "telemetry_update_hz": 2
+          },
+          "output_artifacts": [
+            "tests/system/test_e2e_park.py",
+            "tests/system/test_failsafes.py",
+            "tests/system/test_performance.py",
+            "system_test_report.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 7 scenarios pass in HIL simulation environment",
+          "Command latency <200ms in 95th percentile over 100 runs",
+          "EStop from mobile reaches firmware within 500ms in 100% of test runs",
+          "Concurrent two-session test shows zero cross-session command contamination",
+          "Invalid auth scenario results in zero motion command execution",
+          "System test report generated with pass/fail/metrics per scenario"
+        ],
+        "depends_on": [
+          15,
+          18,
+          19
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 21,
+        "task_type": "QA",
+        "description": "Execute ISO 26262 software verification plan: static analysis (MISRA C:2012 compliance check on firmware), code coverage measurement (MC/DC for ASIL B safety functions), peer review records, and software unit testing sign-off. Produce Software Verification Report.",
+        "payload": {
+          "coding_standard": "MISRA_C_2012",
+          "static_analysis_tool": "PC-lint_Plus_or_Cppcheck_MISRA",
+          "coverage_method": "MC_DC",
+          "coverage_target_safety_functions_percent": 100,
+          "review_process": "two_person_sign_off",
+          "output_artifacts": [
+            "MISRA_deviation_list.xlsx",
+            "code_coverage_report.html",
+            "peer_review_records/",
+            "software_verification_report.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "Zero unmitigated MISRA C:2012 mandatory violations in safety-relevant firmware modules",
+          "100% MC/DC coverage achieved on EStop handler and motion controller safety functions",
+          "All MISRA deviations documented with justification and approved by safety_engineer",
+          "Two-person peer review completed for all safety-critical source files",
+          "Software Verification Report signed and ready for DHF inclusion"
+        ],
+        "depends_on": [
+          17,
+          18
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "COMPLIANCE",
+        "description": "Produce ISO 26262 V&V evidence package: populate traceability matrix with test results, complete the functional safety assessment checklist (ASIL B), generate Software Safety Requirements specification sign-off, and produce the Safety Case argument linking all evidence to safety goals.",
+        "payload": {
+          "standard": "ISO 26262",
+          "asil": "ASIL B",
+          "evidence_types": [
+            "unit_test_results",
+            "HIL_test_results",
+            "system_test_results",
+            "MISRA_deviation_list",
+            "code_coverage_report",
+            "peer_review_records"
+          ],
+          "output_artifacts": [
+            "traceability_matrix_final.xlsx",
+            "functional_safety_assessment.pdf",
+            "safety_case_argument.gsn",
+            "ASIL_B_compliance_declaration.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "Every safety requirement has at least one passing test result linked in traceability matrix",
+          "Functional safety assessment confirms ASIL B compliance for all safety goals",
+          "Safety Case argument covers all ISO 26262 Part 6 software work products",
+          "No open safety findings without mitigation plan and closure date",
+          "Documents reviewed and signed by independent safety_engineer (two-person rule)"
+        ],
+        "depends_on": [
+          3,
+          20,
+          21
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 23,
+        "task_type": "COMPLIANCE",
+        "description": "Produce UNECE R155/R156 cybersecurity compliance artifacts: cybersecurity management system (CSMS) evidence, OTA update security documentation (code signing policy, rollback procedure), incident response plan, and SBOM for all firmware and software components.",
+        "payload": {
+          "standards": [
+            "UNECE_R155",
+            "UNECE_R156"
+          ],
+          "artifacts": [
+            "CSMS_evidence.pdf",
+            "OTA_security_policy.md",
+            "rollback_procedure.md",
+            "incident_response_plan.md",
+            "SBOM.spdx.json"
+          ],
+          "sbom_format": "SPDX_2.3",
+          "output_artifacts": [
+            "compliance/R155_evidence/",
+            "compliance/R156_evidence/",
+            "SBOM.spdx.json"
+          ]
+        },
+        "acceptance_criteria": [
+          "SBOM covers 100% of open-source components with license and vulnerability status",
+          "OTA policy mandates code signing (ECDSA P-256) and version monotonicity",
+          "Incident response plan defines <24h disclosure timeline for critical vulnerabilities",
+          "CSMS evidence maps to all 7 UNECE R155 cybersecurity activity categories",
+          "R156 update management documentation covers rollback and integrity verification"
+        ],
+        "depends_on": [
+          4,
+          22
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 24,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline: GitHub Actions workflows for firmware cross-compilation (ARM-GCC), firmware unit test execution (Unity on Renode), backend tests (pytest), mobile app build (Expo EAS), MISRA static analysis gate, Docker image build and push, and HIL simulation regression suite.",
+        "payload": {
+          "ci_platform": "GitHub_Actions",
+          "jobs": [
+            "firmware_build",
+            "firmware_unit_tests_renode",
+            "misra_static_analysis",
+            "backend_tests",
+            "mobile_build_expo",
+            "docker_build_push",
+            "hil_regression"
+          ],
+          "quality_gates": [
+            "zero_MISRA_mandatory_violations",
+            "85_percent_backend_coverage",
+            "all_hil_scenarios_pass"
+          ],
+          "docker_registry": "ghcr.io",
+          "output_artifacts": [
+            ".github/workflows/firmware_ci.yml",
+            ".github/workflows/backend_ci.yml",
+            ".github/workflows/mobile_ci.yml",
+            "docker/Dockerfile",
+            "docker/docker-compose.yml"
+          ]
+        },
+        "acceptance_criteria": [
+          "All CI jobs complete successfully on main branch push",
+          "MISRA analysis quality gate blocks merge on mandatory violation",
+          "HIL regression suite runs on every PR and reports pass/fail per scenario",
+          "Docker image pushed to registry on tag push only",
+          "CI pipeline runtime <15 minutes for full test suite",
+          "Firmware build produces reproducible binary (same hash for same source)"
+        ],
+        "depends_on": [
+          17,
+          18,
+          19
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "INFRA",
+        "description": "Define production infrastructure: Docker Compose for local dev (PostgreSQL, Mosquitto MQTT, FastAPI backend, nginx reverse proxy), Kubernetes manifests for cloud deployment (backend, MQTT broker, database), TLS certificate management, and environment variable management with secrets injection.",
+        "payload": {
+          "local_stack": "docker_compose",
+          "cloud_target": "Kubernetes_1.29",
+          "services": [
+            "postgres_14_postgis",
+            "mosquitto_2",
+            "fastapi_backend",
+            "nginx_ssl_termination"
+          ],
+          "secrets_management": "Kubernetes_Secrets_or_HashiCorp_Vault",
+          "output_artifacts": [
+            "docker-compose.yml",
+            "k8s/deployment.yaml",
+            "k8s/service.yaml",
+            "k8s/ingress.yaml",
+            "k8s/secrets_template.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker-compose up starts full local stack in <2 minutes",
+          "All services have health checks defined",
+          "Kubernetes manifests deploy successfully to test cluster",
+          "TLS termination verified with valid certificate on nginx ingress",
+          "No secrets hardcoded in any manifest or docker-compose file",
+          "Database volume persists across container restarts"
+        ],
+        "depends_on": [
+          13,
+          24
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "DOCS",
+        "description": "Produce system architecture documentation, firmware integration guide, mobile app developer guide, and operational runbook: system overview diagram, hardware wiring guide for sensor array and CAN bus, API reference (linked from OpenAPI spec), deployment guide, and operator safety checklist.",
+        "payload": {
+          "doc_types": [
+            "architecture_overview",
+            "firmware_integration_guide",
+            "mobile_developer_guide",
+            "operational_runbook",
+            "hardware_wiring_guide",
+            "operator_safety_checklist"
+          ],
+          "format": "Markdown_plus_diagrams",
+          "diagram_tool": "Mermaid_or_draw.io",
+          "output_artifacts": [
+            "docs/architecture.md",
+            "docs/firmware_guide.md",
+            "docs/mobile_guide.md",
+            "docs/ops_runbook.md",
+            "docs/wiring_guide.md",
+            "docs/safety_checklist.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Architecture diagram shows all system components and data flows end-to-end",
+          "Wiring guide covers all 8 ultrasonic sensors, CAN bus topology, and power distribution",
+          "Operational runbook includes EStop procedure, session abort procedure, and fault recovery steps",
+          "Safety checklist reviewed and signed off by safety_engineer",
+          "All docs reviewed by at least one engineer not involved in writing them"
+        ],
+        "depends_on": [
+          22,
+          23,
+          25
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 26,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 42,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 42,
+          "final_review": {
+            "score": 42,
+            "flaws": [
+              "HC-SR04 is a hobby-grade sensor with no automotive qualification, no FMEDA report, and no ASIL rating. Using it as the primary sensing modality in an ASIL B system is a certification blocker. ISO 26262 Part 8 requires that COTS hardware be evaluated \u2014 HC-SR04 has no safety manual, no FIT rate data, and no diagnostic coverage metrics. An OEM certifying body will reject this immediately.",
+              "STM32F4 is not a safety-certified MCU for ASIL B motion control. The plan needs AURIX TC3xx (Infineon), TMS570 (TI), or RH850 (Renesas) \u2014 MCUs that ship with safety manuals, FMEDA reports, and certified peripheral libraries. STM32F4 has no safety manual and no ISO 26262 support package from ST.",
+              "Standard FreeRTOS is not ASIL B certified. SAFERTOS (from WITTENSTEIN) is the qualified variant with a safety manual and certified kernel. Using vanilla FreeRTOS in ASIL B motion control is a mandatory violation of ISO 26262 Part 6 (software tool/OS qualification). This alone fails the certification audit.",
+              "ESP32 and Raspberry Pi 4 are explicitly not suitable for safety-critical roles. The plan uses 'STM32H7_or_Raspberry_Pi4' for path planning and ESP32/SIM7600 for comms \u2014 both 'or' choices and neither is ASIL-qualified. Linux-based SBCs cannot host ASIL B functions without extensive qualification effort not addressed anywhere in the plan.",
+              "No formal software architectural design step. ISO 26262 Part 6 clause 7 mandates a software architectural design work product covering component interfaces, data flows, concurrency, and freedom from interference. The plan jumps from PRD (step 2) directly to simulation (step 6) and firmware (step 8) with no architectural design phase.",
+              "No FMEDA (Failure Mode Effects and Diagnostic Analysis) for the hardware system. ASIL B requires a hardware architecture that meets PMHF < 10^-7 per hour. The plan has FMEA in step 1 but no system-level FMEDA with FIT rates and diagnostic coverage metrics to demonstrate the hardware safety architecture is compliant.",
+              "No tool qualification plan. ISO 26262 Part 8 requires that software tools (ARM-GCC, PC-lint/Cppcheck, VectorCAST/LDRA for MC/DC coverage) be qualified at TQL-1 through TQL-3. Mentioning tools by name without a Tool Qualification Plan (TQP) means the coverage and static analysis results are inadmissible as ISO 26262 evidence.",
+              "No Independent Safety Assessment (ISA). ISO 26262 Part 2 clause 6 requires an independent functional safety assessment for ASIL B systems. This is a mandatory external review by an assessor independent from the development team. Completely absent from the plan.",
+              "BLE 5.0 is non-deterministic and unsuitable as the transport layer for safety-critical vehicle motion commands. BLE has undefined latency variance, susceptibility to interference, and no QoS guarantees. The 1500ms heartbeat timeout is dangerously long \u2014 a vehicle traveling at 10 km/h covers 42cm in that window with no stop command.",
+              "AUTOSAR compliance is listed as an acceptance criterion in steps 8-12 but there is no AUTOSAR architecture design step anywhere. AUTOSAR Classic Platform requires SWC definition, RTE configuration, BSW stack selection, and ARXML tooling. This is a months-long effort that cannot be a checkbox at the end of firmware implementation.",
+              "The HIL platform choice (QEMU/Renode) is insufficient for timing validation of safety functions. These are instruction-set simulators, not cycle-accurate hardware emulators with real-time guarantees. Validating 50ms EStop latency or 10Hz occupancy grid update rates on QEMU produces results that do not transfer to real hardware. Production automotive HIL uses dSPACE SCALEXIO or NI PXI-based systems.",
+              "No physical hardware validation phase. The plan goes directly from HIL simulation to compliance documentation with no EMC testing, environmental testing (temperature -40\u00b0C to +85\u00b0C for automotive), vibration/shock testing, or IP rating validation. ISO 26262 Part 4 requires hardware integration testing and validation on real hardware.",
+              "ASIL decomposition strategy is undefined. ASIL B can be achieved through ASIL B single-channel or ASIL A + ASIL A dual-channel decomposition. This architectural choice determines the entire hardware and software redundancy design. Deferring this to step 3 compliance setup, after sensors and MCU are already chosen, means the architecture may be incompatible with the decomposition strategy chosen.",
+              "Step 20 targets EStop-from-mobile within 500ms. The budget is not allocated per layer: mobile BLE stack + network stack + MQTT broker processing + vehicle MQTT client + CAN + brake actuator response. Without per-layer allocation and worst-case analysis, this target is unverifiable and likely unachievable over public internet paths.",
+              "Single sensor modality (ultrasonic only) for ASIL B in a valet parking environment. Ultrasonic sensors are affected by temperature gradients, high humidity, soft materials (clothing, foam), and cross-talk from other vehicles' sensors. 'camera_optional' is insufficient \u2014 ASIL B pedestrian protection requires redundant sensing. No sensor fusion architecture is defined."
+            ],
+            "suggestions": [
+              "Replace HC-SR04 with automotive-grade ultrasonic sensors that include FMEDA reports and FIT rate data \u2014 Bosch UPA, Continental USS, or Valeo Ultrasound sensors. Add a formal COTS component evaluation step per ISO 26262 Part 8.",
+              "Replace STM32F4 with a qualified safety MCU: Infineon AURIX TC375 (ASIL D capable, includes safety manual + FMEDA) or TI TMS570LC4357. Add an MCU selection and qualification step early in the plan, before firmware implementation.",
+              "Replace FreeRTOS with SAFERTOS (FreeRTOS kernel with ASIL D safety certification package from WITTENSTEIN). This is a drop-in replacement \u2014 the API is identical. Budget for the SAFERTOS license.",
+              "Add a dedicated Software Architectural Design step between PRD (step 2) and firmware implementation (step 8). This step must produce: component diagram, interface definitions, data flow diagrams, freedom-from-interference analysis, and OS/BSW selection rationale.",
+              "Add a Hardware Safety Analysis step to produce FMEDA with FIT rates from supplier data sheets, calculate PMHF/SPFM/LFM metrics, and confirm ASIL B hardware architectural metrics compliance (PMHF < 10^-7/h).",
+              "Add a Tool Qualification Plan (TQP) step that classifies each tool (ARM-GCC, PC-lint, coverage tool) by tool confidence level (TCL) and tool impact (TI), and produces qualification evidence per ISO 26262 Part 8 clause 11.",
+              "Add an Independent Safety Assessment milestone at step 22, with external assessor engagement planned from step 1. The ISA needs access to all work products from HARA through V&V evidence \u2014 they must be contracted early.",
+              "Replace QEMU/Renode HIL with a proper real-time HIL platform (dSPACE SCALEXIO, Speedgoat, or NI VeriStand) that provides deterministic timing. If budget is a constraint, at minimum run firmware on actual target hardware with physical sensor simulation injected via CAN.",
+              "Define the ASIL decomposition strategy in step 1 or as a new step 1.5. Document whether the system uses single-channel ASIL B or dual-channel ASIL A+A decomposition. This decision must precede hardware selection.",
+              "For the comms gateway, move EStop to an independent hardware path (dedicated CAN message or discrete digital signal) that does not depend on the BLE/MQTT chain. Safety-critical stop commands must be independent of the same channel used for normal operation.",
+              "Add camera (or short-range radar) as a mandatory secondary sensor for pedestrian detection, and define a sensor fusion architecture. Treat ultrasonic as primary for proximity, camera as cross-check for pedestrian classification \u2014 assign separate ASIL levels per function.",
+              "Replace the SAGE HITL gate for motion commands with a proper AUTOSAR-compliant supervision mechanism on the firmware side. A cloud-based HITL approval gate (step 16) for individual motion commands will make the system unusable \u2014 this is appropriate for firmware deployment, not per-maneuver motion control."
+            ],
+            "missing": [
+              "MCU and hardware component selection and qualification step (ISO 26262 Part 8 COTS evaluation)",
+              "Software architectural design work product (ISO 26262 Part 6 clause 7 \u2014 mandatory)",
+              "ASIL decomposition decision and rationale document",
+              "FMEDA with FIT rates and hardware architectural metrics (PMHF, SPFM, LFM)",
+              "Tool Qualification Plan (TQP) for ARM-GCC, static analysis, and coverage tools",
+              "Independent Safety Assessment (ISA) engagement and milestone",
+              "Physical hardware integration and validation testing (EMC, environmental, vibration)",
+              "OTA update safety case: what happens to the safety certification when firmware is updated post-deployment? ISO 26262 requires a documented change impact analysis for every OTA",
+              "Parking lot infrastructure requirements: fixed sensor nodes, wireless AP placement, lot-side controller, marking/signage \u2014 the vehicle system alone cannot work without defined infrastructure",
+              "Safe state definition: what is the system's safe state for each hazard? 'Apply brakes' is not sufficient \u2014 needs formal safe state specification per safety goal",
+              "Degraded mode operation specification: single sensor failure behavior must be formally specified and validated, not just described as 'graceful speed reduction'",
+              "Random hardware failure analysis confirming ASIL B hardware targets are met",
+              "Secure element or HSM specification for HMAC key storage on the vehicle gateway \u2014 storing cryptographic keys in ESP32 flash is not acceptable for ASIL B cybersecurity"
+            ],
+            "security_risks": [
+              "BLE proximity check (50m) is trivially bypassable with a directional antenna. Proximity authentication via BLE RSSI is not a reliable security control \u2014 spoofed RSSI or relay attacks enable unauthorized remote operation of a moving vehicle.",
+              "30-minute HMAC session token lifetime is excessive for a vehicle motion command session. A stolen or intercepted token provides a 30-minute window for unauthorized commands. Recommend per-command nonces or maximum 5-minute session tokens tied to active BLE proximity.",
+              "MQTT without client certificate authentication. The plan specifies TLS 1.3 for mobile-to-cloud but the cloud-to-vehicle MQTT path only mentions 'TLS_1.3_MQTT' without specifying mutual TLS (mTLS). A malicious MQTT client on the same broker can subscribe to vehicle command topics.",
+              "No certificate pinning specified for the mobile app. Without pinning, a compromised CA or network MITM can intercept JWT tokens and inject commands.",
+              "Ultrasonic sensor spoofing (listed in TARA attack surfaces) has no firmware-side mitigation in the firmware steps 8-12. The acceptance criteria for spoofing resistance are only in the TARA document \u2014 no runtime detection, plausibility checking, or cross-sensor validation is implemented.",
+              "CAN bus access control 'requirements defined' (step 4) but no SecOC (Secure Onboard Communication) implementation step exists. Without MAC authentication on CAN frames, a physical access attack (OBD port, aftermarket device) can inject motion commands directly.",
+              "SBOM in step 23 is generated post-development. CVE exposure from open-source components (FreeRTOS/SAFERTOS, MQTT client libraries, React Native dependencies) should be tracked from step 1 with a dependency pinning and audit policy from the start."
+            ],
+            "summary": "This plan demonstrates solid systems-level thinking \u2014 the dependency graph is logical, the coverage is broad, and including HARA, TARA, HIL, and compliance artifacts shows genuine ISO 26262 literacy. However, it fails the 85+ threshold required for a regulated automotive system on several fundamental grounds that cannot be patched: (1) the hardware stack (HC-SR04, STM32F4, FreeRTOS, ESP32, Raspberry Pi) is entirely composed of non-automotive-qualified components with no ASIL rating or safety manual, making the certification path non-existent without component replacement; (2) three mandatory ISO 26262 work products are missing \u2014 software architectural design, FMEDA/hardware safety analysis, and tool qualification; (3) the Independent Safety Assessment, which is mandatory for ASIL B and non-negotiable with certification bodies, is entirely absent; and (4) the HIL platform choice (QEMU/Renode) cannot validate real-time safety function timing, rendering the V&V evidence for EStop and occupancy grid latency inadmissible. The plan is viable as a research prototype or concept demonstrator, but as written it cannot produce an ISO 26262 ASIL B type-approved system. Fundamental rework of the hardware stack selection, addition of missing ISO 26262 work products, and ISA engagement are required before development begins.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 42,
+              "flaws": [
+                "HC-SR04 is a hobby-grade sensor with no automotive qualification, no FMEDA report, and no ASIL rating. Using it as the primary sensing modality in an ASIL B system is a certification blocker. ISO 26262 Part 8 requires that COTS hardware be evaluated \u2014 HC-SR04 has no safety manual, no FIT rate data, and no diagnostic coverage metrics. An OEM certifying body will reject this immediately.",
+                "STM32F4 is not a safety-certified MCU for ASIL B motion control. The plan needs AURIX TC3xx (Infineon), TMS570 (TI), or RH850 (Renesas) \u2014 MCUs that ship with safety manuals, FMEDA reports, and certified peripheral libraries. STM32F4 has no safety manual and no ISO 26262 support package from ST.",
+                "Standard FreeRTOS is not ASIL B certified. SAFERTOS (from WITTENSTEIN) is the qualified variant with a safety manual and certified kernel. Using vanilla FreeRTOS in ASIL B motion control is a mandatory violation of ISO 26262 Part 6 (software tool/OS qualification). This alone fails the certification audit.",
+                "ESP32 and Raspberry Pi 4 are explicitly not suitable for safety-critical roles. The plan uses 'STM32H7_or_Raspberry_Pi4' for path planning and ESP32/SIM7600 for comms \u2014 both 'or' choices and neither is ASIL-qualified. Linux-based SBCs cannot host ASIL B functions without extensive qualification effort not addressed anywhere in the plan.",
+                "No formal software architectural design step. ISO 26262 Part 6 clause 7 mandates a software architectural design work product covering component interfaces, data flows, concurrency, and freedom from interference. The plan jumps from PRD (step 2) directly to simulation (step 6) and firmware (step 8) with no architectural design phase.",
+                "No FMEDA (Failure Mode Effects and Diagnostic Analysis) for the hardware system. ASIL B requires a hardware architecture that meets PMHF < 10^-7 per hour. The plan has FMEA in step 1 but no system-level FMEDA with FIT rates and diagnostic coverage metrics to demonstrate the hardware safety architecture is compliant.",
+                "No tool qualification plan. ISO 26262 Part 8 requires that software tools (ARM-GCC, PC-lint/Cppcheck, VectorCAST/LDRA for MC/DC coverage) be qualified at TQL-1 through TQL-3. Mentioning tools by name without a Tool Qualification Plan (TQP) means the coverage and static analysis results are inadmissible as ISO 26262 evidence.",
+                "No Independent Safety Assessment (ISA). ISO 26262 Part 2 clause 6 requires an independent functional safety assessment for ASIL B systems. This is a mandatory external review by an assessor independent from the development team. Completely absent from the plan.",
+                "BLE 5.0 is non-deterministic and unsuitable as the transport layer for safety-critical vehicle motion commands. BLE has undefined latency variance, susceptibility to interference, and no QoS guarantees. The 1500ms heartbeat timeout is dangerously long \u2014 a vehicle traveling at 10 km/h covers 42cm in that window with no stop command.",
+                "AUTOSAR compliance is listed as an acceptance criterion in steps 8-12 but there is no AUTOSAR architecture design step anywhere. AUTOSAR Classic Platform requires SWC definition, RTE configuration, BSW stack selection, and ARXML tooling. This is a months-long effort that cannot be a checkbox at the end of firmware implementation.",
+                "The HIL platform choice (QEMU/Renode) is insufficient for timing validation of safety functions. These are instruction-set simulators, not cycle-accurate hardware emulators with real-time guarantees. Validating 50ms EStop latency or 10Hz occupancy grid update rates on QEMU produces results that do not transfer to real hardware. Production automotive HIL uses dSPACE SCALEXIO or NI PXI-based systems.",
+                "No physical hardware validation phase. The plan goes directly from HIL simulation to compliance documentation with no EMC testing, environmental testing (temperature -40\u00b0C to +85\u00b0C for automotive), vibration/shock testing, or IP rating validation. ISO 26262 Part 4 requires hardware integration testing and validation on real hardware.",
+                "ASIL decomposition strategy is undefined. ASIL B can be achieved through ASIL B single-channel or ASIL A + ASIL A dual-channel decomposition. This architectural choice determines the entire hardware and software redundancy design. Deferring this to step 3 compliance setup, after sensors and MCU are already chosen, means the architecture may be incompatible with the decomposition strategy chosen.",
+                "Step 20 targets EStop-from-mobile within 500ms. The budget is not allocated per layer: mobile BLE stack + network stack + MQTT broker processing + vehicle MQTT client + CAN + brake actuator response. Without per-layer allocation and worst-case analysis, this target is unverifiable and likely unachievable over public internet paths.",
+                "Single sensor modality (ultrasonic only) for ASIL B in a valet parking environment. Ultrasonic sensors are affected by temperature gradients, high humidity, soft materials (clothing, foam), and cross-talk from other vehicles' sensors. 'camera_optional' is insufficient \u2014 ASIL B pedestrian protection requires redundant sensing. No sensor fusion architecture is defined."
+              ],
+              "suggestions": [
+                "Replace HC-SR04 with automotive-grade ultrasonic sensors that include FMEDA reports and FIT rate data \u2014 Bosch UPA, Continental USS, or Valeo Ultrasound sensors. Add a formal COTS component evaluation step per ISO 26262 Part 8.",
+                "Replace STM32F4 with a qualified safety MCU: Infineon AURIX TC375 (ASIL D capable, includes safety manual + FMEDA) or TI TMS570LC4357. Add an MCU selection and qualification step early in the plan, before firmware implementation.",
+                "Replace FreeRTOS with SAFERTOS (FreeRTOS kernel with ASIL D safety certification package from WITTENSTEIN). This is a drop-in replacement \u2014 the API is identical. Budget for the SAFERTOS license.",
+                "Add a dedicated Software Architectural Design step between PRD (step 2) and firmware implementation (step 8). This step must produce: component diagram, interface definitions, data flow diagrams, freedom-from-interference analysis, and OS/BSW selection rationale.",
+                "Add a Hardware Safety Analysis step to produce FMEDA with FIT rates from supplier data sheets, calculate PMHF/SPFM/LFM metrics, and confirm ASIL B hardware architectural metrics compliance (PMHF < 10^-7/h).",
+                "Add a Tool Qualification Plan (TQP) step that classifies each tool (ARM-GCC, PC-lint, coverage tool) by tool confidence level (TCL) and tool impact (TI), and produces qualification evidence per ISO 26262 Part 8 clause 11.",
+                "Add an Independent Safety Assessment milestone at step 22, with external assessor engagement planned from step 1. The ISA needs access to all work products from HARA through V&V evidence \u2014 they must be contracted early.",
+                "Replace QEMU/Renode HIL with a proper real-time HIL platform (dSPACE SCALEXIO, Speedgoat, or NI VeriStand) that provides deterministic timing. If budget is a constraint, at minimum run firmware on actual target hardware with physical sensor simulation injected via CAN.",
+                "Define the ASIL decomposition strategy in step 1 or as a new step 1.5. Document whether the system uses single-channel ASIL B or dual-channel ASIL A+A decomposition. This decision must precede hardware selection.",
+                "For the comms gateway, move EStop to an independent hardware path (dedicated CAN message or discrete digital signal) that does not depend on the BLE/MQTT chain. Safety-critical stop commands must be independent of the same channel used for normal operation.",
+                "Add camera (or short-range radar) as a mandatory secondary sensor for pedestrian detection, and define a sensor fusion architecture. Treat ultrasonic as primary for proximity, camera as cross-check for pedestrian classification \u2014 assign separate ASIL levels per function.",
+                "Replace the SAGE HITL gate for motion commands with a proper AUTOSAR-compliant supervision mechanism on the firmware side. A cloud-based HITL approval gate (step 16) for individual motion commands will make the system unusable \u2014 this is appropriate for firmware deployment, not per-maneuver motion control."
+              ],
+              "missing": [
+                "MCU and hardware component selection and qualification step (ISO 26262 Part 8 COTS evaluation)",
+                "Software architectural design work product (ISO 26262 Part 6 clause 7 \u2014 mandatory)",
+                "ASIL decomposition decision and rationale document",
+                "FMEDA with FIT rates and hardware architectural metrics (PMHF, SPFM, LFM)",
+                "Tool Qualification Plan (TQP) for ARM-GCC, static analysis, and coverage tools",
+                "Independent Safety Assessment (ISA) engagement and milestone",
+                "Physical hardware integration and validation testing (EMC, environmental, vibration)",
+                "OTA update safety case: what happens to the safety certification when firmware is updated post-deployment? ISO 26262 requires a documented change impact analysis for every OTA",
+                "Parking lot infrastructure requirements: fixed sensor nodes, wireless AP placement, lot-side controller, marking/signage \u2014 the vehicle system alone cannot work without defined infrastructure",
+                "Safe state definition: what is the system's safe state for each hazard? 'Apply brakes' is not sufficient \u2014 needs formal safe state specification per safety goal",
+                "Degraded mode operation specification: single sensor failure behavior must be formally specified and validated, not just described as 'graceful speed reduction'",
+                "Random hardware failure analysis confirming ASIL B hardware targets are met",
+                "Secure element or HSM specification for HMAC key storage on the vehicle gateway \u2014 storing cryptographic keys in ESP32 flash is not acceptable for ASIL B cybersecurity"
+              ],
+              "security_risks": [
+                "BLE proximity check (50m) is trivially bypassable with a directional antenna. Proximity authentication via BLE RSSI is not a reliable security control \u2014 spoofed RSSI or relay attacks enable unauthorized remote operation of a moving vehicle.",
+                "30-minute HMAC session token lifetime is excessive for a vehicle motion command session. A stolen or intercepted token provides a 30-minute window for unauthorized commands. Recommend per-command nonces or maximum 5-minute session tokens tied to active BLE proximity.",
+                "MQTT without client certificate authentication. The plan specifies TLS 1.3 for mobile-to-cloud but the cloud-to-vehicle MQTT path only mentions 'TLS_1.3_MQTT' without specifying mutual TLS (mTLS). A malicious MQTT client on the same broker can subscribe to vehicle command topics.",
+                "No certificate pinning specified for the mobile app. Without pinning, a compromised CA or network MITM can intercept JWT tokens and inject commands.",
+                "Ultrasonic sensor spoofing (listed in TARA attack surfaces) has no firmware-side mitigation in the firmware steps 8-12. The acceptance criteria for spoofing resistance are only in the TARA document \u2014 no runtime detection, plausibility checking, or cross-sensor validation is implemented.",
+                "CAN bus access control 'requirements defined' (step 4) but no SecOC (Secure Onboard Communication) implementation step exists. Without MAC authentication on CAN frames, a physical access attack (OBD port, aftermarket device) can inject motion commands directly.",
+                "SBOM in step 23 is generated post-development. CVE exposure from open-source components (FreeRTOS/SAFERTOS, MQTT client libraries, React Native dependencies) should be tracked from step 1 with a dependency pinning and audit policy from the start."
+              ],
+              "summary": "This plan demonstrates solid systems-level thinking \u2014 the dependency graph is logical, the coverage is broad, and including HARA, TARA, HIL, and compliance artifacts shows genuine ISO 26262 literacy. However, it fails the 85+ threshold required for a regulated automotive system on several fundamental grounds that cannot be patched: (1) the hardware stack (HC-SR04, STM32F4, FreeRTOS, ESP32, Raspberry Pi) is entirely composed of non-automotive-qualified components with no ASIL rating or safety manual, making the certification path non-existent without component replacement; (2) three mandatory ISO 26262 work products are missing \u2014 software architectural design, FMEDA/hardware safety analysis, and tool qualification; (3) the Independent Safety Assessment, which is mandatory for ASIL B and non-negotiable with certification bodies, is entirely absent; and (4) the HIL platform choice (QEMU/Renode) cannot validate real-time safety function timing, rendering the V&V evidence for EStop and occupancy grid latency inadmissible. The plan is viable as a research prototype or concept demonstrator, but as written it cannot produce an ISO 26262 ASIL B type-approved system. Fundamental rework of the hardware stack selection, addition of missing ISO 26262 work products, and ISA engagement are required before development begins.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T00:58:01.082933+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 156.76,
+      "critic_plan": 131.8
+    }
+  }
+}

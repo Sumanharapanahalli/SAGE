@@ -1,0 +1,65 @@
+project_name: wearable_fitness
+display_name: Wearable Fitness
+version: 1.0.0
+domain: iot
+description: Fitness wearable platform with heart rate, SpO2, step counting, sleep
+  tracking, workout detection, and health insights. BLE sync with mobile app.
+detected_domains: []
+compliance_standards:
+- FCC Part 15
+- CE Mark
+- GDPR
+- HIPAA
+task_types:
+- AGENTIC
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- INFRA
+- LOCALIZATION
+- MARKET_RESEARCH
+- ML_MODEL
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- firmware_engineer
+- localization_engineer
+- marketing_strategist
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

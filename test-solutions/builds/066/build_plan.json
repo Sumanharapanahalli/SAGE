@@ -1,0 +1,907 @@
+{
+  "run_id": "28cd9cfa-6a23-4206-8ffa-aa3a341fe81f",
+  "status": {
+    "run_id": "28cd9cfa-6a23-4206-8ffa-aa3a341fe81f",
+    "solution_name": "chatbot_builder",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T08:44:51.822654+00:00",
+    "updated_at": "2026-03-22T08:48:51.613606+00:00",
+    "product_description": "No-code chatbot builder with RAG pipeline, custom knowledge base, multi-LLM support (GPT, Claude, Gemini), conversation analytics, and embeddable widget.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the no-code chatbot builder market: identify top competitors (Botpress, Tidio, Landbot, Voiceflow, CustomGPT), pricing benchmarks, market size, underserved segments, and positioning for multi-LLM RAG-native builders.",
+        "payload": {
+          "competitors": [
+            "Botpress",
+            "Tidio",
+            "Landbot",
+            "Voiceflow",
+            "CustomGPT",
+            "Intercom Fin"
+          ],
+          "focus_areas": [
+            "pricing_tiers",
+            "RAG_support",
+            "LLM_flexibility",
+            "analytics_depth",
+            "embed_options"
+          ],
+          "deliverables": [
+            "competitive_matrix.md",
+            "market_sizing.md",
+            "positioning_brief.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitive matrix covers \u22658 competitors with feature/price comparison",
+          "Market size estimate with TAM/SAM/SOM breakdown",
+          "Positioning statement identifying 2\u20133 differentiators",
+          "Go-to-market segment priority list (SMB vs enterprise vs developer)"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user personas (no-code builder, developer, enterprise admin), core user stories, and process flows for chatbot creation, knowledge base upload, and widget deployment lifecycle.",
+        "payload": {
+          "personas": [
+            "no_code_marketer",
+            "developer_integrator",
+            "enterprise_admin"
+          ],
+          "flows": [
+            "chatbot_creation_flow",
+            "knowledge_base_ingestion_flow",
+            "embed_deploy_flow",
+            "analytics_review_flow"
+          ],
+          "deliverables": [
+            "BRD.md",
+            "user_stories.md",
+            "process_flow_diagrams.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "\u22653 detailed user personas with goals, pain points, and success metrics",
+          "User stories in INVEST format covering all major flows",
+          "Process flow diagrams for chatbot creation and knowledge base ingestion",
+          "ROI analysis showing value vs incumbent tools",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Author the Product Requirements Document (PRD), define MVP feature scope, prioritize backlog using RICE scoring, and establish success metrics (activation rate, chatbot creation time, CSAT, widget embed rate).",
+        "payload": {
+          "mvp_features": [
+            "drag_drop_builder",
+            "knowledge_base_upload",
+            "multi_llm_selector",
+            "conversation_analytics",
+            "embeddable_widget"
+          ],
+          "scoring_method": "RICE",
+          "success_metrics": [
+            "time_to_first_chatbot_minutes",
+            "knowledge_base_upload_p95_latency",
+            "widget_embed_adoption_rate",
+            "monthly_active_chatbots"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all MVP features with acceptance criteria per feature",
+          "RICE-scored backlog with \u226520 items, top 10 for v1 identified",
+          "Success metrics baseline and targets defined",
+          "Release roadmap: v1 (MVP), v1.5 (analytics), v2 (enterprise) milestones"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 4,
+        "task_type": "FINANCIAL",
+        "description": "Build a financial model covering infrastructure costs (LLM API costs per token, vector DB, compute), pricing tiers (Free/Pro/Business/Enterprise), unit economics, and 24-month revenue projection.",
+        "payload": {
+          "pricing_tiers": [
+            "free_500_msgs",
+            "pro_49_usd",
+            "business_199_usd",
+            "enterprise_custom"
+          ],
+          "cost_drivers": [
+            "llm_token_costs_per_provider",
+            "vector_db_storage",
+            "compute_egress"
+          ],
+          "model_period_months": 24
+        },
+        "acceptance_criteria": [
+          "Per-conversation cost model for each LLM provider (GPT-4o, Claude 3.5, Gemini 1.5)",
+          "Break-even analysis per tier",
+          "24-month P&L projection with 3 growth scenarios (pessimistic/base/optimistic)",
+          "Pricing validated against competitive benchmarks from step 1",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          1,
+          3
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 5,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (DPA), and AI-generated content disclosure. Address third-party LLM data-handling obligations (OpenAI, Anthropic, Google terms).",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "dpa.md",
+            "ai_disclosure.md"
+          ],
+          "jurisdictions": [
+            "GDPR",
+            "CCPA",
+            "general_US"
+          ],
+          "third_party_llm_obligations": [
+            "OpenAI_data_usage_policy",
+            "Anthropic_usage_policy",
+            "Google_AI_terms"
+          ]
+        },
+        "acceptance_criteria": [
+          "ToS covers user data ownership of knowledge base content",
+          "Privacy policy specifies retention periods and data processing for RAG pipeline",
+          "DPA template suitable for enterprise customers",
+          "AI disclosure meets EU AI Act transparency requirements",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 6,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research, create wireframes for the no-code builder canvas, knowledge base manager, analytics dashboard, and widget configuration panel. Produce an interaction design spec and accessibility audit (WCAG 2.1 AA).",
+        "payload": {
+          "research_methods": [
+            "user_interviews_n8",
+            "competitive_teardown",
+            "card_sorting"
+          ],
+          "screens": [
+            "builder_canvas",
+            "knowledge_base_manager",
+            "llm_selector_panel",
+            "analytics_dashboard",
+            "widget_configurator",
+            "embed_code_generator"
+          ],
+          "accessibility_standard": "WCAG_2.1_AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes for all 6 core screens at mid-fidelity",
+          "Interaction spec covering drag-and-drop builder UX",
+          "User research synthesis with \u22655 actionable insights",
+          "Accessibility audit checklist \u2014 all critical paths pass WCAG 2.1 AA",
+          "Design system tokens defined (colors, typography, spacing)"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design the OpenAPI 3.1 specification for all backend APIs: chatbot CRUD, knowledge base management, RAG query, multi-LLM routing, conversation history, analytics events, and widget token issuance.",
+        "payload": {
+          "api_groups": [
+            "chatbots (CRUD + publish)",
+            "knowledge_base (upload, chunk, index, delete)",
+            "chat (send_message, stream, history)",
+            "llm_providers (list, configure, switch)",
+            "analytics (events, aggregates, exports)",
+            "widgets (token, config, embed_code)",
+            "auth (signup, login, api_keys)"
+          ],
+          "format": "OpenAPI_3.1",
+          "auth": "Bearer JWT + API key"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec passes linting (spectral) with zero errors",
+          "All endpoints have request/response schemas with examples",
+          "Streaming chat endpoint documented with SSE format",
+          "Rate limiting and error response schemas defined",
+          "Widget public API scoped separately from authenticated API"
+        ],
+        "depends_on": [
+          3,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design and implement the database schema for users, organizations, chatbots, knowledge base documents, conversation threads, messages, analytics events, and LLM provider configs. Implement migrations using Alembic.",
+        "payload": {
+          "db_engine": "PostgreSQL 16",
+          "tables": [
+            "users",
+            "organizations",
+            "org_members",
+            "chatbots",
+            "chatbot_versions",
+            "chatbot_configs",
+            "knowledge_bases",
+            "kb_documents",
+            "kb_chunks",
+            "conversations",
+            "messages",
+            "analytics_events",
+            "llm_provider_configs",
+            "widget_tokens"
+          ],
+          "vector_db": "pgvector extension for chunk embeddings",
+          "migration_tool": "Alembic"
+        },
+        "acceptance_criteria": [
+          "ERD diagram with all relationships documented",
+          "All tables have created_at, updated_at, soft-delete fields",
+          "pgvector index on kb_chunks.embedding (HNSW)",
+          "Alembic migrations run cleanly on fresh and existing DB",
+          "Row-level security policies for multi-tenant isolation",
+          "Seed data for local development"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "AGENTIC",
+        "description": "Configure the Multi-LLM Router using the coordinator pattern: a central LLM router agent selects the appropriate provider (GPT-4o, Claude 3.5 Sonnet, Gemini 1.5 Pro) based on chatbot configuration, fallback rules, and cost constraints. Implement provider adapters with a unified interface.",
+        "payload": {
+          "pattern": "coordinator",
+          "router_inputs": [
+            "chatbot_llm_config",
+            "request_context",
+            "provider_health",
+            "cost_budget"
+          ],
+          "providers": {
+            "openai": {
+              "models": [
+                "gpt-4o",
+                "gpt-4o-mini"
+              ],
+              "adapter": "OpenAI SDK"
+            },
+            "anthropic": {
+              "models": [
+                "claude-3-5-sonnet-20241022",
+                "claude-haiku-4-5-20251001"
+              ],
+              "adapter": "Anthropic SDK"
+            },
+            "google": {
+              "models": [
+                "gemini-1.5-pro",
+                "gemini-1.5-flash"
+              ],
+              "adapter": "Google GenAI SDK"
+            }
+          },
+          "fallback_chain": [
+            "primary_provider",
+            "fallback_provider",
+            "error_response"
+          ],
+          "streaming": "SSE via async generators"
+        },
+        "acceptance_criteria": [
+          "Router selects correct provider from chatbot config in <10ms overhead",
+          "All 3 providers return streaming responses via unified async generator interface",
+          "Fallback triggers automatically on provider 5xx errors",
+          "Provider health check endpoint returning status per provider",
+          "Token usage tracked per request per provider"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "ML_MODEL",
+        "description": "Build the RAG pipeline: document ingestion (PDF, DOCX, TXT, URL scraping), chunking strategy (recursive character splitter with 512-token chunks, 50-token overlap), embedding generation (text-embedding-3-small / Gemini embedding), vector storage in pgvector, and retrieval with MMR (Maximal Marginal Relevance) reranking.",
+        "payload": {
+          "ingestion_formats": [
+            "PDF",
+            "DOCX",
+            "TXT",
+            "Markdown",
+            "URL_scrape",
+            "CSV"
+          ],
+          "chunking": {
+            "strategy": "recursive_character",
+            "chunk_size": 512,
+            "overlap": 50
+          },
+          "embedding_models": {
+            "openai": "text-embedding-3-small",
+            "google": "models/text-embedding-004"
+          },
+          "retrieval": {
+            "method": "MMR",
+            "top_k": 5,
+            "diversity_lambda": 0.5
+          },
+          "reranking": "cross-encoder optional (ms-marco-MiniLM-L6-v2)",
+          "pipeline_orchestration": "LangChain LCEL"
+        },
+        "acceptance_criteria": [
+          "PDF/DOCX/TXT ingestion pipeline processes 100-page document in <30s",
+          "Embedding generation batched with retry on rate limits",
+          "MMR retrieval returns top-5 diverse, relevant chunks",
+          "RAG context injected into LLM system prompt with source citations",
+          "Retrieval latency p95 <500ms for knowledge bases up to 10k chunks",
+          "Incremental re-indexing when documents are added/deleted",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 11,
+        "task_type": "DATA",
+        "description": "Build the conversation analytics data pipeline: real-time event ingestion (message_sent, intent_matched, handoff_triggered, session_end), aggregation jobs for daily/weekly metrics (CSAT, response latency, top queries, unanswered rate), and export to CSV/JSON.",
+        "payload": {
+          "events": [
+            "session_start",
+            "message_sent",
+            "llm_response",
+            "rag_retrieval",
+            "handoff",
+            "session_end",
+            "thumbs_up",
+            "thumbs_down"
+          ],
+          "aggregations": [
+            "daily_active_conversations",
+            "avg_response_latency_ms",
+            "top_10_queries",
+            "unanswered_question_rate",
+            "csat_score"
+          ],
+          "storage": "analytics_events table + materialized views for aggregates",
+          "export_formats": [
+            "CSV",
+            "JSON"
+          ],
+          "scheduler": "pg_cron for nightly materialized view refresh"
+        },
+        "acceptance_criteria": [
+          "All 8 event types ingested and stored within 1s of occurrence",
+          "Materialized views refreshed nightly with correct aggregates",
+          "Analytics API returns data within 200ms for 30-day window",
+          "CSV/JSON export for any date range functional",
+          "Unanswered question detection accuracy \u226585% (no RAG match + negative user signal)"
+        ],
+        "depends_on": [
+          8,
+          10
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement the core FastAPI backend: authentication (JWT + API keys), chatbot CRUD, knowledge base management endpoints, chat session handler with streaming SSE, widget token issuance, and multi-tenant middleware. Wire together the RAG pipeline and LLM router.",
+        "payload": {
+          "framework": "FastAPI",
+          "auth": "JWT (python-jose) + scoped API keys (bcrypt hashed)",
+          "key_modules": [
+            "routers/chatbots.py",
+            "routers/knowledge_base.py",
+            "routers/chat.py (SSE streaming)",
+            "routers/analytics.py",
+            "routers/widgets.py",
+            "routers/llm_providers.py",
+            "middleware/tenant.py",
+            "services/rag_service.py",
+            "services/llm_router_service.py"
+          ],
+          "task_queue": "Celery + Redis (for async document ingestion jobs)",
+          "cache": "Redis (conversation context window cache)"
+        },
+        "acceptance_criteria": [
+          "All OpenAPI spec endpoints implemented and passing contract tests",
+          "JWT auth + API key auth both functional",
+          "SSE streaming chat endpoint delivers first token <2s (GPT-4o benchmark)",
+          "Document upload triggers async Celery job; status polled via GET /knowledge-base/{id}/status",
+          "Multi-tenant isolation: org A cannot access org B's chatbots or knowledge bases",
+          "Health check endpoint returns 200 with dependency status"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "FRONTEND",
+        "description": "Build the no-code chatbot builder UI: drag-and-drop canvas (React Flow) for conversation flow, knowledge base file uploader with progress tracking, LLM provider selector with model picker, system prompt editor with variable templating, and chatbot preview panel.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "ui_library": "shadcn/ui + Tailwind CSS",
+          "canvas": "React Flow (drag-and-drop node editor)",
+          "key_pages": [
+            "pages/Dashboard.tsx (chatbot list)",
+            "pages/Builder.tsx (canvas + sidebar)",
+            "pages/KnowledgeBase.tsx (upload + manage docs)",
+            "pages/LLMConfig.tsx (provider + model + params)",
+            "pages/Analytics.tsx (charts + tables)",
+            "pages/Widget.tsx (preview + embed code)"
+          ],
+          "state_management": "Zustand",
+          "api_client": "TanStack Query"
+        },
+        "acceptance_criteria": [
+          "Builder canvas supports add/delete/connect nodes with auto-save",
+          "File uploader accepts PDF/DOCX/TXT up to 50MB with progress bar",
+          "LLM selector shows all 3 providers with model options and cost estimate",
+          "Chatbot preview panel sends real messages to backend SSE endpoint",
+          "All pages pass Lighthouse accessibility score \u226590",
+          "Mobile-responsive layout (no builder canvas on mobile \u2014 graceful degradation)"
+        ],
+        "depends_on": [
+          6,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "FRONTEND",
+        "description": "Build the analytics dashboard: conversation volume chart (recharts), response latency histogram, top queries table, unanswered questions list, CSAT trend line, and CSV export button. Build the embeddable widget configurator with live preview, theme customization, and embed code snippet generator.",
+        "payload": {
+          "analytics_charts": [
+            "daily_conversations_line",
+            "response_latency_histogram",
+            "top_queries_table",
+            "unanswered_questions_list",
+            "csat_trend",
+            "llm_cost_breakdown"
+          ],
+          "widget_configurator": {
+            "customization": [
+              "primary_color",
+              "bot_avatar",
+              "welcome_message",
+              "position",
+              "launcher_icon"
+            ],
+            "live_preview": "iframe sandbox",
+            "embed_code": "script tag with widget token"
+          },
+          "charting_library": "Recharts"
+        },
+        "acceptance_criteria": [
+          "Analytics dashboard loads 30-day data in <1s",
+          "All 6 chart types render correctly with mock and real data",
+          "Widget configurator live-preview updates within 300ms of any setting change",
+          "Embed code snippet copies to clipboard with one click",
+          "CSV export downloads correctly for all analytics views"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build the standalone embeddable chat widget: a lightweight (<50KB gzipped) vanilla JS/Web Component that loads via a script tag, authenticates with widget token, streams responses via SSE, and supports theming via CSS custom properties.",
+        "payload": {
+          "build_tool": "Vite library mode \u2192 single JS bundle",
+          "tech": "Preact + Web Components (shadow DOM for style isolation)",
+          "features": [
+            "streaming_messages",
+            "typing_indicator",
+            "thumbs_up_down_feedback",
+            "session_persistence_localStorage",
+            "responsive_iframe_fallback"
+          ],
+          "bundle_target_size_kb": 50,
+          "auth": "widget_token (scoped, rate-limited, no user auth required)"
+        },
+        "acceptance_criteria": [
+          "Widget bundle \u226450KB gzipped",
+          "Loads and renders first message exchange in <3s on 3G network",
+          "Shadow DOM isolates styles \u2014 no CSS bleed from host page",
+          "Works in Chrome, Firefox, Safari, Edge (last 2 major versions)",
+          "Feedback events (thumbs up/down) sent to analytics pipeline"
+        ],
+        "depends_on": [
+          12,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "SECURITY",
+        "description": "Perform threat modeling, implement security controls: input sanitization against prompt injection, widget token rate limiting, API key scoping, SSRF protection for URL knowledge base ingestion, and produce an SBOM.",
+        "payload": {
+          "threat_model_method": "STRIDE",
+          "controls": [
+            "prompt_injection_filtering (LLM Guard or custom regex)",
+            "widget_token_rate_limiting (100 msgs/hour/token)",
+            "SSRF_allowlist_for_url_ingestion",
+            "API_key_hashing_bcrypt",
+            "output_sanitization_XSS",
+            "PII_detection_before_vector_storage"
+          ],
+          "sbom_format": "CycloneDX",
+          "pen_test": "OWASP API Security Top 10 checklist"
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model with mitigations documented for all 8 threat categories",
+          "Prompt injection test suite: \u226520 adversarial prompts, all blocked or flagged",
+          "SSRF test: URL ingestion rejects private IP ranges (RFC 1918)",
+          "Rate limiting verified: 101st request in window returns 429",
+          "SBOM generated and checked against OSV vulnerability database \u2014 no critical CVEs",
+          "OWASP API Top 10 checklist completed with all High items mitigated"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "INFRA",
+        "description": "Set up Docker Compose for local development (FastAPI, PostgreSQL + pgvector, Redis, Celery worker, Vite frontend). Create production Kubernetes manifests or Render/Railway IaC configs for staging and production environments.",
+        "payload": {
+          "local_stack": "Docker Compose",
+          "services": [
+            "api (FastAPI)",
+            "worker (Celery)",
+            "db (postgres:16-pgvector)",
+            "cache (Redis 7)",
+            "web (Vite dev server)"
+          ],
+          "production_target": "Kubernetes (EKS or GKE) or Render PaaS",
+          "secrets_management": "environment variables + Kubernetes Secrets / Render secret groups",
+          "cdn": "CloudFront or Cloudflare for widget JS bundle"
+        },
+        "acceptance_criteria": [
+          "docker compose up --build starts all services within 60s with no errors",
+          "Database migrations run automatically on API container start",
+          "Production manifests include liveness/readiness probes for all services",
+          "Widget JS bundle served from CDN with cache-control headers",
+          "Horizontal pod autoscaling configured for API and Celery worker"
+        ],
+        "depends_on": [
+          12,
+          15
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipelines (GitHub Actions): lint + type-check \u2192 unit tests \u2192 integration tests \u2192 build \u2192 staging deploy \u2192 smoke tests \u2192 production deploy. Set up monitoring (Prometheus + Grafana), alerting (PagerDuty), and structured logging (OpenTelemetry).",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "pipeline_stages": [
+            "lint_typecheck",
+            "unit_tests",
+            "integration_tests",
+            "build_docker",
+            "deploy_staging",
+            "smoke_tests",
+            "deploy_production"
+          ],
+          "monitoring": {
+            "metrics": "Prometheus (FastAPI instrumentation)",
+            "dashboards": "Grafana (response latency, error rate, RAG retrieval time, LLM cost)",
+            "alerts": [
+              "p99_latency_>2s",
+              "error_rate_>1%",
+              "celery_queue_depth_>100",
+              "llm_provider_failure"
+            ]
+          },
+          "logging": "OpenTelemetry \u2192 stdout \u2192 log aggregator",
+          "tracing": "OpenTelemetry traces with trace_id on all LLM calls"
+        },
+        "acceptance_criteria": [
+          "Full CI pipeline runs in <10 minutes",
+          "Staging deploy triggers automatically on main branch merge",
+          "Production deploy requires manual approval gate",
+          "All 4 alert rules fire correctly in test conditions",
+          "Grafana dashboard shows LLM cost per provider in real time",
+          "OpenTelemetry trace IDs correlate across API \u2192 RAG \u2192 LLM calls"
+        ],
+        "depends_on": [
+          17
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "TESTS",
+        "description": "Write comprehensive test suite: unit tests for RAG pipeline (chunking, embedding, retrieval), LLM router (provider selection, fallback), analytics aggregations; integration tests for all API endpoints; E2E tests (Playwright) for chatbot creation and widget embed flows.",
+        "payload": {
+          "unit_test_framework": "pytest",
+          "e2e_framework": "Playwright",
+          "coverage_target": 80,
+          "test_groups": {
+            "unit": [
+              "rag_pipeline",
+              "llm_router",
+              "analytics_aggregations",
+              "auth_middleware",
+              "tenant_isolation"
+            ],
+            "integration": [
+              "all_api_endpoints (contract tests)",
+              "celery_document_ingestion",
+              "sse_streaming_chat"
+            ],
+            "e2e": [
+              "chatbot_creation_flow",
+              "knowledge_base_upload",
+              "widget_embed_flow",
+              "analytics_dashboard_load"
+            ]
+          },
+          "mocking": "pytest-mock for LLM providers in unit tests; real providers in optional integration suite"
+        },
+        "acceptance_criteria": [
+          "Unit test coverage \u226580% for src/ excluding migrations",
+          "All API contract tests pass against OpenAPI spec",
+          "E2E: chatbot creation flow completes in <2 minutes in CI",
+          "E2E: widget embed renders and exchanges message in headless Chromium",
+          "Celery integration test: document ingested and chunks queryable within 60s",
+          "SSE streaming test: first token received within 3s for GPT-4o"
+        ],
+        "depends_on": [
+          12,
+          13,
+          15
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "COMPLIANCE",
+        "description": "Produce SOC 2 Type I readiness artifacts: security policy documentation, access control matrix, encryption-at-rest/in-transit evidence, audit log completeness review, vendor risk assessment (OpenAI, Anthropic, Google), and incident response procedure.",
+        "payload": {
+          "standard": "SOC 2 Type I (Trust Service Criteria: Security, Availability, Confidentiality)",
+          "artifacts": [
+            "information_security_policy.md",
+            "access_control_matrix.xlsx",
+            "encryption_evidence.md (TLS 1.3 in transit, AES-256 at rest)",
+            "audit_log_completeness_report.md",
+            "vendor_risk_assessment.md (OpenAI, Anthropic, Google)",
+            "incident_response_procedure.md",
+            "vulnerability_management_policy.md"
+          ],
+          "evidence_collection": "automated via CI pipeline artifact archival"
+        },
+        "acceptance_criteria": [
+          "All 7 SOC 2 artifacts complete and reviewed",
+          "Access control matrix covers all system roles with least-privilege verified",
+          "Encryption evidence documents TLS 1.3 for all external endpoints and AES-256 for DB",
+          "Vendor risk assessment completed for all 3 LLM providers",
+          "Incident response procedure tested via tabletop exercise",
+          "Audit log retention policy (90 days minimum) implemented and documented"
+        ],
+        "depends_on": [
+          16,
+          18
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 21,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: deployment runbook, database backup/restore procedure, LLM provider failover playbook, Celery queue drain procedure, SLA definitions (99.5% uptime, <2s p95 response), and on-call escalation matrix.",
+        "payload": {
+          "runbooks": [
+            "deployment_runbook.md",
+            "db_backup_restore.md",
+            "llm_provider_failover.md",
+            "celery_queue_management.md",
+            "incident_response_runbook.md"
+          ],
+          "sla": {
+            "uptime": "99.5%",
+            "response_latency_p95_ms": 2000,
+            "rag_ingestion_sla_hours": 1
+          },
+          "on_call": "PagerDuty rotation with escalation policy"
+        },
+        "acceptance_criteria": [
+          "All 5 runbooks reviewed and approved by engineering lead",
+          "Database backup restore tested \u2014 RTO <1 hour, RPO <24 hours",
+          "LLM failover playbook tested: provider outage simulation switches traffic in <5 minutes",
+          "SLA metrics instrumented and visible in Grafana dashboard",
+          "On-call rotation configured in PagerDuty with <5 min escalation"
+        ],
+        "depends_on": [
+          18,
+          20
+        ],
+        "agent_role": "operations_manager"
+      }
+    ],
+    "task_count": 21,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 62,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 62,
+          "final_review": {
+            "score": 62,
+            "flaws": [
+              "Embedding model lock-in with no migration path: Step 10 uses two embedding models (text-embedding-3-small, text-embedding-004) but never addresses what happens when a user switches their LLM provider after indexing. Vectors from different embedding models are incompatible \u2014 existing chunks become unqueryable. No re-indexing strategy exists.",
+              "pgvector + RLS incompatibility: Step 8 specifies row-level security for multi-tenant isolation, but pgvector's HNSW index scans occur before RLS filtering. This defeats index performance and may leak timing information across tenants. At scale this becomes a correctness AND performance failure.",
+              "No billing/metering infrastructure: Pricing tiers are defined in steps 3 and 4 (free 500 msgs, Pro $49, etc.) but zero implementation of usage metering \u2014 no token counting per tenant, no enforcement of free-tier message limits, no overage logic, no Stripe integration. A SaaS product cannot ship without this.",
+              "LLM API key ownership is unresolved: Step 9 wires up three provider SDKs but never specifies whether this is BYOK (bring-your-own-key) or platform-managed keys. These are fundamentally different architectures with different cost, margin, compliance, and UI implications. The financial model in step 4 cannot be correct without resolving this.",
+              "Security is bolted on after the backend is built: Step 16 (security) depends on step 12 (backend complete). Prompt injection filtering, input sanitization, and SSRF controls should be designed alongside the API spec (step 7) and implemented during backend construction (step 12), not after. Retrofitting security into a finished backend is expensive and error-prone.",
+              "Conversation context window management is undefined: Redis is mentioned as a 'conversation context window cache' in step 12 but no strategy is specified for long conversations. A 50-message conversation cannot be injected wholesale into every LLM call. No truncation, summarization, or sliding window strategy exists anywhere in the plan.",
+              "Analytics aggregations are nightly \u2014 real-time is promised but not delivered: Step 11 uses pg_cron for nightly materialized view refresh. But step 11's acceptance criteria says events are ingested 'within 1s of occurrence.' A user who just deployed a chatbot will see zero analytics until the next morning. Real-time dashboards require a streaming aggregation layer (not pg_cron).",
+              "React Flow node schema is never defined: Step 13 calls for a drag-and-drop canvas using React Flow but nowhere in the plan is the conversation flow graph schema defined \u2014 what does a node represent? What edges are valid? What is the execution model? This is the core product feature and it has no specification.",
+              "LLM router health check claim is unrealistic: Step 9 requires provider selection in '<10ms overhead' while also checking provider health. Real-time HTTP health pings to OpenAI/Anthropic/Google cannot complete in <10ms. The plan needs a circuit breaker pattern with a cached health state updated asynchronously \u2014 not inline health checks per request.",
+              "Document chunking is naive for mixed document types: A single recursive character splitter with 512-token chunks treats PDFs, CSVs, markdown, and DOCX identically. PDF tables produce garbage chunks. CSV data needs row-aware splitting. This will directly degrade RAG quality \u2014 the product's core value proposition.",
+              "Celery job deduplication is absent: Step 12 triggers async Celery jobs on document upload with no idempotency. A user who uploads the same file twice (common UX behavior) gets double processing, double vector storage, and duplicate chunks degrading retrieval quality.",
+              "SOC 2 Type I is mislabeled as shippable: Step 20 produces 'readiness artifacts' but a SOC 2 Type I requires engagement with a certified auditor (takes 4\u201312 weeks, costs $15\u201350K). Treating this as a single build step misrepresents the actual compliance timeline to any stakeholder reading this plan."
+            ],
+            "suggestions": [
+              "Resolve embedding model architecture before writing a line of code: Either commit to one embedding model per knowledge base (stored in kb metadata) with a re-indexing job triggered on provider switch, or use a provider-agnostic embedding model (e.g., a self-hosted model via sentence-transformers) as the sole indexing path.",
+              "Add step 8b: Design and implement usage metering before the backend. Define the metering data model (usage_events table: tenant_id, event_type, quantity, timestamp), the enforcement middleware, and the Stripe billing integration. This is a dependency for shipping, not a nice-to-have.",
+              "Move security threat modeling to step 7 (alongside API design): Prompt injection defense, SSRF controls, and input validation schemas should be part of the OpenAPI contract, not afterthoughts.",
+              "Define the conversation flow graph schema in the PRD (step 3) and API spec (step 7): Node types (message, condition, API call, handoff), edge rules, and execution semantics must be specified before UX design (step 6) and frontend (step 13) can begin.",
+              "Replace pg_cron nightly refresh with incremental real-time aggregation: Use event sourcing \u2014 write to analytics_events, compute running aggregates in Redis on write, and materialize to PostgreSQL on a 1-minute rolling window. Nightly is inadequate for a product competing with Tidio and Intercom.",
+              "Add PgBouncer to the infrastructure stack (step 17): pgvector queries under multi-tenant load will exhaust PostgreSQL connections quickly. Connection pooling is not optional.",
+              "Add a semantic cache layer (Redis + embedding similarity) for LLM responses: Identical or near-identical questions hitting the same chatbot are extremely common. Caching reduces LLM costs by 30\u201360% for deployed chatbots \u2014 this is a competitive pricing advantage.",
+              "Specify an outbound data processing agreement for LLM sub-processors in step 5: The DPA covers the platform's customers. But user knowledge base content is sent to OpenAI/Anthropic/Google APIs. The platform needs its own DPAs with these sub-processors and must disclose this in the privacy policy."
+            ],
+            "missing": [
+              "Billing and metering implementation (Stripe integration, usage enforcement, tier limits, overage handling)",
+              "BYOK vs. platform-managed LLM API key policy decision and implementation",
+              "Conversation flow graph schema definition (node types, edge semantics, execution model)",
+              "Embedding model migration strategy (re-indexing job when user switches LLM provider)",
+              "Real-time analytics aggregation pipeline (not nightly pg_cron)",
+              "Webhook/integration framework for CRM and help-desk tools (Zendesk, Salesforce, HubSpot) \u2014 expected by enterprise buyers",
+              "Human handoff/escalation flow implementation (critical for any customer support use case)",
+              "GDPR right-to-erasure implementation for vector store (deleting user data from embeddings, not just the document record)",
+              "LLM output semantic caching layer",
+              "Knowledge base sharing between chatbots within the same organization",
+              "Chatbot version rollback mechanism and in-flight conversation handling on version publish",
+              "Outbound DPA with LLM sub-processors (OpenAI, Anthropic, Google) for the platform's own data flows"
+            ],
+            "security_risks": [
+              "Widget token stored in localStorage (step 15) is vulnerable to XSS on the host page. Shadow DOM isolation protects styles, not JavaScript. A compromised host page reads localStorage and replays the widget token from any origin.",
+              "SSRF via DNS rebinding: An SSRF allowlist checking the IP at request time is bypassable via DNS rebinding (resolve to public IP, allowlisted; then re-resolve to 169.254.169.254 cloud metadata endpoint). Requires DNS pinning or a dedicated egress proxy with IP validation at connection time, not DNS resolution time.",
+              "PII in vector embeddings with no deletion guarantee: Step 10 detects PII before storage, but doesn't specify the action (block, redact, anonymize). If a user uploads a document containing customer PII and later requests deletion under GDPR Article 17, soft-deleting the document record does not remove the embeddings. True erasure from HNSW index requires full index rebuild.",
+              "LLM Guard regex-based prompt injection is insufficient: Sophisticated jailbreaks use Unicode homoglyphs, prompt continuation attacks, and token manipulation that regex cannot detect. The plan needs adversarial LLM-based input validation (a dedicated classifier or a hardened secondary LLM call) not just LLM Guard.",
+              "API keys hashed with bcrypt but bcrypt is not suitable for API key verification: bcrypt is designed to be slow (for passwords). API keys are validated on every request \u2014 bcrypt verification at high RPS will become a CPU bottleneck. Use HMAC-SHA256 with a secret pepper for API key hashing/verification.",
+              "Multi-tenant isolation relies entirely on application-layer RLS: There is no network-level isolation between tenants. A SQL injection vulnerability anywhere in the backend would bypass RLS and expose all tenant data. Defense-in-depth requires query parameterization enforcement verified by SAST in CI (not just RLS policies)."
+            ],
+            "summary": "This is a well-structured and thorough plan for its scope \u2014 the dependency graph is sound, acceptance criteria are mostly concrete, and the technology choices are defensible. However, it has three production-blocking gaps that are not MVP-acceptable: (1) there is no billing or usage metering implementation, meaning the product cannot enforce its own pricing tiers; (2) embedding model lock-in has no resolution path, so users who switch LLM providers will silently get degraded or broken RAG retrieval; and (3) the analytics pipeline's nightly aggregation model contradicts the implied real-time dashboard experience users expect from a product competing with Tidio and Intercom. Security is architecturally mispositioned \u2014 bolted on after the backend is built rather than designed alongside the API contract, which will require expensive refactoring. The conversation flow graph schema \u2014 the product's core differentiator \u2014 is never defined, which means the frontend, API, and database teams have no shared contract for the builder canvas. At 62/100, the plan is a solid foundation that needs four things before development begins: resolve embedding model architecture, add billing/metering as an explicit build step, define the conversation flow schema, and move security design earlier in the dependency chain.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 62,
+              "flaws": [
+                "Embedding model lock-in with no migration path: Step 10 uses two embedding models (text-embedding-3-small, text-embedding-004) but never addresses what happens when a user switches their LLM provider after indexing. Vectors from different embedding models are incompatible \u2014 existing chunks become unqueryable. No re-indexing strategy exists.",
+                "pgvector + RLS incompatibility: Step 8 specifies row-level security for multi-tenant isolation, but pgvector's HNSW index scans occur before RLS filtering. This defeats index performance and may leak timing information across tenants. At scale this becomes a correctness AND performance failure.",
+                "No billing/metering infrastructure: Pricing tiers are defined in steps 3 and 4 (free 500 msgs, Pro $49, etc.) but zero implementation of usage metering \u2014 no token counting per tenant, no enforcement of free-tier message limits, no overage logic, no Stripe integration. A SaaS product cannot ship without this.",
+                "LLM API key ownership is unresolved: Step 9 wires up three provider SDKs but never specifies whether this is BYOK (bring-your-own-key) or platform-managed keys. These are fundamentally different architectures with different cost, margin, compliance, and UI implications. The financial model in step 4 cannot be correct without resolving this.",
+                "Security is bolted on after the backend is built: Step 16 (security) depends on step 12 (backend complete). Prompt injection filtering, input sanitization, and SSRF controls should be designed alongside the API spec (step 7) and implemented during backend construction (step 12), not after. Retrofitting security into a finished backend is expensive and error-prone.",
+                "Conversation context window management is undefined: Redis is mentioned as a 'conversation context window cache' in step 12 but no strategy is specified for long conversations. A 50-message conversation cannot be injected wholesale into every LLM call. No truncation, summarization, or sliding window strategy exists anywhere in the plan.",
+                "Analytics aggregations are nightly \u2014 real-time is promised but not delivered: Step 11 uses pg_cron for nightly materialized view refresh. But step 11's acceptance criteria says events are ingested 'within 1s of occurrence.' A user who just deployed a chatbot will see zero analytics until the next morning. Real-time dashboards require a streaming aggregation layer (not pg_cron).",
+                "React Flow node schema is never defined: Step 13 calls for a drag-and-drop canvas using React Flow but nowhere in the plan is the conversation flow graph schema defined \u2014 what does a node represent? What edges are valid? What is the execution model? This is the core product feature and it has no specification.",
+                "LLM router health check claim is unrealistic: Step 9 requires provider selection in '<10ms overhead' while also checking provider health. Real-time HTTP health pings to OpenAI/Anthropic/Google cannot complete in <10ms. The plan needs a circuit breaker pattern with a cached health state updated asynchronously \u2014 not inline health checks per request.",
+                "Document chunking is naive for mixed document types: A single recursive character splitter with 512-token chunks treats PDFs, CSVs, markdown, and DOCX identically. PDF tables produce garbage chunks. CSV data needs row-aware splitting. This will directly degrade RAG quality \u2014 the product's core value proposition.",
+                "Celery job deduplication is absent: Step 12 triggers async Celery jobs on document upload with no idempotency. A user who uploads the same file twice (common UX behavior) gets double processing, double vector storage, and duplicate chunks degrading retrieval quality.",
+                "SOC 2 Type I is mislabeled as shippable: Step 20 produces 'readiness artifacts' but a SOC 2 Type I requires engagement with a certified auditor (takes 4\u201312 weeks, costs $15\u201350K). Treating this as a single build step misrepresents the actual compliance timeline to any stakeholder reading this plan."
+              ],
+              "suggestions": [
+                "Resolve embedding model architecture before writing a line of code: Either commit to one embedding model per knowledge base (stored in kb metadata) with a re-indexing job triggered on provider switch, or use a provider-agnostic embedding model (e.g., a self-hosted model via sentence-transformers) as the sole indexing path.",
+                "Add step 8b: Design and implement usage metering before the backend. Define the metering data model (usage_events table: tenant_id, event_type, quantity, timestamp), the enforcement middleware, and the Stripe billing integration. This is a dependency for shipping, not a nice-to-have.",
+                "Move security threat modeling to step 7 (alongside API design): Prompt injection defense, SSRF controls, and input validation schemas should be part of the OpenAPI contract, not afterthoughts.",
+                "Define the conversation flow graph schema in the PRD (step 3) and API spec (step 7): Node types (message, condition, API call, handoff), edge rules, and execution semantics must be specified before UX design (step 6) and frontend (step 13) can begin.",
+                "Replace pg_cron nightly refresh with incremental real-time aggregation: Use event sourcing \u2014 write to analytics_events, compute running aggregates in Redis on write, and materialize to PostgreSQL on a 1-minute rolling window. Nightly is inadequate for a product competing with Tidio and Intercom.",
+                "Add PgBouncer to the infrastructure stack (step 17): pgvector queries under multi-tenant load will exhaust PostgreSQL connections quickly. Connection pooling is not optional.",
+                "Add a semantic cache layer (Redis + embedding similarity) for LLM responses: Identical or near-identical questions hitting the same chatbot are extremely common. Caching reduces LLM costs by 30\u201360% for deployed chatbots \u2014 this is a competitive pricing advantage.",
+                "Specify an outbound data processing agreement for LLM sub-processors in step 5: The DPA covers the platform's customers. But user knowledge base content is sent to OpenAI/Anthropic/Google APIs. The platform needs its own DPAs with these sub-processors and must disclose this in the privacy policy."
+              ],
+              "missing": [
+                "Billing and metering implementation (Stripe integration, usage enforcement, tier limits, overage handling)",
+                "BYOK vs. platform-managed LLM API key policy decision and implementation",
+                "Conversation flow graph schema definition (node types, edge semantics, execution model)",
+                "Embedding model migration strategy (re-indexing job when user switches LLM provider)",
+                "Real-time analytics aggregation pipeline (not nightly pg_cron)",
+                "Webhook/integration framework for CRM and help-desk tools (Zendesk, Salesforce, HubSpot) \u2014 expected by enterprise buyers",
+                "Human handoff/escalation flow implementation (critical for any customer support use case)",
+                "GDPR right-to-erasure implementation for vector store (deleting user data from embeddings, not just the document record)",
+                "LLM output semantic caching layer",
+                "Knowledge base sharing between chatbots within the same organization",
+                "Chatbot version rollback mechanism and in-flight conversation handling on version publish",
+                "Outbound DPA with LLM sub-processors (OpenAI, Anthropic, Google) for the platform's own data flows"
+              ],
+              "security_risks": [
+                "Widget token stored in localStorage (step 15) is vulnerable to XSS on the host page. Shadow DOM isolation protects styles, not JavaScript. A compromised host page reads localStorage and replays the widget token from any origin.",
+                "SSRF via DNS rebinding: An SSRF allowlist checking the IP at request time is bypassable via DNS rebinding (resolve to public IP, allowlisted; then re-resolve to 169.254.169.254 cloud metadata endpoint). Requires DNS pinning or a dedicated egress proxy with IP validation at connection time, not DNS resolution time.",
+                "PII in vector embeddings with no deletion guarantee: Step 10 detects PII before storage, but doesn't specify the action (block, redact, anonymize). If a user uploads a document containing customer PII and later requests deletion under GDPR Article 17, soft-deleting the document record does not remove the embeddings. True erasure from HNSW index requires full index rebuild.",
+                "LLM Guard regex-based prompt injection is insufficient: Sophisticated jailbreaks use Unicode homoglyphs, prompt continuation attacks, and token manipulation that regex cannot detect. The plan needs adversarial LLM-based input validation (a dedicated classifier or a hardened secondary LLM call) not just LLM Guard.",
+                "API keys hashed with bcrypt but bcrypt is not suitable for API key verification: bcrypt is designed to be slow (for passwords). API keys are validated on every request \u2014 bcrypt verification at high RPS will become a CPU bottleneck. Use HMAC-SHA256 with a secret pepper for API key hashing/verification.",
+                "Multi-tenant isolation relies entirely on application-layer RLS: There is no network-level isolation between tenants. A SQL injection vulnerability anywhere in the backend would bypass RLS and expose all tenant data. Defense-in-depth requires query parameterization enforcement verified by SAST in CI (not just RLS policies)."
+              ],
+              "summary": "This is a well-structured and thorough plan for its scope \u2014 the dependency graph is sound, acceptance criteria are mostly concrete, and the technology choices are defensible. However, it has three production-blocking gaps that are not MVP-acceptable: (1) there is no billing or usage metering implementation, meaning the product cannot enforce its own pricing tiers; (2) embedding model lock-in has no resolution path, so users who switch LLM providers will silently get degraded or broken RAG retrieval; and (3) the analytics pipeline's nightly aggregation model contradicts the implied real-time dashboard experience users expect from a product competing with Tidio and Intercom. Security is architecturally mispositioned \u2014 bolted on after the backend is built rather than designed alongside the API contract, which will require expensive refactoring. The conversation flow graph schema \u2014 the product's core differentiator \u2014 is never defined, which means the frontend, API, and database teams have no shared contract for the builder canvas. At 62/100, the plan is a solid foundation that needs four things before development begins: resolve embedding model architecture, add billing/metering as an explicit build step, define the conversation flow schema, and move security design earlier in the dependency chain.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T08:48:51.613581+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 140.29,
+      "critic_plan": 99.5
+    }
+  }
+}

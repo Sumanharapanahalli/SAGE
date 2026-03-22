@@ -1,0 +1,862 @@
+{
+  "run_id": "f6cf7849-2de8-4ea7-bc05-764c129040de",
+  "solution_name": "anomaly_detection",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T08:53:24.620579+00:00",
+  "updated_at": "2026-03-22T08:57:53.018064+00:00",
+  "product_description": "Time-series anomaly detection platform for infrastructure monitoring with unsupervised ML, seasonality handling, alert deduplication, and root cause correlation.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product requirements: data ingestion contracts, anomaly detection SLAs, alert deduplication rules, root cause correlation scope, and success metrics.",
+      "payload": {
+        "deliverables": [
+          "PRD",
+          "user_stories",
+          "success_metrics"
+        ],
+        "key_decisions": [
+          "supported_metric_types",
+          "retention_policy",
+          "alert_channels",
+          "SLA_targets"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all five pillars: ingestion, detection, seasonality, deduplication, correlation",
+        "Success metrics defined (false positive rate < X%, alert noise reduction % target)",
+        "Supported metric sources listed (Prometheus, StatsD, CloudWatch, custom)"
+      ],
+      "depends_on": [],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 2,
+      "task_type": "UX_DESIGN",
+      "description": "Design dashboard wireframes: metric explorer, anomaly timeline, alert inbox with deduplication view, root cause graph, and configuration panels.",
+      "payload": {
+        "screens": [
+          "metric_browser",
+          "anomaly_timeline",
+          "alert_inbox",
+          "root_cause_graph",
+          "model_config",
+          "onboarding_flow"
+        ],
+        "tool": "Figma"
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all six screens",
+        "Anomaly timeline supports zoom/pan and threshold overlay",
+        "Root cause graph shows correlated metric clusters with edge weights",
+        "Accessibility audit passes WCAG 2.1 AA"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 3,
+      "task_type": "DATA",
+      "description": "Design time-series data model: metric schema, anomaly event schema, alert record schema, correlation edge schema, and data retention tiers.",
+      "payload": {
+        "storage_backends": [
+          "TimescaleDB (hot)",
+          "S3/Parquet (cold)"
+        ],
+        "schemas": [
+          "metrics_raw",
+          "metrics_aggregated",
+          "anomaly_events",
+          "alert_records",
+          "correlation_edges"
+        ],
+        "retention": {
+          "hot_days": 30,
+          "cold_days": 365
+        }
+      },
+      "acceptance_criteria": [
+        "All schemas documented with field types and cardinality estimates",
+        "Metric schema supports tags/labels for multi-dimensional filtering",
+        "Anomaly event schema includes: metric_id, timestamp, score, model_id, seasonality_adjusted flag",
+        "Correlation edge schema includes confidence score and lag offset"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 4,
+      "task_type": "DATABASE",
+      "description": "Implement TimescaleDB schema: hypertables for raw metrics and anomaly events, continuous aggregates for 1m/5m/1h rollups, retention policies, and indexes.",
+      "payload": {
+        "engine": "TimescaleDB 2.x (PostgreSQL extension)",
+        "hypertables": [
+          "metrics_raw",
+          "anomaly_events"
+        ],
+        "continuous_aggregates": [
+          "metrics_1m",
+          "metrics_5m",
+          "metrics_1h"
+        ],
+        "indexes": [
+          "(metric_id, time) DESC",
+          "tags GIN",
+          "anomaly_score BRIN"
+        ]
+      },
+      "acceptance_criteria": [
+        "All hypertables created with correct chunk intervals",
+        "Continuous aggregates refresh automatically on schedule",
+        "Retention policies enforce hot/cold tiers via pg_partman or TimescaleDB policies",
+        "Query for last 24h of a single metric completes < 50ms on 1M rows"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 5,
+      "task_type": "DATA",
+      "description": "Build metric ingestion pipeline: multi-source adapters (Prometheus remote_write, StatsD, OpenTelemetry OTLP, REST push), normalization layer, and write-ahead buffer.",
+      "payload": {
+        "sources": [
+          "prometheus_remote_write",
+          "statsD_udp",
+          "otlp_grpc",
+          "rest_push"
+        ],
+        "normalization": "canonical metric envelope (name, tags, value, timestamp_ns)",
+        "buffer": "Redis Streams with consumer groups",
+        "throughput_target": "100k metrics/sec sustained"
+      },
+      "acceptance_criteria": [
+        "All four source adapters pass integration tests against real clients",
+        "Normalization layer enforces canonical schema; malformed metrics logged and dropped",
+        "Write-ahead buffer survives ingestion service restart without data loss",
+        "End-to-end latency from ingest to DB write < 500ms at 100k/s"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 6,
+      "task_type": "ML_MODEL",
+      "description": "Implement unsupervised anomaly detection models: Isolation Forest baseline, LSTM Autoencoder for pattern learning, and STL decomposition for seasonality-aware scoring.",
+      "payload": {
+        "models": [
+          {
+            "name": "IsolationForest",
+            "library": "scikit-learn",
+            "role": "fast baseline, low-latency"
+          },
+          {
+            "name": "LSTMAutoencoder",
+            "library": "PyTorch",
+            "role": "temporal pattern, high-recall"
+          },
+          {
+            "name": "STLDecomposition",
+            "library": "statsmodels",
+            "role": "seasonality extraction + residual scoring"
+          }
+        ],
+        "training": "rolling 7-day window, retrain nightly",
+        "scoring": "ensemble: weighted average of normalized scores",
+        "seasonality_periods": [
+          "hourly",
+          "daily",
+          "weekly"
+        ]
+      },
+      "acceptance_criteria": [
+        "Each model exposes .fit(X) and .score(X) -> anomaly_score interface",
+        "STL correctly extracts daily/weekly seasonality on synthetic test series",
+        "Ensemble scorer returns calibrated [0,1] anomaly score",
+        "LSTM Autoencoder reconstruction error < 5% on clean test data",
+        "Unit tests cover edge cases: constant series, spike series, step-change series",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 7,
+      "task_type": "ML_MODEL",
+      "description": "Build model training pipeline: feature engineering (lag features, rolling stats, Fourier features for seasonality), train/val split strategy, hyperparameter tuning, and model versioning.",
+      "payload": {
+        "feature_engineering": [
+          "lag_1/5/15/60m",
+          "rolling_mean/std/min/max",
+          "Fourier_harmonics_k4",
+          "hour_of_day",
+          "day_of_week"
+        ],
+        "split_strategy": "time-based: last 20% of window for validation",
+        "tuning": "Optuna with 50 trials per model",
+        "versioning": "MLflow tracking + model registry",
+        "schedule": "nightly retraining via Celery beat"
+      },
+      "acceptance_criteria": [
+        "Feature pipeline is reproducible given same input window",
+        "MLflow experiment logged for every training run with metrics and artifacts",
+        "Model registry promotes best model by validation AUC-ROC",
+        "Nightly retraining job completes within 30-minute window",
+        "Backward compatibility: new model version does not break scoring API contract",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        6,
+        5
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Implement anomaly scoring service: real-time scoring worker that consumes from ingestion buffer, applies ensemble model, writes anomaly events, and exposes /score endpoint for on-demand queries.",
+      "payload": {
+        "runtime": "Python FastAPI + Celery workers",
+        "pattern": "multi_agent_sequential (ingest \u2192 feature_extract \u2192 score \u2192 persist)",
+        "endpoints": [
+          "POST /score (on-demand)",
+          "GET /anomalies (query by metric/time range)"
+        ],
+        "model_loading": "lazy load from MLflow registry with in-memory cache",
+        "throughput_target": "10k scoring ops/sec"
+      },
+      "acceptance_criteria": [
+        "Scoring worker processes ingestion buffer with < 2s lag",
+        "POST /score returns anomaly score and contributing model weights",
+        "GET /anomalies supports filters: metric_id, time_range, min_score, tags",
+        "Model cache refreshes on new registry version without service restart",
+        "Service handles model unavailability gracefully with fallback to IsolationForest"
+      ],
+      "depends_on": [
+        7,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Build alert deduplication engine: sliding window grouping, fingerprinting by (metric_id + anomaly_pattern), suppression rules, and alert lifecycle management (open/ack/resolve).",
+      "payload": {
+        "dedup_strategy": "fingerprint = hash(metric_id, severity_bucket, pattern_cluster_id)",
+        "grouping_window": "configurable, default 5 min",
+        "suppression_rules": [
+          "maintenance_windows",
+          "known_flapping_metrics",
+          "inhibition_rules"
+        ],
+        "lifecycle_states": [
+          "firing",
+          "ack",
+          "resolved",
+          "suppressed"
+        ],
+        "storage": "PostgreSQL alerts table with TimescaleDB alert_events hypertable"
+      },
+      "acceptance_criteria": [
+        "Duplicate alerts within grouping window merged into single alert record",
+        "Fingerprint collision rate < 0.1% on test dataset of 10k alerts",
+        "Maintenance window suppression correctly silences alerts during scheduled windows",
+        "Alert lifecycle state machine enforces valid transitions only",
+        "Deduplication reduces alert volume by > 60% on benchmark noisy dataset"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "ML_MODEL",
+      "description": "Implement root cause correlation engine: Granger causality testing between anomalous metrics, DBSCAN clustering for incident grouping, and causal graph construction.",
+      "payload": {
+        "correlation_methods": [
+          "Granger causality (lag 1-30m, p < 0.05 threshold)",
+          "Pearson/Spearman on anomaly score time series",
+          "DBSCAN clustering (eps=0.3, min_samples=3) on feature vectors"
+        ],
+        "graph": "NetworkX DiGraph: nodes=metrics, edges=causal_links with confidence+lag",
+        "runtime": "triggered per incident (alert cluster), async Celery task",
+        "output": "correlation_report: root_cause_candidates ranked by confidence"
+      },
+      "acceptance_criteria": [
+        "Granger causality correctly identifies known causal pairs in synthetic test data",
+        "DBSCAN clusters correlated anomalies with > 80% purity on labeled benchmark",
+        "Causal graph stored in DB as correlation_edges with confidence scores",
+        "Correlation task completes in < 10s for incident window of 1h / 100 metrics",
+        "Root cause candidates ranked; top-1 accuracy > 70% on benchmark incidents",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 11,
+      "task_type": "API",
+      "description": "Design and implement public REST + WebSocket API: metric ingestion, anomaly query, alert management, correlation graph, model status, and real-time SSE stream for live anomaly feed.",
+      "payload": {
+        "spec": "OpenAPI 3.1",
+        "endpoints": [
+          "POST /ingest/metrics",
+          "GET /metrics/{id}/anomalies",
+          "GET /alerts \u2014 list with dedup groups",
+          "POST /alerts/{id}/ack",
+          "GET /incidents/{id}/root-cause",
+          "GET /models/status",
+          "GET /stream/anomalies (SSE)",
+          "POST /config/thresholds",
+          "POST /config/maintenance-windows"
+        ],
+        "auth": "API key header (X-API-Key)",
+        "versioning": "/api/v1/"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec generated and passes schema validation",
+        "All endpoints return correct HTTP status codes per spec",
+        "SSE stream delivers anomaly events within 3s of detection",
+        "API key auth rejects invalid keys with 401",
+        "Rate limiting enforced: 1000 req/min per key"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement notification dispatcher: multi-channel alert routing (PagerDuty, Slack, webhook, email), routing rules engine, escalation policies, and notification deduplication.",
+      "payload": {
+        "channels": [
+          "PagerDuty Events API v2",
+          "Slack Incoming Webhooks",
+          "Generic Webhook POST",
+          "SMTP email"
+        ],
+        "routing_rules": "YAML-configurable: match on tags/severity/metric_name \u2192 channel",
+        "escalation": "tiered: L1 (Slack) \u2192 L2 (PagerDuty) if unack in N min",
+        "dedup": "do not re-notify on same alert fingerprint within suppression window"
+      },
+      "acceptance_criteria": [
+        "PagerDuty and Slack adapters pass integration tests against sandbox accounts",
+        "Routing rules engine evaluates tag matchers correctly (unit tests with 20 cases)",
+        "Escalation timer triggers reliably within \u00b130s of configured delay",
+        "Notification dedup prevents duplicate pages for same fingerprint"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "CONFIG",
+      "description": "Set up SAGE solution configuration: anomaly_detection project.yaml, prompts.yaml (data_scientist, platform_engineer roles), tasks.yaml (anomaly detection task types), and agentic pattern config for coordinator orchestration.",
+      "payload": {
+        "solution_name": "anomaly_detection",
+        "agentic_pattern": "coordinator",
+        "roles": [
+          "data_scientist",
+          "platform_engineer",
+          "analyst",
+          "developer"
+        ],
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "monitor",
+          "improvements",
+          "knowledge"
+        ],
+        "task_types": [
+          "metric_analysis",
+          "anomaly_investigation",
+          "model_retrain_request",
+          "alert_triage",
+          "correlation_review"
+        ]
+      },
+      "acceptance_criteria": [
+        "project.yaml loads without validation errors via POST /config/switch",
+        "prompts.yaml defines system prompts for all four roles",
+        "tasks.yaml registers all five task types with correct routing",
+        "Coordinator pattern wires analyst \u2192 data_scientist \u2192 developer task chain",
+        "Solution .sage/ directory auto-created on first start"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FRONTEND",
+      "description": "Build metric explorer page: searchable metric browser with tag filters, time-range selector, multi-series chart overlay, and anomaly score band visualization.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "charts": "Recharts or uPlot (high-performance time-series)",
+        "features": [
+          "metric search + autocomplete",
+          "tag filter pills",
+          "time range picker (relative + absolute)",
+          "anomaly score overlay band",
+          "zoom/pan"
+        ]
+      },
+      "acceptance_criteria": [
+        "Metric search returns results in < 200ms with 10k metric names",
+        "Chart renders 10k data points without frame drops on modern browser",
+        "Anomaly score band toggleable; color-coded by severity",
+        "Time range picker supports relative (last 1h/6h/24h/7d) and absolute ISO range"
+      ],
+      "depends_on": [
+        11,
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Build alert inbox page: deduplicated alert list with group expansion, ack/resolve actions, severity filter, and maintenance window scheduling UI.",
+      "payload": {
+        "features": [
+          "alert group cards with expand/collapse",
+          "bulk ack",
+          "resolve with comment",
+          "severity filter (critical/warning/info)",
+          "maintenance window form",
+          "real-time updates via SSE"
+        ],
+        "state_management": "Zustand or React Query"
+      },
+      "acceptance_criteria": [
+        "Alert groups show dedup count and member list on expand",
+        "Ack action updates UI optimistically and confirms via API",
+        "Maintenance window form validates time ranges and recurring schedules",
+        "SSE connection auto-reconnects on drop; new alerts appear within 3s"
+      ],
+      "depends_on": [
+        11,
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build root cause correlation graph page: force-directed graph of correlated metrics, incident timeline, ranked root cause candidates panel, and investigation notes.",
+      "payload": {
+        "graph_library": "Cytoscape.js or D3 force-directed",
+        "features": [
+          "node = metric, edge = causal link with confidence label",
+          "click node \u2192 metric detail flyout",
+          "ranked candidates panel",
+          "incident timeline strip",
+          "export PNG/JSON"
+        ]
+      },
+      "acceptance_criteria": [
+        "Graph renders 100-node incident correctly within 1s",
+        "Edge thickness encodes confidence; hover shows lag + p-value",
+        "Ranked candidates panel shows top 5 with confidence bars",
+        "Export produces valid JSON correlation report"
+      ],
+      "depends_on": [
+        11,
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build model status and configuration page: active model versions, per-metric model assignment, threshold tuning sliders, retraining trigger, and training history chart.",
+      "payload": {
+        "features": [
+          "model version table with promote/rollback",
+          "per-metric sensitivity override",
+          "threshold slider with live preview",
+          "manual retrain trigger",
+          "training run history with AUC-ROC trend"
+        ]
+      },
+      "acceptance_criteria": [
+        "Model version table reflects MLflow registry state in real-time",
+        "Sensitivity slider updates anomaly score threshold and previews effect on last 24h",
+        "Manual retrain queues Celery task and shows progress",
+        "Training history chart plots AUC-ROC per run"
+      ],
+      "depends_on": [
+        11,
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "INFRA",
+      "description": "Containerize all services with Docker Compose (dev) and Kubernetes Helm chart (prod): ingestion workers, scoring service, API server, TimescaleDB, Redis, MLflow, Celery beat, and Flower.",
+      "payload": {
+        "services": [
+          "api",
+          "ingestion_worker",
+          "scoring_worker",
+          "celery_beat",
+          "timescaledb",
+          "redis",
+          "mlflow",
+          "flower"
+        ],
+        "dev": "docker-compose.yml with health checks and volume mounts",
+        "prod": "Helm chart with HPA, PodDisruptionBudget, resource limits",
+        "image_registry": "GHCR",
+        "secrets": "Kubernetes Secrets / .env for dev"
+      },
+      "acceptance_criteria": [
+        "docker compose up --build starts all services healthy within 2 min",
+        "Helm chart deploys to local kind cluster without errors",
+        "HPA scales scoring workers at 70% CPU",
+        "All sensitive config injected via env/secrets \u2014 no hardcoded credentials"
+      ],
+      "depends_on": [
+        12,
+        13
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "DEVOPS",
+      "description": "Build CI/CD pipeline: GitHub Actions for lint, test, Docker build, Helm lint, staging deploy on PR merge, and production deploy on release tag.",
+      "payload": {
+        "jobs": [
+          "lint (ruff + mypy + eslint)",
+          "unit_tests",
+          "integration_tests (docker compose)",
+          "docker_build_push",
+          "helm_lint",
+          "deploy_staging (PR merge)",
+          "deploy_prod (release tag)"
+        ],
+        "gates": [
+          "all tests pass",
+          "no HIGH severity vulnerabilities in SBOM scan"
+        ],
+        "rollback": "Helm rollback on failed health check post-deploy"
+      },
+      "acceptance_criteria": [
+        "PR pipeline completes in < 8 min",
+        "Staging deploy triggers automatically on merge to main",
+        "Production deploy requires manual approval gate in GitHub Actions",
+        "Rollback executes within 2 min of failed health check"
+      ],
+      "depends_on": [
+        18
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "SECURITY",
+      "description": "Security review: threat model for ingestion endpoint, API key rotation flow, RBAC for alert management, dependency SBOM, and input validation audit.",
+      "payload": {
+        "scope": [
+          "ingestion endpoint (unauthenticated write path)",
+          "API key storage and rotation",
+          "RBAC roles: viewer/operator/admin",
+          "OWASP Top 10 review",
+          "SBOM via Syft"
+        ],
+        "threat_model": "STRIDE on ingestion + scoring + alert paths"
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model documented with mitigations for all HIGH risks",
+        "API key stored hashed; rotation invalidates old key immediately",
+        "RBAC enforced: viewers cannot ack alerts or modify config",
+        "SBOM generated and scanned; no CRITICAL CVEs in direct dependencies",
+        "Input validation rejects metric payloads > 1MB and malformed timestamps"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "TESTS",
+      "description": "Write unit tests for ML models, ingestion pipeline, deduplication engine, and correlation engine: edge cases, known anomaly patterns, and regression fixtures.",
+      "payload": {
+        "framework": "pytest",
+        "coverage_target": "85%",
+        "test_suites": [
+          "test_models.py: IsolationForest, LSTMAutoencoder, STL on synthetic series",
+          "test_ingestion.py: all four source adapters, malformed inputs, buffer overflow",
+          "test_deduplication.py: fingerprint collisions, state transitions, suppression windows",
+          "test_correlation.py: Granger causality on known pairs, DBSCAN cluster purity"
+        ],
+        "fixtures": "synthetic anomaly series generator (step, spike, seasonal, drift)"
+      },
+      "acceptance_criteria": [
+        "pytest passes with 0 failures on clean checkout",
+        "Coverage >= 85% for src/models, src/ingestion, src/deduplication, src/correlation",
+        "Synthetic series generator produces reproducible fixtures via seed",
+        "ML model tests run in < 60s without GPU"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 22,
+      "task_type": "TESTS",
+      "description": "Write API integration tests: all REST endpoints, SSE stream, auth rejection, rate limiting, and alert lifecycle state machine transitions.",
+      "payload": {
+        "framework": "pytest + httpx (async)",
+        "test_db": "dockerized TimescaleDB + Redis (pytest fixtures)",
+        "coverage": [
+          "all 11 endpoints",
+          "auth rejection (invalid/missing key)",
+          "rate limit 429 response",
+          "alert lifecycle: firing\u2192ack\u2192resolve\u2192suppressed"
+        ]
+      },
+      "acceptance_criteria": [
+        "All endpoint tests pass against live test containers",
+        "Invalid API key returns 401 consistently",
+        "Rate limiter returns 429 after 1001st request within 1-min window",
+        "Alert state machine rejects invalid transitions with 409"
+      ],
+      "depends_on": [
+        21,
+        11
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "SYSTEM_TEST",
+      "description": "End-to-end system test: inject synthetic metric stream with embedded anomalies, verify detection, deduplication, correlation, and notification dispatch within SLA.",
+      "payload": {
+        "test_scenario": "24h synthetic metric stream, 50 metrics, 10 injected anomaly incidents",
+        "assertions": [
+          "all 10 incidents detected within 2 min of injection",
+          "alert deduplication reduces raw alerts by > 60%",
+          "root cause correlation identifies injected causal metric in top-3 for 8/10 incidents",
+          "PagerDuty sandbox receives exactly 10 unique notifications"
+        ],
+        "environment": "docker compose full stack"
+      },
+      "acceptance_criteria": [
+        "System test script runs end-to-end without manual intervention",
+        "All four assertion conditions pass",
+        "Total pipeline latency (ingest \u2192 alert notification) < 3 min",
+        "No data loss in 24h stream replay"
+      ],
+      "depends_on": [
+        22,
+        19
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 24,
+      "task_type": "DOCS",
+      "description": "Write operations documentation: deployment guide, configuration reference, alert routing cookbook, model sensitivity tuning guide, and runbook for common incidents.",
+      "payload": {
+        "docs": [
+          "README.md: quickstart with docker compose",
+          "docs/deployment.md: Helm values reference, scaling guidance",
+          "docs/alert-routing.md: routing rules YAML cookbook",
+          "docs/model-tuning.md: sensitivity sliders, retraining, model selection",
+          "docs/runbooks/: high-alert-volume, model-drift, ingestion-lag runbooks"
+        ]
+      },
+      "acceptance_criteria": [
+        "README quickstart produces working local stack from scratch in < 5 min",
+        "All config keys documented with type, default, and example",
+        "Each runbook has: symptom, diagnosis steps, remediation, escalation path",
+        "API reference generated from OpenAPI spec (Redoc or Swagger UI)"
+      ],
+      "depends_on": [
+        23
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 24,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "CRITICAL: Throughput mismatch \u2014 Step 5 targets 100k metrics/sec ingestion; Step 8 targets 10k scoring ops/sec. The scoring service is architecturally 10x slower than the feed it consumes. Redis Streams backpressure will spike indefinitely under load. No sampling, downsampling, or sharding strategy is defined to close this gap.",
+            "CRITICAL: Granger causality is O(n\u00b2) pairwise \u00d7 lag_orders. At 100 metrics and 30 lag orders: 9,900 pairs \u00d7 30 = 297,000 regressions per incident. The '< 10s for 100 metrics' acceptance criterion is not achievable in Python without precomputed stationarity checks, vectorized lag matrices, and parallel execution \u2014 none of which are specified. At 1,000 metrics this collapses entirely.",
+            "CRITICAL: Fingerprint collision in dedup engine (Step 9) uses `pattern_cluster_id` from DBSCAN clustering \u2014 but DBSCAN clustering is defined in Step 10 (root cause correlation), which depends on Step 9. Step 9 cannot use a cluster_id that Step 10 has not yet computed. This is a circular dependency disguised as a sequential one. The fingerprint design must be reconsidered without forward-referencing Step 10's output.",
+            "SEVERE: LSTM Autoencoder retraining in nightly 30-minute window (Step 7) is incompatible with Optuna 50 trials per model (150 total evaluations). Each LSTM trial on 7 days of data is minutes of compute. 150 trials = multiple hours, not 30 minutes. No GPU is provisioned in the infra plan. Either the tuning cadence or the nightly window constraint must be dropped.",
+            "SEVERE: The ingestion endpoint is explicitly called an 'unauthenticated write path' in Step 20, yet Step 5's design includes no auth. Auth is designed in Step 20 (security review) but never retrofitted back into Steps 5, 8, or 11. This means the system ships without ingestion auth and the security review produces a report, not a fix.",
+            "SEVERE: Granger causality requires stationarity. Infrastructure metrics exhibit trends, seasonality, and regime changes \u2014 all violations of stationarity. No ADF/KPSS testing, differencing, or detrending step is specified before Granger tests. Results will be statistically invalid for most real-world metric pairs.",
+            "MODERATE: Frontend steps (14\u201317) all block on Step 11 (API complete), which itself blocks on the entire backend + ML chain (Steps 5\u21927\u21928\u21929\u219210). No contract-first API mocking is specified. This serializes ~6 weeks of frontend work behind the full ML pipeline, destroying any parallelism benefit of the multi-step plan.",
+            "MODERATE: DBSCAN hyperparameters eps=0.3 and min_samples=3 are hardcoded without justification. The feature vector construction for DBSCAN is undefined \u2014 Step 10 says 'feature vectors' but never specifies what they contain or how they're normalized. eps=0.3 in an unspecified feature space is arbitrary and will produce poor clusters in practice.",
+            "MODERATE: No cold-start strategy for new metrics. A metric with < 7 days of history cannot produce a valid rolling training window. The IsolationForest fallback in Step 8 handles model unavailability but not new-metric bootstrapping. High-churn environments (K8s pods, ephemeral services) will consistently fail to score novel metrics.",
+            "MODERATE: Redis Streams provide at-least-once delivery. Step 5 specifies a write-ahead buffer but no idempotency key or deduplication at the TimescaleDB write layer. A scoring worker restart mid-batch will produce duplicate anomaly_events rows. TimescaleDB UPSERT strategy on (metric_id, timestamp) is not defined.",
+            "MODERATE: Step 13 (SAGE config) is wired independently and lists acceptance criteria that require the API from Step 11 \u2014 but Step 13 depends only on Step 1. The 'Coordinator pattern wires analyst \u2192 data_scientist \u2192 developer task chain' cannot be validated without the running API. The dependency graph is incorrect.",
+            "MODERATE: Alert routing conflict resolution is undefined. Step 12 specifies YAML routing rules (match on tags/severity \u2192 channel) but does not define behavior when multiple rules match: first-match, all-match, or priority-ranked. This will cause unpredictable multi-paging in production.",
+            "MINOR: Step 11 heading says 'REST + WebSocket API' but only SSE is implemented. WebSocket and SSE are not equivalent \u2014 bidirectional control is impossible over SSE. If the product description later requires interactive streaming (e.g., live threshold adjustment), this is a rework.",
+            "MINOR: Cardinality explosion from high-cardinality tags (pod_id, trace_id, request_id) is unaddressed. GIN index on tags in TimescaleDB will degrade severely at >100k unique tag combinations. No ingestion-time cardinality limits or label dropping rules are specified.",
+            "MINOR: Step 12 notification dispatcher has no circuit breaker for downstream channels. If PagerDuty is degraded, escalation timers will silently fail. No dead-letter queue or fallback channel is specified for notification failures."
+          ],
+          "suggestions": [
+            "Resolve the throughput gap in Steps 5/8 by defining explicit async scoring semantics: not every metric needs real-time scoring. Implement priority tiers \u2014 high-value metrics score every interval, long-tail metrics score every N intervals or on statistical deviation only. Document this in the PRD (Step 1) as a first-class design decision.",
+            "Replace Granger causality with Transfer Entropy or precomputed cross-correlation on sliding windows for scalability. If Granger is required, enforce a hard cap (e.g., top-50 metrics by anomaly frequency per incident) and use statsmodels vectorized API with joblib parallelization. Add stationarity testing (ADF) as a prerequisite gate.",
+            "Fix the fingerprint dependency inversion by removing `pattern_cluster_id` from the Step 9 fingerprint. Use `hash(metric_id, severity_bucket, value_bucket)` for initial dedup. Post-correlation, enrich alert records with cluster_id as a separate field. This removes the circular dependency and allows Steps 9 and 10 to be independent.",
+            "Separate nightly model refresh (load new version from registry) from weekly hyperparameter retuning (full Optuna run). Nightly: swap model weights from MLflow registry (< 2 min). Weekly: full 50-trial Optuna run on a dedicated worker, with GPU provisioned in Helm chart for that job only.",
+            "Add API contract mocking (Prism or MSW) in Step 2/11 to unblock frontend development from Step 14 onward. Frontend and backend development should be parallelizable from Step 12 onward, halving the critical path.",
+            "Define a cold-start policy in the data model (Step 3): metrics with < N observations use IsolationForest only, with a `cold_start: true` flag on anomaly events. Track metric age in a `metric_registry` table. This is a one-line schema addition that prevents undefined behavior for new metrics.",
+            "Add idempotency to TimescaleDB writes: use `INSERT ... ON CONFLICT (metric_id, timestamp) DO NOTHING` as the default write strategy. Document this in Step 4 and test it explicitly in Step 5's acceptance criteria.",
+            "Add ingestion authentication in Step 5, not Step 20. Prometheus remote_write supports basic auth and TLS. OTLP supports mTLS. Even a shared bearer token per tenant is better than none. The security review (Step 20) should verify the implementation, not originate it.",
+            "Add a `metric_registry` table to the data model (Step 3) tracking metric_name, first_seen, last_seen, cardinality_count, and owner_tags. This enables cold-start detection, cardinality enforcement, and per-metric model assignment in the UI (Step 17).",
+            "Specify circuit breaker (tenacity or custom) in Step 12 for all notification channels. Define a dead-letter queue (Redis or DB table) for failed notifications with retry policy and ops alert on DLQ depth.",
+            "Add a load test step (k6 or Locust) validating 100k metrics/sec ingestion and 10k scoring ops/sec under sustained load before Step 23 (system test). The system test as written uses 50 metrics \u2014 this does not validate the core SLAs."
+          ],
+          "missing": [
+            "Disaster recovery plan: no TimescaleDB backup strategy (pg_dump schedule, WAL archiving to S3, point-in-time recovery). Losing anomaly history for a monitoring platform is operationally catastrophic.",
+            "Multi-tenancy / team isolation: no tenant scoping for metrics, alerts, or models. An infrastructure monitoring platform serving multiple teams with no data isolation is a non-starter for enterprise use.",
+            "Load test / performance validation step: the 100k/s and 10k/s SLA targets appear only in acceptance criteria with no dedicated load test plan to validate them against real hardware.",
+            "Metric cardinality enforcement: no ingestion-time limits on tag cardinality, no label dropping rules, no cardinality budget per metric family.",
+            "Model artifact integrity verification: no checksum or signature verification when loading model weights from MLflow registry. Model poisoning attack surface unaddressed.",
+            "SLO definitions and error budgets: the PRD step mentions SLA targets but no error budget policy (what happens when false positive rate exceeds target? who owns the SLO?)",
+            "Data retention for anomaly events in cold tier: the S3/Parquet cold tier is defined for raw metrics but anomaly_events, alert_records, and correlation_edges retention in cold storage is unspecified.",
+            "GDPR / data residency: infrastructure metrics can contain PII (usernames in tags, email addresses in alert metadata). No data classification or regional storage policy.",
+            "Stationarity preprocessing pipeline: required before Granger causality but absent from the entire plan.",
+            "MLflow model serving / model API versioning: how does the scoring service know to use model v3 for metric A and model v2 for metric B? Per-metric model assignment is mentioned in the UI (Step 17) but not in the scoring service architecture (Step 8).",
+            "Operational runbook for model drift: Step 24 mentions a model-drift runbook but no automated drift detection (PSI, KL divergence on score distributions) is built in Steps 6-8. The runbook will have no signals to act on.",
+            "Backpressure strategy when TimescaleDB is degraded: the ingestion buffer (Redis Streams) will fill indefinitely if writes are slow. No overflow eviction policy, no producer-side rate limiting, no operator alert on buffer depth."
+          ],
+          "security_risks": [
+            "Unauthenticated ingestion endpoint: explicitly flagged in Step 20 scope but never remediated in the plan. Any actor on the network can inject arbitrary metrics, poison anomaly scores, trigger false alerts, or exhaust DB storage. This is critical in a monitoring system where fake anomalies can mask real incidents.",
+            "API key auth with no rotation policy enforced by the system: Step 20 says 'rotation invalidates old key immediately' but no rotation schedule, no compromise detection (rate anomaly on a single key), and no key expiry TTL are specified. A compromised key is valid indefinitely until manually rotated.",
+            "RBAC designed in Step 20 but not wired in Steps 11/14-17: the API and UI are built without RBAC constraints. Retrofitting auth to 11 endpoints and 4 frontend pages after the fact is a high-risk change with incomplete test coverage.",
+            "Redis Streams with no auth/TLS in dev: `.env` secrets for dev often get committed. Redis without auth means any process on the Docker network can read or inject into the ingestion buffer.",
+            "Generic webhook outbound (Step 12) with no HMAC signing: outbound webhook payloads contain alert data. Receiving systems cannot verify payload integrity. Inbound webhook (n8n integration referenced in SAGE) also lacks HMAC verification.",
+            "MLflow model registry without artifact signing: a compromised MLflow instance or MITM on the registry endpoint can deliver malicious model weights. The scoring service loads and executes these weights with no integrity check.",
+            "Celery workers with implicit trust: Celery beat and workers communicate over Redis without task signing by default. An attacker with Redis access can inject arbitrary Celery tasks (including model retrain triggers or arbitrary Python execution via task payloads).",
+            "SBOM scan only on direct dependencies (Step 19): transitive dependency CVEs (the most common supply chain attack vector) are not explicitly covered. Syft produces the SBOM but the scan gate should use Grype or Trivy with a transitive-depth flag."
+          ],
+          "summary": "This is a technically ambitious plan with genuine breadth \u2014 24 steps, concrete acceptance criteria, appropriate technology choices, and a sensible dependency graph in most places. However, it has three architectural failures that would cause measurable production failures, not just technical debt. First, the 10x throughput gap between ingestion (100k/s) and scoring (10k/s) is baked into the design with no resolution \u2014 the scoring service will permanently lag the buffer. Second, the alert fingerprint in Step 9 references a cluster_id produced in Step 10, creating an unresolvable circular dependency. Third, Granger causality at the proposed scale is computationally intractable, and the 10-second acceptance criterion will never pass without fundamental algorithm changes. Compounding these are the unauthenticated ingestion write path (a security hole, not a gap), the LSTM nightly retraining window that conflicts with 150 Optuna trials, and the complete serialization of frontend development behind the entire ML pipeline. The plan reads like it was written by someone who knows the domain well but hasn't stress-tested the performance envelope or dependency ordering. Fixing the fingerprint design, the throughput architecture, and the Granger scalability strategy would bring this to a solid 70 for MVP scope. As written, it ships with a broken dedup fingerprint, an always-lagging scorer, and a security hole at the entry point.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "CRITICAL: Throughput mismatch \u2014 Step 5 targets 100k metrics/sec ingestion; Step 8 targets 10k scoring ops/sec. The scoring service is architecturally 10x slower than the feed it consumes. Redis Streams backpressure will spike indefinitely under load. No sampling, downsampling, or sharding strategy is defined to close this gap.",
+              "CRITICAL: Granger causality is O(n\u00b2) pairwise \u00d7 lag_orders. At 100 metrics and 30 lag orders: 9,900 pairs \u00d7 30 = 297,000 regressions per incident. The '< 10s for 100 metrics' acceptance criterion is not achievable in Python without precomputed stationarity checks, vectorized lag matrices, and parallel execution \u2014 none of which are specified. At 1,000 metrics this collapses entirely.",
+              "CRITICAL: Fingerprint collision in dedup engine (Step 9) uses `pattern_cluster_id` from DBSCAN clustering \u2014 but DBSCAN clustering is defined in Step 10 (root cause correlation), which depends on Step 9. Step 9 cannot use a cluster_id that Step 10 has not yet computed. This is a circular dependency disguised as a sequential one. The fingerprint design must be reconsidered without forward-referencing Step 10's output.",
+              "SEVERE: LSTM Autoencoder retraining in nightly 30-minute window (Step 7) is incompatible with Optuna 50 trials per model (150 total evaluations). Each LSTM trial on 7 days of data is minutes of compute. 150 trials = multiple hours, not 30 minutes. No GPU is provisioned in the infra plan. Either the tuning cadence or the nightly window constraint must be dropped.",
+              "SEVERE: The ingestion endpoint is explicitly called an 'unauthenticated write path' in Step 20, yet Step 5's design includes no auth. Auth is designed in Step 20 (security review) but never retrofitted back into Steps 5, 8, or 11. This means the system ships without ingestion auth and the security review produces a report, not a fix.",
+              "SEVERE: Granger causality requires stationarity. Infrastructure metrics exhibit trends, seasonality, and regime changes \u2014 all violations of stationarity. No ADF/KPSS testing, differencing, or detrending step is specified before Granger tests. Results will be statistically invalid for most real-world metric pairs.",
+              "MODERATE: Frontend steps (14\u201317) all block on Step 11 (API complete), which itself blocks on the entire backend + ML chain (Steps 5\u21927\u21928\u21929\u219210). No contract-first API mocking is specified. This serializes ~6 weeks of frontend work behind the full ML pipeline, destroying any parallelism benefit of the multi-step plan.",
+              "MODERATE: DBSCAN hyperparameters eps=0.3 and min_samples=3 are hardcoded without justification. The feature vector construction for DBSCAN is undefined \u2014 Step 10 says 'feature vectors' but never specifies what they contain or how they're normalized. eps=0.3 in an unspecified feature space is arbitrary and will produce poor clusters in practice.",
+              "MODERATE: No cold-start strategy for new metrics. A metric with < 7 days of history cannot produce a valid rolling training window. The IsolationForest fallback in Step 8 handles model unavailability but not new-metric bootstrapping. High-churn environments (K8s pods, ephemeral services) will consistently fail to score novel metrics.",
+              "MODERATE: Redis Streams provide at-least-once delivery. Step 5 specifies a write-ahead buffer but no idempotency key or deduplication at the TimescaleDB write layer. A scoring worker restart mid-batch will produce duplicate anomaly_events rows. TimescaleDB UPSERT strategy on (metric_id, timestamp) is not defined.",
+              "MODERATE: Step 13 (SAGE config) is wired independently and lists acceptance criteria that require the API from Step 11 \u2014 but Step 13 depends only on Step 1. The 'Coordinator pattern wires analyst \u2192 data_scientist \u2192 developer task chain' cannot be validated without the running API. The dependency graph is incorrect.",
+              "MODERATE: Alert routing conflict resolution is undefined. Step 12 specifies YAML routing rules (match on tags/severity \u2192 channel) but does not define behavior when multiple rules match: first-match, all-match, or priority-ranked. This will cause unpredictable multi-paging in production.",
+              "MINOR: Step 11 heading says 'REST + WebSocket API' but only SSE is implemented. WebSocket and SSE are not equivalent \u2014 bidirectional control is impossible over SSE. If the product description later requires interactive streaming (e.g., live threshold adjustment), this is a rework.",
+              "MINOR: Cardinality explosion from high-cardinality tags (pod_id, trace_id, request_id) is unaddressed. GIN index on tags in TimescaleDB will degrade severely at >100k unique tag combinations. No ingestion-time cardinality limits or label dropping rules are specified.",
+              "MINOR: Step 12 notification dispatcher has no circuit breaker for downstream channels. If PagerDuty is degraded, escalation timers will silently fail. No dead-letter queue or fallback channel is specified for notification failures."
+            ],
+            "suggestions": [
+              "Resolve the throughput gap in Steps 5/8 by defining explicit async scoring semantics: not every metric needs real-time scoring. Implement priority tiers \u2014 high-value metrics score every interval, long-tail metrics score every N intervals or on statistical deviation only. Document this in the PRD (Step 1) as a first-class design decision.",
+              "Replace Granger causality with Transfer Entropy or precomputed cross-correlation on sliding windows for scalability. If Granger is required, enforce a hard cap (e.g., top-50 metrics by anomaly frequency per incident) and use statsmodels vectorized API with joblib parallelization. Add stationarity testing (ADF) as a prerequisite gate.",
+              "Fix the fingerprint dependency inversion by removing `pattern_cluster_id` from the Step 9 fingerprint. Use `hash(metric_id, severity_bucket, value_bucket)` for initial dedup. Post-correlation, enrich alert records with cluster_id as a separate field. This removes the circular dependency and allows Steps 9 and 10 to be independent.",
+              "Separate nightly model refresh (load new version from registry) from weekly hyperparameter retuning (full Optuna run). Nightly: swap model weights from MLflow registry (< 2 min). Weekly: full 50-trial Optuna run on a dedicated worker, with GPU provisioned in Helm chart for that job only.",
+              "Add API contract mocking (Prism or MSW) in Step 2/11 to unblock frontend development from Step 14 onward. Frontend and backend development should be parallelizable from Step 12 onward, halving the critical path.",
+              "Define a cold-start policy in the data model (Step 3): metrics with < N observations use IsolationForest only, with a `cold_start: true` flag on anomaly events. Track metric age in a `metric_registry` table. This is a one-line schema addition that prevents undefined behavior for new metrics.",
+              "Add idempotency to TimescaleDB writes: use `INSERT ... ON CONFLICT (metric_id, timestamp) DO NOTHING` as the default write strategy. Document this in Step 4 and test it explicitly in Step 5's acceptance criteria.",
+              "Add ingestion authentication in Step 5, not Step 20. Prometheus remote_write supports basic auth and TLS. OTLP supports mTLS. Even a shared bearer token per tenant is better than none. The security review (Step 20) should verify the implementation, not originate it.",
+              "Add a `metric_registry` table to the data model (Step 3) tracking metric_name, first_seen, last_seen, cardinality_count, and owner_tags. This enables cold-start detection, cardinality enforcement, and per-metric model assignment in the UI (Step 17).",
+              "Specify circuit breaker (tenacity or custom) in Step 12 for all notification channels. Define a dead-letter queue (Redis or DB table) for failed notifications with retry policy and ops alert on DLQ depth.",
+              "Add a load test step (k6 or Locust) validating 100k metrics/sec ingestion and 10k scoring ops/sec under sustained load before Step 23 (system test). The system test as written uses 50 metrics \u2014 this does not validate the core SLAs."
+            ],
+            "missing": [
+              "Disaster recovery plan: no TimescaleDB backup strategy (pg_dump schedule, WAL archiving to S3, point-in-time recovery). Losing anomaly history for a monitoring platform is operationally catastrophic.",
+              "Multi-tenancy / team isolation: no tenant scoping for metrics, alerts, or models. An infrastructure monitoring platform serving multiple teams with no data isolation is a non-starter for enterprise use.",
+              "Load test / performance validation step: the 100k/s and 10k/s SLA targets appear only in acceptance criteria with no dedicated load test plan to validate them against real hardware.",
+              "Metric cardinality enforcement: no ingestion-time limits on tag cardinality, no label dropping rules, no cardinality budget per metric family.",
+              "Model artifact integrity verification: no checksum or signature verification when loading model weights from MLflow registry. Model poisoning attack surface unaddressed.",
+              "SLO definitions and error budgets: the PRD step mentions SLA targets but no error budget policy (what happens when false positive rate exceeds target? who owns the SLO?)",
+              "Data retention for anomaly events in cold tier: the S3/Parquet cold tier is defined for raw metrics but anomaly_events, alert_records, and correlation_edges retention in cold storage is unspecified.",
+              "GDPR / data residency: infrastructure metrics can contain PII (usernames in tags, email addresses in alert metadata). No data classification or regional storage policy.",
+              "Stationarity preprocessing pipeline: required before Granger causality but absent from the entire plan.",
+              "MLflow model serving / model API versioning: how does the scoring service know to use model v3 for metric A and model v2 for metric B? Per-metric model assignment is mentioned in the UI (Step 17) but not in the scoring service architecture (Step 8).",
+              "Operational runbook for model drift: Step 24 mentions a model-drift runbook but no automated drift detection (PSI, KL divergence on score distributions) is built in Steps 6-8. The runbook will have no signals to act on.",
+              "Backpressure strategy when TimescaleDB is degraded: the ingestion buffer (Redis Streams) will fill indefinitely if writes are slow. No overflow eviction policy, no producer-side rate limiting, no operator alert on buffer depth."
+            ],
+            "security_risks": [
+              "Unauthenticated ingestion endpoint: explicitly flagged in Step 20 scope but never remediated in the plan. Any actor on the network can inject arbitrary metrics, poison anomaly scores, trigger false alerts, or exhaust DB storage. This is critical in a monitoring system where fake anomalies can mask real incidents.",
+              "API key auth with no rotation policy enforced by the system: Step 20 says 'rotation invalidates old key immediately' but no rotation schedule, no compromise detection (rate anomaly on a single key), and no key expiry TTL are specified. A compromised key is valid indefinitely until manually rotated.",
+              "RBAC designed in Step 20 but not wired in Steps 11/14-17: the API and UI are built without RBAC constraints. Retrofitting auth to 11 endpoints and 4 frontend pages after the fact is a high-risk change with incomplete test coverage.",
+              "Redis Streams with no auth/TLS in dev: `.env` secrets for dev often get committed. Redis without auth means any process on the Docker network can read or inject into the ingestion buffer.",
+              "Generic webhook outbound (Step 12) with no HMAC signing: outbound webhook payloads contain alert data. Receiving systems cannot verify payload integrity. Inbound webhook (n8n integration referenced in SAGE) also lacks HMAC verification.",
+              "MLflow model registry without artifact signing: a compromised MLflow instance or MITM on the registry endpoint can deliver malicious model weights. The scoring service loads and executes these weights with no integrity check.",
+              "Celery workers with implicit trust: Celery beat and workers communicate over Redis without task signing by default. An attacker with Redis access can inject arbitrary Celery tasks (including model retrain triggers or arbitrary Python execution via task payloads).",
+              "SBOM scan only on direct dependencies (Step 19): transitive dependency CVEs (the most common supply chain attack vector) are not explicitly covered. Syft produces the SBOM but the scan gate should use Grype or Trivy with a transitive-depth flag."
+            ],
+            "summary": "This is a technically ambitious plan with genuine breadth \u2014 24 steps, concrete acceptance criteria, appropriate technology choices, and a sensible dependency graph in most places. However, it has three architectural failures that would cause measurable production failures, not just technical debt. First, the 10x throughput gap between ingestion (100k/s) and scoring (10k/s) is baked into the design with no resolution \u2014 the scoring service will permanently lag the buffer. Second, the alert fingerprint in Step 9 references a cluster_id produced in Step 10, creating an unresolvable circular dependency. Third, Granger causality at the proposed scale is computationally intractable, and the 10-second acceptance criterion will never pass without fundamental algorithm changes. Compounding these are the unauthenticated ingestion write path (a security hole, not a gap), the LSTM nightly retraining window that conflicts with 150 Optuna trials, and the complete serialization of frontend development behind the entire ML pipeline. The plan reads like it was written by someone who knows the domain well but hasn't stress-tested the performance envelope or dependency ordering. Fixing the fingerprint design, the throughput architecture, and the Granger scalability strategy would bring this to a solid 70 for MVP scope. As written, it ships with a broken dedup fingerprint, an always-lagging scorer, and a security hole at the entry point.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T08:57:53.018040+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 123.84,
+    "critic_plan": 144.55
+  }
+}

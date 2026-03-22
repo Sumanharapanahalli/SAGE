@@ -1,0 +1,306 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the no-code form builder market: competitors (Typeform,
+      Jotform, Tally, Google Forms, Formstack), pricing tiers, feature gaps, target
+      segments (SMBs, agencies, SaaS teams), and positioning opportunities focusing
+      on payment + conditional logic + webhook depth.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers at least 6 tools across 10+ feature dimensions
+    - TAM/SAM/SOM estimates with cited sources
+    - Differentiation narrative identifies at least 3 defensible advantages
+    - Go-to-market segment priority list ranked by acquisition cost vs LTV
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements: user personas (form creator, form
+      respondent, team admin), core user stories, process flows for form creation
+      → publish → collect responses → trigger webhooks → view analytics, and ROI model
+      for target customers.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 40 user stories across all personas in standard format (As a... I want...
+      So that...)
+    - Process flows cover all 5 core journeys as swim-lane diagrams
+    - Acceptance criteria defined for every user story
+    - ROI model quantifies time-saved vs manual form tooling for target customer
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on: []
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (GDPR/CCPA), and payment processing liability clauses. Identify third-party
+      payment processor (Stripe) licensing requirements and data residency obligations
+      for file uploads.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers acceptable use, IP ownership of form data, and liability limits
+    - Privacy policy enumerates all data collected (form responses, file uploads,
+      payment metadata)
+    - DPA includes data retention schedules and deletion procedures
+    - PCI-DSS scope note confirms cardholder data never touches form_builder servers
+      (Stripe.js only)
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on: []
+  FINANCIAL:
+    description: Build pricing model (freemium + tiered SaaS), cost structure (infra,
+      Stripe fees, storage, support), unit economics (CAC, LTV, payback), and 3-year
+      P&L projection. Define feature gating per tier (response limits, file storage
+      quota, payment access, analytics depth).
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Feature gate matrix maps every feature to its minimum tier
+    - 3-year P&L model with monthly granularity in Year 1
+    - Break-even month identified with sensitivity analysis on churn rate
+    - Stripe fee impact modeled per tier based on expected payment volume
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: 'Write the Product Requirements Document covering all modules: drag-and-drop
+      form builder, field types (20+), conditional logic engine, file upload fields,
+      payment fields (one-time and recurring), webhook configuration UI, analytics
+      dashboard, embed widget generator, team workspaces, and response inbox. Define
+      success metrics and v1 scope.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all 10 modules with functional and non-functional requirements
+    - MoSCoW prioritization applied — v1 Must-Haves clearly bounded
+    - Success metrics have baseline targets and measurement methodology
+    - API contract requirements stated for embed widget (iframe and JS snippet)
+    depends_on:
+    - 1
+    - 2
+  UX_DESIGN:
+    description: 'Conduct user research synthesis from competitive analysis, then
+      produce wireframes for: builder canvas (drag-drop with field palette), logic
+      rule editor (if/then visual builder), payment field config, webhook setup UI,
+      analytics dashboard, embed code generator, and response inbox. Include accessibility
+      audit checklist (WCAG 2.1 AA).'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 7 key screens at mid-fidelity
+    - Interactive prototype demonstrates full form creation → publish → embed flow
+    - Accessibility audit checklist completed with no critical (Level A) violations
+    - Design system documents color tokens, typography scale, spacing grid, and component
+      states
+    - Mobile-responsive layouts defined for form respondent-facing views
+    depends_on:
+    - 2
+    - 5
+  DATABASE:
+    description: 'Design PostgreSQL schema for: workspaces, users, forms (versioned),
+      fields (polymorphic with JSON config), conditional logic rules, responses, file_uploads,
+      payment_transactions, webhooks, webhook_delivery_logs, and analytics_events.
+      Include index strategy, soft-delete pattern, and row-level security for multi-tenancy.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all 14 tables with relationships and cardinality
+    - Row-level security policies isolate workspace data
+    - Field config stored as JSONB with schema validation at application layer
+    - Indexes defined for all foreign keys and high-cardinality filter columns
+    - Migration runs cleanly on Postgres 15+ with rollback script
+    depends_on:
+    - 5
+  API:
+    description: 'Design OpenAPI 3.1 spec for all REST endpoints: workspace CRUD,
+      form CRUD with versioning, field management, logic rule CRUD, response submission
+      (public), file upload pre-signed URL generation, payment intent creation, webhook
+      CRUD + manual retry, analytics query endpoints, and embed token generation.
+      Define auth (JWT + API key) and rate limiting contracts.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against OAS 3.1 validator
+    - Every endpoint has request/response schemas with examples
+    - Error response codes documented (400, 401, 403, 404, 409, 422, 429, 500)
+    - Webhook delivery payload schema versioned (v1) and documented
+    - Embed token endpoint documented with CORS and iframe sandbox attributes
+    depends_on:
+    - 5
+    - 7
+  CONFIG:
+    description: 'Set up the form_builder solution SAGE configuration: project.yaml
+      (domain, active_modules, theme), prompts.yaml (analyst, developer, monitor roles
+      with form-builder domain context), tasks.yaml (task types: form_analysis, webhook_debug,
+      payment_reconciliation, analytics_report). Configure multi-agent coordinator
+      pattern for the AI-assisted form suggestion feature.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml validates against SAGE schema with make test-solution PROJECT=form_builder
+    - prompts.yaml defines analyst, developer, and monitor roles with form-builder
+      system prompts
+    - tasks.yaml registers all 4 domain task types with required fields
+    - Coordinator pattern configured for AI form suggestion with specialist sub-agents
+    depends_on:
+    - 5
+  BACKEND:
+    description: 'Implement FastAPI backend core: auth module (JWT + API key), workspace
+      and user management, form CRUD with optimistic locking on versions, field management
+      with polymorphic JSONB config, and the conditional logic rule engine (evaluate
+      if/then trees against response values at submission time).'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT auth with refresh token rotation; API key hashed in DB
+    - Form version increment on every field/logic change with optimistic lock check
+    - Logic engine correctly evaluates nested AND/OR trees with 10+ operator types
+    - All endpoints return typed Pydantic response models
+    - Startup connects to Postgres and runs pending Alembic migrations
+    depends_on:
+    - 7
+    - 8
+  FRONTEND:
+    description: 'Build the form builder canvas: React drag-and-drop editor (dnd-kit)
+      with field palette (20+ field types: short text, long text, email, phone, number,
+      dropdown, multi-select, checkbox, radio, date, time, file upload, payment, rating,
+      signature, NPS, matrix, image choice, section break, statement). Field config
+      panel slides in on selection. Real-time preview pane.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 20+ field types render in palette and are draggable onto canvas
+    - Field reorder via drag-and-drop updates form schema without page reload
+    - Config panel shows correct options per field type (no cross-contamination)
+    - Real-time preview reflects field changes within 100ms
+    - Undo/redo (Ctrl+Z/Y) works for last 50 actions
+    depends_on:
+    - 6
+    - 8
+  SECURITY:
+    description: 'Perform threat model (STRIDE) for the form builder: identify threats
+      to public submission endpoint (spam, injection, SSRF via webhooks, file upload
+      abuse), payment flow (replay attacks), embed tokens (theft, abuse), and multi-tenant
+      data isolation. Produce mitigations list and penetration test plan.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE analysis covers all 7 threat areas with likelihood and impact ratings
+    - SSRF mitigation defined for webhook URLs (block private IP ranges, require HTTPS)
+    - 'File upload abuse mitigations: magic byte check, AV scan, per-workspace quota'
+    - Penetration test plan covers OWASP Top 10 + business logic abuse cases
+    - Security controls matrix maps each threat to implemented control
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 15
+  COMPLIANCE:
+    description: 'Produce SOC 2 Type I readiness artifacts: security policy documentation,
+      access control matrix, encryption-at-rest and in-transit documentation, audit
+      log completeness review, incident response procedure, vendor risk assessment
+      (Stripe, AWS, Redis), and control mapping to SOC 2 Trust Services Criteria.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Control mapping covers all applicable SOC 2 Common Criteria with evidence pointers
+    - Encryption documentation confirms TLS 1.2+ in transit and AES-256 at rest
+    - Access control matrix documents all system roles and permission boundaries
+    - Incident response plan includes detection, containment, notification, and post-mortem
+      steps
+    - Vendor risk assessment completed for all 4 critical vendors with risk ratings
+    depends_on:
+    - 21
+  TESTS:
+    description: 'Write unit and integration tests for: logic engine (condition evaluation
+      with all operator types and nested AND/OR), response submission pipeline (validation,
+      file handling, payment flow), webhook delivery worker (retry logic, signature
+      verification), analytics aggregation, and embed token validation.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Logic engine tests cover all 9 operators × 5 field types × AND/OR nesting
+    - Submission pipeline tests cover happy path, file rejection, payment failure,
+      rate limit
+    - Webhook retry tests verify all 5 retry attempts with correct backoff timing
+    - Test coverage ≥ 90% on src/ (measured by pytest-cov)
+    - All tests pass in under 60 seconds in CI
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  QA:
+    description: 'Design and execute manual QA test plan covering: form builder usability
+      (20 field types, drag-and-drop, undo/redo), conditional logic correctness across
+      15 edge cases, file upload across all allowed types and sizes, end-to-end Stripe
+      payment (test mode), webhook delivery and retry, analytics accuracy, and embed
+      rendering across 4 browsers.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All 120 test cases executed with pass/fail/blocked status
+    - Zero P0 (data loss, payment error) bugs in final report
+    - 'Conditional logic edge cases tested: circular-safe, multi-condition, skip-to-page'
+    - Embed renders correctly in all 4 browsers with no console errors
+    - 'Payment flow tested: success, declined card, 3DS required scenarios'
+    depends_on:
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite and load tests: full flow (create
+      form → add logic → add payment → publish → submit response → verify webhook
+      → check analytics → export CSV), load test public submission endpoint at 1000
+      concurrent submissions, and chaos test webhook worker (kill worker mid-retry,
+      verify recovery).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Playwright E2E suite covers full happy-path flow across 3 browsers
+    - 'k6 load test: p50 < 300ms, p99 < 1000ms at 1000 concurrent users'
+    - Zero data loss on 10,000 concurrent submissions (all persisted to DB)
+    - Webhook delivery rate ≥ 99.5% over 1-hour sustained load
+    - Worker recovers from kill signal and re-queues pending deliveries within 30
+      seconds
+    depends_on:
+    - 23
+    - 24
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): lint → type-check → unit
+      tests → integration tests → Docker build → staging deploy → E2E tests → production
+      deploy with blue-green. Configure observability: Prometheus metrics, Grafana
+      dashboards (submission rate, webhook delivery rate, p99 latency, error rate),
+      PagerDuty alerting, and structured JSON logging.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs green on every PR with all test stages passing
+    - Blue-green deploy completes with zero downtime (health check verified)
+    - Grafana dashboard has panels for all 4 key alerts
+    - PagerDuty alert fires within 2 minutes of error rate threshold breach in staging
+    - OpenTelemetry trace spans cover form submission → DB write → webhook dispatch
+      chain
+    depends_on:
+    - 23
+    - 25
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response (form submission outage,
+      webhook delivery degradation, Stripe integration failure, file upload unavailable),
+      SLA definitions (99.9% uptime, <5 min webhook delivery), on-call rotation setup,
+      capacity planning model (storage growth per workspace, Celery worker scaling
+      rules), and backup/restore procedures.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Each runbook has: detection signals, immediate triage steps, escalation path,
+      resolution steps, post-mortem template'
+    - SLA document defines measurement methodology and exclusions
+    - Capacity model includes 12-month projection at 3 growth scenarios (base/bull/bear)
+    - DB backup restore tested and documented with RTO < 1 hour, RPO < 5 minutes
+    - On-call rotation configured in PagerDuty with escalation policy
+    depends_on:
+    - 26
+  DOCS:
+    description: 'Write developer documentation: API reference (auto-generated from
+      OpenAPI spec + enriched examples), webhook integration guide (with HMAC verification
+      code samples in Python, Node, PHP, Ruby), embed guide (iframe and JS SDK), analytics
+      API guide, and getting-started tutorial (build a contact form with payment in
+      10 minutes).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Every API endpoint has at least one working curl example
+    - Webhook HMAC verification shown in 5 languages with runnable samples
+    - Embed guide covers both iframe snippet and JS SDK with live CodeSandbox demos
+    - Getting-started tutorial validated by a developer unfamiliar with the system
+    - Docs site search indexes all pages correctly
+    depends_on:
+    - 8
+    - 13
+    - 15

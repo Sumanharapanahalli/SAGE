@@ -1,0 +1,1146 @@
+{
+  "run_id": "306332f3-6871-438d-86f8-8e8f349baba5",
+  "status": {
+    "run_id": "306332f3-6871-438d-86f8-8e8f349baba5",
+    "solution_name": "clinical_trial_manager",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-21T22:51:18.691577+00:00",
+    "updated_at": "2026-03-21T22:57:02.959827+00:00",
+    "product_description": "Clinical trial management system for tracking patient enrollment, randomization, adverse events, and regulatory submissions. 21 CFR Part 11 compliant electronic signatures.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define clinical trial management system requirements: patient enrollment workflows, randomization algorithms, adverse event (AE) capture forms, regulatory submission pipelines, and 21 CFR Part 11 electronic signature requirements. Produce a Business Requirements Document (BRD) with user stories for each stakeholder role: Principal Investigator, Study Coordinator, Regulatory Affairs, Data Manager, Sponsor.",
+        "payload": {
+          "solution_name": "clinical_trial_manager",
+          "stakeholders": [
+            "Principal Investigator",
+            "Study Coordinator",
+            "Regulatory Affairs",
+            "Data Manager",
+            "Sponsor",
+            "IRB"
+          ],
+          "domains": [
+            "patient_enrollment",
+            "randomization",
+            "adverse_events",
+            "regulatory_submissions",
+            "21_cfr_part_11"
+          ],
+          "standards": [
+            "21 CFR Part 11",
+            "ICH E6 GCP",
+            "HIPAA",
+            "HITECH",
+            "HL7 FHIR R4"
+          ],
+          "outputs": [
+            "BRD",
+            "user_stories",
+            "process_flow_diagrams",
+            "data_dictionary"
+          ]
+        },
+        "acceptance_criteria": [
+          "BRD covers all five core modules: enrollment, randomization, AE tracking, regulatory submissions, e-signatures",
+          "User stories written for each stakeholder role with acceptance criteria",
+          "Process flow diagrams produced for enrollment and AE reporting workflows",
+          "21 CFR Part 11 requirements mapped to specific system features (audit trail, e-signature, access controls)",
+          "HIPAA data elements identified and tagged in data dictionary"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "REGULATORY",
+        "description": "Produce a regulatory standards mapping document for 21 CFR Part 11, ICH E6 GCP, HIPAA, HITECH, and HL7 FHIR R4. Map each standard's requirements to system controls. Identify predicate rule applicability. Create a Regulatory Impact Assessment for the system as a software-as-a-medical-device (SaMD) candidate and determine FDA 510(k) / De Novo pathway applicability.",
+        "payload": {
+          "standards": [
+            "21 CFR Part 11",
+            "21 CFR Part 50",
+            "21 CFR Part 56",
+            "ICH E6(R2)",
+            "HIPAA 45 CFR",
+            "HITECH",
+            "HL7 FHIR R4"
+          ],
+          "outputs": [
+            "standards_traceability_matrix",
+            "regulatory_impact_assessment",
+            "predicate_rule_analysis"
+          ],
+          "hitl_gate": true
+        },
+        "acceptance_criteria": [
+          "Each 21 CFR Part 11 sub-requirement (11.10, 11.30, 11.50, 11.70, 11.100, 11.200, 11.300) mapped to a system control",
+          "HIPAA Technical Safeguards (access control, audit controls, integrity, transmission security) mapped to architecture decisions",
+          "HL7 FHIR R4 resource types identified for each clinical data entity (Patient, Encounter, AdverseEvent, ResearchStudy)",
+          "Regulatory impact assessment signed off by regulatory_specialist",
+          "De Novo / 510(k) pathway decision documented with rationale",
+          "HIPAA risk assessment complete",
+          "BAA template prepared"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 3,
+        "task_type": "SECURITY",
+        "description": "Produce a threat model (STRIDE) and security architecture plan for the clinical trial management system. Cover PHI data flows, e-signature integrity, session management, role-based access control (RBAC), audit trail immutability, and HL7 FHIR API security. Generate a Software Bill of Materials (SBOM) template and penetration test plan.",
+        "payload": {
+          "methodology": "STRIDE",
+          "phi_data_flows": true,
+          "components": [
+            "e-signature-service",
+            "audit-trail-db",
+            "fhir-api",
+            "randomization-engine",
+            "submission-portal"
+          ],
+          "outputs": [
+            "threat_model",
+            "security_architecture_doc",
+            "sbom_template",
+            "pentest_plan"
+          ],
+          "compliance_targets": [
+            "HIPAA_Technical_Safeguards",
+            "21_CFR_Part_11_access_controls",
+            "NIST_SP_800-66"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all six threat categories for each system component",
+          "PHI data flow diagram produced and all PHI-at-rest and PHI-in-transit controls documented",
+          "RBAC matrix defined: roles (PI, Coordinator, Regulatory, DM, Sponsor, Admin) \u00d7 permissions (read, write, approve, delete, sign)",
+          "Audit trail immutability mechanism specified (append-only log, cryptographic chaining)",
+          "SBOM template populated with all third-party dependencies and license classifications",
+          "Penetration test plan covers OWASP Top 10 + HIPAA-specific attack vectors",
+          "PHI encryption at rest and in transit",
+          "Access audit logging enabled"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 4,
+        "task_type": "COMPLIANCE",
+        "description": "Create the Design History File (DHF) skeleton, risk matrix (ISO 14971-style adapted for SaMD), V&V protocol templates, and a traceability matrix linking BRD requirements \u2192 design controls \u2192 test cases. Produce a 21 CFR Part 11 compliance checklist as a living document updated with each implementation step.",
+        "payload": {
+          "outputs": [
+            "DHF_skeleton",
+            "risk_matrix",
+            "vv_protocol_templates",
+            "traceability_matrix",
+            "21_cfr_part_11_checklist"
+          ],
+          "risk_standard": "ISO 14971 adapted for SaMD",
+          "traceability_levels": [
+            "BRD",
+            "design_controls",
+            "code",
+            "test_cases"
+          ],
+          "hitl_gate": true
+        },
+        "acceptance_criteria": [
+          "DHF skeleton includes all required sections: design inputs, design outputs, design review records, design verification, design validation, design transfer, design changes",
+          "Risk matrix covers at least 20 identified hazards with severity \u00d7 probability ratings and mitigation controls",
+          "Traceability matrix links every BRD user story to at least one design control and one test case",
+          "V&V protocol templates cover IQ (Installation Qualification), OQ (Operational Qualification), PQ (Performance Qualification)",
+          "21 CFR Part 11 checklist is structured as a pass/fail audit artifact"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "LEGAL",
+        "description": "Draft terms of service, data processing agreements (DPA), privacy policy (HIPAA Notice of Privacy Practices), BAA template for sponsor/site relationships, and software license audit. Classify all open-source dependencies for GPL/LGPL/MIT compatibility with commercial clinical software distribution.",
+        "payload": {
+          "outputs": [
+            "terms_of_service",
+            "privacy_policy",
+            "hipaa_npp",
+            "baa_template",
+            "dpa_template",
+            "license_audit"
+          ],
+          "jurisdiction": "US_federal_plus_state",
+          "hipaa_covered_entity": true,
+          "open_source_scan": true
+        },
+        "acceptance_criteria": [
+          "Privacy Policy satisfies HIPAA Notice of Privacy Practices requirements (45 CFR 164.520)",
+          "BAA template covers all 18 HIPAA identifiers and includes breach notification obligations",
+          "DPA template complies with HITECH amendments to HIPAA",
+          "License audit clears all dependencies \u2014 no GPL-licensed code in proprietary modules",
+          "Terms of service include acceptable use, data retention, liability limitation, and dispute resolution clauses"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 6,
+        "task_type": "UX_DESIGN",
+        "description": "Design wireframes and interaction flows for all five core modules: (1) Patient Enrollment dashboard with eligibility screening, (2) Randomization workflow UI with blinding controls, (3) Adverse Event reporting form (MedDRA-coded, FDA-3500A format), (4) Regulatory submission tracker, (5) 21 CFR Part 11 electronic signature dialog. Conduct accessibility audit per WCAG 2.1 AA.",
+        "payload": {
+          "modules": [
+            "enrollment",
+            "randomization",
+            "adverse_events",
+            "regulatory_submissions",
+            "e_signature"
+          ],
+          "design_tool": "Figma",
+          "accessibility_standard": "WCAG_2.1_AA",
+          "clinical_forms": [
+            "FDA-3500A",
+            "MedDRA_coding",
+            "eligibility_checklist"
+          ],
+          "outputs": [
+            "wireframes",
+            "interaction_flows",
+            "accessibility_audit_report",
+            "design_system"
+          ]
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all five modules with mobile-responsive layouts",
+          "E-signature dialog clearly presents signer identity, meaning of signature, and date/time per 21 CFR 11.50",
+          "AE reporting form maps to FDA-3500A fields and includes MedDRA code lookup",
+          "Accessibility audit shows zero WCAG 2.1 AA violations in core patient-facing flows",
+          "Design system defined with consistent component library (forms, tables, status badges, approval widgets)"
+        ],
+        "depends_on": [
+          1,
+          3
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 7,
+        "task_type": "DATABASE",
+        "description": "Design the PostgreSQL database schema for: patients (PHI-compliant, encrypted PII columns), trials (protocol, arms, sites), randomization (allocation table, blinding keys, stratification factors), adverse events (MedDRA hierarchy, causality, severity), regulatory submissions (submission type, status, attachments), audit_log (append-only, cryptographic hash chain), and electronic_signatures (signer, timestamp, signature_meaning, certificate). Include FHIR R4 resource mapping views.",
+        "payload": {
+          "database": "PostgreSQL 16",
+          "encryption": "column-level AES-256 for PHI fields via pgcrypto",
+          "audit_log_strategy": "append-only table with SHA-256 chaining",
+          "fhir_mappings": [
+            "Patient",
+            "ResearchStudy",
+            "ResearchSubject",
+            "AdverseEvent",
+            "Encounter"
+          ],
+          "migrations_tool": "Alembic",
+          "outputs": [
+            "ERD",
+            "migration_scripts",
+            "seed_data",
+            "fhir_mapping_views"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD covers all six core entity groups with proper normalization (3NF minimum)",
+          "PHI columns (name, DOB, SSN, MRN) use column-level encryption \u2014 plaintext never stored",
+          "audit_log table has no UPDATE/DELETE permissions at database level; triggers enforce append-only",
+          "Audit log records include: event_type, user_id, timestamp, entity_type, entity_id, old_value_hash, new_value_hash, chain_hash",
+          "Electronic signature table stores: signer_id, signed_at (UTC), signature_meaning, record_hash, certificate_thumbprint",
+          "Alembic migration scripts run cleanly on fresh PostgreSQL 16 instance"
+        ],
+        "depends_on": [
+          4,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "CONFIG",
+        "description": "Set up the project scaffold: Python FastAPI backend with SQLAlchemy ORM, React 18 + TypeScript frontend, Docker Compose for local dev (PostgreSQL, Redis for session management, MinIO for document storage), environment configuration for dev/staging/prod, pre-commit hooks (bandit security scan, mypy type checking, ruff linting), and CI/CD pipeline skeleton (GitHub Actions).",
+        "payload": {
+          "backend_stack": "Python 3.12 + FastAPI + SQLAlchemy 2.0 + Alembic + Pydantic v2",
+          "frontend_stack": "React 18 + TypeScript + Vite + TanStack Query + React Hook Form + Zod",
+          "infrastructure": "Docker Compose (PostgreSQL 16, Redis 7, MinIO)",
+          "security_tools": [
+            "bandit",
+            "mypy",
+            "ruff",
+            "trivy_image_scan"
+          ],
+          "ci_cd": "GitHub Actions",
+          "outputs": [
+            "repo_structure",
+            "docker_compose.yml",
+            "github_actions_workflows",
+            "pre_commit_config"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker compose up brings all services healthy within 60 seconds",
+          "Pre-commit hooks pass on initial commit (bandit, mypy, ruff all green)",
+          "GitHub Actions workflow runs on PR: lint \u2192 type-check \u2192 test \u2192 security-scan",
+          "Environment variable schema documented with required vs optional for each environment tier",
+          "MinIO bucket policies enforce HIPAA-compliant access controls for document storage"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement the Patient Enrollment service: REST API endpoints for subject screening (eligibility criteria evaluation), enrollment confirmation, site assignment, and protocol arm assignment. Implement FHIR R4 ResearchSubject resource endpoints. All PHI access writes to audit_log. Implement pagination, filtering, and export (CSV/PDF) for enrollment reports.",
+        "payload": {
+          "endpoints": [
+            "POST /api/v1/subjects/screen",
+            "POST /api/v1/subjects/enroll",
+            "GET /api/v1/subjects/{id}",
+            "GET /api/v1/trials/{trial_id}/subjects",
+            "GET /api/v1/fhir/ResearchSubject/{id}",
+            "GET /api/v1/trials/{trial_id}/enrollment-report"
+          ],
+          "fhir_resources": [
+            "ResearchSubject",
+            "Patient"
+          ],
+          "audit_log_required": true,
+          "export_formats": [
+            "CSV",
+            "PDF"
+          ]
+        },
+        "acceptance_criteria": [
+          "POST /screen returns eligibility pass/fail with per-criterion breakdown",
+          "POST /enroll validates all required fields, creates audit_log entry, returns 201 with subject ID",
+          "All PHI fields returned from GET endpoints are role-filtered (Sponsor cannot see PII)",
+          "FHIR ResearchSubject endpoint validates against FHIR R4 schema and returns proper OperationOutcome on error",
+          "Enrollment report export produces audit-ready CSV with all required fields",
+          "100% of PHI-touching endpoints have audit log coverage verified by integration test"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement the Randomization Engine: support for simple, stratified, and block randomization algorithms. Maintain allocation concealment (sealed envelope equivalent). Implement unblinding workflows with dual-approval requirement and mandatory audit trail. Expose FHIR R4 ResearchStudy arm assignment. Implement randomization list generation, site-level allocation tracking, and balance reporting.",
+        "payload": {
+          "algorithms": [
+            "simple_random",
+            "stratified_block",
+            "minimization"
+          ],
+          "allocation_concealment": true,
+          "unblinding_workflow": "dual_approval_required",
+          "audit_trail": "every_allocation_logged",
+          "endpoints": [
+            "POST /api/v1/trials/{id}/randomize/{subject_id}",
+            "GET /api/v1/trials/{id}/allocation-balance",
+            "POST /api/v1/trials/{id}/unblind-request",
+            "POST /api/v1/trials/{id}/unblind-approve"
+          ]
+        },
+        "acceptance_criteria": [
+          "Stratified block randomization produces statistically balanced arm assignments verified by chi-square test",
+          "Allocation table is write-once: no record can be modified post-assignment (DB constraint + service layer check)",
+          "Unblinding requires two distinct approvers with e-signatures; audit_log captures both approvals",
+          "Randomization list can be pre-generated, sealed, and revealed only at unblinding",
+          "Balance report shows arm allocation counts per site and overall deviation percentage"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement the Adverse Event (AE) reporting service: structured AE capture (MedDRA PT/SOC coding, causality assessment, severity grading per CTCAE v5.0), SAE expedited reporting workflow (15-day FDA alert), follow-up AE updates, signal detection query interface, and FHIR R4 AdverseEvent resource endpoints. Integrate MedDRA terminology lookup via UMLS API.",
+        "payload": {
+          "ae_classification": [
+            "MedDRA_PT",
+            "MedDRA_SOC",
+            "CTCAE_v5"
+          ],
+          "sae_reporting": "15_day_fda_expedited",
+          "fhir_resource": "AdverseEvent",
+          "meddra_source": "UMLS_API",
+          "endpoints": [
+            "POST /api/v1/adverse-events",
+            "PUT /api/v1/adverse-events/{id}/followup",
+            "POST /api/v1/adverse-events/{id}/submit-sae",
+            "GET /api/v1/fhir/AdverseEvent/{id}",
+            "GET /api/v1/trials/{id}/ae-signal-query"
+          ]
+        },
+        "acceptance_criteria": [
+          "AE form captures all FDA-3500A required fields",
+          "MedDRA lookup returns PT with SOC hierarchy within 2 seconds",
+          "SAE workflow auto-triggers 15-day countdown and sends email notification to Regulatory role at T+0, T+10",
+          "FHIR AdverseEvent validates against R4 schema",
+          "Signal detection query supports frequency threshold filtering across AE categories",
+          "Every AE create/update produces an immutable audit_log entry with before/after field hashes"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement the 21 CFR Part 11 Electronic Signature service: biometric or non-biometric e-signature capture (username + password two-factor confirmation), signature meaning attribution, certificate-based signature binding, signature manifest per signed record, and signature verification endpoint. Integrate with PKI infrastructure for certificate issuance and revocation check. Support signature delegation and counter-signature workflows.",
+        "payload": {
+          "signature_type": "non_biometric_21_cfr_11",
+          "factors": [
+            "password",
+            "unique_userid"
+          ],
+          "signature_binding": [
+            "record_hash_SHA256",
+            "signer_id",
+            "timestamp_UTC",
+            "signature_meaning"
+          ],
+          "pki_integration": "self_hosted_PKI_or_third_party",
+          "endpoints": [
+            "POST /api/v1/signatures/sign",
+            "GET /api/v1/signatures/{record_id}/manifest",
+            "POST /api/v1/signatures/verify",
+            "POST /api/v1/signatures/counter-sign"
+          ]
+        },
+        "acceptance_criteria": [
+          "E-signature captures: signer identity (unique user ID), date/time (UTC), signature meaning (e.g., 'I approve this AE report') per 21 CFR 11.50",
+          "Signature bound to SHA-256 hash of the signed record \u2014 tamper detection verified by test",
+          "Two-factor authentication enforced at signing: password re-entry + system-verified user ID",
+          "Signature manifest is append-only and returns full chain for any record",
+          "Verification endpoint returns VALID/INVALID with tamper evidence if record was modified post-signature",
+          "Audit log captures every signature attempt (including failed authentication attempts) per 21 CFR 11.10(e)"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement the Regulatory Submissions module: track IND, NDA, BLA, and IDE submission packages; manage document version control (21 CFR Part 11 compliant); support eCTD format export; integrate SAE reporting to FDA MedWatch; provide submission status tracking, review cycle management, and HL7 FHIR R4 composition export for regulatory documents.",
+        "payload": {
+          "submission_types": [
+            "IND",
+            "NDA",
+            "BLA",
+            "IDE",
+            "SAE_MedWatch",
+            "Annual_Report"
+          ],
+          "document_format": "eCTD_v3.2.2",
+          "storage": "MinIO_versioned_buckets",
+          "fhir_export": "Composition_resource",
+          "endpoints": [
+            "POST /api/v1/submissions",
+            "POST /api/v1/submissions/{id}/documents",
+            "GET /api/v1/submissions/{id}/ectd-export",
+            "POST /api/v1/submissions/{id}/submit-to-fda",
+            "GET /api/v1/fhir/Composition/{id}"
+          ]
+        },
+        "acceptance_criteria": [
+          "Document upload enforces versioning \u2014 every version immutably stored with metadata and uploader e-signature",
+          "eCTD export produces valid XML backbone per eCTD v3.2.2 specification",
+          "SAE MedWatch submission populates FDA-3500A fields from AE records automatically",
+          "Submission status state machine: Draft \u2192 Under Review \u2192 Approved \u2192 Submitted \u2192 Acknowledged",
+          "Each status transition requires e-signature from Regulatory role",
+          "FHIR Composition export validates against R4 Composition profile"
+        ],
+        "depends_on": [
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "AGENTIC",
+        "description": "Implement a Human-in-the-Loop (HITL) agentic pattern for automated signal detection and regulatory action proposals. The agent monitors AE streams, applies CIOMS/ICH E2E signal detection rules, proposes expedited reporting actions or protocol amendments, and routes proposals to the approval queue requiring e-signed approval from the Principal Investigator and Regulatory Affairs roles before any action executes.",
+        "payload": {
+          "pattern": "human_in_the_loop",
+          "triggers": [
+            "AE_threshold_exceeded",
+            "SAE_cluster_detected",
+            "enrollment_deviation",
+            "randomization_imbalance"
+          ],
+          "proposal_types": [
+            "expedited_sae_report",
+            "protocol_amendment_request",
+            "hold_recommendation",
+            "dsmc_notification"
+          ],
+          "approval_required_roles": [
+            "principal_investigator",
+            "regulatory_affairs"
+          ],
+          "approval_mechanism": "21_cfr_11_esignature",
+          "integration": "SAGE_proposal_store"
+        },
+        "acceptance_criteria": [
+          "Signal detection agent runs on configurable schedule (default: hourly) and on AE submission events",
+          "Proposals appear in approval queue with full reasoning trace (ReAct Thought\u2192Action\u2192Observation log)",
+          "No regulatory action executes without e-signed approval from both required roles",
+          "Approval and rejection events write to audit_log with approver ID, timestamp, and rationale",
+          "Agent proposal includes reference to triggering data, relevant ICH guideline, and recommended action with risk classification",
+          "Rejected proposals feed back into agent context to refine future signal thresholds"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build the Patient Enrollment dashboard: subject list with enrollment status, eligibility screening wizard (step-by-step form with real-time criterion evaluation), enrollment confirmation flow with e-signature step, site-level enrollment progress charts (Chart.js), and FHIR ResearchSubject viewer. Implement role-based field masking (Sponsor view hides PII).",
+        "payload": {
+          "components": [
+            "SubjectListTable",
+            "EligibilityScreeningWizard",
+            "EnrollmentConfirmFlow",
+            "EnrollmentProgressChart",
+            "FHIRResourceViewer"
+          ],
+          "role_masking": [
+            "sponsor_cannot_see_pii"
+          ],
+          "charting_library": "Chart.js",
+          "form_validation": "React Hook Form + Zod",
+          "state_management": "TanStack Query"
+        },
+        "acceptance_criteria": [
+          "Eligibility screening wizard shows per-criterion pass/fail with explanatory text",
+          "E-signature dialog appears before final enrollment confirmation \u2014 cannot be bypassed",
+          "Enrollment progress chart updates in real-time via polling (30s interval)",
+          "Sponsor role sees subject IDs only \u2014 name, DOB, MRN fields are masked with '***'",
+          "WCAG 2.1 AA compliance verified by axe-core automated scan",
+          "All API calls use TanStack Query with optimistic updates and error retry"
+        ],
+        "depends_on": [
+          9,
+          12,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build the Randomization UI: randomization request form with stratification factor inputs, real-time arm balance visualization (grouped bar chart by site), unblinding request workflow with dual-approval status tracker, and blind-breaking emergency unblinding flow with mandatory justification and e-signature from two roles.",
+        "payload": {
+          "components": [
+            "RandomizationRequestForm",
+            "ArmBalanceChart",
+            "UnblindingRequestFlow",
+            "DualApprovalTracker",
+            "EmergencyUnblindingModal"
+          ],
+          "emergency_unblind": "requires_two_esignatures_with_justification",
+          "balance_chart": "grouped_bar_by_site"
+        },
+        "acceptance_criteria": [
+          "Randomization form validates stratification factors before submission",
+          "Arm assignment shown to authorized roles immediately post-randomization; hidden from blinded roles",
+          "Dual-approval tracker shows pending approvers with timestamp of request and countdown",
+          "Emergency unblinding modal requires mandatory free-text justification (min 50 chars) + two e-signatures",
+          "All unblinding events prominently flagged in audit log UI with red badge"
+        ],
+        "depends_on": [
+          10,
+          12,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build the Adverse Event reporting UI: AE intake form with MedDRA typeahead search (PT/SOC), CTCAE v5.0 severity grade selector, causality assessment dropdown, SAE flag with expedited reporting countdown timer, AE listing table with signal indicators, follow-up submission flow, and FHIR AdverseEvent viewer.",
+        "payload": {
+          "components": [
+            "AEIntakeForm",
+            "MedDRATypeahead",
+            "CTCAEGradeSelector",
+            "SAECountdownTimer",
+            "AEListingTable",
+            "SignalIndicatorBadge",
+            "FollowUpSubmissionFlow"
+          ],
+          "meddra_search": "debounced_api_call_300ms",
+          "sae_countdown": "15_day_regulatory_deadline"
+        },
+        "acceptance_criteria": [
+          "MedDRA typeahead returns results within 500ms for any search term",
+          "SAE countdown timer displays days remaining with color coding (green > 10d, yellow 5-10d, red < 5d)",
+          "AE listing table supports filter by: severity, causality, SAE flag, MedDRA SOC, site, date range",
+          "Follow-up form pre-populates from original AE record and highlights changed fields",
+          "FHIR viewer renders raw AdverseEvent JSON with syntax highlighting and field annotations"
+        ],
+        "depends_on": [
+          11,
+          12,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build the Regulatory Submissions portal UI: submission tracker (Kanban-style by status), document upload with version history, eCTD package builder wizard, submission review workflow with co-signer tracking, and compliance dashboard showing open action items, upcoming deadlines, and 21 CFR Part 11 compliance score card.",
+        "payload": {
+          "components": [
+            "SubmissionKanban",
+            "DocumentUploadWithHistory",
+            "ECTDPackageBuilder",
+            "ReviewWorkflowStepper",
+            "ComplianceDashboard",
+            "CFRScoreCard"
+          ],
+          "document_versioning": true,
+          "compliance_scorecard_metrics": [
+            "audit_trail_coverage",
+            "esignature_completeness",
+            "open_sae_deadlines",
+            "unverified_records"
+          ]
+        },
+        "acceptance_criteria": [
+          "Kanban board reflects real-time submission status with drag-disabled (status changes via action buttons only to enforce workflow)",
+          "Document upload shows version history with uploader, timestamp, and diff-highlight of changed sections",
+          "eCTD package builder validates all required sections before enabling export",
+          "Compliance scorecard loads within 3 seconds and refreshes every 5 minutes",
+          "Open SAE deadlines section shows count and lists overdue items in red with direct link to AE record"
+        ],
+        "depends_on": [
+          13,
+          12,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "QA",
+        "description": "Design and execute the quality assurance test plan: unit test coverage targets, integration test matrix, regression test suite, data integrity test cases (PHI encryption verification, audit log completeness, e-signature tamper detection), and user acceptance testing (UAT) scripts for each clinical role. Define entry/exit criteria for each test phase.",
+        "payload": {
+          "test_levels": [
+            "unit",
+            "integration",
+            "system",
+            "uat"
+          ],
+          "coverage_targets": {
+            "unit": "90%",
+            "integration": "85%",
+            "e2e": "all_happy_paths"
+          },
+          "data_integrity_tests": [
+            "phi_encryption_at_rest",
+            "audit_log_completeness",
+            "esignature_tamper_detection",
+            "randomization_integrity"
+          ],
+          "uat_scripts_per_role": [
+            "PI",
+            "Study_Coordinator",
+            "Regulatory_Affairs",
+            "Data_Manager",
+            "Sponsor"
+          ],
+          "outputs": [
+            "test_plan",
+            "test_case_repository",
+            "uat_scripts",
+            "defect_tracking_template"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test plan covers all five core modules with entry/exit criteria for each phase",
+          "PHI encryption test verifies ciphertext stored in DB is non-reversible without key",
+          "Audit log completeness test confirms 100% of PHI-touching API calls produce log entries",
+          "E-signature tamper detection test modifies a signed record and verifies INVALID status returned by /verify",
+          "UAT scripts written as step-by-step instructions executable by non-technical clinical staff",
+          "Defect severity matrix defined: Critical (data integrity, HIPAA breach) \u2192 High \u2192 Medium \u2192 Low"
+        ],
+        "depends_on": [
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "TESTS",
+        "description": "Implement automated test suite: pytest unit tests for all backend services (enrollment, randomization, AE, e-signature, submissions), integration tests against a real PostgreSQL test instance, Playwright E2E tests for all five UI modules covering happy paths and critical error scenarios, and property-based tests for randomization algorithm balance using Hypothesis.",
+        "payload": {
+          "unit_test_framework": "pytest",
+          "e2e_framework": "Playwright",
+          "property_based": "Hypothesis",
+          "test_database": "PostgreSQL_16_docker",
+          "fixtures": [
+            "enrolled_subject",
+            "randomized_subject",
+            "adverse_event_sar",
+            "signed_submission"
+          ],
+          "ci_integration": "GitHub_Actions"
+        },
+        "acceptance_criteria": [
+          "pytest --cov reports >= 90% line coverage across src/",
+          "Integration tests run against real PostgreSQL \u2014 no mocks for DB layer",
+          "Playwright tests cover all five core modules: enrollment, randomization, AE, submissions, e-signature",
+          "Hypothesis property tests confirm stratified block randomization never exceeds \u00b110% arm imbalance across 10,000 simulated trials",
+          "Test suite completes in under 8 minutes in CI",
+          "All tests pass in clean Docker environment without any local dependencies"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute system-level integration testing: end-to-end clinical trial lifecycle simulation (create trial \u2192 enroll subjects \u2192 randomize \u2192 capture AEs \u2192 submit SAE \u2192 regulatory submission \u2192 unblind), performance testing (load test with 500 concurrent users across all API endpoints), HL7 FHIR conformance testing (validate all FHIR resources against R4 profiles), and disaster recovery test (backup restore + audit log integrity verification post-restore).",
+        "payload": {
+          "lifecycle_scenarios": [
+            "full_trial_lifecycle",
+            "emergency_unblinding",
+            "sae_expedited_report",
+            "protocol_amendment"
+          ],
+          "performance_target": {
+            "concurrent_users": 500,
+            "p95_latency_ms": 2000,
+            "p99_latency_ms": 5000
+          },
+          "load_test_tool": "Locust",
+          "fhir_conformance_tool": "HAPI_FHIR_Validator",
+          "dr_test": "backup_restore_with_audit_integrity",
+          "outputs": [
+            "system_test_report",
+            "performance_test_report",
+            "fhir_conformance_report",
+            "dr_test_report"
+          ]
+        },
+        "acceptance_criteria": [
+          "Full trial lifecycle scenario completes without errors from trial creation to final submission",
+          "500 concurrent user load test: p95 < 2000ms, p99 < 5000ms, error rate < 0.1%",
+          "All FHIR resources validate against HAPI FHIR R4 validator with zero conformance errors",
+          "Disaster recovery test: system restored within RTO of 4 hours with zero audit log records lost",
+          "Emergency unblinding E2E test completes in under 2 minutes with both e-signatures captured",
+          "Performance test report submitted as evidence artifact in V&V protocol"
+        ],
+        "depends_on": [
+          20
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 22,
+        "task_type": "DEVOPS",
+        "description": "Configure production infrastructure: Kubernetes deployment manifests (multi-zone HA), Helm charts for all services, HashiCorp Vault for secrets management (encryption keys, PKI certificates), PostgreSQL streaming replication (primary + 2 replicas), automated backup to encrypted S3-compatible storage, CloudWatch/Prometheus + Grafana monitoring dashboards, and PagerDuty alerting for SLA breaches and security events.",
+        "payload": {
+          "orchestration": "Kubernetes",
+          "secrets": "HashiCorp_Vault",
+          "database_ha": "PostgreSQL_streaming_replication_1primary_2replicas",
+          "backup": "encrypted_S3_AES256_daily_snapshots",
+          "monitoring": "Prometheus + Grafana",
+          "alerting": "PagerDuty",
+          "rto": "4h",
+          "rpo": "1h"
+        },
+        "acceptance_criteria": [
+          "Kubernetes deployment achieves 99.9% uptime SLA in staging over 7-day soak test",
+          "Vault manages all secrets \u2014 zero secrets in environment variables or config files",
+          "PostgreSQL replication lag < 10ms in steady state; verified by replication monitoring",
+          "Automated backup runs nightly; restore tested weekly in CI pipeline",
+          "Grafana dashboards cover: API latency percentiles, error rates, audit log write throughput, e-signature volume, DB replication health",
+          "PagerDuty fires within 2 minutes of simulated HIPAA security event (unauthorized PHI access attempt)"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "OPERATIONS",
+        "description": "Author operational runbooks: system startup/shutdown procedures, database failover procedure, backup and restore runbook (with tested RTO/RPO), HIPAA breach response procedure (72-hour notification SLA), SAE deadline escalation runbook, PKI certificate rotation procedure, and on-call escalation matrix. Define SLA tiers for different user roles (Sponsor vs. Site staff).",
+        "payload": {
+          "runbooks": [
+            "system_startup_shutdown",
+            "database_failover",
+            "backup_restore",
+            "hipaa_breach_response_72h",
+            "sae_deadline_escalation",
+            "pki_certificate_rotation",
+            "oncall_escalation_matrix"
+          ],
+          "sla_tiers": {
+            "critical": "99.9% uptime, 4h RTO",
+            "high": "AE reporting available 24/7",
+            "standard": "submission portal 99.5% uptime"
+          }
+        },
+        "acceptance_criteria": [
+          "Each runbook has a step-by-step format with expected outputs and rollback steps",
+          "HIPAA breach response runbook covers: detection \u2192 containment \u2192 assessment \u2192 notification (HHS within 60 days, individuals within 60 days, media if > 500 affected)",
+          "Database failover runbook tested in staging: failover completes within 15 minutes",
+          "SAE deadline escalation runbook defines automated escalation at T+10 days and manual escalation at T+13 days",
+          "SLA definitions formally reviewed and signed by operations_manager",
+          "On-call escalation matrix includes contact details for: DB admin, security officer, regulatory affairs, legal"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 24,
+        "task_type": "SECURITY",
+        "description": "Execute security validation: penetration test against staging environment (OWASP Top 10 + HIPAA-specific attack scenarios), static application security testing (Bandit + Semgrep), dependency vulnerability scan (Trivy + pip-audit + npm audit), HIPAA Technical Safeguard gap assessment, and 21 CFR Part 11 access control audit. Produce signed Security Assessment Report as DHF evidence artifact.",
+        "payload": {
+          "pentest_scope": "staging_environment_full_application",
+          "pentest_methodology": "OWASP_Top_10 + HIPAA_attack_vectors",
+          "sast_tools": [
+            "Bandit",
+            "Semgrep"
+          ],
+          "dependency_scan": [
+            "Trivy",
+            "pip_audit",
+            "npm_audit"
+          ],
+          "outputs": [
+            "security_assessment_report",
+            "remediation_tracker",
+            "hipaa_gap_assessment",
+            "21_cfr_access_audit"
+          ],
+          "evidence_artifact": true
+        },
+        "acceptance_criteria": [
+          "Zero Critical and High severity findings in final Security Assessment Report",
+          "All Medium findings have accepted remediation plan with target date",
+          "SAST scan returns zero high-severity findings across all Python and TypeScript source",
+          "Dependency scan shows zero CVE-HIGH or CVE-CRITICAL vulnerabilities",
+          "HIPAA Technical Safeguard gap assessment shows full coverage (no gaps)",
+          "21 CFR Part 11 access control audit confirms: unique user IDs enforced, shared passwords absent, two-factor at signing enforced",
+          "Security Assessment Report signed by security officer and regulatory_specialist for DHF inclusion",
+          "PHI encryption at rest and in transit",
+          "Access audit logging enabled"
+        ],
+        "depends_on": [
+          21,
+          22
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "COMPLIANCE",
+        "description": "Execute IQ/OQ/PQ validation protocols: Installation Qualification (verify system installed correctly per specifications), Operational Qualification (verify each function performs per design specification under boundary conditions), Performance Qualification (verify system performs under real-world clinical trial load). Collect evidence signatures from qualified personnel. Update traceability matrix with test execution evidence. Close DHF.",
+        "payload": {
+          "validation_phases": [
+            "IQ",
+            "OQ",
+            "PQ"
+          ],
+          "iq_scope": "infrastructure, software installation, configuration verification",
+          "oq_scope": "all 32 functional requirements per BRD, boundary conditions, error handling",
+          "pq_scope": "500-subject trial simulation, concurrent user load, 90-day data integrity",
+          "evidence_collection": "e-signed test execution records",
+          "dhf_closure": true,
+          "hitl_gate": true
+        },
+        "acceptance_criteria": [
+          "IQ protocol: all software components verified at correct version, all configuration parameters within specification",
+          "OQ protocol: 100% of BRD functional requirements tested with pass/fail result documented",
+          "PQ protocol: 500-subject trial simulation completes with zero data integrity failures over 90-day period",
+          "All test execution records signed by qualified tester and independent reviewer using 21 CFR Part 11 e-signatures",
+          "Traceability matrix updated with IQ/OQ/PQ test evidence references \u2014 every requirement has passing test evidence",
+          "DHF closed with sign-off from: Quality Assurance Lead, Regulatory Affairs, Principal Investigator"
+        ],
+        "depends_on": [
+          21,
+          24
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 26,
+        "task_type": "REGULATORY",
+        "description": "Prepare regulatory submission package: compile DHF summary for FDA review, prepare 21 CFR Part 11 compliance declaration, produce HIPAA Security Rule compliance certification, generate HL7 FHIR conformance statement, and prepare audit-ready binder for FDA inspection. If SaMD classification requires, initiate 510(k) Pre-Submission meeting request.",
+        "payload": {
+          "submissions": [
+            "21_cfr_part_11_compliance_declaration",
+            "hipaa_security_rule_certification",
+            "fhir_conformance_statement",
+            "dhf_summary_for_fda",
+            "audit_ready_inspection_binder"
+          ],
+          "optional_510k": "conditional_on_samd_classification",
+          "hitl_gate": true
+        },
+        "acceptance_criteria": [
+          "21 CFR Part 11 compliance declaration covers all applicable sub-sections with evidence references",
+          "HIPAA Security Rule certification references IQ/OQ/PQ evidence for each Technical Safeguard",
+          "FHIR conformance statement validated against HL7 FHIR R4 conformance requirements",
+          "Audit-ready binder organized per FDA inspection readiness guidance (21 CFR Part 820)",
+          "All documents e-signed by Regulatory Affairs and Quality Assurance roles",
+          "If 510(k) applicable: Pre-Submission (Q-Sub) meeting request prepared with predicate device analysis",
+          "HIPAA risk assessment complete",
+          "BAA template prepared"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 27,
+        "task_type": "TRAINING",
+        "description": "Create user training materials for all five stakeholder roles: role-specific user guides (PI, Study Coordinator, Regulatory Affairs, Data Manager, Sponsor), 21 CFR Part 11 e-signature training module (with competency assessment), HIPAA data handling training, system administrator guide (user management, access control, certificate rotation), and video script library for onboarding workflows.",
+        "payload": {
+          "user_guides_per_role": [
+            "PI",
+            "Study_Coordinator",
+            "Regulatory_Affairs",
+            "Data_Manager",
+            "Sponsor",
+            "System_Administrator"
+          ],
+          "mandatory_training_modules": [
+            "21_cfr_part_11_esignature",
+            "HIPAA_phi_handling"
+          ],
+          "competency_assessments": true,
+          "video_scripts": [
+            "enrollment_walkthrough",
+            "ae_reporting",
+            "submission_workflow",
+            "esignature_how_to"
+          ],
+          "format": [
+            "PDF_guides",
+            "in_app_tooltips",
+            "video_scripts",
+            "quick_reference_cards"
+          ]
+        },
+        "acceptance_criteria": [
+          "Each role-specific guide covers all functions accessible to that role",
+          "21 CFR Part 11 training module includes 10-question competency assessment; passing score 80%",
+          "HIPAA training covers: what constitutes PHI, minimum necessary rule, breach recognition and reporting",
+          "System administrator guide covers: user onboarding, role assignment, password policy enforcement, certificate rotation",
+          "Video scripts reviewed by clinical subject matter expert for accuracy",
+          "Training completion tracking built into the system (user training records stored with e-signature attestation)"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 27,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 61,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 61,
+          "final_review": {
+            "score": 61,
+            "flaws": [
+              "MedDRA licensing is entirely absent from the plan. MedDRA terminology requires a separate paid subscription agreement with MSSO (~$10K+/year for commercial use). The UMLS API in Step 11 provides NLM-licensed content, not MedDRA. These are different systems. Step 5 (Legal) never addresses MedDRA licensing, which is a hard blocker for deployment.",
+              "FDA Electronic Submissions Gateway (ESG) registration is missing. Step 13 specifies a POST /submit-to-fda endpoint, but actual electronic regulatory submissions require prior FDA ESG account registration and validation testing with FDA's test environment. This is a multi-week process with FDA that cannot be coded around.",
+              "E2B XML format for adverse event reporting is missing. Step 11 says 'populate FDA-3500A fields' but electronic SAE submissions to FDA MedWatch require ICH E2B(R3) XML format, not PDF form population. FDA-3500A is the paper form equivalent. Building the wrong output format means the submission module cannot actually submit electronically to FDA.",
+              "IRB (Institutional Review Board) is listed as a stakeholder in Step 1 but never appears in any subsequent design step. IRB initial submissions, protocol amendments, continuing review reminders, and IRB approval tracking are core CTMS functions. This is an entire missing module.",
+              "Protocol deviation and violation tracking is absent. Protocol deviations are one of the most common data entry workflows in a CTMS and a primary FDA inspection focus area. No module, no schema tables, no UI component anywhere in 27 steps.",
+              "pgcrypto encryption key management lifecycle is undesigned. Step 7 specifies column-level AES-256 via pgcrypto, Step 22 specifies HashiCorp Vault for secrets \u2014 but there is no design for how Vault manages pgcrypto keys, how they are rotated without decrypting and re-encrypting all PHI rows, or what happens during key rotation when trial data must remain accessible. This is a production-blocking gap in a HIPAA system.",
+              "Audit log cryptographic chain seed and key management is undefined. Step 7 specifies SHA-256 chaining but does not address: what seeds the first hash, where the chain key is stored, how chain verification works after Vault rotation, and how a backup-restored database proves chain continuity. Without this, the 'immutable audit trail' claim cannot be demonstrated to FDA.",
+              "SMART on FHIR authorization is not specified. All FHIR endpoints are defined throughout the plan but Step 3 security only mentions 'HL7 FHIR API security' generically. SMART on FHIR (OAuth2 + SMART scopes) is the industry standard for FHIR API authorization and is expected by any health system integration partner. Without it, the FHIR layer is not interoperable.",
+              "PQ protocol specifies a '90-day data integrity' test in Step 25 but the plan timeline implies this runs concurrently with other steps. A 90-day PQ observation period is calendar time \u2014 it adds a mandatory 3-month gate before DHF closure that is completely unaccounted for in the dependency graph.",
+              "GAMP 5 Computer System Validation (CSV) approach is never mentioned. FDA expects pharmaceutical software to follow GAMP 5 guidelines. The plan uses IQ/OQ/PQ (correct) but does not reference GAMP 5 category classification (this system is Category 4 or 5), supplier assessment documentation, or the CSV master plan \u2014 all expected artifacts at FDA inspection.",
+              "Data lock and database freeze procedures are entirely missing. Every clinical trial requires a formal data lock at study close-out. No module, no workflow, no schema support for locking records to prevent post-lock modification. This is a regulatory requirement per ICH E6 GCP.",
+              "The SAGE proposal_store dependency in Step 14 introduces an unvalidated external system into the 21 CFR Part 11 compliance boundary. If the CTMS uses SAGE's proposal store for agent approvals, FDA requires that SAGE itself be validated as part of the CTMS validation package. This substantially expands the validation scope and may be impractical.",
+              "21 CFR 312.32 IND safety reporting timelines are collapsed into a single '15-day' rule. Unexpected fatal or life-threatening SADRs require 7-day telephone/fax notification to FDA followed by a written 15-day report. The plan only models the 15-day written report. Missing the 7-day expedited path is a regulatory violation.",
+              "The SaMD / 510(k) regulatory pathway analysis in Step 2 may be entirely misdirected effort. A CTMS used purely for trial management and data capture is not typically an FDA-regulated medical device. Unless the system includes clinical decision support that influences diagnosis/treatment, FDA regulation as SaMD does not apply. Investing regulatory effort in a De Novo/510(k) analysis for a standard CTMS misallocates resources and creates false compliance obligations.",
+              "Step 20 sets an 8-minute CI test suite target for a system requiring real PostgreSQL, Playwright E2E across five modules, Hypothesis property tests with 10,000 trial simulations, and 90% coverage. This is unrealistic by a factor of 3-4x. CI pipelines for systems of this complexity typically run 25-40 minutes. An unrealistic target will be abandoned or gamed."
+            ],
+            "suggestions": [
+              "Add a Step 1.5 or sub-task in Step 5 (Legal) explicitly for MedDRA MSSO licensing procurement and UMLS license verification. Identify whether to use UMLS API (free but NLM-licensed) or a self-hosted MedDRA browser (requires separate MSSO commercial license). This must be resolved before Step 11 can be implemented.",
+              "Add FDA ESG registration as a prerequisite task before Step 13. Include FDA test environment validation testing in the acceptance criteria for the submissions module. Budget 4-8 weeks for FDA ESG onboarding.",
+              "Replace FDA-3500A field population in Step 11 with ICH E2B(R3) XML generation. The E2B(R3) schema is publicly available from ICH. This is the actual electronic submission format for MedWatch gateway submissions.",
+              "Add an IRB module (Steps 9-13 equivalent scope) covering: IRB submission package assembly, continuing review reminders, IRB approval upload/versioning, and IRB correspondence tracking. Add IRB workflow to UX Step 6.",
+              "Add protocol deviation/violation module with: deviation capture form, severity classification (minor/major), CAPA linkage, investigator notification, and sponsor reporting. This likely requires its own backend step between Steps 9-11.",
+              "Design the pgcrypto + Vault integration explicitly: Vault stores the AES-256 key, application retrieves it at startup via Vault AppRole auth, pgcrypto functions receive the key as a parameter. Define the key rotation procedure: dual-write period, re-encryption job, key version tagging on encrypted columns.",
+              "Specify SMART on FHIR in Step 3 security architecture and Step 8 scaffold. Define FHIR server authorization scopes per resource type (e.g., patient/*.read for sponsor, patient/*.write for coordinator). Use an established FHIR server (HAPI FHIR or Medplum) rather than building FHIR endpoints from scratch in FastAPI.",
+              "Add GAMP 5 CSV master plan as a deliverable in Step 4 (Compliance). Classify the system as GAMP Category 5 (custom software). Add supplier qualification documentation for PostgreSQL, MinIO, Redis, and any third-party libraries used in validated workflows.",
+              "Explicitly design data lock functionality: a database-level lock flag per trial, a lock/unlock workflow requiring QA Lead e-signature, and post-lock modification prevention at the API layer with exception handling for data corrections (which require documented deviation from lock).",
+              "Remove or scope-gate the SaMD/510(k) analysis in Step 2. Add an explicit decision gate: if the system includes no clinical decision support algorithms, document the rationale for non-device classification and skip 510(k) preparation. This saves significant regulatory overhead.",
+              "Split the 8-minute CI target in Step 20 into tiers: fast suite (unit + static analysis, <5 min, runs on every PR), full suite (integration + E2E, <30 min, runs on merge to main), nightly suite (Hypothesis property tests, performance smoke, no time gate). This is the standard pattern for systems of this complexity.",
+              "Add a dedicated 'System Close-Out' task covering: data lock procedures, final audit log export, long-term archive format (HL7 FHIR Bundle export), and the 15-year record retention requirement for clinical trial data under 21 CFR 312.62."
+            ],
+            "missing": [
+              "MedDRA MSSO licensing agreement and procurement workflow",
+              "FDA Electronic Submissions Gateway (ESG) registration and test environment validation",
+              "ICH E2B(R3) XML format for electronic adverse event reporting to FDA",
+              "IRB workflow module: submission package, continuing review, approval tracking",
+              "Protocol deviation and violation tracking module",
+              "Data lock and study close-out procedures",
+              "pgcrypto encryption key lifecycle design (Vault integration path, rotation procedure, key versioning on columns)",
+              "SMART on FHIR authorization framework specification",
+              "GAMP 5 CSV Master Plan and supplier qualification documentation",
+              "7-day IND safety report pathway for fatal/life-threatening unexpected SADRs (21 CFR 312.32(c)(1))",
+              "DSMB/DSMC formal data access and reporting interface (Step 14 mentions dsmc_notification but no module exists)",
+              "HL7 FHIR server selection decision \u2014 building FHIR endpoints in FastAPI from scratch vs. using validated FHIR server",
+              "Long-term archive format and 15-year data retention strategy per 21 CFR 312.62",
+              "IND Annual Safety Report module (21 CFR 312.33) \u2014 separate from SAE expedited reports",
+              "Study close-out and database lock workflow",
+              "Audit log chain verification endpoint and forensic recovery procedure post-backup-restore"
+            ],
+            "security_risks": [
+              "pgcrypto key in environment variable or config file: if Vault integration is not explicitly implemented, the AES-256 key will likely end up hardcoded or in an env var, creating a HIPAA Technical Safeguard failure and an encryption-at-rest control that is trivially bypassed by anyone with shell access.",
+              "FHIR endpoints without SMART on FHIR authorization: without FHIR-native OAuth2 scopes, any authenticated user with a valid session token could potentially query any FHIR resource type. Role-based filtering at the application layer (noted in Step 9) is insufficient if the FHIR base URL is accessible without resource-level scope enforcement.",
+              "Audit log chain seed exposure: if the SHA-256 chain hash seed is stored in the same database as the audit log (the default naive implementation), an attacker with DB write access can reconstruct a valid chain for tampered records. The seed must be stored externally (Vault) and the verification algorithm must be documented as part of the security architecture.",
+              "PKI certificate rotation during active trial: revoking and reissuing PKI certificates while a trial has in-flight e-signatures requires a certificate archive/escrow mechanism. If old certificates are revoked without an archive, previously signed records will fail verification. This is not addressed in the certificate rotation runbook (Step 23).",
+              "MinIO HIPAA compliance boundary is undefined: MinIO is not inherently HIPAA-compliant. The plan must specify whether MinIO is self-hosted or cloud-hosted, which cloud provider holds the BAA, and how MinIO bucket encryption keys are managed separately from application-layer encryption.",
+              "Redis session store without TLS and at-rest encryption: Redis 7 in Docker Compose is configured in plaintext by default. Session tokens stored in Redis are PHI-adjacent \u2014 a compromised Redis instance allows session hijacking for any active user. TLS and Redis AUTH with strong passwords must be enforced from Day 1, not added later.",
+              "SAGE proposal store as unvalidated system in compliance boundary: if agent proposals requiring e-signatures flow through SAGE's SQLite proposal store, that store becomes part of the 21 CFR Part 11 audit trail. SQLite is not designed for multi-process concurrent writes in a production environment and has no row-level access controls \u2014 this is a compliance risk if SAGE's store handles any approved regulatory action records.",
+              "Randomization allocation table write-once constraint enforcement: Step 10 specifies 'DB constraint + service layer check' for allocation immutability but does not specify REVOKE UPDATE/DELETE on the allocation table at the database role level. A service layer check alone is insufficient \u2014 a developer with DB credentials or a compromised service account can still modify allocations. Database-level REVOKE is the only reliable control."
+            ],
+            "summary": "This is a technically ambitious and well-structured plan that demonstrates genuine familiarity with clinical trial processes, 21 CFR Part 11, and HIPAA. The dependency graph is logical, the acceptance criteria are specific, and the inclusion of DHF, IQ/OQ/PQ, and HITL gates shows regulatory awareness. However, it has several production-blocking gaps that would cause real-world failure before FDA inspection: MedDRA requires a paid MSSO license that is not addressed anywhere; actual electronic FDA submissions require ESG registration and E2B(R3) XML format, not FDA-3500A field population; IRB workflow is completely absent despite IRB being listed as a stakeholder; and data lock procedures are missing from every layer of the design. The cryptographic audit trail and pgcrypto encryption designs are conceptually correct but incomplete \u2014 the key management lifecycle between Vault and the database is the single most dangerous unresolved dependency in the security architecture. For a regulated-domain build targeting production clinical use, this plan needs the missing modules (IRB, protocol deviations, data lock, ESG registration) designed and the key management architecture resolved before implementation begins. As an MVP for internal validation and stakeholder demonstration, it is solid. As a submission-ready clinical system, it will fail at the first FDA 21 CFR Part 11 inspection on audit trail forensic integrity and at first contact with FDA's actual electronic submission infrastructure.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 61,
+              "flaws": [
+                "MedDRA licensing is entirely absent from the plan. MedDRA terminology requires a separate paid subscription agreement with MSSO (~$10K+/year for commercial use). The UMLS API in Step 11 provides NLM-licensed content, not MedDRA. These are different systems. Step 5 (Legal) never addresses MedDRA licensing, which is a hard blocker for deployment.",
+                "FDA Electronic Submissions Gateway (ESG) registration is missing. Step 13 specifies a POST /submit-to-fda endpoint, but actual electronic regulatory submissions require prior FDA ESG account registration and validation testing with FDA's test environment. This is a multi-week process with FDA that cannot be coded around.",
+                "E2B XML format for adverse event reporting is missing. Step 11 says 'populate FDA-3500A fields' but electronic SAE submissions to FDA MedWatch require ICH E2B(R3) XML format, not PDF form population. FDA-3500A is the paper form equivalent. Building the wrong output format means the submission module cannot actually submit electronically to FDA.",
+                "IRB (Institutional Review Board) is listed as a stakeholder in Step 1 but never appears in any subsequent design step. IRB initial submissions, protocol amendments, continuing review reminders, and IRB approval tracking are core CTMS functions. This is an entire missing module.",
+                "Protocol deviation and violation tracking is absent. Protocol deviations are one of the most common data entry workflows in a CTMS and a primary FDA inspection focus area. No module, no schema tables, no UI component anywhere in 27 steps.",
+                "pgcrypto encryption key management lifecycle is undesigned. Step 7 specifies column-level AES-256 via pgcrypto, Step 22 specifies HashiCorp Vault for secrets \u2014 but there is no design for how Vault manages pgcrypto keys, how they are rotated without decrypting and re-encrypting all PHI rows, or what happens during key rotation when trial data must remain accessible. This is a production-blocking gap in a HIPAA system.",
+                "Audit log cryptographic chain seed and key management is undefined. Step 7 specifies SHA-256 chaining but does not address: what seeds the first hash, where the chain key is stored, how chain verification works after Vault rotation, and how a backup-restored database proves chain continuity. Without this, the 'immutable audit trail' claim cannot be demonstrated to FDA.",
+                "SMART on FHIR authorization is not specified. All FHIR endpoints are defined throughout the plan but Step 3 security only mentions 'HL7 FHIR API security' generically. SMART on FHIR (OAuth2 + SMART scopes) is the industry standard for FHIR API authorization and is expected by any health system integration partner. Without it, the FHIR layer is not interoperable.",
+                "PQ protocol specifies a '90-day data integrity' test in Step 25 but the plan timeline implies this runs concurrently with other steps. A 90-day PQ observation period is calendar time \u2014 it adds a mandatory 3-month gate before DHF closure that is completely unaccounted for in the dependency graph.",
+                "GAMP 5 Computer System Validation (CSV) approach is never mentioned. FDA expects pharmaceutical software to follow GAMP 5 guidelines. The plan uses IQ/OQ/PQ (correct) but does not reference GAMP 5 category classification (this system is Category 4 or 5), supplier assessment documentation, or the CSV master plan \u2014 all expected artifacts at FDA inspection.",
+                "Data lock and database freeze procedures are entirely missing. Every clinical trial requires a formal data lock at study close-out. No module, no workflow, no schema support for locking records to prevent post-lock modification. This is a regulatory requirement per ICH E6 GCP.",
+                "The SAGE proposal_store dependency in Step 14 introduces an unvalidated external system into the 21 CFR Part 11 compliance boundary. If the CTMS uses SAGE's proposal store for agent approvals, FDA requires that SAGE itself be validated as part of the CTMS validation package. This substantially expands the validation scope and may be impractical.",
+                "21 CFR 312.32 IND safety reporting timelines are collapsed into a single '15-day' rule. Unexpected fatal or life-threatening SADRs require 7-day telephone/fax notification to FDA followed by a written 15-day report. The plan only models the 15-day written report. Missing the 7-day expedited path is a regulatory violation.",
+                "The SaMD / 510(k) regulatory pathway analysis in Step 2 may be entirely misdirected effort. A CTMS used purely for trial management and data capture is not typically an FDA-regulated medical device. Unless the system includes clinical decision support that influences diagnosis/treatment, FDA regulation as SaMD does not apply. Investing regulatory effort in a De Novo/510(k) analysis for a standard CTMS misallocates resources and creates false compliance obligations.",
+                "Step 20 sets an 8-minute CI test suite target for a system requiring real PostgreSQL, Playwright E2E across five modules, Hypothesis property tests with 10,000 trial simulations, and 90% coverage. This is unrealistic by a factor of 3-4x. CI pipelines for systems of this complexity typically run 25-40 minutes. An unrealistic target will be abandoned or gamed."
+              ],
+              "suggestions": [
+                "Add a Step 1.5 or sub-task in Step 5 (Legal) explicitly for MedDRA MSSO licensing procurement and UMLS license verification. Identify whether to use UMLS API (free but NLM-licensed) or a self-hosted MedDRA browser (requires separate MSSO commercial license). This must be resolved before Step 11 can be implemented.",
+                "Add FDA ESG registration as a prerequisite task before Step 13. Include FDA test environment validation testing in the acceptance criteria for the submissions module. Budget 4-8 weeks for FDA ESG onboarding.",
+                "Replace FDA-3500A field population in Step 11 with ICH E2B(R3) XML generation. The E2B(R3) schema is publicly available from ICH. This is the actual electronic submission format for MedWatch gateway submissions.",
+                "Add an IRB module (Steps 9-13 equivalent scope) covering: IRB submission package assembly, continuing review reminders, IRB approval upload/versioning, and IRB correspondence tracking. Add IRB workflow to UX Step 6.",
+                "Add protocol deviation/violation module with: deviation capture form, severity classification (minor/major), CAPA linkage, investigator notification, and sponsor reporting. This likely requires its own backend step between Steps 9-11.",
+                "Design the pgcrypto + Vault integration explicitly: Vault stores the AES-256 key, application retrieves it at startup via Vault AppRole auth, pgcrypto functions receive the key as a parameter. Define the key rotation procedure: dual-write period, re-encryption job, key version tagging on encrypted columns.",
+                "Specify SMART on FHIR in Step 3 security architecture and Step 8 scaffold. Define FHIR server authorization scopes per resource type (e.g., patient/*.read for sponsor, patient/*.write for coordinator). Use an established FHIR server (HAPI FHIR or Medplum) rather than building FHIR endpoints from scratch in FastAPI.",
+                "Add GAMP 5 CSV master plan as a deliverable in Step 4 (Compliance). Classify the system as GAMP Category 5 (custom software). Add supplier qualification documentation for PostgreSQL, MinIO, Redis, and any third-party libraries used in validated workflows.",
+                "Explicitly design data lock functionality: a database-level lock flag per trial, a lock/unlock workflow requiring QA Lead e-signature, and post-lock modification prevention at the API layer with exception handling for data corrections (which require documented deviation from lock).",
+                "Remove or scope-gate the SaMD/510(k) analysis in Step 2. Add an explicit decision gate: if the system includes no clinical decision support algorithms, document the rationale for non-device classification and skip 510(k) preparation. This saves significant regulatory overhead.",
+                "Split the 8-minute CI target in Step 20 into tiers: fast suite (unit + static analysis, <5 min, runs on every PR), full suite (integration + E2E, <30 min, runs on merge to main), nightly suite (Hypothesis property tests, performance smoke, no time gate). This is the standard pattern for systems of this complexity.",
+                "Add a dedicated 'System Close-Out' task covering: data lock procedures, final audit log export, long-term archive format (HL7 FHIR Bundle export), and the 15-year record retention requirement for clinical trial data under 21 CFR 312.62."
+              ],
+              "missing": [
+                "MedDRA MSSO licensing agreement and procurement workflow",
+                "FDA Electronic Submissions Gateway (ESG) registration and test environment validation",
+                "ICH E2B(R3) XML format for electronic adverse event reporting to FDA",
+                "IRB workflow module: submission package, continuing review, approval tracking",
+                "Protocol deviation and violation tracking module",
+                "Data lock and study close-out procedures",
+                "pgcrypto encryption key lifecycle design (Vault integration path, rotation procedure, key versioning on columns)",
+                "SMART on FHIR authorization framework specification",
+                "GAMP 5 CSV Master Plan and supplier qualification documentation",
+                "7-day IND safety report pathway for fatal/life-threatening unexpected SADRs (21 CFR 312.32(c)(1))",
+                "DSMB/DSMC formal data access and reporting interface (Step 14 mentions dsmc_notification but no module exists)",
+                "HL7 FHIR server selection decision \u2014 building FHIR endpoints in FastAPI from scratch vs. using validated FHIR server",
+                "Long-term archive format and 15-year data retention strategy per 21 CFR 312.62",
+                "IND Annual Safety Report module (21 CFR 312.33) \u2014 separate from SAE expedited reports",
+                "Study close-out and database lock workflow",
+                "Audit log chain verification endpoint and forensic recovery procedure post-backup-restore"
+              ],
+              "security_risks": [
+                "pgcrypto key in environment variable or config file: if Vault integration is not explicitly implemented, the AES-256 key will likely end up hardcoded or in an env var, creating a HIPAA Technical Safeguard failure and an encryption-at-rest control that is trivially bypassed by anyone with shell access.",
+                "FHIR endpoints without SMART on FHIR authorization: without FHIR-native OAuth2 scopes, any authenticated user with a valid session token could potentially query any FHIR resource type. Role-based filtering at the application layer (noted in Step 9) is insufficient if the FHIR base URL is accessible without resource-level scope enforcement.",
+                "Audit log chain seed exposure: if the SHA-256 chain hash seed is stored in the same database as the audit log (the default naive implementation), an attacker with DB write access can reconstruct a valid chain for tampered records. The seed must be stored externally (Vault) and the verification algorithm must be documented as part of the security architecture.",
+                "PKI certificate rotation during active trial: revoking and reissuing PKI certificates while a trial has in-flight e-signatures requires a certificate archive/escrow mechanism. If old certificates are revoked without an archive, previously signed records will fail verification. This is not addressed in the certificate rotation runbook (Step 23).",
+                "MinIO HIPAA compliance boundary is undefined: MinIO is not inherently HIPAA-compliant. The plan must specify whether MinIO is self-hosted or cloud-hosted, which cloud provider holds the BAA, and how MinIO bucket encryption keys are managed separately from application-layer encryption.",
+                "Redis session store without TLS and at-rest encryption: Redis 7 in Docker Compose is configured in plaintext by default. Session tokens stored in Redis are PHI-adjacent \u2014 a compromised Redis instance allows session hijacking for any active user. TLS and Redis AUTH with strong passwords must be enforced from Day 1, not added later.",
+                "SAGE proposal store as unvalidated system in compliance boundary: if agent proposals requiring e-signatures flow through SAGE's SQLite proposal store, that store becomes part of the 21 CFR Part 11 audit trail. SQLite is not designed for multi-process concurrent writes in a production environment and has no row-level access controls \u2014 this is a compliance risk if SAGE's store handles any approved regulatory action records.",
+                "Randomization allocation table write-once constraint enforcement: Step 10 specifies 'DB constraint + service layer check' for allocation immutability but does not specify REVOKE UPDATE/DELETE on the allocation table at the database role level. A service layer check alone is insufficient \u2014 a developer with DB credentials or a compromised service account can still modify allocations. Database-level REVOKE is the only reliable control."
+              ],
+              "summary": "This is a technically ambitious and well-structured plan that demonstrates genuine familiarity with clinical trial processes, 21 CFR Part 11, and HIPAA. The dependency graph is logical, the acceptance criteria are specific, and the inclusion of DHF, IQ/OQ/PQ, and HITL gates shows regulatory awareness. However, it has several production-blocking gaps that would cause real-world failure before FDA inspection: MedDRA requires a paid MSSO license that is not addressed anywhere; actual electronic FDA submissions require ESG registration and E2B(R3) XML format, not FDA-3500A field population; IRB workflow is completely absent despite IRB being listed as a stakeholder; and data lock procedures are missing from every layer of the design. The cryptographic audit trail and pgcrypto encryption designs are conceptually correct but incomplete \u2014 the key management lifecycle between Vault and the database is the single most dangerous unresolved dependency in the security architecture. For a regulated-domain build targeting production clinical use, this plan needs the missing modules (IRB, protocol deviations, data lock, ESG registration) designed and the key management architecture resolved before implementation begins. As an MVP for internal validation and stakeholder demonstration, it is solid. As a submission-ready clinical system, it will fail at the first FDA 21 CFR Part 11 inspection on audit trail forensic integrity and at first contact with FDA's actual electronic submission infrastructure.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-21T22:57:02.959802+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 206.57,
+      "critic_plan": 137.7
+    }
+  }
+}

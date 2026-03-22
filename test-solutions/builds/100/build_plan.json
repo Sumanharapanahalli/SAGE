@@ -1,0 +1,1058 @@
+{
+  "run_id": "9e301e04-6f0a-4b70-9463-194549c215f3",
+  "status": {
+    "run_id": "9e301e04-6f0a-4b70-9463-194549c215f3",
+    "solution_name": "it_asset_management",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T11:45:10.264390+00:00",
+    "updated_at": "2026-03-22T11:49:35.041227+00:00",
+    "product_description": "IT asset management with device inventory, software license tracking, automated provisioning, lifecycle management, and security compliance scanning.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user stories, and process flows for IT asset management covering device inventory, software license tracking, automated provisioning, lifecycle management, and security compliance scanning.",
+        "payload": {
+          "deliverables": [
+            "BRD",
+            "user_stories",
+            "process_flow_diagrams",
+            "ROI_analysis"
+          ],
+          "stakeholders": [
+            "IT_admin",
+            "security_team",
+            "finance",
+            "end_users"
+          ],
+          "key_processes": [
+            "asset_onboarding",
+            "license_assignment",
+            "decommission_workflow",
+            "compliance_audit"
+          ]
+        },
+        "acceptance_criteria": [
+          "BRD covers all five feature areas with at least 3 user stories each",
+          "Process flow diagrams produced for asset onboarding, provisioning, and decommission",
+          "ROI analysis quantifies license waste reduction and manual provisioning hours saved",
+          "All stakeholder sign-off captured",
+          "Integration points with existing systems mapped",
+          "Migration plan drafted"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce the product requirements document (PRD), feature roadmap, prioritization matrix (MoSCoW), and success metrics (KPIs) for the it_asset_management solution.",
+        "payload": {
+          "deliverables": [
+            "PRD",
+            "roadmap_v1",
+            "kpi_dashboard_spec"
+          ],
+          "mvp_scope": [
+            "device_inventory",
+            "software_license_tracking",
+            "basic_compliance_scan"
+          ],
+          "v2_scope": [
+            "automated_provisioning",
+            "full_lifecycle_management",
+            "advanced_reporting"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD lists all features with acceptance criteria and priority tier",
+          "MVP scope and v2 scope are clearly separated with rationale",
+          "At least 5 measurable KPIs defined (e.g., license utilization %, provisioning time, scan coverage %)",
+          "Roadmap reviewed and approved by product owner"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "LEGAL",
+        "description": "Draft terms of service, privacy policy, data retention policy, and third-party software licensing review for the IT asset management platform.",
+        "payload": {
+          "documents": [
+            "terms_of_service",
+            "privacy_policy",
+            "data_retention_policy",
+            "oss_license_inventory"
+          ],
+          "data_categories": [
+            "device_identifiers",
+            "user_assignments",
+            "software_titles",
+            "network_scan_results"
+          ],
+          "compliance_frameworks": [
+            "ISO_27001",
+            "SOC_2"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy policy covers all collected data categories with legal basis",
+          "Data retention periods defined per category and aligned to ISO 27001 A.8.3",
+          "OSS license inventory completed with no GPL conflicts in commercial distribution",
+          "Terms of service reviewed by legal counsel and approved"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 4,
+        "task_type": "COMPLIANCE",
+        "description": "Produce compliance evidence artifacts for ISO 27001 and SOC 2: asset management policy, risk matrix, traceability matrix mapping controls to features, and V&V protocol outline.",
+        "payload": {
+          "standards": [
+            "ISO_27001",
+            "SOC_2_Type_II"
+          ],
+          "control_domains": [
+            "A.8_Asset_Management",
+            "A.12_Operations_Security",
+            "CC6_Logical_Access",
+            "CC7_System_Operations"
+          ],
+          "artifacts": [
+            "asset_management_policy",
+            "risk_register",
+            "control_traceability_matrix",
+            "VV_protocol"
+          ]
+        },
+        "acceptance_criteria": [
+          "Asset management policy covers classification, labeling, and handling per ISO 27001 A.8",
+          "Risk register identifies \u226510 risks with likelihood, impact, and mitigation owner",
+          "Traceability matrix maps every ISO 27001 A.8 and SOC 2 CC6/CC7 control to a product feature or process",
+          "V&V protocol approved by compliance officer"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes and interaction designs for the main product surfaces: asset inventory dashboard, license manager, provisioning wizard, lifecycle timeline, and compliance scan report.",
+        "payload": {
+          "screens": [
+            "asset_inventory_dashboard",
+            "device_detail_view",
+            "software_license_manager",
+            "automated_provisioning_wizard",
+            "lifecycle_timeline_view",
+            "compliance_scan_report",
+            "alerts_and_notifications"
+          ],
+          "accessibility_target": "WCAG_2.1_AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes produced for all 7 screens in low-fidelity",
+          "High-fidelity mockups for dashboard and compliance scan report",
+          "User research summary from \u22653 IT admin interviews",
+          "Accessibility audit checklist completed against WCAG 2.1 AA",
+          "Design system tokens (colors, spacing, typography) documented"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "DATABASE",
+        "description": "Design and implement the database schema for asset records, software licenses, provisioning jobs, lifecycle events, compliance scan results, and audit log. Write migrations and seed data.",
+        "payload": {
+          "entities": [
+            "assets (id, hostname, type, os, status, assigned_user, location, purchase_date, eol_date)",
+            "software_licenses (id, product, vendor, license_key, seats_total, seats_used, expiry_date)",
+            "license_assignments (asset_id, license_id, assigned_at)",
+            "provisioning_jobs (id, asset_id, template_id, status, triggered_by, started_at, completed_at)",
+            "lifecycle_events (id, asset_id, event_type, payload, occurred_at)",
+            "compliance_scans (id, asset_id, scanner, findings_json, risk_level, scanned_at)",
+            "audit_log (id, actor, action, resource_type, resource_id, diff_json, timestamp)"
+          ],
+          "db_engine": "PostgreSQL 16",
+          "migration_tool": "Alembic"
+        },
+        "acceptance_criteria": [
+          "All entities created with proper foreign keys and indexes",
+          "Alembic migration scripts are idempotent and reversible",
+          "Seed script populates 50 sample assets, 20 licenses, and 5 scan results",
+          "Schema diagram exported and included in /docs",
+          "All text search fields indexed (hostname, software product name)"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design the OpenAPI 3.1 specification for all REST endpoints: asset CRUD, license management, provisioning job control, lifecycle events, compliance scan triggers, and reporting endpoints.",
+        "payload": {
+          "endpoint_groups": [
+            "GET/POST/PUT/DELETE /assets",
+            "GET /assets/{id}/lifecycle",
+            "GET/POST /licenses",
+            "POST /licenses/{id}/assign",
+            "GET/POST /provisioning/jobs",
+            "POST /provisioning/jobs/{id}/cancel",
+            "POST /compliance/scans",
+            "GET /compliance/scans/{id}/report",
+            "GET /reports/license-utilization",
+            "GET /reports/expiring-assets",
+            "GET /audit-log"
+          ],
+          "auth": "JWT_Bearer",
+          "versioning": "URL_prefix_v1"
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 YAML spec passes validation with no errors",
+          "Every endpoint has request/response schemas, error codes, and auth requirement documented",
+          "Pagination defined for all list endpoints (cursor-based)",
+          "Spec published to /docs/api/openapi.yaml and rendered via Swagger UI at /docs"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "SECURITY",
+        "description": "Produce a threat model (STRIDE), security requirements, and penetration test plan for the IT asset management platform. Define RBAC roles and data encryption requirements.",
+        "payload": {
+          "methodology": "STRIDE",
+          "rbac_roles": [
+            "it_admin",
+            "read_only_viewer",
+            "provisioning_operator",
+            "compliance_auditor",
+            "system_admin"
+          ],
+          "encryption_requirements": [
+            "TLS_1.3_in_transit",
+            "AES-256_at_rest_for_license_keys",
+            "audit_log_immutability"
+          ],
+          "pentest_scope": [
+            "authentication_bypass",
+            "privilege_escalation",
+            "injection_attacks",
+            "insecure_direct_object_reference"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all 5 asset management trust boundaries",
+          "RBAC matrix defines read/write/admin permissions per resource type for all 5 roles",
+          "Pentest plan has \u226515 test cases with expected vs. actual outcome fields",
+          "Security requirements document approved and linked to compliance traceability matrix",
+          "License key storage confirmed to use AES-256 encryption with KMS"
+        ],
+        "depends_on": [
+          4,
+          7
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up the project scaffold: monorepo structure, Python/FastAPI backend with virtual environment, React+TypeScript frontend, Docker Compose for local dev, environment variable management, and agentic pattern configuration (Multi-Agent Coordinator) for the compliance scanning and provisioning subsystems.",
+        "payload": {
+          "backend_stack": "Python 3.12, FastAPI, SQLAlchemy 2, Alembic, Celery, Redis",
+          "frontend_stack": "React 18, TypeScript, Vite, TanStack Query, shadcn/ui",
+          "agentic_pattern": "coordinator",
+          "coordinator_agents": [
+            "inventory_agent",
+            "license_agent",
+            "provisioning_agent",
+            "compliance_scan_agent"
+          ],
+          "docker_services": [
+            "api",
+            "worker",
+            "postgres",
+            "redis",
+            "scanner"
+          ],
+          "env_vars": [
+            "DATABASE_URL",
+            "REDIS_URL",
+            "SECRET_KEY",
+            "SCANNER_API_KEY",
+            "SMTP_URL"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker compose up starts all services with no errors",
+          "make dev starts backend on :8000 and frontend on :5173",
+          "Environment variable template (.env.example) documents all required vars",
+          "Pre-commit hooks configured (ruff, mypy, eslint, prettier)",
+          "Multi-Agent Coordinator scaffold created with agent stubs and task router"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement the asset inventory service: CRUD endpoints, bulk import (CSV/XLSX), search and filtering, asset categorization, and audit log writes on every mutation.",
+        "payload": {
+          "features": [
+            "asset CRUD with field validation",
+            "bulk CSV/XLSX import with conflict resolution",
+            "full-text search by hostname, serial number, assigned user",
+            "filter by type, OS, status, location, department",
+            "asset export to CSV",
+            "audit log write on every create/update/delete"
+          ],
+          "agent_role_mapping": "inventory_agent handles analysis and enrichment"
+        },
+        "acceptance_criteria": [
+          "All CRUD endpoints return correct HTTP status codes per OpenAPI spec",
+          "Bulk import handles 10,000 rows under 30 seconds with duplicate detection",
+          "Full-text search returns results in <200ms for a 100k-asset corpus",
+          "Every mutation writes a structured audit log entry with actor and diff",
+          "Unit test coverage \u226580% for inventory service module"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement the software license tracking service: license CRUD, seat allocation/deallocation, utilization calculation, expiry alerting via Celery beat, and over-allocation detection.",
+        "payload": {
+          "features": [
+            "license CRUD with vendor, product, key vault integration",
+            "seat assign/unassign to assets",
+            "utilization % calculation per license",
+            "Celery beat job: daily expiry alert email (30/7/1 day warnings)",
+            "over-allocation alert (used > total seats)",
+            "license usage report endpoint"
+          ]
+        },
+        "acceptance_criteria": [
+          "Seat assignment prevents allocation beyond total seats with 409 conflict response",
+          "Utilization calculation is accurate to 1 decimal place",
+          "Expiry alert emails triggered correctly in integration test with mocked SMTP",
+          "Over-allocation condition detected and alert created within 1 Celery task cycle",
+          "License keys stored encrypted, never returned in plaintext via API"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement the automated provisioning service: provisioning templates, job queue via Celery, idempotent job execution, status webhooks, rollback on failure, and integration with the Multi-Agent Coordinator provisioning_agent.",
+        "payload": {
+          "features": [
+            "provisioning template CRUD (OS image, software list, config scripts)",
+            "POST /provisioning/jobs creates Celery task",
+            "job status polling and webhook callbacks",
+            "idempotency key enforcement",
+            "rollback handler on partial failure",
+            "provisioning_agent integration for AI-assisted template selection"
+          ],
+          "agentic_pattern": "coordinator",
+          "pattern_role": "provisioning_agent routes templates and monitors execution"
+        },
+        "acceptance_criteria": [
+          "Provisioning job created, queued, and status-polled end-to-end in integration test",
+          "Duplicate job submission with same idempotency key returns existing job, not new one",
+          "Rollback triggered and asset status reverted on simulated failure",
+          "Webhook delivers status update within 5 seconds of job state change",
+          "provisioning_agent selects correct template for 3 test asset profiles"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement the lifecycle management service: lifecycle event recording, EOL/EOS date tracking, automated deprecation workflow triggers, asset retirement flow with data wipe confirmation, and lifecycle timeline API.",
+        "payload": {
+          "lifecycle_states": [
+            "active",
+            "in_repair",
+            "in_storage",
+            "pending_retirement",
+            "retired",
+            "disposed"
+          ],
+          "automated_triggers": [
+            "EOL within 90 days \u2192 create lifecycle_event(type=EOL_WARNING)",
+            "EOL passed \u2192 transition to pending_retirement",
+            "retirement approved \u2192 trigger data wipe provisioning job"
+          ],
+          "timeline_endpoint": "GET /assets/{id}/lifecycle returns ordered event list"
+        },
+        "acceptance_criteria": [
+          "All 6 lifecycle state transitions enforced (invalid transitions return 422)",
+          "EOL warning event auto-created by Celery beat job at correct threshold",
+          "Retirement flow requires explicit approval before data wipe job is queued",
+          "Timeline endpoint returns full ordered history for an asset",
+          "Lifecycle events are immutable once written (no update/delete allowed)"
+        ],
+        "depends_on": [
+          10,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement the security compliance scanning service: scanner integration (OpenVAS/Tenable API or mock), scan job scheduling, findings ingestion, risk scoring, remediation tracking, and compliance_scan_agent in the Multi-Agent Coordinator.",
+        "payload": {
+          "scanner_integrations": [
+            "OpenVAS_REST_API",
+            "mock_scanner_for_dev"
+          ],
+          "features": [
+            "POST /compliance/scans triggers scan job for asset or group",
+            "findings ingested and stored with CVE references",
+            "risk scoring: critical/high/medium/low per CVSS",
+            "remediation ticket creation (linked to lifecycle event)",
+            "scan schedule (cron-based per asset group)",
+            "compliance_scan_agent: ReAct loop analyzes findings and proposes remediation plan"
+          ],
+          "agentic_pattern": "react",
+          "pattern_role": "compliance_scan_agent uses Thought\u2192Action\u2192Observation to triage CVEs"
+        },
+        "acceptance_criteria": [
+          "Scan job completes and findings are stored with correct CVSS scores",
+          "Risk level classification matches CVSS v3.1 severity bands",
+          "Remediation tracking links finding to lifecycle event and assignee",
+          "Scan schedule triggers correctly in Celery beat integration test",
+          "compliance_scan_agent produces remediation proposal with \u226580% accuracy on test finding set"
+        ],
+        "depends_on": [
+          9,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build the asset inventory dashboard: searchable/filterable asset table, asset detail drawer, bulk actions (assign, export, retire), and real-time status indicators.",
+        "payload": {
+          "components": [
+            "AssetTable (virtualized, 100k rows)",
+            "AssetDetailDrawer",
+            "BulkActionToolbar",
+            "FilterPanel (type, OS, status, department)",
+            "SearchBar (debounced full-text)",
+            "StatusBadge",
+            "CSVImportModal"
+          ],
+          "state_management": "TanStack Query with optimistic updates"
+        },
+        "acceptance_criteria": [
+          "Table renders 10,000 rows without layout jank (virtualized)",
+          "Search returns filtered results within 300ms of debounce",
+          "Asset detail drawer shows all fields, lifecycle timeline, and assigned licenses",
+          "Bulk retire action requires confirmation dialog before submission",
+          "CSV import modal shows row-level validation errors before committing"
+        ],
+        "depends_on": [
+          5,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build the software license manager UI: license list with utilization progress bars, seat assignment interface, expiry warnings, and license usage report with chart.",
+        "payload": {
+          "components": [
+            "LicenseTable with utilization bar",
+            "LicenseDetailPanel",
+            "SeatAssignmentModal",
+            "ExpiryAlertBanner",
+            "LicenseUsageChart (Recharts)",
+            "OverAllocationWarning"
+          ]
+        },
+        "acceptance_criteria": [
+          "Utilization bar updates in real-time after seat assignment without page reload",
+          "Expiry warning banner appears for licenses expiring within 30 days",
+          "Over-allocation state renders warning badge and blocks further assignment",
+          "License usage chart shows 12-month trend per license product",
+          "Seat assignment modal prevents submission if seats exceeded"
+        ],
+        "depends_on": [
+          5,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build the automated provisioning wizard UI: multi-step template selector, asset target picker, job status tracker with live progress, and job history table.",
+        "payload": {
+          "components": [
+            "ProvisioningWizard (4 steps: template \u2192 targets \u2192 review \u2192 submit)",
+            "TemplateSelector",
+            "AssetTargetPicker (multi-select)",
+            "JobStatusTracker (SSE or polling)",
+            "JobHistoryTable",
+            "RollbackConfirmDialog"
+          ]
+        },
+        "acceptance_criteria": [
+          "Wizard validates each step before allowing progression",
+          "Job status updates at most 5-second intervals without full page reload",
+          "Rollback button visible only for failed jobs with pending rollback eligibility",
+          "Job history table sortable by status, date, and triggered-by",
+          "Wizard is keyboard-navigable and passes WCAG 2.1 AA automated audit"
+        ],
+        "depends_on": [
+          5,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build the compliance scan report UI: per-asset scan findings table, severity breakdown chart, remediation status tracker, scan scheduler configuration, and executive summary export (PDF).",
+        "payload": {
+          "components": [
+            "ScanFindingsTable (grouped by severity)",
+            "SeverityBreakdownDonut (Recharts)",
+            "RemediationTracker",
+            "ScanSchedulerForm",
+            "ExecutiveSummaryExportButton (PDF via react-pdf)"
+          ]
+        },
+        "acceptance_criteria": [
+          "Findings table groups by critical/high/medium/low with expandable rows",
+          "Remediation status (open/in-progress/resolved) updatable inline",
+          "Scan scheduler form saves cron expression and validates syntax",
+          "PDF export contains asset name, scan date, finding count by severity, and top 5 CVEs",
+          "Compliance scan page accessible with screen reader (aria-labels on chart elements)"
+        ],
+        "depends_on": [
+          5,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build the lifecycle timeline view, alerts/notifications center, and main navigation shell with RBAC-driven menu visibility.",
+        "payload": {
+          "components": [
+            "LifecycleTimeline (vertical event list per asset)",
+            "AlertsNotificationCenter (bell icon, badge count)",
+            "AppShell (sidebar nav, RBAC-driven)",
+            "RoleSwitcherDevTool (dev only)"
+          ]
+        },
+        "acceptance_criteria": [
+          "Timeline renders all lifecycle events in chronological order with icons per event type",
+          "Notification center shows unread count and marks as read on open",
+          "Menu items hidden for roles lacking permission per RBAC matrix",
+          "App shell passes Lighthouse accessibility score \u226590",
+          "Navigation highlights active route correctly across all 5 sections"
+        ],
+        "depends_on": [
+          5,
+          13,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "AGENTIC",
+        "description": "Implement the Multi-Agent Coordinator pattern connecting inventory_agent, license_agent, provisioning_agent, and compliance_scan_agent. Coordinator decomposes cross-domain requests (e.g., 'onboard new device') and routes to specialist agents in parallel waves.",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator_responsibilities": [
+            "parse user intent from /agent/coordinate endpoint",
+            "decompose into subtasks for each specialist agent",
+            "execute independent subtasks in parallel wave",
+            "merge agent outputs into unified response",
+            "route HITL approval requests for risky actions (retirement, bulk wipe)"
+          ],
+          "specialist_agents": {
+            "inventory_agent": "asset enrichment, conflict detection",
+            "license_agent": "license recommendation, compliance check",
+            "provisioning_agent": "template matching, job orchestration",
+            "compliance_scan_agent": "CVE triage, remediation proposal via ReAct"
+          }
+        },
+        "acceptance_criteria": [
+          "POST /agent/coordinate with 'onboard device' intent triggers all 4 agents in correct wave order",
+          "Parallel wave completes in under 2x single-agent time (measured in integration test)",
+          "Coordinator merges outputs with no data loss across 10 test scenarios",
+          "Risky actions (bulk retire, data wipe) create HITL approval request before executing",
+          "Coordinator response includes trace_id linking to audit log entries from all agents"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "QA",
+        "description": "Produce the QA test plan, test case designs, and test execution report covering all five product feature areas and the agentic coordinator.",
+        "payload": {
+          "test_categories": [
+            "asset_inventory_functional",
+            "license_tracking_functional",
+            "provisioning_functional",
+            "lifecycle_management_functional",
+            "compliance_scan_functional",
+            "rbac_access_control",
+            "agent_coordinator_functional"
+          ],
+          "test_case_count_target": 120,
+          "coverage_target": "80% backend, 70% frontend"
+        },
+        "acceptance_criteria": [
+          "Test plan covers all 7 test categories with entry/exit criteria",
+          "\u2265120 test cases written with preconditions, steps, and expected results",
+          "Test execution report produced after full QA cycle with pass/fail/blocked counts",
+          "All critical and high severity defects resolved before sign-off",
+          "RBAC matrix validated: each role tested for both permitted and denied actions"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend services: asset service, license service, provisioning service, lifecycle service, compliance scan service, and agent coordinator.",
+        "payload": {
+          "framework": "pytest with pytest-asyncio",
+          "test_types": [
+            "unit tests per service module",
+            "integration tests with real PostgreSQL via testcontainers",
+            "Celery task tests with eager mode"
+          ],
+          "coverage_target": "\u226580% per service module",
+          "fixtures": [
+            "asset_factory",
+            "license_factory",
+            "scan_findings_factory"
+          ]
+        },
+        "acceptance_criteria": [
+          "pytest runs clean with 0 failures against dockerized PostgreSQL",
+          "Coverage report shows \u226580% for each of the 5 service modules",
+          "Celery task tests cover success, failure, and retry paths",
+          "All API endpoint tests validate status codes, response schemas, and auth rejection",
+          "Test run completes under 3 minutes in CI"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute system-level end-to-end test suites: full device onboarding flow, license over-allocation scenario, provisioning failure and rollback, EOL lifecycle progression, and compliance scan with remediation tracking.",
+        "payload": {
+          "e2e_scenarios": [
+            "E2E-01: New device registered \u2192 license assigned \u2192 provisioned \u2192 scan triggered \u2192 findings remediated",
+            "E2E-02: License seats exhausted \u2192 over-allocation alert \u2192 seat reclaimed from retired asset",
+            "E2E-03: Provisioning job fails mid-run \u2192 rollback triggered \u2192 asset reverted to pre-job state",
+            "E2E-04: Asset passes EOL date \u2192 auto-lifecycle event \u2192 retirement approval \u2192 data wipe",
+            "E2E-05: Compliance scan finds critical CVE \u2192 agent proposes patch \u2192 HITL approval \u2192 remediation tracked"
+          ],
+          "performance_targets": {
+            "asset_search_p99": "200ms at 100k assets",
+            "provisioning_job_throughput": "50 concurrent jobs",
+            "scan_ingestion": "1000 findings per minute"
+          }
+        },
+        "acceptance_criteria": [
+          "All 5 E2E scenarios pass without manual intervention",
+          "p99 asset search latency \u2264200ms under load test with 100k asset dataset",
+          "50 concurrent provisioning jobs complete without deadlock or data corruption",
+          "Scan ingestion rate meets 1000 findings/min throughput target",
+          "E2E test report produced with pass/fail status and latency metrics",
+          "Load test simulates expected concurrent users",
+          "Failover scenario tested"
+        ],
+        "depends_on": [
+          20,
+          22
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 24,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines, production Docker images, monitoring stack (Prometheus + Grafana), alerting rules for compliance SLAs, and SRE runbooks.",
+        "payload": {
+          "ci_cd": "GitHub Actions: lint \u2192 test \u2192 build \u2192 deploy",
+          "stages": [
+            "pr_checks (lint, type-check, unit tests)",
+            "integration_tests (testcontainers)",
+            "docker_build_push",
+            "deploy_staging",
+            "smoke_test",
+            "deploy_production"
+          ],
+          "monitoring": {
+            "metrics": [
+              "api_latency_p99",
+              "celery_queue_depth",
+              "scan_job_failure_rate",
+              "license_over_allocation_count"
+            ],
+            "dashboards": [
+              "api_health",
+              "provisioning_throughput",
+              "compliance_coverage_pct"
+            ],
+            "alerts": [
+              "p99_latency > 500ms",
+              "scan_failure_rate > 5%",
+              "license_expiry_within_7_days"
+            ]
+          },
+          "runbooks": [
+            "incident_response",
+            "db_failover",
+            "celery_worker_scaling",
+            "scanner_credential_rotation"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs on every PR and blocks merge on test failure",
+          "Docker images built, tagged with git SHA, and pushed to registry on merge to main",
+          "Prometheus scrapes all 4 defined metrics with <1% loss",
+          "Grafana dashboards load all 3 panels with live data in staging",
+          "All 3 alert rules fire correctly in staging chaos test",
+          "4 runbooks reviewed and approved by operations manager"
+        ],
+        "depends_on": [
+          22,
+          23
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "OPERATIONS",
+        "description": "Define SLA tiers, write operational runbooks for day-2 operations, incident response playbooks, capacity planning model, and on-call rotation policy for the it_asset_management platform.",
+        "payload": {
+          "sla_tiers": {
+            "critical": "asset inventory API availability \u226599.9%",
+            "high": "compliance scan completion within 4h of schedule",
+            "medium": "provisioning job start within 60s of submission"
+          },
+          "runbooks": [
+            "database_backup_restore",
+            "scanner_integration_failure",
+            "celery_worker_exhaustion",
+            "license_sync_failure",
+            "security_incident_data_breach"
+          ],
+          "capacity_model": "scale Celery workers by queue depth, PG read replicas at 1000 assets"
+        },
+        "acceptance_criteria": [
+          "SLA document defines measurement method and breach notification process for each tier",
+          "All 5 runbooks include prerequisites, step-by-step procedure, rollback steps, and verification",
+          "Incident response playbook covers P1/P2/P3 classification and escalation path",
+          "Capacity model validated against E2E performance test data",
+          "On-call rotation policy covers 24/7 with at least 2 responders per shift"
+        ],
+        "depends_on": [
+          24
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 26,
+        "task_type": "TRAINING",
+        "description": "Produce user guides, administrator onboarding documentation, and training materials for IT admins, compliance auditors, and read-only viewers.",
+        "payload": {
+          "audience_guides": [
+            "IT Admin Guide: asset registration, bulk import, provisioning templates, lifecycle management",
+            "Compliance Auditor Guide: running scans, interpreting findings, exporting reports, ISO 27001 evidence collection",
+            "Read-Only Viewer Guide: navigating dashboards, generating reports",
+            "System Administrator Guide: RBAC configuration, scanner credentials, backup procedures"
+          ],
+          "formats": [
+            "Markdown in /docs",
+            "in-app tooltip overlays",
+            "onboarding checklist (first login)"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 4 audience guides cover complete task flows end-to-end",
+          "In-app onboarding checklist shown on first login and completable in <10 minutes",
+          "Every major UI action has a contextual tooltip or help link",
+          "Guides reviewed by representative from each user role for accuracy",
+          "Documentation published to /docs and linked from app Help menu",
+          "Admin guide separate from end-user guide",
+          "Role-based training paths defined"
+        ],
+        "depends_on": [
+          19,
+          25
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 27,
+        "task_type": "COMPLIANCE",
+        "description": "Compile final ISO 27001 and SOC 2 evidence package: completed control evidence artifacts, audit trail export, penetration test summary, and security scan coverage report.",
+        "payload": {
+          "evidence_artifacts": [
+            "asset_management_policy_signed",
+            "risk_register_final",
+            "control_traceability_matrix_with_test_evidence",
+            "pentest_report_summary",
+            "compliance_scan_coverage_report (% assets scanned in last 30 days)",
+            "audit_log_export_sample",
+            "RBAC_access_review_record"
+          ],
+          "standards": [
+            "ISO_27001_A.8",
+            "SOC_2_CC6",
+            "SOC_2_CC7"
+          ]
+        },
+        "acceptance_criteria": [
+          "100% of ISO 27001 A.8 controls have linked evidence artifact",
+          "100% of SOC 2 CC6 and CC7 controls have linked evidence artifact",
+          "Compliance scan coverage report shows \u226595% of active assets scanned within 30 days",
+          "Audit log export contains no gaps in event sequence",
+          "Evidence package reviewed and signed off by regulatory_specialist and legal_advisor"
+        ],
+        "depends_on": [
+          23,
+          24,
+          25
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 28,
+        "task_type": "DOCS",
+        "description": "Produce final technical documentation: architecture decision records (ADRs), API reference (generated from OpenAPI spec), deployment guide, and developer onboarding README.",
+        "payload": {
+          "documents": [
+            "ADR-001: Multi-Agent Coordinator pattern selection",
+            "ADR-002: PostgreSQL + Celery over event-sourcing",
+            "ADR-003: Scanner abstraction layer for vendor-agnostic integration",
+            "API reference (auto-generated from openapi.yaml)",
+            "Deployment guide (Docker Compose, Kubernetes Helm chart)",
+            "Developer README: local setup, make targets, test commands, env vars"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 3 ADRs include context, decision, and consequences sections",
+          "API reference renders all endpoints with examples at /docs",
+          "Deployment guide covers both Docker Compose and Kubernetes paths",
+          "Developer README enables a new engineer to run the full stack from scratch in <15 minutes",
+          "All docs spell-checked and cross-linked"
+        ],
+        "depends_on": [
+          27
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 28,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 63,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 63,
+          "final_review": {
+            "score": 63,
+            "flaws": [
+              "SOC 2 Type II is fundamentally misunderstood throughout the plan. Type II requires a 6-12 month observation period of continuous control operation \u2014 not a one-time artifact compilation. Step 27 treats it as a document exercise. This alone could invalidate the entire compliance track.",
+              "The provisioning service (Steps 9, 12, 17) never specifies the actual provisioning mechanism. 'OS image, software list, config scripts' describes content but not execution: MDM (Intune/Jamf), PXE/netboot, SSH/Ansible, WinRM, SCCM? Without this decision, Steps 12 and 17 cannot be implemented. This is the single most dangerous gap in the plan.",
+              "EOL date sourcing is completely unaddressed. Step 13 automates EOL-based lifecycle transitions but never answers where EOL dates come from. Vendor APIs (Dell, HP, Lenovo) have inconsistent or non-existent REST interfaces. Manual entry at scale defeats the purpose of lifecycle automation.",
+              "Step 14 acceptance criterion \u2014 'compliance_scan_agent produces remediation proposal with \u226580% accuracy on test finding set' \u2014 is untestable as written. There is no ground-truth remediation dataset defined, no accuracy metric formula, and no mention of who authors the test finding set. This criterion will be gamed or skipped.",
+              "OpenVAS is not a clean REST API. Greenbone Vulnerability Manager uses the OpenVAS Management Protocol (OMP/GMP) \u2014 XML-based, stateful, certificate-authenticated. The newer GSA REST API exists only in Greenbone Enterprise editions. Treating it as 'OpenVAS_REST_API' in Step 14 will block implementation for weeks.",
+              "Step 20 parallel wave claim is incorrect. The 'onboard new device' intent requires inventory_agent to complete before license_agent can recommend licenses, and both must complete before provisioning_agent can start. These are sequential dependencies, not parallelizable waves. The '2x single-agent time' acceptance criterion is physically impossible for this flow.",
+              "KMS integration for license key encryption is mentioned in Step 8 acceptance criteria ('License key storage confirmed to use AES-256 encryption with KMS') but no implementation step exists. Neither Step 6 (schema), Step 11 (service), nor Step 9 (config) plans KMS integration. This leaves a compliance-critical feature permanently in acceptance criteria hell.",
+              "Step 23 performance target '50 concurrent provisioning jobs' is untestable without specifying the infrastructure baseline \u2014 worker count, CPU/RAM allocation, target system capacity. A number without infrastructure context is meaningless and will either be trivially met or impossibly out of reach depending on hardware.",
+              "Audit log immutability (Step 8 requirement, Step 6 schema) is declared but not implemented anywhere. PostgreSQL has no native append-only enforcement. The plan never creates the triggers, separate append-only role, or WORM-equivalent mechanism. For ISO 27001 this is a control failure, not a documentation gap.",
+              "Step 28 references a Kubernetes Helm chart in the deployment guide, but Step 24 (DevOps) never creates the Helm chart. The documentation will reference infrastructure that doesn't exist.",
+              "The actual penetration test is never executed. Step 8 produces a pentest plan. No subsequent step runs it, reviews results, or tracks remediation. For SOC 2 and ISO 27001 this is a required evidence artifact, not an optional exercise.",
+              "Bulk CSV/XLSX import in Step 10 requires a background task with progress tracking for the 10,000-row target, but the implementation description implies synchronous processing. A 30-second HTTP timeout will kill the request on most proxies and load balancers. No chunked processing, background job pattern, or import status polling endpoint is designed."
+            ],
+            "suggestions": [
+              "Add a Step 2.5 or Step 9 decision gate: 'Select and spike provisioning mechanism.' Output: ADR selecting MDM vs Ansible vs WinRM with a working proof-of-concept against one real target type. Nothing in Steps 12/17 should proceed without this decision locked.",
+              "Replace Step 27's SOC 2 artifact compilation with a 'SOC 2 evidence collection framework' that instruments the running system to continuously capture control evidence during a defined observation window. The audit package is generated from this instrumentation, not assembled manually.",
+              "Add an EOL data sourcing step between Steps 2 and 6: evaluate Vendor API availability (Dell TechDirect, HP API, Lenovo PSREF), EOSL databases (ITAM Tool vendors), and CSV upload fallback. Decision must be in the schema before lifecycle automation is implemented.",
+              "Split Step 14's acceptance criterion into two measurable sub-criteria: (a) CVSS risk classification accuracy \u2014 machine-verifiable against NVD ground truth; (b) remediation proposal quality \u2014 evaluated against a curated 20-finding benchmark set authored during Step 21 QA planning, not after.",
+              "Add Redis Sentinel or Redis Cluster configuration to Step 9. Redis is a SPOF for Celery \u2014 a single-node Redis failure kills all background job processing including provisioning and compliance scans. This must be configured before Step 10.",
+              "Add a secrets management service (HashiCorp Vault or AWS Secrets Manager) to Step 9's docker_services. License key encryption keys, scanner credentials, and SMTP credentials should all be vault-backed from day one. Rotating a secret stored in .env on a running system is an operational incident.",
+              "Add API rate limiting (per-endpoint, per-user) to Step 7/Step 9. The compliance scan trigger endpoint is particularly dangerous \u2014 an authenticated user could queue thousands of scan jobs, saturating the scanner and blocking legitimate scans.",
+              "Decompose Step 20's 'parallel wave' into a directed acyclic graph with explicit sequential constraints. The onboarding flow is at minimum: inventory_agent \u2192 [license_agent, provisioning_agent in parallel] \u2192 compliance_scan_agent. Document this DAG in the coordinator design before implementation.",
+              "Add JWT refresh token rotation and a token revocation endpoint (Redis-backed blocklist) to Step 7. Without token revocation, a compromised token is valid until expiry \u2014 unacceptable for a system containing vulnerability data and license keys.",
+              "Add webhook signature verification (HMAC-SHA256) to Step 12's provisioning status webhook spec. Unsigned webhooks allow any network actor to spoof job completion or failure events.",
+              "Move PDF export in Step 18 from client-side (react-pdf) to server-side generation. Compliance report PDFs must be reproducible from server state, not dependent on client-side rendering environment. Use WeasyPrint or Puppeteer server-side.",
+              "Add Active Directory / LDAP integration as a dependency for Steps 10 and 11. Asset-to-user assignment and license-to-user assignment both require a canonical user identity source. Without LDAP/AD sync, user data will drift and assignments will be orphaned when employees leave."
+            ],
+            "missing": [
+              "Asset auto-discovery mechanism: NMAP network scan, SNMP polling, or MDM agent enrollment. Manual-only import makes the system immediately stale in environments with dynamic device pools.",
+              "MDM platform integration (Microsoft Intune, Jamf Pro, VMware Workspace ONE) \u2014 the actual control plane for device provisioning, policy enforcement, and remote wipe. Without this, 'automated provisioning' and 'data wipe' are fictional.",
+              "Active Directory / LDAP / SCIM sync for user identity. All user-asset and user-license assignments require a live identity source, not manual user records.",
+              "Database connection pooling (PgBouncer) for the Celery worker pool. Without pooling, 50 concurrent provisioning workers will exhaust PostgreSQL's connection limit.",
+              "Infrastructure as Code (Terraform or Pulumi) for production environment. Docker Compose is local-dev only; production infrastructure has no IaC definition.",
+              "Secrets rotation procedures and automated secret rotation jobs for scanner credentials and database passwords.",
+              "SIEM/log forwarding integration. For SOC 2 and ISO 27001, security events need to flow to a centralized SIEM. No mention of syslog, Splunk, or CloudWatch forwarding.",
+              "Asset ownership and attribute-level authorization model. RBAC covers roles but not row-level security \u2014 a compliance_auditor for Department A should not be able to trigger scans on Department B's assets.",
+              "Ongoing OSS license scanning in CI (FOSSA, Snyk, or similar). Step 3's OSS inventory is a one-time snapshot; new dependencies will accumulate GPL violations undetected.",
+              "Database backup automation: a scheduled pg_dump Celery beat job, backup verification, and offsite storage configuration. Step 25 has a runbook but no implementation.",
+              "SOC 2 Trust Services Criteria beyond CC6/CC7: Availability (CC3.1, A-series), Confidentiality, and Processing Integrity criteria are all relevant for an asset management platform and are absent from the compliance scope."
+            ],
+            "security_risks": [
+              "KMS key bootstrap problem: if the KMS integration for license key encryption is never implemented (it isn't in any step), license keys will be stored in plaintext or with a hardcoded key, directly violating the Step 8 acceptance criterion and ISO 27001 A.10.1.",
+              "Scanner credential exposure: SCANNER_API_KEY stored in environment variables gives any process with env access \u2014 including the application code, any third-party library, or a SSRF exploit \u2014 access to a privileged network scanning credential. No vault isolation is planned.",
+              "Excel formula injection in CSV/XLSX bulk import (Step 10): cells beginning with '=', '+', '-', or '@' can execute formulas when opened in Excel by an IT admin reviewing imported data. No sanitization mentioned.",
+              "Webhook spoofing in provisioning (Step 12): without HMAC signature verification, an attacker on the internal network (or via SSRF) can POST false job completion events, causing the system to mark provisioning jobs as successful when they failed or were never run.",
+              "Insecure direct object reference on compliance scans: Step 14 allows GET /compliance/scans/{id}/report with only JWT auth. If scan IDs are sequential integers, any authenticated user can enumerate and read vulnerability reports for assets they don't own. No asset-level ownership check is specified.",
+              "Audit log tampering: without cryptographic chaining (each log entry hashing the previous) or an external write-once store, a database admin can delete or modify audit log entries. For ISO 27001 A.12.4.2 this is a direct control failure.",
+              "JWT algorithm confusion: no mention of enforcing RS256 or ES256 in JWT validation. If the library defaults accept 'none' or HS256 with a guessable key, authentication can be bypassed entirely.",
+              "Celery task deserialization: default Celery pickle serializer is a remote code execution vector. The plan should explicitly mandate JSON serializer and task routing via named queues with strict accept lists."
+            ],
+            "summary": "This is a thorough, well-structured plan that covers the right surfaces \u2014 compliance artifacts, security design, agentic patterns, and operational readiness are all represented. However, it has several production-blocking gaps that a score above 63 cannot overlook. The most critical: the provisioning mechanism is never decided (the entire provisioning subsystem is built on an unstated assumption about HOW devices are actually provisioned); SOC 2 Type II is treated as a document artifact exercise when it legally requires months of continuous evidence collection; KMS key management for license encryption is required in acceptance criteria but implemented nowhere; and the 'parallel wave' coordinator design contains sequential dependencies that invalidate its core performance claim. For a production system with ISO 27001 and SOC 2 Type II in scope, these are not polish items \u2014 they are architectural decisions that, if deferred, will trigger expensive rework after significant development investment. The compliance and provisioning tracks need a design review and spike phase before backend implementation begins.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 63,
+              "flaws": [
+                "SOC 2 Type II is fundamentally misunderstood throughout the plan. Type II requires a 6-12 month observation period of continuous control operation \u2014 not a one-time artifact compilation. Step 27 treats it as a document exercise. This alone could invalidate the entire compliance track.",
+                "The provisioning service (Steps 9, 12, 17) never specifies the actual provisioning mechanism. 'OS image, software list, config scripts' describes content but not execution: MDM (Intune/Jamf), PXE/netboot, SSH/Ansible, WinRM, SCCM? Without this decision, Steps 12 and 17 cannot be implemented. This is the single most dangerous gap in the plan.",
+                "EOL date sourcing is completely unaddressed. Step 13 automates EOL-based lifecycle transitions but never answers where EOL dates come from. Vendor APIs (Dell, HP, Lenovo) have inconsistent or non-existent REST interfaces. Manual entry at scale defeats the purpose of lifecycle automation.",
+                "Step 14 acceptance criterion \u2014 'compliance_scan_agent produces remediation proposal with \u226580% accuracy on test finding set' \u2014 is untestable as written. There is no ground-truth remediation dataset defined, no accuracy metric formula, and no mention of who authors the test finding set. This criterion will be gamed or skipped.",
+                "OpenVAS is not a clean REST API. Greenbone Vulnerability Manager uses the OpenVAS Management Protocol (OMP/GMP) \u2014 XML-based, stateful, certificate-authenticated. The newer GSA REST API exists only in Greenbone Enterprise editions. Treating it as 'OpenVAS_REST_API' in Step 14 will block implementation for weeks.",
+                "Step 20 parallel wave claim is incorrect. The 'onboard new device' intent requires inventory_agent to complete before license_agent can recommend licenses, and both must complete before provisioning_agent can start. These are sequential dependencies, not parallelizable waves. The '2x single-agent time' acceptance criterion is physically impossible for this flow.",
+                "KMS integration for license key encryption is mentioned in Step 8 acceptance criteria ('License key storage confirmed to use AES-256 encryption with KMS') but no implementation step exists. Neither Step 6 (schema), Step 11 (service), nor Step 9 (config) plans KMS integration. This leaves a compliance-critical feature permanently in acceptance criteria hell.",
+                "Step 23 performance target '50 concurrent provisioning jobs' is untestable without specifying the infrastructure baseline \u2014 worker count, CPU/RAM allocation, target system capacity. A number without infrastructure context is meaningless and will either be trivially met or impossibly out of reach depending on hardware.",
+                "Audit log immutability (Step 8 requirement, Step 6 schema) is declared but not implemented anywhere. PostgreSQL has no native append-only enforcement. The plan never creates the triggers, separate append-only role, or WORM-equivalent mechanism. For ISO 27001 this is a control failure, not a documentation gap.",
+                "Step 28 references a Kubernetes Helm chart in the deployment guide, but Step 24 (DevOps) never creates the Helm chart. The documentation will reference infrastructure that doesn't exist.",
+                "The actual penetration test is never executed. Step 8 produces a pentest plan. No subsequent step runs it, reviews results, or tracks remediation. For SOC 2 and ISO 27001 this is a required evidence artifact, not an optional exercise.",
+                "Bulk CSV/XLSX import in Step 10 requires a background task with progress tracking for the 10,000-row target, but the implementation description implies synchronous processing. A 30-second HTTP timeout will kill the request on most proxies and load balancers. No chunked processing, background job pattern, or import status polling endpoint is designed."
+              ],
+              "suggestions": [
+                "Add a Step 2.5 or Step 9 decision gate: 'Select and spike provisioning mechanism.' Output: ADR selecting MDM vs Ansible vs WinRM with a working proof-of-concept against one real target type. Nothing in Steps 12/17 should proceed without this decision locked.",
+                "Replace Step 27's SOC 2 artifact compilation with a 'SOC 2 evidence collection framework' that instruments the running system to continuously capture control evidence during a defined observation window. The audit package is generated from this instrumentation, not assembled manually.",
+                "Add an EOL data sourcing step between Steps 2 and 6: evaluate Vendor API availability (Dell TechDirect, HP API, Lenovo PSREF), EOSL databases (ITAM Tool vendors), and CSV upload fallback. Decision must be in the schema before lifecycle automation is implemented.",
+                "Split Step 14's acceptance criterion into two measurable sub-criteria: (a) CVSS risk classification accuracy \u2014 machine-verifiable against NVD ground truth; (b) remediation proposal quality \u2014 evaluated against a curated 20-finding benchmark set authored during Step 21 QA planning, not after.",
+                "Add Redis Sentinel or Redis Cluster configuration to Step 9. Redis is a SPOF for Celery \u2014 a single-node Redis failure kills all background job processing including provisioning and compliance scans. This must be configured before Step 10.",
+                "Add a secrets management service (HashiCorp Vault or AWS Secrets Manager) to Step 9's docker_services. License key encryption keys, scanner credentials, and SMTP credentials should all be vault-backed from day one. Rotating a secret stored in .env on a running system is an operational incident.",
+                "Add API rate limiting (per-endpoint, per-user) to Step 7/Step 9. The compliance scan trigger endpoint is particularly dangerous \u2014 an authenticated user could queue thousands of scan jobs, saturating the scanner and blocking legitimate scans.",
+                "Decompose Step 20's 'parallel wave' into a directed acyclic graph with explicit sequential constraints. The onboarding flow is at minimum: inventory_agent \u2192 [license_agent, provisioning_agent in parallel] \u2192 compliance_scan_agent. Document this DAG in the coordinator design before implementation.",
+                "Add JWT refresh token rotation and a token revocation endpoint (Redis-backed blocklist) to Step 7. Without token revocation, a compromised token is valid until expiry \u2014 unacceptable for a system containing vulnerability data and license keys.",
+                "Add webhook signature verification (HMAC-SHA256) to Step 12's provisioning status webhook spec. Unsigned webhooks allow any network actor to spoof job completion or failure events.",
+                "Move PDF export in Step 18 from client-side (react-pdf) to server-side generation. Compliance report PDFs must be reproducible from server state, not dependent on client-side rendering environment. Use WeasyPrint or Puppeteer server-side.",
+                "Add Active Directory / LDAP integration as a dependency for Steps 10 and 11. Asset-to-user assignment and license-to-user assignment both require a canonical user identity source. Without LDAP/AD sync, user data will drift and assignments will be orphaned when employees leave."
+              ],
+              "missing": [
+                "Asset auto-discovery mechanism: NMAP network scan, SNMP polling, or MDM agent enrollment. Manual-only import makes the system immediately stale in environments with dynamic device pools.",
+                "MDM platform integration (Microsoft Intune, Jamf Pro, VMware Workspace ONE) \u2014 the actual control plane for device provisioning, policy enforcement, and remote wipe. Without this, 'automated provisioning' and 'data wipe' are fictional.",
+                "Active Directory / LDAP / SCIM sync for user identity. All user-asset and user-license assignments require a live identity source, not manual user records.",
+                "Database connection pooling (PgBouncer) for the Celery worker pool. Without pooling, 50 concurrent provisioning workers will exhaust PostgreSQL's connection limit.",
+                "Infrastructure as Code (Terraform or Pulumi) for production environment. Docker Compose is local-dev only; production infrastructure has no IaC definition.",
+                "Secrets rotation procedures and automated secret rotation jobs for scanner credentials and database passwords.",
+                "SIEM/log forwarding integration. For SOC 2 and ISO 27001, security events need to flow to a centralized SIEM. No mention of syslog, Splunk, or CloudWatch forwarding.",
+                "Asset ownership and attribute-level authorization model. RBAC covers roles but not row-level security \u2014 a compliance_auditor for Department A should not be able to trigger scans on Department B's assets.",
+                "Ongoing OSS license scanning in CI (FOSSA, Snyk, or similar). Step 3's OSS inventory is a one-time snapshot; new dependencies will accumulate GPL violations undetected.",
+                "Database backup automation: a scheduled pg_dump Celery beat job, backup verification, and offsite storage configuration. Step 25 has a runbook but no implementation.",
+                "SOC 2 Trust Services Criteria beyond CC6/CC7: Availability (CC3.1, A-series), Confidentiality, and Processing Integrity criteria are all relevant for an asset management platform and are absent from the compliance scope."
+              ],
+              "security_risks": [
+                "KMS key bootstrap problem: if the KMS integration for license key encryption is never implemented (it isn't in any step), license keys will be stored in plaintext or with a hardcoded key, directly violating the Step 8 acceptance criterion and ISO 27001 A.10.1.",
+                "Scanner credential exposure: SCANNER_API_KEY stored in environment variables gives any process with env access \u2014 including the application code, any third-party library, or a SSRF exploit \u2014 access to a privileged network scanning credential. No vault isolation is planned.",
+                "Excel formula injection in CSV/XLSX bulk import (Step 10): cells beginning with '=', '+', '-', or '@' can execute formulas when opened in Excel by an IT admin reviewing imported data. No sanitization mentioned.",
+                "Webhook spoofing in provisioning (Step 12): without HMAC signature verification, an attacker on the internal network (or via SSRF) can POST false job completion events, causing the system to mark provisioning jobs as successful when they failed or were never run.",
+                "Insecure direct object reference on compliance scans: Step 14 allows GET /compliance/scans/{id}/report with only JWT auth. If scan IDs are sequential integers, any authenticated user can enumerate and read vulnerability reports for assets they don't own. No asset-level ownership check is specified.",
+                "Audit log tampering: without cryptographic chaining (each log entry hashing the previous) or an external write-once store, a database admin can delete or modify audit log entries. For ISO 27001 A.12.4.2 this is a direct control failure.",
+                "JWT algorithm confusion: no mention of enforcing RS256 or ES256 in JWT validation. If the library defaults accept 'none' or HS256 with a guessable key, authentication can be bypassed entirely.",
+                "Celery task deserialization: default Celery pickle serializer is a remote code execution vector. The plan should explicitly mandate JSON serializer and task routing via named queues with strict accept lists."
+              ],
+              "summary": "This is a thorough, well-structured plan that covers the right surfaces \u2014 compliance artifacts, security design, agentic patterns, and operational readiness are all represented. However, it has several production-blocking gaps that a score above 63 cannot overlook. The most critical: the provisioning mechanism is never decided (the entire provisioning subsystem is built on an unstated assumption about HOW devices are actually provisioned); SOC 2 Type II is treated as a document artifact exercise when it legally requires months of continuous evidence collection; KMS key management for license encryption is required in acceptance criteria but implemented nowhere; and the 'parallel wave' coordinator design contains sequential dependencies that invalidate its core performance claim. For a production system with ISO 27001 and SOC 2 Type II in scope, these are not polish items \u2014 they are architectural decisions that, if deferred, will trigger expensive rework after significant development investment. The compliance and provisioning tracks need a design review and spike phase before backend implementation begins.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T11:49:35.041209+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 145.99,
+      "critic_plan": 118.79
+    }
+  }
+}

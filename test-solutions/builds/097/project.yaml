@@ -1,0 +1,64 @@
+project_name: procurement_system
+display_name: Procurement System
+version: 1.0.0
+domain: enterprise
+description: Enterprise procurement system with purchase requisitions, vendor management,
+  RFQ process, PO generation, invoice matching, and spend analytics.
+detected_domains: []
+compliance_standards:
+- SOC 2
+- SOX
+- ISO 27001
+- GDPR
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- LEGAL
+- OPERATIONS
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- developer
+- devops_engineer
+- legal_advisor
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

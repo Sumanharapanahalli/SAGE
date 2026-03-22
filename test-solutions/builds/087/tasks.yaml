@@ -1,0 +1,304 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the pet care app market: competitor landscape (Rover, Wag,
+      PetDesk, Vetster), user segments (pet owners, vets, sitters), pricing models,
+      and go-to-market strategy for pet_care launch.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers at least 5 apps with feature, pricing, and rating comparison
+    - At least 3 distinct user personas defined with goals and pain points
+    - Go-to-market strategy documented with channel prioritization
+    - Monetization model recommended (freemium, commission, subscription) with rationale
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Produce the Product Requirements Document (PRD) for pet_care covering
+      all six feature areas: vet booking, vaccination reminders, health records, sitter
+      marketplace, lost pet alerts, and community forums. Define MVP scope, roadmap
+      phases, and success metrics.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all six features with user stories and acceptance criteria per feature
+    - MVP vs V2 scope explicitly defined and justified
+    - Success metrics defined with baseline targets for each KPI
+    - Roadmap contains at least 3 phased milestones with milestone exit criteria
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all primary flows:
+      onboarding/pet profile setup, vet appointment booking, vaccination reminder
+      configuration, health record upload/view, sitter marketplace search and booking,
+      lost pet alert creation, and forum browsing.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User journey maps completed for all 6 feature flows
+    - Low-fidelity wireframes cover all primary screens (min 30 screens)
+    - Accessibility audit confirms WCAG 2.1 AA compliance plan
+    - Component library spec defined for design system handoff
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 specification for all pet_care backend endpoints:
+      auth, pet profiles, vet booking, vaccinations, health records, sitter marketplace,
+      lost pet alerts, community forums, and notifications.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec passes validation with zero errors
+    - All 6 feature domains have full CRUD endpoint definitions
+    - Auth flows documented with token refresh and OAuth2 callback paths
+    - Error schema standardized across all endpoints (RFC 7807 Problem Details)
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design and implement the PostgreSQL schema for pet_care: users,
+      pets, vet_profiles, appointments, vaccination_records, health_documents, sitter_profiles,
+      marketplace_listings, bookings, lost_pet_alerts, forum_posts, and notifications.
+      Include indexes, FK constraints, and migration files.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables created with correct FK constraints and indexes
+    - Alembic migration runs cleanly from empty schema
+    - Soft-delete pattern (deleted_at) applied to all user-facing tables
+    - ERD diagram generated and committed to docs/
+    - Seed script populates test fixtures for all tables
+    depends_on:
+    - 4
+  CONFIG:
+    description: 'Set up the SAGE solution configuration for pet_care: scaffold project.yaml,
+      prompts.yaml, and tasks.yaml defining agent roles (vet_booking_agent, reminder_agent,
+      marketplace_agent, alert_agent), active modules, and theme branding.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml passes SAGE YAML validation
+    - prompts.yaml defines system prompts for all 5 agent roles
+    - tasks.yaml registers all task types needed for pet_care domain
+    - make run PROJECT=pet_care starts without errors
+    - Theme branding applied (sidebar colors, badge colors defined)
+    depends_on:
+    - 2
+  INFRA:
+    description: Set up Docker Compose for local development (API, PostgreSQL, Redis
+      for job queues, MinIO for file storage), and production-ready Dockerfile for
+      the backend. Configure environment variable management and secrets handling.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up starts all services cleanly
+    - All service healthchecks pass within 60 seconds
+    - MinIO bucket auto-provisioned for pet health documents and profile photos
+    - API container starts and responds to GET /health within 5 seconds
+    - No secrets committed to version control
+    depends_on:
+    - 5
+  BACKEND:
+    description: 'Build core backend services: user authentication (JWT + OAuth2 Google/Apple),
+      pet profile management (CRUD, multi-pet per user), file upload service for health
+      documents and photos, and push notification infrastructure (FCM + APNs via Expo).'
+    agent_role: developer
+    acceptance_criteria:
+    - User registration, login, token refresh, and OAuth2 flows all return correct
+      responses
+    - Pet CRUD endpoints enforce ownership (user can only access own pets)
+    - File upload accepts JPEG/PNG/PDF up to 20MB and stores in MinIO with signed
+      URLs
+    - Push notification test endpoint successfully delivers to a registered device
+      token
+    - All endpoints return proper 401/403 on unauthorized access
+    depends_on:
+    - 5
+    - 7
+  AGENTIC:
+    description: 'Implement coordinator agentic pattern for pet_care: a central PetCareCoordinator
+      decomposes incoming tasks (health anomaly detected, overdue vaccine, lost pet
+      nearby) and routes to specialist agents (health_record_analyst for anomaly review,
+      reminder_scheduler_agent for missed vaccines, lost_pet_alert_agent for proximity
+      matching). Use ReAct loop within each specialist.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes health anomaly task to health_record_analyst
+    - Coordinator correctly routes overdue vaccine task to reminder_scheduler_agent
+    - HITL gate pauses execution for health_anomaly and creates SAGE proposal
+    - Each specialist agent uses ReAct Thought→Action→Observation loop (logged)
+    - Vector store retrieves prior similar cases to enrich agent context
+    depends_on:
+    - 6
+    - 10
+    - 12
+  FRONTEND:
+    description: 'Build the React Native (Expo) mobile app foundation: navigation
+      shell (React Navigation), auth screens (login, register, OAuth buttons), onboarding
+      flow (pet profile creation wizard), and global design system (colors, typography,
+      component primitives) derived from UX spec.'
+    agent_role: developer
+    acceptance_criteria:
+    - App launches on iOS and Android simulators without errors
+    - Auth flow (register → verify email → onboarding) completes end-to-end
+    - Pet profile creation wizard saves pet and navigates to home tab
+    - Design system components (Button, Input, Card, Avatar) render consistently on
+      both platforms
+    - OAuth2 Google login completes and returns valid JWT
+    depends_on:
+    - 3
+    - 8
+  SECURITY:
+    description: 'Perform security review of pet_care backend: threat model for user
+      data (health records, location data, payment info), input validation audit,
+      auth token hardening, file upload security (MIME validation, virus scan stub),
+      rate limiting, and GDPR data access/deletion endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model documented for all 6 feature areas
+    - All file uploads validate MIME type server-side and reject non-image/PDF inputs
+    - Rate limiting enforced on auth endpoints (max 5 attempts per minute per IP)
+    - GET /users/me/export returns all user data as GDPR data export
+    - DELETE /users/me triggers full data deletion cascade within 30 days (logged)
+    - JWT tokens expire in 1 hour with 7-day refresh token rotation
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, and marketplace-specific
+      Sitter Agreement for pet_care. Cover user data handling (health records, location),
+      GDPR/CCPA rights, marketplace transaction terms, lost pet alert liability disclaimer,
+      and community forum content moderation policy.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all data types collected (health records, location, payment)
+      with legal basis
+    - GDPR Section enumerates all data subject rights with exercise instructions
+    - Sitter Agreement covers liability, background check disclosure, and payment
+      terms
+    - Lost pet disclaimer limits platform liability for alert outcomes
+    - Community Guidelines specify prohibited content and moderation process
+    depends_on:
+    - 2
+  LOCALIZATION:
+    description: Set up i18n infrastructure for pet_care React Native app using i18next
+      + react-i18next. Extract all UI strings to en.json base locale. Configure locale
+      detection (device language). Set up translation config for es, fr, de, pt as
+      initial target locales.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All visible UI strings extracted to en.json (zero hardcoded strings in components)
+    - App renders correctly when device locale set to es, fr, de, pt (using placeholder
+      translations)
+    - Date/time formatting respects locale conventions (DD/MM/YYYY vs MM/DD/YYYY)
+    - i18next-scanner CI check fails build if new hardcoded strings are introduced
+    - Pluralization rules verified for vaccine count strings in at least 3 locales
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: auth
+      flows, pet CRUD, vet booking (including double-booking prevention), vaccination
+      reminder scheduling, marketplace search, lost pet alert broadcast, and forum
+      endpoints. Target 80% line coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest suite passes with zero failures
+    - Line coverage >= 80% across src/
+    - 'Double-booking prevention test: concurrent booking requests result in exactly
+      one success'
+    - 'Reminder scheduling test: Celery task fires within simulated time window'
+    - 'Geo-radius search test: returns correct sitters within 10km, excludes those
+      at 15km'
+    - Auth tests cover valid login, expired token, invalid token, and OAuth2 callback
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+  QA:
+    description: 'Define and execute QA test plan for pet_care: functional test cases
+      per feature area, edge cases (no vets available, lost pet alert with no nearby
+      users, marketplace with no sitters), regression checklist, and exploratory testing
+      session report.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan document covers all 6 feature areas with min 10 test cases each
+    - Edge case scenarios documented and tested (empty states, no-results, offline
+      mode)
+    - All P0/P1 test cases pass before release candidate
+    - Exploratory testing session report lists discovered bugs with severity ratings
+    - Regression checklist defined for all critical user journeys
+    depends_on:
+    - 15
+    - 16
+    - 17
+    - 18
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: GitHub Actions workflows for backend (lint,
+      test, build Docker image, push to GHCR), frontend (lint, type-check, Expo EAS
+      build), and deployment to staging (Railway or Render). Configure monitoring
+      with Sentry (errors) and basic uptime checks.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Push to main triggers backend test suite, build, and staging deploy within 5
+      minutes
+    - EAS Build produces .ipa and .apk for staging on push to main
+    - Sentry DSN configured and test error captured from both backend and RN app
+    - Staging environment passes all /health endpoint checks post-deploy
+    - CI fails and blocks merge on test failures or lint errors
+    depends_on:
+    - 7
+    - 22
+  TRAINING:
+    description: 'Produce user onboarding and help documentation for pet_care: in-app
+      onboarding tooltips script, help center articles for all 6 features, vet onboarding
+      guide (how to set up profile and availability), sitter onboarding guide, and
+      App Store / Google Play listing copy.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Help center has minimum 18 articles (3 per feature area) with screenshots
+    - Vet onboarding guide covers profile creation, availability setup, and first
+      booking
+    - Sitter onboarding guide covers profile creation, background check step, and
+      first booking
+    - App Store description is under 4000 characters and highlights all 6 features
+    - In-app tooltip scripts delivered for minimum 15 key screens
+    depends_on:
+    - 3
+    - 23
+  DATA:
+    description: 'Design analytics data pipeline for pet_care: define event schema
+      (app_open, booking_created, reminder_dismissed, alert_created, forum_post_created),
+      instrument Expo analytics or Segment, and create dashboard queries for KPI tracking
+      (DAU, booking conversion, alert response time).'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Event schema documented with all properties per event type
+    - Segment tracking calls instrumented in RN app for all defined events
+    - BigQuery tables receive events within 1 hour of instrumentation
+    - KPI dashboard renders DAU, booking conversion rate, and alert response time
+    - Funnel analysis for booking flow (search → view → book → confirm) queryable
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  DOCS:
+    description: 'Write technical documentation: API reference (auto-generated from
+      OpenAPI spec via Redoc), backend architecture overview, SAGE agent configuration
+      guide for pet_care, deployment runbook, and contributing guide for the solution
+      repo.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Redoc site renders all endpoints with request/response examples
+    - Architecture diagram accurately reflects backend, database, workers, and storage
+      components
+    - 'Deployment runbook tested: a new engineer can deploy staging from scratch following
+      it'
+    - SAGE agent config guide explains how to add a new specialist agent role
+    - Contributing guide covers branch naming, PR template, and test requirements
+    depends_on:
+    - 13
+    - 24

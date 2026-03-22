@@ -1,0 +1,993 @@
+{
+  "run_id": "942b82ce-34b7-4620-85c4-ab7079c24a3b",
+  "status": {
+    "run_id": "942b82ce-34b7-4620-85c4-ab7079c24a3b",
+    "solution_name": "payment_gateway",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T00:06:11.480363+00:00",
+    "updated_at": "2026-03-22T00:11:04.682698+00:00",
+    "product_description": "Multi-PSP payment gateway with card processing, digital wallets (Apple Pay, Google Pay), BNPL integration, subscription billing, and PCI DSS Level 1 certification.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define payment gateway business requirements: PSP routing logic, supported payment methods (cards, Apple Pay, Google Pay, BNPL providers), subscription models, merchant onboarding flow, refund and dispute policies, SLA targets, and revenue model.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "deliverables": [
+            "BRD",
+            "user_stories",
+            "process_flow_diagrams",
+            "PSP_selection_matrix"
+          ],
+          "psp_targets": [
+            "Stripe",
+            "Adyen",
+            "Braintree",
+            "PayPal"
+          ],
+          "bnpl_providers": [
+            "Affirm",
+            "Klarna",
+            "Afterpay"
+          ]
+        },
+        "acceptance_criteria": [
+          "BRD covers all five payment method families (card, Apple Pay, Google Pay, BNPL, subscription)",
+          "PSP routing rules documented with failover logic",
+          "Merchant onboarding flow mapped end-to-end",
+          "SLA targets defined for payment latency, uptime, and dispute resolution"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce product requirements document (PRD), prioritised roadmap (MVP vs. post-launch), and success metrics (authorization rate, latency p99, chargeback rate, PCI audit pass). Define merchant-facing API contract surface.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "deliverables": [
+            "PRD",
+            "roadmap",
+            "API_surface_overview",
+            "KPI_dashboard_spec"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD lists all features with priority and acceptance criteria",
+          "MVP scope clearly separated from phase-2 features",
+          "KPIs are measurable and tied to business goals",
+          "API surface lists all merchant-facing endpoints"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "SECURITY",
+        "description": "Produce threat model (STRIDE), PCI DSS Level 1 scope definition, data flow diagrams showing cardholder data environment (CDE), network segmentation plan, encryption key management strategy, and penetration test plan.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "standards": [
+            "PCI DSS v4.0",
+            "SOC 2 Type II",
+            "SOX"
+          ],
+          "deliverables": [
+            "threat_model",
+            "CDE_scope_diagram",
+            "network_segmentation_plan",
+            "key_management_spec",
+            "pentest_plan",
+            "SBOM"
+          ],
+          "tools": [
+            "STRIDE",
+            "OWASP Threat Dragon"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 12 PCI DSS requirements mapped to controls in scope",
+          "CDE boundary clearly defined with in-scope systems listed",
+          "Network segmentation plan reviewed by security lead",
+          "Key management spec covers HSM usage, key rotation, and ceremony procedures",
+          "SBOM generated for all third-party dependencies",
+          "Penetration test plan approved covering internal, external, and social engineering vectors",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 4,
+        "task_type": "COMPLIANCE",
+        "description": "Build PCI DSS Level 1 compliance artifact set: Risk Assessment, Responsibility Assignment Matrix (RAM), System Inventory (asset register), Policies and Procedures documentation, Traceability Matrix mapping controls to requirements, and Report on Compliance (RoC) template. Include SOC 2 Trust Service Criteria mapping and SOX IT general controls (ITGC) checklist.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "standards": [
+            "PCI DSS v4.0 Level 1",
+            "SOC 2 Type II",
+            "SOX ITGC"
+          ],
+          "deliverables": [
+            "risk_assessment",
+            "RAM",
+            "asset_register",
+            "policy_suite",
+            "traceability_matrix",
+            "RoC_template",
+            "SOC2_mapping",
+            "SOX_ITGC_checklist"
+          ],
+          "qsa_readiness": true
+        },
+        "acceptance_criteria": [
+          "All 12 PCI DSS requirements have at least one documented control",
+          "Traceability matrix links every control to evidence artifact",
+          "Policy suite covers acceptable use, incident response, change management, and access control",
+          "SOC 2 CC series (Security, Availability, Confidentiality) fully mapped",
+          "SOX ITGC checklist covers access management, change management, and backup/recovery"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Design merchant dashboard UX: payment analytics, transaction search/filter, dispute management, subscription plan management, webhook configuration, and developer API key management. Include checkout widget UX for card, Apple Pay, and Google Pay flows.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "deliverables": [
+            "wireframes",
+            "prototype",
+            "accessibility_audit",
+            "design_system_tokens"
+          ],
+          "screens": [
+            "dashboard",
+            "transactions",
+            "disputes",
+            "subscriptions",
+            "webhooks",
+            "api_keys",
+            "checkout_widget"
+          ]
+        },
+        "acceptance_criteria": [
+          "All screens wireframed and reviewed with product manager",
+          "Checkout widget flow covers card, Apple Pay, Google Pay, and BNPL selection",
+          "Accessibility audit confirms WCAG 2.1 AA compliance",
+          "Design tokens exported for frontend implementation"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "DATABASE",
+        "description": "Design and implement the core database schema: merchants, payment_intents, transactions, payment_methods (tokenized), subscriptions, subscription_plans, invoices, disputes, refunds, webhook_endpoints, audit_log, and psp_routing_rules. All cardholder data fields must use column-level encryption. Migrations via Alembic (Python) or Flyway (JVM). Seed data for dev/staging.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "engine": "PostgreSQL 16",
+          "migration_tool": "Alembic",
+          "encryption": "AES-256 column-level for PAN, CVV references never stored",
+          "tables": [
+            "merchants",
+            "payment_intents",
+            "transactions",
+            "payment_methods",
+            "subscriptions",
+            "subscription_plans",
+            "invoices",
+            "disputes",
+            "refunds",
+            "webhook_endpoints",
+            "audit_log",
+            "psp_routing_rules",
+            "api_keys"
+          ],
+          "pii_fields_encrypted": true,
+          "row_level_security": true
+        },
+        "acceptance_criteria": [
+          "All tables have primary keys, FK constraints, and indexes on query-hot columns",
+          "No raw PAN or CVV stored anywhere in the schema",
+          "Audit_log table is append-only (no UPDATE/DELETE permissions granted)",
+          "Row-level security enforces merchant data isolation",
+          "Migrations run cleanly from zero on a fresh PostgreSQL instance",
+          "Seed data covers at least 3 test merchants with representative transactions",
+          "Transaction isolation level documented",
+          "Audit trail on all writes"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specification for all merchant-facing REST endpoints: payment intents (create, confirm, cancel, capture), refunds, disputes, payment methods (attach, detach, list), subscriptions (create, update, cancel, pause), invoices, webhook management, and PSP health status. Include idempotency key design and webhook signature schema.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "spec_format": "OpenAPI 3.1",
+          "auth": "Bearer JWT + API key (header)",
+          "idempotency": "Idempotency-Key header, 24h window",
+          "versioning": "URL prefix /v1/",
+          "webhook_signature": "HMAC-SHA256"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors via Spectral linter",
+          "All endpoints have request/response schemas, error codes, and security requirements defined",
+          "Idempotency design documented with collision handling behaviour",
+          "Webhook payload schema and signature verification algorithm documented",
+          "API spec reviewed and approved by product manager and security lead"
+        ],
+        "depends_on": [
+          3,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "CONFIG",
+        "description": "Set up project configuration: Python monorepo structure, environment variable schema (PSP API keys via Vault, DB credentials, HMAC secrets), pre-commit hooks (Bandit, Ruff, detect-secrets), Docker Compose for local dev (Postgres, Redis, Vault dev mode), and .env.example. Configure agentic pattern: review_and_critique for payment processing logic with strict HITL gates on PSP credential access.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "language": "Python 3.12",
+          "secret_manager": "HashiCorp Vault",
+          "local_services": [
+            "PostgreSQL 16",
+            "Redis 7",
+            "Vault dev"
+          ],
+          "pre_commit_tools": [
+            "Bandit",
+            "Ruff",
+            "detect-secrets",
+            "mypy"
+          ],
+          "agentic_pattern": "review_and_critique",
+          "hitl_gates": [
+            "psp_credential_rotation",
+            "routing_rule_changes",
+            "subscription_plan_changes"
+          ]
+        },
+        "acceptance_criteria": [
+          "make dev starts all local services via Docker Compose",
+          "No secrets committed \u2014 detect-secrets baseline passes on initial commit",
+          "Bandit scan returns zero HIGH severity findings on project scaffold",
+          "Vault dev mode serves all required secrets to local services",
+          ".env.example documents every required environment variable with description"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement core payment processing engine: PaymentIntent state machine (created \u2192 processing \u2192 succeeded/failed/canceled), PSP abstraction layer with adapter pattern for Stripe, Adyen, and Braintree, adaptive PSP router with failover and retry (exponential backoff), idempotency middleware, and cardholder data tokenization service (delegating PAN storage to PSP vaults or network tokens).",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "framework": "FastAPI",
+          "state_machine_library": "transitions",
+          "psp_adapters": [
+            "StripeAdapter",
+            "AdyenAdapter",
+            "BraintreeAdapter"
+          ],
+          "routing_strategy": "cost_optimized_with_failover",
+          "tokenization": "network_tokens_via_psp_vault",
+          "idempotency_store": "Redis"
+        },
+        "acceptance_criteria": [
+          "PaymentIntent state machine enforces valid transitions only (no skip states)",
+          "All three PSP adapters implement a common interface and are unit-testable with mocks",
+          "PSP router falls over to next PSP within 500ms on adapter timeout",
+          "Idempotency middleware returns identical response for duplicate Idempotency-Key within 24h",
+          "No raw PAN passes through application layer \u2014 only tokens and last-4 digits stored",
+          "All payment events emitted to audit_log with trace_id"
+        ],
+        "depends_on": [
+          6,
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement digital wallet integrations: Apple Pay (PKPaymentAuthorizationController server-side domain verification, payment token decryption via Merchant Identity Certificate, submission to PSP), Google Pay (server-side payment token decryption via Google Pay API, merchant authentication, PSP submission). Include wallet eligibility detection endpoint for frontend.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "apple_pay": {
+            "domain_verification": "/.well-known/apple-developer-merchantid-domain-association",
+            "token_decryption": "ECDH P-256 + AES-256-GCM",
+            "certificate_management": "Vault PKI"
+          },
+          "google_pay": {
+            "environment": "PRODUCTION",
+            "token_decryption": "ECDH P-256 + AES-256-GCM",
+            "merchant_id": "configured_via_env"
+          }
+        },
+        "acceptance_criteria": [
+          "Apple Pay domain verification file served correctly from /.well-known/ path",
+          "Apple Pay payment token decrypted server-side and submitted to PSP without exposing PAN to frontend",
+          "Google Pay payment token decrypted using correct key pair from Vault",
+          "Wallet eligibility endpoint returns correct flags based on device and browser context",
+          "Integration tests pass against Apple Pay and Google Pay sandbox environments"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement BNPL integration layer: adapters for Affirm, Klarna, and Afterpay/Clearpay. Implement BNPL eligibility check endpoint (order amount, customer context), redirect-based checkout flow, webhook handlers for BNPL authorization and capture events, and refund delegation back to BNPL provider.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "bnpl_adapters": [
+            "AffirmAdapter",
+            "KlarnaAdapter",
+            "AfterpayAdapter"
+          ],
+          "flow_type": "redirect_with_return_url",
+          "eligibility_check": true,
+          "min_order_amounts": {
+            "affirm": 50,
+            "klarna": 10,
+            "afterpay": 1
+          }
+        },
+        "acceptance_criteria": [
+          "BNPL eligibility endpoint returns provider availability and instalment preview within 200ms",
+          "Redirect flow returns merchant to configurable return_url with status and BNPL order ID",
+          "Webhook handlers validate BNPL provider signatures before processing",
+          "Refund to BNPL provider triggers within same session as merchant-initiated refund",
+          "All three adapters tested against sandbox environments"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement subscription billing engine: plan management (fixed, metered, tiered, per-seat), subscription lifecycle (trial \u2192 active \u2192 past_due \u2192 canceled \u2192 unpaid), dunning logic with configurable retry schedule (smart retries using card network advice codes), invoice generation, proration on plan changes, and usage-based billing aggregation.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "billing_models": [
+            "flat_rate",
+            "metered",
+            "tiered",
+            "per_seat"
+          ],
+          "dunning_retries": [
+            1,
+            3,
+            5,
+            7
+          ],
+          "network_decline_codes_handling": true,
+          "invoice_format": "PDF via WeasyPrint",
+          "proration": "immediate_with_credit_note"
+        },
+        "acceptance_criteria": [
+          "All four billing models produce correct invoice amounts verified by unit tests",
+          "Dunning retry scheduler respects configurable intervals and stops after max retries",
+          "Network advice codes (do_not_retry, try_again_later) respected in retry logic",
+          "Proration calculation matches Stripe billing proration formula within 1 cent",
+          "Invoice PDF generated with correct line items, tax, and merchant branding",
+          "Subscription state machine transitions are fully logged in audit_log"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement webhook delivery system: fan-out to merchant-configured endpoints, HMAC-SHA256 signature on every payload, delivery queue (Redis Streams), retry with exponential backoff (max 72h), event log with delivery status, and webhook event catalog (payment.succeeded, payment.failed, subscription.renewed, dispute.opened, etc.).",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "queue": "Redis Streams",
+          "signature": "HMAC-SHA256 via Stripe-Signature-style header",
+          "retry_window_hours": 72,
+          "event_catalog_size": 30
+        },
+        "acceptance_criteria": [
+          "Webhook delivered within 5 seconds of triggering event under normal load",
+          "HMAC-SHA256 signature verifiable by merchant using shared secret",
+          "Failed deliveries retried on exponential schedule up to 72h then marked exhausted",
+          "Event log queryable by event type, merchant, and date range",
+          "All 30 event types documented in event catalog with payload schema"
+        ],
+        "depends_on": [
+          9,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement merchant authentication and authorization layer: API key issuance (hashed storage, prefix-visible last-4), JWT session tokens for dashboard, role-based access control (RBAC: owner, admin, developer, viewer), IP allowlist per API key, rate limiting per merchant (configurable, Redis token bucket), and audit log of all auth events.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "api_key_hash": "Argon2id",
+          "jwt_library": "python-jose",
+          "rbac_roles": [
+            "owner",
+            "admin",
+            "developer",
+            "viewer"
+          ],
+          "rate_limiting": "Redis token bucket",
+          "ip_allowlist": true
+        },
+        "acceptance_criteria": [
+          "API key stored as Argon2id hash \u2014 plaintext never persisted after issuance",
+          "RBAC enforced on all endpoints \u2014 viewer cannot trigger payments or config changes",
+          "IP allowlist blocks requests from unlisted IPs with 403 and audit event",
+          "Rate limit returns 429 with Retry-After header and does not expose limit internals",
+          "All auth events (login, key creation, key rotation, failed auth) written to audit_log"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build the embeddable payment checkout widget (React + TypeScript): card form with real-time validation and bin lookup, Apple Pay button (PaymentRequest API), Google Pay button (Google Pay JS SDK), BNPL option selector with instalment preview, 3DS2 challenge flow integration, and PCI DSS SAQ A-EP compliant iframe architecture.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "framework": "React 18 + TypeScript",
+          "pci_architecture": "iframe hosted on payment_gateway domain (SAQ A-EP)",
+          "card_validation": "luhn + bin_lookup",
+          "3ds2_library": "Cardinal Commerce or Stripe.js 3DS2",
+          "bundler": "Vite"
+        },
+        "acceptance_criteria": [
+          "Card form validates number (Luhn), expiry, and CVV in real-time with accessible error messages",
+          "Apple Pay button only renders on supported devices/browsers",
+          "Google Pay button renders in PRODUCTION environment with correct merchant config",
+          "BNPL selector shows instalment preview fetched from eligibility endpoint",
+          "3DS2 challenge renders in modal and communicates result back to parent frame",
+          "Widget iframe served from separate subdomain (pay.payment_gateway.com) for SAQ A-EP compliance"
+        ],
+        "depends_on": [
+          10,
+          11,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build the merchant dashboard (React 18 + TypeScript): authentication (login, MFA setup, session management), transaction list with search/filter/export, payment detail view with timeline, dispute management (evidence upload, response), subscription and plan management, webhook configuration UI, API key management, and basic analytics charts (revenue, authorization rate, chargeback rate).",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "framework": "React 18 + TypeScript",
+          "charts": "Recharts",
+          "mfa": "TOTP (QR code setup)",
+          "file_upload": "dispute evidence (PDF, PNG, JPG \u2014 max 10MB)"
+        },
+        "acceptance_criteria": [
+          "Login flow supports email/password + TOTP MFA",
+          "Transaction list renders 10,000 rows with virtual scrolling without frame drops",
+          "Dispute evidence upload accepts PDF/PNG/JPG, validates file type and size client-side",
+          "Subscription management allows plan upgrade/downgrade with proration preview",
+          "API key page shows prefix-only after creation (never full key)",
+          "Analytics charts load within 2 seconds for 90-day date range"
+        ],
+        "depends_on": [
+          12,
+          13,
+          14,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "INFRA",
+        "description": "Design and implement cloud infrastructure: Kubernetes (EKS or GKE) with namespace isolation for CDE vs. non-CDE workloads, network policies enforcing CDE segmentation, TLS termination at ingress (cert-manager), WAF (AWS WAF or Cloud Armor) in front of checkout widget, HSM integration (AWS CloudHSM) for key operations, VPC with private subnets for database and PSP outbound traffic, and CloudTrail/audit log forwarding.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "cloud": "AWS",
+          "orchestration": "EKS",
+          "hsm": "AWS CloudHSM",
+          "waf": "AWS WAF with OWASP core rule set",
+          "network_policy": "Calico",
+          "tls": "cert-manager with Let's Encrypt",
+          "audit_forwarding": "CloudTrail \u2192 S3 \u2192 SIEM"
+        },
+        "acceptance_criteria": [
+          "CDE namespace network policy blocks all ingress not originating from allowed sources",
+          "HSM used for all key generation and signing operations \u2014 no plaintext keys in env vars",
+          "WAF blocks OWASP Top 10 attack patterns in staging environment",
+          "All inter-service traffic uses mTLS",
+          "CloudTrail logs forwarded to SIEM within 60 seconds of event",
+          "Network topology diagram matches actual deployed configuration"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipeline: GitHub Actions workflows for lint, unit tests, SAST (Bandit + Semgrep), container image build and push (ECR), Trivy container scan, Helm chart validation, staging deployment with smoke tests, and production deployment with blue/green switch and automatic rollback on error rate spike. Include change management gate (JIRA ticket required for prod deploy).",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "ci": "GitHub Actions",
+          "registry": "AWS ECR",
+          "sast": [
+            "Bandit",
+            "Semgrep"
+          ],
+          "container_scan": "Trivy",
+          "deployment": "Helm + ArgoCD",
+          "deployment_strategy": "blue_green",
+          "change_management": "JIRA ticket reference required"
+        },
+        "acceptance_criteria": [
+          "Pipeline fails on any Bandit HIGH finding or Semgrep critical rule match",
+          "Trivy scan fails pipeline on CRITICAL CVEs with no accepted exception",
+          "Blue/green deploy completes with zero-downtime verified by health check probes",
+          "Automatic rollback triggers when error rate exceeds 1% for 2 minutes post-deploy",
+          "Production deploy requires JIRA ticket ID in commit or PR \u2014 enforced by pipeline",
+          "Full pipeline (lint \u2192 test \u2192 build \u2192 staging \u2192 prod) completes in under 15 minutes"
+        ],
+        "depends_on": [
+          17
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "TESTS",
+        "description": "Write comprehensive test suite: unit tests for PSP adapters (mocked), payment state machine transitions, subscription billing calculations, dunning logic, HMAC webhook signing and verification, and BNPL adapter flows. Integration tests against PSP sandboxes (Stripe test mode, Adyen test), database transaction integrity, and Redis idempotency store. E2E tests for full checkout flows using Playwright.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "unit_test_framework": "pytest",
+          "integration_test_targets": [
+            "Stripe sandbox",
+            "Adyen test",
+            "PostgreSQL",
+            "Redis"
+          ],
+          "e2e_framework": "Playwright",
+          "coverage_target": 85,
+          "test_data": "factories via factory_boy"
+        },
+        "acceptance_criteria": [
+          "Unit test coverage \u2265 85% on core payment engine, subscription billing, and adapter modules",
+          "All PSP adapter unit tests use deterministic mocks \u2014 no live network calls",
+          "Integration tests cover happy path, decline, and network timeout scenarios for each PSP",
+          "E2E tests cover: card payment, Apple Pay (simulated), Google Pay (simulated), BNPL redirect, subscription creation, and failed payment dunning",
+          "All tests pass in CI pipeline on every PR",
+          "Test execution time < 10 minutes for full suite in CI"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          15
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "SECURITY",
+        "description": "Execute security hardening and penetration testing: DAST scan (OWASP ZAP) against staging environment, API penetration test (auth bypass, IDOR, injection, BOLA), cardholder data flow review (confirm PAN never logged or cached outside CDE), TLS configuration audit (TLS 1.2+ only, no weak ciphers), dependency vulnerability audit (pip-audit), and secret scanning (truffleHog on full git history).",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "dast_tool": "OWASP ZAP",
+          "pentest_scope": [
+            "API",
+            "dashboard",
+            "checkout_widget",
+            "webhook_endpoints"
+          ],
+          "tls_min_version": "1.2",
+          "secret_scanner": "truffleHog",
+          "dependency_audit": "pip-audit"
+        },
+        "acceptance_criteria": [
+          "OWASP ZAP scan returns zero HIGH or CRITICAL alerts on staging",
+          "Penetration test report shows no P1 or P2 findings unresolved",
+          "PAN never appears in application logs, error messages, or HTTP responses outside CDE",
+          "TLS audit confirms TLS 1.2+ with approved cipher suites only",
+          "pip-audit returns zero CRITICAL CVEs in production dependencies",
+          "truffleHog scan finds no secrets in git history",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          17,
+          19
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 21,
+        "task_type": "COMPLIANCE",
+        "description": "Execute PCI DSS Level 1 pre-audit evidence collection: gather network diagrams, configuration baselines, vulnerability scan results (ASV-approved), penetration test report, access control reviews (quarterly user access review), log review procedures, incident response test results, and compile into RoC evidence package ready for Qualified Security Assessor (QSA).",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "asv_scan": "Trustwave or Qualys (ASV approved)",
+          "evidence_package": [
+            "network_diagrams",
+            "config_baselines",
+            "ASV_scan_results",
+            "pentest_report",
+            "access_review",
+            "log_review_procedure",
+            "IR_test_results"
+          ],
+          "qsa_firm": "TBD",
+          "roc_template_version": "PCI DSS v4.0"
+        },
+        "acceptance_criteria": [
+          "ASV scan returns clean (no failing requirements) for all in-scope IP ranges",
+          "Evidence package covers all 12 PCI DSS requirements with no gaps",
+          "Quarterly access review completed and signed off",
+          "Incident response tabletop exercise conducted and results documented",
+          "RoC evidence package reviewed by legal and compliance team before QSA submission"
+        ],
+        "depends_on": [
+          20,
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute system-level integration and performance testing: load test (10,000 TPS target using k6), latency profiling (p99 < 500ms for payment intent creation), PSP failover test (kill primary PSP mid-load, measure failover time), subscription billing batch performance test, webhook delivery throughput test, and disaster recovery drill (RTO < 4h, RPO < 1h).",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "load_test_tool": "k6",
+          "target_tps": 10000,
+          "latency_sla": "p99 < 500ms",
+          "dr_targets": {
+            "RTO_hours": 4,
+            "RPO_hours": 1
+          },
+          "failover_test": "primary PSP timeout simulation"
+        },
+        "acceptance_criteria": [
+          "Load test achieves 10,000 TPS with p99 latency < 500ms and error rate < 0.1%",
+          "PSP failover completes in < 500ms when primary PSP times out",
+          "Subscription billing batch processes 100,000 renewals in < 5 minutes",
+          "Webhook delivery throughput sustains 5,000 events/second without queue backlog",
+          "DR drill achieves RTO < 4h and RPO < 1h verified with timestamp evidence",
+          "All performance test results documented and retained as compliance evidence"
+        ],
+        "depends_on": [
+          19,
+          20
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 23,
+        "task_type": "LEGAL",
+        "description": "Produce legal documentation: Terms of Service for merchants, Privacy Policy (GDPR + CCPA compliant), Data Processing Agreement (DPA) template for merchants, PSP sub-processor data flow agreements, PCI DSS merchant liability acknowledgement, and IP ownership review for third-party SDKs (Apple Pay, Google Pay, BNPL SDKs).",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "frameworks": [
+            "GDPR",
+            "CCPA",
+            "PCI DSS merchant agreement"
+          ],
+          "deliverables": [
+            "ToS",
+            "privacy_policy",
+            "DPA_template",
+            "sub_processor_list",
+            "merchant_liability_ack",
+            "IP_review"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy covers all personal data categories collected and their processing basis under GDPR Art. 6",
+          "DPA template includes all GDPR Art. 28 mandatory clauses",
+          "Sub-processor list reviewed and approved by legal \u2014 covers Stripe, Adyen, Braintree, Affirm, Klarna, Afterpay",
+          "Merchant liability acknowledgement references PCI DSS Level 1 certification and shared responsibility",
+          "IP review confirms no GPL or AGPL licensed dependencies in production build"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 24,
+        "task_type": "OPERATIONS",
+        "description": "Define operational runbooks: incident response playbook (P1/P2/P3 classification, escalation matrix), payment failure investigation runbook, PSP outage response, subscription billing failure recovery, database failover procedure, on-call rotation setup (PagerDuty), SLA definitions (99.99% uptime for payment processing), and capacity planning model.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "alerting": "PagerDuty",
+          "sla_uptime": "99.99%",
+          "runbooks": [
+            "incident_response",
+            "payment_failure_investigation",
+            "psp_outage",
+            "billing_recovery",
+            "db_failover"
+          ],
+          "capacity_model": "quarterly review"
+        },
+        "acceptance_criteria": [
+          "Incident response playbook covers all P1/P2/P3 scenarios with clear escalation paths",
+          "On-call rotation configured in PagerDuty with primary and secondary responders",
+          "PSP outage runbook tested in tabletop exercise with < 15-minute MTTR for known scenarios",
+          "SLA definition document reviewed and signed by engineering and product leads",
+          "Capacity model projects infrastructure costs and headroom for 12 months at projected growth"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 25,
+        "task_type": "DOCS",
+        "description": "Produce developer and operator documentation: merchant integration guide (quickstart, API reference generated from OpenAPI spec, webhook integration guide, testing guide with sandbox credentials), platform architecture document, deployment and operations guide, PCI DSS shared responsibility model document, and CHANGELOG.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "doc_site_tool": "Mintlify or Docusaurus",
+          "api_reference": "generated from OpenAPI 3.1 spec",
+          "deliverables": [
+            "quickstart_guide",
+            "API_reference",
+            "webhook_guide",
+            "sandbox_testing_guide",
+            "architecture_doc",
+            "ops_guide",
+            "pci_shared_responsibility",
+            "CHANGELOG"
+          ]
+        },
+        "acceptance_criteria": [
+          "Quickstart guide enables a new merchant to process a test payment in < 15 minutes",
+          "API reference auto-generated from OpenAPI spec with no manual drift",
+          "Webhook guide includes signature verification code samples in Python, Node.js, and Go",
+          "PCI shared responsibility document clearly delineates platform vs. merchant obligations",
+          "All docs reviewed by a developer who was not involved in building the feature (dogfooding test)"
+        ],
+        "depends_on": [
+          15,
+          16,
+          21,
+          23
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 26,
+        "task_type": "TRAINING",
+        "description": "Produce internal training materials: PCI DSS security awareness training for all staff with access to CDE (annual requirement), developer secure coding guidelines specific to payment processing, incident responder training on payment fraud patterns, and merchant onboarding enablement guide for sales/support teams.",
+        "payload": {
+          "solution_name": "payment_gateway",
+          "target_audiences": [
+            "all_staff",
+            "developers",
+            "incident_responders",
+            "sales_support"
+          ],
+          "pci_training_frequency": "annual",
+          "delivery_format": "LMS-compatible SCORM modules"
+        },
+        "acceptance_criteria": [
+          "PCI DSS awareness training covers social engineering, phishing, and clean desk policy",
+          "Training completion tracked per-employee with certificate issued \u2014 required for PCI audit",
+          "Secure coding guidelines cover OWASP Top 10, secrets management, and logging hygiene specific to payment context",
+          "Merchant enablement guide enables support team to answer top-20 integration questions without escalation"
+        ],
+        "depends_on": [
+          21,
+          25
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 26,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "PCI DSS Level 1 does not use SAQs. SAQs apply to Level 2-4 merchants. Level 1 requires a full Report on Compliance (RoC) conducted by a QSA. Steps 3 and 20 both list 'PCI DSS SAQ completed' as acceptance criteria \u2014 this is a fundamental misunderstanding of the compliance tier being targeted.",
+              "Apple Pay Merchant Identity Certificate cannot be issued by Vault PKI (step 10). It must be requested through the Apple Developer Portal and is issued by Apple's CA. Vault PKI cannot produce a cert Apple's servers will accept for merchant session validation.",
+              "PayPal is listed as a PSP target in step 1 but has no corresponding adapter in step 9, which implements only Stripe, Adyen, and Braintree. PayPal silently disappears from the plan with no explanation or deferral.",
+              "10,000 TPS with p99 < 500ms (step 22) is untestable against the described infrastructure. FastAPI + a single PostgreSQL 16 instance with no PgBouncer, no read replicas, and no CQRS split will saturate well before 10k TPS. No database connection pooling strategy exists anywhere in the plan.",
+              "python-jose (step 14) has a known critical vulnerability (CVE-2022-29217, algorithm confusion leading to auth bypass). The plan specifies it by name without pinning a safe version or noting the mitigation. PyJWT with explicit algorithm specification or authlib should be used instead.",
+              "The 3DS2 implementation (step 15) is vague to the point of being unimplementable. It does not specify who hosts the 3DS Server, how the Authentication Value (CAVV) and ECI flag are threaded back to the PSP, how frictionless vs. challenge flows are differentiated, or how authentication results are linked back to the PaymentIntent state machine. 3DS2 has 20+ message types \u2014 'integrate Cardinal Commerce or Stripe.js 3DS2' is not a design.",
+              "SAQ A vs SAQ A-EP distinction is misapplied in step 15. If the card form iframe is fully hosted on the payment gateway's domain and the merchant page never touches card data, the merchant qualifies for SAQ A (the simpler profile). SAQ A-EP applies when the merchant's page directly affects card data flow. Misclassifying this increases merchant compliance burden unnecessarily.",
+              "No fraud detection or prevention layer exists anywhere in 26 steps. No velocity checks, device fingerprinting, fraud scoring, or integration with Sift/Kount/Forter. For a payment gateway, chargeback fraud is the primary P&L risk. Launching without fraud controls guarantees unacceptable chargeback rates and potential PSP account termination.",
+              "No settlement and reconciliation engine. There is no step covering how funds move from PSPs to merchant bank accounts, settlement batching, reconciliation reports, or financial ledger balancing. This is a core function of a payment gateway, not a post-launch concern.",
+              "No multi-currency or FX support. No mention of presentment currency vs. settlement currency, FX rate sourcing, or currency conversion fees. Adyen, Stripe, and Braintree all handle multi-currency differently. Omitting this makes the product non-viable for any merchant with international customers.",
+              "No KYB/KYC/AML merchant onboarding. Step 1 mentions 'merchant onboarding flow' but there is no Know Your Business verification, AML screening, or OFAC/sanctions list checking. Operating a payment gateway without KYB controls violates FinCEN regulations in the US and equivalent regulations in most jurisdictions. This is a legal blocker, not a feature gap.",
+              "Redis idempotency store (step 9) lacks a specified locking strategy. No mention of SET NX with TTL for atomic reservation, or behavior during Redis failover. If Redis is unavailable, does the idempotency check fail open (allowing duplicate charges) or fail closed (denying all payments)? This is a money-movement correctness issue.",
+              "Let's Encrypt with cert-manager (step 17) is inappropriate for PCI DSS Level 1 production payment infrastructure. Let's Encrypt has 90-day cert rotation, public CT log exposure, and rate limits. QSAs at major firms routinely flag free CAs for Level 1 CDE endpoints. Commercial CA certs (DigiCert, Sectigo) are the standard.",
+              "Blue/green deployment (step 18) has no schema migration strategy. PostgreSQL schema changes during a blue/green switch require the expand/contract migration pattern (backward-compatible migrations run before the switch, cleanup migrations after). A breaking schema change mid-deploy will corrupt the active version. This is not mentioned.",
+              "Webhook delivery target of 5,000 events/second (step 22) is not addressable by a single Redis Streams consumer group. No consumer group sharding strategy, no mention of Celery workers or dedicated webhook service scaling. This target will fail without architectural specificity."
+            ],
+            "suggestions": [
+              "Replace python-jose with PyJWT >= 2.4.0 with explicit algorithm='HS256' or 'RS256' in all decode() calls. Add a CI lint rule that fails on jose imports.",
+              "Add a step 6.5 or expand step 8 to cover database connection pooling: PgBouncer in transaction pooling mode, max_connections tuning, and read replica routing for reporting queries. Without this, the 10,000 TPS target is fiction.",
+              "Rewrite step 3 and step 20 acceptance criteria to replace 'SAQ completed' with 'RoC evidence package structured per PCI DSS v4.0 ROC Reporting Template'. Add explicit acceptance criterion: 'QSA firm contracted and scoping call completed'.",
+              "Add a dedicated Fraud step between steps 11 and 12: velocity rule engine (per card, per device, per merchant), integration with one fraud scoring provider (Sift Science recommended for payment gateways), and chargeback threshold alerting. This is not optional for any PSP that will maintain accounts.",
+              "Add a Settlement and Reconciliation step between steps 12 and 13: PSP payout webhook handlers, daily settlement batch reconciliation against bank statements, discrepancy alerting, and merchant payout scheduling. Include a ledger table (double-entry bookkeeping) to the database schema in step 6.",
+              "Fix the Apple Pay certificate management design: remove Vault PKI from step 10 for the Merchant Identity Certificate. The cert must be downloaded from Apple Developer Portal and stored in Vault as a secret (not generated by Vault). Separate the key pair for payment token decryption (which CAN be generated by Vault and stored in HSM) from the merchant identity cert.",
+              "Add SCA / PSD2 compliance for EU-region payments. If any merchant has European customers, Strong Customer Authentication exemption logic (transaction risk analysis, low-value exemptions, recurring transaction exemptions) must be implemented. This is a legal requirement, not a feature.",
+              "Add a BIN intelligence step or expand step 15: BIN database lookup (Mastercard/Visa BIN files or a provider like Binlist) for card type detection, issuing country, debit vs. credit classification, and 3DS2 method availability. Needed for routing decisions and compliance.",
+              "Expand step 17 to explicitly address Redis TLS configuration. Redis in the CDE without in-transit encryption is an automatic PCI DSS finding under Requirement 4.2.1. Specify TLS 1.2+ for all Redis connections.",
+              "Add webhook signature verification guidance to step 13 acceptance criteria: HMAC-SHA256 comparison MUST use hmac.compare_digest() (constant-time). Specify this explicitly \u2014 a naive == comparison is a timing oracle.",
+              "Add KYB/AML step before or within step 1: merchant identity verification via a KYB provider (Stripe Identity, Persona, or Jumio), OFAC SDN list screening, and ongoing monitoring for high-risk MCC codes. This is a legal prerequisite to going live.",
+              "Implement a PayPal adapter in step 9 or explicitly descope it with a documented deferral. Silent omission of a named PSP target is a requirements traceability failure.",
+              "Add data retention and deletion policy design: GDPR right-to-erasure against payment records conflicts with financial record retention requirements (typically 7 years). The plan must specify how tokenized payment methods are deleted from the PSP vault and how audit records are anonymized without being erased."
+            ],
+            "missing": [
+              "Fraud detection and prevention layer (velocity rules, device fingerprinting, fraud scoring provider integration, chargeback threshold monitoring)",
+              "Settlement and reconciliation engine (PSP payout processing, double-entry ledger, bank statement reconciliation, merchant payout scheduling)",
+              "Multi-currency and FX support (presentment vs. settlement currency, FX rate sourcing, cross-border fee disclosure)",
+              "KYB/KYC/AML merchant onboarding verification (identity verification provider, OFAC/sanctions screening, ongoing monitoring)",
+              "PgBouncer or equivalent database connection pooling (mandatory at the target TPS)",
+              "PostgreSQL read replicas for analytics and reporting query isolation",
+              "Monitoring and observability stack (OpenTelemetry instrumentation, APM, payment success rate dashboards, latency anomaly detection)",
+              "SCA/PSD2 compliance for EU payments (exemption logic, TRA, recurring transaction exemptions)",
+              "Data retention and deletion policy (GDPR right-to-erasure vs. financial record-keeping requirements)",
+              "Tax calculation for subscription invoices (Stripe Tax, Avalara, or manual \u2014 not mentioned anywhere)",
+              "BIN database integration for card intelligence",
+              "Chargeback representment and dispute automation beyond manual evidence upload",
+              "PayPal adapter implementation (named in requirements, absent from implementation)",
+              "Disaster recovery runbook for Redis failure (what happens to idempotency and rate limiting when Redis is unavailable)",
+              "Platform/marketplace PSP licensing assessment (if merchants accept payments from their own end-customers, standard PSP accounts may be prohibited \u2014 requires Stripe Connect, Adyen for Platforms, or equivalent)",
+              "GDPR Data Protection Impact Assessment (DPIA) \u2014 required before processing cardholder data at scale under GDPR Art. 35"
+            ],
+            "security_risks": [
+              "python-jose CVE-2022-29217: algorithm confusion attack allows forging JWT tokens with 'none' algorithm or HMAC bypass using the RSA public key as HMAC secret. Any deployment using python-jose without explicit algorithm enforcement is vulnerable to authentication bypass.",
+              "HMAC webhook signature comparison without constant-time comparison: if the implementation uses == instead of hmac.compare_digest(), the signature endpoint is a timing oracle that allows attackers to brute-force valid signatures byte-by-byte.",
+              "Redis without TLS in CDE: step 8 and 9 both use Redis for idempotency and rate limiting with no TLS specification. Plaintext Redis in or adjacent to the CDE violates PCI DSS Requirement 4.2.1 and is an automatic finding.",
+              "PostgreSQL Row-Level Security bypass risk: RLS is effective only if every query runs under the correct merchant role/setting (SET app.current_merchant_id). A missing set_config() call in the API middleware silently grants cross-merchant data access. No acceptance criterion validates this negative case.",
+              "3DS2 CAVV/ECI handling gap: if the authentication result (CAVV, ECI value) is not correctly forwarded to the PSP with the authorization request, liability shift does not apply. Chargebacks on 3DS-authenticated transactions revert to the gateway \u2014 a potentially catastrophic financial exposure.",
+              "Dependency chain attack surface: 4 PSP SDKs (Stripe, Adyen, Braintree, PayPal) + 3 BNPL SDKs (Affirm, Klarna, Afterpay) + Apple/Google Pay SDKs. Each SDK is a supply chain risk. The SBOM in step 3 is listed as a deliverable but there is no acceptance criterion requiring SBOM verification against a vulnerability database on every CI run.",
+              "Let's Encrypt certificate transparency log exposure: all Let's Encrypt certificates are logged to public CT logs. This means your internal CDE subdomain hostnames are publicly discoverable, giving attackers a free inventory of your infrastructure topology.",
+              "Apple Pay payment token decryption key exposure: step 10 uses 'Vault PKI' for certificate management without specifying that the private ECDH key must reside in the HSM (AWS CloudHSM mentioned in step 17). If the decryption key is in Vault software storage rather than CloudHSM, PCI DSS Requirement 3.7 (HSM for cryptographic key operations) is violated.",
+              "IDOR risk in webhook configuration: step 13 allows merchants to configure arbitrary webhook endpoints. Without SSRF protection (allowlisting, blocking RFC 1918 ranges, blocking cloud metadata endpoints), a malicious merchant can use the webhook delivery system as a server-side request forgery vector against internal services."
+            ],
+            "summary": "This plan demonstrates broad domain awareness and reasonable sequencing \u2014 the compliance-first approach (steps 3-4 before implementation), PSP abstraction layer, idempotency design, and webhook delivery system are all architecturally sound. However, the plan has several critical failures that would prevent it from reaching production as a PCI DSS Level 1 certified gateway. The most severe are: (1) a fundamental misunderstanding of PCI DSS Level 1 \u2014 it requires a QSA-conducted RoC, not a self-assessment SAQ, which undermines the entire compliance thread; (2) complete absence of fraud detection and prevention, which is not a feature gap but an existential operational risk \u2014 PSPs will terminate accounts with unchecked chargeback rates; (3) no settlement and reconciliation engine, which means there is no mechanism to actually pay merchants; (4) missing KYB/AML controls, which are legal prerequisites to operating a payment gateway in any regulated jurisdiction; (5) a 10,000 TPS performance target against an architecture with no connection pooling, no read replicas, and no caching strategy \u2014 the target is unachievable as specified. The Apple Pay certificate management design contains a factual error that will cause Apple Pay to fail in production. The python-jose JWT library selection introduces a known critical authentication bypass vulnerability. Taken together, the plan is a solid skeleton that requires a second-pass architect review before any implementation begins, with particular focus on fraud controls, settlement logic, KYB, database scaling strategy, and compliance tier correctness.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "PCI DSS Level 1 does not use SAQs. SAQs apply to Level 2-4 merchants. Level 1 requires a full Report on Compliance (RoC) conducted by a QSA. Steps 3 and 20 both list 'PCI DSS SAQ completed' as acceptance criteria \u2014 this is a fundamental misunderstanding of the compliance tier being targeted.",
+                "Apple Pay Merchant Identity Certificate cannot be issued by Vault PKI (step 10). It must be requested through the Apple Developer Portal and is issued by Apple's CA. Vault PKI cannot produce a cert Apple's servers will accept for merchant session validation.",
+                "PayPal is listed as a PSP target in step 1 but has no corresponding adapter in step 9, which implements only Stripe, Adyen, and Braintree. PayPal silently disappears from the plan with no explanation or deferral.",
+                "10,000 TPS with p99 < 500ms (step 22) is untestable against the described infrastructure. FastAPI + a single PostgreSQL 16 instance with no PgBouncer, no read replicas, and no CQRS split will saturate well before 10k TPS. No database connection pooling strategy exists anywhere in the plan.",
+                "python-jose (step 14) has a known critical vulnerability (CVE-2022-29217, algorithm confusion leading to auth bypass). The plan specifies it by name without pinning a safe version or noting the mitigation. PyJWT with explicit algorithm specification or authlib should be used instead.",
+                "The 3DS2 implementation (step 15) is vague to the point of being unimplementable. It does not specify who hosts the 3DS Server, how the Authentication Value (CAVV) and ECI flag are threaded back to the PSP, how frictionless vs. challenge flows are differentiated, or how authentication results are linked back to the PaymentIntent state machine. 3DS2 has 20+ message types \u2014 'integrate Cardinal Commerce or Stripe.js 3DS2' is not a design.",
+                "SAQ A vs SAQ A-EP distinction is misapplied in step 15. If the card form iframe is fully hosted on the payment gateway's domain and the merchant page never touches card data, the merchant qualifies for SAQ A (the simpler profile). SAQ A-EP applies when the merchant's page directly affects card data flow. Misclassifying this increases merchant compliance burden unnecessarily.",
+                "No fraud detection or prevention layer exists anywhere in 26 steps. No velocity checks, device fingerprinting, fraud scoring, or integration with Sift/Kount/Forter. For a payment gateway, chargeback fraud is the primary P&L risk. Launching without fraud controls guarantees unacceptable chargeback rates and potential PSP account termination.",
+                "No settlement and reconciliation engine. There is no step covering how funds move from PSPs to merchant bank accounts, settlement batching, reconciliation reports, or financial ledger balancing. This is a core function of a payment gateway, not a post-launch concern.",
+                "No multi-currency or FX support. No mention of presentment currency vs. settlement currency, FX rate sourcing, or currency conversion fees. Adyen, Stripe, and Braintree all handle multi-currency differently. Omitting this makes the product non-viable for any merchant with international customers.",
+                "No KYB/KYC/AML merchant onboarding. Step 1 mentions 'merchant onboarding flow' but there is no Know Your Business verification, AML screening, or OFAC/sanctions list checking. Operating a payment gateway without KYB controls violates FinCEN regulations in the US and equivalent regulations in most jurisdictions. This is a legal blocker, not a feature gap.",
+                "Redis idempotency store (step 9) lacks a specified locking strategy. No mention of SET NX with TTL for atomic reservation, or behavior during Redis failover. If Redis is unavailable, does the idempotency check fail open (allowing duplicate charges) or fail closed (denying all payments)? This is a money-movement correctness issue.",
+                "Let's Encrypt with cert-manager (step 17) is inappropriate for PCI DSS Level 1 production payment infrastructure. Let's Encrypt has 90-day cert rotation, public CT log exposure, and rate limits. QSAs at major firms routinely flag free CAs for Level 1 CDE endpoints. Commercial CA certs (DigiCert, Sectigo) are the standard.",
+                "Blue/green deployment (step 18) has no schema migration strategy. PostgreSQL schema changes during a blue/green switch require the expand/contract migration pattern (backward-compatible migrations run before the switch, cleanup migrations after). A breaking schema change mid-deploy will corrupt the active version. This is not mentioned.",
+                "Webhook delivery target of 5,000 events/second (step 22) is not addressable by a single Redis Streams consumer group. No consumer group sharding strategy, no mention of Celery workers or dedicated webhook service scaling. This target will fail without architectural specificity."
+              ],
+              "suggestions": [
+                "Replace python-jose with PyJWT >= 2.4.0 with explicit algorithm='HS256' or 'RS256' in all decode() calls. Add a CI lint rule that fails on jose imports.",
+                "Add a step 6.5 or expand step 8 to cover database connection pooling: PgBouncer in transaction pooling mode, max_connections tuning, and read replica routing for reporting queries. Without this, the 10,000 TPS target is fiction.",
+                "Rewrite step 3 and step 20 acceptance criteria to replace 'SAQ completed' with 'RoC evidence package structured per PCI DSS v4.0 ROC Reporting Template'. Add explicit acceptance criterion: 'QSA firm contracted and scoping call completed'.",
+                "Add a dedicated Fraud step between steps 11 and 12: velocity rule engine (per card, per device, per merchant), integration with one fraud scoring provider (Sift Science recommended for payment gateways), and chargeback threshold alerting. This is not optional for any PSP that will maintain accounts.",
+                "Add a Settlement and Reconciliation step between steps 12 and 13: PSP payout webhook handlers, daily settlement batch reconciliation against bank statements, discrepancy alerting, and merchant payout scheduling. Include a ledger table (double-entry bookkeeping) to the database schema in step 6.",
+                "Fix the Apple Pay certificate management design: remove Vault PKI from step 10 for the Merchant Identity Certificate. The cert must be downloaded from Apple Developer Portal and stored in Vault as a secret (not generated by Vault). Separate the key pair for payment token decryption (which CAN be generated by Vault and stored in HSM) from the merchant identity cert.",
+                "Add SCA / PSD2 compliance for EU-region payments. If any merchant has European customers, Strong Customer Authentication exemption logic (transaction risk analysis, low-value exemptions, recurring transaction exemptions) must be implemented. This is a legal requirement, not a feature.",
+                "Add a BIN intelligence step or expand step 15: BIN database lookup (Mastercard/Visa BIN files or a provider like Binlist) for card type detection, issuing country, debit vs. credit classification, and 3DS2 method availability. Needed for routing decisions and compliance.",
+                "Expand step 17 to explicitly address Redis TLS configuration. Redis in the CDE without in-transit encryption is an automatic PCI DSS finding under Requirement 4.2.1. Specify TLS 1.2+ for all Redis connections.",
+                "Add webhook signature verification guidance to step 13 acceptance criteria: HMAC-SHA256 comparison MUST use hmac.compare_digest() (constant-time). Specify this explicitly \u2014 a naive == comparison is a timing oracle.",
+                "Add KYB/AML step before or within step 1: merchant identity verification via a KYB provider (Stripe Identity, Persona, or Jumio), OFAC SDN list screening, and ongoing monitoring for high-risk MCC codes. This is a legal prerequisite to going live.",
+                "Implement a PayPal adapter in step 9 or explicitly descope it with a documented deferral. Silent omission of a named PSP target is a requirements traceability failure.",
+                "Add data retention and deletion policy design: GDPR right-to-erasure against payment records conflicts with financial record retention requirements (typically 7 years). The plan must specify how tokenized payment methods are deleted from the PSP vault and how audit records are anonymized without being erased."
+              ],
+              "missing": [
+                "Fraud detection and prevention layer (velocity rules, device fingerprinting, fraud scoring provider integration, chargeback threshold monitoring)",
+                "Settlement and reconciliation engine (PSP payout processing, double-entry ledger, bank statement reconciliation, merchant payout scheduling)",
+                "Multi-currency and FX support (presentment vs. settlement currency, FX rate sourcing, cross-border fee disclosure)",
+                "KYB/KYC/AML merchant onboarding verification (identity verification provider, OFAC/sanctions screening, ongoing monitoring)",
+                "PgBouncer or equivalent database connection pooling (mandatory at the target TPS)",
+                "PostgreSQL read replicas for analytics and reporting query isolation",
+                "Monitoring and observability stack (OpenTelemetry instrumentation, APM, payment success rate dashboards, latency anomaly detection)",
+                "SCA/PSD2 compliance for EU payments (exemption logic, TRA, recurring transaction exemptions)",
+                "Data retention and deletion policy (GDPR right-to-erasure vs. financial record-keeping requirements)",
+                "Tax calculation for subscription invoices (Stripe Tax, Avalara, or manual \u2014 not mentioned anywhere)",
+                "BIN database integration for card intelligence",
+                "Chargeback representment and dispute automation beyond manual evidence upload",
+                "PayPal adapter implementation (named in requirements, absent from implementation)",
+                "Disaster recovery runbook for Redis failure (what happens to idempotency and rate limiting when Redis is unavailable)",
+                "Platform/marketplace PSP licensing assessment (if merchants accept payments from their own end-customers, standard PSP accounts may be prohibited \u2014 requires Stripe Connect, Adyen for Platforms, or equivalent)",
+                "GDPR Data Protection Impact Assessment (DPIA) \u2014 required before processing cardholder data at scale under GDPR Art. 35"
+              ],
+              "security_risks": [
+                "python-jose CVE-2022-29217: algorithm confusion attack allows forging JWT tokens with 'none' algorithm or HMAC bypass using the RSA public key as HMAC secret. Any deployment using python-jose without explicit algorithm enforcement is vulnerable to authentication bypass.",
+                "HMAC webhook signature comparison without constant-time comparison: if the implementation uses == instead of hmac.compare_digest(), the signature endpoint is a timing oracle that allows attackers to brute-force valid signatures byte-by-byte.",
+                "Redis without TLS in CDE: step 8 and 9 both use Redis for idempotency and rate limiting with no TLS specification. Plaintext Redis in or adjacent to the CDE violates PCI DSS Requirement 4.2.1 and is an automatic finding.",
+                "PostgreSQL Row-Level Security bypass risk: RLS is effective only if every query runs under the correct merchant role/setting (SET app.current_merchant_id). A missing set_config() call in the API middleware silently grants cross-merchant data access. No acceptance criterion validates this negative case.",
+                "3DS2 CAVV/ECI handling gap: if the authentication result (CAVV, ECI value) is not correctly forwarded to the PSP with the authorization request, liability shift does not apply. Chargebacks on 3DS-authenticated transactions revert to the gateway \u2014 a potentially catastrophic financial exposure.",
+                "Dependency chain attack surface: 4 PSP SDKs (Stripe, Adyen, Braintree, PayPal) + 3 BNPL SDKs (Affirm, Klarna, Afterpay) + Apple/Google Pay SDKs. Each SDK is a supply chain risk. The SBOM in step 3 is listed as a deliverable but there is no acceptance criterion requiring SBOM verification against a vulnerability database on every CI run.",
+                "Let's Encrypt certificate transparency log exposure: all Let's Encrypt certificates are logged to public CT logs. This means your internal CDE subdomain hostnames are publicly discoverable, giving attackers a free inventory of your infrastructure topology.",
+                "Apple Pay payment token decryption key exposure: step 10 uses 'Vault PKI' for certificate management without specifying that the private ECDH key must reside in the HSM (AWS CloudHSM mentioned in step 17). If the decryption key is in Vault software storage rather than CloudHSM, PCI DSS Requirement 3.7 (HSM for cryptographic key operations) is violated.",
+                "IDOR risk in webhook configuration: step 13 allows merchants to configure arbitrary webhook endpoints. Without SSRF protection (allowlisting, blocking RFC 1918 ranges, blocking cloud metadata endpoints), a malicious merchant can use the webhook delivery system as a server-side request forgery vector against internal services."
+              ],
+              "summary": "This plan demonstrates broad domain awareness and reasonable sequencing \u2014 the compliance-first approach (steps 3-4 before implementation), PSP abstraction layer, idempotency design, and webhook delivery system are all architecturally sound. However, the plan has several critical failures that would prevent it from reaching production as a PCI DSS Level 1 certified gateway. The most severe are: (1) a fundamental misunderstanding of PCI DSS Level 1 \u2014 it requires a QSA-conducted RoC, not a self-assessment SAQ, which undermines the entire compliance thread; (2) complete absence of fraud detection and prevention, which is not a feature gap but an existential operational risk \u2014 PSPs will terminate accounts with unchecked chargeback rates; (3) no settlement and reconciliation engine, which means there is no mechanism to actually pay merchants; (4) missing KYB/AML controls, which are legal prerequisites to operating a payment gateway in any regulated jurisdiction; (5) a 10,000 TPS performance target against an architecture with no connection pooling, no read replicas, and no caching strategy \u2014 the target is unachievable as specified. The Apple Pay certificate management design contains a factual error that will cause Apple Pay to fail in production. The python-jose JWT library selection introduces a known critical authentication bypass vulnerability. Taken together, the plan is a solid skeleton that requires a second-pass architect review before any implementation begins, with particular focus on fraud controls, settlement logic, KYB, database scaling strategy, and compliance tier correctness.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T00:11:04.682684+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 152.54,
+      "critic_plan": 140.66
+    }
+  }
+}

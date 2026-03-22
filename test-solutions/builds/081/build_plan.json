@@ -1,0 +1,999 @@
+{
+  "run_id": "52c7c08c-4f42-4917-aa21-6f798bc9caf8",
+  "status": {
+    "run_id": "52c7c08c-4f42-4917-aa21-6f798bc9caf8",
+    "solution_name": "social_fitness",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T10:05:17.818597+00:00",
+    "updated_at": "2026-03-22T10:10:22.630688+00:00",
+    "product_description": "Social fitness app with workout sharing, challenges, leaderboards, trainer marketplace, nutrition tracking, and Apple Health/Google Fit integration.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the social fitness app market: competitor audit (Strava, MyFitnessPal, Peloton, Nike Run Club), user segments, monetization benchmarks, trainer marketplace comps, and wearable integration adoption rates.",
+        "payload": {
+          "competitors": [
+            "Strava",
+            "MyFitnessPal",
+            "Peloton",
+            "Nike Run Club",
+            "Fitbod"
+          ],
+          "focus_areas": [
+            "trainer_marketplace_pricing",
+            "challenge_engagement_mechanics",
+            "health_api_adoption",
+            "freemium_conversion_rates"
+          ],
+          "deliverable": "market_research_report.md"
+        },
+        "acceptance_criteria": [
+          "Competitor feature matrix covering all 6 core features is complete",
+          "Pricing benchmarks for trainer marketplace (commission %, subscription tiers) documented",
+          "Wearable API adoption stats (Apple Health vs Google Fit) included",
+          "Top 3 differentiation opportunities identified with supporting data"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Author the Product Requirements Document (PRD) covering all six product pillars: workout sharing, challenges, leaderboards, trainer marketplace, nutrition tracking, and health platform integration. Define MVP scope, success metrics (DAU, retention, GMV), and phased roadmap.",
+        "payload": {
+          "pillars": [
+            "workout_sharing",
+            "challenges_leaderboards",
+            "trainer_marketplace",
+            "nutrition_tracking",
+            "apple_health_integration",
+            "google_fit_integration"
+          ],
+          "mvp_duration_weeks": 12,
+          "success_metrics": [
+            "DAU",
+            "D7_retention",
+            "trainer_GMV",
+            "workout_shares_per_user"
+          ],
+          "deliverable": "PRD_social_fitness.md"
+        },
+        "acceptance_criteria": [
+          "All 6 pillars have defined user stories with acceptance criteria",
+          "MVP feature set is scoped and justified against market research",
+          "Success metrics have baseline targets and measurement plans",
+          "Phased roadmap (MVP \u2192 Phase 2 \u2192 Phase 3) is documented",
+          "HITL approval gates identified for trainer onboarding and payment flows"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research (5 interviews, survey), define personas (casual exerciser, competitive athlete, certified trainer), and produce wireframes for all core flows: onboarding, feed, workout logging, challenge join, trainer browsing, nutrition dashboard, and health sync consent.",
+        "payload": {
+          "personas": [
+            "casual_exerciser",
+            "competitive_athlete",
+            "certified_trainer"
+          ],
+          "flows": [
+            "onboarding_health_connect",
+            "social_feed",
+            "workout_log_share",
+            "challenge_create_join",
+            "trainer_marketplace_browse_book",
+            "nutrition_log",
+            "leaderboard"
+          ],
+          "accessibility_standard": "WCAG_2.1_AA",
+          "deliverable": "figma_wireframes_social_fitness"
+        },
+        "acceptance_criteria": [
+          "At least 3 distinct user personas documented with goals and pain points",
+          "Wireframes cover all 7 core flows at mid-fidelity",
+          "Health sync consent flow meets Apple HIG and Google Material guidelines",
+          "Accessibility audit checklist completed against WCAG 2.1 AA",
+          "Usability test with 3 participants shows task completion > 80% on critical paths",
+          "App store screenshot mockups prepared",
+          "Onboarding flow under 3 steps"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "DATABASE",
+        "description": "Design the full database schema: users, profiles, workouts, exercises, sets/reps, social graph (follows), challenges, leaderboard entries, trainer profiles, bookings, nutrition logs, food items, health sync records. Include indexes, partitioning strategy, and migration files.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "orm": "SQLAlchemy / Alembic",
+          "key_tables": [
+            "users",
+            "workouts",
+            "exercises",
+            "social_follows",
+            "challenges",
+            "challenge_participants",
+            "leaderboard_entries",
+            "trainer_profiles",
+            "trainer_bookings",
+            "nutrition_logs",
+            "food_items",
+            "health_sync_records"
+          ],
+          "caching_layer": "Redis (leaderboards, feed)",
+          "deliverable": "schema.sql + alembic migrations"
+        },
+        "acceptance_criteria": [
+          "ERD covers all 6 product pillars with no orphaned tables",
+          "Leaderboard queries return top-100 in < 50ms with 1M rows (explain plan documented)",
+          "Nutrition log supports both custom entries and USDA food database lookups",
+          "Health sync records store raw Apple Health / Google Fit payloads with idempotency keys",
+          "All migration files are reversible (up + down)",
+          "GDPR-compliant: PII fields identified and documented for deletion cascade"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 5,
+        "task_type": "API",
+        "description": "Design the full OpenAPI 3.1 spec for the social_fitness backend: auth (OAuth2 + JWT), user profile, workout CRUD, social graph, challenge lifecycle, leaderboard reads, trainer marketplace (listings, bookings, payouts), nutrition (log + food search), and health platform webhook receivers.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "auth": "OAuth2 + JWT (refresh rotation)",
+          "versioning": "/v1/",
+          "endpoint_groups": [
+            "auth",
+            "users",
+            "workouts",
+            "social",
+            "challenges",
+            "leaderboards",
+            "trainers",
+            "bookings",
+            "nutrition",
+            "food_search",
+            "health_sync"
+          ],
+          "deliverable": "openapi_social_fitness.yaml"
+        },
+        "acceptance_criteria": [
+          "All endpoint groups have request/response schemas with example payloads",
+          "Rate limiting headers documented per endpoint group",
+          "Trainer payout endpoint includes webhook signature verification spec",
+          "Health sync endpoints support both Apple Health and Google Fit payload formats",
+          "OpenAPI spec validates with no errors via `openapi-generator validate`",
+          "Breaking change policy documented in spec header"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 6,
+        "task_type": "CONFIG",
+        "description": "Set up the project monorepo structure, environment configuration, secrets management, and agentic AI pattern configuration. Initialize multi-agent coordinator pattern for trainer-matching and workout-recommendation agents. Configure Stripe Connect for marketplace payouts.",
+        "payload": {
+          "repo_structure": "monorepo (backend/, mobile/, web-admin/, infra/)",
+          "env_management": "dotenv + AWS Secrets Manager",
+          "agentic_pattern": "coordinator",
+          "coordinator_agents": [
+            "workout_recommender_agent",
+            "trainer_match_agent",
+            "nutrition_advisor_agent"
+          ],
+          "payment_provider": "Stripe Connect (trainer payouts)",
+          "health_sdks": [
+            "HealthKit (iOS)",
+            "Health Connect (Android)"
+          ],
+          "deliverable": ".env.example, config/, docker-compose.dev.yml"
+        },
+        "acceptance_criteria": [
+          "Monorepo runs with a single `make dev` command",
+          "All secrets loaded from environment \u2014 zero hardcoded credentials",
+          "Multi-agent coordinator routes tasks to correct specialist agent based on intent",
+          "Stripe Connect onboarding flow configured for trainer payout accounts",
+          "HealthKit and Health Connect SDK versions pinned and documented",
+          "Pre-commit hooks enforce lint + type checks on all workspaces"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "HARDWARE_SIM",
+        "description": "Build a wearable sensor data simulator to generate synthetic Apple Watch and Fitbit/Garmin streams (heart rate, steps, calories, GPS tracks, HRV, sleep) for development and test environments. Used to validate health sync pipelines without physical devices.",
+        "payload": {
+          "simulated_devices": [
+            "apple_watch_series_9",
+            "fitbit_charge_6",
+            "garmin_forerunner_265"
+          ],
+          "data_streams": [
+            "heart_rate_bpm",
+            "steps_count",
+            "active_calories",
+            "gps_track_gpx",
+            "hrv_ms",
+            "sleep_stages"
+          ],
+          "output_format": [
+            "HealthKit_HKWorkout_JSON",
+            "Google_Fit_DataPoint_JSON",
+            "FitBit_activities_API_response"
+          ],
+          "tool": "Python simulator + FastAPI mock server",
+          "deliverable": "sim/wearable_simulator.py, sim/mock_health_api/"
+        },
+        "acceptance_criteria": [
+          "Simulator generates valid HealthKit HKWorkout and HKQuantitySample JSON payloads",
+          "Google Fit DataPoint responses pass schema validation against official spec",
+          "GPS tracks are realistic (no teleportation, reasonable pace ranges)",
+          "Simulator runs as a Docker service, discoverable via `HEALTH_API_BASE_URL` env var",
+          "Produces 1 hour of sensor data in < 2 seconds",
+          "Edge cases covered: zero-step rest periods, device disconnect gaps, duplicate sync attempts"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "FIRMWARE",
+        "description": "Implement the BLE (Bluetooth Low Energy) communication layer and HealthKit/Health Connect bridge SDK that runs on the mobile client side \u2014 the embedded firmware equivalent for wearable data ingestion. Includes GATT profile parsing, data buffering, and conflict-resolution for concurrent device syncs.",
+        "payload": {
+          "platform": "React Native (iOS + Android native modules)",
+          "ble_profiles": [
+            "Heart Rate Service (0x180D)",
+            "Running Speed & Cadence (0x1814)",
+            "Fitness Machine (0x1826)"
+          ],
+          "ios_framework": "HealthKit + CoreBluetooth",
+          "android_framework": "Health Connect + Android BLE API",
+          "data_buffer": "SQLite local cache with sync queue",
+          "deliverable": "mobile/native_modules/BLEHealthBridge/ (Swift + Kotlin)"
+        },
+        "acceptance_criteria": [
+          "BLE GATT Heart Rate Service parsed correctly for heart rate and RR intervals",
+          "iOS HealthKit background delivery enabled and tested for workout sessions",
+          "Android Health Connect permission request flow handles all denial scenarios gracefully",
+          "Local SQLite buffer prevents data loss on network interruption",
+          "Sync conflict resolution: device data wins over manual entry for the same timestamp",
+          "BLE connection drops trigger automatic reconnect with exponential backoff"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Build core backend services: authentication (social login + email/password), user profile management, workout CRUD (exercises, sets, reps, media uploads), and social graph (follow/unfollow, activity feed with pagination). Deploy as FastAPI services with async SQLAlchemy.",
+        "payload": {
+          "framework": "FastAPI + SQLAlchemy (async)",
+          "auth": "Auth0 (social providers) + custom JWT refresh",
+          "storage": "S3 (workout media: photos, video clips)",
+          "feed_algorithm": "chronological + engagement-weighted for followed users",
+          "services": [
+            "auth_service",
+            "user_service",
+            "workout_service",
+            "feed_service"
+          ],
+          "deliverable": "backend/services/core/"
+        },
+        "acceptance_criteria": [
+          "Auth endpoints issue access + refresh tokens; refresh rotation implemented",
+          "Workout creation validates exercise library references and rejects unknown exercise IDs",
+          "Media upload pre-signed S3 URLs generated client-side; backend validates on completion",
+          "Feed endpoint returns paginated results (cursor-based) in < 200ms for users with 1000 follows",
+          "Social follow creates bidirectional notification; unfollow cleans up feed cache",
+          "All endpoints require authenticated user; public workout sharing uses signed read URLs"
+        ],
+        "depends_on": [
+          5,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build challenges and leaderboards services: challenge creation (duration, goal type, invite-only vs public), participant tracking, real-time progress updates via SSE, leaderboard computation (Redis sorted sets), and challenge completion awards.",
+        "payload": {
+          "leaderboard_backend": "Redis sorted sets (ZADD/ZRANGE)",
+          "challenge_types": [
+            "total_distance_km",
+            "workout_count",
+            "calories_burned",
+            "step_count",
+            "personal_record"
+          ],
+          "update_mechanism": "SSE (Server-Sent Events) for live leaderboard",
+          "award_system": "badges + XP points stored in PostgreSQL",
+          "deliverable": "backend/services/challenges/, backend/services/leaderboards/"
+        },
+        "acceptance_criteria": [
+          "Leaderboard top-100 read from Redis in < 10ms",
+          "Challenge progress updates are reflected on leaderboard within 5 seconds of workout completion",
+          "Challenge creation enforces start/end date validation and minimum 2 participants",
+          "Private challenges enforce invite-only join; public challenges allow direct join",
+          "Challenge completion triggers badge award and XP update atomically",
+          "SSE stream reconnects automatically on client disconnect"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build the trainer marketplace service: trainer profile creation and verification, service listing (session types, pricing, availability), booking flow, Stripe Connect payment capture and trainer payout, review/rating system, and multi-agent coordinator for AI-driven trainer-matching.",
+        "payload": {
+          "payment": "Stripe Connect (platform fee: 15%)",
+          "booking_states": [
+            "pending",
+            "confirmed",
+            "completed",
+            "cancelled",
+            "refunded"
+          ],
+          "matching_agent": "coordinator pattern \u2014 routes to trainer_match_agent based on user goals, budget, availability",
+          "verification": "trainer certification upload + manual review queue",
+          "deliverable": "backend/services/trainer_marketplace/"
+        },
+        "acceptance_criteria": [
+          "Trainer onboarding creates Stripe Connect Express account and stores account_id",
+          "Booking flow captures payment intent, holds funds until session marked complete",
+          "Platform fee (15%) split calculated correctly for all currency amounts",
+          "Trainer-match agent returns top-3 ranked trainers with reasoning trace",
+          "Review submission blocked until booking status is 'completed'",
+          "Refund flow reverses platform fee split correctly",
+          "Trainer verification queue exposes admin review endpoint (not public)"
+        ],
+        "depends_on": [
+          9,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Build nutrition tracking service: food logging (custom entries + USDA FoodData Central search), macro/calorie calculation, daily nutrition summary, meal planning, and a nutrition advisor agent that suggests adjustments based on workout intensity and goals.",
+        "payload": {
+          "food_database": "USDA FoodData Central API + local cache",
+          "macro_tracking": [
+            "calories",
+            "protein_g",
+            "carbs_g",
+            "fat_g",
+            "fiber_g",
+            "sugar_g"
+          ],
+          "advisor_agent": "single_agent pattern \u2014 LLM with nutrition tool registry",
+          "goals": [
+            "weight_loss",
+            "muscle_gain",
+            "maintenance",
+            "endurance"
+          ],
+          "deliverable": "backend/services/nutrition/"
+        },
+        "acceptance_criteria": [
+          "USDA food search returns results in < 500ms with local Redis cache on subsequent calls",
+          "Macro calculations match USDA reference values within 1% tolerance",
+          "Daily summary aggregates all meals and compares against user's goal macros",
+          "Nutrition advisor agent adjusts recommendations based on today's workout calories burned",
+          "Custom food entries persist per user and appear in personal food library",
+          "Barcode scan endpoint maps UPC to USDA FDC entry (fallback: Open Food Facts)"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build the Apple Health and Google Fit integration service: OAuth2 consent flow (Google Fit), HealthKit permission request orchestration, incoming webhook receivers for health data push, background sync scheduler, and deduplication engine for concurrent device syncs.",
+        "payload": {
+          "apple_health": "HealthKit background delivery + HKObserverQuery",
+          "google_fit": "Google Fit REST API + Health Connect SDK",
+          "sync_scheduler": "Celery beat (every 15 min background sync)",
+          "deduplication": "idempotency key = device_id + data_type + start_timestamp",
+          "deliverable": "backend/services/health_integrations/"
+        },
+        "acceptance_criteria": [
+          "Google Fit OAuth2 flow completes and stores refresh token securely (encrypted at rest)",
+          "HealthKit background delivery triggers workout sync within 60 seconds of session end",
+          "Duplicate sync attempts identified by idempotency key and return 200 without re-inserting",
+          "Health sync failures retry 3 times with exponential backoff before dead-letter queue",
+          "User can disconnect health platform and all synced data remains (soft unlink)",
+          "Sync status endpoint returns last_sync_at, records_synced_24h, error_count"
+        ],
+        "depends_on": [
+          9,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "FRONTEND",
+        "description": "Build the React Native mobile app: onboarding + health permissions, social feed with workout cards, workout logger (exercise picker, set/rep tracker, timer, media capture), challenge browser and live leaderboard, trainer marketplace browse/book, nutrition dashboard with barcode scanner, and settings.",
+        "payload": {
+          "framework": "React Native 0.74 + Expo (managed workflow)",
+          "navigation": "React Navigation v7 (tab + stack)",
+          "state": "Zustand + React Query",
+          "ui_library": "NativeWind (Tailwind for RN)",
+          "offline": "React Query persistence + SQLite local cache",
+          "screens": [
+            "Onboarding",
+            "Feed",
+            "WorkoutLogger",
+            "ChallengeList",
+            "Leaderboard",
+            "TrainerMarketplace",
+            "BookTrainer",
+            "NutritionDashboard",
+            "FoodLog",
+            "BarcodeScanner",
+            "Profile",
+            "Settings"
+          ],
+          "deliverable": "mobile/src/"
+        },
+        "acceptance_criteria": [
+          "Onboarding requests HealthKit / Health Connect permissions with clear rationale strings",
+          "Feed loads in < 2s on 4G; skeleton screens shown during load",
+          "Workout logger supports superset grouping and rest timer with background notifications",
+          "Live leaderboard updates via SSE without full page reload",
+          "Trainer booking checkout completes using Stripe Payment Sheet (no raw card fields in app)",
+          "Barcode scanner opens in < 1s and resolves food item in < 3s",
+          "App passes Expo build for both iOS and Android without warnings"
+        ],
+        "depends_on": [
+          5,
+          3,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "PCB_DESIGN",
+        "description": "Design the schematic and BOM for a companion IoT fitness badge device: low-power BLE beacon (nRF52840), step counter (ADXL362 accelerometer), LED challenge progress indicator, coin cell battery with 6-month life target. Intended as optional branded hardware add-on for challenges.",
+        "payload": {
+          "mcu": "Nordic nRF52840 (BLE 5.3 + USB)",
+          "sensors": [
+            "ADXL362 accelerometer (step counting)"
+          ],
+          "power": "CR2032 coin cell, target 6-month standby",
+          "form_factor": "32mm circular badge",
+          "bom_format": "CSV with LCSC part numbers",
+          "deliverable": "hardware/badge/schematic.kicad_sch, hardware/badge/bom.csv"
+        },
+        "acceptance_criteria": [
+          "KiCad schematic passes ERC with zero errors",
+          "BOM includes all passives, connectors, and ICs with LCSC part numbers and unit costs",
+          "Power budget analysis shows > 6 months battery life at 10Hz BLE advertising",
+          "Decoupling capacitors placed per nRF52840 reference design guidelines",
+          "ADXL362 SPI wiring verified against datasheet pinout",
+          "Schematic reviewed against nRF52840 hardware design guide checklist"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write HIL (Hardware-in-the-Loop) test specs for the BLE health bridge firmware and optional badge device: BLE pairing, data fidelity (heart rate \u00b1 2 BPM vs reference), sync latency, battery drain measurement, and stress test (1000 concurrent BLE events).",
+        "payload": {
+          "test_targets": [
+            "BLE_health_bridge_native_module",
+            "badge_firmware_nRF52840"
+          ],
+          "test_types": [
+            "ble_pairing_reliability",
+            "data_fidelity",
+            "sync_latency",
+            "battery_current_draw",
+            "concurrent_event_stress"
+          ],
+          "reference_device": "Polar H10 (gold standard HR)",
+          "tools": [
+            "nRF9160 DK for HIL",
+            "ppk2 power profiler",
+            "custom BLE sniffer"
+          ],
+          "deliverable": "hardware/tests/hil_test_spec.md, hardware/tests/hil_runner.py"
+        },
+        "acceptance_criteria": [
+          "BLE pairing succeeds in < 3 seconds for 95th percentile across 100 trials",
+          "Heart rate readings within \u00b1 2 BPM of Polar H10 reference during 30-min run",
+          "Sync latency from workout end to backend confirmation < 60 seconds",
+          "Badge average current draw measured < 15\u00b5A in advertising mode (6-month battery validated)",
+          "1000 concurrent BLE events processed without buffer overflow or data loss",
+          "All HIL tests runnable in CI with hardware abstraction layer mock mode"
+        ],
+        "depends_on": [
+          8,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "SECURITY",
+        "description": "Perform a security review covering: threat model (STRIDE), OWASP Mobile Top 10 audit, Stripe webhook signature validation, trainer payout fraud controls, health data encryption at rest and in transit, and PII data handling compliance review.",
+        "payload": {
+          "frameworks": [
+            "OWASP Mobile Top 10",
+            "STRIDE threat model"
+          ],
+          "scope": [
+            "auth_service",
+            "trainer_marketplace",
+            "health_integrations",
+            "nutrition_service",
+            "mobile_app"
+          ],
+          "critical_controls": [
+            "stripe_webhook_signature",
+            "health_data_encryption",
+            "pii_minimization",
+            "trainer_payout_fraud_detection"
+          ],
+          "deliverable": "security/threat_model.md, security/owasp_audit.md"
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model completed for all 6 backend service boundaries",
+          "OWASP Mobile Top 10 checklist completed with findings and mitigations",
+          "Stripe webhook `Stripe-Signature` header validated on every payout callback",
+          "Health data encrypted at rest (AES-256) and in transit (TLS 1.3 minimum)",
+          "PII fields enumerated; data retention policy matches privacy policy",
+          "Trainer payout velocity limits configured (max payout per 24h period)",
+          "All critical and high severity findings have documented remediation owners"
+        ],
+        "depends_on": [
+          9,
+          11,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "LOCALIZATION",
+        "description": "Set up i18n infrastructure for the mobile app and web admin: string extraction, translation config for English, Spanish, Portuguese, and French (primary fitness app markets), locale-aware number/unit formatting (metric vs imperial), and RTL layout preparation.",
+        "payload": {
+          "framework": "i18next (React Native) + react-i18next",
+          "locales": [
+            "en-US",
+            "es-ES",
+            "pt-BR",
+            "fr-FR"
+          ],
+          "unit_systems": [
+            "metric (km, kg)",
+            "imperial (miles, lbs)"
+          ],
+          "string_extraction_tool": "i18next-parser",
+          "rtl_prep": true,
+          "deliverable": "mobile/src/i18n/, mobile/src/locales/"
+        },
+        "acceptance_criteria": [
+          "All user-visible strings extracted to locale JSON files (zero hardcoded UI strings)",
+          "Unit system toggles between metric and imperial; all workout stats and food macros adapt",
+          "Spanish, Portuguese, and French translations complete for all MVP screens",
+          "Date/time formatting uses locale-appropriate formats (DD/MM vs MM/DD)",
+          "RTL layout verified with pseudo-RTL locale; no element overflow detected",
+          "Missing translation key fallback chain: locale \u2192 en-US \u2192 key name",
+          "Top 5 target locales identified",
+          "Store listing translated"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "QA",
+        "description": "Design the QA test plan: test case library covering workout logging, challenge mechanics, leaderboard correctness, trainer booking happy and error paths, nutrition macro accuracy, and health sync data fidelity. Define test environments, regression suite, and release criteria.",
+        "payload": {
+          "test_levels": [
+            "unit",
+            "integration",
+            "E2E",
+            "exploratory"
+          ],
+          "priority_flows": [
+            "workout_log_and_share",
+            "challenge_join_and_complete",
+            "trainer_book_and_pay",
+            "nutrition_log_and_summary",
+            "health_sync_and_display"
+          ],
+          "tools": [
+            "Detox (E2E mobile)",
+            "Postman (API)",
+            "pytest (backend unit)"
+          ],
+          "release_criteria": "< 0 critical bugs, < 5 high bugs, E2E pass rate > 95%",
+          "deliverable": "qa/test_plan.md, qa/test_cases/"
+        },
+        "acceptance_criteria": [
+          "Test case library covers all 5 priority flows with positive, negative, and boundary cases",
+          "Leaderboard test cases verify ordering correctness with tie-breaking rules",
+          "Trainer booking test cases cover: success, payment failure, cancellation, refund",
+          "Nutrition macro accuracy test cases verify USDA reference values \u00b1 1%",
+          "Release criteria gate documented and signed off by product_manager",
+          "Regression suite tagged and runnable in < 30 minutes"
+        ],
+        "depends_on": [
+          14,
+          10,
+          11,
+          12,
+          13
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "TESTS",
+        "description": "Implement unit and integration tests for all backend services and mobile app core logic: auth token lifecycle, workout CRUD, leaderboard sorted set operations, trainer payout split calculation, nutrition macro aggregation, health sync deduplication, and BLE bridge data parsing.",
+        "payload": {
+          "backend_framework": "pytest + httpx (async) + pytest-asyncio",
+          "mobile_framework": "Jest + React Native Testing Library",
+          "coverage_target": "80% line coverage on services/",
+          "test_db": "PostgreSQL (testcontainers) + Redis (fakeredis)",
+          "deliverable": "backend/tests/, mobile/__tests__/"
+        },
+        "acceptance_criteria": [
+          "Backend test suite achieves \u2265 80% line coverage on all service modules",
+          "Trainer payout split test verifies platform fee calculation for 10 currency/amount combinations",
+          "Leaderboard tests verify Redis sorted set ordering with tied scores (secondary sort by timestamp)",
+          "Health sync deduplication test confirms idempotency key prevents double-insert",
+          "BLE data parsing tests cover all GATT Heart Rate Service encoding variants (uint8 vs uint16)",
+          "All tests pass in CI without network calls (external services mocked)"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          8
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines (GitHub Actions), containerised services (Docker Compose for dev, ECS Fargate for prod), environment promotion (dev \u2192 staging \u2192 prod), database migration runner, Celery worker deployment, health sync scheduler deployment, and observability stack (Datadog APM + Sentry).",
+        "payload": {
+          "ci": "GitHub Actions",
+          "container_registry": "AWS ECR",
+          "orchestration": "AWS ECS Fargate",
+          "database": "AWS RDS PostgreSQL (Multi-AZ)",
+          "cache": "AWS ElastiCache Redis",
+          "observability": [
+            "Datadog APM",
+            "Sentry (mobile + backend)"
+          ],
+          "cdn": "CloudFront (workout media assets)",
+          "deliverable": ".github/workflows/, infra/terraform/, infra/docker-compose.prod.yml"
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs lint, type check, unit tests, and builds Docker image on every PR",
+          "Alembic migrations run automatically in staging/prod deployment pipeline before service start",
+          "Zero-downtime deployment uses ECS rolling update with health check grace period",
+          "Celery worker and beat scheduler deployed as separate ECS task definitions",
+          "Datadog APM traces correlate across API \u2192 service \u2192 database for trainer booking flow",
+          "Sentry alerts on error rate > 1% for any service within 5-minute window",
+          "CloudFront distribution serves workout media with signed URLs (60-minute expiry)"
+        ],
+        "depends_on": [
+          20,
+          17
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute full end-to-end system tests across the integrated stack: user onboarding \u2192 health connect \u2192 workout log \u2192 challenge join \u2192 leaderboard update \u2192 trainer booking \u2192 payment \u2192 nutrition log \u2192 summary. Include load test (500 concurrent users) and chaos test (service restart during active leaderboard update).",
+        "payload": {
+          "e2e_tool": "Detox (mobile) + Playwright (web admin)",
+          "load_test_tool": "k6",
+          "load_profile": "500 concurrent users, 30-minute sustained",
+          "chaos_scenarios": [
+            "db_failover_during_leaderboard_write",
+            "redis_restart_during_challenge_update",
+            "stripe_webhook_delayed_60s"
+          ],
+          "deliverable": "qa/e2e_results.md, qa/load_test_report.md"
+        },
+        "acceptance_criteria": [
+          "Full onboarding \u2192 leaderboard E2E test completes in < 5 minutes with no failures",
+          "Load test: p95 API response < 500ms at 500 concurrent users",
+          "Load test: zero 5xx errors during sustained 30-minute run",
+          "Chaos: DB failover \u2014 RDS Multi-AZ promotion completes; no data lost; service recovers in < 30s",
+          "Chaos: Stripe webhook delayed 60s \u2014 booking remains in 'pending' state; resolves correctly on retry",
+          "Leaderboard reads remain consistent during Redis restart (fallback to PostgreSQL confirmed)"
+        ],
+        "depends_on": [
+          21,
+          19
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 23,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (GDPR + CCPA compliant), trainer marketplace terms (independent contractor classification, commission agreement), health data handling addendum, and cookie/tracking policy. Review App Store and Google Play data safety section requirements.",
+        "payload": {
+          "jurisdictions": [
+            "US (CCPA)",
+            "EU (GDPR)",
+            "UK (UK GDPR)"
+          ],
+          "health_data_framework": "HIPAA-adjacent best practices (app is not a covered entity)",
+          "marketplace_terms": "trainer_independent_contractor_agreement.md",
+          "app_store_requirements": [
+            "Apple Privacy Nutrition Label",
+            "Google Play Data Safety"
+          ],
+          "deliverable": "legal/terms_of_service.md, legal/privacy_policy.md, legal/trainer_terms.md"
+        },
+        "acceptance_criteria": [
+          "Privacy policy covers all data categories collected (health, location, payment, biometric)",
+          "GDPR data subject rights (access, deletion, portability) mapped to API endpoints",
+          "Trainer terms classify trainers as independent contractors with commission schedule",
+          "Health data addendum specifies retention period and deletion procedure",
+          "Apple Privacy Nutrition Label data types completed for App Store submission",
+          "Google Play Data Safety form answers align with actual data flows documented in security review"
+        ],
+        "depends_on": [
+          17
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 24,
+        "task_type": "TRAINING",
+        "description": "Produce user-facing onboarding guides, trainer onboarding documentation (how to set up profile, pricing, manage bookings, understand payouts), in-app tooltip copy, app store description copy, and a video script for the 60-second product demo video.",
+        "payload": {
+          "audiences": [
+            "end_user",
+            "certified_trainer",
+            "app_store_reviewer"
+          ],
+          "formats": [
+            "in-app tooltip copy",
+            "trainer_onboarding_guide.pdf",
+            "help_center_articles",
+            "app_store_description",
+            "demo_video_script_60s"
+          ],
+          "locales": [
+            "en-US",
+            "es-ES",
+            "pt-BR",
+            "fr-FR"
+          ],
+          "deliverable": "docs/training/, marketing/app_store_copy/, marketing/demo_script.md"
+        },
+        "acceptance_criteria": [
+          "Trainer onboarding guide covers: profile setup, service listing, availability calendar, payout setup, and first booking walkthrough",
+          "In-app tooltip copy written for 12 key UI elements (health sync, challenge creation, trainer booking)",
+          "App Store description \u2264 4000 characters; highlights all 6 core features; includes keywords",
+          "Demo video script runs 55-65 seconds at natural pace; covers onboarding \u2192 workout \u2192 challenge \u2192 trainer",
+          "All training materials localized into all 4 supported locales",
+          "Help center articles reviewed for reading level \u2264 grade 8 (Flesch-Kincaid)"
+        ],
+        "depends_on": [
+          14,
+          11,
+          18
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 25,
+        "task_type": "DOCS",
+        "description": "Write the full technical documentation suite: API reference (auto-generated from OpenAPI spec + hand-written examples), architecture decision records (ADRs) for leaderboard tech choice, health sync deduplication strategy, and trainer payout model, developer setup guide, and runbook for on-call engineers.",
+        "payload": {
+          "api_docs_tool": "Redocly (from OpenAPI spec)",
+          "adrs": [
+            "leaderboard_redis_vs_postgres",
+            "health_sync_deduplication_strategy",
+            "stripe_connect_vs_direct_charge",
+            "multi_agent_coordinator_for_trainer_matching"
+          ],
+          "runbook_sections": [
+            "leaderboard_lag_investigation",
+            "health_sync_failure_recovery",
+            "stripe_payout_failure_resolution",
+            "badge_ble_connection_issues"
+          ],
+          "deliverable": "docs/api/, docs/adr/, docs/runbooks/, README.md"
+        },
+        "acceptance_criteria": [
+          "Redocly API reference renders all endpoints with request/response examples",
+          "Each ADR has: context, decision, consequences, and alternatives considered",
+          "Developer setup guide tested on clean machine (macOS + Linux) \u2014 app runs in < 20 minutes",
+          "Runbook covers all 4 sections with step-by-step diagnosis and escalation path",
+          "README includes architecture diagram, quick-start, and link to full docs",
+          "All docs reviewed for accuracy against final deployed system"
+        ],
+        "depends_on": [
+          22,
+          21
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 25,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 58,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 58,
+          "final_review": {
+            "score": 58,
+            "flaws": [
+              "CRITICAL \u2014 Expo managed workflow (Step 14) is fundamentally incompatible with custom native BLE modules (Step 8). Expo managed workflow sandboxes native code and does not allow Swift/Kotlin native modules without ejecting to bare workflow or using a custom dev client via EAS Build. This conflict will force a painful mid-build eject that invalidates the Expo managed workflow assumption across all 12 screens.",
+              "Google Fit REST API is being sunset by Google in favor of Health Connect exclusively. Step 13 lists both 'Google Fit REST API + Health Connect SDK' as if they are parallel options, but Google Fit REST API access for fitness data from Android devices is deprecated. Building against it now means rework before launch.",
+              "No badge firmware implementation step exists. Step 15 designs the PCB; Step 16 tests the firmware. The actual Zephyr/nRF SDK firmware for the nRF52840 \u2014 BLE advertising, GATT server, step counting interrupt handler, power management \u2014 is never written. The dependency chain 15\u219216 skips the most critical artifact.",
+              "Auth0 + custom JWT refresh (Step 9) is an anti-pattern. Auth0 already provides PKCE + refresh token rotation. Layering a custom JWT refresh on top creates two divergent token lifecycles, complicates revocation, and is a security surface. Choose one or the other.",
+              "HealthKit background delivery does not work with a Celery beat poller (Step 13). iOS enforces strict background execution rules. HKObserverQuery background delivery is push-based from HealthKit to the app; the app cannot poll Apple Health from a backend scheduler. The '15 min Celery beat' approach will silently fail on iOS and Apple will reject the app if HealthKit entitlements are misconfigured.",
+              "The social feed fan-out problem (Step 9) is trivialized to one line: 'chronological + engagement-weighted for followed users.' At even modest scale (10k users, 1000 follows each), fan-out on write generates millions of feed insertions per workout post. No fan-out strategy, no cutoff threshold for high-follower users, no mention of feed rebuild jobs. This is a known distributed systems scaling cliff.",
+              "SSE long-lived connections (Steps 10, 14) will be silently killed by AWS ALB's default 60-second idle timeout. ECS Fargate behind ALB will drop SSE connections every 60 seconds unless the ALB idle timeout is explicitly raised and heartbeat frames are sent. This is not mentioned anywhere, and the acceptance criterion 'SSE stream reconnects automatically on client disconnect' treats the symptom rather than the cause.",
+              "Step 3 requires 5 user interviews and a usability test with 3 participants. In an agent-driven autonomous build pipeline, there are no real participants. This step cannot be completed autonomously and creates a blocking dependency for all subsequent UX-dependent work (Step 14 depends on Step 3).",
+              "Trainer independent contractor classification (Step 23) is treated as a document-drafting exercise. In California (AB5), New York, and UK employment law, a platform that sets pricing, controls bookings, and takes commission may be reclassifying trainers as employees regardless of what the contract says. This is a business model risk, not just a legal drafting task \u2014 and it is not flagged."
+            ],
+            "suggestions": [
+              "Replace Expo managed workflow with Expo bare workflow or React Native CLI from the start. Document the EAS Build custom dev client setup in Step 6. This is not a minor configuration change \u2014 it affects the entire mobile build pipeline.",
+              "Remove Google Fit REST API references entirely. Target Health Connect (Android 9+) and document the minimum SDK version (API 26 minimum, Health Connect requires Android 9). Add a graceful degradation path for devices below API 28.",
+              "Add a Step 15.5: EMBEDDED_FIRMWARE \u2014 implement the nRF52840 firmware in Zephyr RTOS: BLE advertising (iBeacon/Eddystone), GATT HR server stub, ADXL362 SPI driver, step counter ISR, power management (System OFF between advertising intervals). This is ~2 weeks of work that is simply missing.",
+              "Consolidate auth to Auth0 fully (PKCE on mobile, machine-to-machine for service tokens). Remove the 'custom JWT refresh' from Step 9. Auth0's refresh token rotation already handles this. If cost is a concern, switch to Supabase Auth or Keycloak.",
+              "Replace the Celery beat HealthKit poller with proper HealthKit background delivery: HKObserverQuery registered in the mobile app, which calls setBackgroundDeliveryEnabled, which wakes the app to trigger a backend sync. The backend records the push; it does not poll Apple.",
+              "Add Step 9.5: Push Notifications Infrastructure \u2014 FCM (Android) + APNs (iOS) via Expo Notifications (if bare workflow) or a service like OneSignal. Challenge invites, booking confirmations, workout reactions, and leaderboard overtakes all require push. This is a complete omission.",
+              "Add Step 11.5 or extend Step 21 to build the web-admin panel. The monorepo includes web-admin/ but no step builds it. Trainer verification queue, dispute resolution, payout override, and content moderation all need an admin UI. Right now there is just an undocumented 'admin review endpoint.'",
+              "Add content moderation to Step 9 or as a standalone step. Workout media uploads (photos, video clips) require at minimum CSAM hash-matching (PhotoDNA or AWS Rekognition) before S3 storage. Missing this will cause App Store rejection and potential legal liability.",
+              "Add 1099-K / tax reporting to Step 23. US trainers earning >$600 annually trigger IRS reporting requirements via Stripe's 1099-K. Stripe Connect handles generation but the platform must collect W-9 during onboarding and store TINs. This is a compliance obligation, not optional.",
+              "Move load testing earlier \u2014 add a performance checkpoint at Step 13 (after all backend services exist but before mobile is built). Discovering that the feed or leaderboard cannot handle 500 users at Step 22 means rearchitecting already-deployed services."
+            ],
+            "missing": [
+              "Push notification service (FCM + APNs) \u2014 completely absent from the plan. Required for challenge invites, booking confirmations, leaderboard overtakes, and trainer messages.",
+              "Admin panel build step \u2014 web-admin/ is in the monorepo but never implemented. Trainer verification, content moderation review, payout dispute resolution, and user bans all require this.",
+              "Badge firmware implementation step \u2014 the embedded C/Zephyr code for the nRF52840 is never written. PCB is designed (Step 15), tests written (Step 16), but the firmware itself is missing.",
+              "Content moderation pipeline \u2014 no CSAM detection, no inappropriate image filtering, no report/flag mechanism for workout posts. This is a legal and App Store requirement for UGC platforms.",
+              "Anti-cheat / data validation layer \u2014 users can submit arbitrary workout data or manipulate health sync payloads. No server-side plausibility checks (e.g., 500 km run in 1 hour), no rate limiting on workout submissions.",
+              "Real-time messaging or notification inbox \u2014 trainer \u2194 user communication before/after sessions is implied by the booking flow but never designed or built.",
+              "Tax / 1099-K compliance for trainer payouts \u2014 W-9 collection during Stripe Connect onboarding, IRS threshold monitoring, annual 1099-K generation.",
+              "App Store review strategy \u2014 Apple's health data review is strict and slow (2-4 week review times common for HealthKit apps). No contingency for rejection, no TestFlight beta plan, no review preparation checklist.",
+              "Exercise library data source \u2014 Step 9 validates 'exercise library references' but no step populates the exercise library. Where do the 500+ exercises come from? CRUD admin tool? Seed migration? Third-party API?",
+              "Rate limiting implementation \u2014 Step 5 documents rate limit headers but no step actually implements rate limiting middleware (e.g., slowapi, Redis token bucket). Documentation without enforcement is not a control."
+            ],
+            "security_risks": [
+              "Health data is PHI-adjacent. AES-256 at rest is mentioned (Step 17) but the key management strategy is absent. Who holds the KMS keys? Are they rotated? Is there envelope encryption per-user or per-table? A single compromised key should not expose all users' biometric data.",
+              "Stripe webhook signature validation is listed as an acceptance criterion (Step 17) but the implementation is in Step 11's backend with no explicit code review gate. If a developer bypasses signature validation 'temporarily' during development, it stays in. This should be a test that fails CI if the Stripe-Signature header is not validated.",
+              "Trainer payout fraud: velocity limits are mentioned (Step 17) but there is no fraud scoring model, no manual review trigger for unusual payout patterns, and no mention of Stripe Radar rules. A compromised trainer account can drain funds up to the velocity limit before detection.",
+              "BLE GATT parsing (Step 8) with no input validation on raw byte payloads. Malformed GATT packets from a rogue BLE peripheral could trigger buffer misreads in the native module. The acceptance criteria test only Heart Rate Service encoding variants \u2014 not adversarial payloads.",
+              "S3 pre-signed URL validation (Step 9): 'backend validates on completion' is vague. Without a server-side content type check and file size limit enforced on the S3 bucket policy (not just API-side), users can upload arbitrary files to S3 under workout media keys.",
+              "OAuth2 refresh token storage on mobile: if stored in AsyncStorage (React Native default), it is readable by any code running in the app context. Should use iOS Keychain / Android Keystore via Expo SecureStore. Not specified anywhere in Steps 8 or 14.",
+              "USDA FoodData Central API key (if using the authenticated endpoint for higher rate limits) and Open Food Facts are external dependencies. No credential rotation plan, no circuit breaker if these APIs are unavailable, no mention of whether the API key is in Secrets Manager or hardcoded."
+            ],
+            "summary": "This plan is impressively broad \u2014 25 steps covering market research through docs, with serious acceptance criteria and a realistic dependency graph. The core backend architecture (FastAPI, PostgreSQL, Redis sorted sets for leaderboards, Stripe Connect, Celery) is sound. However, there are three critical technical conflicts that will cause costly rework: (1) Expo managed workflow cannot host the custom Swift/Kotlin BLE native modules the plan requires \u2014 this forces an architectural pivot on the mobile side before a single screen is built; (2) HealthKit background delivery fundamentally does not work with a server-side Celery poller \u2014 the entire health sync architecture for iOS is wrong; and (3) the badge device plan has a missing firmware implementation step between PCB design and HIL testing. Beyond these blockers, the plan omits push notifications entirely (a core UX requirement for a social app), never builds the admin panel it references, and has no content moderation for a UGC platform \u2014 both of which will cause App Store rejection. The trainer marketplace has underestimated legal and tax compliance surface area. Score: 58. Fix the Expo/BLE conflict and the missing firmware step first \u2014 these are load-bearing; everything else is recoverable.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 58,
+              "flaws": [
+                "CRITICAL \u2014 Expo managed workflow (Step 14) is fundamentally incompatible with custom native BLE modules (Step 8). Expo managed workflow sandboxes native code and does not allow Swift/Kotlin native modules without ejecting to bare workflow or using a custom dev client via EAS Build. This conflict will force a painful mid-build eject that invalidates the Expo managed workflow assumption across all 12 screens.",
+                "Google Fit REST API is being sunset by Google in favor of Health Connect exclusively. Step 13 lists both 'Google Fit REST API + Health Connect SDK' as if they are parallel options, but Google Fit REST API access for fitness data from Android devices is deprecated. Building against it now means rework before launch.",
+                "No badge firmware implementation step exists. Step 15 designs the PCB; Step 16 tests the firmware. The actual Zephyr/nRF SDK firmware for the nRF52840 \u2014 BLE advertising, GATT server, step counting interrupt handler, power management \u2014 is never written. The dependency chain 15\u219216 skips the most critical artifact.",
+                "Auth0 + custom JWT refresh (Step 9) is an anti-pattern. Auth0 already provides PKCE + refresh token rotation. Layering a custom JWT refresh on top creates two divergent token lifecycles, complicates revocation, and is a security surface. Choose one or the other.",
+                "HealthKit background delivery does not work with a Celery beat poller (Step 13). iOS enforces strict background execution rules. HKObserverQuery background delivery is push-based from HealthKit to the app; the app cannot poll Apple Health from a backend scheduler. The '15 min Celery beat' approach will silently fail on iOS and Apple will reject the app if HealthKit entitlements are misconfigured.",
+                "The social feed fan-out problem (Step 9) is trivialized to one line: 'chronological + engagement-weighted for followed users.' At even modest scale (10k users, 1000 follows each), fan-out on write generates millions of feed insertions per workout post. No fan-out strategy, no cutoff threshold for high-follower users, no mention of feed rebuild jobs. This is a known distributed systems scaling cliff.",
+                "SSE long-lived connections (Steps 10, 14) will be silently killed by AWS ALB's default 60-second idle timeout. ECS Fargate behind ALB will drop SSE connections every 60 seconds unless the ALB idle timeout is explicitly raised and heartbeat frames are sent. This is not mentioned anywhere, and the acceptance criterion 'SSE stream reconnects automatically on client disconnect' treats the symptom rather than the cause.",
+                "Step 3 requires 5 user interviews and a usability test with 3 participants. In an agent-driven autonomous build pipeline, there are no real participants. This step cannot be completed autonomously and creates a blocking dependency for all subsequent UX-dependent work (Step 14 depends on Step 3).",
+                "Trainer independent contractor classification (Step 23) is treated as a document-drafting exercise. In California (AB5), New York, and UK employment law, a platform that sets pricing, controls bookings, and takes commission may be reclassifying trainers as employees regardless of what the contract says. This is a business model risk, not just a legal drafting task \u2014 and it is not flagged."
+              ],
+              "suggestions": [
+                "Replace Expo managed workflow with Expo bare workflow or React Native CLI from the start. Document the EAS Build custom dev client setup in Step 6. This is not a minor configuration change \u2014 it affects the entire mobile build pipeline.",
+                "Remove Google Fit REST API references entirely. Target Health Connect (Android 9+) and document the minimum SDK version (API 26 minimum, Health Connect requires Android 9). Add a graceful degradation path for devices below API 28.",
+                "Add a Step 15.5: EMBEDDED_FIRMWARE \u2014 implement the nRF52840 firmware in Zephyr RTOS: BLE advertising (iBeacon/Eddystone), GATT HR server stub, ADXL362 SPI driver, step counter ISR, power management (System OFF between advertising intervals). This is ~2 weeks of work that is simply missing.",
+                "Consolidate auth to Auth0 fully (PKCE on mobile, machine-to-machine for service tokens). Remove the 'custom JWT refresh' from Step 9. Auth0's refresh token rotation already handles this. If cost is a concern, switch to Supabase Auth or Keycloak.",
+                "Replace the Celery beat HealthKit poller with proper HealthKit background delivery: HKObserverQuery registered in the mobile app, which calls setBackgroundDeliveryEnabled, which wakes the app to trigger a backend sync. The backend records the push; it does not poll Apple.",
+                "Add Step 9.5: Push Notifications Infrastructure \u2014 FCM (Android) + APNs (iOS) via Expo Notifications (if bare workflow) or a service like OneSignal. Challenge invites, booking confirmations, workout reactions, and leaderboard overtakes all require push. This is a complete omission.",
+                "Add Step 11.5 or extend Step 21 to build the web-admin panel. The monorepo includes web-admin/ but no step builds it. Trainer verification queue, dispute resolution, payout override, and content moderation all need an admin UI. Right now there is just an undocumented 'admin review endpoint.'",
+                "Add content moderation to Step 9 or as a standalone step. Workout media uploads (photos, video clips) require at minimum CSAM hash-matching (PhotoDNA or AWS Rekognition) before S3 storage. Missing this will cause App Store rejection and potential legal liability.",
+                "Add 1099-K / tax reporting to Step 23. US trainers earning >$600 annually trigger IRS reporting requirements via Stripe's 1099-K. Stripe Connect handles generation but the platform must collect W-9 during onboarding and store TINs. This is a compliance obligation, not optional.",
+                "Move load testing earlier \u2014 add a performance checkpoint at Step 13 (after all backend services exist but before mobile is built). Discovering that the feed or leaderboard cannot handle 500 users at Step 22 means rearchitecting already-deployed services."
+              ],
+              "missing": [
+                "Push notification service (FCM + APNs) \u2014 completely absent from the plan. Required for challenge invites, booking confirmations, leaderboard overtakes, and trainer messages.",
+                "Admin panel build step \u2014 web-admin/ is in the monorepo but never implemented. Trainer verification, content moderation review, payout dispute resolution, and user bans all require this.",
+                "Badge firmware implementation step \u2014 the embedded C/Zephyr code for the nRF52840 is never written. PCB is designed (Step 15), tests written (Step 16), but the firmware itself is missing.",
+                "Content moderation pipeline \u2014 no CSAM detection, no inappropriate image filtering, no report/flag mechanism for workout posts. This is a legal and App Store requirement for UGC platforms.",
+                "Anti-cheat / data validation layer \u2014 users can submit arbitrary workout data or manipulate health sync payloads. No server-side plausibility checks (e.g., 500 km run in 1 hour), no rate limiting on workout submissions.",
+                "Real-time messaging or notification inbox \u2014 trainer \u2194 user communication before/after sessions is implied by the booking flow but never designed or built.",
+                "Tax / 1099-K compliance for trainer payouts \u2014 W-9 collection during Stripe Connect onboarding, IRS threshold monitoring, annual 1099-K generation.",
+                "App Store review strategy \u2014 Apple's health data review is strict and slow (2-4 week review times common for HealthKit apps). No contingency for rejection, no TestFlight beta plan, no review preparation checklist.",
+                "Exercise library data source \u2014 Step 9 validates 'exercise library references' but no step populates the exercise library. Where do the 500+ exercises come from? CRUD admin tool? Seed migration? Third-party API?",
+                "Rate limiting implementation \u2014 Step 5 documents rate limit headers but no step actually implements rate limiting middleware (e.g., slowapi, Redis token bucket). Documentation without enforcement is not a control."
+              ],
+              "security_risks": [
+                "Health data is PHI-adjacent. AES-256 at rest is mentioned (Step 17) but the key management strategy is absent. Who holds the KMS keys? Are they rotated? Is there envelope encryption per-user or per-table? A single compromised key should not expose all users' biometric data.",
+                "Stripe webhook signature validation is listed as an acceptance criterion (Step 17) but the implementation is in Step 11's backend with no explicit code review gate. If a developer bypasses signature validation 'temporarily' during development, it stays in. This should be a test that fails CI if the Stripe-Signature header is not validated.",
+                "Trainer payout fraud: velocity limits are mentioned (Step 17) but there is no fraud scoring model, no manual review trigger for unusual payout patterns, and no mention of Stripe Radar rules. A compromised trainer account can drain funds up to the velocity limit before detection.",
+                "BLE GATT parsing (Step 8) with no input validation on raw byte payloads. Malformed GATT packets from a rogue BLE peripheral could trigger buffer misreads in the native module. The acceptance criteria test only Heart Rate Service encoding variants \u2014 not adversarial payloads.",
+                "S3 pre-signed URL validation (Step 9): 'backend validates on completion' is vague. Without a server-side content type check and file size limit enforced on the S3 bucket policy (not just API-side), users can upload arbitrary files to S3 under workout media keys.",
+                "OAuth2 refresh token storage on mobile: if stored in AsyncStorage (React Native default), it is readable by any code running in the app context. Should use iOS Keychain / Android Keystore via Expo SecureStore. Not specified anywhere in Steps 8 or 14.",
+                "USDA FoodData Central API key (if using the authenticated endpoint for higher rate limits) and Open Food Facts are external dependencies. No credential rotation plan, no circuit breaker if these APIs are unavailable, no mention of whether the API key is in Secrets Manager or hardcoded."
+              ],
+              "summary": "This plan is impressively broad \u2014 25 steps covering market research through docs, with serious acceptance criteria and a realistic dependency graph. The core backend architecture (FastAPI, PostgreSQL, Redis sorted sets for leaderboards, Stripe Connect, Celery) is sound. However, there are three critical technical conflicts that will cause costly rework: (1) Expo managed workflow cannot host the custom Swift/Kotlin BLE native modules the plan requires \u2014 this forces an architectural pivot on the mobile side before a single screen is built; (2) HealthKit background delivery fundamentally does not work with a server-side Celery poller \u2014 the entire health sync architecture for iOS is wrong; and (3) the badge device plan has a missing firmware implementation step between PCB design and HIL testing. Beyond these blockers, the plan omits push notifications entirely (a core UX requirement for a social app), never builds the admin panel it references, and has no content moderation for a UGC platform \u2014 both of which will cause App Store rejection. The trainer marketplace has underestimated legal and tax compliance surface area. Score: 58. Fix the Expo/BLE conflict and the missing firmware step first \u2014 these are load-bearing; everything else is recoverable.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T10:10:22.630664+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 193.65,
+      "critic_plan": 111.16
+    }
+  }
+}

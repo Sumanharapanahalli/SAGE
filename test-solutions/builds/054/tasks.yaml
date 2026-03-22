@@ -1,0 +1,309 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define functional and non-functional requirements for the IoT asset
+      tracking platform: BLE beacon scanning intervals, GPS fix frequency, geofence
+      trigger latency SLA, RTLS accuracy targets, supply chain visibility KPIs, multi-tenant
+      org model, and data retention policy.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - Functional requirements cover BLE, GPS, geofencing, RTLS, and dashboard modules
+    - Non-functional requirements include latency (<2s location update), accuracy
+      (±2m indoor RTLS), availability (99.9%), and IEC 62443 SL-2 target
+    - Data flow diagram approved by ops and security stakeholders
+    - User stories cover asset registration, live tracking, alert configuration, and
+      reporting
+    depends_on: []
+  CONFIG:
+    description: 'Scaffold the asset_tracking solution directory from the SAGE starter
+      template. Initialize project.yaml (active modules, theme, compliance_standards:
+      IEC 62443), prompts.yaml (firmware_engineer, iot_backend_engineer, rtls_specialist
+      roles), and tasks.yaml (32 task type registry entries). Set up monorepo structure:
+      firmware/, backend/, web/, infra/, hardware_sim/.'
+    agent_role: developer
+    acceptance_criteria:
+    - solutions/asset_tracking/ directory created with all three YAML files
+    - make run PROJECT=asset_tracking starts without errors
+    - project.yaml lists IEC 62443 under compliance_standards
+    - All three YAML files pass YAML schema validation via GET /config/yaml/project
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Design the supply chain visibility dashboard: wireframes for live
+      asset map view, asset list with filter/sort, geofence zone editor (draw polygon/circle
+      on map), alert inbox, asset detail drawer (location history timeline, battery
+      level, last-seen), and executive summary report page. Include mobile-responsive
+      breakpoints.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 6 pages with annotated interaction states
+    - Geofence editor supports polygon and circle drawing with coordinate display
+    - Asset detail drawer shows location history timeline with timestamps
+    - Color system differentiates alert severities (critical/warning/info)
+    - Mobile layout specified for map and asset list views
+    depends_on:
+    - 1
+  SECURITY:
+    description: Produce IEC 62443 SL-2 threat model for the full asset tracking system.
+      Cover BLE beacon spoofing, GPS jamming/spoofing, MQTT broker compromise, API
+      unauthorized access, firmware tampering, and supply chain data exfiltration.
+      Output STRIDE analysis, attack surface map, and recommended countermeasures.
+      Generate SBOM seed list for firmware and backend components.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 scope areas with threat ID, likelihood, impact,
+      and mitigation
+    - Attack surface map identifies all network interfaces and data flows
+    - IEC 62443 SL-2 control mapping table produced (FR1–FR7)
+    - SBOM seed list generated with known CVE check for all listed components
+    - Countermeasures mapped to implementation steps in this plan
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 1
+  DATABASE:
+    description: 'Design and implement the time-series and relational database schema.
+      Tables: assets (id, type, metadata, org_id), beacons (id, asset_id, mac_addr,
+      tx_power), location_events (asset_id, lat, lng, floor, zone_id, source, timestamp),
+      geofences (id, org_id, name, geometry_geojson, trigger_types), alerts (id, asset_id,
+      geofence_id, severity, triggered_at, resolved_at), supply_chain_events (id,
+      asset_id, event_type, location, actor, timestamp). TimescaleDB hypertable for
+      location_events. PostGIS for geofence geometry.'
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations run cleanly from empty DB to final schema
+    - location_events hypertable partitioned by 1-day chunks
+    - PostGIS ST_Contains query returns correct geofence membership in < 10ms for
+      10k assets
+    - Foreign key constraints enforced for all relationships
+    - Seed data loads without errors and populates all tables
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 spec for all backend endpoints: asset CRUD, beacon
+      registration, GPS event ingest (bulk), geofence CRUD + polygon validation, RTLS
+      zone query, alert subscription (SSE), supply chain event stream, reporting aggregations,
+      and OTA firmware update trigger. Define authentication (JWT + API key for devices),
+      rate limits, and error schema.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors via openapi-cli
+    - All endpoints have request/response schemas with examples
+    - Device ingest endpoints documented with bulk payload format (max 500 events/batch)
+    - SSE alert stream endpoint documented with event format
+    - Auth flows documented for both JWT and device API key paths
+    depends_on:
+    - 1
+    - 5
+  FIRMWARE:
+    description: Implement BLE beacon firmware (Nordic nRF52840, FreeRTOS). HAL drivers
+      for BLE advertising (iBeacon + Eddystone-UID formats), accelerometer wake-on-motion
+      (LIS2DH12), and battery voltage ADC. Implement configurable advertising interval
+      (100ms–10s), TX power control, and manufacturer data payload encoding (asset_id,
+      battery_pct, sequence_num). OTA DFU via Nordic BLE bootloader. Secure boot with
+      firmware signature verification (Ed25519). Flash-backed config (Nordic NVRAM).
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - BLE advertising packet encodes asset_id, battery_pct, and sequence_num correctly
+    - Wake-on-motion fires within 100ms of threshold exceedance
+    - OTA DFU completes successfully with signature validation; rejects unsigned image
+    - Battery ADC reads accurate to ±2% across 2.0V–3.3V supply range
+    - Flash config survives power cycle with all settings intact
+    - Code compiles with zero warnings using ARM GCC -Wall -Wextra
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 2
+    - 4
+  HARDWARE_SIM:
+    description: Build hardware simulation models for CI testing. Python-based BLE
+      scanner emulator that generates synthetic iBeacon/Eddystone packets with configurable
+      RSSI, asset_id, and battery. GPS tracker emulator that replays NMEA sentences
+      from a route file over a mock serial port. Network topology simulator for multi-floor
+      indoor environment (zone_id assignment based on beacon RSSI trilateration).
+      Used by HIL tests and backend integration tests without physical hardware.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - BLE emulator generates valid iBeacon packets parseable by beacon receiver service
+    - GPS emulator replays route at configurable speed (1x, 10x, 100x) with realistic
+      NMEA output
+    - Indoor topology simulator assigns zone_id based on closest beacon RSSI within
+      ±1 zone accuracy
+    - All simulators connect to test MQTT broker and publish at specified rates
+    - Simulator fixtures usable from pytest via conftest.py without hardware
+    depends_on:
+    - 2
+    - 7
+    - 8
+  BACKEND:
+    description: Implement the BLE beacon receiver service. Raspberry Pi / Linux gateway
+      process that scans BLE advertisements (bluepy/bleak), decodes iBeacon and Eddystone-UID
+      payloads, applies RSSI smoothing (Kalman filter), and publishes scan results
+      to MQTT broker. Handles multi-scanner deduplication via sequence number. Configurable
+      scan interval and RSSI threshold. Runs as systemd service with watchdog.
+    agent_role: developer
+    acceptance_criteria:
+    - Decodes iBeacon and Eddystone-UID payloads with asset_id, battery_pct, sequence_num
+    - Kalman-filtered RSSI deviates < 3dB from 10-sample moving average
+    - Deduplication window eliminates duplicate packets within 500ms window
+    - Publishes scan results to MQTT within 100ms of BLE advertisement receipt
+    - Systemd unit restarts automatically on crash with < 5s recovery
+    depends_on:
+    - 6
+    - 7
+  FRONTEND:
+    description: 'Implement the Live Asset Map page. Leaflet.js map with tile layer,
+      asset markers (color-coded by status), geofence polygon/circle overlays, and
+      real-time position updates via WebSocket /ws/rtls/live. Asset marker popups
+      show asset ID, last location, battery, speed. Geofence overlays show name and
+      trigger type. Map controls: floor selector for multi-floor indoor maps, layer
+      toggles (show/hide geofences, GPS-only assets, BLE-only assets). Clustering
+      for > 500 assets.'
+    agent_role: developer
+    acceptance_criteria:
+    - Map renders all assets within 2s of page load for up to 1000 assets
+    - Asset markers update position in real-time via WebSocket within 200ms
+    - Geofence overlays drawn correctly from GeoJSON (polygon and circle supported)
+    - Floor selector switches indoor map layer without full page reload
+    - Clustering activates at 500+ assets with count badges on cluster markers
+    depends_on:
+    - 3
+    - 12
+    - 13
+  DATA:
+    description: Implement analytics data pipeline for supply chain insights. TimescaleDB
+      continuous aggregates for hourly/daily asset activity summaries. Materialized
+      views for SLA compliance rates, geofence dwell statistics, and asset utilization.
+      Scheduled jobs (pg_cron) for stale asset detection (no location update > configurable
+      threshold) and daily report generation. Expose aggregated metrics via /reports/aggregations
+      API.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Continuous aggregates refresh within 5 minutes of new data
+    - SLA compliance rate calculation matches manual verification on test dataset
+    - Stale asset detection job runs hourly and inserts STALE events correctly
+    - Daily report aggregation completes in < 30s for 1M location events
+    - /reports/aggregations returns correct values matching materialized views
+    depends_on:
+    - 5
+    - 14
+  EMBEDDED_TEST:
+    description: 'Write HIL (Hardware-in-the-Loop) test suite for BLE beacon and GPS
+      tracker firmware using hardware simulators from step 9. BLE beacon tests: advertising
+      packet format validation, OTA DFU flow, wake-on-motion sensitivity, battery
+      drain profile. GPS tracker tests: cold/hot start fix acquisition, NMEA parsing
+      accuracy, MQTT TLS handshake, offline buffer replay, FOTA update, power cycling
+      resilience. All tests runnable in CI via hardware simulator without physical
+      hardware.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - BLE advertising packet tests cover all payload field combinations
+    - OTA DFU test verifies both valid and tampered image scenarios
+    - GPS cold start test verifies fix within 60s using simulated NMEA replay
+    - Offline buffer test verifies all events replayed correctly on reconnection
+    - All tests pass in CI using hardware simulators (no physical hardware required)
+    - Test coverage report shows ≥ 90% line coverage on firmware logic modules
+    depends_on:
+    - 7
+    - 8
+    - 9
+  TESTS:
+    description: 'Write unit and integration test suite for all backend services:
+      location ingestion (mock MQTT, verify DB writes), RTLS trilateration (known-position
+      test vectors), geofencing engine (polygon/circle containment, ENTER/EXIT/DWELL
+      detection), supply chain state machine (all FSM transitions), API authentication
+      (JWT, API key, invalid credentials), and analytics aggregations (known dataset,
+      verify computed values).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - RTLS trilateration unit tests include ≥ 20 known-position test vectors
+    - Geofence tests cover polygon, circle, multi-floor, and edge cases (asset on
+      boundary)
+    - Auth tests verify JWT expiry, revocation, and API key rotation
+    - Integration tests hit real TimescaleDB (not mocked) per SAGE feedback guidelines
+    - Coverage report shows ≥ 85% line coverage across all backend services
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+  SYSTEM_TEST:
+    description: 'End-to-end system test using hardware simulators. Scenario 1: full
+      supply chain journey — asset simulated through warehouse-in-transit-warehouse
+      route, verify all events (RECEIVED, IN_TRANSIT, DELAYED, ARRIVED). Scenario
+      2: geofence breach — asset exits authorized zone, verify ENTER/EXIT alert on
+      dashboard SSE within 2s. Scenario 3: BLE indoor tracking — multi-floor route
+      with 8 beacons, verify RTLS position accuracy ±2m. Scenario 4: offline GPS replay
+      — simulate LTE drop, 4h offline, reconnect, verify all buffered events replayed.
+      Scenario 5: 1000-asset load test — verify ingestion latency and dashboard rendering.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Supply chain journey produces all expected FSM events in correct order
+    - Geofence breach alert appears on dashboard SSE within 2s of boundary crossing
+    - RTLS accuracy ±2m on multi-floor scenario with 8 simulated beacons
+    - All 4h of offline buffered events replayed after reconnection with no duplicates
+    - '1000-asset load test: p99 ingest latency < 500ms, dashboard map renders in
+      < 3s'
+    depends_on:
+    - 15
+    - 16
+    - 19
+    - 20
+  COMPLIANCE:
+    description: 'Produce IEC 62443 compliance artifacts for the asset tracking system.
+      Deliverables: (1) Security Requirements Specification (SRS) mapping each FR1–FR7
+      requirement to implementation. (2) Risk assessment matrix with threat likelihood
+      × impact scoring. (3) Security test plan with test cases per control. (4) Network
+      architecture diagram with zone/conduit model. (5) Change management procedure
+      for firmware OTA and config changes. (6) Vulnerability management procedure
+      (SBOM + CVE monitoring cadence).'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - SRS maps every FR1–FR7 requirement to a specific code component or configuration
+    - Risk matrix covers all threats from step 4 threat model with residual risk scores
+    - Security test plan has executable test cases for each implemented control
+    - Network diagram shows IoT device zone, backend zone, and conduits with security
+      properties
+    - Change management procedure specifies approval workflow for OTA firmware updates
+    - SBOM included with CVE check date and open vulnerabilities list
+    depends_on:
+    - 4
+    - 18
+  DEVOPS:
+    description: 'Set up CI/CD pipeline, containerization, and monitoring. Docker
+      Compose for local dev (backend, TimescaleDB, Redis, Mosquitto, Vault). GitHub
+      Actions: build → lint → unit tests → integration tests → HIL sim tests → Docker
+      image push. Kubernetes manifests for production (deployments, services, HPA
+      for ingestion service). Prometheus metrics on all services. Grafana dashboards:
+      ingestion throughput, RTLS accuracy, geofence trigger latency, alert delivery
+      latency. PagerDuty alert rules for SLA breaches.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs all test stages and fails fast on first failure
+    - Docker Compose starts full stack with make dev in < 60s
+    - Kubernetes HPA scales ingestion service from 1→5 replicas under 1000 RPS load
+    - Grafana dashboards show ingestion throughput, RTLS p99 latency, and geofence
+      trigger latency
+    - PagerDuty alert fires within 2 minutes of simulated ingestion service outage
+    depends_on:
+    - 20
+    - 21
+  DOCS:
+    description: 'Produce operator and developer documentation: (1) Architecture overview
+      — system diagram, data flows, component responsibilities. (2) Device onboarding
+      guide — BLE beacon provisioning, GPS tracker certificate installation, gateway
+      setup. (3) API reference — generated from OpenAPI spec via Redoc. (4) Geofence
+      configuration guide — polygon/circle creation, SLA threshold setup, ERP webhook
+      configuration. (5) Operations runbook — alerting, scaling, incident response,
+      log locations. (6) IEC 62443 implementation notes — how each control is implemented.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Architecture diagram shows all components with data flow directions
+    - Device onboarding guide covers BLE beacon and GPS tracker provisioning end-to-end
+    - API reference generated from OpenAPI spec with examples for all endpoints
+    - Operations runbook includes step-by-step incident response for top 5 failure
+      scenarios
+    - IEC 62443 implementation notes map each FR control to specific code file and
+      line range
+    depends_on:
+    - 22
+    - 23

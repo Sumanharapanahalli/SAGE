@@ -1,0 +1,983 @@
+{
+  "run_id": "b1db428d-6c9e-4e75-a40f-3f8b42956626",
+  "status": {
+    "run_id": "b1db428d-6c9e-4e75-a40f-3f8b42956626",
+    "solution_name": "expense_management",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-21T23:41:17.273136+00:00",
+    "updated_at": "2026-03-21T23:45:53.950686+00:00",
+    "product_description": "Corporate expense management with receipt OCR, policy enforcement, approval workflows, accounting integration (QuickBooks, Xero, NetSuite), and corporate card program.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements for corporate expense management: expense submission flows, policy rule types, approval hierarchy models, accounting integration needs, and corporate card program scope.",
+        "payload": {
+          "deliverables": [
+            "business_requirements_doc.md",
+            "user_stories.md",
+            "process_flow_diagrams.md"
+          ],
+          "stakeholders": [
+            "finance_team",
+            "approvers",
+            "employees",
+            "accounting"
+          ],
+          "key_flows": [
+            "expense_submission",
+            "receipt_capture",
+            "policy_check",
+            "approval_chain",
+            "accounting_sync",
+            "card_transaction_reconciliation"
+          ]
+        },
+        "acceptance_criteria": [
+          "All user roles documented (employee, approver, finance admin, auditor)",
+          "Expense policy rule types enumerated (amount limits, category rules, per-diem rates, receipt requirements)",
+          "Approval workflow patterns defined (single, multi-level, amount-based routing)",
+          "Accounting field mapping documented for QuickBooks, Xero, and NetSuite",
+          "Corporate card program scope defined (virtual cards, physical cards, spend controls)"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "SECURITY",
+        "description": "Perform threat model and security review for expense management system. Produce SBOM, threat matrix, and PCI DSS scoping document for corporate card data flows.",
+        "payload": {
+          "standards": [
+            "PCI DSS 4.0",
+            "SOC 2 Type II",
+            "SOX"
+          ],
+          "threat_model_scope": [
+            "receipt_storage",
+            "card_data_handling",
+            "accounting_credentials",
+            "approval_tokens",
+            "OCR_data_pipeline"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "pci_scope_diagram.md",
+            "sbom.json",
+            "pentest_plan.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model completed for all system components",
+          "PCI DSS cardholder data environment (CDE) scoped and documented",
+          "SBOM lists all third-party dependencies with license and CVE status",
+          "Penetration test plan covers API auth, card data endpoints, and OCR pipeline",
+          "SOC 2 trust service criteria mapped to system controls",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 3,
+        "task_type": "COMPLIANCE",
+        "description": "Produce compliance artifacts for PCI DSS, SOC 2, and SOX: risk matrix, traceability matrix, data retention policy, audit trail requirements, and segregation of duties controls.",
+        "payload": {
+          "standards": [
+            "PCI DSS 4.0",
+            "SOC 2",
+            "SOX Section 302/404"
+          ],
+          "artifacts": [
+            "risk_matrix.xlsx",
+            "traceability_matrix.md",
+            "data_retention_policy.md",
+            "audit_trail_spec.md",
+            "segregation_of_duties_matrix.md"
+          ],
+          "sox_controls": [
+            "approval_workflow_immutability",
+            "audit_log_integrity",
+            "financial_data_reconciliation"
+          ]
+        },
+        "acceptance_criteria": [
+          "Risk matrix covers all identified threats with likelihood and impact scores",
+          "Traceability matrix maps every compliance requirement to a system control",
+          "Data retention policy specifies receipt storage duration (7 years for SOX)",
+          "Audit trail spec requires immutable, timestamped records for all expense state changes",
+          "Segregation of duties matrix prevents submitter from also approving their own expenses"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 4,
+        "task_type": "UX_DESIGN",
+        "description": "Design user experience for expense submission, receipt capture, policy feedback, approval inbox, and finance dashboard. Produce wireframes and interaction specifications.",
+        "payload": {
+          "screens": [
+            "expense_submission_form",
+            "receipt_capture_mobile",
+            "policy_violation_feedback",
+            "approval_inbox",
+            "approval_detail",
+            "finance_dashboard",
+            "policy_editor",
+            "card_management",
+            "accounting_sync_status"
+          ],
+          "accessibility": "WCAG 2.1 AA",
+          "platforms": [
+            "web",
+            "mobile_pwa"
+          ]
+        },
+        "acceptance_criteria": [
+          "Mobile-first receipt capture flow with camera and file upload options",
+          "Real-time policy feedback shown during expense entry (before submission)",
+          "Approval inbox shows expenses grouped by urgency and amount",
+          "Finance dashboard displays spend by category, department, and policy violation rate",
+          "All wireframes reviewed and approved by a representative from each user role"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 5,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema for expense management: users, organizations, expenses, receipts, policies, approval workflows, accounting mappings, corporate cards, and audit log tables.",
+        "payload": {
+          "tables": [
+            "organizations",
+            "users",
+            "roles",
+            "departments",
+            "cost_centers",
+            "expenses",
+            "expense_line_items",
+            "receipts",
+            "receipt_ocr_results",
+            "expense_policies",
+            "policy_rules",
+            "policy_violations",
+            "approval_workflows",
+            "approval_steps",
+            "approvals",
+            "accounting_integrations",
+            "accounting_sync_jobs",
+            "accounting_field_mappings",
+            "corporate_cards",
+            "card_transactions",
+            "card_spend_controls",
+            "audit_log"
+          ],
+          "migrations": "Alembic",
+          "database": "PostgreSQL 16",
+          "encryption": "Column-level encryption for card data (PAN, CVV references)",
+          "indexes": [
+            "expense.status+org_id",
+            "approval.approver_id+status",
+            "card_transaction.card_id+date"
+          ]
+        },
+        "acceptance_criteria": [
+          "All tables have created_at, updated_at, and deleted_at (soft delete) columns",
+          "Card PAN stored only as last-4 digits; full PAN never persisted (PCI DSS req 3)",
+          "Audit log table is append-only with no UPDATE/DELETE permissions granted to app role",
+          "Foreign key constraints enforce referential integrity across all relationships",
+          "Migration scripts run cleanly from empty schema to fully seeded dev database",
+          "Seed data includes 3 organizations, 10 users, sample policies, and 50 expense records",
+          "Transaction isolation level documented",
+          "Audit trail on all writes"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 6,
+        "task_type": "BACKEND",
+        "description": "Build core backend service: authentication (OAuth2/SAML SSO), organization management, user/role management, expense CRUD, and audit logging middleware.",
+        "payload": {
+          "framework": "FastAPI",
+          "auth": [
+            "OAuth2 PKCE",
+            "SAML 2.0 SSO",
+            "JWT access tokens",
+            "refresh token rotation"
+          ],
+          "features": [
+            "multi-tenant org isolation",
+            "RBAC",
+            "expense lifecycle state machine",
+            "immutable audit logging"
+          ],
+          "state_machine_states": [
+            "DRAFT",
+            "SUBMITTED",
+            "POLICY_REVIEW",
+            "PENDING_APPROVAL",
+            "APPROVED",
+            "REJECTED",
+            "PAID",
+            "EXPORTED"
+          ]
+        },
+        "acceptance_criteria": [
+          "All endpoints require authentication; unauthenticated requests return 401",
+          "Tenant isolation enforced at query layer \u2014 org A cannot read org B data",
+          "Expense state machine rejects invalid transitions (e.g., PAID \u2192 DRAFT)",
+          "Every state transition writes an immutable audit log entry with actor, timestamp, and previous state",
+          "SAML SSO login tested with a mock IdP (e.g., Okta dev account)",
+          "RBAC blocks employees from accessing admin endpoints; returns 403"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "BACKEND",
+        "description": "Build receipt OCR pipeline: upload endpoint, async OCR processing (Google Vision API or AWS Textract), structured data extraction (merchant, amount, date, currency, line items), and confidence scoring.",
+        "payload": {
+          "ocr_providers": [
+            "Google Cloud Vision API",
+            "AWS Textract (fallback)"
+          ],
+          "extraction_fields": [
+            "merchant_name",
+            "total_amount",
+            "currency",
+            "transaction_date",
+            "line_items",
+            "tax_amount",
+            "receipt_number"
+          ],
+          "pipeline": "async job queue (Celery + Redis)",
+          "storage": "S3-compatible object store with server-side encryption",
+          "confidence_threshold": 0.85
+        },
+        "acceptance_criteria": [
+          "Receipt upload returns a job_id within 200ms; OCR completes asynchronously",
+          "Extracted fields auto-populate expense form with confidence scores shown to user",
+          "Receipts with confidence < 0.85 flagged for manual review",
+          "Duplicate receipt detection (same merchant + amount + date within 30 days) triggers warning",
+          "Receipt images stored encrypted at rest; access via signed URLs expiring in 1 hour",
+          "OCR pipeline processes 100 concurrent receipts without queue backlog exceeding 30 seconds"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Build policy enforcement engine: configurable policy rules (amount limits, category restrictions, per-diem rates, receipt requirements, duplicate detection), real-time evaluation, and violation reporting.",
+        "payload": {
+          "rule_types": [
+            "amount_limit_by_category",
+            "amount_limit_by_role",
+            "receipt_required_above_threshold",
+            "per_diem_rate_by_location",
+            "category_allowlist_by_department",
+            "duplicate_expense_detection",
+            "weekend_submission_flag",
+            "advance_booking_requirement"
+          ],
+          "evaluation": "rule engine evaluates on SUBMIT and in real-time during form entry",
+          "violation_handling": [
+            "BLOCK",
+            "WARN",
+            "FLAG_FOR_REVIEW"
+          ],
+          "policy_versioning": true
+        },
+        "acceptance_criteria": [
+          "Policy rules configurable via API without code changes",
+          "Policy evaluation returns results within 100ms for single expense",
+          "Violation severity (BLOCK/WARN/FLAG) correctly prevents or allows submission",
+          "Policy version history maintained; expenses evaluated against policy active at submission time",
+          "Per-diem rates configurable by country/city with effective date ranges",
+          "Policy changes require finance admin role; changes logged in audit trail"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Build approval workflow engine: configurable multi-level approval chains (by amount, department, category), parallel approvals, delegation, escalation on timeout, and email/Slack notifications.",
+        "payload": {
+          "workflow_patterns": [
+            "single_approver",
+            "sequential_chain",
+            "parallel_all",
+            "amount_threshold_routing",
+            "department_head_chain"
+          ],
+          "features": [
+            "approver_delegation",
+            "out_of_office_routing",
+            "escalation_after_N_days",
+            "bulk_approval",
+            "approval_comments"
+          ],
+          "notifications": [
+            "email",
+            "slack_webhook",
+            "in_app"
+          ],
+          "agentic_pattern": "human_in_the_loop"
+        },
+        "acceptance_criteria": [
+          "Approval chains configurable per department and expense category without code changes",
+          "Amount-based routing correctly escalates expenses above threshold to higher approver",
+          "Delegation persists approver's permissions for specified date range",
+          "Escalation fires after configurable timeout (default 48h); re-notifies manager's manager",
+          "Bulk approval allows approving up to 50 expenses in single action",
+          "All approval decisions (approve/reject/delegate) recorded in immutable audit log"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build accounting integration layer: QuickBooks Online, Xero, and NetSuite connectors with OAuth, field mapping configuration, bi-directional sync, and error recovery.",
+        "payload": {
+          "integrations": {
+            "quickbooks": {
+              "auth": "OAuth 2.0",
+              "entities": [
+                "Expense",
+                "Bill",
+                "Vendor",
+                "Account",
+                "Class",
+                "Customer"
+              ]
+            },
+            "xero": {
+              "auth": "OAuth 2.0 PKCE",
+              "entities": [
+                "Expense",
+                "BankTransaction",
+                "Contact",
+                "Account",
+                "TrackingCategory"
+              ]
+            },
+            "netsuite": {
+              "auth": "OAuth 1.0a Token-Based",
+              "entities": [
+                "Expense Report",
+                "Vendor Bill",
+                "GL Account",
+                "Department",
+                "Class"
+              ]
+            }
+          },
+          "sync_strategy": "event-driven push on APPROVED state + nightly reconciliation job",
+          "field_mapping": "configurable per integration per organization",
+          "error_handling": "dead letter queue with retry and finance admin alerting"
+        },
+        "acceptance_criteria": [
+          "OAuth flow for each provider completes and tokens stored encrypted",
+          "Approved expense exports to QuickBooks as Expense with correct account coding within 60 seconds",
+          "Approved expense exports to Xero as Bank Transaction with tracking categories",
+          "Approved expense exports to NetSuite as Expense Report with department and class",
+          "Field mapping UI allows finance admin to map expense categories to GL account codes",
+          "Failed exports land in dead letter queue with error details; auto-retry 3 times before alerting",
+          "Nightly reconciliation job detects and flags any approved-but-not-exported expenses"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build corporate card program: virtual and physical card issuance via Marqeta or Stripe Issuing, spend controls, real-time transaction webhooks, auto-reconciliation to expenses, and cardholder management.",
+        "payload": {
+          "card_provider": "Marqeta (primary) / Stripe Issuing (alternative)",
+          "card_types": [
+            "virtual",
+            "physical"
+          ],
+          "spend_controls": [
+            "per_transaction_limit",
+            "daily_limit",
+            "monthly_limit",
+            "merchant_category_codes",
+            "approved_merchants"
+          ],
+          "features": [
+            "real_time_transaction_webhooks",
+            "auto_match_to_expense",
+            "card_freeze_unfreeze",
+            "single_use_virtual_cards",
+            "manager_spend_visibility"
+          ],
+          "pci_compliance": "SAQ D \u2014 all card data flows through card provider; no PAN storage"
+        },
+        "acceptance_criteria": [
+          "Virtual card issued within 5 seconds of request via API",
+          "Real-time transaction webhook received and processed within 10 seconds of card swipe",
+          "Card transaction auto-matched to open expense or creates pre-populated expense draft",
+          "Spend controls enforced at card provider level; over-limit transactions declined",
+          "Card freeze takes effect within 5 seconds of admin action",
+          "No PAN stored in application database; only last-4 digits and card provider token",
+          "Manager dashboard shows real-time team card spend by cardholder and category"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "FRONTEND",
+        "description": "Build employee-facing web and mobile PWA: expense submission form with real-time policy feedback, receipt camera capture, OCR result review, expense list, and notification center.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "mobile": "PWA with camera API for receipt capture",
+          "components": [
+            "ExpenseForm",
+            "ReceiptCapture",
+            "OCRReview",
+            "PolicyViolationBanner",
+            "ExpenseList",
+            "ExpenseDetail",
+            "NotificationCenter"
+          ],
+          "state_management": "React Query + Zustand",
+          "offline_support": "draft expenses cached locally, sync on reconnect"
+        },
+        "acceptance_criteria": [
+          "Receipt photo taken via camera on mobile and uploaded within 3 taps",
+          "OCR-extracted fields auto-populate form; user can edit any field",
+          "Policy violations shown inline during form entry before submission",
+          "Expense list filters by status, date range, amount, and category",
+          "Offline draft saved to IndexedDB; submitted automatically when connection restored",
+          "PWA installable on iOS and Android; passes Lighthouse PWA audit score \u2265 90"
+        ],
+        "depends_on": [
+          4,
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "FRONTEND",
+        "description": "Build approver interface: approval inbox with expense details, receipt viewer, policy violation summary, bulk approval, delegation controls, and approval history.",
+        "payload": {
+          "components": [
+            "ApprovalInbox",
+            "ExpenseReviewPanel",
+            "ReceiptViewer",
+            "PolicyViolationSummary",
+            "BulkApprovalSelector",
+            "DelegationSettings",
+            "ApprovalHistory"
+          ],
+          "features": [
+            "keyboard shortcuts for approve/reject",
+            "comment required on rejection",
+            "expense comparison to prior submissions"
+          ]
+        },
+        "acceptance_criteria": [
+          "Approval inbox loads within 2 seconds with up to 200 pending expenses",
+          "Receipt viewable inline without leaving approval screen",
+          "Policy violations highlighted with specific rule violated and dollar over-limit",
+          "Bulk approve/reject applies to selected expenses with single confirmation",
+          "Rejection requires comment; comment stored in audit trail and emailed to submitter",
+          "Delegation wizard allows setting date range and selecting delegate from org directory"
+        ],
+        "depends_on": [
+          4,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "FRONTEND",
+        "description": "Build finance admin dashboard: spend analytics, policy editor, accounting integration setup, corporate card management, export center, and compliance reports.",
+        "payload": {
+          "components": [
+            "SpendDashboard",
+            "PolicyEditor",
+            "AccountingIntegrationWizard",
+            "FieldMappingEditor",
+            "CardManagement",
+            "ExportCenter",
+            "ComplianceReports",
+            "AuditLogViewer"
+          ],
+          "charts": [
+            "spend_by_category",
+            "spend_by_department",
+            "policy_violation_rate",
+            "approval_cycle_time",
+            "card_vs_reimbursement_split"
+          ],
+          "exports": [
+            "CSV",
+            "PDF",
+            "accounting_native_format"
+          ]
+        },
+        "acceptance_criteria": [
+          "Spend dashboard renders charts for current month within 3 seconds for orgs with 10k expenses",
+          "Policy editor allows creating, editing, and versioning rules with effective dates",
+          "Accounting integration wizard guides through OAuth and field mapping in under 10 minutes",
+          "Audit log viewer searchable by actor, expense ID, date range, and event type",
+          "Compliance report exportable as PDF with digital signature for SOX audit",
+          "Card management shows all active cards with spend-to-limit ratio and freeze control"
+        ],
+        "depends_on": [
+          4,
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "AGENTIC",
+        "description": "Implement AI-powered expense intelligence using the review_and_critique pattern: anomaly detection agent flags suspicious expenses, policy suggestion agent recommends policy updates based on violation patterns, and spend optimization agent surfaces savings opportunities.",
+        "payload": {
+          "agentic_pattern": "review_and_critique",
+          "agents": [
+            {
+              "name": "anomaly_detector",
+              "role": "Flags statistically anomalous expenses (outlier amounts, unusual merchants, velocity patterns)",
+              "tools": [
+                "expense_history_query",
+                "vendor_risk_lookup",
+                "employee_baseline_calculator"
+              ]
+            },
+            {
+              "name": "policy_optimizer",
+              "role": "Analyzes violation patterns and suggests policy rule adjustments to reduce friction while maintaining control",
+              "tools": [
+                "violation_history_query",
+                "industry_benchmark_lookup",
+                "policy_simulator"
+              ]
+            },
+            {
+              "name": "spend_optimizer",
+              "role": "Identifies duplicate vendor spend, negotiation opportunities, and category consolidation recommendations",
+              "tools": [
+                "vendor_spend_aggregator",
+                "contract_calendar",
+                "market_rate_lookup"
+              ]
+            }
+          ],
+          "hitl": "All AI-generated flags and suggestions surface as proposals requiring finance admin review before any action"
+        },
+        "acceptance_criteria": [
+          "Anomaly detector flags expenses > 3 standard deviations from employee's category baseline",
+          "Policy optimizer produces ranked list of policy changes with projected violation rate impact",
+          "Spend optimizer identifies top 10 vendors where consolidated buying could reduce cost",
+          "All agent proposals displayed in finance admin review queue; none execute automatically",
+          "Agent reasoning trace shown alongside each proposal for full explainability",
+          "False positive rate for anomaly detection < 5% measured over 30-day pilot"
+        ],
+        "depends_on": [
+          10,
+          14
+        ],
+        "agent_role": "analyst"
+      },
+      {
+        "step": 16,
+        "task_type": "TESTS",
+        "description": "Write comprehensive test suite: unit tests for policy engine and state machine, integration tests for accounting connectors and OCR pipeline, E2E tests for expense submission and approval flows.",
+        "payload": {
+          "unit_tests": [
+            "policy_rule_evaluation",
+            "expense_state_machine_transitions",
+            "approval_routing_logic",
+            "field_mapping_transformation"
+          ],
+          "integration_tests": [
+            "quickbooks_oauth_and_export",
+            "xero_oauth_and_export",
+            "netsuite_export",
+            "ocr_pipeline_end_to_end",
+            "card_webhook_processing"
+          ],
+          "e2e_tests": [
+            "employee_submits_expense_with_receipt",
+            "approver_approves_and_expense_exports",
+            "policy_violation_blocks_submission",
+            "card_transaction_auto_reconciliation"
+          ],
+          "test_framework": "pytest (backend), Playwright (E2E)",
+          "coverage_target": "\u2265 85% line coverage on src/"
+        },
+        "acceptance_criteria": [
+          "Policy engine unit tests cover all 8 rule types with boundary conditions",
+          "State machine tests verify all valid transitions and reject all invalid ones",
+          "Accounting integration tests run against sandbox/developer accounts for all three providers",
+          "E2E tests run in CI against a fully seeded test database",
+          "Test coverage report \u2265 85% on backend source",
+          "All tests pass in under 10 minutes in CI pipeline"
+        ],
+        "depends_on": [
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "INFRA",
+        "description": "Set up infrastructure: Docker Compose for local dev, Kubernetes manifests for production, PostgreSQL with read replica, Redis for job queues, S3-compatible storage, and secrets management.",
+        "payload": {
+          "local": "Docker Compose with all services",
+          "production": "Kubernetes (EKS or GKE)",
+          "services": [
+            "api",
+            "worker (Celery)",
+            "postgres (primary + read replica)",
+            "redis",
+            "object_storage (S3)"
+          ],
+          "secrets": "AWS Secrets Manager or HashiCorp Vault",
+          "networking": "VPC with private subnets for database and worker tiers",
+          "pci_network_segmentation": "CDE isolated in separate subnet with strict ingress/egress rules"
+        },
+        "acceptance_criteria": [
+          "docker compose up starts all services and passes health checks within 60 seconds",
+          "Kubernetes manifests deploy successfully to staging cluster",
+          "PostgreSQL read replica configured; read-heavy queries (analytics) routed to replica",
+          "Secrets never appear in environment variables or logs; all read from secrets manager at runtime",
+          "CDE subnet has no direct internet access; card data flows only through internal service mesh",
+          "Resource limits and pod disruption budgets set on all production deployments"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline: GitHub Actions workflows for test, build, security scan (SAST/DAST/dependency audit), and deploy to staging and production with rollback capability.",
+        "payload": {
+          "ci_jobs": [
+            "lint",
+            "unit_tests",
+            "integration_tests",
+            "sast_semgrep",
+            "dependency_audit_snyk",
+            "docker_build",
+            "e2e_tests_staging"
+          ],
+          "cd_jobs": [
+            "deploy_staging_on_pr",
+            "deploy_production_on_tag",
+            "smoke_tests_post_deploy"
+          ],
+          "rollback": "automated rollback if post-deploy smoke tests fail within 5 minutes",
+          "branch_protection": "require 2 approvals + all CI green before merge to main"
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs on every PR and completes in under 15 minutes",
+          "SAST scan with zero high or critical findings required to pass",
+          "Dependency audit blocks on known CVEs with CVSS \u2265 7.0",
+          "Production deploy requires manual approval gate in GitHub Actions",
+          "Automated rollback triggered and completed within 5 minutes of failed smoke test",
+          "Deploy logs stored for 90 days for SOX audit trail"
+        ],
+        "depends_on": [
+          16,
+          17
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "SECURITY",
+        "description": "Execute security hardening: implement rate limiting, input sanitization, CSP headers, mTLS between services, PCI DSS control validation, and produce penetration test report for card data flows.",
+        "payload": {
+          "controls": [
+            "rate_limiting (per IP and per user)",
+            "input_sanitization (all user inputs)",
+            "CSP_and_security_headers",
+            "mTLS_between_internal_services",
+            "JWT_short_expiry_with_refresh_rotation",
+            "PAN_tokenization_via_card_provider",
+            "WAF_rules_for_common_attacks"
+          ],
+          "pci_controls": [
+            "req_2 (no defaults)",
+            "req_3 (PAN not stored)",
+            "req_6 (secure development)",
+            "req_8 (access control)",
+            "req_10 (audit logging)"
+          ],
+          "pentest": "automated DAST with OWASP ZAP + manual review of card data endpoints"
+        },
+        "acceptance_criteria": [
+          "Rate limiting enforced: 100 req/min per IP, 1000 req/min per authenticated user",
+          "All API responses include HSTS, CSP, X-Content-Type-Options, and X-Frame-Options headers",
+          "mTLS configured between API service and worker service",
+          "OWASP ZAP scan produces zero high-severity findings on staging environment",
+          "PCI DSS requirements 2, 3, 6, 8, and 10 documented as satisfied with evidence",
+          "Penetration test report signed off by security reviewer and stored for audit",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          17,
+          18
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 20,
+        "task_type": "COMPLIANCE",
+        "description": "Produce final compliance package for SOC 2 readiness: control evidence collection, access control review, encryption attestation, incident response plan, and vendor risk assessments for OCR and card providers.",
+        "payload": {
+          "soc2_criteria": [
+            "CC6 (logical access)",
+            "CC7 (system operations)",
+            "CC8 (change management)",
+            "CC9 (risk mitigation)",
+            "A1 (availability)"
+          ],
+          "evidence_artifacts": [
+            "access_control_matrix.xlsx",
+            "encryption_attestation.md",
+            "change_management_log.md",
+            "incident_response_plan.md",
+            "vendor_risk_assessment_marqeta.md",
+            "vendor_risk_assessment_google_vision.md"
+          ],
+          "sox_artifacts": [
+            "financial_data_controls_matrix.md",
+            "segregation_of_duties_evidence.md",
+            "audit_log_integrity_test_results.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "All five SOC 2 common criteria addressed with at least one control per criterion",
+          "Vendor risk assessments completed for Marqeta/Stripe and Google Vision/Textract",
+          "Incident response plan defines RTO \u2264 4 hours and RPO \u2264 1 hour",
+          "Encryption attestation covers data at rest (AES-256) and in transit (TLS 1.3)",
+          "SOX financial controls matrix maps each control to the system feature enforcing it",
+          "Compliance package reviewed and approved by legal_advisor"
+        ],
+        "depends_on": [
+          3,
+          19
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 21,
+        "task_type": "DOCS",
+        "description": "Produce technical and user documentation: API reference (OpenAPI), employee user guide, admin setup guide, accounting integration runbook, and architecture decision records.",
+        "payload": {
+          "docs": [
+            "openapi_spec.yaml (auto-generated + annotated)",
+            "employee_user_guide.md",
+            "approver_guide.md",
+            "finance_admin_guide.md",
+            "accounting_integration_runbook.md (QuickBooks, Xero, NetSuite setup)",
+            "corporate_card_setup_guide.md",
+            "architecture_decision_records/ (ADR-001 through ADR-010)"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec covers all endpoints with request/response schemas and error codes",
+          "Employee user guide covers expense submission, receipt capture, and status tracking",
+          "Accounting integration runbook includes step-by-step OAuth setup for each provider with screenshots",
+          "ADRs document key decisions: database choice, card provider selection, OCR provider, auth strategy",
+          "All docs reviewed by a non-engineer (product_manager) for clarity"
+        ],
+        "depends_on": [
+          12,
+          13,
+          14,
+          10
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 21,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 64,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 64,
+          "final_review": {
+            "score": 64,
+            "flaws": [
+              "Missing reimbursement payment flow entirely. The plan approves expenses and exports them to accounting, but never pays employees. ACH/wire disbursement is a core feature of any expense management product \u2014 employees cannot receive money. This is a fundamental product gap, not a backlog item.",
+              "Multi-currency is absent despite being an OCR extraction field. The plan extracts 'currency' from receipts but has no FX conversion logic, no exchange rate source, no policy enforcement in foreign currencies, and no accounting export in base currency. Any company with international employees hits this on day one.",
+              "PCI DSS SAQ D classification is almost certainly wrong. If the application never stores, processes, or transmits PANs (delegating all card data to Marqeta/Stripe), the correct scope is SAQ A or SAQ A-EP. SAQ D requires 329 controls. Mis-scoping upward means months of unnecessary compliance work; mis-scoping downward is an audit failure. This needs a QSA to determine scope before Step 2.",
+              "Xero OAuth tokens expire in 30 minutes; QuickBooks tokens in 60 minutes. The accounting integration (Step 10) mentions token storage but has no token refresh implementation or acceptance criterion. Production will fail silently after the first token expiry, blocking all accounting exports.",
+              "Real-time policy evaluation during form entry (Step 8) with no debouncing strategy will hammer the API on every keystroke. At 100 concurrent users editing forms, this is a self-inflicted DDoS. The acceptance criterion of 100ms evaluation time does not account for concurrent load or network latency on mobile.",
+              "NetSuite OAuth 1.0a (Token-Based Authentication) is significantly more complex than OAuth 2.0 \u2014 requires HMAC-SHA256 signing of each request, nonce management, and timestamp synchronization. The plan treats all three accounting integrations as equivalent effort. NetSuite alone could double Step 10's timeline.",
+              "Bulk approval of 50 expenses in a single action (Step 9) is a SOX control violation risk. SOX requires evidence of actual review, not just an approval click. There is no minimum-review-time control, no anti-rubber-stamp mechanism, and no auditor guidance on what constitutes a valid approval. An auditor will flag this.",
+              "iOS PWA camera capture is unreliable. iOS Safari restricts camera API access in PWA/homescreen mode on many iOS versions. The 'receipt capture within 3 taps' acceptance criterion will fail on a significant percentage of iPhone users. This requires a native wrapper (Capacitor/React Native) or explicit iOS Safari browser targeting \u2014 neither of which is planned.",
+              "Step 15 anomaly detection uses '3 standard deviations from baseline' but provides no cold-start solution. New employees have no baseline. New expense categories have no baseline. New organizations have no baseline. The false positive rate will be 100% for the first 30-90 days, destroying user trust before the feature can prove value.",
+              "Approval delegation (Step 9) has no chain delegation guard. If Alice delegates to Bob, and Bob can re-delegate to Carol, approval authority can be arbitrarily transferred across the org with a full audit trail of delegations but no policy check on whether Carol is authorized to approve Alice's expense tier. This is an internal control failure.",
+              "The audit log table has no tamper-evidence mechanism beyond 'no UPDATE/DELETE permissions.' A compromised app role, a DBA, or a PostgreSQL superuser can still modify records. SOX requires tamper-evident logs. The plan needs cryptographic chaining (hash of previous entry in each row) or an external append-only log service.",
+              "Step 6 implements SAML 2.0 SSO with acceptance criteria limited to 'tested with a mock IdP.' SAML has well-known implementation vulnerabilities: XML signature wrapping attacks, XXE, comment injection in NameID. A mock IdP test does not catch these. The plan needs a real IdP integration test AND a SAML-specific security review."
+            ],
+            "suggestions": [
+              "Add Step 2.5 or amend Step 2: engage a PCI QSA for formal CDE scoping before any architecture is finalized. The card data flow determines whether this is SAQ A, A-EP, or D \u2014 a decision that changes the compliance workload by an order of magnitude.",
+              "Add an employee reimbursement step between Steps 9 and 10: ACH batch file generation, bank integration (via Dwolla, Modern Treasury, or direct ACH), payment status webhook handling, and reconciliation back to expense records. Without this, the product cannot complete its primary job.",
+              "Add multi-currency as a first-class concern to Step 5 (database: add base_currency, original_amount, exchange_rate, exchange_rate_date columns to expenses) and Step 8 (policy engine must compare amounts in base currency). Add FX rate provider (ECB, Open Exchange Rates, or Wise) to Step 6.",
+              "For real-time policy evaluation, implement client-side debouncing (300ms minimum) in Step 12, cache policy rules in Redis with a short TTL in Step 8, and add a dedicated policy evaluation rate limit separate from the general API rate limit.",
+              "Add cryptographic hash chaining to the audit_log table in Step 5: each row stores sha256(previous_row_hash + current_row_data). Add a nightly audit log integrity verification job. This is the difference between 'append-only by permission' and 'tamper-evident by design.'",
+              "For NetSuite, consider using a third-party connector library (e.g., netsuite-python) rather than building OAuth 1.0a from scratch. Estimate NetSuite integration at 2-3x the effort of QuickBooks/Xero and reflect this in resource planning.",
+              "For anomaly detection cold-start (Step 15), implement a peer-group baseline as fallback: if an employee has <10 expenses in a category, use the department median. Document this in the acceptance criteria with a minimum sample size threshold.",
+              "Add email infrastructure as an explicit step (or sub-step of Step 9): SES/SendGrid setup, transactional email templates, unsubscribe handling (CAN-SPAM/GDPR), and bounce/complaint processing. Email is load-bearing for approval notifications and rejection reasons.",
+              "For JWT storage, specify httpOnly SameSite=Strict cookies rather than localStorage in Step 6. This eliminates an entire class of XSS token theft. Update the acceptance criteria to include a cookie security audit.",
+              "Add GDPR/CCPA compliance artifacts to Step 3 or Step 20. Employee expense receipts contain purchase location data, meal companion names, and personal spending patterns. Any EU or California employees trigger these regulations. At minimum: data subject access request flow, right-to-erasure conflict with 7-year SOX retention (these must be reconciled), and a privacy notice."
+            ],
+            "missing": [
+              "Employee reimbursement payment processing: ACH disbursement, payment status tracking, failed payment handling, and bank account management for employees.",
+              "Multi-currency support: FX rate ingestion, currency conversion at submission time, base-currency normalization for policy enforcement, and accounting export in company base currency.",
+              "Email infrastructure: transactional email provider setup, templates for approval requests, rejection notices, escalations, and compliance with CAN-SPAM/GDPR unsubscribe requirements.",
+              "GDPR and CCPA compliance: data subject rights implementation, privacy notice, retention conflict resolution (GDPR erasure vs. SOX 7-year requirement), and data processing agreements with OCR and card providers.",
+              "Disaster recovery testing: the plan documents RTO/RPO targets in Step 20 but has no step for actually testing failover, backup restoration, or the DR runbook.",
+              "Card issuing bank partnership: Marqeta and Stripe Issuing both require approval of the business as a program manager. This is a business/legal prerequisite with weeks-to-months lead time that has no planned step.",
+              "Mobile push notifications: approval requests via push are more reliable than email for time-sensitive approvals. The notification system (Step 9) covers email, Slack, and in-app but not mobile push (APNs/FCM), which is load-bearing for a mobile-first PWA.",
+              "Expense receipt PAN scrubbing: OCR on receipts will extract visible card numbers (many paper receipts show partial PANs). The OCR pipeline has no step to detect and scrub any card-number-pattern text from extracted data before storage.",
+              "Accounting token refresh strategy: explicit token refresh logic, encrypted token rotation, and alerting when refresh fails \u2014 not implied by 'store tokens encrypted.'",
+              "Data retention enforcement mechanism: the policy says 7-year receipt retention for SOX, but there is no scheduled job, storage lifecycle policy, or legal hold mechanism to enforce it. Policy documentation is not the same as enforcement.",
+              "Webhook signature verification: Marqeta and Stripe both provide HMAC signatures on webhook payloads. There is no acceptance criterion requiring verification of these signatures, leaving the card transaction endpoint open to spoofed transactions."
+            ],
+            "security_risks": [
+              "SAML XML signature wrapping: python3-saml and similar libraries have had CVEs for signature wrapping attacks where a valid signed assertion is cloned into an unsigned position. The acceptance criterion 'tested with mock IdP' does not exercise this attack surface. Require a SAML security review against OWASP SAML Security Cheat Sheet before Step 6 ships.",
+              "Webhook spoofing on card transaction endpoint (Step 11): without HMAC signature verification and timestamp replay protection on Marqeta/Stripe webhooks, any party who discovers the webhook URL can inject fraudulent card transactions that auto-create expense records. This is a direct financial fraud vector.",
+              "OCR pipeline PAN exposure: receipts frequently display partial or full card numbers. Unguarded OCR extraction stores whatever text is in the image. A malicious employee could submit a receipt image containing a PAN in a format that bypasses pattern detection. The extracted text must be scanned for PAN patterns (Luhn check) and scrubbed before storage.",
+              "Accounting OAuth token scope over-provisioning: QuickBooks and Xero OAuth scopes, if not minimized, grant read/write access to the entire organization's financial data. A compromised token gives an attacker full accounting access. The plan has no acceptance criterion enforcing minimum-scope OAuth requests.",
+              "Delegated approval privilege escalation: if delegation is implemented as 'copy approver permissions to delegate,' an employee with no approval authority could be delegated authority over their own manager's expenses if the manager delegates generically. The delegation model needs explicit constraints: a delegate can only approve expenses the delegator could approve, and cannot approve expenses from the delegator.",
+              "JWT in localStorage (implied default): if the React frontend stores JWT access tokens in localStorage, any XSS vulnerability \u2014 including those in third-party dependencies \u2014 exfiltrates tokens. The plan adds CSP headers but does not specify token storage mechanism. CSP reduces XSS risk; it does not eliminate it.",
+              "mTLS certificate lifecycle gap: Step 19 requires mTLS between services but has no acceptance criterion for certificate rotation, revocation, or expiry alerting. An expired internal certificate silently breaks service-to-service communication in production with no user-visible error until a cascading failure.",
+              "Bulk approval CSRF: the bulk approve endpoint (Step 9) processes up to 50 financial approvals per request. Without SameSite cookie enforcement and CSRF token validation, a cross-site request could trigger mass approvals from an authenticated approver's session. This is a high-value CSRF target."
+            ],
+            "summary": "This is a structurally sound, well-sequenced plan that correctly identifies the major components of a corporate expense management system and includes compliance steps rarely seen in MVP plans. The dependency graph is mostly logical, the database schema is thorough, and the decision to front-load security and compliance (Steps 2-3) before implementation is correct. However, the plan has a fundamental product gap: it approves and exports expenses but never pays employees. ACH reimbursement is not a stretch goal \u2014 it is the reason the product exists. Multi-currency is similarly absent despite being extraction-targeted in the OCR step. On the compliance side, PCI DSS SAQ scope is likely mis-classified (SAQ D adds hundreds of controls that may be unnecessary), GDPR/CCPA are unaddressed for a system storing employee personal spending data, and the audit log's tamper-evidence relies entirely on database permissions rather than cryptographic guarantees a SOX auditor will accept. The iOS PWA camera limitation is a known platform constraint that will break the core mobile receipt capture flow on a large portion of the target user base. Accounting OAuth token refresh is a silent production failure waiting to happen on day two. These are not backlog items \u2014 they are gaps that prevent the system from functioning correctly in production. Score reflects that the plan's architecture and compliance intent are strong but the execution would stall on payment processing, currency handling, and several security controls before reaching a releasable state.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 64,
+              "flaws": [
+                "Missing reimbursement payment flow entirely. The plan approves expenses and exports them to accounting, but never pays employees. ACH/wire disbursement is a core feature of any expense management product \u2014 employees cannot receive money. This is a fundamental product gap, not a backlog item.",
+                "Multi-currency is absent despite being an OCR extraction field. The plan extracts 'currency' from receipts but has no FX conversion logic, no exchange rate source, no policy enforcement in foreign currencies, and no accounting export in base currency. Any company with international employees hits this on day one.",
+                "PCI DSS SAQ D classification is almost certainly wrong. If the application never stores, processes, or transmits PANs (delegating all card data to Marqeta/Stripe), the correct scope is SAQ A or SAQ A-EP. SAQ D requires 329 controls. Mis-scoping upward means months of unnecessary compliance work; mis-scoping downward is an audit failure. This needs a QSA to determine scope before Step 2.",
+                "Xero OAuth tokens expire in 30 minutes; QuickBooks tokens in 60 minutes. The accounting integration (Step 10) mentions token storage but has no token refresh implementation or acceptance criterion. Production will fail silently after the first token expiry, blocking all accounting exports.",
+                "Real-time policy evaluation during form entry (Step 8) with no debouncing strategy will hammer the API on every keystroke. At 100 concurrent users editing forms, this is a self-inflicted DDoS. The acceptance criterion of 100ms evaluation time does not account for concurrent load or network latency on mobile.",
+                "NetSuite OAuth 1.0a (Token-Based Authentication) is significantly more complex than OAuth 2.0 \u2014 requires HMAC-SHA256 signing of each request, nonce management, and timestamp synchronization. The plan treats all three accounting integrations as equivalent effort. NetSuite alone could double Step 10's timeline.",
+                "Bulk approval of 50 expenses in a single action (Step 9) is a SOX control violation risk. SOX requires evidence of actual review, not just an approval click. There is no minimum-review-time control, no anti-rubber-stamp mechanism, and no auditor guidance on what constitutes a valid approval. An auditor will flag this.",
+                "iOS PWA camera capture is unreliable. iOS Safari restricts camera API access in PWA/homescreen mode on many iOS versions. The 'receipt capture within 3 taps' acceptance criterion will fail on a significant percentage of iPhone users. This requires a native wrapper (Capacitor/React Native) or explicit iOS Safari browser targeting \u2014 neither of which is planned.",
+                "Step 15 anomaly detection uses '3 standard deviations from baseline' but provides no cold-start solution. New employees have no baseline. New expense categories have no baseline. New organizations have no baseline. The false positive rate will be 100% for the first 30-90 days, destroying user trust before the feature can prove value.",
+                "Approval delegation (Step 9) has no chain delegation guard. If Alice delegates to Bob, and Bob can re-delegate to Carol, approval authority can be arbitrarily transferred across the org with a full audit trail of delegations but no policy check on whether Carol is authorized to approve Alice's expense tier. This is an internal control failure.",
+                "The audit log table has no tamper-evidence mechanism beyond 'no UPDATE/DELETE permissions.' A compromised app role, a DBA, or a PostgreSQL superuser can still modify records. SOX requires tamper-evident logs. The plan needs cryptographic chaining (hash of previous entry in each row) or an external append-only log service.",
+                "Step 6 implements SAML 2.0 SSO with acceptance criteria limited to 'tested with a mock IdP.' SAML has well-known implementation vulnerabilities: XML signature wrapping attacks, XXE, comment injection in NameID. A mock IdP test does not catch these. The plan needs a real IdP integration test AND a SAML-specific security review."
+              ],
+              "suggestions": [
+                "Add Step 2.5 or amend Step 2: engage a PCI QSA for formal CDE scoping before any architecture is finalized. The card data flow determines whether this is SAQ A, A-EP, or D \u2014 a decision that changes the compliance workload by an order of magnitude.",
+                "Add an employee reimbursement step between Steps 9 and 10: ACH batch file generation, bank integration (via Dwolla, Modern Treasury, or direct ACH), payment status webhook handling, and reconciliation back to expense records. Without this, the product cannot complete its primary job.",
+                "Add multi-currency as a first-class concern to Step 5 (database: add base_currency, original_amount, exchange_rate, exchange_rate_date columns to expenses) and Step 8 (policy engine must compare amounts in base currency). Add FX rate provider (ECB, Open Exchange Rates, or Wise) to Step 6.",
+                "For real-time policy evaluation, implement client-side debouncing (300ms minimum) in Step 12, cache policy rules in Redis with a short TTL in Step 8, and add a dedicated policy evaluation rate limit separate from the general API rate limit.",
+                "Add cryptographic hash chaining to the audit_log table in Step 5: each row stores sha256(previous_row_hash + current_row_data). Add a nightly audit log integrity verification job. This is the difference between 'append-only by permission' and 'tamper-evident by design.'",
+                "For NetSuite, consider using a third-party connector library (e.g., netsuite-python) rather than building OAuth 1.0a from scratch. Estimate NetSuite integration at 2-3x the effort of QuickBooks/Xero and reflect this in resource planning.",
+                "For anomaly detection cold-start (Step 15), implement a peer-group baseline as fallback: if an employee has <10 expenses in a category, use the department median. Document this in the acceptance criteria with a minimum sample size threshold.",
+                "Add email infrastructure as an explicit step (or sub-step of Step 9): SES/SendGrid setup, transactional email templates, unsubscribe handling (CAN-SPAM/GDPR), and bounce/complaint processing. Email is load-bearing for approval notifications and rejection reasons.",
+                "For JWT storage, specify httpOnly SameSite=Strict cookies rather than localStorage in Step 6. This eliminates an entire class of XSS token theft. Update the acceptance criteria to include a cookie security audit.",
+                "Add GDPR/CCPA compliance artifacts to Step 3 or Step 20. Employee expense receipts contain purchase location data, meal companion names, and personal spending patterns. Any EU or California employees trigger these regulations. At minimum: data subject access request flow, right-to-erasure conflict with 7-year SOX retention (these must be reconciled), and a privacy notice."
+              ],
+              "missing": [
+                "Employee reimbursement payment processing: ACH disbursement, payment status tracking, failed payment handling, and bank account management for employees.",
+                "Multi-currency support: FX rate ingestion, currency conversion at submission time, base-currency normalization for policy enforcement, and accounting export in company base currency.",
+                "Email infrastructure: transactional email provider setup, templates for approval requests, rejection notices, escalations, and compliance with CAN-SPAM/GDPR unsubscribe requirements.",
+                "GDPR and CCPA compliance: data subject rights implementation, privacy notice, retention conflict resolution (GDPR erasure vs. SOX 7-year requirement), and data processing agreements with OCR and card providers.",
+                "Disaster recovery testing: the plan documents RTO/RPO targets in Step 20 but has no step for actually testing failover, backup restoration, or the DR runbook.",
+                "Card issuing bank partnership: Marqeta and Stripe Issuing both require approval of the business as a program manager. This is a business/legal prerequisite with weeks-to-months lead time that has no planned step.",
+                "Mobile push notifications: approval requests via push are more reliable than email for time-sensitive approvals. The notification system (Step 9) covers email, Slack, and in-app but not mobile push (APNs/FCM), which is load-bearing for a mobile-first PWA.",
+                "Expense receipt PAN scrubbing: OCR on receipts will extract visible card numbers (many paper receipts show partial PANs). The OCR pipeline has no step to detect and scrub any card-number-pattern text from extracted data before storage.",
+                "Accounting token refresh strategy: explicit token refresh logic, encrypted token rotation, and alerting when refresh fails \u2014 not implied by 'store tokens encrypted.'",
+                "Data retention enforcement mechanism: the policy says 7-year receipt retention for SOX, but there is no scheduled job, storage lifecycle policy, or legal hold mechanism to enforce it. Policy documentation is not the same as enforcement.",
+                "Webhook signature verification: Marqeta and Stripe both provide HMAC signatures on webhook payloads. There is no acceptance criterion requiring verification of these signatures, leaving the card transaction endpoint open to spoofed transactions."
+              ],
+              "security_risks": [
+                "SAML XML signature wrapping: python3-saml and similar libraries have had CVEs for signature wrapping attacks where a valid signed assertion is cloned into an unsigned position. The acceptance criterion 'tested with mock IdP' does not exercise this attack surface. Require a SAML security review against OWASP SAML Security Cheat Sheet before Step 6 ships.",
+                "Webhook spoofing on card transaction endpoint (Step 11): without HMAC signature verification and timestamp replay protection on Marqeta/Stripe webhooks, any party who discovers the webhook URL can inject fraudulent card transactions that auto-create expense records. This is a direct financial fraud vector.",
+                "OCR pipeline PAN exposure: receipts frequently display partial or full card numbers. Unguarded OCR extraction stores whatever text is in the image. A malicious employee could submit a receipt image containing a PAN in a format that bypasses pattern detection. The extracted text must be scanned for PAN patterns (Luhn check) and scrubbed before storage.",
+                "Accounting OAuth token scope over-provisioning: QuickBooks and Xero OAuth scopes, if not minimized, grant read/write access to the entire organization's financial data. A compromised token gives an attacker full accounting access. The plan has no acceptance criterion enforcing minimum-scope OAuth requests.",
+                "Delegated approval privilege escalation: if delegation is implemented as 'copy approver permissions to delegate,' an employee with no approval authority could be delegated authority over their own manager's expenses if the manager delegates generically. The delegation model needs explicit constraints: a delegate can only approve expenses the delegator could approve, and cannot approve expenses from the delegator.",
+                "JWT in localStorage (implied default): if the React frontend stores JWT access tokens in localStorage, any XSS vulnerability \u2014 including those in third-party dependencies \u2014 exfiltrates tokens. The plan adds CSP headers but does not specify token storage mechanism. CSP reduces XSS risk; it does not eliminate it.",
+                "mTLS certificate lifecycle gap: Step 19 requires mTLS between services but has no acceptance criterion for certificate rotation, revocation, or expiry alerting. An expired internal certificate silently breaks service-to-service communication in production with no user-visible error until a cascading failure.",
+                "Bulk approval CSRF: the bulk approve endpoint (Step 9) processes up to 50 financial approvals per request. Without SameSite cookie enforcement and CSRF token validation, a cross-site request could trigger mass approvals from an authenticated approver's session. This is a high-value CSRF target."
+              ],
+              "summary": "This is a structurally sound, well-sequenced plan that correctly identifies the major components of a corporate expense management system and includes compliance steps rarely seen in MVP plans. The dependency graph is mostly logical, the database schema is thorough, and the decision to front-load security and compliance (Steps 2-3) before implementation is correct. However, the plan has a fundamental product gap: it approves and exports expenses but never pays employees. ACH reimbursement is not a stretch goal \u2014 it is the reason the product exists. Multi-currency is similarly absent despite being extraction-targeted in the OCR step. On the compliance side, PCI DSS SAQ scope is likely mis-classified (SAQ D adds hundreds of controls that may be unnecessary), GDPR/CCPA are unaddressed for a system storing employee personal spending data, and the audit log's tamper-evidence relies entirely on database permissions rather than cryptographic guarantees a SOX auditor will accept. The iOS PWA camera limitation is a known platform constraint that will break the core mobile receipt capture flow on a large portion of the target user base. Accounting OAuth token refresh is a silent production failure waiting to happen on day two. These are not backlog items \u2014 they are gaps that prevent the system from functioning correctly in production. Score reflects that the plan's architecture and compliance intent are strong but the execution would stall on payment processing, currency handling, and several security controls before reaching a releasable state.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-21T23:45:53.950657+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 139.18,
+      "critic_plan": 137.5
+    }
+  }
+}

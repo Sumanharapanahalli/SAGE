@@ -1,0 +1,62 @@
+project_name: hmi_design_system
+display_name: Hmi Design System
+version: 1.0.0
+domain: automotive
+description: Automotive HMI design system with instrument cluster renderer, head-up
+  display overlay, multi-modal input (touch, voice, gesture), and distraction-minimizing
+  UX. ISO 15005.
+detected_domains: []
+compliance_standards:
+- ISO 15005
+- ISO 15008
+- NHTSA Distraction Guidelines
+task_types:
+- AGENTIC
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- PRODUCT_MGMT
+- QA
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- UX_DESIGN
+agent_roles:
+- developer
+- devops_engineer
+- firmware_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

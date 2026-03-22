@@ -1,0 +1,354 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user stories, and process flows for
+      EV charging network operators, fleet managers, and end-users. Map OCPP 2.0.1
+      functional requirements, dynamic pricing triggers, load balancing SLAs, and
+      fleet scheduling constraints.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All OCPP 2.0.1 functional blocks are mapped to user stories
+    - Dynamic pricing triggers (time-of-use, demand, spot) are defined with acceptance
+      rules
+    - Fleet charging optimization constraints (SoC targets, departure times, priority
+      tiers) are documented
+    - Load balancing SLA thresholds (max kW per site, per circuit) are specified
+    - Payment processing flows (RFID, mobile app, credit card, fleet account) are
+      fully described
+    depends_on: []
+  SAFETY:
+    description: Perform FMEA and hazard analysis for the EV charging network. Identify
+      failure modes in EVSE hardware, OCPP communication, load balancing decisions,
+      and payment processing. Produce fault tree analysis for grid overload and electrical
+      safety scenarios per IEC 61851 and ISO 26262 principles.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - FMEA covers all EVSE hardware failure modes with severity, occurrence, and detection
+      ratings
+    - Fault tree for grid overload scenario is complete with cut sets identified
+    - Safety requirements are traceable to hazard log entries
+    - All UNECE R155/R156 cybersecurity threat scenarios are enumerated
+    - Safety requirements baseline is approved and version-controlled
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on:
+    - 1
+  SECURITY:
+    description: Produce threat model, penetration test plan, and SBOM for the EV
+      charging network. Cover OCPP WebSocket channel security, payment data flows
+      (PCI DSS scope), fleet telematics API, firmware OTA update integrity, and CSMS
+      portal access control. Map to UNECE R155/R156 and SOC 2 Type II controls.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 threat surfaces with mitigations mapped
+    - PCI DSS cardholder data environment boundary is documented and scoped
+    - SBOM lists all third-party libraries with CVE status
+    - UNECE R155 cybersecurity management system requirements are mapped to implementation
+      controls
+    - OTA firmware update integrity chain (signing, verification, rollback) is fully
+      specified
+    - Penetration test plan is approved by security team lead
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 1
+  DATABASE:
+    description: 'Design and implement the database schema for the EV charging network:
+      charge points, connectors, sessions, transactions, pricing rules, load zones,
+      fleet accounts, vehicles, schedules, and audit logs. Include TimescaleDB hypertables
+      for telemetry and partitioned transaction tables for PCI DSS data isolation.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables have primary keys, foreign keys, and relevant indexes
+    - meter_values is a TimescaleDB hypertable partitioned by time with compression
+      policy
+    - transactions table has no raw card numbers; only payment_token references external
+      vault
+    - Audit log table is append-only with row-level security preventing updates/deletes
+    - Migrations run cleanly from empty schema to current version
+    - ERD is reviewed and approved
+    - Seed data covers at least 3 charge sites, 10 charge points, 2 fleet accounts,
+      and sample pricing rules
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 1
+    - 2
+    - 3
+  CONFIG:
+    description: 'Set up the solution configuration for ev_charging_network: project.yaml
+      (domain manifest, active modules, theme), prompts.yaml (OCPP analyst, load balancing
+      optimizer, fleet scheduler, pricing engine agent roles), tasks.yaml (all task
+      types for this domain). Configure the coordinator agentic pattern for multi-domain
+      orchestration across pricing, load balancing, and fleet scheduling agents.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml validates against SAGE schema with no errors
+    - All 5 agent roles have system prompts in prompts.yaml with OCPP/EV domain context
+    - 'tasks.yaml defines task types for: ocpp_message_analysis, load_rebalance, fleet_schedule_optimize,
+      price_update, session_audit'
+    - 'Coordinator pattern is wired: coordinator decomposes charging events and routes
+      to specialist agents'
+    - make run PROJECT=ev_charging_network starts without errors
+    depends_on:
+    - 1
+  FIRMWARE:
+    description: 'Implement charge point controller firmware: OCPP 2.0.1 WebSocket
+      client, IEC 61851 state machine (A/B/C/D/E/F), meter value sampling (Wh, W,
+      V, A, SoC), smart charging profile execution (ChargingSchedule, SetChargingProfile),
+      OTA firmware update (UpdateFirmware, FirmwareStatusNotification), and local
+      authorization cache. Target STM32H7 MCU with FreeRTOS.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'OCPP 2.0.1 core profile messages are fully implemented: BootNotification, Heartbeat,
+      StatusNotification, Authorize, StartTransaction, StopTransaction, MeterValues'
+    - 'Smart charging messages implemented: SetChargingProfile, GetChargingProfiles,
+      ClearChargingProfile'
+    - IEC 61851 state machine handles all transitions including error and fault states
+    - OTA update verifies Ed25519 firmware signature before applying; rolls back on
+      integrity failure
+    - Firmware compiles cleanly with arm-none-eabi-gcc for STM32H7 target
+    - FreeRTOS task stack usage is within bounds for all tasks (verified with uxTaskGetStackHighWaterMark)
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 2
+    - 3
+    - 5
+  BACKEND:
+    description: 'Build the Charge Point Management System (CPMS) backend: OCPP 2.0.1
+      WebSocket server (JSON-over-WS), charge point registry, session lifecycle manager,
+      real-time telemetry ingestion pipeline, and OCPP message router. Implement all
+      OCPP 2.0.1 Core, Smart Charging, and ISO 15118 Plug & Charge feature profiles.'
+    agent_role: developer
+    acceptance_criteria:
+    - OCPP 2.0.1 WebSocket server accepts connections from simulated charge points
+      and authenticates via BasicAuth + TLS client cert
+    - All Core profile messages are handled with correct response types and error
+      codes
+    - Smart charging profile messages (SetChargingProfile, GetChargingProfiles) are
+      processed and stored
+    - MeterValues are written to TimescaleDB within 500ms of receipt
+    - Charge point online/offline state is published to Redis pub/sub for real-time
+      dashboard
+    - Session lifecycle (start → active → stop) is fully persisted with idempotent
+      handling of duplicate messages
+    - Unit test coverage ≥ 80% for OCPP message handlers
+    depends_on:
+    - 4
+    - 5
+  API:
+    description: 'Design and document the complete CSMS REST API and WebSocket event
+      API. Produce OpenAPI 3.1 specification covering: charge point management, session
+      lifecycle, pricing rules, load balancing controls, fleet management, payment
+      processing, reporting, and admin operations. Include authentication (OAuth 2.0
+      + API keys) and rate limiting specs.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against OpenAPI 3.1 schema
+    - Every endpoint has request/response schemas with examples
+    - Authentication requirements are specified per endpoint
+    - Rate limits are documented (e.g., 100 req/min for public, 1000 req/min for fleet
+      API keys)
+    - WebSocket event catalog documents all server-push events with payload schemas
+    - API spec is importable into Postman without modification
+    depends_on:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+  FRONTEND:
+    description: 'Build the network operator dashboard: real-time site map (charge
+      point status, availability heatmap), live session table with meter values, load
+      balancing visualizer (Sankey/gauge per site), pricing rule manager, fleet scheduling
+      calendar, and revenue/utilization reporting charts.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Site map renders all charge points with correct status colors (available/occupied/faulted/offline)
+      within 2s of page load
+    - Live session table updates without page refresh when new sessions start or stop
+    - Load balancing gauges reflect real-time kW within 5 seconds of meter value changes
+    - Pricing rule builder validates rules before save and shows live price preview
+      calendar
+    - Fleet schedule Gantt chart renders 50 vehicles × 24 hours without performance
+      degradation
+    - All pages are responsive down to 1280px width
+    - 'Accessibility: WCAG 2.1 AA compliance (keyboard navigation, ARIA labels, color
+      contrast)'
+    depends_on:
+    - 12
+  HARDWARE_SIM:
+    description: 'Build an OCPP 2.0.1 charge point simulator for integration testing
+      and development: simulate 50 concurrent charge points with configurable connector
+      counts, IEC 61851 state transitions, meter value generation (realistic EV charging
+      curves), fault injection, and network interruption scenarios. Implement as a
+      Python async simulator with WebSocket clients.'
+    agent_role: developer
+    acceptance_criteria:
+    - Simulator connects 50 charge points to CPMS simultaneously without connection
+      errors
+    - Each simulated CP sends BootNotification, Heartbeat (every 30s), and MeterValues
+      (every 60s)
+    - Session simulation follows IEC 61851 states with realistic transition timing
+    - Charging curve models match real-world kW profiles within ±10% for BEV 50kW
+      and BEV 150kW models
+    - Fault injection scenarios trigger correct CPMS alarm handling
+    - Simulator is controllable via REST API (start/stop sessions, inject faults,
+      adjust load)
+    depends_on:
+    - 7
+  INFRA:
+    description: 'Set up infrastructure: Docker Compose for local development (CPMS
+      backend, pricing, load balancing, fleet, payments services, PostgreSQL+TimescaleDB,
+      Redis, Nginx), Kubernetes manifests for production deployment, and Terraform
+      for cloud infrastructure (AWS EKS, RDS Aurora, ElastiCache, ACM certificates,
+      VPC).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up starts all services and passes health checks within 120 seconds
+    - All services have resource limits (CPU/memory) defined in K8s manifests
+    - Terraform plan completes without errors for AWS target environment
+    - OCPP WebSocket endpoint is exposed via NGINX with TLS termination and WSS upgrade
+      headers
+    - PostgreSQL uses encrypted storage (RDS encryption at rest) in Terraform config
+    - Horizontal Pod Autoscaler is configured for CPMS API (target 70% CPU)
+    - All secrets are injected via environment variables from Kubernetes Secrets (not
+      hardcoded)
+    depends_on:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+  DEVOPS:
+    description: Set up CI/CD pipeline, monitoring, alerting, and SRE runbooks for
+      the EV charging network. Implement GitHub Actions pipelines for backend and
+      firmware builds, Prometheus + Grafana for metrics, PagerDuty integration for
+      on-call alerting, and distributed tracing with OpenTelemetry.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Backend CI pipeline runs in under 8 minutes including tests
+    - Firmware CI cross-compiles for STM32H7 and reports binary size
+    - OTA release pipeline signs firmware with Ed25519 and uploads to OTA distribution
+      server
+    - 'Grafana dashboard shows: active sessions, site load kW, OCPP message rate,
+      payment success rate, CP availability %'
+    - All 5 key alerts are configured in AlertManager with correct severity and PagerDuty
+      routing
+    - Production deployment requires manual approval in GitHub Actions
+    - 'Runbooks cover: CP mass-disconnect, load balancer failure, payment gateway
+      outage'
+    depends_on:
+    - 16
+  EMBEDDED_TEST:
+    description: Write firmware unit tests and HIL test specifications for the charge
+      point controller firmware. Cover OCPP message encoding/decoding, IEC 61851 state
+      machine transitions, smart charging profile parsing, OTA update validation,
+      and metering accuracy. Define HIL test bench configuration using STM32 Nucleo
+      + EVSE hardware shield.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test suite covers ≥ 85% of firmware source lines
+    - All OCPP 2.0.1 message codec tests pass with no encoding errors
+    - IEC 61851 state machine tests cover all 30+ valid transitions and 10+ invalid
+      transition rejection cases
+    - 'OTA update test: firmware with invalid signature is rejected and device remains
+      on previous version'
+    - HIL test spec defines bench wiring, signal levels, test sequences, and pass/fail
+      criteria
+    - HIL meter accuracy test procedure references IEC 62053 measurement standards
+    - Tests run in CI pipeline without HIL hardware using mocked HAL
+    depends_on:
+    - 6
+    - 15
+  TESTS:
+    description: Write backend unit tests and integration tests for CPMS, pricing
+      engine, load balancing solver, fleet optimizer, and payment service. Use pytest
+      with async support. Integration tests run against Docker Compose stack with
+      real PostgreSQL+TimescaleDB and the OCPP charge point simulator.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All unit tests pass in CI without external dependencies
+    - Integration tests pass against Docker Compose stack with OCPP simulator generating
+      10 concurrent sessions
+    - Load balancing solver unit tests verify allocation is within 1% of LP optimal
+      for standard test cases
+    - Fleet optimizer tests verify SoC targets are met for all vehicles when energy
+      is sufficient
+    - Payment service tests verify Stripe webhook idempotency (duplicate event does
+      not double-charge)
+    - Coverage report shows ≥ 80% line coverage
+    - Test suite completes in under 5 minutes in CI
+    depends_on:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 15
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests: full charge session lifecycle (connect
+      → authorize → charge → stop → bill → receipt), dynamic pricing update propagation,
+      load balancing rebalancing under simulated peak load, fleet schedule execution
+      across 20 vehicles, and payment processing with Stripe test mode. Include performance
+      test: 50 concurrent sessions for 30 minutes.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 6 E2E scenarios pass without manual intervention
+    - Full session lifecycle completes in under 30 seconds from connector plug-in
+      to session active state
+    - Price update propagates to all 50 simulated charge points within 60 seconds
+    - Load rebalancing completes and all OCPP profiles are updated within 10 seconds
+      of trigger
+    - Fleet schedule meets SoC targets for all 20 vehicles in 8-hour test window
+    - 'Performance test: p99 session start API latency < 2 seconds under 50 concurrent
+      sessions'
+    - 'Performance test: zero OCPP message processing errors during 30-minute run'
+    depends_on:
+    - 18
+    - 19
+    - 16
+  COMPLIANCE:
+    description: 'Produce compliance artifacts for PCI DSS v4.0, SOC 2 Type II, and
+      UNECE R155/R156. Generate: PCI DSS Self-Assessment Questionnaire A-EP, SOC 2
+      control mapping to system design, UNECE R155 cybersecurity management system
+      evidence package, and traceability matrix from safety requirements (Step 2)
+      to implementation and tests.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Traceability matrix links every safety requirement from Step 2 to at least one
+      implementation artifact and one test case
+    - PCI DSS SAQ A-EP is fully completed with evidence references for all applicable
+      requirements
+    - SOC 2 control mapping covers all 5 Trust Service Criteria (Security, Availability,
+      Processing Integrity, Confidentiality, Privacy)
+    - UNECE R155 evidence package documents all cybersecurity controls with implementation
+      evidence pointers
+    - Risk matrix assigns residual risk ratings to all identified risks after mitigation
+    - All compliance documents are version-controlled and signed-off
+    depends_on:
+    - 2
+    - 3
+    - 19
+    - 20
+  DOCS:
+    description: 'Write operator and developer documentation: CPMS deployment guide,
+      OCPP integration guide for third-party charge points, API reference (from OpenAPI
+      spec), load balancing configuration guide, fleet management user guide, and
+      payment integration guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Deployment guide covers Docker Compose (local) and Kubernetes (production) installation
+      end-to-end
+    - OCPP integration guide documents WebSocket endpoint URL, authentication, supported
+      feature profiles, and message examples
+    - API reference is auto-generated from OpenAPI spec and renders correctly in Redoc
+    - 'Fleet management guide includes step-by-step walkthrough: create account →
+      add vehicles → configure schedule → view reports'
+    - Architecture document includes C4 context, container, and component diagrams
+    - All docs pass markdown lint with no broken links
+    depends_on:
+    - 12
+    - 13
+    - 14
+    - 21

@@ -1,0 +1,320 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Competitive landscape analysis: identify competitor pricing tools,
+      data sources, scraping legality, and market positioning for the price_optimization
+      solution.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - At least 5 competitor tools profiled with feature/pricing comparison
+    - Identified ≥3 viable competitor price data sources (APIs, scrapers, feeds)
+    - Market sizing estimate with addressable segment defined
+    - Go-to-market positioning statement drafted
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Elicit and document business requirements: user personas (e-commerce
+      managers, revenue ops, pricing analysts), use cases, repricing rule vocabulary,
+      and KPI definitions.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - ≥10 prioritized user stories with acceptance criteria
+    - 'KPIs defined: margin lift %, reprice latency, forecast MAPE, rule coverage
+      %'
+    - Repricing rule vocabulary documented (floor, ceiling, match, undercut, elasticity-based)
+    - Data retention and audit requirements captured
+    depends_on:
+    - 1
+  FINANCIAL:
+    description: Build financial model covering pricing strategy framework, cost-of-goods
+      guardrails, margin floor enforcement logic, and ROI projection for automated
+      repricing.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Margin floor formula defined and reviewed by stakeholder
+    - ROI model shows ≥1 scenario with positive return within 6 months
+    - All repricing rules reference financial guardrails as hard constraints
+    - Cost model accounts for API call costs, compute, and data feed fees
+    depends_on:
+    - 2
+  LEGAL:
+    description: Review legal constraints on competitor price scraping, terms of service
+      compliance, GDPR/CCPA data handling, and prepare IP/licensing review for ML
+      model artifacts.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Legal opinion documented on scraping each identified data source
+    - Data processing agreement template drafted for customer PII
+    - OSS license inventory completed for all planned dependencies
+    - GDPR/CCPA data subject rights flow documented
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'User research and wireframes for the pricing dashboard: competitor
+      monitor view, demand forecast charts, elasticity curves, rule builder UI, and
+      repricing history audit trail.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes produced for all 7 screens with annotated interactions
+    - Rule builder supports AND/OR logic with visual preview
+    - Accessibility audit checklist completed — 0 critical violations
+    - Design reviewed and approved by ≥1 pricing analyst persona representative
+    depends_on:
+    - 2
+  SECURITY:
+    description: Threat model and security review covering PCI DSS scope (payment-adjacent
+      pricing data), API key management for competitor feeds, OWASP Top 10 for web
+      layer, and SBOM generation.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covering all 5 attack surfaces
+    - PCI DSS scoping decision documented (in-scope vs. out-of-scope components)
+    - SBOM generated with no known critical CVEs in direct dependencies
+    - Penetration test plan approved covering OWASP Top 10 + auth flows
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'Produce PCI DSS compliance artifacts: data flow diagrams, control
+      mapping, audit log requirements, encryption-at-rest/in-transit evidence plan,
+      and access control matrix.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All applicable PCI DSS v4.0 requirements mapped to implementation controls
+    - Data flow diagram identifies all cardholder-adjacent data paths
+    - Encryption spec mandates TLS 1.2+ in transit and AES-256 at rest
+    - Access control matrix covers all service accounts and human roles
+    depends_on:
+    - 6
+  DATABASE:
+    description: Design and implement database schema for product catalog, competitor
+      price snapshots, demand signals, elasticity model outputs, repricing rules,
+      and audit log.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD reviewed and approved with all foreign key relationships defined
+    - Migrations run idempotently on clean DB and existing DB
+    - TimescaleDB hypertable compression configured for price_snapshots
+    - Row-level security policies tested for tenant isolation
+    - All PII fields identified and annotated for compliance
+    depends_on:
+    - 3
+    - 7
+  CONFIG:
+    description: 'Set up project scaffolding for price_optimization solution: monorepo
+      layout, Python virtual environment, dependency pinning, environment variable
+      schema, and agentic pattern configuration (Multi-Agent Coordinator) for the
+      repricing pipeline.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 6 agent roles defined in prompts.yaml with system prompts
+    - docker-compose.yml brings up postgres, redis, and app with one command
+    - .env.example documents all required variables with descriptions
+    - 'Coordinator pattern wiring validated: coordinator can dispatch to all specialist
+      agents'
+    - '`make run PROJECT=price_optimization` starts the backend successfully'
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Build competitor price monitoring service: configurable scraper
+      adapters (HTTP + headless browser), rate-limiting, proxy rotation support, structured
+      price snapshot ingestion, and change-detection diffing.'
+    agent_role: developer
+    acceptance_criteria:
+    - HTTP adapter fetches and parses price from ≥2 test product URLs
+    - Browser adapter handles JS-rendered pages via Playwright
+    - Rate limiter enforces per-domain request cadence from config
+    - Snapshot diff detects price changes ≥0.01 and emits change events
+    - Dead letter queue captures failed scrapes for retry
+    depends_on:
+    - 9
+  ML_MODEL:
+    description: 'Build demand forecasting pipeline: feature engineering from sales
+      history and external signals, model training (Prophet + XGBoost ensemble), evaluation
+      harness, and serving endpoint.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model achieves MAPE ≤15% on held-out test set
+    - 90% confidence interval coverage ≥85% on validation data
+    - Feature importance documented with top-5 drivers identified
+    - Model artifacts versioned in model registry with metadata
+    - Serving endpoint returns forecast + CI within 500ms p95
+    depends_on:
+    - 9
+  AGENTIC:
+    description: 'Implement Multi-Agent Coordinator pattern for the repricing pipeline:
+      coordinator decomposes repricing requests, dispatches to competitor_monitor,
+      forecast, elasticity, and rule_engine agents, aggregates results, and routes
+      high-impact changes through HITL approval gate.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator dispatches competitor + forecast + elasticity agents in parallel
+    - Aggregated price proposal includes source attribution for each input
+    - Changes exceeding HITL threshold create a Proposal in approval store — never
+      auto-execute
+    - Changes below threshold execute with full audit log entry
+    - Coordinator handles partial agent failures gracefully (degraded mode with reduced
+      confidence score)
+    depends_on:
+    - 13
+  API:
+    description: 'Design and implement REST API: product catalog management, competitor
+      source config, repricing rule CRUD, forecast retrieval, elasticity query, repricing
+      trigger, approval workflow, and audit log endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec generated and validates with no errors
+    - All endpoints return typed responses matching schemas.py
+    - Auth required on all endpoints — unauthenticated requests return 401
+    - Pagination implemented on /reprice/history and /audit-log
+    - Rate limiting applied to /reprice/run (max 10 req/min per tenant)
+    depends_on:
+    - 14
+  FRONTEND:
+    description: 'Build React dashboard: competitor monitor table with live price
+      deltas, demand forecast chart (line + CI band), elasticity curve explorer, drag-and-drop
+      rule builder, repricing history log, and approval inbox.'
+    agent_role: developer
+    acceptance_criteria:
+    - Competitor monitor table updates within 5s of a scraped price change
+    - Forecast chart renders CI bands and allows horizon selection (7/14/30/90 days)
+    - Rule builder generates valid rule DSL JSON on save — validated client-side before
+      submit
+    - Approval inbox shows pending proposals with approve/reject controls and feedback
+      field
+    - All 7 pages pass axe-core accessibility scan with 0 critical violations
+    - Lighthouse performance score ≥80 on simulated 4G
+    depends_on:
+    - 15
+    - 5
+  INFRA:
+    description: 'Infrastructure setup: Docker Compose for local dev, Kubernetes manifests
+      for production, Celery worker deployment for scraping/repricing jobs, Redis
+      for task queue and caching, and TimescaleDB setup.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up starts all services in <60 seconds on clean machine
+    - Kubernetes manifests include resource limits and liveness/readiness probes
+    - CI pipeline passes on PR — lint, typecheck, tests, build in <10 minutes
+    - Secrets never stored in plaintext in any committed file
+    - TimescaleDB compression policy applied to price_snapshots (>7 days)
+    depends_on:
+    - 15
+  DEVOPS:
+    description: 'Monitoring and alerting setup: Prometheus metrics for scraper health,
+      forecast job duration, repricing latency, and rule coverage; Grafana dashboards;
+      PagerDuty integration for SLA breaches.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All 5 metrics instrumented and visible in Grafana
+    - Alert fires within 2 minutes when scraper_success_rate drops below 95% for 5
+      minutes
+    - Approval queue depth alert fires when >50 pending proposals
+    - Runbook linked in every alert annotation
+    - SLO burn rate alerts configured for 1h and 6h windows
+    depends_on:
+    - 17
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: competitor
+      monitor adapters, demand forecast pipeline, elasticity model, rule engine logic,
+      coordinator agent, and API endpoints.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Overall line coverage ≥85% measured by pytest-cov
+    - All rule types covered with positive, negative, and edge-case fixtures
+    - Coordinator agent tested with mocked specialist agents — partial failure scenarios
+      covered
+    - Integration tests hit real PostgreSQL (no mocks for DB layer)
+    - 'API auth tests cover: valid JWT, expired JWT, missing token, wrong scope'
+    depends_on:
+    - 14
+    - 15
+  QA:
+    description: QA test plan, test case design for end-to-end repricing scenarios,
+      regression suite definition, exploratory testing charter for rule builder and
+      approval workflow.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - ≥30 test cases documented with expected outcomes
+    - All 7 critical scenarios have pass/fail criteria defined
+    - Regression suite runs in <5 minutes and covers happy path for all 7 API workflow
+      areas
+    - Exploratory charter covers rule builder edge cases and approval inbox UX
+    - Defect severity classification matrix defined
+    depends_on:
+    - 16
+    - 20
+  SYSTEM_TEST:
+    description: 'End-to-end system tests: full repricing pipeline from price change
+      detection through forecast update through rule evaluation through approval to
+      execution; load test at 10k SKUs.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full auto-reprice cycle completes end-to-end in <30 seconds for 100 SKUs
+    - 'HITL flow: proposal created, approved via API, execution confirmed in audit
+      log'
+    - 'Load test: 500 SKUs/min repriced with p95 latency ≤2s at 50 concurrent users'
+    - 'Competitor offline scenario: system continues with cached data and raises alert'
+    - No data loss or duplicate reprice events under concurrent load
+    depends_on:
+    - 21
+  OPERATIONS:
+    description: 'Operational runbooks: scraper failure recovery, model drift detection
+      and retraining trigger, repricing pause/resume procedure, database backup/restore,
+      and incident response playbook.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Each runbook has: trigger condition, step-by-step procedure, verification step,
+      escalation path'
+    - Repricing pause procedure tested in staging — disables execution without data
+      loss
+    - 'DB backup restore tested: restore from snapshot completes in <30 minutes'
+    - SLA breach thresholds match alert thresholds defined in step 18
+    - Incident severity matrix defined (P1–P4) with response time SLAs
+    depends_on:
+    - 18
+    - 22
+  DATA:
+    description: Build data pipeline for historical sales import, ongoing sales event
+      ingestion (webhook + batch), and analytics schema for pricing performance reporting
+      (margin lift, reprice volume, forecast accuracy over time).
+    agent_role: data_scientist
+    acceptance_criteria:
+    - CSV importer handles 1M rows in <5 minutes without memory overflow
+    - Webhook consumer processes events with ≤1s end-to-end latency
+    - All 4 analytics views return results in <3s on 90-day dataset
+    - Duplicate event detection prevents double-counting sales
+    - Schema migration tested against production-size dataset
+    depends_on:
+    - 9
+  DOCS:
+    description: 'Technical documentation: API reference (auto-generated from OpenAPI),
+      architecture decision records (ADRs), data model docs, ML model cards, and operator
+      guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from OpenAPI spec — all 15 endpoints documented with
+      examples
+    - 4 ADRs written with context/decision/consequences format
+    - 'Model cards include: intended use, training data, evaluation metrics, limitations,
+      bias considerations'
+    - Operator guide covers deployment, config reference, and first-run setup in <30
+      minutes
+    - Docs reviewed by ≥1 team member who was not the author
+    depends_on:
+    - 22
+  TRAINING:
+    description: 'User onboarding materials: quickstart guide for pricing analysts,
+      video script for rule builder tutorial, and FAQ covering common repricing scenarios
+      and guardrail configuration.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Quickstart guide user-tested with 1 non-technical persona — completed in <15
+      minutes
+    - Rule builder guide covers all 5 rule types with worked examples
+    - Video script covers core flow in ≤8 minutes of estimated runtime
+    - FAQ answers top 10 questions identified during UX research
+    depends_on:
+    - 25
+    - 5

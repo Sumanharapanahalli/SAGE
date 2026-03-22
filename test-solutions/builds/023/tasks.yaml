@@ -1,0 +1,366 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Conduct competitive analysis of IVI market: Android Automotive OEM
+      adopters (Volvo, GM, Renault), competing platforms (QNX BlackBerry, GENIVI),
+      voice assistant landscape (Google Assistant, Alexa Auto, custom), and OTA providers
+      (HARMAN, Aptiv). Define target OEM tier and feature-set positioning.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers ≥8 IVI platforms with feature-by-feature comparison
+    - Market sizing includes TAM/SAM/SOM with cited sources
+    - Navigation SDK recommendation includes cost, offline capability, and Android
+      Automotive compatibility matrix
+    - OTA platform comparison covers SOTA and FOTA variants
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce Product Requirements Document (PRD) for the infotainment_system
+      solution. Define ISO 26262 QM scope boundary, feature list (Android Automotive
+      OS, voice assistant, navigation, media streaming, OTA), success metrics, and
+      phased roadmap (MVP → GA → Post-launch).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all five feature areas with functional and non-functional requirements
+    - ISO 26262 QM ASIL determination documented per feature with rationale
+    - Success metrics are quantitative (e.g., voice command success rate ≥95%, OTA
+      update success rate ≥99.5%)
+    - Roadmap has defined MVP scope with locked acceptance criteria per milestone
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct driver-focused UX research and produce wireframes for all
+      IVI surfaces: Home screen, Navigation view, Media player, Voice assistant overlay,
+      Settings, and OTA notification flow. Apply NHTSA distraction guidelines (≤2s
+      glance time) and accessibility audit (WCAG 2.1 AA for in-vehicle context).'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All primary tasks completable within NHTSA 12-second glance budget
+    - Wireframes cover all six surfaces with light/dark mode variants
+    - Accessibility audit identifies and resolves all AA-level contrast failures
+    - Voice assistant overlay designed for eyes-free operation with audio-only fallback
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  SAFETY:
+    description: Perform ISO 26262 QM Hazard Analysis and Risk Assessment (HARA) and
+      system-level FMEA for all IVI features. Document item definition, hazardous
+      event catalog, controllability classification, and ASIL determination. Produce
+      Functional Safety Concept (FSC) for OTA update and navigation features as highest-risk
+      surfaces.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All hazardous events rated with Severity × Exposure × Controllability per ISO
+      26262 Table 4
+    - ASIL determination confirmed QM for all in-scope items with documented rationale
+    - Safety goals defined for OTA and navigation with verification method specified
+    - FMEA covers ≥30 failure modes with detection and mitigation columns populated
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: Establish compliance framework for AUTOSAR, ISO 26262 QM, and UNECE
+      R155/R156. Create Design History File (DHF) skeleton, traceability matrix template
+      (requirements → design → test), and V&V protocol. Map UNECE R155 cybersecurity
+      management obligations and R156 software update management obligations to architecture
+      decisions.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF skeleton includes all ISO 26262 Part 4 work products with status tracking
+    - RTM links every PRD requirement to at least one design artifact and one test
+      case
+    - V&V protocol defines pass/fail criteria for each test phase (unit, integration,
+      HIL, system)
+    - UNECE R155 gap analysis identifies ≥5 cybersecurity controls required and assigned
+      owners
+    - UNECE R156 SUMS checklist covers OTA authorization, rollback, and integrity
+      verification
+    depends_on:
+    - 4
+  CONFIG:
+    description: 'Set up infotainment_system development environment: Android Automotive
+      OS (AAOS) emulator and build system (AOSP with car extensions), AUTOSAR toolchain
+      (Vector CANoe/DaVinci or open-source equivalent), cross-compilation toolchain
+      (ARM Cortex-A / QNX or Linux), OTA test infrastructure (local update server),
+      and CI/CD pipeline stubs. Configure agentic pattern: multi-agent coordinator
+      routing voice, navigation, media, and OTA specialist agents.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - AAOS emulator boots and displays car launcher in <90 seconds
+    - AOSP car build compiles without errors for x86_64 emulator target
+    - Cross-compilation toolchain produces ARM ELF binary from sample C file
+    - Local OTA server accepts and serves a test update package
+    - CI pipeline runs build + unit tests on PR creation
+    - Coordinator agent routes test task to correct specialist and returns merged
+      result
+    depends_on:
+    - 2
+  FIRMWARE:
+    description: 'Implement Hardware Abstraction Layer (HAL) modules for IVI hardware
+      interfaces: display controller (DSI/LVDS), touch input (I2C capacitive), audio
+      codec (I2S/TDM), CAN bus interface (vehicle data — speed, gear, ignition state),
+      and GPS/GNSS receiver (UART/SPI). Implement RTOS task scheduler (FreeRTOS or
+      Zephyr) with priority assignment per functional domain.'
+    agent_role: developer
+    acceptance_criteria:
+    - All five HAL modules compile without warnings for ARM target
+    - display_hal initializes at target resolution (1280×720 minimum) with verified
+      pixel output
+    - can_hal decodes vehicle speed signal from DBC file with ±1 km/h accuracy in
+      test harness
+    - gnss_hal achieves first fix within 60 seconds in open-sky simulation
+    - 'RTOS task schedule verified with logic analyzer: no priority inversion under
+      load'
+    - All HAL functions have Doxygen headers with parameter and return documentation
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 6
+  HARDWARE_SIM:
+    description: 'Build hardware simulation testbench for IVI SoC peripherals: SystemC/TLM
+      model of CAN bus with vehicle ECU simulator, GNSS signal simulator (replay of
+      recorded NMEA traces), and SPI/I2C bus model for touch and audio codec. Integrate
+      with QEMU for full firmware bring-up without physical hardware.'
+    agent_role: developer
+    acceptance_criteria:
+    - QEMU boots firmware image and reaches HAL init stage without hang
+    - CAN ECU simulator generates valid DBC-encoded frames verified by can_hal_tb
+    - GNSS simulator replays 100km route trace; gnss_hal_tb verifies coordinate accuracy
+      within 10m
+    - All testbenches runnable with single `make sim` command
+    - 'Simulation coverage: ≥80% of HAL module branches exercised by testbench'
+    depends_on:
+    - 7
+  API:
+    description: 'Define API contracts for all IVI service boundaries: Android Automotive
+      Car API extensions (CarAudioManager, CarNavigationStatusManager, CarVoiceInteractionSession),
+      OTA update REST API (manifest fetch, chunk download, status reporting), Voice
+      NLU API (intent + entity schema), and Navigation SDK integration contract (route
+      request/response, map tile protocol).'
+    agent_role: developer
+    acceptance_criteria:
+    - All OpenAPI specs pass validation (openapi-lint or Spectral)
+    - 'OTA API spec covers full update lifecycle: check → download → verify → apply
+      → confirm/rollback'
+    - Voice NLU intent schema covers ≥10 intents with slot definitions and example
+      utterances
+    - Android Automotive API usage documented with AAOS version compatibility matrix
+    - API contracts reviewed and signed off by product_manager before implementation
+      begins
+    depends_on:
+    - 6
+  BACKEND:
+    description: 'Implement OTA Update Server: manifest generation and signing (RSA-2048
+      or Ed25519), firmware/software package repository, chunked download with resume
+      support, update campaign management (vehicle targeting, rollout percentage),
+      and audit logging for UNECE R156 SUMS compliance. Stack: Python FastAPI + PostgreSQL
+      + S3-compatible object storage.'
+    agent_role: developer
+    acceptance_criteria:
+    - OTA server boots and passes /health endpoint check
+    - Package upload, signing, and SHA-256 verification pipeline completes in <30s
+      for 500MB package
+    - Campaign targeting correctly filters vehicles by VIN pattern and software version
+    - 'Rollout percentage limiter tested: 10% campaign delivers to exactly 10% of
+      test VIN pool'
+    - Rollback API reverts vehicle to previous version in test harness
+    - All UNECE R156 mandatory audit fields present in every logged event
+    depends_on:
+    - 9
+  FRONTEND:
+    description: 'Implement Android Automotive OS car app: Home screen launcher (AAOS
+      CarLauncher extension), Media player activity (ExoPlayer with MediaBrowserService,
+      Bluetooth A2DP, USB Audio), Navigation host activity (Google Maps for Automotive
+      or HERE SDK integration), OTA notification and progress UI, and Settings hierarchy
+      (CarSettingsActivity extensions).'
+    agent_role: developer
+    acceptance_criteria:
+    - All activities pass AAOS car app compliance checker (no non-driver-safe UI violations)
+    - Home screen renders in <1s cold start on emulator
+    - Media player transitions between BT and USB sources without audio dropout
+    - Navigation turn card updates within 100ms of GPS position change
+    - Voice overlay appears within 200ms of wake word detection callback
+    - OTA progress UI accurately reflects backend job status (polling ≤5s)
+    - All text elements pass WCAG 2.1 AA contrast ratio (≥4.5:1)
+    depends_on:
+    - 11
+    - 3
+  SECURITY:
+    description: 'Perform threat modeling (STRIDE/TARA per ISO/SAE 21434) for the
+      IVI system. Identify attack surfaces: OTA update channel, voice data pipeline,
+      Bluetooth/WiFi interfaces, CAN bus gateway, and Android app sideloading. Produce
+      UNECE R155 CSMS artifacts: cybersecurity goals, countermeasure catalog, and
+      residual risk acceptance.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis covers all six attack surfaces with threat rating (likelihood
+      × impact)
+    - Every high-rated threat has at least one countermeasure mapped and assigned
+      to an implementation step
+    - 'OTA channel: TLS 1.3 pinning and Ed25519 package signing confirmed as countermeasures'
+    - 'CAN gateway: IVI→CAN write access confirmed restricted to non-safety bus segments
+      only'
+    - 'UNECE R155 CSMS artifact package complete: covers 7 mandatory cybersecurity
+      measures'
+    - Residual risk acceptance signed off by safety_engineer
+    depends_on:
+    - 5
+    - 10
+  DATABASE:
+    description: 'Design and implement data schema for IVI system: vehicle preferences
+      store (driver profiles, seat/mirror/audio presets), navigation history and favorites,
+      media library index (local USB + streaming cache), OTA campaign and job audit
+      database, and voice interaction log (anonymized for model improvement). SQLite
+      on-device + PostgreSQL for OTA server.'
+    agent_role: developer
+    acceptance_criteria:
+    - All Room migrations run without data loss on schema upgrade test
+    - Driver profile switch (seat/audio/nav prefs) loads in <200ms
+    - OTA audit log table has row-level immutability (append-only trigger, no UPDATE/DELETE)
+    - 'Voice interaction log confirmed: no speaker identity or raw audio stored'
+    - PostgreSQL schema passes pgTAP unit tests for FK constraints and index coverage
+    - 'GDPR data retention policy enforced: voice logs auto-purged after 30 days'
+    depends_on:
+    - 6
+  LOCALIZATION:
+    description: 'Implement i18n/l10n framework for IVI system: Android Automotive
+      string resources for 12 locales (en-US, en-GB, de-DE, fr-FR, es-ES, it-IT, pt-BR,
+      zh-CN, zh-TW, ja-JP, ko-KR, ar-SA), RTL layout support (Arabic), locale-aware
+      number/date/unit formatting (km vs miles, 12h vs 24h clock, temperature units),
+      and Navigation voice prompt audio assets per locale.'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All 12 locales render without truncation on standard 10-inch IVI display
+    - 'RTL layout (ar-SA) mirrors correctly: back button, navigation arrows, text
+      alignment'
+    - 'Unit formatting switches correctly when device locale changes: km↔miles, °C↔°F'
+    - Navigation voice prompts available in all 12 locales (TTS fallback where audio
+      assets absent)
+    - No hardcoded strings in codebase (Lint LocaleStrings check passes with zero
+      warnings)
+    - Date/time display matches Android system locale in all 12 test configurations
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 12
+  DEVOPS:
+    description: 'Set up CI/CD pipeline for IVI system: AAOS build pipeline (AOSP
+      car branch, emulator smoke test), OTA server deployment pipeline (Docker → Kubernetes),
+      firmware cross-compilation pipeline (ARM), automated signing pipeline (OTA packages
+      with HSM integration), release management (semantic versioning, changelog generation),
+      and monitoring stack (Grafana + Prometheus for OTA server, Sentry for Android
+      crashes).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR pipeline completes in <20 minutes (build + test + lint)
+    - OTA server deployment to staging completes in <10 minutes with zero-downtime
+      rolling update
+    - Firmware binary signing pipeline produces Ed25519-signed artifact verified by
+      OTA verifier module
+    - 'Semantic versioning increments correctly on merge to main: PATCH for fixes,
+      MINOR for features'
+    - Grafana dashboard shows OTA success rate with ≥99.5% threshold alert configured
+    - Sentry crash rate alert triggers when ANR rate >0.1% in rolling 1-hour window
+    depends_on:
+    - 10
+    - 14
+  EMBEDDED_TEST:
+    description: 'Produce Hardware-in-the-Loop (HIL) test specifications for IVI system:
+      test harness design (dSPACE or National Instruments HIL platform), test cases
+      for CAN signal injection (vehicle speed, ignition state, gear), GNSS signal
+      replay, display and touch validation, OTA update over real Ethernet, and fault
+      injection (power loss during OTA, GPS signal loss during navigation).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - HIL test specification covers ≥50 test cases across all categories
+    - 'Each test case has: precondition, stimulus sequence, expected response, pass/fail
+      criterion'
+    - OTA power-loss tests confirm rollback for power cut at all 5 state transitions
+    - 'HAL unit test coverage: ≥85% branch coverage across all HAL modules (gcov report)'
+    - GNSS parser handles all NMEA 0183 v4.11 sentence types without crash
+    - HIL spec reviewed and approved by safety_engineer before hardware procurement
+    depends_on:
+    - 8
+    - 14
+    - 5
+  QA:
+    description: 'Produce QA Test Plan covering all IVI features: test strategy, entry/exit
+      criteria per phase, risk-based test prioritization (ISO 26262 QM coverage requirements),
+      defect management process, and test execution report template. Define regression
+      suite for each OTA software update. Include AUTOSAR BSW integration test cases.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all five test phases with entry/exit criteria
+    - Risk matrix identifies top-10 highest-risk test areas with priority ordering
+    - Every PRD requirement has ≥1 test case mapped in RTM
+    - 'Regression suite defined: ≥150 automated test cases for OTA update qualification'
+    - Defect management process documented with S1 fix SLA = 24 hours
+    - QA plan reviewed and signed off by product_manager and safety_engineer
+    depends_on:
+    - 5
+    - 19
+  SYSTEM_TEST:
+    description: 'Execute system-level integration test suite: end-to-end voice command
+      → navigation flow, media playback across all sources, full OTA update cycle
+      (check → download → apply → confirm), multi-driver profile switch, and 8-hour
+      soak test (display, audio, CAN parsing under continuous load). Document results
+      in V&V protocol evidence package.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Voice command success rate ≥95% across 100-utterance test set
+    - OTA full cycle completes without manual intervention in ≥99/100 test runs
+    - '8-hour soak test passes: no ANR, no crash, heap growth <10%'
+    - All system test results documented in V&V evidence package with pass/fail per
+      test case
+    - All S1 and S2 defects resolved before system test sign-off
+    - V&V evidence package linked to RTM closing traceability loop
+    depends_on:
+    - 13
+    - 14
+    - 17
+    - 20
+  TRAINING:
+    description: 'Produce end-user and OEM integration documentation: driver quick-start
+      guide (voice commands, navigation, media controls), OEM integration guide (Android
+      Automotive build system integration, HAL porting guide, OTA server deployment
+      runbook), and service technician guide (diagnostic access via UDS/OBD-II, forced
+      OTA rollback procedure).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Driver quick-start covers top-5 features with step-by-step illustrated instructions
+    - Voice command reference lists all intents with ≥3 example utterances per intent
+      in all 12 locales
+    - OEM integration guide allows a new OEM engineer to build and boot AAOS image
+      following doc alone
+    - Service technician guide covers DTC catalog for all IVI-specific fault codes
+    - All documents reviewed by technical_writer and approved by product_manager
+    - In-app help overlay triggers on first-launch and is accessible from Settings
+    depends_on:
+    - 21
+  AGENTIC:
+    description: 'Implement SAGE solution configuration for infotainment_system: prompts.yaml
+      with specialist agent roles (IVI analyst, OTA operations agent, voice quality
+      monitor, compliance tracker), tasks.yaml with 8 task types (ota_campaign_create,
+      voice_quality_alert, navigation_error_triage, can_signal_anomaly, driver_feedback_analysis,
+      software_update_audit, distraction_incident_review, compliance_gap_detect),
+      and project.yaml with active modules and coordinator pattern. Agentic pattern:
+      multi-agent coordinator routing IVI-specific events.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'project.yaml loads without validation errors via POST /config/switch {project:
+      infotainment_system}'
+    - prompts.yaml defines ≥4 specialist agent roles with automotive-domain system
+      prompts
+    - tasks.yaml defines ≥8 task types with correct HITL levels (strict for OTA and
+      compliance)
+    - Coordinator routes test OTA failure event to ota_agent and returns structured
+      proposal
+    - 'HITL gate confirmed: ota_campaign_create creates pending proposal, does not
+      auto-execute'
+    - 'Autonomous action confirmed: voice_quality_alert executes without approval
+      gate'
+    - POST /analyze with IVI-domain payload returns structured analysis from correct
+      specialist agent
+    depends_on:
+    - 6
+    - 11

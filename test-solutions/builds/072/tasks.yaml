@@ -1,0 +1,450 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas (students K-12, parents,
+      educators), user stories, learning outcome KPIs, and ROI model for ai_tutor
+      platform
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 3 distinct user personas documented with goals and pain points
+    - Minimum 30 user stories covering student, parent, and admin roles
+    - ROI model shows unit economics for B2C and B2B2C pricing tiers
+    - 'Learning outcome KPIs defined: mastery rate, session completion, time-to-mastery,
+      7-day retention'
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce PRD covering adaptive learning paths, Socratic questioning
+      engine, multi-subject support (Math, Science, Language Arts, History), progress
+      analytics, and parent dashboard. Define MVP scope, versioned roadmap phases,
+      and success metrics.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all 5 core features with acceptance criteria per feature
+    - Roadmap has at least 3 versioned phases with release criteria
+    - Success metrics include DAU, 7-day retention, mastery rate, and NPS
+    - MVP scope document signed off with no scope-creep items in v1
+    depends_on:
+    - 1
+  MARKET_RESEARCH:
+    description: Analyze edtech competitor landscape (Khan Academy, Khanmigo, Synthesis,
+      IXL, Duolingo), identify differentiation opportunities in AI-personalized Socratic
+      tutoring, and define go-to-market positioning.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers at least 6 competitors across 8 evaluation dimensions
+    - Clear differentiation statement articulated in one sentence
+    - GTM strategy defines two launch channels with CAC estimates
+    - Pricing tiers proposed with competitive benchmarking justification
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: Conduct user research with student and parent archetypes, produce
+      information architecture, wireframes for all core flows (student onboarding,
+      Socratic learning session, progress dashboard, parent review), and accessibility
+      audit plan targeting WCAG 2.1 AA.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - IA diagram covers all routes with depth <= 3 clicks to any core feature
+    - Wireframes cover student onboarding, Socratic session, quiz, progress, and parent
+      dashboard flows
+    - Accessibility checklist maps each UI element to WCAG 2.1 AA criteria
+    - Age-appropriate UI patterns documented per age group with design rationale
+    - Usability test plan defines at least 5 tasks with measurable success criteria
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: Produce COPPA compliance plan (verifiable parental consent, data
+      minimization, parental access and deletion rights), FERPA compliance checklist
+      (education records, school official exception, disclosure controls), and WCAG
+      2.1 conformance strategy.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - COPPA plan covers verifiable parental consent mechanism via email-plus-callback
+      method
+    - COPPA plan includes data minimization inventory listing no PII beyond operational
+      necessity
+    - FERPA checklist maps all education record types and permissible disclosure paths
+    - WCAG 2.1 AA conformance statement lists all tested criteria with pass/fail status
+    - Data retention policy specifies retention period and deletion SLA per data category
+    depends_on:
+    - 2
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (COPPA-compliant with plain-language
+      children's summary), and data processing agreements for third-party AI and analytics
+      providers. Review IP ownership of AI-generated tutoring content.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy has a dedicated children's section written at 6th-grade reading
+      level
+    - ToS covers content ownership, AI-generated outputs, and acceptable use policy
+    - DPA template is GDPR and CCPA compatible for school district procurement
+    - IP review confirms no third-party model outputs create ownership conflicts for
+      generated content
+    - FERPA/COPPA compliance if minors involved
+    depends_on:
+    - 5
+  SECURITY:
+    description: Produce STRIDE threat model for ai_tutor, define authentication strategy
+      (JWT plus OAuth2, parental consent tokens), data encryption requirements, prompt
+      injection mitigation, and penetration test plan with special focus on child
+      data protection.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 categories with documented mitigations for
+      all high and critical risks
+    - Auth architecture supports guardian parent role with child sub-accounts and
+      consent tokens
+    - Prompt injection mitigation strategy documented for all Socratic engine student
+      inputs
+    - Pen test plan covers OWASP Top 10 and OWASP LLM Top 10
+    - All child PII encrypted at rest (AES-256) and in transit (TLS 1.3) per requirements
+    depends_on:
+    - 5
+  API:
+    description: 'Design OpenAPI 3.1 spec for all ai_tutor endpoints: auth, student
+      sessions, adaptive learning engine, Socratic chat, multi-subject content, quizzes,
+      progress analytics, parent dashboard, and admin routes.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with zero errors via swagger-parser
+    - All endpoints have request and response schemas with typed examples
+    - Error catalog covers all 4xx and 5xx cases with human-readable messages
+    - Parental consent flow fully specified including email verification callback
+    - Rate limiting headers documented per endpoint group
+    depends_on:
+    - 2
+    - 5
+  DATABASE:
+    description: 'Design PostgreSQL schema for ai_tutor: users, guardian_relationships,
+      subjects, curriculum_nodes (knowledge graph with prerequisites), learning_sessions,
+      quiz_attempts, per-student adaptive_state, progress_snapshots, and FERPA-compliant
+      append-only audit_events table.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all entities with labeled relationships and cardinalities
+    - Schema includes soft-delete and created_at/updated_at timestamps on all mutable
+      tables
+    - audit_events table has UPDATE and DELETE privileges revoked for all application
+      roles
+    - Adaptive state schema supports per-student per-subject mastery probability vectors
+    - Alembic migrations run idempotently on clean and existing databases
+    - Seed data populates 3 subjects with at least 20 curriculum nodes each
+    depends_on:
+    - 8
+  ML_MODEL:
+    description: 'Design and implement the adaptive learning model pipeline: Deep
+      Knowledge Tracing (DKT) for student mastery estimation, Item Response Theory
+      (IRT) for difficulty calibration, and learning path recommendation. Train on
+      synthetic interactions, export as REST inference service.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - DKT model achieves AUC >= 0.82 on held-out 20% test split
+    - IRT calibration produces difficulty and discrimination parameters for all curriculum
+      nodes
+    - Inference service latency p99 <= 100ms for next-node recommendation
+    - Model card documents training data, evaluation metrics, known limitations, and
+      bias analysis
+    - Serve endpoint exposes REST API compatible with backend integration spec from
+      step 8
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 9
+  DATA:
+    description: 'Build analytics data pipeline: xAPI-compatible clickstream event
+      schema, ingestion layer, nightly dbt aggregation jobs for learning KPIs, and
+      materialized views for parent dashboard and admin analytics.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - 'xAPI event schema covers 8 verb types: answered, completed, passed, failed,
+      progressed, experienced, launched, exited'
+    - dbt models produce daily, weekly, and monthly aggregations with no nulls on
+      key metric fields
+    - Pipeline sustains 10k events per minute without backpressure under load test
+    - Parent dashboard materialized view returns in <= 200ms for 90-day lookback window
+    - All PII fields hashed or pseudonymized in analytics aggregation tables
+    depends_on:
+    - 9
+    - 10
+  CONFIG:
+    description: 'Scaffold ai_tutor SAGE solution: write project.yaml, prompts.yaml,
+      and tasks.yaml. Configure Multi-Agent Coordinator pattern with Socratic Tutor
+      Agent (ReAct), Adaptive Router Agent, and Content Critic Agent. Add safety filters,
+      prompt injection guards, and HITL gates for curriculum edits.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml defines solution with active_modules list and theme block
+    - prompts.yaml defines socratic_tutor, adaptive_router, and content_critic roles
+      with complete system prompts
+    - 'tasks.yaml defines task types: socratic_session, quiz_generation, path_adaptation,
+      progress_report'
+    - Safety filter rejects responses containing PII, adult content, or detected prompt
+      injection patterns
+    - HITL gates configured for curriculum_node_edit and agent_hire task types
+    - Solution loads without errors via make run PROJECT=ai_tutor
+    depends_on:
+    - 2
+    - 5
+    - 8
+  AGENTIC:
+    description: 'Implement Socratic Tutor Agent using ReAct pattern: receives student
+      question or topic, retrieves curriculum node from knowledge graph, generates
+      Socratic follow-up questions (never direct answers), evaluates student response
+      quality, updates mastery state, and selects next pedagogical move. Integrates
+      with adaptive model from step 10.'
+    agent_role: developer
+    acceptance_criteria:
+    - Agent never reveals direct answers — all outputs are questions, guided hints,
+      or Socratic prompts
+    - ReAct loop completes in <= 3s per turn at p95 latency
+    - Agent correctly writes updated mastery probability to adaptive state after each
+      student response
+    - Socratic question quality scored >= 4/5 by content_critic agent on 20 benchmark
+      test cases
+    - Age-appropriate language verified via Flesch-Kincaid grade matching student
+      age group setting
+    - Prompt injection attempts in student input caught and deflected with safe fallback
+      response
+    depends_on:
+    - 10
+    - 12
+  BACKEND:
+    description: 'Build FastAPI backend for ai_tutor: JWT + OAuth2 authentication
+      with parental consent flow, student and guardian CRUD, learning session management,
+      Socratic chat relay, adaptive engine client, progress aggregation endpoints,
+      parent dashboard API, and admin routes.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints from OpenAPI spec implemented and passing contract tests
+    - 'Parental consent flow: parent email verified, consent recorded, child account
+      activates atomically'
+    - Audit logger writes every student data access event to FERPA audit_events with
+      user, timestamp, and record type
+    - 'Rate limiting enforced: 60 req/min per student session, 200 req/min per parent
+      account'
+    - All endpoints return <= 200ms p95 latency under 100 concurrent users in load
+      test
+    - Guardian-child relationship enforced at middleware layer — parent cannot access
+      another family's data
+    depends_on:
+    - 9
+    - 12
+    - 13
+  FRONTEND:
+    description: 'Build React 18 + TypeScript student-facing UI: onboarding wizard
+      (age, grade, subject selection), adaptive Socratic chat interface, quiz component
+      supporting multiple-choice and fill-in-blank, subject progress rings, streak
+      tracker, and achievement badges. WCAG 2.1 AA compliant.'
+    agent_role: developer
+    acceptance_criteria:
+    - All pages pass axe-core accessibility audit with zero critical violations
+    - Socratic chat interface shows typing indicator, message history, and collapsible
+      hint panel
+    - Progress rings animate on load and update in real-time after session completion
+    - Quiz component renders multiple-choice, fill-in-blank, and drag-to-match question
+      types
+    - Lighthouse scores >= 90 for Performance, Accessibility, and Best Practices
+    - All pages are mobile-responsive and tested at 375px, 768px, and 1280px breakpoints
+    depends_on:
+    - 4
+    - 14
+  INFRA:
+    description: Set up Docker Compose for local dev stack (PostgreSQL, Redis, backend,
+      ML inference, frontend), Kubernetes manifests for production (HPA, PodDisruptionBudget,
+      NetworkPolicy for PII isolation), and GitHub Actions CI/CD pipeline with staging
+      auto-deploy and prod manual gate.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up --build starts full stack in <= 3 minutes on a clean machine
+    - CI pipeline runs lint, type-check, unit tests, and integration tests on every
+      PR
+    - CD pipeline auto-deploys to staging on main merge; prod deploy requires manual
+      approval gate
+    - K8s HPA scales backend pods from 2 to 20 replicas based on CPU and memory thresholds
+    - NetworkPolicy prevents ML inference service from initiating external internet
+      connections
+    - All secrets injected via Kubernetes Secrets or external Vault — zero plaintext
+      credentials in manifests
+    depends_on:
+    - 14
+    - 15
+    - 16
+  TESTS:
+    description: 'Write unit tests (pytest for backend, Vitest for frontend), integration
+      tests (database and API contract), and Playwright E2E tests covering: student
+      onboarding, full Socratic session loop, adaptive path update, parent dashboard
+      review, and cross-family data isolation.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Backend unit test line coverage >= 80% across all service modules
+    - 'Frontend component tests cover all interactive states: loading, error, success,
+      and empty'
+    - 'E2E test covers full student journey: login to topic select to Socratic chat
+      to quiz to progress update'
+    - E2E FERPA isolation test confirms parent cannot retrieve another family's data
+      across 50 attempts
+    - Full test suite completes in CI in <= 10 minutes
+    - All tests pass 3 consecutive runs with no flakiness
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 13
+  QA:
+    description: Design comprehensive QA test plan covering functional, regression,
+      performance, accessibility, and child-safety categories. Define edge cases for
+      adaptive engine boundary conditions, Socratic agent safety boundaries, and COPPA/FERPA
+      compliance verification scenarios.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 5 core features with positive, negative, and edge case
+      scenarios
+    - Child safety scenarios include 20 adversarial student inputs testing jailbreak
+      and inappropriate topic attempts
+    - Performance test plan defines ramp-up profile and pass/fail thresholds per SLA
+    - Accessibility test cases map to each WCAG 2.1 AA criterion in scope
+    - 'Compliance scenarios verify: COPPA deletion within 72h, FERPA access log completeness,
+      and consent revocation end-to-end'
+    depends_on:
+    - 18
+  SYSTEM_TEST:
+    description: 'Execute system-level integration testing: 20-student adaptive learning
+      simulation over 50 sessions each, Socratic agent child-safety adversarial review,
+      parent dashboard data accuracy validation, and load test at 500 concurrent users
+      for 10 minutes.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 20-student simulation shows average mastery probability delta >= 15% after 50
+      sessions per subject
+    - Socratic agent achieves >= 90% safe response rate on child-safety adversarial
+      input set
+    - Parent dashboard data matches source-of-truth database within 5-minute reporting
+      lag
+    - p99 API latency <= 500ms sustained over 10 minutes at 500 concurrent users
+    - 'Data isolation penetration test: zero cross-family data leakage detected across
+      100 test attempts'
+    depends_on:
+    - 18
+    - 19
+  LOCALIZATION:
+    description: Set up i18n infrastructure (react-i18next + i18next-backend, backend
+      locale middleware), extract all UI strings to translation files, and deliver
+      initial translations for en-US, es, and fr. Configure locale-aware formatting
+      for dates, numbers, grade levels, and subject names.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All UI text extracted to translation JSON files with zero hardcoded strings
+      remaining in components
+    - Spanish and French translations complete and reviewed for all student-facing
+      and parent-facing pages
+    - Language switcher toggles locale without full page reload
+    - Date and number formatting verified correct per locale via unit tests
+    - RTL layout scaffolded and layout does not break at 0% translation coverage for
+      Arabic locale
+    depends_on:
+    - 15
+    - 16
+  FIRMWARE:
+    description: 'Develop firmware for ai_tutor companion learning device (ARM Cortex-M4
+      offline tablet variant): FreeRTOS tasks for BLE session sync, e-ink display
+      driver for offline lesson cards, offline quiz cache manager, and low-power sleep/wake
+      on proximity sensor trigger.'
+    agent_role: developer
+    acceptance_criteria:
+    - FreeRTOS boots and schedules 4 tasks (BLE sync, display, cache, power manager)
+      without deadlock over 24h run
+    - BLE sync task transfers quiz cache from backend within 30s of proximity detection
+      event
+    - e-ink driver renders a full lesson card frame in <= 500ms
+    - Quiz cache stores >= 50 offline quiz items in FLASH with CRC integrity check
+    - Deep sleep current draw measured <= 5uA on target hardware
+    depends_on:
+    - 14
+  HARDWARE_SIM:
+    description: 'Build SystemC behavioral simulation of companion device SoC: ARM
+      Cortex-M4 core model, BLE transceiver simulation, e-ink display controller model,
+      and power consumption testbench to validate sleep/wake power budget before PCB
+      fabrication.'
+    agent_role: developer
+    acceptance_criteria:
+    - SoC simulation boots firmware image and completes BLE sync scenario without
+      segfault or assertion failure
+    - Power testbench reports <= 5uA simulated sleep current consistent with firmware
+      specification
+    - e-ink controller model produces pixel-accurate frame buffer output for reference
+      test image
+    - All 4 testbench scenarios complete with zero assertion failures
+    - Full simulation run completes in <= 60s wall-clock time for 10s simulated time
+    depends_on:
+    - 23
+  PCB_DESIGN:
+    description: 'Capture KiCad schematic for ai_tutor companion device: STM32L4R5
+      MCU, nRF52840 BLE SoC, e-ink FPC connector, USB-C PD charging (BQ25895), LiPo
+      management, VCNL4040 proximity sensor. Generate fabrication-ready BOM with RoHS
+      and REACH compliance confirmation.'
+    agent_role: developer
+    acceptance_criteria:
+    - Schematic passes ERC with zero errors
+    - PCB layout passes DRC with zero violations against JLCPCB 4-layer design rules
+    - BOM includes manufacturer part numbers and lead-free (RoHS) certification for
+      all components
+    - No REACH-restricted substances flagged in BOM material declaration
+    - Gerber files exported and validated as fabrication-ready by DFM check
+    depends_on:
+    - 24
+  EMBEDDED_TEST:
+    description: 'Write firmware unit tests (Unity framework) and HIL test specification
+      for ai_tutor companion device: BLE sync correctness, offline quiz cache CRC
+      integrity, e-ink display driver pixel accuracy, and power mode transition stability
+      over 1000 sleep/wake cycles.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unity test suite achieves >= 85% firmware line coverage across all modules
+    - BLE sync test verifies correct quiz data transfer for 10 distinct test payloads
+    - Quiz cache test confirms read/write integrity for 100-item cache with per-item
+      CRC validation
+    - HIL power cycle test completes 1000 sleep/wake cycles with zero crashes or data
+      corruption events
+    - All Unity tests pass on both target hardware (STM32L4R5) and SystemC simulation
+    depends_on:
+    - 23
+    - 24
+  TRAINING:
+    description: Produce user guides for students (K-8 and 9-12 variants), parents,
+      and school administrators. Write in-app onboarding wizard copy and tooltip content.
+      Create educator quick-start guide for school deployment. Produce 3-minute product
+      walkthrough video script.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - K-8 student guide passes Flesch-Kincaid readability check at grade 4-6 level
+    - Parent guide covers account setup, privacy controls, and progress chart interpretation
+      in <= 10 pages
+    - Admin guide covers school deployment, SSO configuration, and FERPA data request
+      workflow
+    - Video script reviewed and approved by product_manager for tone and accuracy
+    - All in-app tooltip copy reviewed for COPPA-compliant language with no data collection
+      incentives
+    depends_on:
+    - 15
+    - 16
+    - 21
+  DEVOPS:
+    description: 'Configure production observability: Prometheus metrics, Grafana
+      dashboards (API health, ML inference throughput, adaptive model accuracy drift,
+      child-safety filter trigger rate, user acquisition funnel), PagerDuty alerting,
+      and SRE runbooks for all critical failure modes.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All 5 Grafana dashboards deployed and showing live production data
+    - PagerDuty alert fires within 2 minutes when API error rate exceeds 1% over a
+      5-minute window
+    - Adaptive model accuracy drift alert triggers when DKT AUC degrades >= 5% from
+      deployment baseline
+    - Safety filter trigger rate dashboard shows per-age-group anomaly detection with
+      drill-down
+    - 'SRE runbooks cover: database failover, ML service restart, COPPA deletion SLA
+      breach, and Socratic agent degraded mode'
+    depends_on:
+    - 17
+    - 20

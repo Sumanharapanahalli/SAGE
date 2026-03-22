@@ -1,0 +1,183 @@
+task_types:
+  CONFIG:
+    description: Scaffold the voice_assistant solution directory structure. Set up
+      Python virtual environment, pyproject.toml with all dependencies (torch, torchaudio,
+      whisper, transformers, pyttsx3/coqui-tts, fastapi, uvicorn, numpy, sounddevice,
+      webrtcvad). Create config.yaml with model paths, sample rates, wake word threshold,
+      ASR model name, NLU confidence threshold, TTS engine choice.
+    agent_role: developer
+    acceptance_criteria:
+    - All directories created and present
+    - '`pip install -e .` completes without errors'
+    - config.yaml is schema-validated on load
+    - '`python -c ''import torch, whisper, transformers''` succeeds'
+    depends_on: []
+  DATA:
+    description: 'Build wake word training data pipeline. Collect and augment positive
+      samples (target wake word spoken in varied conditions) and negative samples
+      (background speech, noise). Apply augmentations: speed perturbation, pitch shift,
+      additive noise (SNR 0–20 dB), room impulse response convolution. Output 16 kHz
+      mono WAV files with train/val/test splits and a manifest CSV.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - 'Manifest CSV exists with columns: file_path, label, split'
+    - All audio files are exactly 16 kHz mono
+    - Class balance in training split is at most 1:6 (positive:negative)
+    - Pipeline script is idempotent and reruns without duplicating data
+    depends_on:
+    - 1
+  ML_MODEL:
+    description: Train wake word detection model. Use a lightweight CNN or MobileNet-V2
+      on 1-second log-mel spectrogram patches (64 mel bins, 25ms frame, 10ms hop).
+      Train binary classifier (wake word vs. not). Optimize for low false-accept rate
+      (<0.5/hr) and low false-reject rate (<5%). Export to ONNX for CPU inference.
+      Target real-time factor < 0.05.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model ONNX file < 5 MB
+    - False-accept rate <= 0.5 per hour on held-out test set
+    - False-reject rate <= 5% on held-out test set
+    - Training and evaluation script reproducible with fixed random seed
+    - Model card documenting architecture, metrics, and limitations written
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 2
+  BACKEND:
+    description: Implement wake word detection service. Continuously reads audio from
+      microphone in 1-second overlapping windows (50% hop). Runs ONNX inference on
+      each window. On detection above threshold, emits a WAKE_WORD_DETECTED event
+      on an asyncio queue and mutes further detections for 2 seconds (debounce). Exposes
+      start()/stop() async context manager.
+    agent_role: developer
+    acceptance_criteria:
+    - Service starts and stops cleanly without leaked threads
+    - WAKE_WORD_DETECTED event emitted within 750ms of wake word onset
+    - No event emitted for non-wake-word speech in 60-second background test
+    - CPU usage <= 5% during idle listening on a modern laptop
+    depends_on:
+    - 4
+  AGENTIC:
+    description: 'Implement dialog management engine using a Multi-Agent Sequential
+      Pipeline pattern. DialogManager maintains conversation state (ConversationContext:
+      history, current_intent, pending_slots, turn_count). Routes NLUResult to specialist
+      handlers: ClarificationAgent (asks follow-up questions for missing slots), FulfillmentAgent
+      (executes confirmed intents via tool calls), FallbackAgent (handles low-confidence
+      or OOD inputs). Each agent uses ReAct loops. State persists across turns up
+      to max_turns.'
+    agent_role: developer
+    acceptance_criteria:
+    - Dialog correctly routes to ClarificationAgent when required_slots are missing
+    - FulfillmentAgent executes tool call and returns result within 1 second
+    - Conversation context preserved across all turns up to max_turns
+    - FallbackAgent triggered when intent confidence < 0.4
+    - Dialog resets cleanly after cancel intent or max_turns exceeded
+    - All agent transitions logged with trace_id for audit
+    depends_on:
+    - 10
+  API:
+    description: 'Design and implement REST + WebSocket API for the voice assistant.
+      REST endpoints: POST /session/start, POST /session/end, GET /session/{id}/history,
+      POST /intent/classify (text input for testing), GET /health. WebSocket endpoint:
+      /ws/stream — streams audio in, streams back partial transcriptions and final
+      DialogResponse. Define OpenAPI spec. Authenticate via API key header.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec generated at /docs with all endpoints documented
+    - WebSocket accepts binary audio frames at 16 kHz and returns JSON events
+    - /health returns 200 with model load status for all 4 models
+    - API key validation returns 401 for missing or invalid keys
+    - 'All endpoints respond within SLA: REST < 100ms overhead, WS < 50ms per frame'
+    depends_on:
+    - 11
+    - 12
+  FRONTEND:
+    description: 'Build a web-based demo interface for the voice assistant. Display:
+      real-time waveform visualizer (Web Audio API), pipeline state indicator (idle/listening/transcribing/speaking
+      with color coding), live transcription display with confidence score, intent
+      + slots panel showing parsed NLUResult, conversation history scroll panel, manual
+      text input for testing NLU without microphone. Connect via WebSocket to /ws/stream.'
+    agent_role: developer
+    acceptance_criteria:
+    - Waveform updates in real time (<50ms lag) when microphone is active
+    - Pipeline state indicator changes color within 100ms of state change
+    - Transcription text appears incrementally as partials arrive
+    - Intent and slots panel updates on each NLUResult event
+    - Conversation history scrollable and persists for session duration
+    - Text input mode works without microphone access
+    depends_on:
+    - 13
+  INFRA:
+    description: 'Containerize all components with Docker. Write multi-stage Dockerfile:
+      builder stage installs deps and downloads models, runtime stage copies artifacts.
+      Write docker-compose.yaml with services: voice-assistant-api (FastAPI + pipeline),
+      voice-assistant-ui (nginx serving React build). Add model download script that
+      pulls ONNX and TTS model files on first run. Write GitHub Actions CI pipeline:
+      lint, unit tests, Docker build.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`docker-compose up` starts all services successfully from cold state'
+    - Models downloaded automatically on first run without manual steps
+    - Docker image size <= 4 GB including all models
+    - GitHub Actions CI pipeline passes on clean branch
+    - 'Container restarts automatically on crash (restart: unless-stopped)'
+    depends_on:
+    - 14
+    - 15
+  TESTS:
+    description: Write unit tests for all backend services. Test WakeWordService with
+      synthetic audio fixtures (positive and negative). Test ASRService with pre-recorded
+      WAV files and mock VAD. Test NLUService with fixture utterances covering all
+      intents and edge cases (empty string, very long input, non-English). Test DialogManager
+      state transitions and slot filling logic. Test TTSService cache hit/miss behavior.
+      Achieve >= 85% line coverage.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All unit tests pass with `pytest tests/unit/`
+    - Line coverage >= 85% reported by pytest-cov
+    - 'Wake word tests cover: true positive, true negative, debounce'
+    - 'NLU tests cover: all intents, low confidence path, entity normalization'
+    - 'Dialog tests cover: clarification loop, fulfillment, fallback, max turns reset'
+    - No test depends on network or microphone hardware
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+  SECURITY:
+    description: 'Perform security review of the voice assistant. Threat model: unauthorized
+      microphone access, API key exposure, WebSocket injection, audio data retention
+      risks. Implement: API key rotation mechanism, TLS for all WebSocket connections,
+      audio buffer zeroization after processing, rate limiting on /ws/stream (max
+      5 concurrent sessions), input sanitization on text endpoints to prevent prompt
+      injection into NLU. Document SBOM.'
+    agent_role: developer
+    acceptance_criteria:
+    - All WebSocket connections require TLS in production config
+    - Audio buffers explicitly zeroed after ASR processing (verified by unit test)
+    - Rate limiter rejects 6th concurrent WebSocket session with 429
+    - Input sanitization strips control characters from text endpoint inputs
+    - SBOM generated in CycloneDX format listing all Python dependencies
+    depends_on:
+    - 13
+    - 16
+  DOCS:
+    description: 'Write comprehensive documentation. README.md: quick start (docker-compose
+      up), architecture diagram (ASCII or Mermaid), model provenance table, configuration
+      reference. API docs: auto-generated from OpenAPI spec + WebSocket event schema
+      documented manually. Model cards for all 4 models (wake word, ASR, NLU, TTS):
+      training data, metrics, known limitations. Deployment guide: CPU vs GPU config,
+      cloud deployment on AWS EC2.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - README quick start produces a running system in <= 5 commands
+    - Architecture diagram shows all 5 pipeline stages and data flow
+    - 'All 4 model cards include: training data source, evaluation metrics, known
+      failure modes'
+    - API reference documents all REST endpoints and WebSocket event schema
+    - Deployment guide covers both CPU-only and GPU-enabled configurations
+    depends_on:
+    - 16
+    - 18
+    - 19

@@ -1,0 +1,298 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define interoperability requirements: message flows between HL7
+      v2, FHIR R4, and CDA; Epic/Cerner/Allscripts integration contracts; ONC 2015
+      Edition Cures Update certification scope; HIPAA transaction set coverage.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All HL7 v2 message types in scope (ADT, ORU, ORM, MDM, SIU) are enumerated with
+      field mappings
+    - FHIR R4 resource set is defined (Patient, Observation, Encounter, Condition,
+      MedicationRequest, DiagnosticReport, DocumentReference)
+    - Epic, Cerner, Allscripts endpoint types and auth models documented
+    - ONC certification criterion list (§170.315) is mapped to product features
+    - HIPAA covered transaction types identified with business associate obligations
+      noted
+    depends_on: []
+  REGULATORY:
+    description: Map product to ONC Health IT Certification Program requirements (21st
+      Century Cures Act, §170.315 criteria). Produce standards mapping document covering
+      USCDI v3, SMART on FHIR, bulk data access, and patient access API requirements.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Every required §170.315 criterion (a-h) is mapped to a product feature or marked
+      as out-of-scope with justification
+    - USCDI v3 data class coverage matrix is complete
+    - SMART on FHIR scopes and authorization flows are documented
+    - Bulk data export (Group/$export, Patient/$export) requirements are captured
+    - Gaps requiring third-party testing lab engagement are identified
+    - HIPAA risk assessment complete
+    - BAA template prepared
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Draft HIPAA/HITECH compliance framework: PHI data flow inventory,
+      Business Associate Agreement (BAA) template, minimum necessary standard implementation,
+      breach notification SOP, and audit control requirements (§164.312(b)).'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - PHI data flow diagram identifies every system where ePHI is created, received,
+      maintained, or transmitted
+    - HIPAA Risk Assessment covers all 18 PHI identifiers with risk ratings
+    - BAA template reviewed for completeness against §164.504(e)
+    - Breach notification procedures meet 60-day reporting window requirement
+    - Audit log retention policy (minimum 6 years) is documented
+    depends_on:
+    - 1
+  SECURITY:
+    description: Produce threat model (STRIDE), PHI threat landscape analysis, penetration
+      test plan, SBOM, and TLS/mTLS policy for EHR connections. Define encryption-at-rest
+      and in-transit requirements for all ePHI.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis covers all six threat categories for each system component
+    - All PHI transmission paths require TLS 1.3 minimum with certificate pinning
+      for EHR connectors
+    - AES-256-GCM encryption at rest is mandated for all PHI storage
+    - SBOM lists all direct and transitive dependencies with CVE scan baseline
+    - Penetration test scope covers OWASP API Top 10, injection attacks, and authentication
+      bypass
+    - PHI encryption at rest and in transit
+    - Access audit logging enabled
+    depends_on:
+    - 3
+  LEGAL:
+    description: Draft Terms of Service, Data Processing Agreement (DPA), Privacy
+      Policy, open-source license inventory, and IP review for HL7 standards usage
+      (HL7 International licensing requirements).
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS explicitly defines permitted use, prohibited PHI handling, and liability
+      limitations
+    - DPA includes Standard Contractual Clauses for cross-border data transfers
+    - Privacy Policy satisfies HIPAA Notice of Privacy Practices requirements
+    - OSS license inventory flags any GPL/AGPL components incompatible with commercial
+      use
+    - HL7 International membership or per-standard licensing requirements are resolved
+    depends_on:
+    - 3
+  API:
+    description: 'Design OpenAPI 3.1 specification for the gateway REST API: message
+      translation endpoints, FHIR R4 RESTful API (SMART on FHIR), bulk export, webhook
+      callbacks, and admin/status endpoints. Define versioning strategy.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec passes validation with no errors (openapi-generator validate)
+    - All FHIR R4 RESTful interactions (read, vread, update, create, search, history)
+      are specified
+    - SMART on FHIR authorization flows (standalone launch, EHR launch) are fully
+      documented
+    - Bulk export endpoints conform to HL7 FHIR Bulk Data Access IG
+    - Error responses use FHIR OperationOutcome format for FHIR endpoints, HL7 ACK/NACK
+      for v2
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design schema for: message audit log (immutable append-only), terminology
+      mapping tables (LOINC, SNOMED, ICD-10, RxNorm), EHR connection configurations,
+      translation cache, and FHIR resource store. Define retention and archival policies.'
+    agent_role: developer
+    acceptance_criteria:
+    - Audit log table has hash-chained rows (each row SHA-256 of previous row + payload)
+      to detect tampering
+    - Terminology mapping tables cover LOINC 2.76+, SNOMED CT US Edition, ICD-10-CM/PCS,
+      RxNorm
+    - EHR connection config table stores credentials encrypted (AES-256) with KMS
+      key reference, never plaintext
+    - FHIR resource store supports versioned resources (vread) with full history chain
+    - Database migrations use forward-only numbered scripts (Flyway/Alembic)
+    depends_on:
+    - 6
+  CONFIG:
+    description: 'Set up project scaffold: monorepo structure, Python/FastAPI backend,
+      containerization (Docker + docker-compose), environment config management (Vault/AWS
+      Secrets Manager integration), and configure the review_and_critique agentic
+      pattern for transformation quality gates.'
+    agent_role: developer
+    acceptance_criteria:
+    - docker-compose up starts all services (gateway, postgres, redis, vault) with
+      health checks passing
+    - Environment variables never hardcoded — all loaded from Vault or env file
+    - 'review_and_critique loop wired: TranslationAgent output → ComplianceReviewAgent
+      → iterate or approve'
+    - Project linting (ruff, mypy --strict) passes with zero errors on empty scaffold
+    - Pre-commit hooks enforce formatting, secret scanning (detect-secrets), and type
+      checking
+    depends_on:
+    - 6
+    - 7
+  BACKEND:
+    description: Implement HL7 v2 parser and serializer supporting v2.3–v2.8. Handle
+      MSH/PID/PV1/OBR/OBX/NTE/EVN/MRG segments. Support MLLP framing for TCP transport
+      and HTTP wrapping. Implement ACK/NACK generation with HL7 error codes.
+    agent_role: developer
+    acceptance_criteria:
+    - Parser handles all 40+ ADT event types without exception on well-formed messages
+    - MLLP framing (0x0B header, 0x1C 0x0D trailer) correctly wraps/unwraps messages
+    - ACK/NACK generated with correct MSA-1 (AA/AE/AR) and ERR segment on validation
+      failure
+    - Segment repetition, component, and sub-component separators parsed from MSH-1/MSH-2
+    - Malformed messages return structured error with segment location, never crash
+      the process
+    depends_on:
+    - 8
+  FRONTEND:
+    description: 'Build admin dashboard: EHR connection status monitoring, message
+      throughput charts, translation error rates, audit log viewer, and manual message
+      replay UI. Implement real-time updates via SSE for live message flow.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Connection Dashboard shows live status (green/amber/red) for all three EHR connections
+      with last-ping timestamp
+    - Message Explorer supports filter by format type, EHR source, date range, and
+      patient MRN (redacted display)
+    - Audit Log Viewer renders hash-chain integrity indicator and supports CSV export
+    - Translation error rate chart shows rolling 24h with drill-down to individual
+      failed messages
+    - WCAG 2.1 AA accessibility compliance verified with axe-core
+    depends_on:
+    - 16
+    - 17
+  UX_DESIGN:
+    description: 'Design and usability-test the message translation UI: manual message
+      submission, format detection, side-by-side diff view of source/translated output,
+      validation issue overlay, and terminology gap flagging. Produce annotated wireframes
+      and interaction spec.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all five primary user flows with error states documented
+    - Usability test conducted with >= 5 participants from target personas
+    - Side-by-side diff view clearly highlights field-level mapping changes
+    - Terminology gap flags display original code, system, and suggested mapping
+    - All interactive elements meet 4.5:1 contrast ratio minimum
+    depends_on:
+    - 6
+  INFRA:
+    description: 'Build production infrastructure: Kubernetes manifests (Deployment,
+      Service, HPA, PodDisruptionBudget), Helm chart, Terraform for AWS/GCP, network
+      policies enforcing zero-trust between pods, and HashiCorp Vault for secrets.
+      Configure HIPAA-eligible cloud regions only.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Helm chart deploys to Kubernetes with all pods reaching Ready state in < 3 minutes
+    - NetworkPolicy blocks all inter-pod traffic except explicitly allowed routes
+    - HPA scales from 2 to 10 replicas when CPU > 70% sustained for 2 minutes
+    - Terraform plan produces zero diff against deployed state (drift detection)
+    - All compute resources run in HIPAA-eligible AWS regions with BAA-covered services
+      only
+    depends_on:
+    - 8
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): lint → unit test → integration
+      test → SAST (Semgrep) → container scan (Trivy) → FHIR conformance test → staging
+      deploy → smoke test → production deploy with canary rollout. Enforce signed
+      commits and image signing (Cosign).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline completes in < 15 minutes for a typical commit
+    - SAST step blocks merge on any HIGH or CRITICAL severity finding
+    - Container image scanned for CVEs — CRITICAL CVEs block release
+    - ONC Inferno test suite runs against staging and must pass 100% of required test
+      steps
+    - Canary automatically rolls back if 5xx error rate exceeds 1% over 5-minute window
+    depends_on:
+    - 21
+  TESTS:
+    description: Write unit tests for all translation functions, FHIR validators,
+      HL7 parsers, CDA extractors, terminology mappers, and audit log integrity. Target
+      >= 90% line coverage. Use property-based testing (Hypothesis) for parser edge
+      cases.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Coverage report shows >= 90% line coverage across all gateway modules
+    - Hypothesis property tests cover HL7 v2 segment parsing with 1000+ generated
+      inputs
+    - Every translation function has happy path + at least 3 error/edge case tests
+    - Audit hash chain integrity test verifies tampered row is detected
+    - All tests pass in < 5 minutes in CI with no external network calls (fully mocked)
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 16
+  QA:
+    description: 'Produce QA test plan: test case design for all translation scenarios,
+      EHR connector integration tests, boundary condition catalogue, negative test
+      library (malformed inputs, invalid codes, missing required fields), and regression
+      suite definition.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers >= 200 distinct test cases across all translation pairs
+    - Negative test library includes >= 50 malformed message scenarios with expected
+      error responses
+    - 'Each test case has: ID, preconditions, steps, expected result, pass/fail criteria'
+    - Regression suite identified with automated/manual split and execution time estimate
+    - Test coverage matrix maps each ONC certification criterion to >= 1 test case
+    depends_on:
+    - 23
+  SYSTEM_TEST:
+    description: 'Execute end-to-end integration test suite against all three EHR
+      sandboxes: Epic Open Sandbox, Cerner Ignite Sandbox, and Allscripts Developer
+      Portal. Run ONC Inferno Community Edition test suite for all applicable §170.315
+      criteria. Load test with Locust at 500 concurrent users.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - ONC Inferno test suite passes 100% of required test steps for §170.315(g)(10)
+    - End-to-end round-trip (EHR → gateway → translate → deliver) completes in < 2
+      seconds p95
+    - Load test sustains 500 messages/second with p99 latency < 500ms and zero data
+      corruption
+    - All three EHR sandbox integration tests pass with >= 95% test case success rate
+    - System remains available (no 5xx > 0.1%) during rolling deployment of a new
+      version
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 18
+    - 22
+    - 24
+  OPERATIONS:
+    description: 'Write operational runbooks: deployment runbook, incident response
+      playbook (PHI breach, service degradation, EHR connector failure), SLA definitions
+      (99.9% availability, RPO 1h, RTO 4h), on-call escalation matrix, and capacity
+      planning model.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Deployment runbook covers blue/green and canary rollout procedures with rollback
+      steps
+    - PHI breach playbook follows HIPAA 60-day notification timeline with contact
+      list
+    - SLA definitions specify measurement methodology, exclusions, and customer credit
+      schedule
+    - On-call escalation matrix defines P1/P2/P3 response times and escalation path
+      to compliance officer for PHI incidents
+    - Capacity plan projects resource requirements for 1x, 5x, and 10x message volume
+    depends_on:
+    - 22
+    - 25
+  TRAINING:
+    description: 'Produce user documentation and training materials: integration engineer
+      onboarding guide, EHR administrator setup guide (Epic/Cerner/Allscripts), compliance
+      officer audit log guide, API quick-start with Postman collection, and SMART
+      on FHIR app developer guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Integration engineer guide enables a new engineer to complete first message
+      translation within 30 minutes
+    - EHR setup guides cover Epic/Cerner/Allscripts sandbox registration and credential
+      configuration step-by-step
+    - Postman collection includes all API endpoints with pre-request auth scripts
+      and example PHI-free payloads
+    - SMART developer guide covers both EHR launch and standalone launch flows with
+      code samples
+    - All guides reviewed by a non-author engineer for clarity before publication
+    depends_on:
+    - 27
+    - 28

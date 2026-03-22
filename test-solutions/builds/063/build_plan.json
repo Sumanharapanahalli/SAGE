@@ -1,0 +1,923 @@
+{
+  "run_id": "725864fc-de4d-45d1-97c3-5fec85262ab2",
+  "status": {
+    "run_id": "725864fc-de4d-45d1-97c3-5fec85262ab2",
+    "solution_name": "content_moderation",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T08:32:30.768879+00:00",
+    "updated_at": "2026-03-22T08:37:10.884464+00:00",
+    "product_description": "AI content moderation system for UGC platforms with text toxicity detection, image NSFW classification, video analysis, appeal workflow, and human review queue.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements, success metrics, and moderation policy framework for the UGC content moderation system. Establish toxicity thresholds, NSFW classification categories, SLA targets for review queue (P0/P1/P2), and appeal resolution time targets.",
+        "payload": {
+          "deliverables": [
+            "PRD",
+            "moderation_policy.md",
+            "SLA_definitions.md",
+            "category_taxonomy.yaml"
+          ],
+          "categories": [
+            "hate_speech",
+            "harassment",
+            "explicit_content",
+            "spam",
+            "violence",
+            "self_harm"
+          ],
+          "sla_targets": {
+            "auto_decision_p99_ms": 500,
+            "human_review_hours": 24,
+            "appeal_resolution_hours": 72
+          }
+        },
+        "acceptance_criteria": [
+          "PRD covers all five moderation modes: text, image, video, appeal, human review",
+          "Confidence threshold matrix defined per content type and severity category",
+          "SLA targets defined and agreed upon for each queue tier",
+          "Escalation policy documented for edge cases and high-severity content"
+        ],
+        "depends_on": [],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 2,
+        "task_type": "UX_DESIGN",
+        "description": "Design moderator review queue dashboard, appeal management interface, and content flagging UX. Create wireframes for the human reviewer workflow, decision interface (approve/reject/escalate), and reporter-facing appeal submission form.",
+        "payload": {
+          "screens": [
+            "review_queue",
+            "content_detail_view",
+            "decision_panel",
+            "appeal_form",
+            "appeal_status",
+            "analytics_dashboard"
+          ],
+          "personas": [
+            "platform_moderator",
+            "senior_reviewer",
+            "content_reporter"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all six screens with annotated interaction flows",
+          "Review queue shows content preview, metadata, AI confidence score, and prior decisions",
+          "Decision panel supports keyboard-only operation for high-throughput moderators",
+          "Appeal form collects structured reason + optional evidence attachment"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 3,
+        "task_type": "DATA",
+        "description": "Design the data pipeline and analytics schema for content moderation. Define ingestion streams for text/image/video content, ML feature extraction pipelines, moderation decision events, and reporting aggregations. Set up data retention and anonymization policies.",
+        "payload": {
+          "ingestion_sources": [
+            "REST_API",
+            "webhook",
+            "batch_upload"
+          ],
+          "pipeline_stages": [
+            "ingest",
+            "preprocess",
+            "feature_extract",
+            "model_inference",
+            "decision_routing",
+            "audit_write"
+          ],
+          "analytics_tables": [
+            "moderation_events",
+            "model_performance_daily",
+            "queue_throughput_hourly",
+            "appeal_outcomes"
+          ],
+          "retention_days": {
+            "raw_content": 30,
+            "moderation_decisions": 365,
+            "audit_log": 2555
+          }
+        },
+        "acceptance_criteria": [
+          "Data flow diagram covers all five content types end-to-end",
+          "Event schema versioned with Avro or Pydantic models",
+          "Retention and anonymization policy documented and implemented",
+          "Analytics schema supports funnel queries: submitted \u2192 auto-decided \u2192 queued \u2192 reviewed \u2192 appealed"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 4,
+        "task_type": "DATABASE",
+        "description": "Design and implement the database schema for content submissions, moderation decisions, human review queue, appeal records, and moderator audit trail. Use PostgreSQL with row-level security for multi-tenant isolation.",
+        "payload": {
+          "engine": "PostgreSQL 15",
+          "tables": [
+            "content_items (id, platform_id, content_type, raw_ref, submitted_at, status)",
+            "moderation_decisions (id, content_id, model_version, confidence, label, decision, decided_by, decided_at)",
+            "review_queue (id, content_id, priority, assigned_to, assigned_at, sla_deadline)",
+            "appeals (id, content_id, original_decision_id, reporter_id, reason, status, resolved_at)",
+            "moderator_actions (id, reviewer_id, content_id, action, rationale, duration_ms, created_at)",
+            "model_versions (id, content_type, model_name, version, deployed_at, is_active)"
+          ],
+          "indexes": [
+            "content_items(status, submitted_at)",
+            "review_queue(priority, sla_deadline)",
+            "appeals(status, created_at)"
+          ],
+          "rls_policy": "platform_id isolation per tenant"
+        },
+        "acceptance_criteria": [
+          "All tables created with migrations using Alembic",
+          "Foreign key constraints enforce referential integrity",
+          "Row-level security policies pass test with two isolated tenants",
+          "Indexes confirmed via EXPLAIN ANALYZE on top-10 query patterns"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 5,
+        "task_type": "ML_MODEL",
+        "description": "Build and train the text toxicity detection model pipeline. Fine-tune a transformer (e.g., DistilBERT or RoBERTa) on combined toxicity datasets (Jigsaw, HatEval). Implement multi-label classification for toxicity categories: hate, harassment, threats, explicit, spam. Export to ONNX for low-latency inference.",
+        "payload": {
+          "base_model": "distilbert-base-uncased",
+          "datasets": [
+            "jigsaw_toxicity",
+            "hateval_2019",
+            "civil_comments"
+          ],
+          "labels": [
+            "toxic",
+            "severe_toxic",
+            "obscene",
+            "threat",
+            "insult",
+            "identity_hate"
+          ],
+          "output_format": "ONNX",
+          "target_metrics": {
+            "accuracy": 0.92,
+            "f1_macro": 0.88,
+            "inference_p99_ms": 50
+          },
+          "framework": "HuggingFace Transformers + PyTorch",
+          "evaluation": "5-fold cross-validation + held-out test set"
+        },
+        "acceptance_criteria": [
+          "Model achieves \u22650.92 accuracy and \u22650.88 macro-F1 on held-out test set",
+          "ONNX export verified with identical outputs vs PyTorch model (max delta 1e-5)",
+          "Inference latency P99 \u226450ms on single CPU core",
+          "Model card documented: training data, intended use, known limitations, bias evaluation",
+          "Confusion matrix and per-class metrics logged to MLflow",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 6,
+        "task_type": "ML_MODEL",
+        "description": "Build and train the image NSFW classification model pipeline. Fine-tune a ResNet-50 or EfficientNet-B3 on NSFW/SFW datasets. Implement multi-class output: safe, suggestive, explicit, violence, gore. Add hash-based deduplication (pHash) to fast-path known content.",
+        "payload": {
+          "base_model": "efficientnet-b3",
+          "datasets": [
+            "nsfw_data_scraper",
+            "open_nsfw_yahoo",
+            "synthetic_augmented"
+          ],
+          "labels": [
+            "safe",
+            "suggestive",
+            "explicit",
+            "violence",
+            "gore"
+          ],
+          "preprocessing": [
+            "resize_224x224",
+            "normalize_imagenet",
+            "phash_cache"
+          ],
+          "output_format": "TorchScript + ONNX",
+          "target_metrics": {
+            "top1_accuracy": 0.94,
+            "explicit_recall": 0.97,
+            "inference_p99_ms": 100
+          }
+        },
+        "acceptance_criteria": [
+          "Model achieves \u22650.94 top-1 accuracy on held-out test set",
+          "Explicit/gore recall \u22650.97 (minimize false negatives for high-severity classes)",
+          "pHash cache reduces duplicate image latency to <5ms",
+          "ONNX export validated; model card published",
+          "Grad-CAM visualizations confirm model attends to correct image regions",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 7,
+        "task_type": "ML_MODEL",
+        "description": "Build the video analysis pipeline. Implement frame sampling (1 FPS + scene-change detection), batch image classification using the NSFW model, audio transcription (Whisper) + text toxicity scoring, and temporal aggregation to produce a per-video moderation signal with timestamp-level evidence.",
+        "payload": {
+          "frame_sampling": "1fps + PySceneDetect scene changes",
+          "audio_asr": "openai/whisper-base",
+          "aggregation_strategy": "max_severity_with_evidence_timestamps",
+          "output_schema": {
+            "overall_label": "string",
+            "confidence": "float",
+            "evidence": [
+              {
+                "timestamp_ms": "int",
+                "frame_label": "string",
+                "transcript_segment": "string"
+              }
+            ]
+          },
+          "max_video_duration_minutes": 60,
+          "target_metrics": {
+            "video_p99_latency_minutes": 5
+          }
+        },
+        "acceptance_criteria": [
+          "Pipeline processes a 10-minute video in under 3 minutes on 4 CPU cores",
+          "Audio transcription accuracy \u22650.85 WER on clean speech",
+          "Evidence timestamps accurate to \u00b12 seconds for flagged segments",
+          "Pipeline handles corrupt/partial video files gracefully without crashing",
+          "Output schema validated against JSON schema contract",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 8,
+        "task_type": "API",
+        "description": "Design the OpenAPI specification for all moderation service endpoints: content submission, async status polling, decision retrieval, human review queue management, appeal CRUD, moderator action recording, and model performance metrics.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "endpoints": [
+            "POST /v1/moderate/text",
+            "POST /v1/moderate/image",
+            "POST /v1/moderate/video",
+            "GET  /v1/moderate/{job_id}/status",
+            "GET  /v1/queue \u2014 list review queue (paginated, filterable)",
+            "POST /v1/queue/{item_id}/decide",
+            "POST /v1/appeals",
+            "GET  /v1/appeals/{appeal_id}",
+            "PUT  /v1/appeals/{appeal_id}/resolve",
+            "GET  /v1/metrics/model",
+            "GET  /v1/metrics/queue"
+          ],
+          "auth": "API key (platform) + JWT (moderator session)",
+          "rate_limits": {
+            "text": "1000/min",
+            "image": "500/min",
+            "video": "50/min"
+          }
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec passes spectral lint with zero errors",
+          "All async endpoints follow job_id polling pattern with status enum: queued/processing/complete/failed",
+          "Error responses use RFC 7807 Problem Details format",
+          "Rate limit headers (X-RateLimit-*) documented on all endpoints",
+          "Auth schemes documented with example tokens for testing"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up the multi-agent coordinator pattern for the moderation pipeline. Configure the coordinator agent that routes content to specialist sub-agents (TextModerationAgent, ImageModerationAgent, VideoModerationAgent, AppealAgent), manages confidence-based escalation to human review, and aggregates decisions. Wire the human_in_the_loop pattern for low-confidence and appeal cases.",
+        "payload": {
+          "pattern": "coordinator + human_in_the_loop",
+          "coordinator_role": "ModeratorCoordinator",
+          "specialist_agents": [
+            "TextModerationAgent (ReAct: classify \u2192 check_context \u2192 finalize)",
+            "ImageModerationAgent (ReAct: hash_check \u2192 classify \u2192 generate_evidence)",
+            "VideoModerationAgent (ReAct: sample_frames \u2192 transcribe \u2192 aggregate)",
+            "AppealAgent (ReAct: retrieve_original \u2192 re-evaluate \u2192 recommend)"
+          ],
+          "escalation_rules": {
+            "confidence_below": 0.75,
+            "category_always_human": [
+              "self_harm",
+              "csam"
+            ],
+            "appeal_always_human": true
+          },
+          "hitl_checkpoints": [
+            "low_confidence_decisions",
+            "appeal_resolutions",
+            "first_offense_bans"
+          ]
+        },
+        "acceptance_criteria": [
+          "Coordinator routes text/image/video to correct specialist agent based on content_type",
+          "Escalation to human review queue triggered when confidence < 0.75",
+          "CSAM and self-harm categories always route to human review regardless of confidence",
+          "AppealAgent retrieves original decision context before re-evaluation",
+          "HITL checkpoints create proposals in the approval store, not auto-execute"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement the core moderation service: async job queue (Celery + Redis), content ingestion and storage (S3-compatible), ML model inference workers (text + image), decision engine with threshold application, and audit event emission to the data pipeline.",
+        "payload": {
+          "framework": "FastAPI",
+          "task_queue": "Celery + Redis",
+          "storage": "S3-compatible (MinIO for local, S3 for prod)",
+          "inference_runtime": "ONNX Runtime",
+          "workers": {
+            "text_worker": "4 replicas, CPU-optimized",
+            "image_worker": "2 replicas, CPU-optimized",
+            "video_worker": "2 replicas, high-memory"
+          },
+          "decision_engine": "threshold_matrix per label per content_type, configurable via DB"
+        },
+        "acceptance_criteria": [
+          "POST /v1/moderate/text returns job_id within 200ms; result ready within 500ms P99",
+          "POST /v1/moderate/image returns job_id within 200ms; result ready within 1s P99",
+          "POST /v1/moderate/video returns job_id within 200ms; result ready within 5min P99 for 10min video",
+          "All moderation decisions written to audit log with trace_id, model_version, confidence, label",
+          "Worker failures trigger automatic retry with exponential backoff (max 3 attempts)"
+        ],
+        "depends_on": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement the human review queue service: priority-based queue ingestion (P0=CSAM/violence, P1=explicit, P2=toxicity), SLA deadline tracking, moderator assignment (round-robin with specialization routing), decision recording with rationale, and SLA breach alerting.",
+        "payload": {
+          "queue_backend": "PostgreSQL + Redis sorted sets (priority score = severity * urgency)",
+          "priority_levels": {
+            "P0": {
+              "sla_hours": 1
+            },
+            "P1": {
+              "sla_hours": 4
+            },
+            "P2": {
+              "sla_hours": 24
+            }
+          },
+          "assignment_strategy": "round_robin with moderator specialization tags",
+          "sla_alerting": "webhook to ops channel on 80% SLA consumed",
+          "metrics_emitted": [
+            "queue_depth_by_priority",
+            "assignment_latency",
+            "decision_throughput_per_moderator",
+            "sla_breach_rate"
+          ]
+        },
+        "acceptance_criteria": [
+          "P0 items appear at top of queue within 5 seconds of insertion",
+          "SLA deadline computed correctly for all priority levels including weekends",
+          "Alert fires when item reaches 80% of SLA window without assignment",
+          "Moderator assignment respects specialization: CSAM routed to certified reviewers only",
+          "Decision API records action, duration, and rationale within single DB transaction"
+        ],
+        "depends_on": [
+          4,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement the appeal workflow service: appeal submission with structured reason + evidence, automatic re-evaluation via AppealAgent (ONNX re-inference + context retrieval), senior reviewer escalation, decision notification, and outcome feedback to ML training pipeline.",
+        "payload": {
+          "appeal_states": [
+            "submitted",
+            "auto_review",
+            "pending_human",
+            "resolved_upheld",
+            "resolved_overturned"
+          ],
+          "auto_review_trigger": "AppealAgent re-runs inference + retrieves similar past overturns from vector store",
+          "escalation": "confidence change >0.15 or auto_overturn \u2192 senior_reviewer queue",
+          "notification_channels": [
+            "email",
+            "webhook",
+            "in-app"
+          ],
+          "feedback_loop": "overturned decisions written to ML retraining dataset"
+        },
+        "acceptance_criteria": [
+          "Appeal submission creates record within 500ms and triggers AppealAgent async",
+          "AppealAgent completes auto-review within 60 seconds for text/image",
+          "Overturned decisions trigger notification to original reporter within 5 minutes",
+          "Overturned decisions written to training feedback dataset with original + new label",
+          "Appeal status transitions enforced by state machine (invalid transitions return 409)"
+        ],
+        "depends_on": [
+          11,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "SECURITY",
+        "description": "Perform security review and threat modeling for the content moderation system. Address: content injection via malicious payloads, model evasion attacks (adversarial text/images), CSAM handling compliance (mandatory reporting, encrypted storage, access logs), moderator credential security, and multi-tenant data isolation.",
+        "payload": {
+          "threat_model_framework": "STRIDE",
+          "mandatory_requirements": [
+            "CSAM content encrypted at rest with separate KMS key",
+            "CSAM access logged with moderator identity for legal compliance",
+            "Adversarial input sanitization before model inference",
+            "Rate limiting per API key to prevent enumeration attacks"
+          ],
+          "compliance_standards": [
+            "NCMEC reporting requirements",
+            "GDPR Art.17 right to erasure",
+            "COPPA"
+          ],
+          "pen_test_scope": [
+            "API endpoints",
+            "file upload handling",
+            "auth token lifecycle"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model documented with mitigations for all HIGH/CRITICAL threats",
+          "CSAM storage uses separate encryption key with access audit log",
+          "File upload endpoint rejects non-image/video MIME types and validates magic bytes",
+          "SQL injection and XSS tests pass on all API endpoints",
+          "Multi-tenant isolation verified: tenant A cannot retrieve tenant B content via any endpoint"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "FRONTEND",
+        "description": "Build the moderator review queue dashboard: prioritized content list with filters (content type, priority, SLA status), content preview panel (text render / image display / video player with flagged timestamps), AI decision metadata (label, confidence, model version), and one-click approve/reject/escalate decision panel.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "key_components": [
+            "QueueList (virtualized, sort by SLA deadline)",
+            "ContentPreview (text/image/video renderer with NSFW blur-by-default)",
+            "DecisionPanel (keyboard shortcuts: A=approve, R=reject, E=escalate)",
+            "SLACountdown (visual urgency indicator)",
+            "ModeratorStats (throughput, accuracy, time-per-item)"
+          ],
+          "accessibility": "WCAG 2.1 AA, keyboard-first navigation",
+          "sensitive_content": "NSFW content blurred by default, click-to-reveal with confirmation"
+        },
+        "acceptance_criteria": [
+          "Queue renders 1000+ items without jank using virtual scrolling",
+          "NSFW images blurred by default; video flagged frames highlighted in timeline",
+          "Keyboard shortcut A/R/E submits decision without mouse interaction",
+          "SLA countdown updates every 30 seconds and turns red below 2 hours",
+          "Decision submission optimistically updates UI and confirms via API response"
+        ],
+        "depends_on": [
+          2,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build the appeal management interface: reporter-facing appeal submission form, appeal status tracker, moderator appeal review panel with original decision context, and admin analytics dashboard showing moderation accuracy, overturn rates, queue health, and model performance trends.",
+        "payload": {
+          "reporter_screens": [
+            "appeal_form",
+            "appeal_status_tracker",
+            "notification_history"
+          ],
+          "moderator_screens": [
+            "appeal_queue",
+            "appeal_detail_with_original_context",
+            "overturn_confirmation"
+          ],
+          "admin_screens": [
+            "accuracy_dashboard (precision/recall by model + category)",
+            "queue_health (depth, SLA breach rate, throughput)",
+            "overturn_rate_trends",
+            "moderator_performance"
+          ],
+          "charts": "Recharts or Nivo"
+        },
+        "acceptance_criteria": [
+          "Appeal form validates reason is required and evidence upload is optional (max 10MB)",
+          "Appeal status page polls every 30s and shows current state in timeline format",
+          "Moderator appeal panel shows original decision, AI confidence, and similar past cases",
+          "Admin dashboard refreshes every 60s and supports date-range filtering",
+          "All charts render correctly with empty/zero-data states"
+        ],
+        "depends_on": [
+          2,
+          12,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "INFRA",
+        "description": "Containerize all services and set up CI/CD pipeline. Docker Compose for local development. Kubernetes manifests for production with HPA for moderation workers. GitHub Actions pipeline: lint \u2192 test \u2192 build \u2192 security scan \u2192 push \u2192 deploy. Set up MinIO (local) / S3 (prod) for content storage.",
+        "payload": {
+          "services_to_containerize": [
+            "api",
+            "text_worker",
+            "image_worker",
+            "video_worker",
+            "appeal_worker",
+            "frontend"
+          ],
+          "orchestration": "Kubernetes (HPA: text_worker 2-20 replicas, image_worker 1-10, video_worker 1-5)",
+          "ci_cd": "GitHub Actions",
+          "pipeline_stages": [
+            "lint (ruff/eslint)",
+            "unit_tests",
+            "integration_tests",
+            "trivy_scan",
+            "docker_build",
+            "push_to_registry",
+            "helm_deploy"
+          ],
+          "storage": "MinIO (dev), S3 (prod)",
+          "secrets_management": "Kubernetes Secrets + Vault for CSAM KMS key"
+        },
+        "acceptance_criteria": [
+          "docker compose up brings all services healthy within 60 seconds",
+          "CI pipeline completes in under 10 minutes on standard GitHub runner",
+          "Trivy scan blocks deployment on CRITICAL CVEs",
+          "HPA scales text_worker from 2\u21928 replicas under 10x load within 90 seconds",
+          "Zero-downtime rolling deployment verified with load test during deploy"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12,
+          14,
+          15
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "DEVOPS",
+        "description": "Set up observability stack: Prometheus metrics collection from all services, Grafana dashboards (moderation throughput, model latency, queue depth, SLA breach rate), structured JSON logging to ELK stack, distributed tracing with OpenTelemetry, and PagerDuty alerting for P0 SLA breach and model error spikes.",
+        "payload": {
+          "metrics": "Prometheus + Grafana",
+          "logging": "Structured JSON \u2192 ELK (Elasticsearch + Kibana)",
+          "tracing": "OpenTelemetry \u2192 Jaeger",
+          "alerting": "PagerDuty via Alertmanager",
+          "dashboards": [
+            "moderation_throughput_by_type",
+            "model_latency_p50_p99",
+            "queue_depth_by_priority",
+            "sla_breach_rate",
+            "overturn_rate_7d_rolling",
+            "worker_error_rate"
+          ],
+          "alert_rules": [
+            "P0 SLA breach \u2192 immediate page",
+            "Model error rate >5% in 5min \u2192 page",
+            "Queue depth P1 >500 \u2192 warn",
+            "Worker pod restarts >3 in 10min \u2192 warn"
+          ]
+        },
+        "acceptance_criteria": [
+          "All six Grafana dashboards populated with real data from staging environment",
+          "P0 SLA breach alert fires within 1 minute of breach in test scenario",
+          "Distributed trace links API request \u2192 worker task \u2192 DB write end-to-end",
+          "Log query retrieves all events for a given content_id within 5 seconds",
+          "Alert runbooks linked in each alert annotation"
+        ],
+        "depends_on": [
+          16
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "TESTS",
+        "description": "Write comprehensive test suite: unit tests for decision engine, queue priority logic, and appeal state machine; integration tests for full moderation pipeline (text/image/video submission \u2192 decision); contract tests for OpenAPI spec compliance; load tests simulating peak UGC traffic; and adversarial tests for model evasion attempts.",
+        "payload": {
+          "test_framework": "pytest + pytest-asyncio (backend), Vitest (frontend), Locust (load)",
+          "unit_tests": [
+            "decision_engine threshold application",
+            "queue priority score calculation",
+            "appeal state machine transitions",
+            "confidence-based escalation rules"
+          ],
+          "integration_tests": [
+            "text submission \u2192 toxicity decision \u2192 audit log",
+            "image submission \u2192 NSFW decision \u2192 queue routing",
+            "video submission \u2192 multi-signal aggregation",
+            "appeal submission \u2192 AppealAgent \u2192 notification"
+          ],
+          "load_test_targets": {
+            "text_rps": 500,
+            "image_rps": 100,
+            "video_concurrent": 20
+          },
+          "adversarial_tests": [
+            "leetspeak evasion",
+            "homoglyph substitution",
+            "adversarial image patches"
+          ]
+        },
+        "acceptance_criteria": [
+          "Unit test coverage \u226590% for decision engine, queue, and appeal state machine modules",
+          "All integration tests pass against a live test environment with real ONNX models",
+          "Load test: 500 text RPS sustained for 5 minutes with P99 <500ms and zero 5xx errors",
+          "Adversarial test suite documents model robustness score per evasion category",
+          "Contract tests validate every endpoint against OpenAPI spec with zero schema violations"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "DATA",
+        "description": "Build the ML retraining feedback pipeline: collect overturned decisions and human corrections from the review queue, transform into training-ready labeled datasets, trigger weekly retraining jobs, evaluate new model candidates against production baseline, and gate deployment on quality metrics.",
+        "payload": {
+          "feedback_sources": [
+            "overturned_appeals",
+            "moderator_corrections",
+            "human_review_decisions"
+          ],
+          "pipeline": "weekly_cron \u2192 collect_feedback \u2192 augment_dataset \u2192 retrain \u2192 evaluate \u2192 compare_to_baseline \u2192 promote_or_reject",
+          "evaluation_gate": {
+            "min_f1_delta": -0.005,
+            "min_accuracy": 0.92
+          },
+          "experiment_tracking": "MLflow",
+          "dataset_versioning": "DVC"
+        },
+        "acceptance_criteria": [
+          "Feedback pipeline collects labeled examples from all three sources without data leakage",
+          "Retraining job runs end-to-end without manual intervention",
+          "New model promoted only when F1 does not regress more than 0.5% vs baseline",
+          "MLflow experiment links new model to the feedback batch that triggered retraining",
+          "DVC tracks dataset version used for each model training run"
+        ],
+        "depends_on": [
+          12,
+          16
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 20,
+        "task_type": "LEGAL",
+        "description": "Review legal obligations for UGC content moderation: CSAM mandatory reporting to NCMEC, GDPR/CCPA data subject rights (erasure, portability), DSA transparency reporting requirements for EU platforms, and moderator wellbeing obligations (content exposure limits, psychological support access).",
+        "payload": {
+          "regulatory_frameworks": [
+            "NCMEC CyberTipline",
+            "GDPR Art.17/20",
+            "CCPA",
+            "EU DSA Art.15-24"
+          ],
+          "deliverables": [
+            "legal_obligations_checklist.md",
+            "privacy_policy_addendum.md (moderation data handling)",
+            "moderator_wellbeing_policy.md",
+            "dsa_transparency_report_template.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "NCMEC reporting flow documented and wired into P0 queue for CSAM items",
+          "GDPR erasure request removes content and pseudonymizes moderation decisions",
+          "DSA transparency report template covers all required Art.15 disclosures",
+          "Moderator wellbeing policy includes daily exposure limits and mandatory break scheduling"
+        ],
+        "depends_on": [
+          1,
+          13
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 21,
+        "task_type": "TRAINING",
+        "description": "Create moderator onboarding materials: policy guide for each content category, decision framework reference card, UI walkthrough video, calibration quiz with annotated examples, and wellness resources. Create platform integration guide for API customers.",
+        "payload": {
+          "moderator_materials": [
+            "content_policy_guide.pdf (per-category decision criteria)",
+            "decision_reference_card.pdf (1-page quick reference)",
+            "ui_walkthrough.mp4 (screen recording with narration)",
+            "calibration_quiz (20 annotated examples per category)",
+            "moderator_wellness_resources.md"
+          ],
+          "api_customer_materials": [
+            "api_quickstart.md",
+            "webhook_integration_guide.md",
+            "policy_customization_guide.md",
+            "sdk_examples (Python, Node.js)"
+          ]
+        },
+        "acceptance_criteria": [
+          "Policy guide covers all six content categories with examples of clear, borderline, and edge cases",
+          "New moderator achieves \u226585% agreement with expert labels on calibration quiz",
+          "API quickstart gets a working text moderation call in under 5 minutes",
+          "SDK examples tested and verified against live sandbox environment"
+        ],
+        "depends_on": [
+          14,
+          15,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 21,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 61,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 61,
+          "final_review": {
+            "score": 61,
+            "flaws": [
+              "CSAM is stored in S3 (Step 10, 30-day retention) BEFORE classification. Submitting CSAM to your platform causes it to land in your S3 bucket for up to 30 days before the model flags it. This is a federal liability (18 U.S.C. \u00a7 2258A) that cannot be fixed post-hoc with encryption. Content must be hashed against NCMEC PhotoDNA before storage, or held in a transient pre-classification buffer with sub-minute TTL.",
+              "Confidence threshold of 0.75 is hardcoded in Step 9 but Step 9 depends only on Step 8 (API spec), not Steps 5/6/7 (model training). The threshold is baked into the coordinator before a single model has been trained or calibrated. You have no idea what 0.75 means for your false positive/negative rate until you run evaluation curves on your actual held-out data.",
+              "Video pipeline latency is almost certainly infeasible on CPU. Whisper-base transcription alone runs ~2-3x real-time on CPU (a 10-minute audio takes 2-3 minutes). Add 1FPS frame sampling (600 frames) through EfficientNet-B3, and PySceneDetect overhead. 'Under 3 minutes for 10-minute video on 4 CPU cores' is optimistic by 2-3x. GPU workers are not mentioned anywhere in the infra plan.",
+              "The AppealAgent in Step 12 retrieves 'similar past overturns from vector store' for context, but the vector store isn't populated with overturn decisions until Step 19 (retraining feedback pipeline). The appeal system launches in Step 12, well before Step 19 is built. The agent will operate on an empty store for months.",
+              "GDPR Art.17 erasure (Step 20) directly conflicts with the 7-year audit log retention defined in Step 3 (2555 days). The plan does not resolve this tension. Standard resolution is pseudonymization of PII in audit records while retaining the decision metadata, but this requires schema design decisions that affect Step 4 (database schema), not Step 20.",
+              "Text toxicity model (Step 5) is trained exclusively on English datasets (Jigsaw, HatEval, Civil Comments). UGC platforms are multilingual. Non-English toxic content\u2014particularly code-switched slang, transliterated text, and languages with different toxicity conventions\u2014will pass through with minimal detection. There is no language detection gate, no multilingual model strategy, and no fallback.",
+              "No degraded-mode behavior is specified for when ONNX inference workers are unavailable. If all text workers crash, does the API return 503? Auto-route all content to human review queue? Drop it silently? This is a critical operational gap that affects queue capacity planning.",
+              "The database schema (Step 4) uses a single moderation_decisions table for text, image, and video, but decisions have fundamentally different evidence structures (text: span offsets; image: Grad-CAM regions; video: timestamp ranges). Without a discriminator column or separate evidence tables, querying decision details requires type-specific joins that aren't modeled.",
+              "ONNX model cold-start loading is not addressed. DistilBERT ONNX is ~250MB; EfficientNet-B3 is ~50MB. If Celery workers restart under load (Step 10), each cold start must load the model before processing jobs. At 20 replicas under HPA, this creates a thundering herd on the model store and delays queue processing exactly when load is highest.",
+              "No idempotency keys on notification delivery (Step 12). Email/webhook delivery for appeal outcomes has no exactly-once guarantee. Retry logic on transient failures will send duplicate notifications to reporters, which is both a UX failure and a potential GDPR issue (repeated transmission of decision data).",
+              "Step 11 SLA calculation says 'computed correctly for all priority levels including weekends,' but P0 (1-hour SLA) must run 24/7 including weekends by definition\u2014it's a safety-critical category. The weekend clause only matters for P2 (business-hours 24h SLA). Conflating these suggests the SLA engine logic has not been thought through for each tier independently.",
+              "No PhotoDNA / NCMEC hash database integration. Industry-standard practice is to check submitted content hashes against the NCMEC hash database before any ML inference. This fast-paths known CSAM with zero false negatives and zero latency. Omitting this means every known CSAM item must go through the full ML pipeline before being flagged."
+            ],
+            "suggestions": [
+              "Move CSAM architectural constraints to Step 1 as a hard prerequisite. Define the pre-classification transient buffer, PhotoDNA hash check, and NCMEC reporting flow before any storage or ML design is finalized. Legal review (Step 20) must happen before data pipeline design (Step 3), not after.",
+              "Add a model calibration step between Steps 5-7 (model training) and Step 9 (coordinator config). Plot precision-recall curves at multiple thresholds on your actual held-out data. Set the 0.75 escalation threshold empirically, not speculatively. This threshold directly determines human reviewer headcount.",
+              "Plan GPU workers for video pipeline or revise latency SLAs to match CPU reality. A single T4 GPU reduces Whisper and EfficientNet inference by 10-20x. If GPU is out of scope, the P99 for 10-minute video should be 8-12 minutes, not 3, and 60-minute videos should be rejected at submission time.",
+              "Implement model pre-loading at worker startup and keep models in shared memory (via ONNX Runtime's arena allocator or a sidecar model server like Triton). Workers should never cold-load a model during request processing.",
+              "Resolve the GDPR/audit-retention conflict explicitly in Step 3/4: define which fields in audit records are PII (reporter_id, moderator_id, content_ref), which are pseudonymized on erasure request, and which are retained as anonymized statistical records. This must be a schema decision, not a policy document.",
+              "Add a language detection gate (langdetect or fastText LID) before the text toxicity model. Route non-English content to a multilingual model (mBERT or XLM-RoBERTa) or flag for human review if no multilingual model is available. English-only classification with silent pass-through for other languages is a moderation blind spot.",
+              "Add a circuit breaker and dead-letter queue for all worker failure modes. Define explicitly: if text workers are down for >N seconds, route to human review queue with SYSTEM_FALLBACK label. This affects queue depth planning and moderator staffing models.",
+              "Add rate limiting on appeal submissions per reporter_id (e.g., 5 appeals per 24h). Without this, rejected bad actors can flood the appeal queue as a denial-of-service against legitimate review capacity.",
+              "For the adversarial testing acceptance criteria in Step 18, replace 'documents model robustness score' with a minimum pass threshold (e.g., leetspeak evasion must not reduce recall below 0.85). Documentation without a gate is not a quality control measure.",
+              "Add a jurisdictional policy layer. What is legal content in one jurisdiction may be illegal in another (e.g., Nazi symbols in Germany, certain political speech in various countries). The threshold matrix (Step 10) needs a geo-routing dimension or platform-level policy override capability."
+            ],
+            "missing": [
+              "PhotoDNA / NCMEC hash database integration for known CSAM \u2014 this is industry-mandatory, not optional",
+              "Pre-classification content buffer with sub-minute TTL to avoid storing unclassified CSAM in persistent storage",
+              "Multilingual support strategy: language detection, multilingual model (mBERT/XLM-RoBERTa), or human fallback for non-English content",
+              "Model serving infrastructure (Triton Inference Server or equivalent) for warm model loading and GPU inference \u2014 required for video pipeline feasibility",
+              "Jurisdictional/regional policy variations \u2014 content legal in one market may require removal in another",
+              "Near-duplicate text detection (simhash/MinHash) equivalent to image pHash \u2014 critical for spam campaign detection",
+              "Technical implementation of moderator exposure limits (daily flagged-content count tracking, forced session breaks) \u2014 Step 20 defines a policy but no system enforces it",
+              "Blue/green or canary deployment strategy for ML model version rollouts \u2014 Step 19 gates model promotion but Step 10/16 have no mechanism for live traffic switching without downtime",
+              "Model monitoring for distribution shift in production \u2014 once deployed, model accuracy on live traffic may diverge from held-out test set. No drift detection (e.g., evidently.ai) is planned",
+              "Database migration rollback strategy \u2014 Alembic is mentioned but no down-migration or rollback testing is specified",
+              "Exactly-once semantics for Celery task execution \u2014 at-least-once delivery can cause duplicate moderation decisions for the same content_id",
+              "Cross-platform content portability spec \u2014 if a user requests GDPR data portability (Art.20), what format do moderation decisions export in?"
+            ],
+            "security_risks": [
+              "CSAM lands in S3 before classification. Even with encryption, possession before reporting is a federal offense. This is not a security risk \u2014 it is a criminal liability. Architectural fix required before any other work proceeds.",
+              "File upload accepts content before MIME validation and magic byte checks occur. A polyglot file (valid JPEG header wrapping a ZIP or JavaScript payload) passes MIME checks but can be weaponized if downstream components process the file as its embedded type. Validation must happen at the API gateway layer before storage, not as a post-upload check.",
+              "JWT session tokens for moderators: expiry policy, revocation mechanism, and refresh token strategy are unspecified. A leaked moderator JWT with a long TTL grants access to the full review queue including CSAM items. Tokens must have short expiry (<1h) with server-side revocation on logout.",
+              "The AppealAgent vector store retrieval of 'similar past overturns' leaks moderation policy internals. A sophisticated bad actor who submits borderline content, observes the appeal outcome, and iterates can reverse-engineer the model's decision boundary and overturn threshold. The retrieval results should not be included in any user-facing response.",
+              "Multi-tenant RLS tested with two tenants is insufficient. Test with three or more, including: (a) a superadmin querying across tenants, (b) a tenant using raw SQL via a compromised API key, (c) ORM bypass via raw query in FastAPI dependency injection. Two-tenant tests commonly miss N+1 tenant scenarios.",
+              "No mention of content sanitization before rendering in the moderator UI. If user-submitted text contains `<script>` tags or markdown with embedded HTML, and the React frontend renders it without sanitization, stored XSS is trivially achievable against moderator sessions. DOMPurify or equivalent must be applied to all user-generated text rendered in the review dashboard.",
+              "API key compromise grants read access to all moderated content for that tenant with no additional factor. For high-risk platforms, consider requiring signed request payloads (HMAC) in addition to API key authentication, or at minimum enforce key rotation policies with last-used tracking.",
+              "Adversarial image patches (Step 18 tests) are tested post-hoc but no input preprocessing hardening is specified. Standard mitigations (JPEG re-encoding, random resizing, bit-depth reduction) to destroy adversarial perturbations before inference are not planned."
+            ],
+            "summary": "This is a technically ambitious and broadly well-structured plan with solid coverage of architecture, ML pipeline, and operational concerns. However, it has one disqualifying flaw and several serious gaps that require rework before production. The disqualifying flaw: CSAM content is stored in S3 before classification, which is a federal criminal liability, not a 'security risk to mitigate later.' This must be fixed at the architectural level before any storage or pipeline design is finalized, and legal review must move to Step 1, not Step 20. Beyond this, the plan has compounding problems: confidence thresholds are hardcoded before models are trained, the video pipeline's latency SLA is infeasible on CPU, the appeal agent's vector store is empty when the service launches, GDPR erasure conflicts with audit retention without resolution, and the system has no multilingual support despite being designed for a global UGC platform. The test suite's adversarial acceptance criteria are toothless (document, don't gate). The core architecture \u2014 FastAPI + Celery + ONNX + PostgreSQL RLS \u2014 is sound. But this plan, as written, would ship a system that is simultaneously over-engineered in its observability stack and dangerously underspecified in its compliance-critical paths. Score: 61. Requires rework on CSAM handling, legal sequencing, video infrastructure, multilingual strategy, and threshold calibration before this is production-ready.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 61,
+              "flaws": [
+                "CSAM is stored in S3 (Step 10, 30-day retention) BEFORE classification. Submitting CSAM to your platform causes it to land in your S3 bucket for up to 30 days before the model flags it. This is a federal liability (18 U.S.C. \u00a7 2258A) that cannot be fixed post-hoc with encryption. Content must be hashed against NCMEC PhotoDNA before storage, or held in a transient pre-classification buffer with sub-minute TTL.",
+                "Confidence threshold of 0.75 is hardcoded in Step 9 but Step 9 depends only on Step 8 (API spec), not Steps 5/6/7 (model training). The threshold is baked into the coordinator before a single model has been trained or calibrated. You have no idea what 0.75 means for your false positive/negative rate until you run evaluation curves on your actual held-out data.",
+                "Video pipeline latency is almost certainly infeasible on CPU. Whisper-base transcription alone runs ~2-3x real-time on CPU (a 10-minute audio takes 2-3 minutes). Add 1FPS frame sampling (600 frames) through EfficientNet-B3, and PySceneDetect overhead. 'Under 3 minutes for 10-minute video on 4 CPU cores' is optimistic by 2-3x. GPU workers are not mentioned anywhere in the infra plan.",
+                "The AppealAgent in Step 12 retrieves 'similar past overturns from vector store' for context, but the vector store isn't populated with overturn decisions until Step 19 (retraining feedback pipeline). The appeal system launches in Step 12, well before Step 19 is built. The agent will operate on an empty store for months.",
+                "GDPR Art.17 erasure (Step 20) directly conflicts with the 7-year audit log retention defined in Step 3 (2555 days). The plan does not resolve this tension. Standard resolution is pseudonymization of PII in audit records while retaining the decision metadata, but this requires schema design decisions that affect Step 4 (database schema), not Step 20.",
+                "Text toxicity model (Step 5) is trained exclusively on English datasets (Jigsaw, HatEval, Civil Comments). UGC platforms are multilingual. Non-English toxic content\u2014particularly code-switched slang, transliterated text, and languages with different toxicity conventions\u2014will pass through with minimal detection. There is no language detection gate, no multilingual model strategy, and no fallback.",
+                "No degraded-mode behavior is specified for when ONNX inference workers are unavailable. If all text workers crash, does the API return 503? Auto-route all content to human review queue? Drop it silently? This is a critical operational gap that affects queue capacity planning.",
+                "The database schema (Step 4) uses a single moderation_decisions table for text, image, and video, but decisions have fundamentally different evidence structures (text: span offsets; image: Grad-CAM regions; video: timestamp ranges). Without a discriminator column or separate evidence tables, querying decision details requires type-specific joins that aren't modeled.",
+                "ONNX model cold-start loading is not addressed. DistilBERT ONNX is ~250MB; EfficientNet-B3 is ~50MB. If Celery workers restart under load (Step 10), each cold start must load the model before processing jobs. At 20 replicas under HPA, this creates a thundering herd on the model store and delays queue processing exactly when load is highest.",
+                "No idempotency keys on notification delivery (Step 12). Email/webhook delivery for appeal outcomes has no exactly-once guarantee. Retry logic on transient failures will send duplicate notifications to reporters, which is both a UX failure and a potential GDPR issue (repeated transmission of decision data).",
+                "Step 11 SLA calculation says 'computed correctly for all priority levels including weekends,' but P0 (1-hour SLA) must run 24/7 including weekends by definition\u2014it's a safety-critical category. The weekend clause only matters for P2 (business-hours 24h SLA). Conflating these suggests the SLA engine logic has not been thought through for each tier independently.",
+                "No PhotoDNA / NCMEC hash database integration. Industry-standard practice is to check submitted content hashes against the NCMEC hash database before any ML inference. This fast-paths known CSAM with zero false negatives and zero latency. Omitting this means every known CSAM item must go through the full ML pipeline before being flagged."
+              ],
+              "suggestions": [
+                "Move CSAM architectural constraints to Step 1 as a hard prerequisite. Define the pre-classification transient buffer, PhotoDNA hash check, and NCMEC reporting flow before any storage or ML design is finalized. Legal review (Step 20) must happen before data pipeline design (Step 3), not after.",
+                "Add a model calibration step between Steps 5-7 (model training) and Step 9 (coordinator config). Plot precision-recall curves at multiple thresholds on your actual held-out data. Set the 0.75 escalation threshold empirically, not speculatively. This threshold directly determines human reviewer headcount.",
+                "Plan GPU workers for video pipeline or revise latency SLAs to match CPU reality. A single T4 GPU reduces Whisper and EfficientNet inference by 10-20x. If GPU is out of scope, the P99 for 10-minute video should be 8-12 minutes, not 3, and 60-minute videos should be rejected at submission time.",
+                "Implement model pre-loading at worker startup and keep models in shared memory (via ONNX Runtime's arena allocator or a sidecar model server like Triton). Workers should never cold-load a model during request processing.",
+                "Resolve the GDPR/audit-retention conflict explicitly in Step 3/4: define which fields in audit records are PII (reporter_id, moderator_id, content_ref), which are pseudonymized on erasure request, and which are retained as anonymized statistical records. This must be a schema decision, not a policy document.",
+                "Add a language detection gate (langdetect or fastText LID) before the text toxicity model. Route non-English content to a multilingual model (mBERT or XLM-RoBERTa) or flag for human review if no multilingual model is available. English-only classification with silent pass-through for other languages is a moderation blind spot.",
+                "Add a circuit breaker and dead-letter queue for all worker failure modes. Define explicitly: if text workers are down for >N seconds, route to human review queue with SYSTEM_FALLBACK label. This affects queue depth planning and moderator staffing models.",
+                "Add rate limiting on appeal submissions per reporter_id (e.g., 5 appeals per 24h). Without this, rejected bad actors can flood the appeal queue as a denial-of-service against legitimate review capacity.",
+                "For the adversarial testing acceptance criteria in Step 18, replace 'documents model robustness score' with a minimum pass threshold (e.g., leetspeak evasion must not reduce recall below 0.85). Documentation without a gate is not a quality control measure.",
+                "Add a jurisdictional policy layer. What is legal content in one jurisdiction may be illegal in another (e.g., Nazi symbols in Germany, certain political speech in various countries). The threshold matrix (Step 10) needs a geo-routing dimension or platform-level policy override capability."
+              ],
+              "missing": [
+                "PhotoDNA / NCMEC hash database integration for known CSAM \u2014 this is industry-mandatory, not optional",
+                "Pre-classification content buffer with sub-minute TTL to avoid storing unclassified CSAM in persistent storage",
+                "Multilingual support strategy: language detection, multilingual model (mBERT/XLM-RoBERTa), or human fallback for non-English content",
+                "Model serving infrastructure (Triton Inference Server or equivalent) for warm model loading and GPU inference \u2014 required for video pipeline feasibility",
+                "Jurisdictional/regional policy variations \u2014 content legal in one market may require removal in another",
+                "Near-duplicate text detection (simhash/MinHash) equivalent to image pHash \u2014 critical for spam campaign detection",
+                "Technical implementation of moderator exposure limits (daily flagged-content count tracking, forced session breaks) \u2014 Step 20 defines a policy but no system enforces it",
+                "Blue/green or canary deployment strategy for ML model version rollouts \u2014 Step 19 gates model promotion but Step 10/16 have no mechanism for live traffic switching without downtime",
+                "Model monitoring for distribution shift in production \u2014 once deployed, model accuracy on live traffic may diverge from held-out test set. No drift detection (e.g., evidently.ai) is planned",
+                "Database migration rollback strategy \u2014 Alembic is mentioned but no down-migration or rollback testing is specified",
+                "Exactly-once semantics for Celery task execution \u2014 at-least-once delivery can cause duplicate moderation decisions for the same content_id",
+                "Cross-platform content portability spec \u2014 if a user requests GDPR data portability (Art.20), what format do moderation decisions export in?"
+              ],
+              "security_risks": [
+                "CSAM lands in S3 before classification. Even with encryption, possession before reporting is a federal offense. This is not a security risk \u2014 it is a criminal liability. Architectural fix required before any other work proceeds.",
+                "File upload accepts content before MIME validation and magic byte checks occur. A polyglot file (valid JPEG header wrapping a ZIP or JavaScript payload) passes MIME checks but can be weaponized if downstream components process the file as its embedded type. Validation must happen at the API gateway layer before storage, not as a post-upload check.",
+                "JWT session tokens for moderators: expiry policy, revocation mechanism, and refresh token strategy are unspecified. A leaked moderator JWT with a long TTL grants access to the full review queue including CSAM items. Tokens must have short expiry (<1h) with server-side revocation on logout.",
+                "The AppealAgent vector store retrieval of 'similar past overturns' leaks moderation policy internals. A sophisticated bad actor who submits borderline content, observes the appeal outcome, and iterates can reverse-engineer the model's decision boundary and overturn threshold. The retrieval results should not be included in any user-facing response.",
+                "Multi-tenant RLS tested with two tenants is insufficient. Test with three or more, including: (a) a superadmin querying across tenants, (b) a tenant using raw SQL via a compromised API key, (c) ORM bypass via raw query in FastAPI dependency injection. Two-tenant tests commonly miss N+1 tenant scenarios.",
+                "No mention of content sanitization before rendering in the moderator UI. If user-submitted text contains `<script>` tags or markdown with embedded HTML, and the React frontend renders it without sanitization, stored XSS is trivially achievable against moderator sessions. DOMPurify or equivalent must be applied to all user-generated text rendered in the review dashboard.",
+                "API key compromise grants read access to all moderated content for that tenant with no additional factor. For high-risk platforms, consider requiring signed request payloads (HMAC) in addition to API key authentication, or at minimum enforce key rotation policies with last-used tracking.",
+                "Adversarial image patches (Step 18 tests) are tested post-hoc but no input preprocessing hardening is specified. Standard mitigations (JPEG re-encoding, random resizing, bit-depth reduction) to destroy adversarial perturbations before inference are not planned."
+              ],
+              "summary": "This is a technically ambitious and broadly well-structured plan with solid coverage of architecture, ML pipeline, and operational concerns. However, it has one disqualifying flaw and several serious gaps that require rework before production. The disqualifying flaw: CSAM content is stored in S3 before classification, which is a federal criminal liability, not a 'security risk to mitigate later.' This must be fixed at the architectural level before any storage or pipeline design is finalized, and legal review must move to Step 1, not Step 20. Beyond this, the plan has compounding problems: confidence thresholds are hardcoded before models are trained, the video pipeline's latency SLA is infeasible on CPU, the appeal agent's vector store is empty when the service launches, GDPR erasure conflicts with audit retention without resolution, and the system has no multilingual support despite being designed for a global UGC platform. The test suite's adversarial acceptance criteria are toothless (document, don't gate). The core architecture \u2014 FastAPI + Celery + ONNX + PostgreSQL RLS \u2014 is sound. But this plan, as written, would ship a system that is simultaneously over-engineered in its observability stack and dangerously underspecified in its compliance-critical paths. Score: 61. Requires rework on CSAM handling, legal sequencing, video infrastructure, multilingual strategy, and threshold calibration before this is production-ready.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T08:37:10.884450+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 153.54,
+      "critic_plan": 126.57
+    }
+  }
+}

@@ -1,0 +1,362 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define stakeholder requirements for V2X use cases: intersection
+      collision warning (ICW), emergency vehicle preemption (EVP), and cooperative
+      adaptive cruise control / platooning. Map to SAE J2735 message types (BSM, SPAT,
+      MAP, SRM, SSM, PVD) and J3161 application layer behaviors.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - Stakeholder requirement document produced with ≥30 numbered SRs
+    - Every SR traced to at least one SAE J2735 message type or J3161 application
+    - ICW, EVP, and platooning use cases each have scenario diagrams (happy path +
+      3 failure modes)
+    - 'Latency budgets defined: ICW ≤100 ms E2E, EVP ≤50 ms, platooning gap ≤30 ms'
+    depends_on: []
+  SAFETY:
+    description: Conduct HARA (Hazard Analysis and Risk Assessment) per ISO 26262
+      Part 3 for all three V2X applications. Assign ASIL levels. Produce FMEA for
+      message loss, spoofed BSM, GPS drift, and channel congestion failure modes.
+      Generate fault tree for intersection collision warning false-negative.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - HARA table covers all identified hazards with S/E/C ratings and ASIL assignments
+    - ASIL decomposition proposed for each safety goal
+    - FMEA covers ≥20 failure modes including RF jamming, GPS spoofing, late packet
+      delivery
+    - FTA for ICW false-negative has ≤5 cut sets identified with probability estimates
+    - Document reviewed and signed by safety_engineer and regulatory_specialist
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Produce Design History File skeleton and regulatory compliance matrix
+      for UNECE R155 (cybersecurity), R156 (software update), and ISO 26262 ASIL decomposition
+      evidence. Map every SR from Step 1 to a verification method (test, analysis,
+      inspection). Generate traceability matrix SR→Safety Goal→Verification.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF skeleton contains all mandatory ISO 26262 work products for ASIL-B/C
+    - Traceability matrix covers 100% of SRs from Step 1
+    - V&V plan defines entry/exit criteria for each verification phase
+    - UNECE R155 cybersecurity management plan includes threat categories from SAE
+      J3101
+    - UNECE R156 SOTA (Software Over The Air) update procedure documented
+    depends_on:
+    - 1
+    - 2
+  SECURITY:
+    description: Threat model the V2X stack using STRIDE. Cover BSM spoofing/replay,
+      SPAT signal hijacking, C-V2X PC5 Uu man-in-the-middle, certificate revocation
+      latency, and misbehavior detection (IEEE 1609.2 / ETSI TS 102 941). Define SCMS
+      (Security Credential Management System) integration points.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE table covers all 6 categories for each attack surface
+    - SCMS integration architecture diagram produced with certificate lifecycle flows
+    - Misbehavior detection algorithm specified (local + global MBD thresholds)
+    - SBOM generated listing all third-party libraries with CVE scan results
+    - Security controls mapped to UNECE R155 Annex 5 threat categories
+    depends_on:
+    - 1
+    - 2
+  CONFIG:
+    description: 'Set up the development environment: AUTOSAR Classic/Adaptive toolchain
+      (ARXML import), cross-compilation toolchain for target SoC (e.g., NXP S32G or
+      Qualcomm 9150 C-V2X), Yocto-based Linux BSP for RSU, CMake superbuild, Git submodules
+      for open-source WAVE stack (OpenV2X or similar), and Docker dev containers.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Docker dev container builds successfully with all toolchains installed
+    - cmake --build succeeds for all targets (OBU firmware, RSU Linux daemon, simulation
+      harness)
+    - AUTOSAR ARXML schema validation passes for base ECU extract
+    - Cross-compilation produces ELF binary; arm-none-eabi-size output recorded as
+      baseline
+    - Pre-commit hooks enforce clang-format, cppcheck, and MISRA-C 2012 subset via
+      pc-lint
+    depends_on:
+    - 1
+  FIRMWARE:
+    description: 'Implement the DSRC (IEEE 802.11p / WAVE) radio HAL layer: MLME/MAC
+      SAP bindings, channel switching (CCH/SCH), EDCA QoS priority queues, and transmit
+      power control. Target the Cohda MK6 or equivalent DSRC modem via SPI/PCIe HAL
+      abstraction.'
+    agent_role: developer
+    acceptance_criteria:
+    - HAL init/deinit cycle passes with no memory leaks (Valgrind/AddressSanitizer
+      clean)
+    - Channel switching latency measured ≤2 ms CCH→SCH (FreeRTOS task timing log)
+    - 'EDCA queues verified: AC_VO packets preempt AC_BE under 80% channel load'
+    - Transmit power control API accepts dBm value and modem confirms via SPI ACK
+    - Unit test coverage ≥85% for hal_dsrc.c (gcov report attached)
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 5
+  HARDWARE_SIM:
+    description: Build a multi-vehicle V2X simulation environment using ns-3 with
+      WAVE / 802.11p module and Sumo traffic simulator (TraCI interface). Model channel
+      fading (WINNER+ B1 urban canyon model), packet error rate vs distance, and congestion
+      control (ETSI TS 102 687 DCC). Simulate ICW, EVP, and platooning scenarios with
+      10–50 vehicles.
+    agent_role: system_tester
+    acceptance_criteria:
+    - ns-3 simulation builds and runs 10-vehicle ICW scenario without crashes
+    - PDR ≥90% at 150 m inter-vehicle distance in B1 channel model (simulation log)
+    - E2E BSM latency P99 ≤100 ms at 30 vehicles/km density
+    - DCC algorithm reduces CBR from 0.65 to ≤0.60 under 50-vehicle load
+    - Simulation outputs Wireshark-compatible PCAP for offline protocol analysis
+    depends_on:
+    - 5
+  BACKEND:
+    description: 'Build the RSU (Roadside Unit) backend service: Python/FastAPI daemon
+      that interfaces with the WAVE stack via UDP socket, manages MAP/SPAT message
+      broadcast scheduling, handles SRM/SSM EVP logic, connects to traffic signal
+      controller via NTCIP 1202 SNMP, and exposes a REST management API for RSU configuration
+      and monitoring.'
+    agent_role: developer
+    acceptance_criteria:
+    - RSU service starts and connects to WAVE stack UDP socket within 5 seconds
+    - SPAT broadcast at exactly 10 Hz verified by Wireshark capture (±5% jitter tolerance)
+    - NTCIP 1202 preemption SNMP SET acknowledged by simulated TSC within 200 ms
+    - REST /rsu/status returns 200 with signal phase state and connected vehicle count
+    - Service restarts automatically on crash (systemd unit with Restart=on-failure)
+    depends_on:
+    - 8
+    - 9
+    - 11
+  FRONTEND:
+    description: 'Build the V2X operations dashboard: React + TypeScript SPA displaying
+      a live map (MapLibre GL JS) with vehicle positions (BSM feed), intersection
+      phase state (SPAT visualization), EVP active preemptions, platoon formations,
+      and system health metrics. Include RSU management and alert triage UI.'
+    agent_role: developer
+    acceptance_criteria:
+    - Live map renders 100 vehicle icons at 10 Hz update rate with ≤16 ms frame time
+    - SPAT phase ring visualization shows correct phase (green/yellow/red) for each
+      movement
+    - EVP active preemption indicator appears within 500 ms of SSM grant (WebSocket
+      event)
+    - Platoon view draws convoy lines connecting leader and followers by platoon ID
+    - RSU management page allows MAP/SPAT config upload and shows broadcast status
+    depends_on:
+    - 17
+  API:
+    description: 'Design and document the full V2X system API surface: OBU REST/gRPC
+      management API, RSU REST management API, cloud backend REST API, and WebSocket
+      streaming API for the dashboard. Produce OpenAPI 3.1 specification for all REST
+      endpoints. Define Protobuf schemas for OBU↔Cloud telemetry.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates against official schema validator with zero errors
+    - All REST endpoints have request/response examples and error schema defined
+    - Protobuf schemas compile for Python and C targets without warnings
+    - API versioning strategy (URI /v1/) documented with deprecation policy
+    - Authentication scheme (OAuth2 + mTLS) documented for all endpoints
+    depends_on:
+    - 16
+    - 17
+  DATABASE:
+    description: Design InfluxDB schema (measurements, tags, fields) for BSM telemetry,
+      SPAT phase history, EVP event log, and platoon session log. Design PostgreSQL
+      schema for RSU fleet registry, intersection MAP registry, certificate pseudonym
+      mapping, and misbehavior detection case management.
+    agent_role: developer
+    acceptance_criteria:
+    - InfluxDB schema defined with appropriate tag keys for filtering by RSU and vehicle
+    - PostgreSQL migration scripts produce all tables with FK constraints and indexes
+    - Retention policy downsample task (Flux task) aggregates BSM to 1-min rollup
+      correctly
+    - 'Query: latest position for all active vehicles returns in ≤50 ms with 10k vehicle
+      dataset'
+    - Schema migration reversible (up.sql + down.sql provided)
+    depends_on:
+    - 17
+  EMBEDDED_TEST:
+    description: 'Design and implement HIL (Hardware-in-the-Loop) test harness for
+      OBU firmware: connect OBU dev board to PC via JTAG (for coverage instrumentation)
+      and RF test port, inject synthetic BSM/SPAT/MAP packets via software-defined
+      radio (USRP or HackRF), and verify ICW alert timing, EVP state machine, and
+      platooning gap control on real hardware.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - HIL test harness injects synthetic BSMs at 10 Hz and OBU receives without packet
+      loss
+    - ICW alert fires within 100 ms of SDR-injected collision-course BSM (timestamp
+      delta logged)
+    - 'EVP state machine test: SRM→SSM grant→CAN signal HIGH sequence verified in
+      ≤500 ms'
+    - Platooning gap control HIL test achieves RMS gap error ≤0.5 m with SDR-simulated
+      lead vehicle
+    - Firmware code coverage ≥80% for icw_app.c, evp_obu.c, platoon_app.c after HIL
+      suite run
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+  TESTS:
+    description: 'Write integration tests for the RSU backend service and cloud backend:
+      end-to-end BSM ingest via UDP→MQTT→InfluxDB, SPAT broadcast cycle, EVP SRM→SSM→NTCIP
+      1202→CAN pipeline, and misbehavior detection trigger. Use pytest with Docker
+      Compose test environment spinning up real Mosquitto + InfluxDB + PostgreSQL.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - BSM injected via UDP appears in InfluxDB within 500 ms (asserted in test)
+    - SPAT broadcast test verifies exactly 10 messages/second over 10-second window
+    - EVP pipeline test confirms NTCIP 1202 SNMP SET fired within 500 ms of SRM receipt
+    - Misbehavior detection test triggers CRL report for vehicle with 100 m position
+      jump
+    - All 200+ integration tests pass in CI Docker Compose environment within 5 minutes
+    depends_on:
+    - 16
+    - 17
+    - 20
+  SYSTEM_TEST:
+    description: Execute end-to-end system validation scenarios in the ns-3 + SUMO
+      simulation environment from Step 14 with actual firmware application logic compiled
+      for Linux (x86 POSIX target). Validate J2945/1 ICW warning rates, J3082 EVP
+      preemption success rate, J2945/4 platooning stability, and channel congestion
+      behavior under varying vehicle densities.
+    agent_role: system_tester
+    acceptance_criteria:
+    - ICW true positive rate ≥99.5% across 100 NGSIM intersection scenarios
+    - EVP preemption success rate ≥99% at distances ≤300 m in clear channel
+    - 'Platoon string stability criterion: spacing error does not amplify upstream
+      (L∞ norm < 1)'
+    - CBR remains ≤0.6 at 50 vehicles/km with DCC active
+    - System test report generated with pass/fail for each KPI threshold
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 14
+    - 22
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: GitHub Actions workflows for firmware build
+      + unit test + static analysis (MISRA-C via cppcheck + pc-lint), RSU/cloud backend
+      test + Docker image build, frontend lint + build + Cypress E2E, ns-3 simulation
+      smoke test, and nightly full system test suite. Artifact promotion via semantic
+      versioning tags.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR pipeline completes in ≤15 minutes including all firmware unit tests
+    - MISRA-C violation check fails PR if any new Rule 13.1, 14.2, or 15.5 violations
+      introduced
+    - Docker images tagged with git SHA and pushed to GHCR on merge to main
+    - Nightly HIL regression runs 50 scenarios autonomously and posts pass/fail Slack
+      summary
+    - Release artifacts include signed firmware binary, SBOM.json, and OpenAPI spec
+    depends_on:
+    - 5
+    - 22
+    - 23
+  INFRA:
+    description: 'Define infrastructure-as-code for cloud backend deployment: Kubernetes
+      manifests (or Helm chart) for RSU backend, cloud ingest service, InfluxDB, PostgreSQL,
+      Mosquitto MQTT broker, and Grafana dashboard. Include horizontal pod autoscaler
+      for ingest service, persistent volumes for databases, and network policies for
+      mTLS enforcement.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - helm install deploys all components to a KIND cluster without errors
+    - HPA scales cloud-backend from 2 to 5 replicas when CPU >70% (load test triggered)
+    - PersistentVolumeClaims bound and InfluxDB survives pod restart with data intact
+    - Network policy blocks pod-to-pod traffic except defined service dependencies
+    - Grafana dashboard displays BSM ingest rate, EVP events/hour, and system health
+    depends_on:
+    - 17
+    - 20
+    - 25
+  REGULATORY:
+    description: 'Prepare AUTOSAR Classic SWC (Software Component) architecture description
+      in ARXML for the OBU application layer: define ICW_SWC, EVP_SWC, Platoon_SWC
+      with port interfaces, runnable entities (10 ms, 100 ms tasks), and inter-runnable
+      variables. Map to AUTOSAR OS tasks and COM signals. Validate against AUTOSAR
+      schema.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - ARXML validates against AUTOSAR R22-11 schema with zero errors
+    - All port interfaces between SWCs have matching P-Port and R-Port definitions
+    - Runnable entities assigned to correct OS tasks with deadlines specified
+    - COM signals mapped between WAVE_COM_SWC and ICW/EVP/Platoon SWCs
+    - Memory footprint estimate per SWC derived from ARXML and within flash budget
+    depends_on:
+    - 10
+    - 11
+    - 12
+  AGENTIC:
+    description: 'Implement a V2X channel health monitoring agent using the coordinator
+      pattern: a coordinator agent spawns specialist sub-agents for DSRC congestion
+      analysis (CBR monitoring), C-V2X HARQ failure rate analysis, and misbehavior
+      detection review. Agent reads InfluxDB metrics, proposes DCC parameter adjustments
+      or misbehavior reports, and requires human approval before any change is executed.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator agent decomposes channel health task and routes to correct sub-agent
+    - DSRC agent generates DCC parameter proposal when CBR >0.6 (logged in audit trail)
+    - MBD agent proposal for CRL submission created within 60 seconds of misbehavior
+      flag
+    - All proposals appear in SAGE approvals queue before any action is taken
+    - Rejection of any proposal stores feedback in vector memory for future improvement
+    depends_on:
+    - 17
+    - 20
+  UX_DESIGN:
+    description: 'Design HMI (Human-Machine Interface) specifications for the in-vehicle
+      V2X alert system: visual and audible alert hierarchy for ICW (approaching collision),
+      EVP (yield to emergency vehicle), and platooning status (gap, speed, leader
+      ID). Comply with SAE J2945/9 HMI guidelines and ISO 15008 visual distraction
+      standards.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 6 alert states with correct color, icon, and text per J2945/9
+    - 'Audible chime sequences differentiated: ICW ≥600 Hz, EVP 400 Hz, platoon 800
+      Hz'
+    - 'Alert display time meets ISO 15008: ≤2 seconds glance time to comprehend status'
+    - Distraction assessment checklist completed with all items PASS
+    - HMI spec reviewed and approved by ux_designer and safety_engineer
+    depends_on:
+    - 10
+    - 11
+    - 12
+  QA:
+    description: Develop V&V test plan and execute functional qualification testing
+      (OQ) for the complete V2X system against all SRs from Step 1. Produce test execution
+      report with pass/fail status per SR. Include radio conformance testing checklist
+      referencing FCC Part 90 Subpart M (DSRC) and ETSI EN 302 663 (ITS-G5).
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers 100% of SRs with at least one test case per SR
+    - OQ execution report shows ≥95% pass rate with all critical safety SRs passing
+    - Conformance checklist completed for FCC Part 90.377 and ETSI EN 302 663 mandatory
+      tests
+    - All failures have linked defect tickets with severity classification
+    - OQ report signed by qa_engineer and regulatory_specialist
+    depends_on:
+    - 24
+    - 28
+  DOCS:
+    description: 'Produce final documentation package: System Architecture Document
+      (SAD) covering OBU + RSU + cloud tiers, ICD (Interface Control Document) for
+      all external interfaces (NTCIP 1202, SCMS, J2735 air interface), OBU firmware
+      developer guide, RSU operator manual, and API reference generated from OpenAPI
+      spec.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - SAD includes architecture diagrams for all three tiers with numbered interface
+      lines
+    - ICD covers all 8 external interfaces with message format, encoding, and timing
+      specs
+    - Doxygen-generated firmware API reference covers all public headers with no undocumented
+      functions
+    - RSU operator manual includes step-by-step MAP/SPAT configuration and troubleshooting
+      guide
+    - All documents published to GitHub Pages and linked from repo README
+    depends_on:
+    - 16
+    - 17
+    - 18
+    - 19
+    - 25

@@ -1,0 +1,336 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas, and process flows for
+      the course marketplace. Capture instructor onboarding, learner enrollment, revenue
+      sharing model, affiliate commission structure, and corporate licensing workflows.
+      Include ROI projections for each revenue stream.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories written for all 5 user types with acceptance criteria
+    - Revenue sharing formula documented with payout rules and thresholds
+    - Affiliate program commission tiers defined with tracking requirements
+    - Corporate license tiers (seat-based, unlimited) defined with feature gates
+    - Process flow diagrams cover course creation, enrollment, payment, and payout
+      flows
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Analyze course marketplace competitors (Udemy, Teachable, Thinkific,
+      Coursera for Business). Identify positioning opportunities, pricing benchmarks
+      for revenue splits and corporate licenses, and go-to-market strategy for instructor
+      acquisition.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covering revenue share %, affiliate rates, and corporate pricing
+      tiers
+    - Recommended revenue split ratio backed by market data
+    - Differentiation strategy documented with at least 3 unique value propositions
+    - GTM channel priorities ranked with acquisition cost estimates
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Produce the product requirements document, feature roadmap, and success
+      metrics. Define MVP scope vs. post-launch features. Set KPIs for GMV, instructor
+      retention, learner completion rates, and corporate contract values.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD signed off with MVP feature list and explicit out-of-scope items
+    - Roadmap with milestones for MVP, Phase 2, and Phase 3
+    - Success metrics defined with baseline targets and measurement methodology
+    - Feature prioritization matrix (RICE or MoSCoW) for all backlog items
+    depends_on:
+    - 1
+    - 2
+  COMPLIANCE:
+    description: Produce compliance artifacts for COPPA (children's data), FERPA (student
+      educational records), and WCAG 2.1 (accessibility). Define data handling policies,
+      age verification requirements, parental consent flows, and accessibility conformance
+      targets.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - COPPA compliance checklist completed — age gate mechanism, parental consent
+      flow, data minimization for minors
+    - FERPA data classification map identifying all PII and education records
+    - WCAG 2.1 AA conformance targets documented with audit schedule
+    - Third-party data processor inventory with DPA requirements
+    - Data retention and deletion policy covering all user types
+    depends_on:
+    - 1
+    - 3
+  LEGAL:
+    description: Draft terms of service, privacy policy, instructor agreement, affiliate
+      agreement, and corporate license agreement. Address IP ownership of course content,
+      revenue share terms, affiliate cookie tracking disclosures, and FERPA-compliant
+      data sharing clauses.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - All 5 legal documents drafted and reviewed
+    - Revenue share and payout terms legally binding in instructor agreement
+    - Affiliate FTC disclosure requirements met in affiliate agreement
+    - FERPA-compliant data processing addendum included in corporate license
+    - COPPA parental consent language reviewed and approved
+    - FERPA/COPPA compliance if minors involved
+    depends_on:
+    - 4
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all user journeys:
+      learner discovery and enrollment, instructor course creation studio, affiliate
+      dashboard, and corporate admin seat management. Perform accessibility audit
+      against WCAG 2.1 AA standards.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research sessions completed with at least 2 learners, 2 instructors, and
+      1 corporate buyer
+    - Wireframes cover all critical user flows at medium fidelity
+    - Accessibility audit report identifies WCAG 2.1 AA violations with remediation
+      notes
+    - Design system tokens (color, typography, spacing) defined with contrast ratios
+      meeting AA
+    - Mobile-first responsive layouts specified for all pages
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on:
+    - 3
+  FINANCIAL:
+    description: Model revenue share calculation engine, affiliate commission tiers,
+      and corporate license pricing. Define payout schedules, minimum thresholds,
+      refund impact on payouts, and currency conversion rules for international instructors.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Revenue share calculation formula documented with worked examples for refunds
+      and disputes
+    - Affiliate commission calculation rules defined with cookie window and attribution
+      model
+    - Corporate license pricing tiers with feature gates and overage rules
+    - Payout schedule and minimum threshold policy documented
+    - Tax handling rules (W-9, VAT) documented for domestic and international payouts
+    depends_on:
+    - 1
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 spec for all platform API contracts: course CRUD,
+      enrollment, payments, analytics, review system, affiliate tracking, and corporate
+      license management. Define authentication schemes (JWT, API keys for corporate),
+      rate limiting, and versioning strategy.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec covers all endpoint groups with request/response schemas
+    - Authentication requirements specified per endpoint
+    - Pagination strategy defined for list endpoints
+    - Error response schema standardized across all endpoints
+    - Webhook contracts defined for enrollment, payment, and payout events
+    depends_on:
+    - 3
+    - 7
+  DATABASE:
+    description: Design relational database schema for courses, enrollments, users,
+      reviews, payments, revenue share ledger, affiliate tracking, and corporate licenses.
+      Include indexes for analytics queries and soft-delete for FERPA compliance.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram covers all tables with relationships and cardinality
+    - Revenue ledger table supports double-entry bookkeeping for payout accuracy
+    - Affiliate click and conversion tracking tables include cookie_window and attribution_model
+      columns
+    - Row-level security policies defined for FERPA-scoped data
+    - Indexes created for high-frequency query patterns (course search, analytics
+      aggregations)
+    - Migration scripts are idempotent and reversible
+    depends_on:
+    - 8
+  CONFIG:
+    description: 'Set up project infrastructure configuration: monorepo structure,
+      environment configs, Docker Compose for local development, secrets management,
+      and agentic AI pattern configuration. Configure the Multi-Agent Coordinator
+      pattern for orchestrating instructor analytics, review moderation, and affiliate
+      fraud detection agents.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Docker Compose starts all services with a single command
+    - Environment variable schema documented with required vs. optional flags
+    - Coordinator agent pattern wired with task router and result merger components
+    - Secrets never committed to version control — .gitignore and pre-commit hook
+      configured
+    - README documents local setup in under 5 commands
+    depends_on:
+    - 8
+    - 9
+  BACKEND:
+    description: 'Build core authentication and user management service: registration,
+      login, JWT issuance, role-based access control (learner, instructor, affiliate,
+      corporate_admin, platform_admin), OAuth2 social login, and age verification
+      gate for COPPA compliance.'
+    agent_role: developer
+    acceptance_criteria:
+    - Registration flow captures date of birth and enforces COPPA age gate (under
+      13 blocked or parental consent required)
+    - JWT tokens expire in 1 hour with refresh token rotation
+    - RBAC middleware enforces role permissions on all protected endpoints
+    - OAuth2 social login tested for Google and GitHub providers
+    - Password reset and email verification flows implemented
+    depends_on:
+    - 9
+    - 10
+  FRONTEND:
+    description: 'Build learner-facing UI: course discovery with search and filter,
+      course detail page, video player with progress tracking, learning dashboard,
+      certificate generation, and review submission form. Implement WCAG 2.1 AA accessibility
+      throughout.'
+    agent_role: developer
+    acceptance_criteria:
+    - All interactive elements keyboard-navigable with visible focus indicators
+    - Video player has captions, keyboard controls, and screen reader announcements
+    - Course search returns results within 300ms with autocomplete
+    - Checkout flow integrates Stripe Elements with 3DS support
+    - Certificate page renders and is printable/downloadable as PDF
+    - axe-core automated scan returns zero critical accessibility violations
+    depends_on:
+    - 6
+    - 13
+    - 12
+  LOCALIZATION:
+    description: Set up i18n infrastructure for the full platform. Configure react-i18next
+      for frontend and Babel/gettext for backend. Produce initial locale files for
+      English (base), Spanish, French, and Portuguese. Localize all UI strings, email
+      templates, legal documents, and error messages.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All UI strings externalized to locale JSON files — zero hardcoded English in
+      components
+    - Language switcher in header changes locale without page reload
+    - Currency and date formats locale-aware (e.g., pt-BR uses R$ and DD/MM/YYYY)
+    - Email templates rendered in learner's locale preference
+    - Translation coverage report shows 100% key coverage for all 4 locales at launch
+    - Missing translation keys fall back to en-US without throwing errors
+    depends_on:
+    - 19
+    - 20
+    - 21
+  SECURITY:
+    description: Conduct security review and threat modeling for the platform. Cover
+      payment data handling (PCI DSS scope), affiliate fraud vectors, IDOR vulnerabilities
+      in course/enrollment APIs, JWT security, and FERPA data leakage risks. Produce
+      SBOM and dependency vulnerability report.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model completed for all 5 API groups
+    - IDOR tested on course, enrollment, and payout endpoints — all access checks
+      enforced
+    - JWT algorithm pinned to RS256 — none algorithm attack mitigated
+    - SBOM generated and zero critical CVEs in production dependencies
+    - OWASP Top 10 checklist completed with findings and mitigations documented
+    - Affiliate self-referral and click fraud vectors documented with countermeasures
+      implemented
+    depends_on:
+    - 17
+    - 16
+    - 14
+  DEVOPS:
+    description: Set up CI/CD pipeline, infrastructure as code, monitoring, and alerting.
+      Configure GitHub Actions for test, build, and deploy stages. Provision AWS infrastructure
+      via Terraform. Set up Datadog (or equivalent) for APM, error tracking, and business
+      metric dashboards.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs lint, type-check, unit tests, and security scan on every PR
+    - CD pipeline deploys to staging on merge to main and production on tag
+    - Terraform plan reviewed in CI before apply — no manual console changes
+    - Datadog dashboards cover API latency, error rate, enrollment rate, and payout
+      job health
+    - Alerts fire within 2 minutes of threshold breach with on-call runbook links
+    - Blue-green deployment configured for zero-downtime releases
+    depends_on:
+    - 10
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: auth,
+      course management, enrollment, payments (Stripe mocked), revenue ledger, affiliate
+      tracking, corporate licenses, analytics aggregation, and review moderation pipeline.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Overall backend test coverage >= 85%
+    - Revenue ledger double-entry invariants tested — credits always equal debits
+      per transaction
+    - Stripe webhook idempotency tested with duplicate event simulation
+    - 'Affiliate attribution logic tested for all edge cases: expired cookie, self-referral,
+      disputed conversion'
+    - Corporate seat allocation limits enforced in tests
+    - All API endpoints have at least one authenticated and one unauthorized test
+      case
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  QA:
+    description: 'Design and execute QA test plan for the full platform: functional
+      test cases for all user journeys, regression suite, exploratory testing of payment
+      and payout flows, accessibility testing (manual + automated), and cross-browser/device
+      compatibility matrix.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all user stories from PRD with traceability matrix
+    - All critical path test cases executed with pass/fail documented
+    - Zero P1 bugs in purchase, enrollment, or payout flows at release
+    - WCAG 2.1 AA manual audit completed with screen reader testing on 3 key flows
+    - Cross-browser test matrix shows no layout regressions on supported browsers
+    - Regression suite automated and runs on every staging deploy
+    depends_on:
+    - 19
+    - 20
+    - 21
+    - 25
+  SYSTEM_TEST:
+    description: 'Execute system-level integration and performance tests: end-to-end
+      purchase-to-payout flow, affiliate click-to-commission flow, corporate SSO login-to-completion
+      flow, load testing for video streaming and concurrent enrollments, and chaos
+      engineering for payout job resilience.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - End-to-end purchase → enrollment → completion → certificate flow passes in all
+      4 locales
+    - Affiliate click → conversion → commission allocation verified end-to-end
+    - Corporate SSO login flow verified with mock SAML IdP
+    - Load test passes at 500 concurrent users with p95 latency within targets
+    - Payout job recovers from worker crash without duplicate payouts
+    - 'Stripe webhook delay simulation: enrollment not created before confirmation
+      received'
+    depends_on:
+    - 25
+    - 26
+  TRAINING:
+    description: 'Produce user-facing onboarding and training materials: instructor
+      getting-started guide, course creation video walkthrough, affiliate program
+      quick-start, corporate admin setup guide, and learner help center articles.
+      Include accessibility-compliant video captions.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Instructor getting-started guide covers account setup, first course creation,
+      and payout configuration
+    - 'All training videos have accurate captions meeting WCAG 1.2.2 (Captions: Prerecorded)'
+    - Corporate SSO setup guide tested with IT admin persona — zero ambiguous steps
+    - Help center articles cover top 10 learner support queries identified from user
+      research
+    - All materials reviewed for accuracy against final UI before publication
+    depends_on:
+    - 22
+    - 26
+  OPERATIONS:
+    description: 'Produce operational runbooks for all critical platform processes:
+      payout batch job monitoring, Stripe webhook failure recovery, affiliate fraud
+      escalation, corporate license provisioning SLA, and incident response playbook
+      for data breaches (FERPA notification requirements).'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Each runbook has clear trigger conditions, step-by-step remediation, and escalation
+      contacts
+    - FERPA breach notification runbook specifies 72-hour regulatory notification
+      timeline
+    - Payout job runbook covers duplicate-payout prevention during recovery
+    - SLA targets documented and tracked in monitoring dashboards
+    - Runbooks reviewed by at least one engineer who did not write them
+    depends_on:
+    - 24
+    - 27

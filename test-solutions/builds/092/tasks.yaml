@@ -1,0 +1,339 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements document, roadmap, and success metrics
+      for the cloud data warehouse platform covering ETL, SQL engine, catalog, lineage,
+      RBAC, and BI integration.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD documents all six core feature areas with scope boundaries
+    - Roadmap has at least three release milestones with defined scope per milestone
+    - 'Success metrics defined: query latency p95, pipeline success rate, catalog
+      coverage percentage'
+    - Prioritization matrix ranks features by user value and implementation complexity
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Capture business requirements, user stories, and process flows for
+      all personas: data engineers (ETL), data analysts (SQL/BI), data stewards (catalog/lineage),
+      and admins (RBAC).'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - Minimum 30 user stories covering all six feature areas
+    - Process flow diagrams for ETL authoring, query execution, catalog search, and
+      access request workflows
+    - ROI analysis quantifies cost savings vs Snowflake/BigQuery for target customer
+      segment
+    - Acceptance criteria defined per user story
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft terms of service, privacy policy, data processing agreements
+      (DPA), and open-source license inventory for all third-party dependencies.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers data ownership, SLA commitments, and acceptable use
+    - Privacy policy addresses data retention, deletion rights, and cross-border transfers
+    - DPA template is GDPR Article 28 compliant
+    - OSS license audit flags any GPL/AGPL conflicts with commercial distribution
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Map ISO 27001 and SOC 2 Type II controls to product architecture.
+      Produce a control inventory, risk register, and traceability matrix linking
+      each control to implementation evidence.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All Annex A ISO 27001 controls assessed as in-scope, out-of-scope, or N/A with
+      justification
+    - SOC 2 TSC criteria mapped to specific implementation tasks
+    - Risk register has likelihood/impact ratings and mitigation owners for top 20
+      risks
+    - Evidence collection plan specifies artifact type, owner, and collection cadence
+      per control
+    depends_on:
+    - 2
+    - 3
+  SECURITY:
+    description: Produce threat model (STRIDE), security architecture document, encryption-at-rest
+      and in-transit design, and penetration test plan covering multi-tenant data
+      isolation.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model identifies threats for all six trust boundaries
+    - Security architecture specifies AES-256 at-rest, TLS 1.3 in-transit, and key
+      rotation strategy
+    - Multi-tenant isolation design prevents cross-tenant data access at storage and
+      query layers
+    - Pen test plan covers OWASP Top 10 plus data warehouse-specific attack vectors
+      (SQL injection, metadata poisoning)
+    depends_on:
+    - 4
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for: ETL pipeline canvas,
+      SQL query editor, data catalog browser, lineage graph viewer, RBAC admin panel,
+      and BI connector setup.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all six feature areas at medium fidelity
+    - Pipeline canvas supports drag-and-drop node placement with connector arrows
+    - Lineage graph is interactive (zoom, pan, click-to-expand)
+    - Accessibility audit confirms WCAG 2.1 AA compliance on all key flows
+    - User research findings documented with at least 5 participant interviews
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 spec for all platform APIs: warehouse management,
+      ETL pipeline CRUD and execution, SQL query submission and results, catalog search
+      and metadata, lineage graph queries, RBAC policies, and BI connector registration.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec validates without errors using spectral lint
+    - All endpoints have request/response schemas with examples
+    - Pagination defined for all list endpoints (cursor-based)
+    - Error response schema is consistent across all endpoints (RFC 7807 Problem Details)
+    - WebSocket protocol for streaming query results is documented
+    depends_on:
+    - 2
+    - 5
+  DATABASE:
+    description: 'Design and implement database schemas for: warehouse metadata store,
+      ETL pipeline definitions and run history, data catalog assets and tags, lineage
+      graph (adjacency), RBAC policies, and query history.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all six domains with foreign key relationships documented
+    - Migration scripts run idempotently on fresh and existing databases
+    - Lineage graph schema supports upstream/downstream traversal queries in under
+      100ms for 10k nodes
+    - Catalog full-text search returns results in under 200ms for 1M assets
+    - Row-level security policies enforce tenant isolation at database layer
+    - All tables have created_at, updated_at, and deleted_at for soft-delete audit
+    depends_on:
+    - 7
+  CONFIG:
+    description: 'Set up project configuration: monorepo structure, environment management,
+      secrets vault integration (HashiCorp Vault or AWS Secrets Manager), feature
+      flags, and local development environment with Docker Compose.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up starts all services and passes health checks within 60 seconds
+    - Secrets are never hardcoded; all pulled from Vault at startup
+    - Environment variables documented in .env.example for each service
+    - Feature flag system allows enabling/disabling any feature without code deploy
+    - Monorepo build caches correctly — unchanged packages not rebuilt
+    depends_on:
+    - 7
+    - 8
+  INFRA:
+    description: 'Provision cloud infrastructure via Terraform: Kubernetes cluster
+      (EKS/GKE), object storage for warehouse data (S3/GCS), managed PostgreSQL, Elasticsearch
+      cluster, VPC with private subnets, load balancers, and WAF.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan has zero errors and applies idempotently
+    - All data stored in private subnets with no public S3 bucket access
+    - KMS encryption enabled for S3, RDS, and EBS volumes
+    - Kubernetes cluster passes CIS benchmark level 1
+    - VPC flow logs enabled and routed to SIEM for SOC 2 compliance
+    - Terraform state stored remotely with locking (S3 + DynamoDB)
+    depends_on:
+    - 9
+  BACKEND:
+    description: 'Build the authentication and authorization service: OAuth 2.0 /
+      OIDC provider integration, JWT issuance, RBAC policy engine (OPA/Casbin), service-to-service
+      mTLS, and audit log for all auth events.'
+    agent_role: developer
+    acceptance_criteria:
+    - All four identity providers authenticate successfully in integration tests
+    - OPA policy evaluation adds under 5ms latency to request path
+    - RBAC supports workspace/schema/table-level permission granularity
+    - All authentication events logged with user ID, IP, timestamp, and outcome
+    - JWT expiry and refresh token rotation implemented per OAuth 2.0 best practices
+    - mTLS enforced between all internal services
+    depends_on:
+    - 9
+    - 10
+  DATA:
+    description: 'Build the data catalog service: automated schema inference from
+      Iceberg tables, asset registration (tables, views, pipelines, dashboards), full-text
+      search, tagging system, and business glossary with term-to-asset linking.'
+    agent_role: data_engineer
+    acceptance_criteria:
+    - New Iceberg table appears in catalog within 60 seconds of creation via schema
+      inference
+    - Full-text search returns relevant assets for natural language queries across
+      name, description, and tags
+    - PII auto-detection tags columns containing email, SSN, phone patterns
+    - Business glossary terms linkable to tables and columns via steward workflow
+    - Catalog search API returns results in under 200ms at 1M assets
+    - Asset descriptions editable by stewards with edit history preserved
+    depends_on:
+    - 13
+  AGENTIC:
+    description: 'Implement AI-powered catalog enrichment and query assistance using
+      the Multi-Agent Coordinator pattern: a coordinator agent routes to specialist
+      sub-agents for (a) auto-generating asset descriptions from schema+sample data,
+      (b) suggesting SQL query completions, and (c) recommending relevant catalog
+      assets for a given query context.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes description generation, query assist, and recommendation
+      tasks to specialist agents
+    - AI-generated asset descriptions are queued for steward approval before appearing
+      in catalog
+    - Natural language to SQL converts at least 80% of test queries to valid SQL
+    - Asset recommendations return ≥3 relevant assets for a given query in under 1
+      second
+    - All AI outputs include confidence score and source attribution
+    - Rejected AI suggestions are fed back into vector memory for future improvement
+    depends_on:
+    - 15
+    - 16
+  FRONTEND:
+    description: 'Build the ETL pipeline canvas: drag-and-drop DAG editor with node
+      palette (sources, transforms, sinks), connection validation, live execution
+      status overlay, and run history panel.'
+    agent_role: developer
+    acceptance_criteria:
+    - User can drag source, transform, and sink nodes onto canvas and connect them
+    - Invalid connections (e.g. sink → source) rejected with visual error indicator
+    - Live execution overlay shows per-node status (pending/running/success/failed)
+      in real time via WebSocket
+    - Run history panel lists last 50 runs with status, duration, and row count
+    - Pipeline JSON exported from canvas matches API schema exactly
+    - Canvas renders correctly on 1920×1080 and 1366×768 viewports
+    depends_on:
+    - 12
+    - 6
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: auth
+      service, ETL engine, query engine, catalog service, lineage service, and BI
+      connectors. Target 80% line coverage per service.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All six services achieve ≥80% line coverage
+    - Integration tests run against real testcontainer instances (no mocked databases)
+    - Contract tests validate all API responses against OpenAPI schema
+    - ETL engine unit tests cover all source/transform/sink combinations
+    - SQL parser lineage extraction tested against 50 representative SQL patterns
+      including JOINs, CTEs, and window functions
+    - Test suite completes within 10 minutes in CI
+    depends_on:
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 11
+  QA:
+    description: 'Produce a quality assurance test plan: test strategy, test case
+      inventory, data quality validation test cases (for ETL output), performance
+      test cases for query engine, and exploratory testing charters for all six feature
+      areas.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test strategy document covers scope, entry/exit criteria, risk-based prioritization,
+      and defect management
+    - Test case inventory has at least 150 cases covering all six feature areas
+    - Data quality test cases include row count reconciliation, null rate checks,
+      and schema drift detection
+    - Performance test cases target query p95 ≤5s, ETL ≥100k rows/sec, catalog search
+      ≤200ms
+    - Exploratory charters include session goals, areas to explore, and oracle heuristics
+    - Test cases tagged with ISO 27001 and SOC 2 control IDs where applicable
+    depends_on:
+    - 2
+    - 7
+  DEVOPS:
+    description: 'Set up CI/CD pipelines: GitHub Actions workflows for lint, test,
+      build, container push, and deploy. Implement GitOps with ArgoCD for Kubernetes
+      deployments, blue/green deploy strategy, automated rollback on health check
+      failure, and secrets rotation pipeline.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR CI pipeline completes in under 15 minutes
+    - Failed integration tests block merge to main automatically
+    - ArgoCD syncs staging deployment within 5 minutes of main branch push
+    - Blue/green deployment has zero downtime during promotion
+    - Automated rollback triggers within 2 minutes of health check failure post-deploy
+    - Trivy container scan fails pipeline on CRITICAL CVEs
+    - SAST scan (Semgrep) runs on every PR with results posted as PR comments
+    depends_on:
+    - 22
+    - 10
+  SYSTEM_TEST:
+    description: 'Execute system-level end-to-end test suites: full ETL-to-query flow
+      (ingest CSV → transform → query results match source), multi-tenant isolation
+      tests, BI connector integration tests, lineage accuracy tests, and performance
+      load tests.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 5 E2E scenarios pass in staging environment
+    - Multi-tenant isolation test confirms zero cross-tenant data leakage at all layers
+    - Load test sustains 100 concurrent queries with p95 latency under 5 seconds
+    - ETL pipeline throughput sustains 100k rows/sec for 30 minutes without error
+      accumulation
+    - 'Lineage accuracy validated: 95% of SQL-derived lineage edges match manually
+      annotated ground truth'
+    - All E2E tests automated and runnable via single make test-e2e command
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 18
+    - 19
+    - 20
+    - 21
+    - 25
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response playbooks for query
+      engine outage, ETL pipeline mass failure, data breach, and catalog unavailability.
+      Define SLAs, on-call rotation, capacity planning model, and disaster recovery
+      procedure.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Each runbook has: detection criteria, triage steps, escalation path, resolution
+      steps, and post-mortem template'
+    - SLA definitions signed off by product manager and legal
+    - 'DR procedure tested in staging: RTO ≤4h and RPO ≤1h verified'
+    - Capacity model projects storage and compute costs at 3x current load
+    - On-call rotation defined with primary and secondary for each service area
+    - All runbooks stored in version-controlled wiki and linked from PagerDuty alerts
+    depends_on:
+    - 25
+    - 26
+  TRAINING:
+    description: 'Produce user guides, onboarding documentation, and training materials
+      for all four personas: data engineers (ETL pipeline authoring), data analysts
+      (SQL editor and BI integration), data stewards (catalog curation), and admins
+      (RBAC and monitoring).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Getting Started guide tested by a new user with zero prior context who completes
+      first pipeline within 30 minutes
+    - All four persona guides cover their primary workflows end-to-end with screenshots
+    - API reference auto-generated from OpenAPI spec and deployed alongside product
+    - Video scripts reviewed and approved by product manager
+    - Documentation site searchable and mobile-readable
+    - Docs version selector allows reading docs for prior releases
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 26
+    - 2
+  DOCS:
+    description: 'Write architecture documentation: system design document, data flow
+      diagrams, ADRs (Architecture Decision Records) for key choices (Iceberg over
+      Delta Lake, Trino over Spark, OPA for authz), deployment topology diagram, and
+      developer onboarding guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - System design document reviewed and approved by tech lead
+    - All ADRs include context, decision, consequences, and alternatives considered
+    - Developer onboarding guide tested by a new engineer who achieves local setup
+      within 30 minutes
+    - Mermaid diagrams render correctly in GitHub and documentation site
+    - Data flow diagrams cover happy path and error/retry flows
+    - Documentation kept in sync with code via CI check on API schema changes
+    depends_on:
+    - 26

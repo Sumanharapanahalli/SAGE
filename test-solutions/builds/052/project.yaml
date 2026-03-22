@@ -1,0 +1,57 @@
+project_name: industrial_iot_platform
+display_name: Industrial Iot Platform
+version: 1.0.0
+domain: iot
+description: Industrial IoT platform for factory monitoring with MQTT/OPC-UA ingestion,
+  real-time dashboards, predictive maintenance ML, alert management, and SCADA integration.
+detected_domains: []
+compliance_standards:
+- IEC 62443
+- ISO 27001
+- NIST Cybersecurity Framework
+task_types:
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- ML_MODEL
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- firmware_engineer
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

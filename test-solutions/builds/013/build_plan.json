@@ -1,0 +1,1196 @@
+{
+  "run_id": "fb18aaca-0b19-408b-a829-cf9b0b70d101",
+  "status": {
+    "run_id": "fb18aaca-0b19-408b-a829-cf9b0b70d101",
+    "solution_name": "invoice_factoring_marketplace",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-21T23:31:23.191256+00:00",
+    "updated_at": "2026-03-21T23:36:43.660541+00:00",
+    "product_description": "B2B invoice factoring marketplace connecting SMBs with institutional investors. Credit scoring, fraud detection, automated KYB verification, and escrow management.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the B2B invoice factoring market: size, growth, key players (Fundbox, BlueVine, Triumph Business Capital), pricing benchmarks, SMB pain points, and institutional investor appetite for receivables assets.",
+        "payload": {
+          "deliverables": [
+            "market_sizing_report.md",
+            "competitor_matrix.md",
+            "gtm_strategy.md"
+          ],
+          "key_questions": [
+            "TAM/SAM/SOM for US invoice factoring",
+            "Discount rate benchmarks (1-5% typical)",
+            "Investor return expectations",
+            "Regulatory arbitrage vs licensed lender model"
+          ]
+        },
+        "acceptance_criteria": [
+          "Market size quantified with cited sources",
+          "At least 8 direct competitors analyzed with differentiation gaps identified",
+          "Go-to-market motion defined (SMB acquisition channel + investor onboarding funnel)",
+          "Pricing model recommendation with margin analysis"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements and user stories for all three personas: SMB seller (invoice submitter), institutional investor (invoice buyer), and platform operator (admin). Map end-to-end process flows: invoice submission \u2192 KYB \u2192 credit scoring \u2192 listing \u2192 bid \u2192 funding \u2192 repayment \u2192 fee collection.",
+        "payload": {
+          "personas": [
+            "SMB_seller",
+            "institutional_investor",
+            "platform_operator"
+          ],
+          "core_flows": [
+            "invoice_lifecycle",
+            "kyb_onboarding",
+            "bid_auction",
+            "escrow_funding",
+            "repayment_tracking"
+          ],
+          "deliverables": [
+            "business_requirements.md",
+            "user_stories.md",
+            "process_flow_diagrams.md",
+            "roi_analysis.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "All three persona journeys documented end-to-end",
+          "At least 40 user stories written in standard format with acceptance criteria",
+          "Invoice lifecycle state machine defined (draft \u2192 verified \u2192 listed \u2192 funded \u2192 repaid \u2192 defaulted)",
+          "ROI model showing platform unit economics at scale",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "FINANCIAL",
+        "description": "Build the financial model: discount rate engine, factoring fee structure (advance rate 80-95%, fee 1-5%), investor yield calculation, platform take-rate, default reserve modeling, and 5-year P&L projection. Include escrow float revenue and late payment penalty economics.",
+        "payload": {
+          "model_components": [
+            "discount_rate_engine",
+            "advance_rate_calculator",
+            "fee_waterfall",
+            "default_reserve",
+            "investor_yield",
+            "platform_economics"
+          ],
+          "deliverables": [
+            "financial_model.xlsx",
+            "pricing_strategy.md",
+            "unit_economics.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Discount rate formula parameterized by credit score, invoice tenor, and buyer concentration risk",
+          "Advance rate tiers defined (Tier A: 90%, Tier B: 85%, Tier C: 80%)",
+          "Platform take-rate modeled at 0.5-2% of invoice face value",
+          "5-year P&L with break-even analysis at specified transaction volume",
+          "Default reserve ratio calculated from industry loss data",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 4,
+        "task_type": "LEGAL",
+        "description": "Draft legal framework: terms of service for SMBs and investors, privacy policy (CCPA/GDPR), invoice purchase agreement, escrow agreement, investor accreditation requirements (Reg D / Reg CF), money transmission licensing assessment, and UCC-1 filing strategy for receivables perfection.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "invoice_purchase_agreement.md",
+            "escrow_agreement.md",
+            "investor_agreement.md",
+            "ucc1_filing_strategy.md"
+          ],
+          "regulatory_scope": [
+            "Reg_D_506b",
+            "CFPB_small_business_lending",
+            "state_money_transmission",
+            "UCC_Article_9"
+          ]
+        },
+        "acceptance_criteria": [
+          "Terms of service covers invoice representations, recourse vs non-recourse factoring, and dispute resolution",
+          "Privacy policy CCPA-compliant with data retention schedules",
+          "Invoice purchase agreement includes UCC-1 perfection language",
+          "Accredited investor verification process documented",
+          "Money transmission licensing gap analysis completed per state",
+          "Legal counsel sign-off checklist created",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 5,
+        "task_type": "COMPLIANCE",
+        "description": "Build compliance framework for PCI DSS, SOC 2 Type II, and SOX controls. Define KYB/AML/KYC obligations under FinCEN BSA. Create traceability matrix mapping regulatory requirements to system controls. Produce audit evidence artifacts: control inventory, risk matrix, data flow diagrams for PCI CDE scope.",
+        "payload": {
+          "standards": [
+            "PCI_DSS_v4",
+            "SOC2_Type2",
+            "SOX_IT_general_controls",
+            "FinCEN_BSA_AML"
+          ],
+          "deliverables": [
+            "compliance_control_matrix.md",
+            "pci_dss_scope_diagram.md",
+            "risk_matrix.md",
+            "sar_filing_procedure.md",
+            "audit_evidence_inventory.md"
+          ],
+          "aml_program": [
+            "customer_due_diligence",
+            "enhanced_due_diligence",
+            "transaction_monitoring",
+            "SAR_filing"
+          ]
+        },
+        "acceptance_criteria": [
+          "PCI DSS CDE scoped with network segmentation diagram",
+          "SOC 2 Trust Service Criteria mapped to 47 controls minimum",
+          "SOX ITGC controls defined for financial reporting data flows",
+          "AML program documented: CDD, EDD, transaction monitoring thresholds, SAR procedures",
+          "Traceability matrix links each standard requirement to a specific technical control",
+          "Annual compliance calendar created"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product roadmap across 3 phases: MVP (KYB + invoice listing + manual funding), v1 (automated credit scoring + auction marketplace), v2 (secondary market + portfolio analytics + API for ERPs). Define success metrics, OKRs, and feature prioritization using RICE scoring.",
+        "payload": {
+          "phases": {
+            "mvp": [
+              "kyb_onboarding",
+              "invoice_upload",
+              "manual_underwriting",
+              "escrow_basic"
+            ],
+            "v1": [
+              "automated_credit_scoring",
+              "fraud_detection",
+              "bid_marketplace",
+              "automated_funding"
+            ],
+            "v2": [
+              "secondary_market",
+              "portfolio_dashboard",
+              "erp_integrations",
+              "white_label_api"
+            ]
+          },
+          "deliverables": [
+            "prd.md",
+            "roadmap.md",
+            "rice_scoring.md",
+            "success_metrics.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all three phases with clear scope boundaries",
+          "Each feature RICE-scored with rationale",
+          "North Star metric defined (GMV processed per month)",
+          "MVP timeline feasible within 3 months of build start",
+          "Success metrics include: time-to-fund, default rate, investor yield, NPS for both personas"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 7,
+        "task_type": "UX_DESIGN",
+        "description": "Design UX for all three portals: SMB dashboard (invoice submission, funding status, repayment schedule), Investor portal (deal flow, bidding interface, portfolio analytics), and Admin console (underwriting queue, KYB review, escrow management). Conduct accessibility audit to WCAG 2.1 AA.",
+        "payload": {
+          "portals": [
+            "smb_portal",
+            "investor_portal",
+            "admin_console"
+          ],
+          "deliverables": [
+            "wireframes/",
+            "design_system.md",
+            "interaction_flows.md",
+            "accessibility_audit.md"
+          ],
+          "key_screens": [
+            "invoice_upload_wizard",
+            "kyb_onboarding_stepper",
+            "bid_auction_view",
+            "portfolio_dashboard",
+            "escrow_ledger",
+            "underwriting_queue"
+          ]
+        },
+        "acceptance_criteria": [
+          "Wireframes for all 3 portals covering critical paths",
+          "Invoice upload wizard: drag-drop + CSV import, validation feedback inline",
+          "Bid auction view shows real-time countdown, current best bid, and investor capacity",
+          "WCAG 2.1 AA audit passed with no critical violations",
+          "Design system components documented (tokens, components, spacing)",
+          "Usability tested with at least 3 representative users per persona"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 8,
+        "task_type": "SECURITY",
+        "description": "Produce threat model (STRIDE) for the marketplace, PCI DSS penetration test plan, application security requirements (OWASP ASVS Level 2), SBOM, and secrets management architecture. Define data classification policy and encryption-at-rest/in-transit requirements.",
+        "payload": {
+          "frameworks": [
+            "STRIDE",
+            "OWASP_ASVS_L2",
+            "PCI_DSS_pen_test",
+            "NIST_CSF"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "pen_test_plan.md",
+            "security_requirements.md",
+            "sbom.json",
+            "data_classification_policy.md"
+          ],
+          "controls": [
+            "secrets_vault",
+            "field_level_encryption_PII",
+            "mTLS_internal_services",
+            "WAF_rules",
+            "rate_limiting"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all data flows: invoice upload, payment processing, KYB data, investor wires",
+          "OWASP ASVS Level 2 requirements checklist complete (286 items)",
+          "PCI DSS pen test scope and methodology documented",
+          "SBOM generated for all third-party dependencies",
+          "Secrets management via HashiCorp Vault or AWS Secrets Manager \u2014 no hardcoded credentials",
+          "Encryption requirements: AES-256 at rest, TLS 1.3 in transit, HSM for payment keys",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 9,
+        "task_type": "DATABASE",
+        "description": "Design PostgreSQL schema for the core domain: entities (businesses, invoices, investors, bids, escrow_accounts, transactions, kyb_records, credit_scores, fraud_signals). Write migrations using Alembic. Seed reference data (industry codes, document types, risk tiers). Define row-level security policies for multi-tenant isolation.",
+        "payload": {
+          "tables": [
+            "businesses",
+            "business_documents",
+            "kyb_records",
+            "invoices",
+            "invoice_line_items",
+            "credit_scores",
+            "fraud_signals",
+            "investors",
+            "investor_profiles",
+            "bids",
+            "auction_rounds",
+            "escrow_accounts",
+            "escrow_transactions",
+            "payments",
+            "repayment_schedules",
+            "platform_fees",
+            "audit_log"
+          ],
+          "features": [
+            "row_level_security",
+            "pgcrypto_PII_fields",
+            "partitioned_audit_log",
+            "temporal_tables_for_credit_history"
+          ],
+          "deliverables": [
+            "migrations/",
+            "schema_diagram.md",
+            "seed_data/",
+            "rls_policies.sql"
+          ]
+        },
+        "acceptance_criteria": [
+          "All tables have primary keys, foreign key constraints, and created_at/updated_at",
+          "PII fields (SSN, bank account numbers, tax IDs) encrypted at column level using pgcrypto",
+          "Row-level security enforces tenant isolation \u2014 businesses can only read their own invoices",
+          "Audit log table partitioned by month for query performance",
+          "Invoice state machine enforced via CHECK constraints",
+          "Migrations are idempotent and reversible (up/down)",
+          "ERD diagram generated and reviewed",
+          "Transaction isolation level documented",
+          "Audit trail on all writes"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specification for all REST endpoints across four service domains: Identity & KYB, Invoice Management, Marketplace (bidding/auction), and Escrow & Payments. Define authentication (OAuth 2.0 + JWT), rate limiting, webhook contracts for payment events, and versioning strategy.",
+        "payload": {
+          "service_domains": {
+            "identity": [
+              "/auth/*",
+              "/kyb/*",
+              "/businesses/*",
+              "/investors/*"
+            ],
+            "invoices": [
+              "/invoices/*",
+              "/documents/*",
+              "/credit-scores/*"
+            ],
+            "marketplace": [
+              "/listings/*",
+              "/bids/*",
+              "/auctions/*"
+            ],
+            "escrow": [
+              "/escrow/*",
+              "/payments/*",
+              "/repayments/*",
+              "/fees/*"
+            ]
+          },
+          "deliverables": [
+            "openapi.yaml",
+            "webhook_contracts.md",
+            "api_versioning_strategy.md"
+          ],
+          "auth": "OAuth2_PKCE_with_refresh_tokens"
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 spec passes validation (no errors in Spectral lint)",
+          "All endpoints have request/response schemas with examples",
+          "Webhook payloads defined for: invoice.funded, payment.received, bid.accepted, kyb.approved",
+          "Rate limits documented per endpoint tier (SMB: 100 req/min, investor: 500 req/min, admin: unlimited)",
+          "API versioning strategy: URI versioning (/v1/, /v2/) with deprecation policy",
+          "Error response schema standardized (RFC 7807 Problem Details)"
+        ],
+        "depends_on": [
+          7,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "CONFIG",
+        "description": "Set up the agentic AI pattern configuration for the platform's internal intelligence layer. Configure a Multi-Agent Coordinator pattern (coordinator + specialist agents) to orchestrate: credit scoring agent, fraud detection agent, KYB verification agent, and underwriting recommendation agent. Set up HITL approval gates for underwriting decisions.",
+        "payload": {
+          "agentic_pattern": "coordinator",
+          "coordinator": "underwriting_coordinator",
+          "specialist_agents": [
+            {
+              "name": "credit_scoring_agent",
+              "tools": [
+                "credit_bureau_api",
+                "financial_statement_parser",
+                "payment_history_analyzer"
+              ]
+            },
+            {
+              "name": "fraud_detection_agent",
+              "tools": [
+                "ip_risk_scorer",
+                "document_authenticity_checker",
+                "velocity_monitor"
+              ]
+            },
+            {
+              "name": "kyb_agent",
+              "tools": [
+                "business_registry_api",
+                "beneficial_owner_lookup",
+                "sanctions_screening"
+              ]
+            },
+            {
+              "name": "underwriting_agent",
+              "tools": [
+                "risk_model_scorer",
+                "advance_rate_calculator",
+                "proposal_generator"
+              ]
+            }
+          ],
+          "hitl_gates": [
+            "underwriting_approval",
+            "kyb_escalation",
+            "high_value_invoice_review"
+          ],
+          "deliverables": [
+            "agent_config.yaml",
+            "hitl_gate_definitions.yaml",
+            "tool_registry.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "Coordinator routes tasks to correct specialist based on task type",
+          "Each specialist agent has defined tools, system prompt, and output schema",
+          "HITL gates configured for: invoices > $500K, KYB risk score > 7, fraud signal triggered",
+          "Agent proposals stored in proposal_store before execution",
+          "ReAct loop configured with max 5 iterations per decision",
+          "Audit trail captures every agent decision with trace_id"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Build the Identity & KYB microservice: business registration, document upload (Articles of Incorporation, EIN letter, bank statements), automated KYB verification via Persona or Middesk API, beneficial ownership verification, OFAC/sanctions screening, and risk score calculation with manual review queue.",
+        "payload": {
+          "stack": "Python FastAPI + PostgreSQL + Celery + Redis",
+          "integrations": [
+            "Persona_KYB_API",
+            "Middesk_business_verification",
+            "OFAC_SDN_list",
+            "Plaid_bank_verification"
+          ],
+          "endpoints": [
+            "/businesses/register",
+            "/businesses/{id}/documents",
+            "/kyb/initiate",
+            "/kyb/{id}/status",
+            "/kyb/{id}/review"
+          ],
+          "async_tasks": [
+            "document_ocr_extraction",
+            "sanctions_screening",
+            "bank_account_verification"
+          ],
+          "deliverables": [
+            "src/services/kyb/",
+            "src/tasks/kyb_tasks.py",
+            "tests/test_kyb.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Business registration creates entity with EIN validation",
+          "Document upload: PDF/image, virus scanned, stored encrypted in S3 with signed URLs",
+          "Automated KYB completes in < 60 seconds for 80% of applicants",
+          "Beneficial ownership CDD: captures all owners > 25% stake",
+          "OFAC screening runs on every applicant and all beneficial owners",
+          "Manual review queue triggers for risk score > 7 or document verification failure",
+          "KYB status webhooks fire on: initiated, documents_received, approved, rejected, manual_review"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build the Credit Scoring & Fraud Detection service: ML-based credit scoring pipeline using business financials, payment history, and industry benchmarks; real-time fraud detection using velocity checks, IP risk, document authenticity, and invoice duplication detection. Integrate with Experian/Dun & Bradstreet business credit APIs.",
+        "payload": {
+          "credit_features": [
+            "business_age",
+            "annual_revenue",
+            "dscr",
+            "industry_risk",
+            "payment_history",
+            "credit_bureau_score",
+            "invoice_concentration_risk"
+          ],
+          "fraud_signals": [
+            "ip_risk_score",
+            "device_fingerprint",
+            "invoice_duplicate_hash",
+            "buyer_verification",
+            "bank_account_mismatch",
+            "velocity_anomaly"
+          ],
+          "integrations": [
+            "Experian_BusinessIQ",
+            "DnB_Direct_Plus",
+            "Sift_fraud_scoring",
+            "AWS_Fraud_Detector"
+          ],
+          "deliverables": [
+            "src/services/credit/",
+            "src/services/fraud/",
+            "models/credit_model.pkl",
+            "tests/test_credit_scoring.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Credit score produces a 0-100 score with Tier (A/B/C/D) classification",
+          "Score explained with top 5 contributing factors (explainability required for adverse action notices)",
+          "Fraud detection runs in < 2 seconds per invoice submission",
+          "Invoice duplicate detection hashes on: amount, buyer, due date \u2014 catches same invoice re-submitted",
+          "Credit bureau data cached for 24 hours to reduce API costs",
+          "Adverse action notice generated automatically for rejected invoices (ECOA compliance)",
+          "Model performance metrics tracked: precision, recall, F1 for fraud labels"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Build the Invoice Management service: invoice submission (manual entry + PDF parsing + CSV bulk upload + ERP webhook), invoice validation (buyer verification, duplicate check, terms validation), document storage, and state machine management (draft \u2192 submitted \u2192 verified \u2192 listed \u2192 funded \u2192 repaid \u2192 defaulted).",
+        "payload": {
+          "invoice_ingestion": [
+            "manual_form",
+            "pdf_ocr_extraction",
+            "csv_bulk_import",
+            "erp_webhook_receiver"
+          ],
+          "validation_pipeline": [
+            "duplicate_detection",
+            "buyer_verification_email",
+            "invoice_terms_validation",
+            "credit_limit_check"
+          ],
+          "state_machine": [
+            "draft",
+            "submitted",
+            "under_review",
+            "verified",
+            "listed",
+            "auction_closed",
+            "funded",
+            "in_repayment",
+            "repaid",
+            "defaulted",
+            "disputed"
+          ],
+          "deliverables": [
+            "src/services/invoices/",
+            "src/workers/invoice_processor.py",
+            "tests/test_invoice_service.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "PDF invoice parser extracts: amount, due date, buyer name, invoice number with > 90% accuracy",
+          "CSV bulk upload handles up to 500 invoices per batch with row-level validation errors",
+          "State machine transitions are atomic and audit-logged",
+          "Buyer verification sends confirmation email and tracks response",
+          "Invoice eligibility rules enforced: min $5K, max $5M, max 90-day tenor, verified buyer required",
+          "ERP webhook receiver supports QuickBooks and Xero payload formats",
+          "Duplicate detection prevents same invoice from being submitted twice"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Build the Marketplace & Auction service: investor accreditation verification, deal listing with advance rate and discount rate parameters, sealed-bid and Dutch auction mechanisms, bid management, auction settlement, investor allocation for partial fills, and secondary market trading.",
+        "payload": {
+          "auction_types": [
+            "fixed_price",
+            "sealed_bid",
+            "dutch_auction",
+            "open_book"
+          ],
+          "investor_features": [
+            "accreditation_verification",
+            "investment_limits",
+            "portfolio_diversification_rules",
+            "auto_bid_rules"
+          ],
+          "settlement": [
+            "allocation_engine",
+            "partial_fill_handling",
+            "escrow_funding_trigger"
+          ],
+          "deliverables": [
+            "src/services/marketplace/",
+            "src/workers/auction_settler.py",
+            "tests/test_marketplace.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Investor accreditation verified via third-party (e.g., Parallel Markets) before first bid",
+          "Dutch auction price steps from discount_rate_max down to reserve in configurable intervals",
+          "Auction closes automatically at expiry or when fully funded",
+          "Partial fills: multiple investors can co-fund a single invoice pro-rata",
+          "Auto-bid rules: investor can set yield floor and max concentration per buyer",
+          "Settlement triggers escrow funding within 5 minutes of auction close",
+          "Secondary market: funded invoices can be re-listed at haircut before maturity"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Build the Escrow & Payments service: virtual escrow account per invoice, ACH/wire funding from investor accounts (via Dwolla or Stripe Treasury), advance disbursement to SMB, repayment collection from buyers (ACH debit pull), fee waterfall calculation, and default/collections workflow.",
+        "payload": {
+          "payment_rails": [
+            "ACH_via_Dwolla",
+            "wire_transfer",
+            "Stripe_Treasury_virtual_accounts"
+          ],
+          "escrow_operations": [
+            "fund_escrow",
+            "disburse_advance",
+            "collect_repayment",
+            "distribute_to_investors",
+            "collect_platform_fee",
+            "handle_default"
+          ],
+          "fee_waterfall": [
+            "repayment_amount",
+            "minus_platform_fee",
+            "minus_reserve",
+            "distribute_principal",
+            "distribute_yield"
+          ],
+          "deliverables": [
+            "src/services/escrow/",
+            "src/workers/payment_processor.py",
+            "tests/test_escrow.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Virtual escrow account created per invoice at auction close",
+          "Investor ACH funding confirmed before advance disbursement",
+          "Advance disbursed to SMB bank account within 1 business day of funding confirmation",
+          "Repayment ACH pull scheduled on invoice due date with 3 retry logic",
+          "Fee waterfall calculated correctly: platform fee deducted first, then investor principal + yield",
+          "Default workflow: triggers collections agent, investor loss notification, reserve fund drawdown",
+          "All money movements recorded in double-entry ledger format",
+          "PCI DSS: no card data stored; bank account tokens stored via payment processor vault"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "ML_MODEL",
+        "description": "Train and deploy the credit scoring ML model: feature engineering from business financials and credit bureau data, XGBoost classifier for default probability, model explainability with SHAP values, model registry with versioning, A/B testing framework for model updates, and bias/fairness audit.",
+        "payload": {
+          "model_type": "XGBoost_with_calibrated_probabilities",
+          "features": [
+            "revenue_growth_yoy",
+            "dscr",
+            "current_ratio",
+            "days_payable_outstanding",
+            "credit_bureau_score",
+            "industry_default_rate",
+            "invoice_concentration",
+            "business_age_months"
+          ],
+          "explainability": "SHAP_TreeExplainer",
+          "deployment": "FastAPI_model_serving + MLflow_registry",
+          "deliverables": [
+            "models/credit_model_v1.pkl",
+            "notebooks/credit_model_training.ipynb",
+            "src/ml/credit_scorer.py",
+            "fairness_audit_report.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Model trained on minimum 10K historical factoring transactions (synthetic data acceptable for MVP)",
+          "AUC-ROC > 0.78 on hold-out test set",
+          "SHAP values computed per prediction for adverse action notice generation",
+          "Model version registered in MLflow with performance metrics and training data hash",
+          "Fairness audit: disparate impact ratio > 0.8 across protected class proxies",
+          "Model serving latency < 200ms at p99",
+          "Model drift monitoring configured: retrain trigger if PSI > 0.2"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build the SMB Portal: React 18 + TypeScript application with invoice submission wizard (multi-step form with PDF upload), dashboard (invoice pipeline status board, funding history, repayment schedule calendar), KYB onboarding stepper, document vault, and notification center.",
+        "payload": {
+          "stack": "React 18 + TypeScript + Vite + TailwindCSS + React Query",
+          "key_pages": [
+            "kyb_onboarding",
+            "invoice_upload_wizard",
+            "invoice_dashboard",
+            "invoice_detail",
+            "repayment_schedule",
+            "document_vault",
+            "notifications"
+          ],
+          "components": [
+            "invoice_status_kanban",
+            "pdf_upload_with_ocr_preview",
+            "repayment_calendar",
+            "funding_progress_bar"
+          ],
+          "deliverables": [
+            "web/smb-portal/src/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Invoice upload wizard: drag-drop PDF, OCR preview with field correction, submit",
+          "Dashboard shows invoice pipeline as Kanban: Draft \u2192 Under Review \u2192 Listed \u2192 Funded \u2192 Repaid",
+          "Repayment schedule shows calendar view with upcoming payment dates highlighted",
+          "Real-time status updates via WebSocket (no page refresh required for state changes)",
+          "Mobile-responsive at 375px, 768px, 1280px breakpoints",
+          "WCAG 2.1 AA compliance verified",
+          "Lighthouse score > 85 on performance, accessibility, best practices"
+        ],
+        "depends_on": [
+          10,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build the Investor Portal: deal flow marketplace with filterable/sortable invoice listings, bidding interface with real-time auction countdown, portfolio dashboard with yield analytics, auto-bid rule configuration, and wire/ACH funding management.",
+        "payload": {
+          "key_pages": [
+            "deal_flow_marketplace",
+            "invoice_detail_investor_view",
+            "active_bids",
+            "portfolio_dashboard",
+            "auto_bid_config",
+            "funding_accounts",
+            "tax_documents"
+          ],
+          "real_time": "WebSocket_auction_feed",
+          "analytics": [
+            "portfolio_yield_chart",
+            "industry_concentration_heatmap",
+            "default_rate_tracker",
+            "cash_flow_calendar"
+          ],
+          "deliverables": [
+            "web/investor-portal/src/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Deal flow marketplace: filter by industry, invoice size, tenor, advance rate, buyer credit rating",
+          "Auction countdown timer updates in real-time via WebSocket",
+          "Bid submission shows confirmation with yield preview before final submission",
+          "Portfolio dashboard shows: total deployed, WAY (weighted average yield), default rate, cash flow calendar",
+          "Auto-bid rules: set yield floor, max single-invoice concentration, industry exclusions",
+          "Tax document downloads: 1099-INT generated annually",
+          "Investor onboarding: accreditation document upload, bank account linking via Plaid"
+        ],
+        "depends_on": [
+          18
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build the Admin Console: underwriting queue with AI recommendations and one-click approve/reject, KYB review interface, escrow ledger, platform analytics dashboard, user management, fraud alert feed, and compliance reporting exports.",
+        "payload": {
+          "key_pages": [
+            "underwriting_queue",
+            "kyb_review",
+            "escrow_ledger",
+            "fraud_alerts",
+            "platform_analytics",
+            "user_management",
+            "compliance_reports"
+          ],
+          "ai_features": [
+            "credit_score_explanation_panel",
+            "fraud_signal_breakdown",
+            "underwriting_recommendation_card"
+          ],
+          "hitl_integration": "proposal_store_inbox",
+          "deliverables": [
+            "web/admin-console/src/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Underwriting queue shows AI recommendation (Approve/Review/Reject) with SHAP factor breakdown",
+          "One-click approve/reject with required comment field for rejections (adverse action)",
+          "KYB review: side-by-side document viewer with extracted data comparison",
+          "Escrow ledger: double-entry view with export to CSV/PDF",
+          "Fraud alert feed: real-time feed with alert severity, signal type, and recommended action",
+          "Compliance reports: AML transaction monitoring report, SAR filing tracker, PCI compliance status",
+          "Role-based access: underwriter role cannot access investor PII; compliance role read-only"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "DATA",
+        "description": "Build the analytics data pipeline: event streaming from application services to data warehouse (Snowflake or BigQuery), dbt transformation models for platform metrics, investor reporting data marts, AML transaction monitoring analytics, and regulatory reporting extracts (CTR, SAR thresholds).",
+        "payload": {
+          "pipeline": "Kafka_events \u2192 Fivetran_or_Airbyte \u2192 Snowflake \u2192 dbt \u2192 BI_layer",
+          "key_models": [
+            "invoice_lifecycle_mart",
+            "investor_portfolio_mart",
+            "platform_revenue_mart",
+            "aml_monitoring_mart",
+            "credit_performance_mart"
+          ],
+          "regulatory_reports": [
+            "CTR_threshold_monitor",
+            "SAR_candidate_detector",
+            "1099_generation"
+          ],
+          "deliverables": [
+            "data/pipelines/",
+            "data/dbt/models/",
+            "data/reports/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Events published to Kafka for all state transitions with schema registry validation",
+          "Snowflake data warehouse loaded within 15 minutes of event emission",
+          "dbt models tested with dbt-expectations: not_null, unique, referential integrity",
+          "Investor portfolio mart correctly calculates WAY, duration, default rate per investor",
+          "AML monitoring: flags transactions > $10K for CTR review, patterns for SAR review",
+          "1099-INT generation: accurate to penny, produced by Jan 15 annually",
+          "Data lineage documented from source event to BI dashboard field"
+        ],
+        "depends_on": [
+          16,
+          17
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 22,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines, infrastructure as code (Terraform for AWS), Kubernetes deployment manifests, secrets management (HashiCorp Vault), monitoring stack (Prometheus + Grafana), distributed tracing (Jaeger/OpenTelemetry), log aggregation (ELK), and PagerDuty alerting with runbooks.",
+        "payload": {
+          "cloud": "AWS",
+          "iac": "Terraform",
+          "orchestration": "EKS_Kubernetes",
+          "ci_cd": "GitHub_Actions",
+          "monitoring": [
+            "Prometheus",
+            "Grafana",
+            "Jaeger_OpenTelemetry",
+            "ELK_Stack",
+            "PagerDuty"
+          ],
+          "security": [
+            "HashiCorp_Vault",
+            "AWS_KMS",
+            "VPC_with_private_subnets",
+            "WAF",
+            "Shield"
+          ],
+          "deliverables": [
+            "infra/terraform/",
+            ".github/workflows/",
+            "k8s/manifests/",
+            "monitoring/dashboards/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Terraform state managed in S3 with DynamoDB locking; all resources tagged",
+          "CI pipeline: lint \u2192 test \u2192 security scan (Snyk) \u2192 build \u2192 push image \u2192 deploy to staging",
+          "CD pipeline: manual approval gate before production deploy with canary rollout",
+          "Kubernetes: HPA configured, pod disruption budgets set, resource limits enforced",
+          "Secrets: zero secrets in environment variables; all via Vault agent sidecar injection",
+          "Monitoring: SLA dashboards for payment success rate, KYB completion rate, auction settlement time",
+          "Alerts: PagerDuty pages on: payment failure spike, fraud detection service down, escrow balance anomaly",
+          "PCI DSS: CDE in isolated VPC with dedicated security groups, no public internet access"
+        ],
+        "depends_on": [
+          16,
+          21
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "TESTS",
+        "description": "Write comprehensive test suite: unit tests for all service business logic, integration tests for KYB/payment/auction flows, contract tests for API consumers, load tests for auction settlement (1000 concurrent bids), and security tests (OWASP ZAP automated scan, auth bypass attempts).",
+        "payload": {
+          "unit_tests": [
+            "credit_scoring_engine",
+            "fraud_detection_rules",
+            "fee_waterfall_calculator",
+            "invoice_state_machine",
+            "auction_settlement_logic"
+          ],
+          "integration_tests": [
+            "kyb_flow_end_to_end",
+            "invoice_submission_to_listing",
+            "auction_to_escrow_funding",
+            "repayment_collection_flow"
+          ],
+          "load_tests": "Locust \u2014 1000 concurrent bidders, 500 invoice submissions/minute",
+          "security_tests": [
+            "OWASP_ZAP_scan",
+            "auth_bypass_matrix",
+            "IDOR_test_suite",
+            "SQL_injection_fuzzing"
+          ],
+          "deliverables": [
+            "tests/unit/",
+            "tests/integration/",
+            "tests/load/",
+            "tests/security/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Unit test coverage > 85% for all service business logic",
+          "Integration tests cover all happy paths and top 5 error scenarios per flow",
+          "Contract tests validated against OpenAPI spec \u2014 no breaking changes undetected",
+          "Load test: auction settlement handles 1000 concurrent bids in < 5 seconds",
+          "OWASP ZAP scan: zero high/critical findings in production build",
+          "IDOR tests: investor A cannot access investor B's portfolio or bids",
+          "All tests run in CI pipeline; failing tests block merge",
+          "Test data factory creates isolated fixtures per test run \u2014 no shared state"
+        ],
+        "depends_on": [
+          20,
+          22
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "OPERATIONS",
+        "description": "Define operational runbooks: incident response playbooks (payment failure, fraud surge, KYB provider outage, data breach), SLA definitions (funding SLA: advance disbursed within 24h of auction close), capacity planning model, on-call rotation, and AML escalation procedures.",
+        "payload": {
+          "runbooks": [
+            "payment_failure_runbook.md",
+            "fraud_surge_runbook.md",
+            "kyb_provider_outage_runbook.md",
+            "data_breach_runbook.md",
+            "escrow_reconciliation_runbook.md"
+          ],
+          "slas": {
+            "invoice_verification": "4 business hours",
+            "advance_disbursement": "1 business day after auction close",
+            "repayment_collection": "same day ACH attempt on due date",
+            "support_response": "4 hours for P1, 24 hours for P2"
+          },
+          "deliverables": [
+            "ops/runbooks/",
+            "ops/sla_definitions.md",
+            "ops/capacity_plan.md",
+            "ops/on_call_schedule.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Each runbook has: detection criteria, severity classification, step-by-step remediation, escalation path, post-incident review template",
+          "Payment failure runbook tested with tabletop exercise",
+          "SLAs defined for all customer-facing commitments with measurement methodology",
+          "Capacity plan projects infrastructure cost at 10x, 100x current volume",
+          "AML escalation: SAR filing procedure with 30-day FinCEN deadline tracking",
+          "Data breach runbook meets 72-hour GDPR notification requirement",
+          "On-call rotation documented with PagerDuty schedule configuration"
+        ],
+        "depends_on": [
+          22,
+          23
+        ],
+        "agent_role": "operations_manager"
+      }
+    ],
+    "task_count": 24,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "Money transmission licensing treated as a documentation exercise (Step 4): MTL acquisition is a 12-24 month process with capital bonding requirements ($500K-$5M+) in key states (NY, TX, CA). The plan produces a 'gap analysis' document but has no go/no-go gate blocking build start. You cannot legally hold or move customer funds in most US states without this license or a bank sponsor. This is existential.",
+              "ML credit model trained on synthetic data (Step 17) making real lending decisions: Adverse action notices generated from a model without real historical performance data will fail ECOA/FCRA audit. Regulators will ask for model validation against actual default outcomes. Synthetic data is acceptable for testing infrastructure, not for calibrating a real credit scoring engine used to approve or deny funding.",
+              "No bank partner / sponsor bank strategy: The plan uses Dwolla/Stripe Treasury for ACH but doesn't address who holds the escrowed funds. Investor funds must sit in FDIC-insured accounts. Without a bank sponsor (BaaS model) or your own bank charter, you are holding uninsured customer funds \u2014 illegal in most states and a catastrophic trust failure.",
+              "Escrow as a service without an escrow license: 'Escrow' is a regulated activity in California, Washington, Idaho, and others requiring a licensed escrow agent. Building an internal escrow service (Step 16) without addressing this is a regulatory violation in major SMB markets.",
+              "Step 13 builds credit scoring service before Step 17 trains the ML model: The backend credit service (Step 13) depends on a model that isn't trained until Step 17, which depends on Step 13. This circular dependency means the Step 13 service will ship with a placeholder model and then require a breaking integration change. The plan doesn't acknowledge or solve this.",
+              "ACH return code handling is absent: The plan says '3 retry logic' for repayment (Step 16) but ACH has 40+ return reason codes (R01-R85). R10 (unauthorized), R05 (unauthorized consumer debit), and R07 (authorization revoked) require specific NACHA-compliant responses and cannot just be retried. Improper ACH handling leads to Originating Depository Financial Institution (ODFI) fines and termination.",
+              "No NACHA operating rules compliance defined anywhere: Dwolla as a Third-Party Service Provider (TPSP) requires the platform to comply with NACHA rules as an Originating Company. Daily origination limits, debit exposure limits, return rate thresholds (< 0.5% for unauthorized returns), and ACH audit requirements are entirely absent from the plan.",
+              "WebSocket auction concurrency not addressed: Steps 18/19 require real-time auction with 1000 concurrent bidders. Horizontal scaling of WebSocket servers requires a pub/sub layer (Redis Pub/Sub, AWS API Gateway WebSocket, or similar). Without this, sticky sessions on a single node become the auction settlement bottleneck. The load test (Step 23) will expose this but with no architectural solution defined.",
+              "Auction race condition / double-fill not solved: Two investors submitting the final 10% of an invoice simultaneously can result in over-funding. The plan mentions 'partial fills' and 'pro-rata' allocation but defines no distributed locking, optimistic concurrency control, or idempotency key strategy for bid submission. In a financial system, this is a correctness failure with real monetary impact.",
+              "FCRA compliance absent: Experian BusinessIQ and D&B Direct+ are FCRA-regulated consumer reporting agencies when used for commercial credit decisions on small businesses with personal guarantors. The plan mentions ECOA adverse action notices but never mentions FCRA permissible purpose, data furnisher obligations, dispute resolution requirements, or the 5-year data retention limit.",
+              "Reg D 506(b) vs 506(c) not decided \u2014 it changes the entire investor onboarding flow: 506(b) prohibits general solicitation but allows up to 35 non-accredited investors; 506(c) requires ALL investors to be accredited but allows advertising. The plan lists both without choosing. This decision gates the marketing strategy, investor UI, and accreditation verification requirements. It's listed as a document to draft (Step 4), not an architectural decision.",
+              "Form D SEC filing not in the plan: After the first investor funds an invoice under Reg D, the platform must file Form D with the SEC within 15 days and make state notice filings (Blue Sky laws) in each investor's state. Missing this is a securities violation. Not mentioned anywhere.",
+              "No FinCEN MSB registration step: If the platform originates, holds, or transfers funds, it is likely a Money Services Business required to register with FinCEN within 180 days of starting operations. This is separate from state MTLs. The plan builds the AML program (Step 5) but never registers the entity.",
+              "pgcrypto key management not defined (Step 9): Column-level encryption via pgcrypto is only as strong as the key management. If encryption keys are stored in the same database or in application env vars (which Step 22 prohibits via Vault), the encryption is theater. No HSM, no Vault Transit Engine integration, no key rotation cadence defined.",
+              "Reserve fund initial capitalization has no source: Step 3 models a default reserve ratio but never specifies where the initial reserve fund comes from. Institutional investors will require a funded reserve before deploying capital. This is a capital structure question that blocks investor onboarding.",
+              "Buyer verification is an email confirmation (Step 14): Invoice fraud often involves SMBs submitting invoices for non-existent buyers or inflated amounts. An email to the buyer's unverified address is trivially spoofable. No business registry verification of buyers, no phone confirmation, no buyer enrollment step \u2014 this is the weakest link in the fraud prevention chain.",
+              "Three separate React apps with no shared design system implementation: Steps 18/19/20 build three independent frontend applications. Step 7 defines a design system but there is no monorepo strategy, no shared component package, and no mechanism to keep all three portals consistent. This creates 3x maintenance burden and inconsistent UX/security patches."
+            ],
+            "suggestions": [
+              "Add a regulatory structure decision step BEFORE Step 4 that determines: (a) bank sponsor vs MTL model, (b) Reg D 506(b) vs 506(c), (c) escrow agent partner vs licensed escrow. These are go/no-go gates. Building Steps 12-16 without knowing the regulatory structure produces throwaway code.",
+              "Replace synthetic training data requirement in Step 17 with a data partnership requirement: either purchase historical invoice performance data from a factoring industry data cooperative, or pilot with a real portfolio of $1-5M before deploying the ML model in production. Document the data lineage as part of model card.",
+              "Add Step 0: 'Regulatory Feasibility Assessment' \u2014 engage fintech legal counsel to produce a legal memo covering: MTL requirements by target state, MSB registration obligations, Reg D election, escrow licensing, and FCRA applicability. This step must complete before any build starts.",
+              "Resolve the Step 13 \u2192 Step 17 circular dependency by separating credit scoring into two phases: Phase 1 uses a rules-based scorecard (deterministic, explainable, ECOA-compliant) for launch; Phase 2 replaces it with the XGBoost model once real performance data accumulates from Phase 1 production traffic.",
+              "Add a dedicated auction concurrency design document as a deliverable in Step 15: specify the distributed lock mechanism (Redis SETNX or Postgres advisory locks), define bid idempotency keys, and specify the settlement sequence as a two-phase commit (reserve capacity \u2192 confirm allocation).",
+              "Add NACHA compliance checklist to Step 16 acceptance criteria: daily debit cap configuration, return rate monitoring thresholds, SEC code selection (CCD for business-to-business), ODFI agreement requirements, and ACH audit trail per transaction.",
+              "Consolidate the three frontend portals into a monorepo (Turborepo or Nx) with a shared packages/ui library. Define this in the architecture before Step 18. This cuts maintenance cost by 50% and ensures security patches (e.g., auth token handling) are applied once.",
+              "Add Business Email Compromise (BEC) controls to Step 13 fraud signals: any change to bank account disbursement details within 48 hours of an auction close should require out-of-band verification (phone call to registered contact, not email). This is the most common high-value fraud vector in invoice factoring.",
+              "Step 22 acceptance criteria must include RDS automated backups with point-in-time recovery enabled, cross-region replication for the escrow database, and a tested restore procedure with documented RTO/RPO. Financial platforms have regulatory obligations to maintain financial record integrity.",
+              "Add investor suitability analysis to Step 15 beyond accreditation: document the platform's position on whether yield recommendations or auto-bid suggestions constitute investment advice triggering RIA registration requirements under the Investment Advisers Act of 1940."
+            ],
+            "missing": [
+              "Bank sponsor / BaaS partner selection and onboarding timeline: Stripe Treasury, Evolve Bank, Cross River Bank, or similar. This takes 3-6 months of underwriting and legal review. Not mentioning it means the payment infrastructure has no legal home.",
+              "Series LLC or SPV structure for investor asset isolation: institutional investors expect receivables assets to be held in bankruptcy-remote SPVs. The plan has no entity structure diagram. This is table stakes for institutional capital.",
+              "CFPB small business lending complaint management system: required for commercial lenders under CFPB supervision. Must include intake, tracking, escalation, and regulatory reporting.",
+              "Fair lending / Reg B analysis program: beyond adverse action notices, the platform must monitor for disparate impact in credit decisions by geography, industry, and business owner demographics. No monitoring program defined.",
+              "FinCEN MSB registration step with timeline",
+              "FCRA compliance program: permissible purpose documentation, data furnisher obligations (e30 dispute process), and adverse action letter templates that cite the specific credit bureau report used.",
+              "SEC Form D filing procedure and Blue Sky state notice filing tracker",
+              "API Gateway / service mesh definition: Step 10 designs OpenAPI specs but never defines how services are exposed externally (AWS API Gateway, Kong, Istio). Rate limiting specified in Step 10 requires enforcement infrastructure that doesn't exist in the plan.",
+              "Database connection pooling strategy (PgBouncer): with 6+ microservices hitting PostgreSQL, connection exhaustion is a production failure mode at moderate scale. Not mentioned.",
+              "Redis pub/sub architecture for WebSocket horizontal scaling: required for Steps 18/19 to work at the load targets in Step 23.",
+              "Disaster recovery plan with explicit RPO/RTO targets: not the same as runbooks. Regulators and institutional investors will ask for this before committing capital.",
+              "Conflict of interest policy and platform neutrality documentation: the platform operator sees all bids and all investor profiles. How is preferential treatment prevented? Required for investor trust and potentially for regulatory compliance.",
+              "Investor onboarding regulatory timeline: Parallel Markets accreditation verification, Plaid bank linking, and investor KYC can each take 1-5 business days. The plan has no async onboarding state machine for investors analogous to the KYB flow for SMBs.",
+              "1099-B vs 1099-INT determination: factoring transactions where investors purchase receivables at a discount may generate 1099-B (proceeds from broker transactions) rather than 1099-INT. Tax counsel must opine on this before Step 21 builds the 1099 generation pipeline."
+            ],
+            "security_risks": [
+              "Bank account substitution fraud at disbursement: an attacker who compromises an SMB account (or social engineers the admin team) can change the disbursement bank account minutes before the advance is sent. No out-of-band verification, change notification delay, or change velocity controls are defined. This is the highest-value attack surface on the platform.",
+              "Admin console is a single point of total compromise: Step 20 grants the admin role access to underwriting decisions, KYB documents, escrow ledger, fraud alerts, and compliance reports. A compromised admin credential exposes the entire platform. No privileged access management (PAM), no just-in-time access provisioning, no session recording defined.",
+              "Auction insider manipulation: platform operators with admin access can see all sealed bids before auction close. The plan has no separation of duties preventing an insider from sharing bid information with favored investors. Sealed-bid auctions require cryptographic commitment schemes or strict role separation \u2014 neither is specified.",
+              "JWT token revocation not addressed: OAuth 2.0 + JWT is stateless by design. If an investor's device is stolen or an employee is terminated, their JWT remains valid until expiry. No token revocation endpoint, no short expiry + refresh rotation policy, no blacklist mechanism defined.",
+              "Invoice duplication detection is hash-based but hash inputs are attacker-controlled: Step 13 hashes on 'amount, buyer, due date.' An attacker submitting a fraudulent duplicate invoice can defeat this by changing the due date by one day or the amount by $1. The deduplication scheme needs to include normalized buyer EIN + invoice number from OCR, not just metadata fields.",
+              "Kafka event stream is an unprotected audit trail: Step 21 streams all state transitions to Kafka. If the Kafka cluster is compromised or misconfigured (default no-auth Kafka is common), an attacker gains a real-time feed of every transaction on the platform. No mention of Kafka authentication, authorization (ACLs), or encryption in transit.",
+              "pgcrypto key co-location: if encryption keys for PII columns are derived from a master key stored in the application config (even via Vault), a Vault breach or application-level compromise decrypts all PII. The plan needs a Vault Transit Engine integration so the application never holds plaintext keys.",
+              "Webhook receiver for ERP integrations (Step 14) has no HMAC signature verification specified: QuickBooks and Xero webhooks can be spoofed to inject fraudulent invoice data at scale. HMAC validation must be in the acceptance criteria, not assumed."
+            ],
+            "summary": "This plan is architecturally ambitious and covers more ground than most early-stage fintech builds \u2014 the 24-step sequence, three-portal architecture, ML pipeline, compliance framework, and operational runbooks demonstrate genuine domain knowledge. However, it has a fundamental category error: it treats blocked regulatory decisions as documentation deliverables rather than go/no-go gates. The platform cannot legally process a single transaction without resolving bank sponsorship, money transmission licensing, escrow licensing, and the Reg D election \u2014 and these decisions take 6-18 months, not a sprint. Building Steps 12-22 before these are resolved produces code that may need complete rearchitecture. Compounding this, the ML credit scoring model explicitly accepts synthetic training data for real lending decisions, which is both operationally unsound and a regulatory landmine under ECOA/FCRA. The auction concurrency design has no solution for race conditions in bid settlement, the ACH integration ignores NACHA compliance entirely, and the three-portal frontend has no shared infrastructure strategy. For a regulated financial platform, this scores 54: the coverage breadth is real, but the execution blockers are fundamental enough that a naive team would build for 12 months and then discover they cannot legally launch.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "Money transmission licensing treated as a documentation exercise (Step 4): MTL acquisition is a 12-24 month process with capital bonding requirements ($500K-$5M+) in key states (NY, TX, CA). The plan produces a 'gap analysis' document but has no go/no-go gate blocking build start. You cannot legally hold or move customer funds in most US states without this license or a bank sponsor. This is existential.",
+                "ML credit model trained on synthetic data (Step 17) making real lending decisions: Adverse action notices generated from a model without real historical performance data will fail ECOA/FCRA audit. Regulators will ask for model validation against actual default outcomes. Synthetic data is acceptable for testing infrastructure, not for calibrating a real credit scoring engine used to approve or deny funding.",
+                "No bank partner / sponsor bank strategy: The plan uses Dwolla/Stripe Treasury for ACH but doesn't address who holds the escrowed funds. Investor funds must sit in FDIC-insured accounts. Without a bank sponsor (BaaS model) or your own bank charter, you are holding uninsured customer funds \u2014 illegal in most states and a catastrophic trust failure.",
+                "Escrow as a service without an escrow license: 'Escrow' is a regulated activity in California, Washington, Idaho, and others requiring a licensed escrow agent. Building an internal escrow service (Step 16) without addressing this is a regulatory violation in major SMB markets.",
+                "Step 13 builds credit scoring service before Step 17 trains the ML model: The backend credit service (Step 13) depends on a model that isn't trained until Step 17, which depends on Step 13. This circular dependency means the Step 13 service will ship with a placeholder model and then require a breaking integration change. The plan doesn't acknowledge or solve this.",
+                "ACH return code handling is absent: The plan says '3 retry logic' for repayment (Step 16) but ACH has 40+ return reason codes (R01-R85). R10 (unauthorized), R05 (unauthorized consumer debit), and R07 (authorization revoked) require specific NACHA-compliant responses and cannot just be retried. Improper ACH handling leads to Originating Depository Financial Institution (ODFI) fines and termination.",
+                "No NACHA operating rules compliance defined anywhere: Dwolla as a Third-Party Service Provider (TPSP) requires the platform to comply with NACHA rules as an Originating Company. Daily origination limits, debit exposure limits, return rate thresholds (< 0.5% for unauthorized returns), and ACH audit requirements are entirely absent from the plan.",
+                "WebSocket auction concurrency not addressed: Steps 18/19 require real-time auction with 1000 concurrent bidders. Horizontal scaling of WebSocket servers requires a pub/sub layer (Redis Pub/Sub, AWS API Gateway WebSocket, or similar). Without this, sticky sessions on a single node become the auction settlement bottleneck. The load test (Step 23) will expose this but with no architectural solution defined.",
+                "Auction race condition / double-fill not solved: Two investors submitting the final 10% of an invoice simultaneously can result in over-funding. The plan mentions 'partial fills' and 'pro-rata' allocation but defines no distributed locking, optimistic concurrency control, or idempotency key strategy for bid submission. In a financial system, this is a correctness failure with real monetary impact.",
+                "FCRA compliance absent: Experian BusinessIQ and D&B Direct+ are FCRA-regulated consumer reporting agencies when used for commercial credit decisions on small businesses with personal guarantors. The plan mentions ECOA adverse action notices but never mentions FCRA permissible purpose, data furnisher obligations, dispute resolution requirements, or the 5-year data retention limit.",
+                "Reg D 506(b) vs 506(c) not decided \u2014 it changes the entire investor onboarding flow: 506(b) prohibits general solicitation but allows up to 35 non-accredited investors; 506(c) requires ALL investors to be accredited but allows advertising. The plan lists both without choosing. This decision gates the marketing strategy, investor UI, and accreditation verification requirements. It's listed as a document to draft (Step 4), not an architectural decision.",
+                "Form D SEC filing not in the plan: After the first investor funds an invoice under Reg D, the platform must file Form D with the SEC within 15 days and make state notice filings (Blue Sky laws) in each investor's state. Missing this is a securities violation. Not mentioned anywhere.",
+                "No FinCEN MSB registration step: If the platform originates, holds, or transfers funds, it is likely a Money Services Business required to register with FinCEN within 180 days of starting operations. This is separate from state MTLs. The plan builds the AML program (Step 5) but never registers the entity.",
+                "pgcrypto key management not defined (Step 9): Column-level encryption via pgcrypto is only as strong as the key management. If encryption keys are stored in the same database or in application env vars (which Step 22 prohibits via Vault), the encryption is theater. No HSM, no Vault Transit Engine integration, no key rotation cadence defined.",
+                "Reserve fund initial capitalization has no source: Step 3 models a default reserve ratio but never specifies where the initial reserve fund comes from. Institutional investors will require a funded reserve before deploying capital. This is a capital structure question that blocks investor onboarding.",
+                "Buyer verification is an email confirmation (Step 14): Invoice fraud often involves SMBs submitting invoices for non-existent buyers or inflated amounts. An email to the buyer's unverified address is trivially spoofable. No business registry verification of buyers, no phone confirmation, no buyer enrollment step \u2014 this is the weakest link in the fraud prevention chain.",
+                "Three separate React apps with no shared design system implementation: Steps 18/19/20 build three independent frontend applications. Step 7 defines a design system but there is no monorepo strategy, no shared component package, and no mechanism to keep all three portals consistent. This creates 3x maintenance burden and inconsistent UX/security patches."
+              ],
+              "suggestions": [
+                "Add a regulatory structure decision step BEFORE Step 4 that determines: (a) bank sponsor vs MTL model, (b) Reg D 506(b) vs 506(c), (c) escrow agent partner vs licensed escrow. These are go/no-go gates. Building Steps 12-16 without knowing the regulatory structure produces throwaway code.",
+                "Replace synthetic training data requirement in Step 17 with a data partnership requirement: either purchase historical invoice performance data from a factoring industry data cooperative, or pilot with a real portfolio of $1-5M before deploying the ML model in production. Document the data lineage as part of model card.",
+                "Add Step 0: 'Regulatory Feasibility Assessment' \u2014 engage fintech legal counsel to produce a legal memo covering: MTL requirements by target state, MSB registration obligations, Reg D election, escrow licensing, and FCRA applicability. This step must complete before any build starts.",
+                "Resolve the Step 13 \u2192 Step 17 circular dependency by separating credit scoring into two phases: Phase 1 uses a rules-based scorecard (deterministic, explainable, ECOA-compliant) for launch; Phase 2 replaces it with the XGBoost model once real performance data accumulates from Phase 1 production traffic.",
+                "Add a dedicated auction concurrency design document as a deliverable in Step 15: specify the distributed lock mechanism (Redis SETNX or Postgres advisory locks), define bid idempotency keys, and specify the settlement sequence as a two-phase commit (reserve capacity \u2192 confirm allocation).",
+                "Add NACHA compliance checklist to Step 16 acceptance criteria: daily debit cap configuration, return rate monitoring thresholds, SEC code selection (CCD for business-to-business), ODFI agreement requirements, and ACH audit trail per transaction.",
+                "Consolidate the three frontend portals into a monorepo (Turborepo or Nx) with a shared packages/ui library. Define this in the architecture before Step 18. This cuts maintenance cost by 50% and ensures security patches (e.g., auth token handling) are applied once.",
+                "Add Business Email Compromise (BEC) controls to Step 13 fraud signals: any change to bank account disbursement details within 48 hours of an auction close should require out-of-band verification (phone call to registered contact, not email). This is the most common high-value fraud vector in invoice factoring.",
+                "Step 22 acceptance criteria must include RDS automated backups with point-in-time recovery enabled, cross-region replication for the escrow database, and a tested restore procedure with documented RTO/RPO. Financial platforms have regulatory obligations to maintain financial record integrity.",
+                "Add investor suitability analysis to Step 15 beyond accreditation: document the platform's position on whether yield recommendations or auto-bid suggestions constitute investment advice triggering RIA registration requirements under the Investment Advisers Act of 1940."
+              ],
+              "missing": [
+                "Bank sponsor / BaaS partner selection and onboarding timeline: Stripe Treasury, Evolve Bank, Cross River Bank, or similar. This takes 3-6 months of underwriting and legal review. Not mentioning it means the payment infrastructure has no legal home.",
+                "Series LLC or SPV structure for investor asset isolation: institutional investors expect receivables assets to be held in bankruptcy-remote SPVs. The plan has no entity structure diagram. This is table stakes for institutional capital.",
+                "CFPB small business lending complaint management system: required for commercial lenders under CFPB supervision. Must include intake, tracking, escalation, and regulatory reporting.",
+                "Fair lending / Reg B analysis program: beyond adverse action notices, the platform must monitor for disparate impact in credit decisions by geography, industry, and business owner demographics. No monitoring program defined.",
+                "FinCEN MSB registration step with timeline",
+                "FCRA compliance program: permissible purpose documentation, data furnisher obligations (e30 dispute process), and adverse action letter templates that cite the specific credit bureau report used.",
+                "SEC Form D filing procedure and Blue Sky state notice filing tracker",
+                "API Gateway / service mesh definition: Step 10 designs OpenAPI specs but never defines how services are exposed externally (AWS API Gateway, Kong, Istio). Rate limiting specified in Step 10 requires enforcement infrastructure that doesn't exist in the plan.",
+                "Database connection pooling strategy (PgBouncer): with 6+ microservices hitting PostgreSQL, connection exhaustion is a production failure mode at moderate scale. Not mentioned.",
+                "Redis pub/sub architecture for WebSocket horizontal scaling: required for Steps 18/19 to work at the load targets in Step 23.",
+                "Disaster recovery plan with explicit RPO/RTO targets: not the same as runbooks. Regulators and institutional investors will ask for this before committing capital.",
+                "Conflict of interest policy and platform neutrality documentation: the platform operator sees all bids and all investor profiles. How is preferential treatment prevented? Required for investor trust and potentially for regulatory compliance.",
+                "Investor onboarding regulatory timeline: Parallel Markets accreditation verification, Plaid bank linking, and investor KYC can each take 1-5 business days. The plan has no async onboarding state machine for investors analogous to the KYB flow for SMBs.",
+                "1099-B vs 1099-INT determination: factoring transactions where investors purchase receivables at a discount may generate 1099-B (proceeds from broker transactions) rather than 1099-INT. Tax counsel must opine on this before Step 21 builds the 1099 generation pipeline."
+              ],
+              "security_risks": [
+                "Bank account substitution fraud at disbursement: an attacker who compromises an SMB account (or social engineers the admin team) can change the disbursement bank account minutes before the advance is sent. No out-of-band verification, change notification delay, or change velocity controls are defined. This is the highest-value attack surface on the platform.",
+                "Admin console is a single point of total compromise: Step 20 grants the admin role access to underwriting decisions, KYB documents, escrow ledger, fraud alerts, and compliance reports. A compromised admin credential exposes the entire platform. No privileged access management (PAM), no just-in-time access provisioning, no session recording defined.",
+                "Auction insider manipulation: platform operators with admin access can see all sealed bids before auction close. The plan has no separation of duties preventing an insider from sharing bid information with favored investors. Sealed-bid auctions require cryptographic commitment schemes or strict role separation \u2014 neither is specified.",
+                "JWT token revocation not addressed: OAuth 2.0 + JWT is stateless by design. If an investor's device is stolen or an employee is terminated, their JWT remains valid until expiry. No token revocation endpoint, no short expiry + refresh rotation policy, no blacklist mechanism defined.",
+                "Invoice duplication detection is hash-based but hash inputs are attacker-controlled: Step 13 hashes on 'amount, buyer, due date.' An attacker submitting a fraudulent duplicate invoice can defeat this by changing the due date by one day or the amount by $1. The deduplication scheme needs to include normalized buyer EIN + invoice number from OCR, not just metadata fields.",
+                "Kafka event stream is an unprotected audit trail: Step 21 streams all state transitions to Kafka. If the Kafka cluster is compromised or misconfigured (default no-auth Kafka is common), an attacker gains a real-time feed of every transaction on the platform. No mention of Kafka authentication, authorization (ACLs), or encryption in transit.",
+                "pgcrypto key co-location: if encryption keys for PII columns are derived from a master key stored in the application config (even via Vault), a Vault breach or application-level compromise decrypts all PII. The plan needs a Vault Transit Engine integration so the application never holds plaintext keys.",
+                "Webhook receiver for ERP integrations (Step 14) has no HMAC signature verification specified: QuickBooks and Xero webhooks can be spoofed to inject fraudulent invoice data at scale. HMAC validation must be in the acceptance criteria, not assumed."
+              ],
+              "summary": "This plan is architecturally ambitious and covers more ground than most early-stage fintech builds \u2014 the 24-step sequence, three-portal architecture, ML pipeline, compliance framework, and operational runbooks demonstrate genuine domain knowledge. However, it has a fundamental category error: it treats blocked regulatory decisions as documentation deliverables rather than go/no-go gates. The platform cannot legally process a single transaction without resolving bank sponsorship, money transmission licensing, escrow licensing, and the Reg D election \u2014 and these decisions take 6-18 months, not a sprint. Building Steps 12-22 before these are resolved produces code that may need complete rearchitecture. Compounding this, the ML credit scoring model explicitly accepts synthetic training data for real lending decisions, which is both operationally unsound and a regulatory landmine under ECOA/FCRA. The auction concurrency design has no solution for race conditions in bid settlement, the ACH integration ignores NACHA compliance entirely, and the three-portal frontend has no shared infrastructure strategy. For a regulated financial platform, this scores 54: the coverage breadth is real, but the execution blockers are fundamental enough that a naive team would build for 12 months and then discover they cannot legally launch.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-21T23:36:43.660529+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 176.1,
+      "critic_plan": 144.37
+    }
+  }
+}

@@ -1,0 +1,62 @@
+project_name: agriculture_monitoring
+display_name: Agriculture Monitoring
+version: 1.0.0
+domain: iot
+description: Smart agriculture IoT system with soil moisture sensors, weather station,
+  irrigation automation, crop health imaging (NDVI), and yield prediction.
+detected_domains: []
+compliance_standards:
+- IEC 62443
+- FCC Part 15
+- EPA Water Standards
+task_types:
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- INFRA
+- ML_MODEL
+- PCB_DESIGN
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- UX_DESIGN
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- firmware_engineer
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

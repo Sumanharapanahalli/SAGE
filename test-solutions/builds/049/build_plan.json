@@ -1,0 +1,1065 @@
+{
+  "run_id": "1d1254b5-3b4b-4db5-8799-797676a3bf69",
+  "status": {
+    "run_id": "1d1254b5-3b4b-4db5-8799-797676a3bf69",
+    "solution_name": "price_optimization",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T06:15:17.038616+00:00",
+    "updated_at": "2026-03-22T06:19:19.839771+00:00",
+    "product_description": "Dynamic pricing optimization engine with competitor price monitoring, demand forecasting, price elasticity modeling, and automated repricing rules.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Competitive landscape analysis: identify competitor pricing tools, data sources, scraping legality, and market positioning for the price_optimization solution.",
+        "payload": {
+          "deliverables": [
+            "competitor_matrix.md",
+            "data_source_inventory.md",
+            "pricing_tool_landscape.md"
+          ],
+          "competitors": [
+            "Prisync",
+            "Wiser",
+            "Omnia Retail",
+            "Intelligence Node"
+          ],
+          "focus_areas": [
+            "real-time data feeds",
+            "API availability",
+            "pricing frequency",
+            "SMB vs enterprise fit"
+          ]
+        },
+        "acceptance_criteria": [
+          "At least 5 competitor tools profiled with feature/pricing comparison",
+          "Identified \u22653 viable competitor price data sources (APIs, scrapers, feeds)",
+          "Market sizing estimate with addressable segment defined",
+          "Go-to-market positioning statement drafted"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Elicit and document business requirements: user personas (e-commerce managers, revenue ops, pricing analysts), use cases, repricing rule vocabulary, and KPI definitions.",
+        "payload": {
+          "deliverables": [
+            "business_requirements.md",
+            "user_stories.md",
+            "kpi_definitions.md"
+          ],
+          "personas": [
+            "pricing_analyst",
+            "ecommerce_manager",
+            "revenue_ops_lead"
+          ],
+          "core_flows": [
+            "price_monitor_setup",
+            "rule_creation",
+            "forecast_review",
+            "approval_gate",
+            "repricing_execution"
+          ]
+        },
+        "acceptance_criteria": [
+          "\u226510 prioritized user stories with acceptance criteria",
+          "KPIs defined: margin lift %, reprice latency, forecast MAPE, rule coverage %",
+          "Repricing rule vocabulary documented (floor, ceiling, match, undercut, elasticity-based)",
+          "Data retention and audit requirements captured"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model covering pricing strategy framework, cost-of-goods guardrails, margin floor enforcement logic, and ROI projection for automated repricing.",
+        "payload": {
+          "deliverables": [
+            "financial_model.xlsx",
+            "margin_guardrail_spec.md",
+            "roi_projection.md"
+          ],
+          "models": [
+            "margin_floor_calculator",
+            "elasticity_revenue_impact",
+            "repricing_frequency_cost_model"
+          ],
+          "guardrails": [
+            "minimum_margin_pct",
+            "max_discount_pct",
+            "competitor_undercut_cap"
+          ]
+        },
+        "acceptance_criteria": [
+          "Margin floor formula defined and reviewed by stakeholder",
+          "ROI model shows \u22651 scenario with positive return within 6 months",
+          "All repricing rules reference financial guardrails as hard constraints",
+          "Cost model accounts for API call costs, compute, and data feed fees"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 4,
+        "task_type": "LEGAL",
+        "description": "Review legal constraints on competitor price scraping, terms of service compliance, GDPR/CCPA data handling, and prepare IP/licensing review for ML model artifacts.",
+        "payload": {
+          "deliverables": [
+            "legal_review.md",
+            "scraping_policy.md",
+            "data_privacy_notice.md",
+            "oss_license_inventory.md"
+          ],
+          "review_areas": [
+            "web_scraping_legality",
+            "competitor_TOS_compliance",
+            "customer_data_pii",
+            "pricing_algorithm_ip"
+          ]
+        },
+        "acceptance_criteria": [
+          "Legal opinion documented on scraping each identified data source",
+          "Data processing agreement template drafted for customer PII",
+          "OSS license inventory completed for all planned dependencies",
+          "GDPR/CCPA data subject rights flow documented",
+          "Return/refund policy drafted",
+          "Consumer protection compliance checked"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "User research and wireframes for the pricing dashboard: competitor monitor view, demand forecast charts, elasticity curves, rule builder UI, and repricing history audit trail.",
+        "payload": {
+          "deliverables": [
+            "ux_research_summary.md",
+            "wireframes/",
+            "interaction_spec.md",
+            "accessibility_audit.md"
+          ],
+          "screens": [
+            "dashboard_overview",
+            "competitor_monitor",
+            "demand_forecast",
+            "elasticity_explorer",
+            "rule_builder",
+            "repricing_log",
+            "alerts_config"
+          ],
+          "a11y_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes produced for all 7 screens with annotated interactions",
+          "Rule builder supports AND/OR logic with visual preview",
+          "Accessibility audit checklist completed \u2014 0 critical violations",
+          "Design reviewed and approved by \u22651 pricing analyst persona representative"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "SECURITY",
+        "description": "Threat model and security review covering PCI DSS scope (payment-adjacent pricing data), API key management for competitor feeds, OWASP Top 10 for web layer, and SBOM generation.",
+        "payload": {
+          "deliverables": [
+            "threat_model.md",
+            "pci_dss_scoping.md",
+            "sbom.json",
+            "pentest_plan.md"
+          ],
+          "frameworks": [
+            "STRIDE",
+            "PCI DSS v4.0"
+          ],
+          "attack_surfaces": [
+            "competitor_scraper",
+            "pricing_api",
+            "rule_engine",
+            "forecast_service",
+            "admin_dashboard"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covering all 5 attack surfaces",
+          "PCI DSS scoping decision documented (in-scope vs. out-of-scope components)",
+          "SBOM generated with no known critical CVEs in direct dependencies",
+          "Penetration test plan approved covering OWASP Top 10 + auth flows",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 7,
+        "task_type": "COMPLIANCE",
+        "description": "Produce PCI DSS compliance artifacts: data flow diagrams, control mapping, audit log requirements, encryption-at-rest/in-transit evidence plan, and access control matrix.",
+        "payload": {
+          "deliverables": [
+            "pci_dss_control_matrix.md",
+            "data_flow_diagram.md",
+            "encryption_spec.md",
+            "access_control_matrix.md"
+          ],
+          "standard": "PCI DSS v4.0",
+          "controls": [
+            "Req 2 (config standards)",
+            "Req 3 (stored data)",
+            "Req 4 (transmission)",
+            "Req 7 (access control)",
+            "Req 10 (audit logs)"
+          ]
+        },
+        "acceptance_criteria": [
+          "All applicable PCI DSS v4.0 requirements mapped to implementation controls",
+          "Data flow diagram identifies all cardholder-adjacent data paths",
+          "Encryption spec mandates TLS 1.2+ in transit and AES-256 at rest",
+          "Access control matrix covers all service accounts and human roles"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema for product catalog, competitor price snapshots, demand signals, elasticity model outputs, repricing rules, and audit log.",
+        "payload": {
+          "deliverables": [
+            "schema.sql",
+            "migrations/",
+            "erd.md"
+          ],
+          "tables": [
+            "products",
+            "competitor_prices",
+            "price_snapshots",
+            "demand_signals",
+            "elasticity_models",
+            "repricing_rules",
+            "reprice_events",
+            "audit_log"
+          ],
+          "engine": "PostgreSQL 16",
+          "features": [
+            "TimescaleDB hypertable for time-series price data",
+            "JSONB for flexible rule payloads",
+            "row-level security for multi-tenant isolation"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD reviewed and approved with all foreign key relationships defined",
+          "Migrations run idempotently on clean DB and existing DB",
+          "TimescaleDB hypertable compression configured for price_snapshots",
+          "Row-level security policies tested for tenant isolation",
+          "All PII fields identified and annotated for compliance"
+        ],
+        "depends_on": [
+          3,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up project scaffolding for price_optimization solution: monorepo layout, Python virtual environment, dependency pinning, environment variable schema, and agentic pattern configuration (Multi-Agent Coordinator) for the repricing pipeline.",
+        "payload": {
+          "pattern": "coordinator",
+          "components": [
+            "coordinator_agent",
+            "competitor_monitor_agent",
+            "forecast_agent",
+            "elasticity_agent",
+            "rule_engine_agent",
+            "critic_agent"
+          ],
+          "deliverables": [
+            "pyproject.toml",
+            ".env.example",
+            "docker-compose.yml",
+            "Makefile",
+            "solutions/price_optimization/project.yaml",
+            "solutions/price_optimization/prompts.yaml",
+            "solutions/price_optimization/tasks.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 6 agent roles defined in prompts.yaml with system prompts",
+          "docker-compose.yml brings up postgres, redis, and app with one command",
+          ".env.example documents all required variables with descriptions",
+          "Coordinator pattern wiring validated: coordinator can dispatch to all specialist agents",
+          "`make run PROJECT=price_optimization` starts the backend successfully"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build competitor price monitoring service: configurable scraper adapters (HTTP + headless browser), rate-limiting, proxy rotation support, structured price snapshot ingestion, and change-detection diffing.",
+        "payload": {
+          "deliverables": [
+            "src/services/competitor_monitor.py",
+            "src/adapters/http_scraper.py",
+            "src/adapters/browser_scraper.py",
+            "src/adapters/api_feed.py"
+          ],
+          "features": [
+            "adapter_registry",
+            "rate_limiter",
+            "proxy_pool",
+            "snapshot_diff",
+            "alert_on_change"
+          ],
+          "tech": [
+            "httpx",
+            "playwright",
+            "celery",
+            "redis"
+          ]
+        },
+        "acceptance_criteria": [
+          "HTTP adapter fetches and parses price from \u22652 test product URLs",
+          "Browser adapter handles JS-rendered pages via Playwright",
+          "Rate limiter enforces per-domain request cadence from config",
+          "Snapshot diff detects price changes \u22650.01 and emits change events",
+          "Dead letter queue captures failed scrapes for retry"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "ML_MODEL",
+        "description": "Build demand forecasting pipeline: feature engineering from sales history and external signals, model training (Prophet + XGBoost ensemble), evaluation harness, and serving endpoint.",
+        "payload": {
+          "deliverables": [
+            "src/ml/demand_forecast.py",
+            "src/ml/feature_engineering.py",
+            "src/ml/model_registry.py",
+            "notebooks/demand_forecast_eda.ipynb"
+          ],
+          "models": [
+            "Prophet (seasonality)",
+            "XGBoost (external signals)"
+          ],
+          "features": [
+            "historical_sales",
+            "day_of_week",
+            "promotions",
+            "competitor_price_delta",
+            "inventory_level"
+          ],
+          "metrics": [
+            "MAPE",
+            "RMSE",
+            "coverage_at_90pct_CI"
+          ],
+          "target_MAPE": 15
+        },
+        "acceptance_criteria": [
+          "Model achieves MAPE \u226415% on held-out test set",
+          "90% confidence interval coverage \u226585% on validation data",
+          "Feature importance documented with top-5 drivers identified",
+          "Model artifacts versioned in model registry with metadata",
+          "Serving endpoint returns forecast + CI within 500ms p95"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 12,
+        "task_type": "ML_MODEL",
+        "description": "Build price elasticity modeling module: estimate own-price and cross-price elasticity coefficients using log-log regression and Bayesian hierarchical model; expose elasticity API for rule engine.",
+        "payload": {
+          "deliverables": [
+            "src/ml/elasticity_model.py",
+            "src/ml/elasticity_trainer.py",
+            "notebooks/elasticity_analysis.ipynb"
+          ],
+          "models": [
+            "log-log OLS regression",
+            "Bayesian hierarchical (PyMC)"
+          ],
+          "outputs": [
+            "own_price_elasticity",
+            "cross_elasticity_matrix",
+            "confidence_intervals",
+            "optimal_price_point"
+          ],
+          "minimum_data_requirement": "90 days of sales + price history per SKU"
+        },
+        "acceptance_criteria": [
+          "Elasticity coefficients computed for \u2265100 test SKUs with CI",
+          "Model flags SKUs with insufficient data (< 90 days) rather than producing spurious estimates",
+          "Optimal price point calculation validated against known demand curves",
+          "Cross-elasticity matrix identifies \u22651 substitution pair in test dataset",
+          "API returns elasticity + optimal price within 200ms p95"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build rule engine for automated repricing: DSL for rule definition (match, undercut, elasticity-optimal, floor/ceiling), rule evaluation against live price + forecast data, and conflict resolution.",
+        "payload": {
+          "deliverables": [
+            "src/engine/rule_engine.py",
+            "src/engine/rule_dsl.py",
+            "src/engine/conflict_resolver.py"
+          ],
+          "rule_types": [
+            "match_competitor",
+            "undercut_by_pct",
+            "elasticity_optimal",
+            "time_based",
+            "inventory_based"
+          ],
+          "conflict_strategies": [
+            "highest_priority_wins",
+            "most_conservative",
+            "margin_floor_override"
+          ],
+          "guardrails": [
+            "minimum_margin_pct",
+            "maximum_discount_pct",
+            "competitor_undercut_cap",
+            "rate_of_change_limit"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 5 rule types evaluate correctly against test fixtures",
+          "Conflict resolution applies margin_floor_override as hard constraint in all scenarios",
+          "Rule DSL validated with JSON Schema \u2014 malformed rules rejected with clear error",
+          "Rate-of-change limit prevents price moves >X% within configurable time window",
+          "Rule evaluation latency \u226450ms for 1000 SKUs batch"
+        ],
+        "depends_on": [
+          12,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "AGENTIC",
+        "description": "Implement Multi-Agent Coordinator pattern for the repricing pipeline: coordinator decomposes repricing requests, dispatches to competitor_monitor, forecast, elasticity, and rule_engine agents, aggregates results, and routes high-impact changes through HITL approval gate.",
+        "payload": {
+          "pattern": "coordinator",
+          "deliverables": [
+            "src/agents/pricing_coordinator.py",
+            "src/agents/hitl_gate.py"
+          ],
+          "coordinator_logic": [
+            "decompose_reprice_request",
+            "dispatch_parallel_agents",
+            "aggregate_price_proposals",
+            "apply_guardrails",
+            "route_to_hitl_if_high_impact"
+          ],
+          "hitl_threshold": "price_change_pct > 10 OR margin_impact > 5pct",
+          "approval_store_integration": true
+        },
+        "acceptance_criteria": [
+          "Coordinator dispatches competitor + forecast + elasticity agents in parallel",
+          "Aggregated price proposal includes source attribution for each input",
+          "Changes exceeding HITL threshold create a Proposal in approval store \u2014 never auto-execute",
+          "Changes below threshold execute with full audit log entry",
+          "Coordinator handles partial agent failures gracefully (degraded mode with reduced confidence score)"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "API",
+        "description": "Design and implement REST API: product catalog management, competitor source config, repricing rule CRUD, forecast retrieval, elasticity query, repricing trigger, approval workflow, and audit log endpoints.",
+        "payload": {
+          "deliverables": [
+            "src/interface/api.py",
+            "openapi.yaml",
+            "src/interface/schemas.py"
+          ],
+          "endpoints": [
+            "POST /products/import",
+            "GET  /products/{id}/price-history",
+            "POST /competitor-sources",
+            "GET  /competitor-sources/{id}/prices",
+            "GET  /forecast/{product_id}",
+            "GET  /elasticity/{product_id}",
+            "POST /rules",
+            "PUT  /rules/{id}",
+            "DELETE /rules/{id}",
+            "POST /reprice/run",
+            "GET  /reprice/history",
+            "GET  /approvals",
+            "POST /approvals/{id}/approve",
+            "POST /approvals/{id}/reject",
+            "GET  /audit-log"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec generated and validates with no errors",
+          "All endpoints return typed responses matching schemas.py",
+          "Auth required on all endpoints \u2014 unauthenticated requests return 401",
+          "Pagination implemented on /reprice/history and /audit-log",
+          "Rate limiting applied to /reprice/run (max 10 req/min per tenant)"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build React dashboard: competitor monitor table with live price deltas, demand forecast chart (line + CI band), elasticity curve explorer, drag-and-drop rule builder, repricing history log, and approval inbox.",
+        "payload": {
+          "deliverables": [
+            "web/src/pages/CompetitorMonitor.tsx",
+            "web/src/pages/DemandForecast.tsx",
+            "web/src/pages/ElasticityExplorer.tsx",
+            "web/src/pages/RuleBuilder.tsx",
+            "web/src/pages/RepricingLog.tsx",
+            "web/src/pages/Approvals.tsx"
+          ],
+          "tech": [
+            "React 18",
+            "TypeScript",
+            "Recharts",
+            "TanStack Query",
+            "TanStack Table"
+          ],
+          "real_time": "SSE for live price change alerts",
+          "a11y": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "Competitor monitor table updates within 5s of a scraped price change",
+          "Forecast chart renders CI bands and allows horizon selection (7/14/30/90 days)",
+          "Rule builder generates valid rule DSL JSON on save \u2014 validated client-side before submit",
+          "Approval inbox shows pending proposals with approve/reject controls and feedback field",
+          "All 7 pages pass axe-core accessibility scan with 0 critical violations",
+          "Lighthouse performance score \u226580 on simulated 4G"
+        ],
+        "depends_on": [
+          15,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "INFRA",
+        "description": "Infrastructure setup: Docker Compose for local dev, Kubernetes manifests for production, Celery worker deployment for scraping/repricing jobs, Redis for task queue and caching, and TimescaleDB setup.",
+        "payload": {
+          "deliverables": [
+            "docker-compose.yml",
+            "k8s/",
+            "Makefile",
+            ".github/workflows/ci.yml"
+          ],
+          "services": [
+            "fastapi_app",
+            "celery_worker",
+            "celery_beat",
+            "redis",
+            "postgres_timescaledb",
+            "playwright_service"
+          ],
+          "ci_checks": [
+            "lint",
+            "type_check",
+            "unit_tests",
+            "integration_tests",
+            "docker_build"
+          ],
+          "secrets_management": "Kubernetes Secrets + Sealed Secrets"
+        },
+        "acceptance_criteria": [
+          "docker-compose up starts all services in <60 seconds on clean machine",
+          "Kubernetes manifests include resource limits and liveness/readiness probes",
+          "CI pipeline passes on PR \u2014 lint, typecheck, tests, build in <10 minutes",
+          "Secrets never stored in plaintext in any committed file",
+          "TimescaleDB compression policy applied to price_snapshots (>7 days)"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "DEVOPS",
+        "description": "Monitoring and alerting setup: Prometheus metrics for scraper health, forecast job duration, repricing latency, and rule coverage; Grafana dashboards; PagerDuty integration for SLA breaches.",
+        "payload": {
+          "deliverables": [
+            "monitoring/prometheus.yml",
+            "monitoring/grafana_dashboards/",
+            "monitoring/alerts.yml"
+          ],
+          "metrics": [
+            "scraper_success_rate",
+            "forecast_mape_drift",
+            "reprice_latency_p95",
+            "rule_coverage_pct",
+            "approval_queue_depth"
+          ],
+          "slo_targets": {
+            "scraper_success_rate": ">=95%",
+            "reprice_latency_p95": "<=2s",
+            "forecast_job_success": ">=99%"
+          }
+        },
+        "acceptance_criteria": [
+          "All 5 metrics instrumented and visible in Grafana",
+          "Alert fires within 2 minutes when scraper_success_rate drops below 95% for 5 minutes",
+          "Approval queue depth alert fires when >50 pending proposals",
+          "Runbook linked in every alert annotation",
+          "SLO burn rate alerts configured for 1h and 6h windows"
+        ],
+        "depends_on": [
+          17
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "SECURITY",
+        "description": "Implement security controls: API authentication (JWT + API keys), secret rotation workflow, input sanitization for rule DSL, audit log tamper-evidence (hash chaining), and PCI DSS encryption enforcement.",
+        "payload": {
+          "deliverables": [
+            "src/auth/jwt_handler.py",
+            "src/auth/api_key_manager.py",
+            "src/security/input_sanitizer.py",
+            "src/security/audit_integrity.py"
+          ],
+          "controls": [
+            "jwt_rs256",
+            "api_key_hashing_argon2",
+            "rule_dsl_sandbox",
+            "audit_log_sha256_chain",
+            "tls_enforced",
+            "secrets_vault_integration"
+          ]
+        },
+        "acceptance_criteria": [
+          "JWT RS256 validated \u2014 forged tokens return 401",
+          "API keys stored as Argon2 hashes \u2014 plaintext never persisted",
+          "Rule DSL sandbox prevents code injection \u2014 fuzz test with 100 malformed payloads passes",
+          "Audit log hash chain: any row mutation detected on integrity check",
+          "TLS 1.2+ enforced \u2014 TLS 1.0/1.1 connections rejected",
+          "OWASP ZAP scan on staging returns 0 high-severity findings",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          15,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend services: competitor monitor adapters, demand forecast pipeline, elasticity model, rule engine logic, coordinator agent, and API endpoints.",
+        "payload": {
+          "deliverables": [
+            "tests/unit/",
+            "tests/integration/"
+          ],
+          "coverage_target": 85,
+          "frameworks": [
+            "pytest",
+            "pytest-asyncio",
+            "factory_boy",
+            "respx"
+          ],
+          "test_areas": [
+            "scraper_adapters",
+            "snapshot_diff",
+            "forecast_pipeline",
+            "elasticity_calculator",
+            "rule_evaluation",
+            "conflict_resolution",
+            "coordinator_dispatch",
+            "api_endpoints",
+            "auth_flows"
+          ]
+        },
+        "acceptance_criteria": [
+          "Overall line coverage \u226585% measured by pytest-cov",
+          "All rule types covered with positive, negative, and edge-case fixtures",
+          "Coordinator agent tested with mocked specialist agents \u2014 partial failure scenarios covered",
+          "Integration tests hit real PostgreSQL (no mocks for DB layer)",
+          "API auth tests cover: valid JWT, expired JWT, missing token, wrong scope"
+        ],
+        "depends_on": [
+          14,
+          15
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "QA",
+        "description": "QA test plan, test case design for end-to-end repricing scenarios, regression suite definition, exploratory testing charter for rule builder and approval workflow.",
+        "payload": {
+          "deliverables": [
+            "qa/test_plan.md",
+            "qa/test_cases/",
+            "qa/exploratory_charter.md"
+          ],
+          "test_scenarios": [
+            "price_drop_triggers_undercut_rule",
+            "margin_floor_blocks_reprice",
+            "hitl_gate_fires_on_high_impact",
+            "forecast_degraded_mode",
+            "competitor_source_goes_offline",
+            "bulk_reprice_1000_skus",
+            "concurrent_rule_conflict"
+          ],
+          "regression_suite": "smoke + critical path, run on every PR"
+        },
+        "acceptance_criteria": [
+          "\u226530 test cases documented with expected outcomes",
+          "All 7 critical scenarios have pass/fail criteria defined",
+          "Regression suite runs in <5 minutes and covers happy path for all 7 API workflow areas",
+          "Exploratory charter covers rule builder edge cases and approval inbox UX",
+          "Defect severity classification matrix defined"
+        ],
+        "depends_on": [
+          16,
+          20
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "SYSTEM_TEST",
+        "description": "End-to-end system tests: full repricing pipeline from price change detection through forecast update through rule evaluation through approval to execution; load test at 10k SKUs.",
+        "payload": {
+          "deliverables": [
+            "tests/e2e/",
+            "tests/load/locustfile.py",
+            "tests/load/load_test_report.md"
+          ],
+          "e2e_scenarios": [
+            "full_reprice_cycle_auto",
+            "full_reprice_cycle_hitl",
+            "competitor_offline_degraded",
+            "model_retrain_no_downtime"
+          ],
+          "load_targets": {
+            "concurrent_users": 50,
+            "sku_count": 10000,
+            "reprice_throughput": "500 SKUs/min"
+          },
+          "tools": [
+            "pytest-playwright",
+            "locust"
+          ]
+        },
+        "acceptance_criteria": [
+          "Full auto-reprice cycle completes end-to-end in <30 seconds for 100 SKUs",
+          "HITL flow: proposal created, approved via API, execution confirmed in audit log",
+          "Load test: 500 SKUs/min repriced with p95 latency \u22642s at 50 concurrent users",
+          "Competitor offline scenario: system continues with cached data and raises alert",
+          "No data loss or duplicate reprice events under concurrent load"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 23,
+        "task_type": "OPERATIONS",
+        "description": "Operational runbooks: scraper failure recovery, model drift detection and retraining trigger, repricing pause/resume procedure, database backup/restore, and incident response playbook.",
+        "payload": {
+          "deliverables": [
+            "ops/runbooks/scraper_recovery.md",
+            "ops/runbooks/model_drift_response.md",
+            "ops/runbooks/reprice_pause.md",
+            "ops/runbooks/db_backup_restore.md",
+            "ops/runbooks/incident_response.md"
+          ],
+          "sla_definitions": {
+            "reprice_latency_slo": "p95 \u22642s",
+            "scraper_availability": "\u226595%",
+            "forecast_freshness": "\u22646h staleness"
+          },
+          "on_call_rotation": "defined in PagerDuty"
+        },
+        "acceptance_criteria": [
+          "Each runbook has: trigger condition, step-by-step procedure, verification step, escalation path",
+          "Repricing pause procedure tested in staging \u2014 disables execution without data loss",
+          "DB backup restore tested: restore from snapshot completes in <30 minutes",
+          "SLA breach thresholds match alert thresholds defined in step 18",
+          "Incident severity matrix defined (P1\u2013P4) with response time SLAs"
+        ],
+        "depends_on": [
+          18,
+          22
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 24,
+        "task_type": "DATA",
+        "description": "Build data pipeline for historical sales import, ongoing sales event ingestion (webhook + batch), and analytics schema for pricing performance reporting (margin lift, reprice volume, forecast accuracy over time).",
+        "payload": {
+          "deliverables": [
+            "src/data/sales_importer.py",
+            "src/data/sales_event_consumer.py",
+            "src/data/analytics_schema.sql"
+          ],
+          "ingestion_modes": [
+            "CSV bulk import",
+            "webhook real-time",
+            "nightly batch"
+          ],
+          "analytics_views": [
+            "daily_margin_summary",
+            "reprice_volume_by_rule",
+            "forecast_accuracy_history",
+            "competitor_price_index"
+          ]
+        },
+        "acceptance_criteria": [
+          "CSV importer handles 1M rows in <5 minutes without memory overflow",
+          "Webhook consumer processes events with \u22641s end-to-end latency",
+          "All 4 analytics views return results in <3s on 90-day dataset",
+          "Duplicate event detection prevents double-counting sales",
+          "Schema migration tested against production-size dataset"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 25,
+        "task_type": "DOCS",
+        "description": "Technical documentation: API reference (auto-generated from OpenAPI), architecture decision records (ADRs), data model docs, ML model cards, and operator guide.",
+        "payload": {
+          "deliverables": [
+            "docs/api_reference.md",
+            "docs/architecture/",
+            "docs/adr/",
+            "docs/model_cards/",
+            "docs/operator_guide.md"
+          ],
+          "adr_topics": [
+            "timescaledb_choice",
+            "coordinator_pattern",
+            "hitl_threshold_rationale",
+            "pci_dss_scoping"
+          ],
+          "model_cards": [
+            "demand_forecast_model_card.md",
+            "elasticity_model_card.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "API reference generated from OpenAPI spec \u2014 all 15 endpoints documented with examples",
+          "4 ADRs written with context/decision/consequences format",
+          "Model cards include: intended use, training data, evaluation metrics, limitations, bias considerations",
+          "Operator guide covers deployment, config reference, and first-run setup in <30 minutes",
+          "Docs reviewed by \u22651 team member who was not the author"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 26,
+        "task_type": "TRAINING",
+        "description": "User onboarding materials: quickstart guide for pricing analysts, video script for rule builder tutorial, and FAQ covering common repricing scenarios and guardrail configuration.",
+        "payload": {
+          "deliverables": [
+            "docs/user/quickstart.md",
+            "docs/user/rule_builder_guide.md",
+            "docs/user/video_script_rule_builder.md",
+            "docs/user/faq.md"
+          ],
+          "personas": [
+            "pricing_analyst",
+            "ecommerce_manager"
+          ],
+          "quickstart_target": "user can set up first competitor source and repricing rule in <15 minutes"
+        },
+        "acceptance_criteria": [
+          "Quickstart guide user-tested with 1 non-technical persona \u2014 completed in <15 minutes",
+          "Rule builder guide covers all 5 rule types with worked examples",
+          "Video script covers core flow in \u22648 minutes of estimated runtime",
+          "FAQ answers top 10 questions identified during UX research"
+        ],
+        "depends_on": [
+          25,
+          5
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 26,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 62,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 62,
+          "final_review": {
+            "score": 62,
+            "flaws": [
+              "Step 10 (scraper build) depends only on Step 9 (scaffolding) but NOT on Step 4 (legal review). If legal blocks scraping a specific competitor's site, the adapter is already built and must be ripped out. The legal dependency must gate scraper implementation, not run in parallel with it.",
+              "ML cold-start is unaddressed. Step 11 requires historical sales data and Step 12 requires '90 days of sales + price history per SKU', but there is no data bootstrapping, synthetic data strategy, or cold-start fallback for new products or new customers onboarding with sparse history. The model simply fails silently on new SKUs.",
+              "Prophet + XGBoost ensemble specification is absent. 'Ensemble' is stated but the aggregation method (simple average, weighted, stacked meta-learner) is never defined. This is the critical design decision that determines whether the 15% MAPE target is achievable and it is deferred to implementation with no guidance.",
+              "Cross-elasticity matrix is computationally intractable at production scale. O(n\u00b2) pairs for n SKUs: 100 SKUs = 10,000 pairs (manageable), 10,000 SKUs = 100,000,000 pairs (not feasible with PyMC). No scalability strategy, approximation method, or SKU clustering approach is specified for the real load target of 10,000 SKUs.",
+              "PCI DSS scoping is likely incorrect and over-engineered. A pricing engine does not process, store, or transmit cardholder data (PANs, CVVs, track data). PCI DSS scope should have been a single paragraph in Step 4 concluding 'out of scope'. Instead, Steps 6 and 7 build an entire PCI compliance apparatus, wasting significant effort and adding audit overhead with no actual compliance benefit.",
+              "No A/B testing or holdout framework. Dynamic pricing changes must be empirically validated \u2014 without a holdout group you cannot attribute revenue changes to repricing vs. external factors. This is not a 'nice to have'; it is the only way to prove the product works and justify ROI. The financial model (Step 3) projects ROI but provides no mechanism to measure it.",
+              "Repricing race-to-bottom loop is unaddressed. The 'undercut_by_pct' rule with 'competitor_undercut_cap' does not terminate a competitive spiral. If Competitor A also runs an undercut rule, prices iterate to the floor. No detection logic, no circuit breaker, no minimum hold time between competitive reprices.",
+              "Model retraining pipeline is documented in a runbook (Step 23) but never implemented. Step 11 builds the initial model. Nothing builds the scheduled retraining pipeline, drift detection trigger, champion/challenger evaluation, or shadow deployment. The runbook references a system that does not exist.",
+              "Coordinator agent (Step 14) dispatches to specialist agents in parallel but the failure handling spec says 'degraded mode with reduced confidence score'. This is underspecified: what constitutes degraded mode when the elasticity agent fails? Does the rule engine still run elasticity-optimal rules? Does it fall back to match_competitor? Silent degradation without explicit fallback logic produces unpredictable repricing behavior.",
+              "Step 13 acceptance criteria: 'Rate-of-change limit prevents price moves >X% within configurable time window' \u2014 X is never defined in the financial model (Step 3) or anywhere else. This is a placeholder, not a specification."
+            ],
+            "suggestions": [
+              "Add a hard dependency: Step 10 depends on Step 4. Build a scraper adapter interface first (no live targets), and only implement live adapters after legal sign-off on each source. Gate each adapter behind a feature flag keyed to legal clearance status.",
+              "Add Step 8.5: Data bootstrapping pipeline. For cold-start SKUs, define a fallback strategy: (a) category-level elasticity estimates, (b) synthetic price/demand curves from category averages, (c) explicit 'insufficient data' flag that disables elasticity rules and falls back to competitor-match only.",
+              "Define the ensemble method explicitly in Step 11. Specify: Prophet for seasonality trend, XGBoost for residual correction using external features, weighted average based on recent validation MAPE per model. Include a model selection test that switches to single-model if ensemble underperforms either component.",
+              "Add a scalability gate to Step 12: define a maximum SKU-count threshold for full cross-elasticity computation. Above that threshold, use a sparse approximation: compute cross-elasticity only within product clusters (defined by category or historical correlation), not across all pairs.",
+              "Remove Steps 6 and 7 (PCI DSS). Replace with a single 'compliance scoping' deliverable in Step 4: document that the pricing engine is out of PCI DSS scope because no CHD is processed. If payment-adjacent data (order totals) is present, document the explicit data minimization decision. Redirect the saved effort toward SOC 2 Type I controls, which are actually relevant here.",
+              "Add Step 14.5: A/B testing framework. Define holdout group logic (e.g., 10% of SKUs not repriced by the engine), measurement window, and the statistical test used to evaluate lift. This should be a first-class feature, not an afterthought.",
+              "Add an anti-spiral circuit breaker to the rule engine (Step 13): detect when a SKU's price has moved more than N% in a rolling 24-hour window across multiple reprice events and pause automated repricing for that SKU, emitting an alert. The floor/ceiling guardrails are not sufficient \u2014 they stop the absolute bound but not the velocity.",
+              "Add Step 11.5: Automated retraining pipeline. Implement scheduled retraining (weekly), drift detection (MAPE degradation > threshold on recent actuals vs. predictions), champion/challenger A/B deployment, and automatic rollback if new model underperforms."
+            ],
+            "missing": [
+              "Data quality validation for incoming competitor prices. Scrapers will return garbage: $0.00 prices, HTML parse errors stored as prices, prices in wrong currency, outliers from flash sales. No validation layer or anomaly detection is specified before competitor prices feed into the rule engine.",
+              "Multi-currency and locale handling. Not a single mention of currency normalization. An international e-commerce use case with prices in USD, EUR, GBP feeding into a competitor price delta calculation will silently produce wrong results without explicit currency normalization.",
+              "RTO/RPO definitions. Step 23 defines SLOs for latency and availability but never defines Recovery Time Objective or Recovery Point Objective. The DB backup runbook (Step 23) says 'restore completes in <30 minutes' but does not say what the maximum acceptable data loss window is.",
+              "Caching strategy for ML model outputs. Elasticity coefficients and demand forecasts do not change on a per-minute basis. No specification for caching model outputs (Redis TTL, invalidation on retrain). Without this, every reprice call hits the ML serving endpoint, making the 10,000 SKU load target implausible.",
+              "SKU lifecycle management. No specification for what happens when a product is discontinued, repriced manually in the source system, or temporarily out of stock. Active repricing of OOS products wastes budget and pollutes competitor price tracking.",
+              "Timezone-aware pricing specification. Time-based repricing rules require explicit timezone handling. No mention of how the system handles flash sales across timezones, DST transitions, or multi-region deployments.",
+              "Data governance and access control for competitive intelligence data. Competitor prices are commercially sensitive. No specification of who within the customer organization can view raw competitor price data, how long it is retained, or whether it can be exported.",
+              "Webhook consumer backpressure (Step 24). The \u22641s latency target is specified but no queue depth limit, overflow behavior, or backpressure signaling is defined. A sales spike will overwhelm the consumer without a bounded queue and rejection policy.",
+              "Key rotation procedure for JWT RS256. Step 19 specifies RS256 validation but no key rotation workflow, rotation interval, or zero-downtime rotation procedure (dual-validation during rotation window) is defined.",
+              "Proxy pool credential management and rotation in Step 10. Proxy credentials are a live security surface \u2014 they expire, get banned, and must be rotated. No specification of how proxy pool credentials are stored, rotated, or monitored for health."
+            ],
+            "security_risks": [
+              "Rule DSL sandbox specification is dangerously vague. 'Prevents code injection \u2014 fuzz test with 100 malformed payloads passes' is not a security specification. If the DSL evaluator uses Python eval(), ast.literal_eval(), or any dynamic execution, the attack surface is enormous. The sandbox technology must be specified (e.g., restricted AST evaluation with allowlist of operators, no dynamic execution). A fuzz test of 100 payloads is insufficient for a system making automated pricing decisions.",
+              "Audit log hash chain is trivially defeatable if the database is compromised. An attacker with DB write access can mutate a row and recompute all subsequent hashes. The chain only proves integrity against partial file-level corruption, not against an authenticated attacker. Tamper-evidence requires an external witness (append-only log shipped to immutable store, Merkle tree with external anchor, or Write-Once storage). The current design creates false compliance confidence.",
+              "Proxy pool in Step 10 introduces credential sprawl. Proxy credentials (username/password per proxy endpoint) are a sensitive secret class not covered by the Kubernetes Secrets + Sealed Secrets plan. No specification for how proxy credentials are scoped, rotated, or revoked when a proxy provider is compromised.",
+              "Multi-tenant row-level security in PostgreSQL (Step 8) is not enforced at the application layer. If the coordinator agent (Step 14) constructs raw SQL or uses an ORM that bypasses RLS (e.g., via a superuser connection), tenant isolation fails silently. No test specification for verifying RLS enforcement through the application stack, only at the DB layer.",
+              "API key scope model is undefined. Step 19 implements API key storage (Argon2 hashed) but no permission scope is defined. A leaked read-only key should not be able to trigger repricing. A leaked repricing key should not be able to modify rules. No scope model means all API keys are implicitly full-admin, which is a significant blast radius for a key compromise.",
+              "Browser scraper (Playwright) running in Celery workers is a SSRF attack surface. If the scraper target URL is user-configurable (competitor source URLs set by customers), a malicious user can point it at internal network endpoints (AWS metadata service, internal APIs, Redis). No URL validation, SSRF prevention, or network egress restriction is specified for the scraper service."
+            ],
+            "summary": "This is a thorough, well-structured plan that covers the full lifecycle from market research to operations \u2014 the dependency chain is mostly sound, compliance is addressed (though mis-scoped for PCI DSS), and the HITL approval gate is correctly specified. However, three fundamental gaps will cause production failures: (1) the ML cold-start problem is unacknowledged and will break the product for any new customer without sales history; (2) the legal review does not gate scraper implementation, meaning unlawful adapters will be built before legal sign-off; and (3) there is no A/B testing framework, making it impossible to prove the product generates the revenue lift it claims. The cross-elasticity O(n\u00b2) scaling issue will silently cap the product at ~500 SKUs in practice despite a 10,000-SKU load target. The PCI DSS work in Steps 6 and 7 is likely wasted effort on a product that does not touch cardholder data. Security risks in the DSL sandbox and audit log integrity design create compliance exposure. With rework on the cold-start strategy, legal gating, A/B testing, and elasticity scaling, this plan could reach 78+; as written it is not production-ready.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 62,
+              "flaws": [
+                "Step 10 (scraper build) depends only on Step 9 (scaffolding) but NOT on Step 4 (legal review). If legal blocks scraping a specific competitor's site, the adapter is already built and must be ripped out. The legal dependency must gate scraper implementation, not run in parallel with it.",
+                "ML cold-start is unaddressed. Step 11 requires historical sales data and Step 12 requires '90 days of sales + price history per SKU', but there is no data bootstrapping, synthetic data strategy, or cold-start fallback for new products or new customers onboarding with sparse history. The model simply fails silently on new SKUs.",
+                "Prophet + XGBoost ensemble specification is absent. 'Ensemble' is stated but the aggregation method (simple average, weighted, stacked meta-learner) is never defined. This is the critical design decision that determines whether the 15% MAPE target is achievable and it is deferred to implementation with no guidance.",
+                "Cross-elasticity matrix is computationally intractable at production scale. O(n\u00b2) pairs for n SKUs: 100 SKUs = 10,000 pairs (manageable), 10,000 SKUs = 100,000,000 pairs (not feasible with PyMC). No scalability strategy, approximation method, or SKU clustering approach is specified for the real load target of 10,000 SKUs.",
+                "PCI DSS scoping is likely incorrect and over-engineered. A pricing engine does not process, store, or transmit cardholder data (PANs, CVVs, track data). PCI DSS scope should have been a single paragraph in Step 4 concluding 'out of scope'. Instead, Steps 6 and 7 build an entire PCI compliance apparatus, wasting significant effort and adding audit overhead with no actual compliance benefit.",
+                "No A/B testing or holdout framework. Dynamic pricing changes must be empirically validated \u2014 without a holdout group you cannot attribute revenue changes to repricing vs. external factors. This is not a 'nice to have'; it is the only way to prove the product works and justify ROI. The financial model (Step 3) projects ROI but provides no mechanism to measure it.",
+                "Repricing race-to-bottom loop is unaddressed. The 'undercut_by_pct' rule with 'competitor_undercut_cap' does not terminate a competitive spiral. If Competitor A also runs an undercut rule, prices iterate to the floor. No detection logic, no circuit breaker, no minimum hold time between competitive reprices.",
+                "Model retraining pipeline is documented in a runbook (Step 23) but never implemented. Step 11 builds the initial model. Nothing builds the scheduled retraining pipeline, drift detection trigger, champion/challenger evaluation, or shadow deployment. The runbook references a system that does not exist.",
+                "Coordinator agent (Step 14) dispatches to specialist agents in parallel but the failure handling spec says 'degraded mode with reduced confidence score'. This is underspecified: what constitutes degraded mode when the elasticity agent fails? Does the rule engine still run elasticity-optimal rules? Does it fall back to match_competitor? Silent degradation without explicit fallback logic produces unpredictable repricing behavior.",
+                "Step 13 acceptance criteria: 'Rate-of-change limit prevents price moves >X% within configurable time window' \u2014 X is never defined in the financial model (Step 3) or anywhere else. This is a placeholder, not a specification."
+              ],
+              "suggestions": [
+                "Add a hard dependency: Step 10 depends on Step 4. Build a scraper adapter interface first (no live targets), and only implement live adapters after legal sign-off on each source. Gate each adapter behind a feature flag keyed to legal clearance status.",
+                "Add Step 8.5: Data bootstrapping pipeline. For cold-start SKUs, define a fallback strategy: (a) category-level elasticity estimates, (b) synthetic price/demand curves from category averages, (c) explicit 'insufficient data' flag that disables elasticity rules and falls back to competitor-match only.",
+                "Define the ensemble method explicitly in Step 11. Specify: Prophet for seasonality trend, XGBoost for residual correction using external features, weighted average based on recent validation MAPE per model. Include a model selection test that switches to single-model if ensemble underperforms either component.",
+                "Add a scalability gate to Step 12: define a maximum SKU-count threshold for full cross-elasticity computation. Above that threshold, use a sparse approximation: compute cross-elasticity only within product clusters (defined by category or historical correlation), not across all pairs.",
+                "Remove Steps 6 and 7 (PCI DSS). Replace with a single 'compliance scoping' deliverable in Step 4: document that the pricing engine is out of PCI DSS scope because no CHD is processed. If payment-adjacent data (order totals) is present, document the explicit data minimization decision. Redirect the saved effort toward SOC 2 Type I controls, which are actually relevant here.",
+                "Add Step 14.5: A/B testing framework. Define holdout group logic (e.g., 10% of SKUs not repriced by the engine), measurement window, and the statistical test used to evaluate lift. This should be a first-class feature, not an afterthought.",
+                "Add an anti-spiral circuit breaker to the rule engine (Step 13): detect when a SKU's price has moved more than N% in a rolling 24-hour window across multiple reprice events and pause automated repricing for that SKU, emitting an alert. The floor/ceiling guardrails are not sufficient \u2014 they stop the absolute bound but not the velocity.",
+                "Add Step 11.5: Automated retraining pipeline. Implement scheduled retraining (weekly), drift detection (MAPE degradation > threshold on recent actuals vs. predictions), champion/challenger A/B deployment, and automatic rollback if new model underperforms."
+              ],
+              "missing": [
+                "Data quality validation for incoming competitor prices. Scrapers will return garbage: $0.00 prices, HTML parse errors stored as prices, prices in wrong currency, outliers from flash sales. No validation layer or anomaly detection is specified before competitor prices feed into the rule engine.",
+                "Multi-currency and locale handling. Not a single mention of currency normalization. An international e-commerce use case with prices in USD, EUR, GBP feeding into a competitor price delta calculation will silently produce wrong results without explicit currency normalization.",
+                "RTO/RPO definitions. Step 23 defines SLOs for latency and availability but never defines Recovery Time Objective or Recovery Point Objective. The DB backup runbook (Step 23) says 'restore completes in <30 minutes' but does not say what the maximum acceptable data loss window is.",
+                "Caching strategy for ML model outputs. Elasticity coefficients and demand forecasts do not change on a per-minute basis. No specification for caching model outputs (Redis TTL, invalidation on retrain). Without this, every reprice call hits the ML serving endpoint, making the 10,000 SKU load target implausible.",
+                "SKU lifecycle management. No specification for what happens when a product is discontinued, repriced manually in the source system, or temporarily out of stock. Active repricing of OOS products wastes budget and pollutes competitor price tracking.",
+                "Timezone-aware pricing specification. Time-based repricing rules require explicit timezone handling. No mention of how the system handles flash sales across timezones, DST transitions, or multi-region deployments.",
+                "Data governance and access control for competitive intelligence data. Competitor prices are commercially sensitive. No specification of who within the customer organization can view raw competitor price data, how long it is retained, or whether it can be exported.",
+                "Webhook consumer backpressure (Step 24). The \u22641s latency target is specified but no queue depth limit, overflow behavior, or backpressure signaling is defined. A sales spike will overwhelm the consumer without a bounded queue and rejection policy.",
+                "Key rotation procedure for JWT RS256. Step 19 specifies RS256 validation but no key rotation workflow, rotation interval, or zero-downtime rotation procedure (dual-validation during rotation window) is defined.",
+                "Proxy pool credential management and rotation in Step 10. Proxy credentials are a live security surface \u2014 they expire, get banned, and must be rotated. No specification of how proxy pool credentials are stored, rotated, or monitored for health."
+              ],
+              "security_risks": [
+                "Rule DSL sandbox specification is dangerously vague. 'Prevents code injection \u2014 fuzz test with 100 malformed payloads passes' is not a security specification. If the DSL evaluator uses Python eval(), ast.literal_eval(), or any dynamic execution, the attack surface is enormous. The sandbox technology must be specified (e.g., restricted AST evaluation with allowlist of operators, no dynamic execution). A fuzz test of 100 payloads is insufficient for a system making automated pricing decisions.",
+                "Audit log hash chain is trivially defeatable if the database is compromised. An attacker with DB write access can mutate a row and recompute all subsequent hashes. The chain only proves integrity against partial file-level corruption, not against an authenticated attacker. Tamper-evidence requires an external witness (append-only log shipped to immutable store, Merkle tree with external anchor, or Write-Once storage). The current design creates false compliance confidence.",
+                "Proxy pool in Step 10 introduces credential sprawl. Proxy credentials (username/password per proxy endpoint) are a sensitive secret class not covered by the Kubernetes Secrets + Sealed Secrets plan. No specification for how proxy credentials are scoped, rotated, or revoked when a proxy provider is compromised.",
+                "Multi-tenant row-level security in PostgreSQL (Step 8) is not enforced at the application layer. If the coordinator agent (Step 14) constructs raw SQL or uses an ORM that bypasses RLS (e.g., via a superuser connection), tenant isolation fails silently. No test specification for verifying RLS enforcement through the application stack, only at the DB layer.",
+                "API key scope model is undefined. Step 19 implements API key storage (Argon2 hashed) but no permission scope is defined. A leaked read-only key should not be able to trigger repricing. A leaked repricing key should not be able to modify rules. No scope model means all API keys are implicitly full-admin, which is a significant blast radius for a key compromise.",
+                "Browser scraper (Playwright) running in Celery workers is a SSRF attack surface. If the scraper target URL is user-configurable (competitor source URLs set by customers), a malicious user can point it at internal network endpoints (AWS metadata service, internal APIs, Redis). No URL validation, SSRF prevention, or network egress restriction is specified for the scraper service."
+              ],
+              "summary": "This is a thorough, well-structured plan that covers the full lifecycle from market research to operations \u2014 the dependency chain is mostly sound, compliance is addressed (though mis-scoped for PCI DSS), and the HITL approval gate is correctly specified. However, three fundamental gaps will cause production failures: (1) the ML cold-start problem is unacknowledged and will break the product for any new customer without sales history; (2) the legal review does not gate scraper implementation, meaning unlawful adapters will be built before legal sign-off; and (3) there is no A/B testing framework, making it impossible to prove the product generates the revenue lift it claims. The cross-elasticity O(n\u00b2) scaling issue will silently cap the product at ~500 SKUs in practice despite a 10,000-SKU load target. The PCI DSS work in Steps 6 and 7 is likely wasted effort on a product that does not touch cardholder data. Security risks in the DSL sandbox and audit log integrity design create compliance exposure. With rework on the cold-start strategy, legal gating, A/B testing, and elasticity scaling, this plan could reach 78+; as written it is not production-ready.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T06:19:19.839746+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 134.2,
+      "critic_plan": 108.59
+    }
+  }
+}

@@ -1,0 +1,310 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas, and process flows for
+      the enterprise IAM platform covering SSO, MFA, RBAC, SCIM, audit logging, and
+      compliance reporting.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - 'BRD covers all features: SSO (SAML, OIDC), MFA, RBAC, SCIM, audit logging,
+      compliance reporting'
+    - At least 20 user stories with acceptance criteria defined
+    - Process flows documented for onboarding, de-provisioning, access review, and
+      incident response
+    - ROI analysis with measurable success metrics (time-to-provision, audit pass
+      rate)
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce the product requirements document (PRD), feature roadmap,
+      and prioritization framework for the identity_platform solution.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD reviewed and signed off by business analyst and security stakeholders
+    - Roadmap defines MVP scope, phase gates, and release criteria
+    - Success metrics include MTTD, provisioning latency, compliance audit pass rate
+    - Prioritization matrix maps features to business impact and compliance requirements
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft terms of service, privacy policy, data processing agreements
+      (DPA), and IP review for the identity_platform. Assess GDPR, CCPA, and HIPAA
+      applicability.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS and privacy policy reviewed by legal counsel
+    - DPA template covers sub-processor obligations and data residency
+    - IP review confirms no third-party license conflicts in chosen OSS dependencies
+    - Licensing strategy documented for enterprise deployment scenarios
+    depends_on:
+    - 1
+  SECURITY:
+    description: Perform threat modeling (STRIDE), produce a threat model document,
+      define security controls, and create a penetration test plan for the IAM platform.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - STRIDE analysis completed for all trust boundaries (IdP, SP, SCIM endpoint,
+      admin API)
+    - Security controls mapped to ISO 27001 Annex A and SOC 2 CC series
+    - Penetration test plan covers OWASP Top 10 and OAuth/OIDC-specific attack vectors
+    - SBOM generated listing all runtime dependencies with known CVE status
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: Design user flows, wireframes, and interaction specs for the admin
+      console (user management, policy editor, audit viewer) and end-user login/MFA
+      enrollment experiences.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes produced for all listed screens at mid-fidelity
+    - Accessibility audit confirms WCAG 2.1 AA compliance targets
+    - Admin console UX validated with at least 3 IT admin personas via usability review
+    - Design tokens exported for frontend implementation
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI specs for all platform APIs: authentication (OIDC/SAML),
+      SCIM 2.0 provisioning, RBAC management, MFA enrollment, audit log retrieval,
+      and compliance report generation.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec validates with no errors via swagger-parser
+    - SCIM 2.0 endpoints conform to RFC 7643 and RFC 7644
+    - OIDC discovery document includes all required metadata fields per OpenID Connect
+      spec
+    - All endpoints include authentication schemes, request/response schemas, and
+      error codes
+    depends_on:
+    - 2
+    - 4
+  DATABASE:
+    description: Design and implement the database schema for users, groups, roles,
+      permissions, SCIM attributes, MFA devices, sessions, audit events, and compliance
+      report metadata.
+    agent_role: developer
+    acceptance_criteria:
+    - Schema normalized to 3NF with documented denormalization exceptions
+    - audit_events table partitioned by month to support 5-year retention
+    - PII fields (email, phone) encrypted at rest using pgcrypto or application-level
+      AES-256
+    - All migrations run cleanly on fresh PostgreSQL 15 instance
+    - Row-level security policies enforce tenant isolation
+    depends_on:
+    - 6
+  CONFIG:
+    description: Set up the monorepo structure, development toolchain, environment
+      configuration, and agentic AI pattern (coordinator) for the identity_platform
+      solution.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Monorepo initialized with consistent linting (ruff, eslint) and pre-commit hooks
+    - Environment config uses .env.example with all required variables documented
+    - Docker Compose brings up all services with health checks passing
+    - 'Coordinator agent pattern wired: routes to RBAC, audit, compliance specialist
+      agents'
+    - Secret management configured via environment variables (no secrets in code)
+    depends_on:
+    - 6
+    - 7
+  BACKEND:
+    description: 'Implement the core authentication service: OIDC authorization server
+      (authorization code flow, PKCE, token introspection, refresh), JWT issuance/validation,
+      and session management.'
+    agent_role: developer
+    acceptance_criteria:
+    - OIDC authorization code flow with PKCE passes OpenID Connect conformance tests
+    - Tokens signed with RS256; JWK endpoint serves public keys
+    - Refresh token rotation implemented with family invalidation on reuse detection
+    - Sessions stored in Redis with configurable TTL and sliding expiry
+    - Token introspection endpoint returns correct active/inactive status
+    depends_on:
+    - 7
+    - 8
+  AGENTIC:
+    description: 'Implement the coordinator agentic pattern for the IAM platform:
+      a central coordinator agent routes access review, anomaly detection, and compliance
+      tasks to specialist agents (RBAC agent, audit agent, compliance agent), merges
+      results, and surfaces proposals for human approval.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator successfully routes 'access review' task to rbac_agent and audit_agent
+      in parallel
+    - RBAC agent detects and proposes cleanup for roles with zero usage in 90 days
+    - Audit agent flags >5 failed auth attempts from same IP within 1 hour as anomaly
+    - Compliance agent generates SOC 2 gap report with no manual intervention
+    - All agent proposals flow through HITL approval gate before execution
+    depends_on:
+    - 12
+    - 14
+    - 15
+  FRONTEND:
+    description: 'Build the admin console React application: user directory, group
+      management, RBAC policy editor, SCIM integration configuration, MFA policy settings,
+      and session management views.'
+    agent_role: developer
+    acceptance_criteria:
+    - All pages render without console errors on Chrome, Firefox, Safari
+    - UserDirectory supports search, filter by group/role, and bulk operations
+    - RBACPolicyEditor provides drag-and-drop role hierarchy visualization
+    - SCIMIntegrations page shows provisioning sync status and last-sync timestamp
+    - All forms include client-side validation matching API constraints
+    depends_on:
+    - 5
+    - 6
+    - 9
+    - 12
+    - 13
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: auth
+      service (OIDC, SAML, MFA), RBAC engine, SCIM service, audit service, and compliance
+      service.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Line coverage >= 85% across all service modules
+    - OIDC token flow tested end-to-end with real JWT validation
+    - SAML assertion tests cover signed, encrypted, and malformed inputs
+    - RBAC policy evaluation tests cover allow, deny, inheritance, and wildcard cases
+    - SCIM filter query tests cover all RFC 7644 filter operators
+    - Audit hash chain integrity test validates and detects tampering
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  QA:
+    description: Produce a QA test plan, test case library, and execution report covering
+      functional, security, and regression testing for the identity_platform.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all PRD features with traceability matrix linking tests to
+      requirements
+    - Test case library contains >= 150 cases with expected outcomes
+    - OWASP ZAP active scan shows zero high-severity findings on auth endpoints
+    - Execution report signed off by QA engineer with pass/fail per test case
+    - Regression suite runnable in CI in under 15 minutes
+    depends_on:
+    - 20
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system integration tests: SSO federation with
+      3 test SPs (Okta, Azure AD, Google), SCIM provisioning lifecycle, MFA step-up
+      flows, and load testing at 10k concurrent sessions.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - SSO federation tests pass with Okta, Azure AD, and Google Workspace test tenants
+    - SCIM lifecycle test creates, updates, deactivates, and reactivates 100 users
+      without errors
+    - MFA step-up triggers correctly on sensitive operations and cannot be bypassed
+    - Load test sustains 10,000 concurrent sessions with p99 auth latency < 500ms
+    - Audit chain integrity verified across 50,000 events in E2E test
+    - Compliance report generated matches expected control statuses from test data
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 17
+    - 18
+    - 19
+    - 20
+    - 21
+  COMPLIANCE:
+    description: 'Produce compliance evidence artifacts for ISO 27001 and SOC 2 Type
+      II: control mapping matrix, risk register, data flow diagrams, evidence collection,
+      and audit readiness checklist.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Control mapping covers all ISO 27001 Annex A controls with applicability justification
+    - SOC 2 mapping covers all 5 Trust Service Categories (Security, Availability,
+      Confidentiality, Processing Integrity, Privacy)
+    - Risk register includes likelihood, impact, residual risk, and owner for each
+      identified risk
+    - Data flow diagrams show all PII flows with encryption status at each hop
+    - Evidence package includes machine-readable artifacts linkable to specific controls
+    - Audit readiness checklist reviewed by regulatory_specialist with no blocking
+      gaps
+    depends_on:
+    - 14
+    - 15
+    - 21
+  INFRA:
+    description: Set up Kubernetes deployment manifests, Helm charts, TLS termination,
+      secrets management (Vault), and multi-region active-passive HA configuration
+      for the identity_platform.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Helm charts deploy all services to Kubernetes with configurable resource limits
+    - TLS terminates at ingress; all internal service comms use mTLS
+    - Vault integration injects secrets as environment variables at pod startup
+    - PostgreSQL failover completes in under 30 seconds with zero data loss (RPO=0,
+      RTO<30s)
+    - Horizontal pod autoscaler configured for auth-service with CPU and RPS triggers
+    - All manifests pass kube-score security policy checks
+    depends_on:
+    - 8
+    - 22
+  DEVOPS:
+    description: Build CI/CD pipelines, monitoring stack (Prometheus + Grafana), alerting
+      rules, distributed tracing (OpenTelemetry), and SRE runbooks for the identity_platform.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs lint, unit tests, integration tests, and SAST on every PR
+    - CD pipeline deploys to staging automatically; production requires manual approval
+      gate
+    - Grafana dashboards show auth latency, error rates, active sessions, SCIM sync
+      status
+    - All 5 alert rules fire correctly in a chaos test environment
+    - OpenTelemetry traces span across auth-service, scim-service, and audit-service
+    - SRE runbooks cover MTTR < 30 minutes for each P1 scenario
+    depends_on:
+    - 24
+  OPERATIONS:
+    description: Define SLA targets, operational runbooks, incident response procedures,
+      capacity planning model, and on-call rotation structure for the identity_platform.
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA document approved by product manager and operations manager
+    - Runbooks cover detection, triage, mitigation, and post-mortem steps for each
+      scenario
+    - Incident severity matrix maps symptoms to P1-P4 with escalation paths
+    - Capacity model projects infrastructure costs at 10k, 100k, and 1M users
+    - On-call rotation defined with pager integration (PagerDuty or Opsgenie)
+    depends_on:
+    - 25
+  TRAINING:
+    description: Produce user guides, IT admin onboarding documentation, developer
+      integration guides (OIDC, SAML, SCIM), and compliance officer reporting tutorials
+      for the identity_platform.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - End-user guide covers login, MFA enrollment (TOTP + WebAuthn), and account recovery
+      with screenshots
+    - Admin guide covers all console pages with step-by-step procedures
+    - Developer guide includes working code samples in Python, Node.js, and Java for
+      OIDC integration
+    - Compliance officer guide walks through generating a SOC 2 evidence report end-to-end
+    - All guides reviewed by a non-technical stakeholder for clarity
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 17
+    - 18
+    - 19
+    - 22
+  DOCS:
+    description: Produce architecture documentation, API reference (auto-generated
+      from OpenAPI spec), deployment guide, security hardening guide, and CHANGELOG
+      for the identity_platform.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Architecture doc includes C4 context, container, and component diagrams
+    - API reference generated from OpenAPI spec with no missing descriptions
+    - Deployment guide covers Kubernetes install, Helm values, Vault setup, and smoke
+      test
+    - Security hardening guide covers TLS config, header policies, rate limiting,
+      and secret rotation
+    - CHANGELOG follows Keep a Changelog format with all MVP changes listed
+    depends_on:
+    - 22
+    - 24
+    - 25

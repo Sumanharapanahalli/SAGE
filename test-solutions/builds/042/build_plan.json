@@ -1,0 +1,903 @@
+{
+  "run_id": "c43a01e5-f15b-45c6-a12e-99cc46f199d2",
+  "status": {
+    "run_id": "c43a01e5-f15b-45c6-a12e-99cc46f199d2",
+    "solution_name": "headless_storefront",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T05:44:25.888335+00:00",
+    "updated_at": "2026-03-22T05:48:28.518026+00:00",
+    "product_description": "Headless ecommerce storefront with React frontend, Shopify/Medusa backend, product search (Algolia), cart management, checkout, and SSR for SEO.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze headless ecommerce market: competitor storefronts (Shopify Hydrogen, Commerce.js, BigCommerce), positioning for headless vs monolithic, target buyer personas, and GTM strategy.",
+        "payload": {
+          "competitors": [
+            "Shopify Hydrogen",
+            "Commerce.js",
+            "Saleor",
+            "Vendure"
+          ],
+          "output": "market_analysis.md, gtm_strategy.md"
+        },
+        "acceptance_criteria": [
+          "Competitor feature matrix covering search, cart, checkout, SSR capabilities",
+          "Documented buyer personas (2-3) with jobs-to-be-done",
+          "GTM strategy with channel recommendations and launch timeline",
+          "Positioning statement distinguishing headless_storefront value prop"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model covering infrastructure costs (Vercel/CDN, Algolia, Medusa hosting), Shopify API tier costs, projected revenue scenarios, and pricing strategy for the storefront platform.",
+        "payload": {
+          "cost_components": [
+            "Vercel Pro",
+            "Algolia Search",
+            "Medusa Cloud or self-hosted",
+            "Shopify Storefront API"
+          ],
+          "output": "financial_model.xlsx, cost_analysis.md"
+        },
+        "acceptance_criteria": [
+          "Monthly infrastructure cost estimate for 3 traffic tiers (1k, 10k, 100k sessions/month)",
+          "Break-even analysis at each tier",
+          "Shopify API plan comparison with cost impact documented",
+          "Algolia record/operation costs modeled against expected catalog size"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes for: product listing page (PLP), product detail page (PDP), search results with Algolia InstantSearch, cart drawer, multi-step checkout flow, and mobile-first responsive layout.",
+        "payload": {
+          "pages": [
+            "home",
+            "PLP",
+            "PDP",
+            "search",
+            "cart",
+            "checkout-address",
+            "checkout-payment",
+            "checkout-confirmation"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA",
+          "output": "wireframes.figma, ux_research.md, accessibility_audit.md"
+        },
+        "acceptance_criteria": [
+          "Low-fidelity wireframes for all 8 pages reviewed by stakeholder",
+          "Mobile and desktop breakpoints documented for each page",
+          "Accessibility audit checklist completed \u2014 color contrast, keyboard nav, ARIA roles",
+          "Checkout flow UX validated against 3 usability test participants",
+          "Component inventory produced (button variants, form fields, product card)"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "LEGAL",
+        "description": "Draft terms of service, privacy policy (GDPR/CCPA), cookie consent policy, and IP/licensing review for third-party dependencies (Algolia SDK, Medusa, Next.js).",
+        "payload": {
+          "jurisdictions": [
+            "US",
+            "EU"
+          ],
+          "standards": [
+            "GDPR",
+            "CCPA",
+            "PCI DSS data handling"
+          ],
+          "output": "terms_of_service.md, privacy_policy.md, cookie_policy.md, ip_review.md"
+        },
+        "acceptance_criteria": [
+          "Privacy policy covers all data collected (session, payment tokenization, search queries)",
+          "Cookie consent banner implementation spec included",
+          "Dependency license audit completed \u2014 no GPL conflicts in production bundle",
+          "PCI DSS scope reduction documented: cardholder data handled by Shopify/Stripe, not stored locally",
+          "Return/refund policy drafted",
+          "Consumer protection compliance checked"
+        ],
+        "depends_on": [],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 5,
+        "task_type": "SECURITY",
+        "description": "Perform threat model for the headless storefront: API key exposure, XSS via product content, CSRF on cart mutations, Algolia API key scoping, PCI DSS SAQ-A scope definition, and dependency SBOM.",
+        "payload": {
+          "threat_model_scope": [
+            "Storefront API tokens",
+            "Algolia search-only key",
+            "Checkout redirect to Shopify/Stripe",
+            "SSR data exposure"
+          ],
+          "standard": "PCI DSS SAQ-A",
+          "output": "threat_model.md, pci_saq_a_checklist.md, sbom.json"
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model completed for all API surfaces",
+          "Algolia search-only API key restrictions documented and verified in config",
+          "PCI DSS SAQ-A self-assessment questionnaire completed with all applicable items passing",
+          "SBOM generated listing all production dependencies with CVE scan results",
+          "CSP headers, HSTS, and X-Frame-Options defined in security policy doc",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document (PRD): feature list, MVP scope, success metrics (Core Web Vitals, conversion rate, cart abandonment), and phased roadmap.",
+        "payload": {
+          "mvp_features": [
+            "product catalog",
+            "search",
+            "cart",
+            "checkout",
+            "SSR/SEO"
+          ],
+          "metrics": [
+            "LCP < 2.5s",
+            "CLS < 0.1",
+            "checkout conversion rate"
+          ],
+          "output": "prd.md, roadmap.md"
+        },
+        "acceptance_criteria": [
+          "PRD defines in-scope and out-of-scope features for v1",
+          "Success metrics measurable and baselined",
+          "Phased roadmap with v1 (MVP), v1.5 (personalization), v2 (loyalty) defined",
+          "Dependency on Shopify vs Medusa backend documented as decision with tradeoffs"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design the API contract layer: Storefront API abstraction (Shopify Storefront GraphQL vs Medusa REST), cart service API, search API wrapper for Algolia, and OpenAPI/GraphQL schema for frontend consumption.",
+        "payload": {
+          "backend_options": [
+            "Shopify Storefront API (GraphQL)",
+            "Medusa REST API"
+          ],
+          "services": [
+            "catalog",
+            "search",
+            "cart",
+            "checkout",
+            "customer"
+          ],
+          "output": "api_schema.graphql, openapi.yaml, api_design.md"
+        },
+        "acceptance_criteria": [
+          "GraphQL schema covers product, variant, collection, cart, checkout types",
+          "Medusa REST endpoints mapped for catalog, cart, order flows",
+          "Algolia index schema defined: product attributes, facets, ranking rules",
+          "Error response contracts standardized across all services",
+          "API versioning strategy documented"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "CONFIG",
+        "description": "Initialize monorepo structure: Next.js 14 App Router frontend, Medusa backend service, shared TypeScript types package, environment variable schema (.env.example), and ESLint/Prettier/TypeScript configs.",
+        "payload": {
+          "stack": {
+            "frontend": "Next.js 14 App Router + TypeScript",
+            "backend": "Medusa v2 (Node.js) or Shopify Storefront API",
+            "search": "Algolia InstantSearch + algoliasearch SDK",
+            "styling": "Tailwind CSS",
+            "package_manager": "pnpm workspaces"
+          },
+          "output": "repo scaffold, package.json, tsconfig.json, .env.example, .eslintrc"
+        },
+        "acceptance_criteria": [
+          "pnpm workspace with packages: apps/web, apps/backend (if Medusa), packages/types",
+          "TypeScript strict mode enabled across all packages",
+          "Environment variables typed via zod schema validation at startup",
+          "Husky pre-commit hooks: lint + type-check passing",
+          "README with local dev setup instructions verified by running from scratch"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "DATABASE",
+        "description": "Set up Medusa database schema: products, variants, collections, customers, carts, orders tables. Configure PostgreSQL with migrations. If using Shopify only, document data model and skip migration setup.",
+        "payload": {
+          "database": "PostgreSQL 15",
+          "orm": "MikroORM (Medusa v2)",
+          "entities": [
+            "Product",
+            "ProductVariant",
+            "Collection",
+            "Customer",
+            "Cart",
+            "Order",
+            "Address"
+          ],
+          "output": "migrations/, seed.ts, erd.png"
+        },
+        "acceptance_criteria": [
+          "All Medusa v2 core entity migrations run successfully on clean PostgreSQL instance",
+          "Seed script populates 50+ test products across 5 collections",
+          "ERD diagram generated and reviewed",
+          "Database indexes defined on frequently queried fields (product handle, variant sku)",
+          "Connection pooling configured for production load"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement Medusa v2 backend: product catalog APIs, cart service (create, add item, update quantity, remove, apply discount), customer auth (register, login, JWT), and order creation endpoint.",
+        "payload": {
+          "services": [
+            "ProductService",
+            "CartService",
+            "CustomerService",
+            "OrderService"
+          ],
+          "auth": "JWT + refresh tokens",
+          "middleware": [
+            "cors",
+            "rate-limiter (100 req/min per IP)",
+            "request logging"
+          ],
+          "output": "src/api/, src/services/, src/middleware/"
+        },
+        "acceptance_criteria": [
+          "GET /products returns paginated list with variants and images",
+          "POST /carts creates cart and returns cart_id",
+          "POST /carts/:id/line-items adds product variant to cart",
+          "PATCH /carts/:id/line-items/:lid updates quantity, returns updated cart totals",
+          "POST /customers/auth returns signed JWT with 1h expiry and refresh token",
+          "All endpoints return consistent JSON error shape {code, message, details}",
+          "Rate limiter returns 429 after threshold with Retry-After header"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement checkout flow: address collection, shipping options, payment intent creation (Stripe integration via Medusa payment plugin), order confirmation, and webhook handler for payment events.",
+        "payload": {
+          "payment_provider": "Stripe (via medusa-payment-stripe)",
+          "shipping_providers": [
+            "FlatRate",
+            "FreeShipping threshold"
+          ],
+          "webhooks": [
+            "payment_intent.succeeded",
+            "payment_intent.payment_failed"
+          ],
+          "output": "src/api/checkout/, src/subscribers/stripe-webhook.ts"
+        },
+        "acceptance_criteria": [
+          "POST /carts/:id/shipping-methods selects shipping option",
+          "POST /payment-sessions creates Stripe PaymentIntent and returns client_secret",
+          "POST /carts/:id/complete creates order on successful payment",
+          "Stripe webhook signature verified using STRIPE_WEBHOOK_SECRET",
+          "Order confirmation email triggered on payment_intent.succeeded",
+          "Failed payment returns 402 with retry guidance"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Set up Algolia index sync: index products from Medusa/Shopify to Algolia on create/update/delete events using Medusa subscriber hooks. Define index settings: searchable attributes, facets, custom ranking.",
+        "payload": {
+          "index_name": "products",
+          "searchable_attributes": [
+            "title",
+            "description",
+            "vendor",
+            "tags",
+            "variant_titles"
+          ],
+          "facets": [
+            "categories",
+            "vendor",
+            "price_range",
+            "in_stock"
+          ],
+          "custom_ranking": [
+            "desc(popularity_score)",
+            "asc(price)"
+          ],
+          "output": "src/subscribers/algolia-sync.ts, scripts/algolia-reindex.ts"
+        },
+        "acceptance_criteria": [
+          "Product create/update in Medusa triggers Algolia index update within 5 seconds",
+          "Product delete removes record from Algolia index",
+          "Bulk reindex script processes 10,000 products without timeout",
+          "Algolia index settings script idempotent \u2014 safe to re-run",
+          "Search-only API key restricted to GET operations on products index only"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "FRONTEND",
+        "description": "Implement Next.js 14 App Router foundation: layout, navigation, ThemeProvider, Cart context (Zustand), font optimization, and root error boundary. Implement SSR data fetching pattern with React Server Components.",
+        "payload": {
+          "router": "Next.js 14 App Router",
+          "state_management": "Zustand (cart client state)",
+          "styling": "Tailwind CSS + shadcn/ui",
+          "fonts": "next/font (Inter)",
+          "output": "app/layout.tsx, app/providers.tsx, store/cart.ts, components/layout/"
+        },
+        "acceptance_criteria": [
+          "Root layout renders with correct HTML lang, meta charset, viewport",
+          "Cart context initializes from localStorage on hydration without flicker",
+          "Navigation responsive: hamburger menu on mobile, horizontal links on desktop",
+          "Error boundary catches and displays user-friendly error UI",
+          "React Server Component page renders with zero client JS for static content"
+        ],
+        "depends_on": [
+          8,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "FRONTEND",
+        "description": "Build product listing page (PLP) and product detail page (PDP): SSR via generateStaticParams + ISR, product card component, image optimization (next/image), variant selector, add-to-cart action.",
+        "payload": {
+          "pages": [
+            "app/products/page.tsx",
+            "app/products/[handle]/page.tsx"
+          ],
+          "components": [
+            "ProductCard",
+            "ProductGrid",
+            "VariantSelector",
+            "AddToCartButton",
+            "ProductImageGallery"
+          ],
+          "ssr_strategy": "ISR with revalidate: 60",
+          "output": "app/products/, components/product/"
+        },
+        "acceptance_criteria": [
+          "PLP renders 24 products per page with pagination",
+          "PDP generateStaticParams pre-renders top 200 products at build time",
+          "Product images lazy-loaded with next/image blur placeholder",
+          "Variant selector updates price and availability without page reload",
+          "Add-to-cart updates cart count in header within 200ms",
+          "LCP on PDP < 2.5s measured in Lighthouse"
+        ],
+        "depends_on": [
+          13,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Integrate Algolia InstantSearch: search bar with autocomplete (SearchBox), search results page with faceted filtering (RefinementList for category, vendor, price range), sorting, infinite scroll, and no-results state.",
+        "payload": {
+          "library": "react-instantsearch",
+          "components": [
+            "SearchBox",
+            "Hits",
+            "RefinementList",
+            "SortBy",
+            "Pagination",
+            "NoResults"
+          ],
+          "pages": [
+            "app/search/page.tsx"
+          ],
+          "output": "app/search/, components/search/"
+        },
+        "acceptance_criteria": [
+          "Search returns results within 100ms (Algolia SLA)",
+          "Facet filters update results without page reload",
+          "URL reflects active filters and search query (shareable links)",
+          "No-results state shows category suggestions",
+          "Search bar accessible: role=combobox, aria-expanded, keyboard navigation",
+          "Algolia search-only API key used client-side (never admin key)"
+        ],
+        "depends_on": [
+          13,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build cart drawer and checkout flow: cart slide-over with line item CRUD, discount code input, order summary, multi-step checkout (address \u2192 shipping \u2192 payment with Stripe Elements), and order confirmation page.",
+        "payload": {
+          "components": [
+            "CartDrawer",
+            "LineItem",
+            "DiscountCode",
+            "CheckoutStepper",
+            "AddressForm",
+            "ShippingOptions",
+            "PaymentForm (Stripe Elements)",
+            "OrderConfirmation"
+          ],
+          "pages": [
+            "app/checkout/page.tsx",
+            "app/checkout/confirmation/page.tsx"
+          ],
+          "payment": "Stripe Elements (@stripe/react-stripe-js)",
+          "output": "app/checkout/, components/cart/, components/checkout/"
+        },
+        "acceptance_criteria": [
+          "Cart drawer opens within 150ms of add-to-cart action",
+          "Line item quantity update debounced 300ms before API call",
+          "Stripe Elements loads with correct publishable key from env",
+          "Address form validates required fields client-side before submission",
+          "Successful payment redirects to /checkout/confirmation with order ID",
+          "Back button from checkout restores cart state",
+          "Payment form never logs card details to console or analytics"
+        ],
+        "depends_on": [
+          13,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Implement SEO layer: dynamic metadata (generateMetadata), Open Graph tags, JSON-LD structured data for Product and BreadcrumbList, XML sitemap generation, and robots.txt.",
+        "payload": {
+          "pages": [
+            "PLP",
+            "PDP",
+            "search",
+            "homepage"
+          ],
+          "structured_data": [
+            "Product",
+            "BreadcrumbList",
+            "WebSite"
+          ],
+          "output": "app/sitemap.ts, app/robots.ts, lib/seo.ts"
+        },
+        "acceptance_criteria": [
+          "Each PDP generates unique title tag and meta description from product data",
+          "Open Graph image uses product primary image with 1200x630 crop",
+          "JSON-LD Product schema validates in Google Rich Results Test",
+          "Sitemap.xml generated at build time with all product and collection URLs",
+          "robots.txt allows Googlebot and disallows /checkout/, /api/",
+          "No duplicate canonical tags on paginated PLP"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "COMPLIANCE",
+        "description": "Produce PCI DSS SAQ-A compliance artifacts: scoping document confirming cardholder data handled solely by Stripe/Shopify, network segmentation notes, annual compliance attestation template, and evidence checklist.",
+        "payload": {
+          "standard": "PCI DSS v4.0 SAQ-A",
+          "scope_justification": "No cardholder data stored, processed, or transmitted by headless_storefront; delegated to Stripe",
+          "output": "compliance/pci_dss_saq_a.md, compliance/scope_reduction.md, compliance/aoc_template.md"
+        },
+        "acceptance_criteria": [
+          "SAQ-A questionnaire completed with pass/N/A for all 22 requirements",
+          "Scope reduction document signed off: confirms Stripe as payment processor, no PAN storage",
+          "Stripe webhook signature verification documented as compensating control",
+          "Annual review schedule defined",
+          "HTTPS-only enforcement documented (HSTS header, redirect from HTTP)"
+        ],
+        "depends_on": [
+          5,
+          11
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 19,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline (GitHub Actions): lint, type-check, unit tests, E2E tests (Playwright), Vercel preview deployments on PR, production deployment on main merge. Add Dependabot for dependency updates.",
+        "payload": {
+          "ci_provider": "GitHub Actions",
+          "hosting": "Vercel (frontend) + Railway/Render (Medusa backend)",
+          "stages": [
+            "lint",
+            "type-check",
+            "unit-test",
+            "e2e-test",
+            "preview-deploy",
+            "prod-deploy"
+          ],
+          "output": ".github/workflows/ci.yml, .github/workflows/deploy.yml, vercel.json"
+        },
+        "acceptance_criteria": [
+          "CI pipeline completes in under 8 minutes on PR",
+          "Preview URL posted as PR comment with Vercel deployment link",
+          "Production deployment gated on all CI checks passing",
+          "Secrets (STRIPE_SECRET_KEY, ALGOLIA_ADMIN_KEY) stored in GitHub Secrets, not in code",
+          "Dependabot configured for weekly dependency updates on both npm and Docker",
+          "Rollback procedure documented: revert commit triggers automatic Vercel rollback"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "INFRA",
+        "description": "Define infrastructure: Vercel project config (rewrites, headers for CSP/HSTS/cache), Medusa backend Dockerfile, PostgreSQL on managed service (Railway/Supabase), Redis for Medusa cache, environment variable management.",
+        "payload": {
+          "frontend_hosting": "Vercel",
+          "backend_hosting": "Railway (Docker)",
+          "database": "Supabase PostgreSQL",
+          "cache": "Redis (Upstash)",
+          "cdn": "Vercel Edge Network",
+          "output": "Dockerfile, docker-compose.yml, vercel.json, infra/README.md"
+        },
+        "acceptance_criteria": [
+          "Dockerfile builds Medusa backend image under 500MB",
+          "docker-compose.yml runs full local stack: web + backend + postgres + redis",
+          "vercel.json defines security headers: CSP, HSTS, X-Content-Type-Options",
+          "Cache-Control headers set: product pages 60s stale-while-revalidate, cart/checkout no-cache",
+          "All secrets injected via environment variables \u2014 no hardcoded credentials",
+          "Infrastructure cost estimate matches financial model (step 2)"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests: Medusa service unit tests (Jest), cart state Zustand store tests, API route tests with supertest, and Algolia sync subscriber tests with mocked Algolia client.",
+        "payload": {
+          "framework": "Jest + ts-jest",
+          "coverage_target": "80% line coverage on src/services/",
+          "mocks": [
+            "algoliasearch",
+            "Stripe SDK",
+            "@medusajs/medusa"
+          ],
+          "output": "src/**/*.test.ts, jest.config.ts"
+        },
+        "acceptance_criteria": [
+          "CartService unit tests cover: create, addItem, updateQuantity, removeItem, applyDiscount",
+          "Algolia sync subscriber tests verify indexing called on product.created event",
+          "Stripe webhook handler tests cover succeeded and failed payment scenarios",
+          "80%+ line coverage achieved on all service files",
+          "Tests run in under 60 seconds in CI",
+          "No test relies on real external API calls (all mocked)"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "QA",
+        "description": "Create QA test plan: functional test cases for all user journeys, cross-browser matrix (Chrome, Firefox, Safari, mobile), accessibility validation (axe-core), and performance budget checklist.",
+        "payload": {
+          "test_journeys": [
+            "browse catalog",
+            "search and filter",
+            "add to cart",
+            "checkout with Stripe",
+            "order confirmation"
+          ],
+          "browsers": [
+            "Chrome 120+",
+            "Firefox 121+",
+            "Safari 17+",
+            "Chrome Android",
+            "Safari iOS"
+          ],
+          "tools": [
+            "axe-core",
+            "Lighthouse CI",
+            "BrowserStack"
+          ],
+          "output": "qa/test_plan.md, qa/test_cases.md, qa/browser_matrix.md"
+        },
+        "acceptance_criteria": [
+          "Test plan covers all 5 user journeys with step-by-step test cases",
+          "Browser matrix executed with pass/fail for each journey per browser",
+          "axe-core scan returns 0 critical violations on PLP, PDP, cart, checkout",
+          "Lighthouse CI scores: Performance > 90, Accessibility > 95, SEO > 95 on PDP",
+          "Mobile viewport tested at 375px (iPhone SE) and 390px (iPhone 14)"
+        ],
+        "depends_on": [
+          14,
+          15,
+          16,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "SYSTEM_TEST",
+        "description": "Write Playwright E2E test suite: full purchase flow (browse \u2192 search \u2192 PDP \u2192 cart \u2192 checkout \u2192 confirmation), cart persistence across page reload, search facet filtering, and Stripe test card scenarios.",
+        "payload": {
+          "framework": "Playwright",
+          "test_scenarios": [
+            "full_purchase_flow",
+            "cart_persistence",
+            "search_filter_flow",
+            "stripe_test_card_success",
+            "stripe_test_card_decline",
+            "out_of_stock_handling"
+          ],
+          "stripe_test_cards": [
+            "4242424242424242 (success)",
+            "4000000000000002 (decline)"
+          ],
+          "output": "e2e/**/*.spec.ts, playwright.config.ts"
+        },
+        "acceptance_criteria": [
+          "Full purchase flow test completes without manual intervention using Stripe test mode",
+          "Cart persists across browser refresh (localStorage hydration verified)",
+          "Search filter test confirms results narrow correctly with each facet",
+          "Declined card test verifies error message displayed and cart not cleared",
+          "All E2E tests pass in CI against preview deployment",
+          "E2E suite completes in under 5 minutes"
+        ],
+        "depends_on": [
+          21,
+          22
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 24,
+        "task_type": "OPERATIONS",
+        "description": "Define operational runbooks: deployment procedure, rollback steps, Algolia reindex runbook, database backup/restore, incident response for checkout outage, and SLA definitions (99.9% uptime, <2s TTFB).",
+        "payload": {
+          "runbooks": [
+            "deployment",
+            "rollback",
+            "algolia-reindex",
+            "db-backup-restore",
+            "checkout-incident-response"
+          ],
+          "sla": {
+            "uptime": "99.9%",
+            "ttfb_p95": "< 2s",
+            "checkout_success_rate": "> 99.5%"
+          },
+          "monitoring": "Vercel Analytics + Sentry + UptimeRobot",
+          "output": "ops/runbooks/, ops/sla.md, ops/incident_response.md"
+        },
+        "acceptance_criteria": [
+          "Deployment runbook includes pre-deploy checklist and smoke test steps",
+          "Rollback runbook executable in under 5 minutes",
+          "Algolia reindex runbook covers full catalog reindex without downtime",
+          "SLA document defines measurement methodology and exclusions",
+          "Incident response runbook assigns on-call roles and escalation path",
+          "Monitoring alerts configured for: error rate > 1%, p95 latency > 3s, payment failure spike"
+        ],
+        "depends_on": [
+          19,
+          20
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 25,
+        "task_type": "DOCS",
+        "description": "Write developer documentation: local setup guide, environment variable reference, architecture decision records (ADRs) for Medusa vs Shopify and Algolia choice, API reference, and solution README.",
+        "payload": {
+          "docs": [
+            "README.md",
+            "docs/local-setup.md",
+            "docs/architecture.md",
+            "docs/api-reference.md",
+            "docs/adr/"
+          ],
+          "adrs": [
+            "ADR-001: Medusa vs Shopify backend",
+            "ADR-002: Algolia vs native search",
+            "ADR-003: Vercel for SSR hosting"
+          ],
+          "output": "README.md, docs/"
+        },
+        "acceptance_criteria": [
+          "Local setup guide verified: new developer can run full stack from scratch following only README",
+          "All environment variables documented with type, required/optional, and example values",
+          "Three ADRs written with context, decision, and consequences sections",
+          "API reference covers all Medusa endpoints used by frontend",
+          "Architecture diagram (Mermaid) shows data flow: Browser \u2192 Next.js \u2192 Medusa/Shopify \u2192 Algolia \u2192 Stripe"
+        ],
+        "depends_on": [
+          23,
+          18
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 25,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 58,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 58,
+          "final_review": {
+            "score": 58,
+            "flaws": [
+              "Backend decision (Shopify vs Medusa) is never forced \u2014 Step 9 says 'if using Shopify only, skip migration setup', meaning the entire database schema, API design, and subscriber architecture could be thrown away mid-build. This is not a design choice, it's deferred technical debt disguised as flexibility.",
+              "Step 7 outputs both api_schema.graphql and openapi.yaml, but Medusa v2 exposes REST only \u2014 there is no GraphQL layer. If Shopify is chosen, the REST OpenAPI spec is irrelevant. The API contract deliverable is contradictory and will produce dead artifacts regardless of which backend is picked.",
+              "Cart state is split between Zustand/localStorage (client) and Medusa CartService (server). The plan has no strategy for guest-to-authenticated cart merge, concurrent-tab cart conflicts, or Medusa cart expiry (default 7 days) vs localStorage persistence. This is a known ecommerce production bug class.",
+              "ISR with revalidate: 60 on PDP means a product that sells out stays purchasable for up to 60 seconds post-depletion. No on-demand revalidation (Next.js revalidateTag/revalidatePath) is wired to the Medusa product update subscriber. The plan will ship a known oversell race condition.",
+              "PSD2/SCA Strong Customer Authentication is completely absent. Any EU customer paying with a European-issued card will trigger 3DS authentication. Stripe Elements handles the UX but the checkout flow (Step 16) must explicitly handle the PaymentIntent status requires_action and redirect the user back. Without this, EU checkout fails for a significant card percentage.",
+              "Step 4 (Legal) has no dependency on Step 6 (PRD) \u2014 legal docs are written before the product scope is defined. The privacy policy will document data collection that doesn't exist yet or miss collection that is later added. Legal depends on at minimum knowing what data flows exist.",
+              "PCI SAQ-A compliance work (Step 18) is scheduled after the payment implementation (Step 11). The scope definition \u2014 specifically whether any cardholder data touches the Next.js server during SSR \u2014 must be validated before writing checkout code, not after.",
+              "No email infrastructure is defined anywhere. Step 11 says 'order confirmation email triggered on payment_intent.succeeded' but there is no SMTP/transactional email provider setup (SendGrid, Postmark, Resend), no email template system, and no delivery failure handling. This is a dangling dependency with no owner step.",
+              "Tax calculation is entirely absent. Collecting payment without computing applicable sales tax (US nexus rules) or VAT (EU) is a legal compliance failure in most jurisdictions. No TaxJar, Avalara, or Stripe Tax integration is mentioned anywhere in 25 steps.",
+              "Inventory concurrency is unaddressed. Two simultaneous add-to-cart requests for the last unit will both succeed until checkout. No pessimistic locking, optimistic concurrency check, or reservation pattern is described. Medusa does not handle this automatically."
+            ],
+            "suggestions": [
+              "Force the Shopify vs Medusa decision in Step 1 or as a prerequisite gate before Step 7. Document it as ADR-001 (already planned) and make Steps 9-12 conditional branches, not ambiguous prose. All downstream steps should reference the decided backend only.",
+              "Replace the dual GraphQL/REST API output in Step 7 with a single contract matching the chosen backend. If Shopify: document the Storefront GraphQL schema. If Medusa: document the REST OpenAPI spec. Delete the unused artifact.",
+              "Add a cart reconciliation spec to Step 10: define the merge strategy when a guest cart (Medusa cart_id in cookie) is associated with a newly authenticated customer. Medusa supports this via POST /store/customers/me/cart but it must be explicitly called.",
+              "Wire on-demand revalidation: in the Medusa product.updated subscriber (Step 12), call Next.js revalidateTag('product-[handle]') via a server action or internal API route. This eliminates the oversell window without removing ISR benefits.",
+              "Add a PSD2/SCA handling section to Step 16: after confirmPayment(), check the PaymentIntent status. If requires_action, call stripe.handleNextAction() or handleCardAction() and handle the return_url flow. Test with Stripe's 3DS test cards (4000002500003155).",
+              "Reorder Step 4 to depend on Step 6 (PRD). Legal docs need a defined feature scope to accurately describe data collection, retention, and third-party sharing. Running legal in parallel with market research produces legally incomplete documents.",
+              "Move PCI scope definition (currently Step 18) to before Step 11 implementation. The critical check \u2014 does any Next.js Server Component or API route ever receive or log raw card data \u2014 must be verified in the architecture phase, not after shipping.",
+              "Add Step 10.5 or extend Step 8: set up transactional email provider (Resend recommended for Medusa v2 compatibility), define email templates for order confirmation, shipping notification, and password reset, and add SMTP env vars to .env.example.",
+              "Add tax calculation to Step 10 backend implementation: integrate Stripe Tax (simplest path \u2014 one API flag on PaymentIntent) or Medusa's built-in tax module with region-based rates. Document jurisdiction coverage in the PRD."
+            ],
+            "missing": [
+              "Inventory reservation / stock locking strategy during checkout (prevent oversell)",
+              "Tax computation provider and rate configuration",
+              "Transactional email infrastructure and template system",
+              "PSD2/SCA 3DS authentication handling in checkout flow",
+              "Password reset and account management flows (only register/login is specified)",
+              "Algolia index aliasing for zero-downtime reindexing (bulk reindex in Step 12 requires alias swap to avoid serving empty index during migration)",
+              "Image storage backend for Medusa (local disk fails in Docker/Railway \u2014 needs S3 or Cloudflare R2 configuration)",
+              "Error monitoring integration point (Sentry is mentioned in Step 24 ops runbook but never initialized in the application \u2014 Step 8 or 13 should install and configure it)",
+              "Rate limiting on Next.js API routes and Server Actions (Step 10 adds rate limiting to Medusa but the Next.js layer has none)",
+              "Webhook idempotency handling: Stripe can deliver the same webhook event multiple times; the payment_intent.succeeded handler must be idempotent using the event ID as a deduplication key",
+              "Medusa v2 plugin compatibility matrix \u2014 medusa-payment-stripe package name and API for v2 differs from v1; this needs explicit verification before Step 11",
+              "Shopify Storefront API access token scoping and rotating strategy (if Shopify path is chosen)",
+              "Content Security Policy for Stripe Elements: Stripe.js must be loaded from js.stripe.com and the CSP in Step 20 must whitelist exactly the right Stripe domains or payment will fail in production"
+            ],
+            "security_risks": [
+              "XSS via product content: Medusa product descriptions are merchant-controlled strings rendered in React. If any component uses dangerouslySetInnerHTML for rich text descriptions (common pattern), a compromised merchant account or admin injection attack yields stored XSS in a PCI-scoped checkout page. The threat model (Step 5) lists XSS but the frontend implementation steps have no explicit sanitization requirement.",
+              "ALGOLIA_ADMIN_KEY exposure: Step 19 correctly stores this in GitHub Secrets, but if any Next.js Server Component or API route forwards this key to the client response (e.g., in a debug header or error message), it grants full index write access. The search-only key restriction is mentioned but there is no audit requirement to verify the admin key never appears in client-accessible code paths.",
+              "Stripe webhook endpoint lacks idempotency: a replayed payment_intent.succeeded webhook will create a duplicate order. Without event ID deduplication in the database, this is both a financial and inventory integrity risk.",
+              "JWT refresh token strategy undefined: Step 10 specifies '1h expiry and refresh token' but the refresh token rotation policy, storage mechanism (httpOnly cookie vs localStorage), and revocation strategy are unspecified. Storing refresh tokens in localStorage makes them accessible to any XSS payload.",
+              "SSR secret leakage: Next.js App Router Server Components run server-side but developers frequently make the mistake of importing server-only modules into shared components, which Next.js then bundles client-side. Without the server-only package enforced at build time (mentioned nowhere), Medusa API keys or database credentials can leak into the client bundle.",
+              "CSP misconfiguration for Stripe: Stripe Elements requires specific CSP directives (frame-src https://js.stripe.com, script-src https://js.stripe.com). An overly strict or incorrectly specified CSP (Step 20) will silently break payment in some browsers with no obvious error, which is both a UX failure and a security misconfiguration if the fix is to loosen CSP globally."
+            ],
+            "summary": "This is a structurally comprehensive plan that covers the right surface area for a headless ecommerce MVP, but it contains a critical unresolved fork \u2014 the Shopify vs Medusa backend decision \u2014 that contaminates every downstream step with ambiguity. Approximately 8 of 25 steps produce artifacts that are partially or wholly wrong depending on which backend is ultimately chosen, and no step forces the decision. Beyond this architectural defect, the plan has three production-failure-class gaps: cart split-brain between client and server with no reconciliation strategy, no PSD2/SCA 3DS handling that will cause silent checkout failures for EU users, and no tax computation layer that creates legal compliance exposure from day one. The security work is better than average (STRIDE model, PCI SAQ-A, SBOM) but is scheduled in the wrong order \u2014 PCI scope must precede payment implementation, not follow it. The score reflects a plan that would produce a demo-quality build that fails real users in checkout and fails regulators in EU markets without additional rework passes on these specific gaps.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 58,
+              "flaws": [
+                "Backend decision (Shopify vs Medusa) is never forced \u2014 Step 9 says 'if using Shopify only, skip migration setup', meaning the entire database schema, API design, and subscriber architecture could be thrown away mid-build. This is not a design choice, it's deferred technical debt disguised as flexibility.",
+                "Step 7 outputs both api_schema.graphql and openapi.yaml, but Medusa v2 exposes REST only \u2014 there is no GraphQL layer. If Shopify is chosen, the REST OpenAPI spec is irrelevant. The API contract deliverable is contradictory and will produce dead artifacts regardless of which backend is picked.",
+                "Cart state is split between Zustand/localStorage (client) and Medusa CartService (server). The plan has no strategy for guest-to-authenticated cart merge, concurrent-tab cart conflicts, or Medusa cart expiry (default 7 days) vs localStorage persistence. This is a known ecommerce production bug class.",
+                "ISR with revalidate: 60 on PDP means a product that sells out stays purchasable for up to 60 seconds post-depletion. No on-demand revalidation (Next.js revalidateTag/revalidatePath) is wired to the Medusa product update subscriber. The plan will ship a known oversell race condition.",
+                "PSD2/SCA Strong Customer Authentication is completely absent. Any EU customer paying with a European-issued card will trigger 3DS authentication. Stripe Elements handles the UX but the checkout flow (Step 16) must explicitly handle the PaymentIntent status requires_action and redirect the user back. Without this, EU checkout fails for a significant card percentage.",
+                "Step 4 (Legal) has no dependency on Step 6 (PRD) \u2014 legal docs are written before the product scope is defined. The privacy policy will document data collection that doesn't exist yet or miss collection that is later added. Legal depends on at minimum knowing what data flows exist.",
+                "PCI SAQ-A compliance work (Step 18) is scheduled after the payment implementation (Step 11). The scope definition \u2014 specifically whether any cardholder data touches the Next.js server during SSR \u2014 must be validated before writing checkout code, not after.",
+                "No email infrastructure is defined anywhere. Step 11 says 'order confirmation email triggered on payment_intent.succeeded' but there is no SMTP/transactional email provider setup (SendGrid, Postmark, Resend), no email template system, and no delivery failure handling. This is a dangling dependency with no owner step.",
+                "Tax calculation is entirely absent. Collecting payment without computing applicable sales tax (US nexus rules) or VAT (EU) is a legal compliance failure in most jurisdictions. No TaxJar, Avalara, or Stripe Tax integration is mentioned anywhere in 25 steps.",
+                "Inventory concurrency is unaddressed. Two simultaneous add-to-cart requests for the last unit will both succeed until checkout. No pessimistic locking, optimistic concurrency check, or reservation pattern is described. Medusa does not handle this automatically."
+              ],
+              "suggestions": [
+                "Force the Shopify vs Medusa decision in Step 1 or as a prerequisite gate before Step 7. Document it as ADR-001 (already planned) and make Steps 9-12 conditional branches, not ambiguous prose. All downstream steps should reference the decided backend only.",
+                "Replace the dual GraphQL/REST API output in Step 7 with a single contract matching the chosen backend. If Shopify: document the Storefront GraphQL schema. If Medusa: document the REST OpenAPI spec. Delete the unused artifact.",
+                "Add a cart reconciliation spec to Step 10: define the merge strategy when a guest cart (Medusa cart_id in cookie) is associated with a newly authenticated customer. Medusa supports this via POST /store/customers/me/cart but it must be explicitly called.",
+                "Wire on-demand revalidation: in the Medusa product.updated subscriber (Step 12), call Next.js revalidateTag('product-[handle]') via a server action or internal API route. This eliminates the oversell window without removing ISR benefits.",
+                "Add a PSD2/SCA handling section to Step 16: after confirmPayment(), check the PaymentIntent status. If requires_action, call stripe.handleNextAction() or handleCardAction() and handle the return_url flow. Test with Stripe's 3DS test cards (4000002500003155).",
+                "Reorder Step 4 to depend on Step 6 (PRD). Legal docs need a defined feature scope to accurately describe data collection, retention, and third-party sharing. Running legal in parallel with market research produces legally incomplete documents.",
+                "Move PCI scope definition (currently Step 18) to before Step 11 implementation. The critical check \u2014 does any Next.js Server Component or API route ever receive or log raw card data \u2014 must be verified in the architecture phase, not after shipping.",
+                "Add Step 10.5 or extend Step 8: set up transactional email provider (Resend recommended for Medusa v2 compatibility), define email templates for order confirmation, shipping notification, and password reset, and add SMTP env vars to .env.example.",
+                "Add tax calculation to Step 10 backend implementation: integrate Stripe Tax (simplest path \u2014 one API flag on PaymentIntent) or Medusa's built-in tax module with region-based rates. Document jurisdiction coverage in the PRD."
+              ],
+              "missing": [
+                "Inventory reservation / stock locking strategy during checkout (prevent oversell)",
+                "Tax computation provider and rate configuration",
+                "Transactional email infrastructure and template system",
+                "PSD2/SCA 3DS authentication handling in checkout flow",
+                "Password reset and account management flows (only register/login is specified)",
+                "Algolia index aliasing for zero-downtime reindexing (bulk reindex in Step 12 requires alias swap to avoid serving empty index during migration)",
+                "Image storage backend for Medusa (local disk fails in Docker/Railway \u2014 needs S3 or Cloudflare R2 configuration)",
+                "Error monitoring integration point (Sentry is mentioned in Step 24 ops runbook but never initialized in the application \u2014 Step 8 or 13 should install and configure it)",
+                "Rate limiting on Next.js API routes and Server Actions (Step 10 adds rate limiting to Medusa but the Next.js layer has none)",
+                "Webhook idempotency handling: Stripe can deliver the same webhook event multiple times; the payment_intent.succeeded handler must be idempotent using the event ID as a deduplication key",
+                "Medusa v2 plugin compatibility matrix \u2014 medusa-payment-stripe package name and API for v2 differs from v1; this needs explicit verification before Step 11",
+                "Shopify Storefront API access token scoping and rotating strategy (if Shopify path is chosen)",
+                "Content Security Policy for Stripe Elements: Stripe.js must be loaded from js.stripe.com and the CSP in Step 20 must whitelist exactly the right Stripe domains or payment will fail in production"
+              ],
+              "security_risks": [
+                "XSS via product content: Medusa product descriptions are merchant-controlled strings rendered in React. If any component uses dangerouslySetInnerHTML for rich text descriptions (common pattern), a compromised merchant account or admin injection attack yields stored XSS in a PCI-scoped checkout page. The threat model (Step 5) lists XSS but the frontend implementation steps have no explicit sanitization requirement.",
+                "ALGOLIA_ADMIN_KEY exposure: Step 19 correctly stores this in GitHub Secrets, but if any Next.js Server Component or API route forwards this key to the client response (e.g., in a debug header or error message), it grants full index write access. The search-only key restriction is mentioned but there is no audit requirement to verify the admin key never appears in client-accessible code paths.",
+                "Stripe webhook endpoint lacks idempotency: a replayed payment_intent.succeeded webhook will create a duplicate order. Without event ID deduplication in the database, this is both a financial and inventory integrity risk.",
+                "JWT refresh token strategy undefined: Step 10 specifies '1h expiry and refresh token' but the refresh token rotation policy, storage mechanism (httpOnly cookie vs localStorage), and revocation strategy are unspecified. Storing refresh tokens in localStorage makes them accessible to any XSS payload.",
+                "SSR secret leakage: Next.js App Router Server Components run server-side but developers frequently make the mistake of importing server-only modules into shared components, which Next.js then bundles client-side. Without the server-only package enforced at build time (mentioned nowhere), Medusa API keys or database credentials can leak into the client bundle.",
+                "CSP misconfiguration for Stripe: Stripe Elements requires specific CSP directives (frame-src https://js.stripe.com, script-src https://js.stripe.com). An overly strict or incorrectly specified CSP (Step 20) will silently break payment in some browsers with no obvious error, which is both a UX failure and a security misconfiguration if the fix is to loosen CSP globally."
+              ],
+              "summary": "This is a structurally comprehensive plan that covers the right surface area for a headless ecommerce MVP, but it contains a critical unresolved fork \u2014 the Shopify vs Medusa backend decision \u2014 that contaminates every downstream step with ambiguity. Approximately 8 of 25 steps produce artifacts that are partially or wholly wrong depending on which backend is ultimately chosen, and no step forces the decision. Beyond this architectural defect, the plan has three production-failure-class gaps: cart split-brain between client and server with no reconciliation strategy, no PSD2/SCA 3DS handling that will cause silent checkout failures for EU users, and no tax computation layer that creates legal compliance exposure from day one. The security work is better than average (STRIDE model, PCI SAQ-A, SBOM) but is scheduled in the wrong order \u2014 PCI scope must precede payment implementation, not follow it. The score reflects a plan that would produce a demo-quality build that fails real users in checkout and fails regulators in EU markets without additional rework passes on these specific gaps.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T05:48:28.518010+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 126.73,
+      "critic_plan": 115.9
+    }
+  }
+}

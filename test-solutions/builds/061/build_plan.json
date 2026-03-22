@@ -1,0 +1,647 @@
+{
+  "run_id": "b2f2729a-393a-48ef-a3ed-457ae250a7ec",
+  "status": {
+    "run_id": "b2f2729a-393a-48ef-a3ed-457ae250a7ec",
+    "solution_name": "document_extraction",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T08:24:17.032821+00:00",
+    "updated_at": "2026-03-22T08:28:24.501499+00:00",
+    "product_description": "AI document extraction pipeline for invoices, receipts, and contracts with OCR, NER, table extraction, and structured JSON output. REST API with batch processing.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "CONFIG",
+        "description": "Initialize project structure and dependency manifest for the document_extraction solution. Set up Python virtual environment with OCR (Tesseract/EasyOCR), NER (spaCy/transformers), table extraction (camelot/pdfplumber), and FastAPI dependencies. Configure solution YAML files (project.yaml, prompts.yaml, tasks.yaml).",
+        "payload": {
+          "solution_name": "document_extraction",
+          "runtime": "python3.11",
+          "key_dependencies": [
+            "fastapi",
+            "uvicorn",
+            "pytesseract",
+            "easyocr",
+            "pdfplumber",
+            "camelot-py",
+            "spacy",
+            "transformers",
+            "celery",
+            "redis",
+            "sqlalchemy",
+            "pydantic",
+            "pillow",
+            "pdf2image"
+          ],
+          "config_files": [
+            "project.yaml",
+            "prompts.yaml",
+            "tasks.yaml",
+            "pyproject.toml",
+            ".env.example"
+          ]
+        },
+        "acceptance_criteria": [
+          "All dependencies install cleanly with no version conflicts",
+          "project.yaml declares solution name, active_modules, and agent roles",
+          "prompts.yaml defines analyst, developer, and data_scientist roles with domain-specific system prompts",
+          "tasks.yaml enumerates all task types used by this solution",
+          ".env.example documents all required environment variables"
+        ],
+        "depends_on": [],
+        "agent_role": "developer"
+      },
+      {
+        "step": 2,
+        "task_type": "API",
+        "description": "Design the OpenAPI specification for the document extraction REST API. Define endpoints for single document upload, batch submission, job status polling, and result retrieval. Specify request/response schemas for all three document types (invoice, receipt, contract).",
+        "payload": {
+          "endpoints": [
+            "POST /extract \u2014 single document upload, returns job_id",
+            "POST /extract/batch \u2014 multipart upload of multiple docs, returns batch_id",
+            "GET /jobs/{job_id} \u2014 poll extraction status",
+            "GET /jobs/{job_id}/result \u2014 retrieve structured JSON output",
+            "GET /batches/{batch_id} \u2014 poll batch status with per-document breakdown",
+            "GET /batches/{batch_id}/results \u2014 retrieve all results in batch",
+            "DELETE /jobs/{job_id} \u2014 purge job and artifacts",
+            "GET /health \u2014 liveness probe"
+          ],
+          "document_types": [
+            "invoice",
+            "receipt",
+            "contract"
+          ],
+          "output_format": "structured JSON with document_type, extracted_entities, tables, raw_text, confidence_scores, processing_metadata"
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 spec (openapi.yaml) is complete and valid (passes swagger-cli validate)",
+          "All request bodies define required fields, optional fields, and file MIME type constraints",
+          "All response schemas include a top-level 'status' field (queued | processing | completed | failed)",
+          "Error responses follow RFC 7807 Problem Details format",
+          "Batch endpoint spec supports 1\u2013100 documents per request"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 3,
+        "task_type": "DATABASE",
+        "description": "Design and implement the database schema for job tracking, extraction results, and audit history. Use SQLAlchemy ORM with Alembic migrations. Tables: jobs, batch_jobs, extraction_results, entity_records, table_records.",
+        "payload": {
+          "engine": "PostgreSQL",
+          "orm": "SQLAlchemy 2.x",
+          "migrations": "Alembic",
+          "tables": {
+            "jobs": "id, batch_id (FK nullable), document_type, status, filename, file_hash, created_at, updated_at, processing_time_ms",
+            "batch_jobs": "id, total_docs, completed_docs, failed_docs, status, created_at, completed_at",
+            "extraction_results": "id, job_id (FK), raw_text, confidence_score, ocr_engine, model_version, created_at",
+            "entity_records": "id, job_id (FK), entity_type, entity_value, start_char, end_char, confidence",
+            "table_records": "id, job_id (FK), table_index, headers (JSONB), rows (JSONB), page_number"
+          }
+        },
+        "acceptance_criteria": [
+          "Alembic migration runs cleanly on a fresh PostgreSQL 15 instance",
+          "All foreign key constraints are enforced",
+          "Indexes exist on jobs.status, jobs.batch_id, entity_records.job_id, and entity_records.entity_type",
+          "JSONB columns for table rows are validated by a CHECK constraint against a JSON schema",
+          "Rollback migration returns schema to prior state without data loss"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 4,
+        "task_type": "DATA",
+        "description": "Build the document ingestion and preprocessing pipeline. Handles PDF-to-image conversion, image normalization (deskew, denoise, contrast enhancement), file format validation, and document-type classification. Implements the multi_agent_sequential pattern: classifier \u2192 OCR \u2192 NER \u2192 table extractor \u2192 JSON assembler.",
+        "payload": {
+          "agentic_pattern": "multi_agent_sequential",
+          "pipeline_stages": [
+            "ingest: validate file type (PDF/PNG/JPG/TIFF), compute SHA-256 hash, store to object storage",
+            "preprocess: pdf2image conversion at 300 DPI, deskew via OpenCV, adaptive thresholding",
+            "classify: lightweight CNN or zero-shot LLM classifier \u2192 invoice | receipt | contract",
+            "ocr: route to engine based on doc quality score",
+            "ner: pass OCR text to domain NER model",
+            "table_extract: detect and parse tabular regions",
+            "assemble: merge all outputs into canonical JSON schema"
+          ],
+          "state_passing": "Pydantic DocumentState object carries raw bytes \u2192 text \u2192 entities \u2192 tables across stages",
+          "error_propagation": "Each stage emits stage_name, status, error_code on failure; downstream stages skip gracefully"
+        },
+        "acceptance_criteria": [
+          "Pipeline processes a 10-page PDF invoice end-to-end in under 30 seconds on a 2-vCPU machine",
+          "DocumentState is serializable to JSON at every stage boundary for debugging",
+          "Classification accuracy \u2265 90% on a 100-document labeled test set",
+          "Pipeline emits structured logs (JSON) for every stage transition",
+          "SHA-256 deduplication prevents reprocessing identical files within the same batch"
+        ],
+        "depends_on": [
+          1,
+          3
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 5,
+        "task_type": "ML_MODEL",
+        "description": "Integrate and configure the OCR engine layer. Support dual-engine strategy: Tesseract 5 (fast, offline) for clean scans and EasyOCR (deep-learning, GPU-optional) for degraded or handwritten documents. Implement quality-score-based routing. Output: raw text with bounding-box coordinates and per-word confidence scores.",
+        "payload": {
+          "engines": {
+            "tesseract": "pytesseract with OEM 3 (LSTM), PSM 6, language packs: eng + any configured locales",
+            "easyocr": "EasyOCR 1.7+ with GPU detection, batch inference for multi-page docs"
+          },
+          "routing_rule": "if image_quality_score > 0.75 \u2192 tesseract else \u2192 easyocr",
+          "quality_scorer": "Laplacian variance + histogram entropy \u2192 normalized 0\u20131 score",
+          "output_schema": "List[{text, bbox: {x,y,w,h}, confidence, page}]"
+        },
+        "acceptance_criteria": [
+          "Tesseract achieves \u2265 95% character accuracy on a clean-scan benchmark set",
+          "EasyOCR achieves \u2265 85% character accuracy on a degraded-scan benchmark set",
+          "Quality-score router correctly selects the appropriate engine for 90% of test cases",
+          "OCR layer is encapsulated behind an OCREngine abstract base class \u2014 engines are swappable",
+          "Bounding box coordinates are normalized to [0,1] relative to page dimensions",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 6,
+        "task_type": "ML_MODEL",
+        "description": "Build the Named Entity Recognition (NER) model layer for extracting structured fields from invoices (vendor, total, line items, tax, due date), receipts (merchant, items, subtotal, date, payment method), and contracts (parties, effective date, termination clauses, governing law). Use a fine-tuned BERT-based model (layoutlm-v3 for layout-aware extraction) with a fallback to spaCy rule-based patterns.",
+        "payload": {
+          "primary_model": "microsoft/layoutlmv3-base fine-tuned on FUNSD + custom labeled invoices/receipts/contracts",
+          "fallback": "spaCy en_core_web_trf with custom EntityRuler patterns per document type",
+          "entity_types": {
+            "invoice": [
+              "VENDOR_NAME",
+              "VENDOR_ADDRESS",
+              "INVOICE_NUMBER",
+              "INVOICE_DATE",
+              "DUE_DATE",
+              "LINE_ITEM",
+              "SUBTOTAL",
+              "TAX",
+              "TOTAL",
+              "CURRENCY"
+            ],
+            "receipt": [
+              "MERCHANT_NAME",
+              "MERCHANT_ADDRESS",
+              "TRANSACTION_DATE",
+              "TRANSACTION_TIME",
+              "ITEM_NAME",
+              "ITEM_PRICE",
+              "SUBTOTAL",
+              "TAX",
+              "TOTAL",
+              "PAYMENT_METHOD"
+            ],
+            "contract": [
+              "PARTY_NAME",
+              "EFFECTIVE_DATE",
+              "TERMINATION_DATE",
+              "GOVERNING_LAW",
+              "JURISDICTION",
+              "CLAUSE_TYPE",
+              "OBLIGATION"
+            ]
+          },
+          "confidence_threshold": 0.7
+        },
+        "acceptance_criteria": [
+          "LayoutLMv3 achieves F1 \u2265 0.88 on invoice NER test set (100 labeled documents)",
+          "LayoutLMv3 achieves F1 \u2265 0.85 on receipt NER test set",
+          "LayoutLMv3 achieves F1 \u2265 0.80 on contract NER test set",
+          "spaCy fallback activates when primary model confidence < threshold for all entities",
+          "NER layer accepts bounding-box-enriched OCR tokens (LayoutLM format) and plain text",
+          "Model version is recorded in every extraction_result row",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 7,
+        "task_type": "ML_MODEL",
+        "description": "Implement the table extraction module for detecting and parsing tabular structures in invoices and receipts (line item tables) and contracts (schedule/exhibit tables). Use pdfplumber for native PDF tables and a TATR (Table Transformer) model for image-based table detection. Output canonical row/column JSON with header inference.",
+        "payload": {
+          "pdf_native": "pdfplumber \u2014 extracts tables from PDFs with embedded text layer",
+          "image_based": "microsoft/table-transformer-detection + microsoft/table-transformer-structure-recognition",
+          "routing": "if PDF has text layer \u2192 pdfplumber else \u2192 TATR pipeline",
+          "output_schema": "{table_index, page, headers: [str], rows: [[cell_value]], bbox, confidence}",
+          "header_inference": "First row heuristic + column value type analysis (date, currency, quantity)"
+        },
+        "acceptance_criteria": [
+          "pdfplumber correctly parses \u2265 95% of native-PDF invoice line-item tables in the test set",
+          "TATR detects tables with IoU \u2265 0.85 on image-based documents",
+          "Table structure recognition achieves TEDS score \u2265 0.82 on benchmark",
+          "Empty cells are represented as null (not empty string) in output JSON",
+          "Multi-page tables are merged when continuation is detected",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Implement the FastAPI backend service. Wire all pipeline stages (OCR \u2192 NER \u2192 table extraction \u2192 JSON assembly) into the job execution flow. Implement async job submission with Celery + Redis as the task broker. Persist results to PostgreSQL via SQLAlchemy. Implement the review_and_critique agentic pattern: extraction output is scored by a critic agent before finalizing.",
+        "payload": {
+          "agentic_pattern": "review_and_critique",
+          "framework": "FastAPI + Celery 5 + Redis 7",
+          "job_flow": "POST /extract \u2192 create job record \u2192 enqueue Celery task \u2192 return job_id \u2192 worker runs pipeline \u2192 critic scores output \u2192 if score < 0.7 retry with alternate engine \u2192 persist result \u2192 update job status",
+          "critic_agent": "Scores extraction completeness (required fields present), confidence distribution, and cross-field consistency (e.g. subtotal + tax \u2248 total)",
+          "serialization": "Pydantic v2 models for all request/response types",
+          "file_storage": "Local filesystem (dev) / S3-compatible object store (prod) via abstracted StorageBackend"
+        },
+        "acceptance_criteria": [
+          "POST /extract returns job_id within 200ms (async submission)",
+          "GET /jobs/{job_id}/result returns completed JSON within SLA after worker finishes",
+          "Critic agent re-routes to alternate OCR engine when initial confidence score < 0.7",
+          "All database writes use SQLAlchemy async session with proper transaction boundaries",
+          "API returns 422 with field-level detail for invalid input (wrong MIME type, file too large)",
+          "Concurrent extraction of 10 jobs does not cause race conditions in job status updates"
+        ],
+        "depends_on": [
+          3,
+          4,
+          6,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement batch processing subsystem. Accept up to 100 documents in a single multipart POST. Dispatch parallel Celery subtasks using a Chord (fan-out \u2192 fan-in). Track per-document status within batch. Emit batch_completed event when all subtasks resolve. Implement progress streaming via Server-Sent Events on GET /batches/{batch_id}/stream.",
+        "payload": {
+          "agentic_pattern": "multi_agent_parallel",
+          "celery_pattern": "Chord: group(subtasks) | aggregate_callback",
+          "concurrency": "Worker pool size configurable via CELERY_CONCURRENCY env var (default: 4)",
+          "sse_endpoint": "GET /batches/{batch_id}/stream \u2014 emits {doc_index, status, progress_pct} as each doc completes",
+          "partial_failure": "Batch marked 'partially_completed' if \u2265 1 doc fails; failed docs include error detail in results",
+          "rate_limiting": "Max 3 concurrent batches per client IP via Redis token bucket"
+        },
+        "acceptance_criteria": [
+          "Batch of 10 PDFs processes in parallel \u2014 wall-clock time \u2264 1.5x single-document time",
+          "SSE stream emits an event for each completed document with correct progress percentage",
+          "Batch result endpoint returns per-document status (completed | failed) for every document submitted",
+          "Partial batch failure does not block successful documents from returning results",
+          "Rate limiter returns 429 with Retry-After header when limit is exceeded"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "INFRA",
+        "description": "Create Docker Compose stack for local development and a production-ready Dockerfile. Services: api (FastAPI), worker (Celery), redis (broker + result backend), postgres (job store), flower (Celery monitoring UI). Add GitHub Actions CI pipeline for lint, test, and Docker build on PR.",
+        "payload": {
+          "services": {
+            "api": "Python 3.11-slim, uvicorn, port 8000",
+            "worker": "Same image as api, celery worker entrypoint, GPU passthrough optional via NVIDIA runtime",
+            "redis": "redis:7-alpine, port 6379",
+            "postgres": "postgres:15-alpine, port 5432, persistent volume",
+            "flower": "mher/flower:2.0, port 5555, basic auth"
+          },
+          "ci_pipeline": "GitHub Actions: ruff lint \u2192 pytest \u2192 docker build --no-cache \u2192 push to GHCR on main",
+          "health_checks": "All services have HEALTHCHECK instructions; api depends_on postgres and redis health",
+          "env_management": ".env file for dev, Kubernetes Secrets / AWS Parameter Store for prod"
+        },
+        "acceptance_criteria": [
+          "docker compose up --build starts all services and passes health checks within 60 seconds",
+          "API is reachable at http://localhost:8000 and returns 200 on GET /health",
+          "Flower UI is reachable at http://localhost:5555 and shows active workers",
+          "CI pipeline runs in < 5 minutes on a standard GitHub-hosted runner",
+          "docker compose down -v cleanly removes all containers and volumes",
+          "Production Dockerfile image size < 2 GB (multi-stage build)"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 11,
+        "task_type": "TESTS",
+        "description": "Write unit tests for all pipeline stages, NER models, table extraction logic, and API endpoint handlers. Use pytest with pytest-asyncio for async handlers. Mock external I/O (file storage, database). Target \u2265 85% line coverage.",
+        "payload": {
+          "framework": "pytest 8 + pytest-asyncio + pytest-cov + httpx (async test client)",
+          "test_modules": [
+            "test_ocr_engine.py \u2014 quality scorer, engine routing, bounding box normalization",
+            "test_ner_layer.py \u2014 entity extraction for all 3 doc types, confidence thresholding, fallback activation",
+            "test_table_extractor.py \u2014 native PDF tables, image-based detection, header inference, multi-page merge",
+            "test_pipeline.py \u2014 end-to-end DocumentState flow through all stages",
+            "test_api_endpoints.py \u2014 POST /extract, GET /jobs, batch endpoints, error cases",
+            "test_critic_agent.py \u2014 completeness scoring, consistency checks, re-routing trigger"
+          ],
+          "fixtures": "Sample invoice/receipt/contract PDFs and images in tests/fixtures/",
+          "mocks": "StorageBackend, database session, Celery task execution"
+        },
+        "acceptance_criteria": [
+          "pytest --cov reports \u2265 85% line coverage across src/",
+          "All tests pass in CI (no flaky tests \u2014 each test is deterministic)",
+          "Each OCR engine is tested with both a clean and degraded sample document",
+          "NER tests assert specific entity types and values against labeled fixtures",
+          "API tests cover happy path, 422 validation errors, 404 not found, and 429 rate limit"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 12,
+        "task_type": "TESTS",
+        "description": "Write integration and end-to-end tests against a live Docker Compose stack. Test the full extraction pipeline with real PDFs for all three document types. Validate structured JSON output against expected entity schemas. Test batch processing with concurrent load.",
+        "payload": {
+          "test_types": [
+            "e2e_invoice.py \u2014 upload invoice PDF, poll to completion, assert all required entity types present",
+            "e2e_receipt.py \u2014 upload receipt image, assert merchant name, total, date extracted",
+            "e2e_contract.py \u2014 upload contract PDF, assert party names, effective date, governing law",
+            "e2e_batch.py \u2014 submit 5-doc batch, assert all complete, verify SSE stream events",
+            "e2e_dedup.py \u2014 submit same file twice in one batch, assert second is deduplicated",
+            "load_test.py \u2014 20 concurrent single-doc requests, assert all complete within 120s"
+          ],
+          "test_fixtures": "10 real-world anonymized samples per document type in tests/e2e/fixtures/",
+          "environment": "pytest with INTEGRATION_TEST=1 env var, spins up docker compose test profile"
+        },
+        "acceptance_criteria": [
+          "All e2e tests pass against a freshly started Docker Compose stack",
+          "Invoice e2e asserts: VENDOR_NAME, INVOICE_NUMBER, TOTAL, DUE_DATE all present in result",
+          "Receipt e2e asserts: MERCHANT_NAME, TOTAL, TRANSACTION_DATE all present in result",
+          "Contract e2e asserts: at least 2 PARTY_NAME entities and EFFECTIVE_DATE present",
+          "Batch e2e confirms all 5 documents reach 'completed' status within 180 seconds",
+          "Load test: p95 latency < 45 seconds for single-page documents under 20 concurrent requests"
+        ],
+        "depends_on": [
+          10,
+          11
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 13,
+        "task_type": "SECURITY",
+        "description": "Perform security review of the document extraction API. Threat model: malicious file uploads, path traversal, SSRF via webhook callbacks, PII data leakage in logs, and unauthenticated batch job enumeration. Implement mitigations.",
+        "payload": {
+          "threat_areas": [
+            "File upload: MIME type validation, magic byte verification, file size cap (default 50 MB), virus scan hook",
+            "Path traversal: all file paths resolved via pathlib.Path with chroot-style prefix validation",
+            "PII in logs: structured log scrubber \u2014 redact entity values from INFO-level logs, keep only entity types",
+            "Auth: API key authentication via X-API-Key header (no auth in dev mode only)",
+            "Job enumeration: job IDs are UUIDs v4, not sequential integers",
+            "Resource exhaustion: per-IP rate limiting already in step 9; add file count limit per API key"
+          ],
+          "tooling": "bandit (static analysis), safety (dependency CVE scan), OWASP ZAP baseline scan in CI"
+        },
+        "acceptance_criteria": [
+          "bandit scan reports zero HIGH severity findings in src/",
+          "safety check reports zero CRITICAL CVEs in requirements.txt",
+          "Uploading a file with .pdf extension but EXE magic bytes returns 422",
+          "Extracted entity values do not appear in INFO-level application logs",
+          "Unauthenticated request to any endpoint returns 401 when API key auth is enabled",
+          "OWASP ZAP baseline scan passes with no FAIL-level alerts"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "DEVOPS",
+        "description": "Set up production monitoring and alerting. Instrument FastAPI with Prometheus metrics (request count, latency histograms, job queue depth, extraction success rate). Configure Grafana dashboard. Define SLO: 99% of single-document jobs complete within 60 seconds.",
+        "payload": {
+          "metrics": [
+            "http_request_duration_seconds (histogram, by endpoint and status)",
+            "extraction_job_duration_seconds (histogram, by document_type and ocr_engine)",
+            "extraction_success_total / extraction_failure_total (counters)",
+            "celery_queue_length (gauge, polled from Redis)",
+            "ner_confidence_score (histogram, by document_type)",
+            "critic_rerout_total (counter \u2014 times critic triggered engine re-route)"
+          ],
+          "alerting": [
+            "ALERT: job_failure_rate > 5% over 5m \u2192 PagerDuty P2",
+            "ALERT: celery_queue_length > 50 for 2m \u2192 Slack warning",
+            "ALERT: p95 extraction latency > 60s \u2192 PagerDuty P1"
+          ],
+          "stack": "prometheus-fastapi-instrumentator, Prometheus 2.x, Grafana 10"
+        },
+        "acceptance_criteria": [
+          "GET /metrics endpoint returns valid Prometheus text format",
+          "All six metric families appear in Prometheus scrape output",
+          "Grafana dashboard JSON (exported) is committed to infra/grafana/",
+          "Alert rules are defined in infra/prometheus/alerts.yaml and load without syntax errors",
+          "Celery queue depth metric updates within 15 seconds of task enqueue"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 15,
+        "task_type": "QA",
+        "description": "Define and execute a QA test plan covering extraction accuracy benchmarks, edge cases, and regression suite. Produce a formal test report with pass/fail status per document type and entity class.",
+        "payload": {
+          "test_plan_sections": [
+            "Accuracy benchmarks: F1, precision, recall per entity class per document type on 50-doc labeled set",
+            "Edge cases: scanned handwritten amounts, rotated pages, multi-column contracts, receipts with no tax line",
+            "Regression suite: 20 previously failed extractions, assert they now pass after model updates",
+            "Negative tests: password-protected PDFs, corrupted images, zero-byte files \u2014 all return structured error JSON",
+            "Localization edge: documents with \u20ac and \u00a3 currency symbols and non-US date formats"
+          ],
+          "output": "QA report in docs/qa_report.md with per-entity F1 table and failure analysis"
+        },
+        "acceptance_criteria": [
+          "QA report documents F1 \u2265 0.85 for all REQUIRED entity types across all document types",
+          "All negative test cases return HTTP 422 or 500 with structured error body (no unhandled exceptions)",
+          "Regression suite: 100% pass rate on previously known failure cases",
+          "Edge case results are categorized: handled gracefully | known limitation | bug (filed as GitHub issue)",
+          "QA report is reviewed and signed off by data_scientist and qa_engineer agent roles"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "DOCS",
+        "description": "Write API documentation, developer quickstart guide, and model card for the extraction models. Document the agentic pipeline architecture (multi_agent_sequential + review_and_critique patterns) and how to extend it for new document types.",
+        "payload": {
+          "deliverables": [
+            "README.md \u2014 quickstart: clone \u2192 docker compose up \u2192 first extraction in 5 minutes",
+            "docs/api_reference.md \u2014 all endpoints with curl examples and annotated JSON responses",
+            "docs/architecture.md \u2014 pipeline diagram (Mermaid), agentic patterns used, data flow",
+            "docs/model_card.md \u2014 OCR engines, NER model details, training data provenance, known limitations",
+            "docs/extending.md \u2014 how to add a new document type: labeled data \u2192 fine-tune \u2192 register entity types \u2192 add spaCy patterns",
+            "docs/deployment.md \u2014 production checklist: env vars, object storage config, GPU setup, scaling workers"
+          ]
+        },
+        "acceptance_criteria": [
+          "README quickstart works on a clean machine following only the documented steps",
+          "Every API endpoint has a working curl example in api_reference.md",
+          "Architecture Mermaid diagram renders correctly on GitHub",
+          "Model card documents training dataset size, evaluation metrics, and known failure modes",
+          "docs/extending.md includes a worked example adding a 'purchase_order' document type"
+        ],
+        "depends_on": [
+          13,
+          14,
+          15
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 16,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 57,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 57,
+          "final_review": {
+            "score": 57,
+            "flaws": [
+              "Step 6 assumes a fine-tuned LayoutLMv3 exists ('fine-tuned on FUNSD + custom labeled invoices/receipts/contracts') but there is NO step in the plan that covers data labeling, model training, or fine-tuning. FUNSD is a generic form-understanding dataset \u2014 it will not hit F1 \u2265 0.88 on domain-specific invoices out of the box. This is the most critical gap in the entire plan.",
+              "Step 9 uses Celery Chord for fan-out and SSE for per-document progress streaming, but these are architecturally incompatible as described. A Chord callback fires ONCE when ALL subtasks complete, not incrementally per document. To emit per-document SSE events you need workers to write intermediate status to Redis/DB and the SSE endpoint to poll that \u2014 not a chord callback. This will not work as written.",
+              "Step 4 acceptance criterion: '10-page PDF in under 30 seconds on a 2-vCPU machine' is not achievable with EasyOCR + LayoutLMv3 + Table Transformer on CPU. EasyOCR cold-start alone is 5\u201315s; inference on 10 pages at 300 DPI (10 \u00d7 ~5MB images) on CPU takes 60\u2013120s. This SLA requires GPU and is not flagged as such.",
+              "Step 10 acceptance criterion: 'Docker image size < 2 GB (multi-stage build)' is not achievable. PyTorch (required by EasyOCR and transformers) is ~2 GB by itself. Add CUDA libs, Tesseract binaries, spaCy models, LayoutLMv3 weights (~450 MB), Table Transformer weights, and Python deps \u2014 the image will be 6\u201310 GB minimum. This constraint will be failed immediately.",
+              "Step 3 acceptance criterion: 'JSONB columns validated by a CHECK constraint against a JSON schema' \u2014 PostgreSQL CHECK constraints cannot perform JSON Schema validation natively. You would need a PL/pgSQL function or extension (pg_jsonschema). This is non-trivial and not mentioned.",
+              "Step 8: Celery workers are synchronous by default. Using SQLAlchemy async sessions (asyncpg) inside Celery tasks requires a dedicated event loop per task (asyncio.run()). Mixing FastAPI's async context with Celery's sync workers without explicit loop management causes 'Event loop is closed' errors in production. This is a common failure mode that requires explicit design.",
+              "Step 8 critic re-routing: 'if score < 0.7, retry with alternate engine' \u2014 the plan does not define what happens when both engines fail below threshold, or when EasyOCR is already the engine used (no alternate exists). This creates an infinite loop or silent failure path.",
+              "Step 9 rate limiting is IP-based ('per client IP'). This fails silently behind corporate NAT, VPNs, or CDNs where hundreds of users share one IP. Step 13 adds API-key-based auth, but these two rate-limiting strategies are never reconciled into a single coherent policy.",
+              "Steps 11\u201312 tests are designed before Step 13 auth is implemented. Every test against authenticated endpoints will need to be reworked after auth is added, or tests must mock auth from day one. The dependency ordering creates technical debt in the test suite.",
+              "EasyOCR downloads models (~1.5 GB) on first use at runtime. In a containerized environment this means the first job submission will block for minutes or fail with a timeout. The Dockerfile in Step 10 does not pre-bake model weights into the image."
+            ],
+            "suggestions": [
+              "Insert a 'ML_DATA' step between Steps 1 and 6: define data labeling schema, collect 500+ annotated documents per type, fine-tune LayoutLMv3, and run evaluation. Without this, Step 6 F1 targets are aspirational, not achievable.",
+              "Replace the Celery Chord + SSE pattern: have each Celery subtask write status updates to a Redis hash keyed by batch_id, and have the SSE endpoint poll that hash every 1s. Remove the chord pattern entirely for batch progress tracking.",
+              "Add a GPU/CPU tiering note to the SLA: state '30 seconds on 2-vCPU with Tesseract-only path; 60 seconds with EasyOCR on CPU; GPU required for < 15s'. Separate the SLAs by code path.",
+              "Split the Docker image: create a 'cpu-slim' image (Tesseract + spaCy only, ~1.5 GB) and a 'gpu-full' image (+ PyTorch + EasyOCR + transformers). Most document pipelines can start with cpu-slim and upgrade selectively.",
+              "Pre-download all ML model weights into the Docker image during build (using a dedicated RUN layer after pip install) so workers start cold in < 30 seconds.",
+              "Add an explicit step for the document classifier: Step 4 mentions 'lightweight CNN or zero-shot LLM classifier' but neither path is designed. Zero-shot via an LLM adds ~2\u20135s latency and cost per document. A fine-tuned DistilBERT on 3 classes is 30ms inference and should be the primary path.",
+              "Add a webhook/callback endpoint: polling-only APIs force clients into polling loops. Add POST /extract with optional callback_url parameter \u2014 far more efficient for batch consumers.",
+              "Define a data retention and purge policy in Step 3. Extracted text from invoices and contracts is PII-dense. The DELETE /jobs/{job_id} endpoint must cascade-delete all derived artifacts (entities, tables, stored file).",
+              "Resolve the Celery serializer explicitly: set task_serializer='json', result_serializer='json', accept_content=['json'] in Celery config. Default pickle is a code execution vector if Redis is reachable from untrusted networks.",
+              "Add a 'decompression bomb' guard: a 100KB PDF can expand to gigabytes. Add a size check after pdf2image conversion, not just on the upload."
+            ],
+            "missing": [
+              "Model training pipeline: data collection, annotation tooling (Label Studio or Prodigy), fine-tuning script, and model registry. Without this, LayoutLMv3 will not meet F1 targets.",
+              "OCR bounding-box format translation layer: pytesseract returns (left, top, width, height) in pixels; EasyOCR returns [[x1,y1],[x2,y1],[x2,y2],[x1,y2]]; LayoutLMv3 expects normalized [x0,y0,x1,y1] in 0\u20131000 range. The conversion logic is non-trivial and completely absent from the plan.",
+              "Graceful worker shutdown: in-flight Celery tasks during a rolling deploy or scale-down. No SIGTERM handler defined; jobs will be orphaned.",
+              "Password-protected PDF handling: mentioned only as a negative test in Step 15 but no pipeline handling is designed. Should return a structured error at ingestion stage, not propagate to OCR.",
+              "Multi-language support: Step 5 mentions 'language packs: eng + any configured locales' but there is no configuration surface, no locale detection, and no NER model selection per language. This is a stub that will break for any non-English document.",
+              "Memory pressure management: a 50 MB PDF converted at 300 DPI produces ~300 MB of PIL images. With 10 concurrent workers, this is 3 GB of in-memory image data. No worker memory cap or per-job memory limit is defined.",
+              "API versioning: no /v1/ prefix, no deprecation strategy. Breaking changes to the JSON output schema (e.g., entity type renames after model updates) will silently break consumers.",
+              "Encryption at rest: raw PDFs and extracted entities (names, financials, legal parties) are stored unencrypted. For any real deployment processing business documents this is a compliance gap.",
+              "Token/cost budget for LLM-based document classifier if used: no rate limit, no cost tracking, no fallback if the LLM endpoint is down."
+            ],
+            "security_risks": [
+              "Multipart batch upload (Step 9) accepts up to 100 files at 50 MB each = 5 GB per request. File size validation in Step 13 fires after reading, not before. A single request can exhaust disk or memory before rejection. Enforce Content-Length header limit at the reverse proxy and per-file size limit during streaming ingestion.",
+              "Celery default serializer (pickle) allows arbitrary Python object deserialization. If Redis is exposed or compromised, a crafted task message achieves remote code execution on all workers. Must set task_serializer='json' explicitly \u2014 this is not mentioned anywhere in the plan.",
+              "The Redis instance in the Docker Compose stack has no password configured. In any environment where Redis is not 100% network-isolated (cloud VMs, shared dev environments), this is an unauthenticated RCE surface via Celery task injection.",
+              "PDF content can include embedded JavaScript, URI actions, and launch actions. Neither pdfplumber nor pdf2image is immune to malicious PDFs. No mention of sandboxing the PDF processing workers (e.g., seccomp profile, no-network container policy, or running in a gVisor/Firecracker VM).",
+              "PII leakage surface is broader than Step 13 addresses: extracted entity values will appear in Celery task arguments, Redis result backend, PostgreSQL extraction_results, and potentially in exception tracebacks. The log scrubber alone is insufficient \u2014 need field-level encryption or result backend TTL.",
+              "SSRF via webhook callback_url (not in this plan but a natural next feature): if a callback_url field is added later without SSRF protection, the extraction service becomes a proxy for internal network scanning.",
+              "Job UUID v4 prevents sequential enumeration but does not prevent a compromised API key from listing all jobs for all users. No tenant isolation or job ownership model is defined \u2014 any authenticated client can poll any job_id if they guess it."
+            ],
+            "summary": "The plan is well-structured and covers all the right conceptual areas \u2014 the dependency graph is logical, acceptance criteria are mostly concrete, and the technology selections are defensible. However, it has several failure modes that will block production delivery, not just slow it down. The most critical: there is no model training step. The plan assumes a fine-tuned LayoutLMv3 materializes by Step 6, but data collection, annotation, and fine-tuning are absent from the entire 16-step plan \u2014 this alone could add 4\u20138 weeks to the timeline. Second, the Celery Chord + SSE architecture for batch progress is technically broken as described and will require a redesign when implemented. Third, the Docker image size constraint (< 2 GB) and the 30s CPU SLA are both physically impossible given the chosen ML stack; these will cause the Step 10 and Step 4 acceptance criteria to fail on day one. The security review in Step 13 is solid in intent but arrives too late \u2014 auth and input validation should be in place before Steps 11\u201312 integration tests, not after. For an MVP where ML model quality targets can be relaxed and the SLA is GPU-qualified, this plan could score in the low 60s; as written, targeting the stated acceptance criteria on CPU infrastructure, it scores 57.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 57,
+              "flaws": [
+                "Step 6 assumes a fine-tuned LayoutLMv3 exists ('fine-tuned on FUNSD + custom labeled invoices/receipts/contracts') but there is NO step in the plan that covers data labeling, model training, or fine-tuning. FUNSD is a generic form-understanding dataset \u2014 it will not hit F1 \u2265 0.88 on domain-specific invoices out of the box. This is the most critical gap in the entire plan.",
+                "Step 9 uses Celery Chord for fan-out and SSE for per-document progress streaming, but these are architecturally incompatible as described. A Chord callback fires ONCE when ALL subtasks complete, not incrementally per document. To emit per-document SSE events you need workers to write intermediate status to Redis/DB and the SSE endpoint to poll that \u2014 not a chord callback. This will not work as written.",
+                "Step 4 acceptance criterion: '10-page PDF in under 30 seconds on a 2-vCPU machine' is not achievable with EasyOCR + LayoutLMv3 + Table Transformer on CPU. EasyOCR cold-start alone is 5\u201315s; inference on 10 pages at 300 DPI (10 \u00d7 ~5MB images) on CPU takes 60\u2013120s. This SLA requires GPU and is not flagged as such.",
+                "Step 10 acceptance criterion: 'Docker image size < 2 GB (multi-stage build)' is not achievable. PyTorch (required by EasyOCR and transformers) is ~2 GB by itself. Add CUDA libs, Tesseract binaries, spaCy models, LayoutLMv3 weights (~450 MB), Table Transformer weights, and Python deps \u2014 the image will be 6\u201310 GB minimum. This constraint will be failed immediately.",
+                "Step 3 acceptance criterion: 'JSONB columns validated by a CHECK constraint against a JSON schema' \u2014 PostgreSQL CHECK constraints cannot perform JSON Schema validation natively. You would need a PL/pgSQL function or extension (pg_jsonschema). This is non-trivial and not mentioned.",
+                "Step 8: Celery workers are synchronous by default. Using SQLAlchemy async sessions (asyncpg) inside Celery tasks requires a dedicated event loop per task (asyncio.run()). Mixing FastAPI's async context with Celery's sync workers without explicit loop management causes 'Event loop is closed' errors in production. This is a common failure mode that requires explicit design.",
+                "Step 8 critic re-routing: 'if score < 0.7, retry with alternate engine' \u2014 the plan does not define what happens when both engines fail below threshold, or when EasyOCR is already the engine used (no alternate exists). This creates an infinite loop or silent failure path.",
+                "Step 9 rate limiting is IP-based ('per client IP'). This fails silently behind corporate NAT, VPNs, or CDNs where hundreds of users share one IP. Step 13 adds API-key-based auth, but these two rate-limiting strategies are never reconciled into a single coherent policy.",
+                "Steps 11\u201312 tests are designed before Step 13 auth is implemented. Every test against authenticated endpoints will need to be reworked after auth is added, or tests must mock auth from day one. The dependency ordering creates technical debt in the test suite.",
+                "EasyOCR downloads models (~1.5 GB) on first use at runtime. In a containerized environment this means the first job submission will block for minutes or fail with a timeout. The Dockerfile in Step 10 does not pre-bake model weights into the image."
+              ],
+              "suggestions": [
+                "Insert a 'ML_DATA' step between Steps 1 and 6: define data labeling schema, collect 500+ annotated documents per type, fine-tune LayoutLMv3, and run evaluation. Without this, Step 6 F1 targets are aspirational, not achievable.",
+                "Replace the Celery Chord + SSE pattern: have each Celery subtask write status updates to a Redis hash keyed by batch_id, and have the SSE endpoint poll that hash every 1s. Remove the chord pattern entirely for batch progress tracking.",
+                "Add a GPU/CPU tiering note to the SLA: state '30 seconds on 2-vCPU with Tesseract-only path; 60 seconds with EasyOCR on CPU; GPU required for < 15s'. Separate the SLAs by code path.",
+                "Split the Docker image: create a 'cpu-slim' image (Tesseract + spaCy only, ~1.5 GB) and a 'gpu-full' image (+ PyTorch + EasyOCR + transformers). Most document pipelines can start with cpu-slim and upgrade selectively.",
+                "Pre-download all ML model weights into the Docker image during build (using a dedicated RUN layer after pip install) so workers start cold in < 30 seconds.",
+                "Add an explicit step for the document classifier: Step 4 mentions 'lightweight CNN or zero-shot LLM classifier' but neither path is designed. Zero-shot via an LLM adds ~2\u20135s latency and cost per document. A fine-tuned DistilBERT on 3 classes is 30ms inference and should be the primary path.",
+                "Add a webhook/callback endpoint: polling-only APIs force clients into polling loops. Add POST /extract with optional callback_url parameter \u2014 far more efficient for batch consumers.",
+                "Define a data retention and purge policy in Step 3. Extracted text from invoices and contracts is PII-dense. The DELETE /jobs/{job_id} endpoint must cascade-delete all derived artifacts (entities, tables, stored file).",
+                "Resolve the Celery serializer explicitly: set task_serializer='json', result_serializer='json', accept_content=['json'] in Celery config. Default pickle is a code execution vector if Redis is reachable from untrusted networks.",
+                "Add a 'decompression bomb' guard: a 100KB PDF can expand to gigabytes. Add a size check after pdf2image conversion, not just on the upload."
+              ],
+              "missing": [
+                "Model training pipeline: data collection, annotation tooling (Label Studio or Prodigy), fine-tuning script, and model registry. Without this, LayoutLMv3 will not meet F1 targets.",
+                "OCR bounding-box format translation layer: pytesseract returns (left, top, width, height) in pixels; EasyOCR returns [[x1,y1],[x2,y1],[x2,y2],[x1,y2]]; LayoutLMv3 expects normalized [x0,y0,x1,y1] in 0\u20131000 range. The conversion logic is non-trivial and completely absent from the plan.",
+                "Graceful worker shutdown: in-flight Celery tasks during a rolling deploy or scale-down. No SIGTERM handler defined; jobs will be orphaned.",
+                "Password-protected PDF handling: mentioned only as a negative test in Step 15 but no pipeline handling is designed. Should return a structured error at ingestion stage, not propagate to OCR.",
+                "Multi-language support: Step 5 mentions 'language packs: eng + any configured locales' but there is no configuration surface, no locale detection, and no NER model selection per language. This is a stub that will break for any non-English document.",
+                "Memory pressure management: a 50 MB PDF converted at 300 DPI produces ~300 MB of PIL images. With 10 concurrent workers, this is 3 GB of in-memory image data. No worker memory cap or per-job memory limit is defined.",
+                "API versioning: no /v1/ prefix, no deprecation strategy. Breaking changes to the JSON output schema (e.g., entity type renames after model updates) will silently break consumers.",
+                "Encryption at rest: raw PDFs and extracted entities (names, financials, legal parties) are stored unencrypted. For any real deployment processing business documents this is a compliance gap.",
+                "Token/cost budget for LLM-based document classifier if used: no rate limit, no cost tracking, no fallback if the LLM endpoint is down."
+              ],
+              "security_risks": [
+                "Multipart batch upload (Step 9) accepts up to 100 files at 50 MB each = 5 GB per request. File size validation in Step 13 fires after reading, not before. A single request can exhaust disk or memory before rejection. Enforce Content-Length header limit at the reverse proxy and per-file size limit during streaming ingestion.",
+                "Celery default serializer (pickle) allows arbitrary Python object deserialization. If Redis is exposed or compromised, a crafted task message achieves remote code execution on all workers. Must set task_serializer='json' explicitly \u2014 this is not mentioned anywhere in the plan.",
+                "The Redis instance in the Docker Compose stack has no password configured. In any environment where Redis is not 100% network-isolated (cloud VMs, shared dev environments), this is an unauthenticated RCE surface via Celery task injection.",
+                "PDF content can include embedded JavaScript, URI actions, and launch actions. Neither pdfplumber nor pdf2image is immune to malicious PDFs. No mention of sandboxing the PDF processing workers (e.g., seccomp profile, no-network container policy, or running in a gVisor/Firecracker VM).",
+                "PII leakage surface is broader than Step 13 addresses: extracted entity values will appear in Celery task arguments, Redis result backend, PostgreSQL extraction_results, and potentially in exception tracebacks. The log scrubber alone is insufficient \u2014 need field-level encryption or result backend TTL.",
+                "SSRF via webhook callback_url (not in this plan but a natural next feature): if a callback_url field is added later without SSRF protection, the extraction service becomes a proxy for internal network scanning.",
+                "Job UUID v4 prevents sequential enumeration but does not prevent a compromised API key from listing all jobs for all users. No tenant isolation or job ownership model is defined \u2014 any authenticated client can poll any job_id if they guess it."
+              ],
+              "summary": "The plan is well-structured and covers all the right conceptual areas \u2014 the dependency graph is logical, acceptance criteria are mostly concrete, and the technology selections are defensible. However, it has several failure modes that will block production delivery, not just slow it down. The most critical: there is no model training step. The plan assumes a fine-tuned LayoutLMv3 materializes by Step 6, but data collection, annotation, and fine-tuning are absent from the entire 16-step plan \u2014 this alone could add 4\u20138 weeks to the timeline. Second, the Celery Chord + SSE architecture for batch progress is technically broken as described and will require a redesign when implemented. Third, the Docker image size constraint (< 2 GB) and the 30s CPU SLA are both physically impossible given the chosen ML stack; these will cause the Step 10 and Step 4 acceptance criteria to fail on day one. The security review in Step 13 is solid in intent but arrives too late \u2014 auth and input validation should be in place before Steps 11\u201312 integration tests, not after. For an MVP where ML model quality targets can be relaxed and the SLA is GPU-qualified, this plan could score in the low 60s; as written, targeting the stated acceptance criteria on CPU infrastructure, it scores 57.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T08:28:24.501473+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 132.88,
+      "critic_plan": 114.59
+    }
+  }
+}

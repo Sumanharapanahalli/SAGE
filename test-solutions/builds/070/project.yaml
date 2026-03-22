@@ -1,0 +1,53 @@
+project_name: translation_service
+display_name: Translation Service
+version: 1.0.0
+domain: ml_ai
+description: Neural machine translation service with 50+ language pairs, domain adaptation,
+  terminology management, translation memory, and quality estimation scoring.
+detected_domains: []
+compliance_standards:
+- GDPR
+- SOC 2
+- ISO 17100
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- ML_MODEL
+- SECURITY
+- TESTS
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- qa_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

@@ -1,0 +1,60 @@
+project_name: noise_monitoring
+display_name: Noise Monitoring
+version: 1.0.0
+domain: iot
+description: Environmental noise monitoring IoT network with decibel sensors, frequency
+  analysis, source identification, compliance reporting, and citizen complaint correlation.
+detected_domains: []
+compliance_standards:
+- EPA Noise Standards
+- WHO Guidelines
+- IEC 61672
+- IEC 62443
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- ML_MODEL
+- QA
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- firmware_engineer
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

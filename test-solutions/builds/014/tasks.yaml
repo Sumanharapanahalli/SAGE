@@ -1,0 +1,378 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas, and regulatory scope
+      for the robo-advisor platform. Document investor onboarding flows, risk tolerance
+      questionnaire structure, and investment mandate constraints.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - 'BRD covers all product features: risk profiling, MPT portfolio construction,
+      tax-loss harvesting, rebalancing'
+    - At least 3 user personas defined with investment goals and risk profiles
+    - Investor onboarding flow diagram approved by legal and compliance
+    - Investment Policy Statement template reviewed by regulatory_specialist
+    depends_on: []
+  REGULATORY:
+    description: 'Prepare SEC Registered Investment Adviser (RIA) registration package:
+      Form ADV Part 1 and Part 2, compliance policies, fiduciary duty documentation,
+      and fee disclosure schedules. Map to Investment Advisers Act of 1940 requirements.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Form ADV Part 1 fully completed with all required sections for robo-advisory
+      services
+    - Form ADV Part 2A brochure discloses all fees, conflicts of interest, and investment
+      methodologies
+    - Compliance manual includes written supervisory procedures (WSP) for automated
+      advisory
+    - Form CRS relationship summary meets SEC plain-language requirements
+    - Legal advisor sign-off on all fiduciary duty disclosures
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft client agreements, terms of service, privacy policy (CCPA/GLBA
+      compliant), arbitration clauses, and investment advisory agreements. Define
+      data retention and breach notification procedures.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Investment Advisory Agreement includes fee schedule, termination rights, and
+      conflicts disclosure
+    - Privacy policy is GLBA Safeguards Rule compliant with annual notice provision
+    - Data retention schedule defined for all PII and financial data per SEC 17a-4
+    - Breach notification procedure meets 72-hour regulatory reporting requirement
+    - All documents reviewed and signed off by legal_advisor
+    depends_on:
+    - 2
+  SECURITY:
+    description: Produce threat model, penetration test plan, and Software Bill of
+      Materials (SBOM). Define security architecture for PCI DSS Level 1, SOC 2 Type
+      II, and SOX IT controls. Include data encryption standards, key management,
+      and zero-trust network design.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model completed for all system components
+    - SBOM generated for all third-party dependencies with CVE scan results
+    - PCI DSS cardholder data environment (CDE) scoped and network segmentation documented
+    - SOC 2 trust service criteria (Security, Availability, Confidentiality) mapped
+      to controls
+    - SOX ITGC controls documented for financial reporting systems
+    - 'Encryption standards defined: AES-256 at rest, TLS 1.3 in transit, HSM for
+      key management'
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Build compliance traceability matrix mapping features to regulatory
+      requirements (SEC, PCI DSS, SOC 2, SOX). Create risk matrix for compliance gaps,
+      V&V protocols for advisory algorithm outputs, and audit trail requirements.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Every regulatory requirement from SEC RIA, PCI DSS, SOC 2, and SOX has at least
+      one mapped control
+    - Risk matrix identifies all compliance gaps with severity ratings and remediation
+      owners
+    - V&V protocols defined for MPT algorithm, risk profiling engine, and rebalancing
+      logic
+    - Audit trail specification covers all user actions, portfolio changes, and advisory
+      decisions
+    - Compliance traceability matrix approved by regulatory_specialist and legal_advisor
+    depends_on:
+    - 2
+    - 3
+    - 4
+  UX_DESIGN:
+    description: 'Design end-to-end user experience: onboarding risk questionnaire,
+      portfolio dashboard, rebalancing notifications, tax-loss harvesting reports,
+      and account management. Conduct accessibility audit (WCAG 2.1 AA).'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All 6 flows have high-fidelity wireframes approved by product_manager
+    - Risk questionnaire UX follows SEC suitability assessment best practices
+    - Portfolio dashboard displays allocation, performance, risk metrics, and tax
+      exposure
+    - Rebalancing and tax-loss harvesting actions include HITL confirmation dialogs
+    - Accessibility audit confirms WCAG 2.1 AA compliance for all screens
+    - Interactive prototype usability-tested with at least 5 representative users
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Define product requirements document (PRD), success metrics (AUM
+      growth, Sharpe ratio improvement, churn rate), MVP feature set, and phased roadmap.
+      Prioritize features against regulatory go-live requirements.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD defines MVP scope with regulatory-required features flagged as P0
+    - Success metrics have baseline targets and measurement methodology defined
+    - Phased roadmap aligns Phase 1 with SEC RIA go-live prerequisites
+    - Feature prioritization matrix reviewed and approved by regulatory_specialist
+    - Go/no-go criteria defined for each phase launch
+    depends_on:
+    - 1
+    - 2
+  DATABASE:
+    description: Design and implement database schema for investor profiles, portfolios,
+      holdings, transactions, risk scores, rebalancing history, tax lots, and audit
+      logs. Apply PCI DSS data tokenization for payment data and field-level encryption
+      for SSN/account numbers.
+    agent_role: developer
+    acceptance_criteria:
+    - All tables have primary keys, foreign key constraints, and created_at/updated_at
+      timestamps
+    - SSN and account numbers encrypted at field level with separate key management
+    - Tax lot table tracks purchase date, cost basis, and wash sale restrictions
+    - Audit log table is append-only with tamper-evident hash chaining
+    - All migrations are idempotent and reversible
+    - Seed data includes at least 50 ETFs across asset classes for MPT universe
+    - Database schema reviewed against PCI DSS data minimization requirements
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 5
+  INFRA:
+    description: Set up cloud infrastructure with PCI DSS-compliant network segmentation,
+      multi-region failover, WAF, DDoS protection, secrets management (HashiCorp Vault
+      or AWS Secrets Manager), and SOC 2 logging pipeline. Configure IaC with Terraform.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CDE network segment isolated from public internet with dedicated subnets
+    - All data stores encrypted at rest using KMS with automatic key rotation
+    - CloudTrail enabled across all accounts with logs shipped to immutable S3 bucket
+    - WAF rules configured for OWASP Top 10 and financial API abuse patterns
+    - Terraform state stored remotely with state locking enabled
+    - Multi-region RDS read replica configured for failover < 30 seconds RTO
+    - All secrets stored in Secrets Manager — zero secrets in code or environment
+      variables
+    depends_on:
+    - 4
+    - 8
+  CONFIG:
+    description: 'Configure agentic AI pattern for the robo-advisor: Multi-Agent Coordinator
+      pattern with specialist agents for risk assessment, portfolio optimization,
+      tax strategy, and rebalancing. Set up HITL approval gates for all portfolio-altering
+      actions.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator agent routes tasks to correct specialist based on investment action
+      type
+    - HITL approval gate configured for all 4 portfolio-altering action types
+    - Agent proposal store connected to audit log for SEC compliance
+    - Each specialist agent has system prompt grounded in its regulatory constraints
+    - Coordinator timeout and fallback behavior defined for agent failures
+    depends_on:
+    - 5
+  ML_MODEL:
+    description: 'Build the risk profiling engine: questionnaire scoring model mapping
+      investor responses to risk tolerance scores (1–10 scale), time horizon classification,
+      and suitability assessment. Implement Modern Portfolio Theory (MPT) optimizer
+      using mean-variance optimization with Black-Litterman model enhancements.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Risk profiler maps questionnaire responses to 10-point scale with documented
+      methodology
+    - MPT optimizer produces efficient frontier and selects portfolio at investor's
+      risk tolerance
+    - Black-Litterman model accepts market views as configurable inputs
+    - Ledoit-Wolf covariance shrinkage applied to handle ill-conditioned matrices
+    - Optimizer enforces all constraints (long-only, weight bounds, sector limits)
+    - Backtested Sharpe ratio improvement over equal-weight benchmark documented
+    - All model outputs include explainability metadata for regulatory disclosure
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Build investor onboarding service: KYC/AML verification integration,
+      risk questionnaire API, suitability assessment engine, account creation, and
+      investment mandate storage. Implement Plaid integration for bank account linking.'
+    agent_role: developer
+    acceptance_criteria:
+    - KYC/AML check completes synchronously for 95% of users, async with webhook for
+      remainder
+    - Questionnaire API validates all required fields and returns suitability score
+    - Account creation is transactional — all-or-nothing with rollback on failure
+    - Plaid integration links bank accounts with OAuth and stores tokenized account
+      references
+    - All onboarding events written to audit log with timestamp and user ID
+    - OFAC/sanctions screening integrated into KYC flow
+    depends_on:
+    - 8
+    - 9
+    - 11
+  FRONTEND:
+    description: 'Build investor onboarding UI: multi-step risk questionnaire wizard,
+      KYC document upload, bank account linking via Plaid Link, investment goal setting,
+      and account confirmation screen.'
+    agent_role: developer
+    acceptance_criteria:
+    - Multi-step wizard with progress indicator completes in < 10 minutes for median
+      user
+    - Questionnaire validates all required fields with inline error messages
+    - Plaid Link integration opens OAuth flow and returns linked account on success
+    - KYC document upload supports PDF/JPG/PNG with file size validation
+    - Onboarding confirmation shows risk score, recommended allocation, and fee schedule
+    - All screens meet WCAG 2.1 AA accessibility standards
+    depends_on:
+    - 6
+    - 12
+  DEVOPS:
+    description: Build CI/CD pipeline with mandatory security scans (SAST, DAST, dependency
+      CVE), SOC 2 change management controls, blue-green deployment, rollback automation,
+      and SOX change approval workflow.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - SAST scan runs on every PR and blocks merge on high/critical findings
+    - Dependency CVE scan blocks deploy on CVSS >= 7.0 unpatched vulnerabilities
+    - SOX change approval step requires 4-eyes sign-off before production deploy
+    - Blue-green deployment enables zero-downtime releases with automatic health check
+      validation
+    - Rollback completes in < 5 minutes via automated pipeline trigger
+    - All deployment events logged to immutable audit trail for SOX compliance
+    - Canary release option available for gradual traffic shifting
+    depends_on:
+    - 9
+  TESTS:
+    description: Write comprehensive unit tests for MPT optimizer, risk profiling
+      engine, tax-loss harvesting logic (including wash sale edge cases), rebalancing
+      drift detection, and fee calculation. Target 90%+ code coverage on all financial
+      logic.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - 'MPT optimizer tests cover: efficient frontier generation, constraint enforcement,
+      ill-conditioned covariance handling'
+    - 'Wash sale tests cover: 30-day window, substantially identical securities, replacement
+      security rules'
+    - 'Rebalancing tests cover: drift threshold trigger, cash flow rebalancing, quarterly
+      calendar trigger'
+    - 'Fee tests cover: all AUM tier breakpoints, quarterly proration, zero-balance
+      edge case'
+    - All financial calculation tests use exact decimal arithmetic (no floating point
+      ambiguity)
+    - Overall backend code coverage >= 90% on src/ financial modules
+    - Property-based tests confirm MPT optimizer handles random valid inputs without
+      crashing
+    depends_on:
+    - 11
+    - 14
+    - 15
+    - 16
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests: full investor lifecycle (onboarding
+      → portfolio construction → rebalancing → TLH → fee billing → reporting), load
+      testing (1000 concurrent users), and disaster recovery test (failover RTO <
+      30s).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 'Full investor lifecycle E2E test passes: onboarding to first portfolio statement'
+    - 'Load test: p99 API latency < 500ms under 1000 concurrent users'
+    - Portfolio construction p99 < 2000ms under load
+    - Database failover completes in < 30 seconds with zero data loss
+    - Brokerage API timeout handled gracefully — orders queued and retried, no duplicate
+      trades
+    - Market data feed failure degrades gracefully — rebalancing deferred, clients
+      notified
+    - All E2E tests pass in staging environment before production release
+    depends_on:
+    - 21
+    - 23
+  QA:
+    description: 'Execute pre-launch QA: suitability algorithm audit (verify each
+      risk score maps to correct model portfolio), regulatory disclosure review (ADV
+      matches fee schedule in system), and Form 8949 accuracy validation against manual
+      calculations.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All 10 risk scores mapped to documented model portfolios with zero unexplained
+      deviations
+    - Fee schedule in system matches Form ADV Part 2A exactly — zero discrepancies
+    - Form 8949 output validated against manual calculation for 50 sample tax lots
+    - Wash sale enforcement tested with 20 edge cases — 100% rule enforcement
+    - 'Audit log completeness check: every portfolio-altering action has a corresponding
+      log entry'
+    - QA sign-off report produced and retained for SEC examination readiness
+    depends_on:
+    - 22
+    - 23
+    - 24
+  FINANCIAL:
+    description: 'Build financial model for the business: AUM growth projections,
+      unit economics (CAC, LTV, break-even AUM), fee revenue forecasting, and capital
+      requirements for SEC RIA net worth requirements.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - AUM growth model uses S-curve adoption with conservative/base/optimistic scenarios
+    - LTV:CAC ratio > 3:1 modeled at steady state
+    - Fee revenue forecast tied directly to AUM projections with tiered fee schedule
+    - SEC/state RIA net worth requirements documented and funded in financial plan
+    - Break-even AUM calculation shows path to profitability
+    - Model reviewed and approved by financial_analyst and regulatory_specialist
+    depends_on:
+    - 2
+    - 7
+  MARKET_RESEARCH:
+    description: Conduct competitive analysis of robo-advisor market (Betterment,
+      Wealthfront, Schwab Intelligent Portfolios), identify differentiation opportunities,
+      and define go-to-market strategy targeting underserved segments.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix completed for all 4 named competitors across 5 analysis dimensions
+    - Differentiation opportunities identified with supporting evidence
+    - Target customer segment defined with TAM/SAM/SOM estimate
+    - Go-to-market strategy includes acquisition channels and partnership opportunities
+    - Research report approved by product_manager and marketing_strategist
+    depends_on:
+    - 1
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response for trading outages,
+      brokerage API failures, market data gaps, regulatory examination preparation
+      checklist, and business continuity plan (BCP). Define SLAs for advisory services.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Trading outage runbook defines client communication template and regulatory
+      notification timeline
+    - Brokerage API failure runbook includes manual order entry fallback procedure
+    - SEC examination prep checklist covers all books-and-records requirements (17a-4)
+    - BCP defines RPO < 1 hour and RTO < 4 hours for all critical systems
+    - SLAs documented and signed off by operations_manager and regulatory_specialist
+    - All runbooks reviewed by at least two team members and version-controlled
+    depends_on:
+    - 5
+    - 21
+  TRAINING:
+    description: Create investor-facing onboarding guide, help center articles (MPT
+      explained, tax-loss harvesting FAQ, rebalancing explained), and compliance training
+      materials for staff covering fiduciary duty and RIA obligations.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Investor onboarding guide covers all steps from account opening to first portfolio
+      review
+    - 15 help center articles cover all major platform features at reading level 8
+      or below
+    - MPT and tax-loss harvesting explanations reviewed by financial_analyst for accuracy
+    - Staff compliance training covers fiduciary duty, conflict of interest disclosure,
+      and code of ethics
+    - All materials reviewed by regulatory_specialist for regulatory accuracy
+    - Video scripts produced for top 5 most common investor questions
+    depends_on:
+    - 3
+    - 17
+    - 18
+    - 19
+    - 20
+  DOCS:
+    description: 'Produce technical documentation: API reference (OpenAPI spec), architecture
+      decision records (ADRs), MPT algorithm specification, tax-loss harvesting rule
+      engine documentation, and SEC examination-ready books-and-records index.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec covers all endpoints with request/response schemas and auth requirements
+    - ADRs document all major architecture decisions with rationale and alternatives
+      considered
+    - MPT algorithm spec includes mathematical formulation, assumptions, and known
+      limitations
+    - TLH rule engine documentation covers all wash sale rules and substitute security
+      logic
+    - Books-and-records index maps SEC 17a-4 requirements to specific system components
+    - All regulatory documents reviewed and approved by regulatory_specialist
+    depends_on:
+    - 11
+    - 13
+    - 14
+    - 15
+    - 25

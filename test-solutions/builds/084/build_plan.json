@@ -1,0 +1,934 @@
+{
+  "run_id": "c455706e-4dfa-485c-b769-cc389cb4e124",
+  "status": {
+    "run_id": "c455706e-4dfa-485c-b769-cc389cb4e124",
+    "solution_name": "travel_planner",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T10:20:44.675188+00:00",
+    "updated_at": "2026-03-22T10:24:49.447825+00:00",
+    "product_description": "AI travel planner with itinerary generation, flight/hotel booking integration, budget tracking, group trip planning, and offline maps.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze AI travel planner market: competitors (Google Travel, TripIt, Wanderlog, Hopper), pricing models, user pain points, TAM/SAM/SOM, and go-to-market positioning for travel_planner.",
+        "payload": {
+          "competitors": [
+            "Google Travel",
+            "TripIt",
+            "Wanderlog",
+            "Hopper",
+            "Kayak",
+            "Rome2Rio"
+          ],
+          "dimensions": [
+            "pricing",
+            "AI features",
+            "offline capability",
+            "group planning",
+            "booking integrations"
+          ],
+          "output": "competitive_analysis.md + positioning_brief.md"
+        },
+        "acceptance_criteria": [
+          "Competitive matrix covers at least 6 competitors across 5 dimensions",
+          "Unique differentiators for travel_planner clearly stated",
+          "TAM/SAM/SOM estimates with sources",
+          "Go-to-market strategy with 3 target personas defined"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Write Product Requirements Document for travel_planner: user stories for itinerary generation, flight/hotel booking, budget tracking, group trip planning, and offline maps. Define success metrics, MVP scope, and phased roadmap.",
+        "payload": {
+          "core_features": [
+            "itinerary_generation",
+            "flight_hotel_booking",
+            "budget_tracking",
+            "group_planning",
+            "offline_maps"
+          ],
+          "output": "PRD.md + roadmap.md",
+          "hitl_level": "standard"
+        },
+        "acceptance_criteria": [
+          "User stories written for all 5 core feature areas with acceptance criteria",
+          "MVP feature set explicitly scoped (Phase 1 vs Phase 2)",
+          "Success metrics defined: DAU, itinerary completion rate, booking conversion, group trip retention",
+          "Roadmap covers 3 phases with time estimates",
+          "Non-functional requirements documented: offline sync, latency targets, supported locales"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes for all travel_planner flows: onboarding, AI itinerary chat, booking search/compare, budget dashboard, group invite/vote, and offline map download.",
+        "payload": {
+          "research_methods": [
+            "user interviews",
+            "journey mapping"
+          ],
+          "screens": [
+            "onboarding",
+            "itinerary_chat",
+            "flight_search",
+            "hotel_search",
+            "budget_dashboard",
+            "group_planning",
+            "offline_map"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "User journey maps for all 3 personas from PRD",
+          "Low-fidelity wireframes for all 7 screen areas",
+          "Interaction design spec for AI chat interface (streaming responses, suggestion chips)",
+          "Group planning flow covers: invite, vote on destinations, split costs",
+          "Accessibility audit checklist completed for each wireframe",
+          "Wireframes reviewed and approved by product_manager",
+          "App store screenshot mockups prepared",
+          "Onboarding flow under 3 steps"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "CONFIG",
+        "description": "Set up travel_planner solution scaffold: copy starter template, configure project.yaml/prompts.yaml/tasks.yaml for the travel domain, set up agentic pattern config (coordinator pattern for multi-domain agent routing across itinerary, booking, budget, maps subsystems).",
+        "payload": {
+          "solution_name": "travel_planner",
+          "agentic_pattern": "coordinator",
+          "coordinator_agents": [
+            "itinerary_agent",
+            "booking_agent",
+            "budget_agent",
+            "maps_agent",
+            "group_agent"
+          ],
+          "llm_provider": "gemini",
+          "active_modules": [
+            "dashboard",
+            "analyst",
+            "improvements",
+            "knowledge",
+            "approvals"
+          ]
+        },
+        "acceptance_criteria": [
+          "solutions/travel_planner/ directory created from starter template",
+          "project.yaml has correct solution name, domain, active_modules, and theme block",
+          "prompts.yaml defines roles for itinerary, booking, budget, maps, and group coordinator agents",
+          "tasks.yaml defines task types: itinerary_generate, flight_search, hotel_search, budget_update, group_invite, map_download",
+          "make run PROJECT=travel_planner starts without errors",
+          "Coordinator pattern wired: central agent routes sub-tasks to specialist agents"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 5,
+        "task_type": "DATABASE",
+        "description": "Design and implement the travel_planner database schema: users, trips, itineraries, bookings (flights + hotels), budget_items, group_members, offline_map_cache metadata.",
+        "payload": {
+          "tables": [
+            "users",
+            "trips",
+            "itinerary_days",
+            "itinerary_items",
+            "flight_bookings",
+            "hotel_bookings",
+            "budget_items",
+            "group_members",
+            "group_invites",
+            "offline_map_tiles"
+          ],
+          "db_engine": "PostgreSQL",
+          "migrations_tool": "Alembic"
+        },
+        "acceptance_criteria": [
+          "ERD diagram produced covering all 10 tables with relationships",
+          "All tables have UUID primary keys and created_at/updated_at timestamps",
+          "trips table links to users (owner) and group_members (shared access)",
+          "budget_items table supports currency field and category enum",
+          "offline_map_tiles table stores bounding_box, zoom_levels, download_status, size_bytes",
+          "Initial Alembic migration runs cleanly on a fresh PostgreSQL instance",
+          "Seed data script populates 2 sample trips for testing"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 6,
+        "task_type": "API",
+        "description": "Design OpenAPI spec for all travel_planner REST and streaming endpoints: itinerary generation (SSE stream), flight/hotel search, booking confirmation, budget CRUD, group management, and offline map tile download.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "streaming_endpoints": [
+            "/itinerary/generate/stream",
+            "/agent/stream"
+          ],
+          "booking_endpoints": [
+            "/flights/search",
+            "/flights/book",
+            "/hotels/search",
+            "/hotels/book"
+          ],
+          "group_endpoints": [
+            "/trips/{id}/group/invite",
+            "/trips/{id}/group/vote"
+          ],
+          "map_endpoints": [
+            "/maps/download",
+            "/maps/status/{job_id}"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors using swagger-parser",
+          "All endpoints have request/response schemas, status codes, and error shapes",
+          "SSE streaming endpoints documented with event schema",
+          "Auth scheme defined (JWT Bearer) on all protected endpoints",
+          "Booking endpoints include idempotency key pattern",
+          "Map download endpoint returns async job_id with polling status endpoint"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "BACKEND",
+        "description": "Implement the AI itinerary generation service using the coordinator agentic pattern. Central coordinator receives trip parameters, fans out to specialist agents (destination researcher, activity planner, logistics optimizer), collects outputs, and streams a cohesive day-by-day itinerary via SSE.",
+        "payload": {
+          "pattern": "coordinator",
+          "entry_point": "POST /itinerary/generate",
+          "stream_endpoint": "GET /itinerary/generate/stream",
+          "specialist_agents": [
+            "destination_researcher",
+            "activity_planner",
+            "logistics_optimizer"
+          ],
+          "llm_calls": "via LLMGateway with trace_id logging",
+          "framework_file": "src/core/build_orchestrator.py"
+        },
+        "acceptance_criteria": [
+          "POST /itinerary/generate accepts: destination, dates, travelers, interests, budget_range",
+          "Coordinator decomposes request and dispatches to 3 specialist agents in parallel (wave execution)",
+          "SSE stream emits partial itinerary chunks as agents complete",
+          "Final itinerary persisted to itinerary_days + itinerary_items tables",
+          "All LLM calls logged to audit_log.db with trace_id",
+          "Itinerary generation completes in under 15 seconds for a 7-day trip",
+          "Handles LLM timeout/retry with graceful SSE error event"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Implement flight and hotel booking integration layer: adapter interfaces for Amadeus (flights) and Booking.com (hotels) APIs, search aggregation, price comparison, and booking confirmation with idempotency.",
+        "payload": {
+          "flight_provider": "Amadeus API",
+          "hotel_provider": "Booking.com API",
+          "pattern": "adapter + facade",
+          "features": [
+            "search",
+            "price_comparison",
+            "availability_check",
+            "book",
+            "cancel"
+          ],
+          "idempotency": "idempotency key on POST /book endpoints"
+        },
+        "acceptance_criteria": [
+          "BookingAdapter interface defined with search(), book(), cancel() methods",
+          "AmadeusAdapter and BookingComAdapter implement BookingAdapter",
+          "Flight search returns sorted results with price, duration, stops, and deep-link",
+          "Hotel search returns results with price/night, rating, amenities, and cancellation policy",
+          "Booking creates a record in flight_bookings or hotel_bookings tables",
+          "Duplicate booking requests with same idempotency key return existing booking, not a new one",
+          "Provider API errors mapped to unified BookingError with user-friendly messages",
+          "Mock adapter provided for testing without live API credentials"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement budget tracking service: expense logging, per-category aggregation, multi-currency conversion (via Exchange Rate API), budget vs. actual comparison, and real-time split calculation for group trips.",
+        "payload": {
+          "features": [
+            "add_expense",
+            "categorize",
+            "currency_conversion",
+            "budget_vs_actual",
+            "group_split"
+          ],
+          "currencies": "ISO 4217 supported",
+          "split_algorithms": [
+            "equal",
+            "proportional",
+            "custom"
+          ]
+        },
+        "acceptance_criteria": [
+          "POST /trips/{id}/budget/expenses adds expense with amount, currency, category, payer",
+          "GET /trips/{id}/budget returns totals by category + overall spent vs. budget",
+          "All amounts stored in trip's base currency after conversion; conversion rate logged",
+          "Group split endpoint returns per-member owed amounts for all 3 split algorithms",
+          "Budget alert triggered when spending exceeds 80% and 100% of budget",
+          "Currency conversion cache refreshes rates every 6 hours",
+          "Unit tests cover all 3 split algorithms with edge cases (unequal shares, zero balances)"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement group trip planning service: trip sharing via invite links, role-based access (owner/editor/viewer), destination voting with ranked-choice, and group activity preference aggregation.",
+        "payload": {
+          "features": [
+            "invite_link_generation",
+            "role_management",
+            "destination_voting",
+            "preference_aggregation"
+          ],
+          "roles": [
+            "owner",
+            "editor",
+            "viewer"
+          ],
+          "voting": "ranked_choice"
+        },
+        "acceptance_criteria": [
+          "POST /trips/{id}/group/invite generates time-limited invite token (48h expiry)",
+          "Invite accept flow adds user to group_members with correct role",
+          "Owner can promote/demote editors; editors cannot modify roles",
+          "Viewers see read-only trip; editors can modify itinerary and budget items",
+          "POST /trips/{id}/group/vote submits ranked destination preferences",
+          "GET /trips/{id}/group/vote/results returns ranked-choice tally with winner",
+          "Real-time group notifications via WebSocket when itinerary is edited",
+          "Integration test covers full group flow: invite \u2192 accept \u2192 vote \u2192 view results"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement offline map service: tile download job orchestration using OpenStreetMap/Mapbox tile API, bounding-box selection, background download queue, tile storage (local filesystem or S3), and sync status API.",
+        "payload": {
+          "tile_provider": "Mapbox Tiles API (with OSM fallback)",
+          "storage": "local filesystem + optional S3",
+          "queue": "Celery + Redis",
+          "features": [
+            "request_download",
+            "background_worker",
+            "progress_polling",
+            "tile_serve",
+            "delete_cache"
+          ]
+        },
+        "acceptance_criteria": [
+          "POST /maps/download accepts bounding_box + zoom_levels and returns async job_id",
+          "Celery worker downloads tiles in background, updating progress in offline_map_tiles table",
+          "GET /maps/status/{job_id} returns download percentage and estimated completion",
+          "Downloaded tiles served at GET /maps/tiles/{z}/{x}/{y}.png",
+          "Cache eviction policy: LRU, max 2GB per user",
+          "Download job is resumable after interruption",
+          "Integration test verifies tile download, serve, and delete cycle"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "LOCALIZATION",
+        "description": "Set up i18n infrastructure for travel_planner: extraction pipeline, translation config, and initial locale files for English, Spanish, French, Japanese, and Portuguese (top travel app locales).",
+        "payload": {
+          "framework": "i18next (frontend) + Babel (backend messages)",
+          "locales": [
+            "en",
+            "es",
+            "fr",
+            "ja",
+            "pt"
+          ],
+          "extraction_tool": "i18next-parser",
+          "string_categories": [
+            "ui_labels",
+            "error_messages",
+            "itinerary_templates",
+            "booking_confirmations",
+            "budget_categories"
+          ]
+        },
+        "acceptance_criteria": [
+          "i18next configured with locale files at web/src/locales/{locale}/translation.json",
+          "i18next-parser script extracts all t() calls to en/translation.json baseline",
+          "Translation files created for all 5 locales (stub translations acceptable for non-English at this stage)",
+          "Date/time formatting uses locale-aware Intl.DateTimeFormat throughout",
+          "Currency display uses Intl.NumberFormat with correct locale",
+          "Language switcher component added to settings page",
+          "RTL layout tested with a placeholder RTL locale config",
+          "Top 5 target locales identified",
+          "Store listing translated"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 13,
+        "task_type": "FRONTEND",
+        "description": "Build the travel_planner React frontend: app shell, routing, auth flow, and all core pages \u2014 Home/Trip List, AI Itinerary Chat, Booking Search, Budget Dashboard, Group Planning, and Offline Maps.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "state_management": "Zustand",
+          "routing": "React Router v6",
+          "map_library": "Mapbox GL JS",
+          "pages": [
+            "home",
+            "trip_detail",
+            "itinerary_chat",
+            "flight_search",
+            "hotel_search",
+            "budget_dashboard",
+            "group_planning",
+            "offline_maps",
+            "settings"
+          ],
+          "design_system": "Tailwind CSS + shadcn/ui"
+        },
+        "acceptance_criteria": [
+          "All 9 pages render without errors with React Router routes configured",
+          "AI itinerary chat page streams SSE responses and renders markdown itinerary incrementally",
+          "Flight and hotel search pages show sortable, filterable result lists",
+          "Budget dashboard shows category breakdown chart (Recharts) + group split table",
+          "Group planning page shows member list, invite modal, and destination voting UI",
+          "Offline maps page shows region selector on Mapbox GL JS map + download progress bar",
+          "All pages are responsive (mobile 375px, tablet 768px, desktop 1280px)",
+          "i18n hook (useTranslation) used for all user-visible strings",
+          "Lighthouse accessibility score \u2265 90 on itinerary_chat and budget_dashboard pages"
+        ],
+        "depends_on": [
+          3,
+          6,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "AGENTIC",
+        "description": "Implement the iterative refinement agentic pattern for itinerary personalization: after initial itinerary generation, a refinement agent evaluates user feedback signals (thumbs up/down on activities, manual edits), scores the itinerary against preferences, and regenerates improved versions until quality threshold is met.",
+        "payload": {
+          "pattern": "iterative_refinement",
+          "components": [
+            "refiner_agent",
+            "quality_scorer",
+            "termination_criteria",
+            "history_tracker"
+          ],
+          "quality_dimensions": [
+            "preference_match",
+            "schedule_feasibility",
+            "budget_fit",
+            "group_consensus"
+          ],
+          "max_iterations": 3,
+          "quality_threshold": 0.85,
+          "feedback_signals": [
+            "activity_rating",
+            "manual_edit",
+            "group_vote"
+          ]
+        },
+        "acceptance_criteria": [
+          "Refinement agent reads user feedback signals from itinerary_items ratings",
+          "Quality scorer returns a 0-1 score across all 4 dimensions",
+          "Refinement loop terminates when overall score \u2265 0.85 or max_iterations reached",
+          "Each refinement iteration stored in history with score delta",
+          "User can trigger manual refinement via POST /itinerary/{id}/refine",
+          "Group consensus dimension aggregates all members' ratings before scoring",
+          "Refinement history visible in audit_log.db with trace_ids"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "SECURITY",
+        "description": "Perform security review of travel_planner: threat model for booking data (PII, payment), JWT auth hardening, API rate limiting, input validation on all endpoints, and OWASP Top 10 checklist.",
+        "payload": {
+          "threat_model_scope": [
+            "user_auth",
+            "booking_pii",
+            "payment_data",
+            "group_invite_tokens",
+            "offline_tile_access"
+          ],
+          "checks": [
+            "OWASP_Top10",
+            "JWT_config",
+            "rate_limiting",
+            "input_validation",
+            "dependency_audit"
+          ],
+          "sensitive_data": [
+            "passport_numbers",
+            "credit_card_tokens",
+            "location_history"
+          ]
+        },
+        "acceptance_criteria": [
+          "Threat model document covers all 5 scoped areas with mitigations",
+          "JWT tokens use RS256, 1h expiry, refresh token rotation implemented",
+          "Rate limiting applied: 10 req/min on /itinerary/generate, 30 req/min on /flights/search",
+          "All user inputs validated with Pydantic schemas; no raw SQL string interpolation",
+          "Invite tokens are single-use and invalidated after acceptance",
+          "npm audit + pip-audit report produced with no critical/high unresolved vulnerabilities",
+          "Offline tile endpoints require authenticated session (no public tile serving)"
+        ],
+        "depends_on": [
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, and cookie consent banner for travel_planner. Address GDPR/CCPA compliance for location data, travel PII, and third-party booking integrations.",
+        "payload": {
+          "regulations": [
+            "GDPR",
+            "CCPA"
+          ],
+          "data_types": [
+            "location_history",
+            "passport_numbers",
+            "payment_tokens",
+            "travel_itineraries"
+          ],
+          "third_parties": [
+            "Amadeus",
+            "Booking.com",
+            "Mapbox"
+          ],
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "cookie_policy.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy covers all 4 data types with retention periods and deletion rights",
+          "Third-party data sharing clearly disclosed for Amadeus, Booking.com, Mapbox",
+          "GDPR Article 13/14 notice requirements met",
+          "CCPA 'Do Not Sell My Personal Information' opt-out path described",
+          "Cookie consent banner text drafted with category breakdown (essential, analytics, marketing)",
+          "Terms of Service covers booking liability limitations and group trip shared responsibility"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 17,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline, Docker Compose for local dev, and production deployment config for travel_planner: backend (FastAPI), frontend (Vite), PostgreSQL, Redis (Celery), and Celery worker services.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "services": [
+            "fastapi_backend",
+            "react_frontend",
+            "postgresql",
+            "redis",
+            "celery_worker"
+          ],
+          "environments": [
+            "dev",
+            "staging",
+            "production"
+          ],
+          "pipeline_stages": [
+            "lint",
+            "test",
+            "build",
+            "deploy"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker-compose.yml starts all 5 services with a single docker-compose up",
+          "GitHub Actions workflow runs lint + test on every PR",
+          "Build stage produces Docker images tagged with git SHA",
+          "Deploy stage pushes to staging on merge to main; production requires manual approval",
+          "Health check endpoints wired to Docker HEALTHCHECK instructions",
+          "Environment-specific .env files documented with required variables list",
+          "Celery worker auto-scales to 4 concurrent workers in production config"
+        ],
+        "depends_on": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          13
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "TESTS",
+        "description": "Write comprehensive unit and integration tests for all travel_planner backend services: itinerary coordinator, booking adapters, budget split algorithms, group invite flow, and offline map job queue.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio",
+          "coverage_target": "80%",
+          "test_areas": [
+            "itinerary_coordinator",
+            "booking_adapters",
+            "budget_service",
+            "group_service",
+            "map_service"
+          ],
+          "mock_strategy": "MockBookingAdapter for external APIs; real PostgreSQL via testcontainers"
+        },
+        "acceptance_criteria": [
+          "Test suite achieves \u2265 80% line coverage across src/",
+          "All 3 budget split algorithms (equal, proportional, custom) have edge-case tests",
+          "Booking adapter tests use MockBookingAdapter; integration test verifies real Amadeus sandbox",
+          "Group invite flow tested: generate \u2192 accept \u2192 role check \u2192 expiry \u2192 duplicate reject",
+          "Map download job tested: enqueue \u2192 worker pickup \u2192 progress update \u2192 completion",
+          "Itinerary coordinator tested with mocked LLM responses for deterministic assertions",
+          "CI pipeline runs full test suite in under 5 minutes"
+        ],
+        "depends_on": [
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "QA",
+        "description": "Develop QA test plan and execute manual test cases for travel_planner: exploratory testing of AI itinerary chat UX, booking end-to-end flow, group planning edge cases, budget tracking accuracy, and offline map download on slow connections.",
+        "payload": {
+          "test_types": [
+            "functional",
+            "exploratory",
+            "regression",
+            "usability"
+          ],
+          "priority_flows": [
+            "itinerary_generation_to_booking",
+            "group_invite_to_vote",
+            "budget_overspend_alert",
+            "offline_map_download_resume"
+          ],
+          "devices": [
+            "Chrome desktop",
+            "Safari iOS",
+            "Chrome Android"
+          ]
+        },
+        "acceptance_criteria": [
+          "QA test plan document covers all 5 feature areas with 5+ test cases each",
+          "All P0 test cases executed with pass/fail recorded",
+          "Zero P0 bugs open at release gate",
+          "Itinerary streaming tested on slow 3G (Chrome DevTools throttle) \u2014 no broken UI",
+          "Group planning tested with 8 simultaneous members editing \u2014 no data conflict",
+          "Offline map tested by toggling to airplane mode after download \u2014 tiles serve correctly",
+          "Bug report template created with severity/priority/reproduce-steps fields"
+        ],
+        "depends_on": [
+          13,
+          14,
+          18
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system tests for travel_planner's critical user journeys using Playwright: full itinerary generation \u2192 booking \u2192 budget tracking flow, and group trip invite \u2192 vote \u2192 finalize flow.",
+        "payload": {
+          "framework": "Playwright",
+          "journeys": [
+            "solo_trip: onboard \u2192 generate itinerary \u2192 search flights \u2192 book \u2192 track budget",
+            "group_trip: create trip \u2192 invite 3 members \u2192 vote destination \u2192 finalize itinerary \u2192 split costs",
+            "offline: search trip \u2192 download map region \u2192 toggle offline \u2192 navigate map"
+          ],
+          "environments": [
+            "staging"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 3 Playwright journeys pass on staging environment",
+          "Solo trip E2E completes in under 60 seconds (excluding LLM generation time)",
+          "Group trip flow handles concurrent member actions without race conditions",
+          "Offline map journey verified: tile serve returns 200 from local cache after network disabled",
+          "E2E tests run in GitHub Actions on every deploy to staging",
+          "Test report with screenshots on failure stored as CI artifact"
+        ],
+        "depends_on": [
+          17,
+          19
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 21,
+        "task_type": "TRAINING",
+        "description": "Create user onboarding guide, in-app tooltip copy, and help center articles for travel_planner: getting started, creating your first AI itinerary, inviting a group, tracking budget, and downloading offline maps.",
+        "payload": {
+          "deliverables": [
+            "getting_started_guide.md",
+            "help_center_articles/",
+            "in_app_tooltip_copy.json",
+            "onboarding_checklist_copy.json"
+          ],
+          "topics": [
+            "first_itinerary",
+            "booking_a_flight",
+            "inviting_group_members",
+            "budget_tracking",
+            "offline_maps"
+          ],
+          "formats": [
+            "written guide",
+            "in-app tooltips",
+            "onboarding checklist (5 steps)"
+          ]
+        },
+        "acceptance_criteria": [
+          "Getting started guide covers all 5 topics with screenshots placeholders",
+          "In-app tooltip copy provided for every major UI action (JSON keyed to component IDs)",
+          "Onboarding checklist drives new user through: create trip \u2192 generate itinerary \u2192 invite friend \u2192 add expense \u2192 download map",
+          "Help center articles are under 500 words each with a 'Did this help?' feedback widget spec",
+          "Content reviewed for all 5 locales (en complete; others marked for translation)",
+          "Technical writer sign-off from product_manager"
+        ],
+        "depends_on": [
+          13,
+          19
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 22,
+        "task_type": "DOCS",
+        "description": "Write developer documentation for travel_planner: architecture overview, local setup guide, API reference (generated from OpenAPI spec), agentic pattern documentation, and solution YAML reference.",
+        "payload": {
+          "docs": [
+            "README.md",
+            "docs/architecture.md",
+            "docs/local_setup.md",
+            "docs/api_reference.md",
+            "docs/agentic_patterns.md",
+            "docs/yaml_reference.md"
+          ],
+          "api_gen_tool": "Redoc / Swagger UI from OpenAPI spec"
+        },
+        "acceptance_criteria": [
+          "README.md has quickstart that gets a developer running locally in under 10 commands",
+          "Architecture diagram (Mermaid) covers all services and data flows",
+          "API reference auto-generated from OpenAPI spec and published at /docs",
+          "Agentic pattern doc explains coordinator + iterative_refinement patterns with sequence diagrams",
+          "YAML reference documents every field in project.yaml, prompts.yaml, tasks.yaml with examples",
+          "Local setup guide tested by a second developer who had not previously set up the project"
+        ],
+        "depends_on": [
+          17,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 22,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "Payment processing is completely absent. Steps 8 describes 'booking confirmation' but there is no Stripe/Braintree integration, no payment flow, no PCI DSS scope. You cannot book a flight or hotel without charging a card. This is not a minor gap \u2014 the entire booking feature is non-functional without it.",
+              "Booking.com's Connectivity API is restricted to licensed travel agencies with commercial agreements. It is not a self-service API. Amadeus Self-Service has limited inventory and sandbox-only access without a commercial agreement. The plan treats both as simple REST adapters; obtaining production access to either could take months of business negotiation and is a potential project-killer.",
+              "The product description implies a mobile app ('offline maps', 'app store screenshot mockups' in Step 3). The entire implementation is React web + React Router \u2014 not React Native or Flutter. A PWA can approximate offline maps but cannot match native map tile caching on iOS/Android. This is a fundamental product/implementation mismatch that is never resolved.",
+              "Celery tile workers write to 'local filesystem + optional S3' (Step 11). In a multi-worker production environment, a tile downloaded by worker A is not accessible to worker B serving the tile endpoint. S3 must be mandatory, not optional. The 2GB LRU per-user cap on local filesystem does not scale beyond a single machine.",
+              "Real-time group notifications via WebSocket (Step 10) are never wired into infrastructure. Step 17 (DevOps) defines services as FastAPI + Postgres + Redis + Celery \u2014 no WebSocket connection manager, no sticky sessions, no pub/sub fan-out. This breaks group editing UX entirely in multi-worker deployments.",
+              "The 15-second SLA for 7-day itinerary generation (Step 7) is unrealistic. Three parallel LLM calls (each 5\u201315s p50 on current models) plus coordinator overhead, SSE handshake, and DB persistence will routinely exceed 15s. There is no fallback or revised UX contract when this SLA is breached.",
+              "Group concurrency is untested at the schema level. Step 10 acceptance criteria require 'no data conflict' with 8 simultaneous editors, but the database schema (Step 5) has no optimistic locking fields (version/etag), no row-level locking strategy, and no CRDT approach. This will produce silent last-write-wins overwrites.",
+              "GDPR 'right to erasure' is mentioned in the Privacy Policy (Step 16) but the database schema has no soft-delete columns, no cascade delete strategy, no account deletion endpoint, and no data purge job. The legal document will promise a right the backend cannot honor.",
+              "The iterative refinement quality scorer (Step 14, threshold 0.85) uses LLM-as-judge with no calibration baseline. LLM quality scores are non-deterministic; the same itinerary can score 0.78 one run and 0.91 the next. There is no validation that the scorer is accurate, no human-labeled ground truth, and no metric to detect scorer drift.",
+              "Budget alerts (Step 9) are mentioned as acceptance criteria but there is no notification delivery system anywhere in the plan \u2014 no email service, no push notification infrastructure, no SMS. The alert fires into a void.",
+              "Mapbox bulk tile download for offline use likely violates Mapbox Terms of Service Section 3 (restrictions on bulk tile extraction). The plan acknowledges 'OSM fallback' but OSM tile servers also prohibit bulk downloads. Legal clearance for offline tile caching is not addressed in the Legal step (Step 16).",
+              "Single-use invite tokens (Step 15) conflict with the 48h expiry window (Step 10). If a user clicks the link, the request fails mid-flight (network drop), and they retry, the token is consumed and they are locked out. No retry-safe token invalidation strategy is defined."
+            ],
+            "suggestions": [
+              "Add a dedicated payment step using Stripe with a defined PCI scope. Use Stripe's hosted payment page to stay out of PCI DSS SAQ D. Wire payment_intent_id to the flight_bookings and hotel_bookings tables. Define refund/cancellation flows explicitly.",
+              "Replace direct Booking.com/Amadeus integration in MVP with an aggregator that has accessible APIs \u2014 Duffel (flights, accessible self-service API with real inventory), HotelBeds, or Agoda Partner API. Document the partnership acquisition path as a project dependency, not a technical task.",
+              "Decide on web PWA vs native mobile and commit. If PWA: document its offline map limitations explicitly and use Workbox for service worker tile caching. If native: add React Native + Expo to the stack and replace Mapbox GL JS with react-native-maps or Mapbox React Native SDK.",
+              "Make S3 (or equivalent object store) mandatory for tile storage in Step 11. Add a shared Redis key namespace for tile metadata so any worker can serve any tile. Define the storage cost model per user at the expected scale.",
+              "Add a WebSocket connection manager (e.g., Redis pub/sub + FastAPI WebSocket) as an explicit infrastructure component in Step 17. Define which service owns connection state and how fan-out works across multiple FastAPI instances.",
+              "Replace the 15s itinerary SLA with a streaming progress contract: emit a 'planning started' SSE event immediately, stream partial results as each specialist agent completes, set a 60s hard timeout with a graceful truncation. Remove the wall-clock SLA from acceptance criteria.",
+              "Add version integer columns to itinerary_days, itinerary_items, and budget_items. Implement optimistic locking at the API layer: accept If-Match header, reject with 409 on version mismatch. This is the minimal viable concurrency control for group editing.",
+              "Add a /users/{id}/delete endpoint in Step 9 or a new GDPR Compliance step that cascades deletion across all tables, revokes tokens, and queues a deletion audit event. This must exist before any GDPR-scoped Privacy Policy is published.",
+              "Calibrate the quality scorer in Step 14 with at least 20 human-labeled itinerary examples before setting a hard threshold. Use a confidence interval, not a point estimate. Log raw dimension scores to audit_log.db so scorer drift is detectable.",
+              "Add a notification service step (or subsystem within Step 9/10): choose SendGrid for email, Firebase Cloud Messaging for push. Define the notification contract (event types, payload schema, user preferences) before wiring alert triggers.",
+              "Add a Legal review of Mapbox and OSM offline tile terms to Step 16. If offline caching is prohibited, the entire Step 11 must pivot to a licensed offline map provider (e.g., Maps.me data, HERE Maps offline SDK) or be descoped to Phase 2."
+            ],
+            "missing": [
+              "Payment processing and PCI DSS scope definition \u2014 the most critical missing element",
+              "Booking API commercial access acquisition plan \u2014 this is a business dependency, not a code task",
+              "Account deletion and GDPR erasure implementation (endpoint + cascade delete + purge job)",
+              "Notification delivery infrastructure (email + push) for budget alerts and group events",
+              "Optimistic locking / concurrency control strategy for collaborative group editing",
+              "Offline map tile licensing review and storage architecture decision (S3 mandatory, not optional)",
+              "WebSocket infrastructure design for real-time group collaboration",
+              "Mobile vs. web platform decision and corresponding build pipeline",
+              "Error compensation / saga pattern for partial booking failures (flight booked, hotel fails)",
+              "Quality scorer calibration and validation methodology for Step 14",
+              "Currency conversion failure handling and stale-rate fallback policy",
+              "Token retry-safety for invite link acceptance flow"
+            ],
+            "security_risks": [
+              "Passport numbers stored in the database (referenced in Step 16) require encryption at rest. The schema design (Step 5) specifies no column-level encryption or KMS integration. Storing plaintext passport numbers is a regulatory liability in GDPR/CCPA jurisdictions.",
+              "Payment tokens referenced as 'sensitive_data' in Step 15 but with no tokenization architecture. If Stripe is used, the raw card number should never reach the backend. If a custom payment flow is built (which this plan implies), it is PCI DSS in-scope and requires formal audit.",
+              "Group invite tokens with 48h expiry and no rate limiting on the accept endpoint enable enumeration attacks. Tokens should be 128-bit random, single-use with atomic compare-and-swap invalidation, and the accept endpoint should have its own rate limit separate from the general API limits.",
+              "Offline tile endpoints require auth (Step 15 correctly identifies this), but tile URLs at /maps/tiles/{z}/{x}/{y}.png follow a predictable pattern. Without signed URLs or short-lived session tokens on the tile endpoint, authenticated users can share tile URLs that remain accessible.",
+              "The WebSocket endpoint for group notifications (Step 10) is not in the security threat model (Step 15). WebSocket connections bypass standard HTTP middleware for auth; JWT validation must be explicit on the upgrade handshake, not assumed from the HTTP session.",
+              "Exchange Rate API (Step 9) is an external dependency with no mention of authentication or SSRF protection. If the API URL is configurable, this is an SSRF vector. If hardcoded, a compromised CDN/DNS cache can manipulate exchange rates."
+            ],
+            "summary": "This is a thorough and well-structured plan that covers the full product lifecycle from market research to documentation, with credible dependency ordering and specific acceptance criteria. However, it has one fundamental hole that makes the core value proposition non-functional: there is no payment processing anywhere in 22 steps. Itinerary generation + booking search is a free feature; actual booking requires charging money, and this is completely absent. Compounding this, the two named booking providers (Amadeus, Booking.com) require commercial agreements that are non-trivial to obtain \u2014 the plan treats them as technical integrations when they are business partnerships. The mobile vs. web ambiguity (app store mockups, offline maps, but React web stack) will cause rework when stakeholders realize the PWA cannot match native offline map UX. The offline tile storage architecture (local filesystem, S3 optional) will fail at multi-worker scale without a mandatory shared object store. Group concurrency is untested at the database level \u2014 eight simultaneous editors on unversioned rows will corrupt data silently. These are not polish issues; they require architectural decisions before backend implementation begins. Score 54: the plan's structure and research/design steps are solid, but the backend implementation steps (7\u201311) are building on unresolved foundations. Resolve payment processing, booking API access strategy, and mobile/web platform decision before proceeding to Step 5.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "Payment processing is completely absent. Steps 8 describes 'booking confirmation' but there is no Stripe/Braintree integration, no payment flow, no PCI DSS scope. You cannot book a flight or hotel without charging a card. This is not a minor gap \u2014 the entire booking feature is non-functional without it.",
+                "Booking.com's Connectivity API is restricted to licensed travel agencies with commercial agreements. It is not a self-service API. Amadeus Self-Service has limited inventory and sandbox-only access without a commercial agreement. The plan treats both as simple REST adapters; obtaining production access to either could take months of business negotiation and is a potential project-killer.",
+                "The product description implies a mobile app ('offline maps', 'app store screenshot mockups' in Step 3). The entire implementation is React web + React Router \u2014 not React Native or Flutter. A PWA can approximate offline maps but cannot match native map tile caching on iOS/Android. This is a fundamental product/implementation mismatch that is never resolved.",
+                "Celery tile workers write to 'local filesystem + optional S3' (Step 11). In a multi-worker production environment, a tile downloaded by worker A is not accessible to worker B serving the tile endpoint. S3 must be mandatory, not optional. The 2GB LRU per-user cap on local filesystem does not scale beyond a single machine.",
+                "Real-time group notifications via WebSocket (Step 10) are never wired into infrastructure. Step 17 (DevOps) defines services as FastAPI + Postgres + Redis + Celery \u2014 no WebSocket connection manager, no sticky sessions, no pub/sub fan-out. This breaks group editing UX entirely in multi-worker deployments.",
+                "The 15-second SLA for 7-day itinerary generation (Step 7) is unrealistic. Three parallel LLM calls (each 5\u201315s p50 on current models) plus coordinator overhead, SSE handshake, and DB persistence will routinely exceed 15s. There is no fallback or revised UX contract when this SLA is breached.",
+                "Group concurrency is untested at the schema level. Step 10 acceptance criteria require 'no data conflict' with 8 simultaneous editors, but the database schema (Step 5) has no optimistic locking fields (version/etag), no row-level locking strategy, and no CRDT approach. This will produce silent last-write-wins overwrites.",
+                "GDPR 'right to erasure' is mentioned in the Privacy Policy (Step 16) but the database schema has no soft-delete columns, no cascade delete strategy, no account deletion endpoint, and no data purge job. The legal document will promise a right the backend cannot honor.",
+                "The iterative refinement quality scorer (Step 14, threshold 0.85) uses LLM-as-judge with no calibration baseline. LLM quality scores are non-deterministic; the same itinerary can score 0.78 one run and 0.91 the next. There is no validation that the scorer is accurate, no human-labeled ground truth, and no metric to detect scorer drift.",
+                "Budget alerts (Step 9) are mentioned as acceptance criteria but there is no notification delivery system anywhere in the plan \u2014 no email service, no push notification infrastructure, no SMS. The alert fires into a void.",
+                "Mapbox bulk tile download for offline use likely violates Mapbox Terms of Service Section 3 (restrictions on bulk tile extraction). The plan acknowledges 'OSM fallback' but OSM tile servers also prohibit bulk downloads. Legal clearance for offline tile caching is not addressed in the Legal step (Step 16).",
+                "Single-use invite tokens (Step 15) conflict with the 48h expiry window (Step 10). If a user clicks the link, the request fails mid-flight (network drop), and they retry, the token is consumed and they are locked out. No retry-safe token invalidation strategy is defined."
+              ],
+              "suggestions": [
+                "Add a dedicated payment step using Stripe with a defined PCI scope. Use Stripe's hosted payment page to stay out of PCI DSS SAQ D. Wire payment_intent_id to the flight_bookings and hotel_bookings tables. Define refund/cancellation flows explicitly.",
+                "Replace direct Booking.com/Amadeus integration in MVP with an aggregator that has accessible APIs \u2014 Duffel (flights, accessible self-service API with real inventory), HotelBeds, or Agoda Partner API. Document the partnership acquisition path as a project dependency, not a technical task.",
+                "Decide on web PWA vs native mobile and commit. If PWA: document its offline map limitations explicitly and use Workbox for service worker tile caching. If native: add React Native + Expo to the stack and replace Mapbox GL JS with react-native-maps or Mapbox React Native SDK.",
+                "Make S3 (or equivalent object store) mandatory for tile storage in Step 11. Add a shared Redis key namespace for tile metadata so any worker can serve any tile. Define the storage cost model per user at the expected scale.",
+                "Add a WebSocket connection manager (e.g., Redis pub/sub + FastAPI WebSocket) as an explicit infrastructure component in Step 17. Define which service owns connection state and how fan-out works across multiple FastAPI instances.",
+                "Replace the 15s itinerary SLA with a streaming progress contract: emit a 'planning started' SSE event immediately, stream partial results as each specialist agent completes, set a 60s hard timeout with a graceful truncation. Remove the wall-clock SLA from acceptance criteria.",
+                "Add version integer columns to itinerary_days, itinerary_items, and budget_items. Implement optimistic locking at the API layer: accept If-Match header, reject with 409 on version mismatch. This is the minimal viable concurrency control for group editing.",
+                "Add a /users/{id}/delete endpoint in Step 9 or a new GDPR Compliance step that cascades deletion across all tables, revokes tokens, and queues a deletion audit event. This must exist before any GDPR-scoped Privacy Policy is published.",
+                "Calibrate the quality scorer in Step 14 with at least 20 human-labeled itinerary examples before setting a hard threshold. Use a confidence interval, not a point estimate. Log raw dimension scores to audit_log.db so scorer drift is detectable.",
+                "Add a notification service step (or subsystem within Step 9/10): choose SendGrid for email, Firebase Cloud Messaging for push. Define the notification contract (event types, payload schema, user preferences) before wiring alert triggers.",
+                "Add a Legal review of Mapbox and OSM offline tile terms to Step 16. If offline caching is prohibited, the entire Step 11 must pivot to a licensed offline map provider (e.g., Maps.me data, HERE Maps offline SDK) or be descoped to Phase 2."
+              ],
+              "missing": [
+                "Payment processing and PCI DSS scope definition \u2014 the most critical missing element",
+                "Booking API commercial access acquisition plan \u2014 this is a business dependency, not a code task",
+                "Account deletion and GDPR erasure implementation (endpoint + cascade delete + purge job)",
+                "Notification delivery infrastructure (email + push) for budget alerts and group events",
+                "Optimistic locking / concurrency control strategy for collaborative group editing",
+                "Offline map tile licensing review and storage architecture decision (S3 mandatory, not optional)",
+                "WebSocket infrastructure design for real-time group collaboration",
+                "Mobile vs. web platform decision and corresponding build pipeline",
+                "Error compensation / saga pattern for partial booking failures (flight booked, hotel fails)",
+                "Quality scorer calibration and validation methodology for Step 14",
+                "Currency conversion failure handling and stale-rate fallback policy",
+                "Token retry-safety for invite link acceptance flow"
+              ],
+              "security_risks": [
+                "Passport numbers stored in the database (referenced in Step 16) require encryption at rest. The schema design (Step 5) specifies no column-level encryption or KMS integration. Storing plaintext passport numbers is a regulatory liability in GDPR/CCPA jurisdictions.",
+                "Payment tokens referenced as 'sensitive_data' in Step 15 but with no tokenization architecture. If Stripe is used, the raw card number should never reach the backend. If a custom payment flow is built (which this plan implies), it is PCI DSS in-scope and requires formal audit.",
+                "Group invite tokens with 48h expiry and no rate limiting on the accept endpoint enable enumeration attacks. Tokens should be 128-bit random, single-use with atomic compare-and-swap invalidation, and the accept endpoint should have its own rate limit separate from the general API limits.",
+                "Offline tile endpoints require auth (Step 15 correctly identifies this), but tile URLs at /maps/tiles/{z}/{x}/{y}.png follow a predictable pattern. Without signed URLs or short-lived session tokens on the tile endpoint, authenticated users can share tile URLs that remain accessible.",
+                "The WebSocket endpoint for group notifications (Step 10) is not in the security threat model (Step 15). WebSocket connections bypass standard HTTP middleware for auth; JWT validation must be explicit on the upgrade handshake, not assumed from the HTTP session.",
+                "Exchange Rate API (Step 9) is an external dependency with no mention of authentication or SSRF protection. If the API URL is configurable, this is an SSRF vector. If hardcoded, a compromised CDN/DNS cache can manipulate exchange rates."
+              ],
+              "summary": "This is a thorough and well-structured plan that covers the full product lifecycle from market research to documentation, with credible dependency ordering and specific acceptance criteria. However, it has one fundamental hole that makes the core value proposition non-functional: there is no payment processing anywhere in 22 steps. Itinerary generation + booking search is a free feature; actual booking requires charging money, and this is completely absent. Compounding this, the two named booking providers (Amadeus, Booking.com) require commercial agreements that are non-trivial to obtain \u2014 the plan treats them as technical integrations when they are business partnerships. The mobile vs. web ambiguity (app store mockups, offline maps, but React web stack) will cause rework when stakeholders realize the PWA cannot match native offline map UX. The offline tile storage architecture (local filesystem, S3 optional) will fail at multi-worker scale without a mandatory shared object store. Group concurrency is untested at the database level \u2014 eight simultaneous editors on unversioned rows will corrupt data silently. These are not polish issues; they require architectural decisions before backend implementation begins. Score 54: the plan's structure and research/design steps are solid, but the backend implementation steps (7\u201311) are building on unresolved foundations. Resolve payment processing, booking API access strategy, and mobile/web platform decision before proceeding to Step 5.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T10:24:49.447778+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 125.48,
+      "critic_plan": 119.29
+    }
+  }
+}

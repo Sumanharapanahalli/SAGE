@@ -1,0 +1,281 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze CRM market landscape: Salesforce, HubSpot, Pipedrive positioning.
+      Identify addressable segments, pricing benchmarks, migration pain points, and
+      differentiation opportunities for crm_platform.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covering all 6 product areas is complete
+    - Pricing benchmarks documented for at least 5 competitors
+    - Top 3 migration pain points from Salesforce identified with evidence
+    - TAM/SAM/SOM estimates included with sources
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas (sales rep, sales manager,
+      RevOps, admin), core user stories for all 6 feature areas, and process flows
+      for lead-to-close lifecycle.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 5 user stories per persona with acceptance criteria
+    - Lead-to-close process flow diagram covers all pipeline stages
+    - Salesforce migration user journey documented end-to-end
+    - ROI analysis quantifies time-savings vs. Salesforce per persona
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Produce product requirements document (PRD), phased roadmap (MVP
+      → v1 → v2), feature prioritization matrix (RICE scoring), and success metrics
+      (activation rate, pipeline velocity, churn).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all 6 feature areas with scope boundaries per phase
+    - RICE scores assigned to every feature in backlog
+    - MVP scope is achievable in ≤12 weeks by a 3-person team
+    - Success metrics defined with baseline, target, and measurement method
+    depends_on:
+    - 2
+  FINANCIAL:
+    description: 'Build financial model: infrastructure cost projections, SaaS pricing
+      tiers (Starter/Growth/Enterprise), unit economics (CAC, LTV, payback period),
+      and 3-year P&L forecast.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Unit economics model includes CAC, LTV, LTV:CAC ratio, payback period
+    - Infrastructure cost modeled at 100, 1K, 10K seat cohorts
+    - Three pricing tiers defined with feature gates and per-seat prices
+    - Break-even analysis shows month of profitability under conservative assumptions
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), Data
+      Processing Agreement (DPA) template for enterprise customers, and email automation
+      CAN-SPAM/CASL compliance review.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all GDPR Articles 13/14 disclosure requirements
+    - DPA template includes SCCs for EU data transfers
+    - Email automation compliance checklist covers unsubscribe, sender ID, and consent
+      requirements
+    - ToS includes data ownership, SLA definitions, and termination clauses
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  SECURITY:
+    description: 'Produce threat model (STRIDE) for CRM platform covering contact
+      data, email credentials, pipeline data, and Salesforce OAuth tokens. Define
+      security architecture: encryption at rest/transit, RBAC, audit logging.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis covers all 6 major components with mitigations
+    - RBAC matrix defined for all 4 personas with least-privilege principle
+    - Salesforce OAuth token storage design reviewed and approved
+    - Audit log schema captures actor, action, resource, timestamp for all mutations
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: 'User research synthesis (jobs-to-be-done), information architecture,
+      wireframes for all major flows: contact list, pipeline kanban, email campaign
+      builder, lead score card, dashboard, and Salesforce import wizard.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 6 product areas with annotated interaction notes
+    - Pipeline kanban supports drag-and-drop stage transitions
+    - Email builder wireframe shows visual block editor (not raw HTML)
+    - Salesforce import wizard wireframe covers field-mapping and conflict resolution
+      steps
+    - Accessibility audit checklist passed (color contrast, keyboard nav, ARIA roles)
+    depends_on:
+    - 3
+  COMPLIANCE:
+    description: 'Define SOC 2 Type II control framework for crm_platform: map product
+      features to Trust Service Criteria (Security, Availability, Confidentiality),
+      produce evidence collection plan and control matrix.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All CC, A, and C criteria mapped to at least one technical or operational control
+    - Evidence collection plan lists owner, frequency, and artifact format per control
+    - Gap analysis identifies controls not yet implemented
+    - Audit readiness checklist produced for each Trust Service Criterion
+    depends_on:
+    - 5
+    - 6
+  DATABASE:
+    description: 'Design relational schema for CRM core: contacts, accounts, deals,
+      activities, pipeline_stages, email_campaigns, email_sends, lead_scores, users,
+      roles, audit_events. Include indexes, foreign keys, and soft-delete patterns.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all 14 tables with relationships and cardinalities
+    - Row-level security policies enforce tenant isolation
+    - All foreign keys have cascading delete or restrict rules defined
+    - Indexes defined for all query patterns identified in user stories
+    - Migration files runnable via Alembic from empty schema to full schema
+    depends_on:
+    - 3
+    - 6
+  API:
+    description: 'Design OpenAPI 3.1 spec for all CRM REST endpoints: contacts CRUD,
+      pipeline stages, deals, activities, email campaigns, lead scoring rules, reports,
+      Salesforce OAuth + sync, and webhook delivery.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints documented with request/response schemas and error codes
+    - Pagination (cursor-based) defined for all list endpoints
+    - Salesforce OAuth flow (authorize → callback → token refresh) fully specified
+    - Webhook delivery spec includes retry policy and signature verification
+    - OpenAPI spec validates without errors against openapi-validator
+    depends_on:
+    - 9
+  CONFIG:
+    description: Set up monorepo project structure, Python backend (FastAPI + SQLAlchemy
+      + Alembic), React frontend (Vite + TypeScript), Docker Compose for local dev
+      (Postgres, Redis, Mailhog), pre-commit hooks, and environment config.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`docker compose up` starts all services with no errors'
+    - Backend server starts on :8000 with `/health` returning 200
+    - Frontend dev server starts on :3000 with no TypeScript errors
+    - pre-commit hooks run ruff + mypy on Python, eslint + prettier on TS
+    - .env.example documents all required environment variables
+    depends_on:
+    - 10
+  BACKEND:
+    description: 'Implement contact management API: CRUD for contacts and accounts,
+      custom field definitions, activity timeline, duplicate detection (fuzzy match
+      on email/phone), bulk import (CSV), and advanced search with filters.'
+    agent_role: developer
+    acceptance_criteria:
+    - All CRUD endpoints return correct HTTP status codes and response shapes per
+      OpenAPI spec
+    - Duplicate detection flags contacts with >85% similarity score before save
+    - CSV import handles 10K rows without timeout; errors reported per-row
+    - Custom field definitions stored and returned with contact objects
+    - Activity timeline returns events sorted desc by timestamp with pagination
+    depends_on:
+    - 11
+  DATA:
+    description: 'Build Salesforce migration toolchain: OAuth2 connection to Salesforce
+      org, field mapping engine (Salesforce field → crm_platform field), delta sync
+      (initial full + ongoing incremental via Salesforce Change Data Capture), conflict
+      resolution, and rollback capability.'
+    agent_role: developer
+    acceptance_criteria:
+    - OAuth2 flow connects to Salesforce sandbox and production orgs without exposing
+      tokens in logs
+    - Field mapping UI allows drag-and-drop mapping with type coercion warnings
+    - Full import of 100K contacts completes using Bulk API 2 in under 15 minutes
+    - Incremental CDC processes events within 5 minutes of Salesforce change
+    - Rollback restores pre-import snapshot atomically with no partial state
+    - All 8 Salesforce object types successfully imported with relationship integrity
+    depends_on:
+    - 12
+  FRONTEND:
+    description: 'Build contact management UI: contact list with virtual scrolling,
+      detail view with activity timeline and custom fields, quick-edit inline, bulk
+      actions (tag, assign, export), duplicate merge UI, and CSV import wizard.'
+    agent_role: developer
+    acceptance_criteria:
+    - Contact list virtualises rows and renders 10K contacts with no visible lag
+    - Activity timeline shows all event types with correct icons and relative timestamps
+    - Inline edit commits on blur with optimistic UI update and error rollback
+    - Duplicate merge UI shows field-by-field comparison with winner selection
+    - CSV import wizard shows column preview, field mapping, and per-row error report
+    depends_on:
+    - 7
+    - 12
+  TESTS:
+    description: 'Write backend unit and integration tests: pytest suite covering
+      all API endpoints, business logic (lead scoring math, forecast calculation,
+      duplicate detection), Celery tasks, and Salesforce sync engine. Target ≥85%
+      code coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest suite runs to completion with 0 failures on clean checkout
+    - Coverage report shows ≥85% line coverage across all backend modules
+    - Salesforce sync tests use mock responses covering happy path + error cases
+    - Lead scoring unit tests verify composite score formula with known inputs
+    - Integration tests hit real Postgres (testcontainer) not mocks
+    depends_on:
+    - 16
+    - 17
+  DEVOPS:
+    description: 'Build CI/CD pipeline (GitHub Actions): lint → test → build → container
+      push → staging deploy → E2E → production deploy (manual gate). Include branch
+      protection rules, environment secrets management, and Dependabot config.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline completes lint + test + build in under 10 minutes
+    - Docker images tagged with git SHA and pushed to GHCR on merge to main
+    - Staging deploys automatically on merge; production requires manual approval
+    - Branch protection requires 1 approval + passing CI before merge to main
+    - Dependabot configured for Python, Node, and Docker base images
+    depends_on:
+    - 24
+    - 25
+  INFRA:
+    description: 'Define production infrastructure as code (Terraform): Postgres RDS
+      (Multi-AZ), ElastiCache Redis, ECS Fargate services (API, Celery workers, beat
+      scheduler), ALB with WAF, S3 for exports, CloudWatch dashboards and alarms.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`terraform plan` produces no errors on clean AWS account with required permissions'
+    - RDS Multi-AZ with automated backups (7-day retention) configured
+    - WAF rules block OWASP Top 10 attack patterns
+    - CloudWatch alarms defined for API p99 latency >1s, error rate >1%, Celery queue
+      depth >1000
+    - All secrets stored in AWS Secrets Manager, not Terraform state
+    - Staging and production environments deployable from same Terraform with workspace
+      var files
+    depends_on:
+    - 26
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response (P1/P2/P3 classification),
+      on-call rotation setup, database failover procedure, Celery queue drain, Salesforce
+      sync re-trigger, SLA definitions, and capacity planning model.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Incident response runbook classifies P1/P2/P3 with response time SLAs per tier
+    - Database failover runbook tested against staging RDS and documented with step
+      times
+    - Celery queue drain runbook covers graceful shutdown without message loss
+    - Salesforce re-sync runbook covers partial failure recovery without data duplication
+    - Capacity planning model projects costs at 1K/10K/100K active contacts
+    depends_on:
+    - 27
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests on staging: load test (k6, 500 concurrent
+      users), Salesforce migration stress test (250K contacts), email throughput test
+      (100K sends/hour), and full pipeline-to-report smoke test.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - API p95 latency <500ms and p99 <1s under 500 concurrent users
+    - Error rate <0.1% under full load
+    - Salesforce import of 250K contacts completes in under 45 minutes without data
+      loss
+    - Email worker sustains 100K sends/hour for 30 minutes without queue backlog growth
+    - Full journey (create contact → score → add to campaign → move deal → view report)
+      completes in staging
+    depends_on:
+    - 27
+    - 28
+  DOCS:
+    description: 'Write developer and end-user documentation: API reference (generated
+      from OpenAPI), developer setup guide, architecture decision records (ADRs) for
+      key choices, user guide per feature area, and Salesforce migration guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference generated from openapi.yaml with no broken links
+    - Developer setup guide produces running local environment from zero on clean
+      machine
+    - 'ADRs cover: database choice, email provider selection, lead scoring architecture,
+      Salesforce sync strategy'
+    - Salesforce migration guide covers pre-migration checklist, mapping guide, and
+      post-migration validation
+    - All user guides include screenshots from production-equivalent UI
+    depends_on:
+    - 29

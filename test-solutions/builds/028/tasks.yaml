@@ -1,0 +1,299 @@
+task_types:
+  SAFETY:
+    description: Conduct hazard analysis and risk assessment (HARA) for automated
+      valet parking per ISO 26262 ASIL B. Identify all hazardous events (unintended
+      motion, sensor failure, communication loss, obstacle detection failure), assign
+      ASIL levels, and define safety goals.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All hazardous events identified with severity, exposure, and controllability
+      ratings
+    - ASIL B confirmed for primary motion control functions
+    - Minimum 10 safety goals defined with functional safety requirements
+    - FMEA covers all sensor and actuator failure modes
+    - 'Fault tree analysis completed for top-level hazard: unintended vehicle motion'
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Define product requirements document (PRD) for the autonomous_parking
+      system: functional requirements for sensor coverage, parking maneuver types
+      (parallel, perpendicular, angle), retrieval flow, mobile app commands, latency
+      budgets, and system constraints (speed limits ≤10 km/h, geofencing).'
+    agent_role: product_manager
+    acceptance_criteria:
+    - All functional requirements traced to safety goals from step 1
+    - Non-functional requirements include latency (<200ms sensor-to-actuator), reliability
+      (99.9% uptime), and availability targets
+    - Interface requirements defined for mobile app ↔ vehicle ECU ↔ parking infrastructure
+    - PRD reviewed and signed off by safety_engineer and product_manager
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Establish the ISO 26262 Safety Case framework: create the Design
+      History File (DHF) skeleton, functional safety concept, safety requirements
+      specification, and traceability matrix linking HARA safety goals → functional
+      safety requirements → technical safety requirements → implementation.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF skeleton covers all ISO 26262 Part 2 management work products
+    - Functional safety concept addresses all safety goals from HARA
+    - Traceability matrix maps every safety goal to at least one technical safety
+      requirement
+    - Safety requirements spec reviewed for completeness and consistency
+    - Document control (version, author, review status) applied to all artifacts
+    depends_on:
+    - 1
+    - 2
+  SECURITY:
+    description: 'Perform threat analysis and risk assessment (TARA) per UNECE R155/R156
+      and ISO/SAE 21434. Model attack surfaces: mobile app ↔ cloud, cloud ↔ vehicle
+      OTA, CAN bus injection. Define cybersecurity goals and secure-by-design requirements.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - STRIDE analysis completed for all identified attack surfaces
+    - Cybersecurity risk ratings assigned (CAL 1–4 per ISO/SAE 21434)
+    - Secure boot, signed OTA, and encrypted BLE/TLS requirements specified
+    - CAN bus access control requirements defined
+    - TARA report traceable to cybersecurity goals
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: 'Design mobile app UX for remote parking and retrieval: park command
+      flow, retrieval request, real-time vehicle status display, proximity authentication,
+      emergency stop button placement, and accessibility compliance (WCAG 2.1 AA).'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 5 key user flows
+    - Emergency stop reachable within 1 tap from any active session screen
+    - Confirmation dialog required before any vehicle motion command
+    - Proximity authentication (Bluetooth/GPS geofence) designed and specified
+    - Accessibility audit passes WCAG 2.1 AA for critical action elements
+    depends_on:
+    - 2
+  HARDWARE_SIM:
+    description: 'Build simulation models for the ultrasonic sensor array: HC-SR04
+      timing model in SystemC/Python, sensor cone geometry (15° half-angle, 2–400cm
+      range), multi-sensor interference model, and 2D occupancy grid map builder.
+      Include a simulated parking lot environment with static and dynamic obstacles.'
+    agent_role: developer
+    acceptance_criteria:
+    - Sensor model produces distance readings within ±1% of HC-SR04 datasheet values
+    - Multi-sensor 360° coverage verified with no blind spots >20cm at vehicle corners
+    - Occupancy grid updates at ≥10Hz with 8 sensors active
+    - Simulation handles pedestrian crossing scenario without false-negative obstacle
+      detection
+    - Testbench runs 100 randomized parking lot configurations without crash
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design database schema for parking lot management: lot map (spaces,
+      levels, dimensions), vehicle sessions (park/retrieve events, duration, position
+      history), reservation system, and audit log for all remote commands (ISO 26262
+      traceability). PostgreSQL with PostGIS for spatial queries.'
+    agent_role: developer
+    acceptance_criteria:
+    - Schema normalized to 3NF with PostGIS geometry columns for space and position
+      data
+    - Audit log table is append-only (no UPDATE/DELETE) with row-level security
+    - All remote command records include timestamp, source IP, user_id, and HMAC token
+    - Migrations idempotent and reversible
+    - ERD reviewed and approved
+    depends_on:
+    - 2
+  FIRMWARE:
+    description: 'Implement ultrasonic sensor HAL layer: GPIO trigger/echo timing
+      using hardware timer capture (TIM), interrupt-driven echo measurement, DMA-based
+      multi-sensor round-robin polling, and distance calculation with temperature
+      compensation. Target: STM32F4 / FreeRTOS.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 8 sensors polled at ≥10Hz without CPU busy-wait
+    - Distance accuracy ±1cm over 2–400cm range at 25°C
+    - Temperature compensation applied using configurable Celsius input
+    - HAL compiles cleanly with zero warnings under ARM-GCC with -Wall -Wextra
+    - FreeRTOS sensor task has stack overflow guard and watchdog feed
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 6
+  BACKEND:
+    description: 'Build parking management backend service (FastAPI/Python): REST
+      + WebSocket API for mobile app, vehicle telemetry ingestion endpoint, parking
+      space occupancy state machine, remote command dispatcher with HMAC signing,
+      MQTT broker bridge to vehicle gateway, and session lifecycle management.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints return correct status codes and OpenAPI schema validated
+    - EStop POST endpoint responds in <100ms end-to-end
+    - HMAC-signed commands forwarded to vehicle MQTT topic within 200ms
+    - WebSocket telemetry streams sensor data at 2Hz to connected mobile clients
+    - 'Session state machine correctly transitions: IDLE→PARKING→PARKED→RETRIEVING→IDLE'
+    - JWT auth required on all non-health endpoints
+    depends_on:
+    - 7
+    - 12
+    - 4
+  API:
+    description: 'Define and document the complete OpenAPI 3.1 specification for the
+      autonomous_parking backend: all REST endpoints, WebSocket contract, error schemas,
+      authentication flows (JWT + HMAC), and MQTT topic structure for vehicle gateway
+      integration.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against OpenAPI 3.1 schema
+    - All request/response bodies have complete schema definitions with examples
+    - MQTT topic structure documented with QoS levels and payload schemas
+    - Authentication flow diagrams included for mobile→cloud and cloud→vehicle paths
+    - Spec reviewed by security_engineer against TARA findings from step 4
+    depends_on:
+    - 13
+  FRONTEND:
+    description: 'Build React Native mobile app (iOS + Android): park/retrieve command
+      screens, real-time vehicle position map view (2D parking lot overlay), session
+      status display, proximity BLE authentication, emergency stop floating action
+      button, and push notification for session events.'
+    agent_role: developer
+    acceptance_criteria:
+    - Park and retrieve commands require explicit confirmation dialog before sending
+    - Emergency stop FAB visible on all active session screens, triggers within 1
+      tap
+    - Real-time map renders vehicle position updates within 1s of telemetry receipt
+    - BLE proximity check prevents commands when device >50m from vehicle
+    - Push notification delivered within 10s of session state change
+    - App passes WCAG 2.1 AA contrast checks on all interactive elements
+    depends_on:
+    - 5
+    - 14
+  CONFIG:
+    description: 'Configure SAGE autonomous_parking solution YAML files (project.yaml,
+      prompts.yaml, tasks.yaml): define agent roles (safety_engineer, firmware_dev,
+      motion_controller_specialist), active modules, HITL approval gates for motion
+      commands, and agentic pattern setup (human_in_the_loop coordinator for motion
+      approvals).'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml loads without validation errors via GET /config/yaml/project
+    - All motion command task types require human approval in tasks.yaml
+    - Agent roles defined in prompts.yaml with domain-appropriate system prompts
+    - active_modules list verified against MODULE_REGISTRY in web/src/registry/modules.ts
+    - 'HITL gate configured as strict: no motion command executes without approval
+      token'
+    depends_on:
+    - 3
+  EMBEDDED_TEST:
+    description: 'Write firmware unit tests for HAL and occupancy grid modules: sensor
+      timing accuracy, distance calculation edge cases, occupancy grid Bayesian update,
+      path planner collision avoidance, PID controller response, and EStop latency.
+      Use Unity test framework on-target and host-side mocks.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All unit tests pass on host with mocks and on-target STM32
+    - ≥80% line coverage across all tested firmware modules
+    - EStop latency test verifies <50ms response in 1000 iterations
+    - Auth validator rejects 100% of tampered HMAC payloads in fuzz test (1000 cases)
+    - Path planner unit test verifies 0 clearance violations across 50 grid configurations
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+  TESTS:
+    description: 'Write backend unit and integration tests: session state machine
+      transitions, command dispatcher HMAC signing, MQTT bridge message routing, telemetry
+      WebSocket streaming, database CRUD operations, and JWT authentication. Use pytest
+      with testcontainers for PostgreSQL and Mosquitto.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - ≥85% line coverage on all backend service modules
+    - All 7 session state transitions tested including error paths
+    - 'HMAC signing verified: tampered command rejected with 401'
+    - WebSocket test confirms telemetry delivery latency <500ms
+    - Integration tests run against real PostgreSQL and MQTT via testcontainers
+    - CI pipeline fails on any test regression
+    depends_on:
+    - 13
+  SYSTEM_TEST:
+    description: 'Design and execute system-level integration test suite: mobile app
+      → backend → MQTT → firmware HIL end-to-end park and retrieve scenarios, failsafe
+      validation (EStop, comms loss, sensor blackout), performance tests (command
+      latency <200ms), and multi-session concurrency tests.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 7 scenarios pass in HIL simulation environment
+    - Command latency <200ms in 95th percentile over 100 runs
+    - EStop from mobile reaches firmware within 500ms in 100% of test runs
+    - Concurrent two-session test shows zero cross-session command contamination
+    - Invalid auth scenario results in zero motion command execution
+    - System test report generated with pass/fail/metrics per scenario
+    depends_on:
+    - 15
+    - 18
+    - 19
+  QA:
+    description: 'Execute ISO 26262 software verification plan: static analysis (MISRA
+      C:2012 compliance check on firmware), code coverage measurement (MC/DC for ASIL
+      B safety functions), peer review records, and software unit testing sign-off.
+      Produce Software Verification Report.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Zero unmitigated MISRA C:2012 mandatory violations in safety-relevant firmware
+      modules
+    - 100% MC/DC coverage achieved on EStop handler and motion controller safety functions
+    - All MISRA deviations documented with justification and approved by safety_engineer
+    - Two-person peer review completed for all safety-critical source files
+    - Software Verification Report signed and ready for DHF inclusion
+    depends_on:
+    - 17
+    - 18
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: GitHub Actions workflows for firmware cross-compilation
+      (ARM-GCC), firmware unit test execution (Unity on Renode), backend tests (pytest),
+      mobile app build (Expo EAS), MISRA static analysis gate, Docker image build
+      and push, and HIL simulation regression suite.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All CI jobs complete successfully on main branch push
+    - MISRA analysis quality gate blocks merge on mandatory violation
+    - HIL regression suite runs on every PR and reports pass/fail per scenario
+    - Docker image pushed to registry on tag push only
+    - CI pipeline runtime <15 minutes for full test suite
+    - Firmware build produces reproducible binary (same hash for same source)
+    depends_on:
+    - 17
+    - 18
+    - 19
+  INFRA:
+    description: 'Define production infrastructure: Docker Compose for local dev (PostgreSQL,
+      Mosquitto MQTT, FastAPI backend, nginx reverse proxy), Kubernetes manifests
+      for cloud deployment (backend, MQTT broker, database), TLS certificate management,
+      and environment variable management with secrets injection.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up starts full local stack in <2 minutes
+    - All services have health checks defined
+    - Kubernetes manifests deploy successfully to test cluster
+    - TLS termination verified with valid certificate on nginx ingress
+    - No secrets hardcoded in any manifest or docker-compose file
+    - Database volume persists across container restarts
+    depends_on:
+    - 13
+    - 24
+  DOCS:
+    description: 'Produce system architecture documentation, firmware integration
+      guide, mobile app developer guide, and operational runbook: system overview
+      diagram, hardware wiring guide for sensor array and CAN bus, API reference (linked
+      from OpenAPI spec), deployment guide, and operator safety checklist.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Architecture diagram shows all system components and data flows end-to-end
+    - Wiring guide covers all 8 ultrasonic sensors, CAN bus topology, and power distribution
+    - Operational runbook includes EStop procedure, session abort procedure, and fault
+      recovery steps
+    - Safety checklist reviewed and signed off by safety_engineer
+    - All docs reviewed by at least one engineer not involved in writing them
+    depends_on:
+    - 22
+    - 23
+    - 25

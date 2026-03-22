@@ -1,0 +1,337 @@
+task_types:
+  CONFIG:
+    description: 'Initialize the noise_monitoring solution scaffold: toolchain setup
+      (ARM-GCC cross-compiler, PlatformIO/CMake for firmware), Python monorepo layout
+      for backend services, MQTT broker (Mosquitto) config, environment variable templates,
+      and IEC 62443 zone definitions in config files.'
+    agent_role: developer
+    acceptance_criteria:
+    - Running `pio run` in firmware/ compiles without errors on a clean checkout
+    - docker-compose up starts MQTT broker and backend skeleton
+    - All secrets are environment variables — no hardcoded credentials in any config
+      file
+    - IEC 62443 security zone definitions (Level 1–3) are declared in config/zones.yaml
+    - README contains first-run instructions that a new engineer can follow in under
+      10 minutes
+    depends_on: []
+  SAFETY:
+    description: 'Produce a hazard analysis and risk assessment for the IoT sensor
+      network: sensor failure modes (stuck readings, calibration drift, power loss),
+      data integrity hazards (spoofed readings, replay attacks), and environmental
+      hazards (outdoor weatherproofing). Output FMEA table with severity/probability/RPN
+      scores and mitigation actions.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - FMEA covers at minimum 20 distinct failure modes across sensor, gateway, and
+      cloud tiers
+    - Every failure mode has a documented mitigation or design control
+    - All RPNs above 100 have a MANDATORY mitigation assigned and tracked
+    - Document is reviewable by a regulatory specialist within 30 minutes
+    depends_on: []
+  DATABASE:
+    description: 'Design and implement the time-series and relational database schema:
+      sensor_nodes table, noise_readings (dB level, frequency spectrum blob, timestamp,
+      GPS), source_classifications, compliance_thresholds (zone + time-of-day limits),
+      citizen_complaints (linked to sensor + time window), and audit_log. Use TimescaleDB
+      (PostgreSQL extension) for time-series efficiency.'
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations run cleanly from scratch with `alembic upgrade head`
+    - noise_readings hypertable partitions by week and retains 2 years of data without
+      manual intervention
+    - citizen_complaints table has a foreign key constraint linking to sensor_nodes
+      and a time_window range column
+    - Seed data populates WHO day/night dB thresholds for residential, commercial,
+      and industrial zones
+    - All tables have appropriate indexes; EXPLAIN ANALYZE on a 1M row query returns
+      < 50 ms
+    depends_on:
+    - 1
+  API:
+    description: 'Design the full OpenAPI 3.1 specification for the noise monitoring
+      platform: sensor data ingestion (MQTT bridge + REST fallback), noise reading
+      query endpoints, compliance report generation, citizen complaint submission
+      and correlation, source identification results, and admin sensor management.
+      Define auth schemes (JWT for web clients, mutual TLS for devices).'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates cleanly with `redocly lint`
+    - Every endpoint has request/response schemas, error codes, and auth requirements
+      documented
+    - mTLS device auth flow is documented with certificate provisioning steps
+    - Spec is imported into Postman collection and all example requests are valid
+    depends_on:
+    - 1
+  SECURITY:
+    description: 'Perform threat modeling (STRIDE) for the full IoT stack: sensor
+      nodes, MQTT broker, cloud backend, and citizen portal. Map threats to IEC 62443
+      security levels. Produce: threat model document, SBOM for firmware dependencies,
+      network segmentation diagram (OT/IT zones), certificate lifecycle plan (device
+      provisioning, rotation, revocation), and penetration test plan.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All 6 STRIDE categories have at least 3 documented threats for the IoT layer
+    - SBOM lists all firmware libraries with version and known CVE status
+    - Network diagram shows physical separation between sensor OT zone and IT cloud
+      zone
+    - Certificate lifecycle plan covers provisioning, 1-year rotation, and emergency
+      revocation within 1 hour
+    - 'Penetration test plan includes at minimum: MQTT auth bypass, sensor data spoofing,
+      replay attack, and backend API fuzzing scenarios'
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 1
+    - 2
+  FIRMWARE:
+    description: 'Implement sensor node firmware in C (FreeRTOS): HAL drivers for
+      I2S digital MEMS microphone (e.g., INMP441), dB(A) computation task (IIR A-weighting
+      filter), raw PCM ring buffer, FFT task producing 1/3-octave band spectrum, MQTT
+      publish over TLS (lwIP + mbedTLS), and OTA update support. Target ESP32-S3 or
+      STM32H7.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - dB(A) reading matches calibrated reference meter within ±1.5 dB at 94 dB SPL
+      1 kHz test tone
+    - FFT task produces 31-band 1/3-octave spectrum at 1 Hz update rate without task
+      starvation
+    - MQTT publishes JSON payload (sensor_id, timestamp_utc, dba, spectrum[]) over
+      TLS within 500 ms of measurement
+    - OTA update completes from a test firmware binary in under 90 seconds and rolls
+      back on CRC failure
+    - Watchdog task resets the MCU if MQTT publish task is blocked > 30 s
+    - Memory usage leaves at least 20% heap free under worst-case load
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 1
+    - 3
+  BACKEND:
+    description: 'Build the data ingestion backend service: MQTT subscriber (Eclipse
+      Paho) that validates device certificates, deserializes JSON payloads, validates
+      dB range and spectrum shape, writes to TimescaleDB via SQLAlchemy async, and
+      emits events to an internal event bus (Redis Streams) for downstream ML and
+      compliance services.'
+    agent_role: developer
+    acceptance_criteria:
+    - Service ingests 500 concurrent MQTT sensor messages/second without message loss
+      at p99
+    - Invalid payloads are rejected and written to a dead-letter stream with error
+      reason
+    - Every ingested reading is committed to TimescaleDB and confirmed on Redis Streams
+      within 200 ms
+    - Service recovers automatically after MQTT broker restart without message loss
+      (MQTT QoS 1)
+    - 'Unit tests cover: valid payload, out-of-range dB, malformed JSON, timestamp
+      drift > 60 s'
+    depends_on:
+    - 3
+    - 4
+    - 5
+  ML_MODEL:
+    description: 'Build the noise source identification ML pipeline: collect/label
+      training data (traffic, HVAC, construction, industrial, nature, music/entertainment),
+      train a CNN or gradient-boosted classifier on 1/3-octave spectrograms, export
+      to ONNX for inference, and deploy as a microservice consuming Redis Stream events
+      and writing source_classifications back to the database.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Classifier achieves ≥ 82% macro F1 on held-out test set across all 7 classes
+    - ONNX inference latency is < 50 ms per 10 s window on CPU (single core)
+    - Model card documents training data sources, class distribution, and known failure
+      modes
+    - Inference microservice reads from Redis Streams and writes classification +
+      confidence to source_classifications table
+    - Confidence threshold below 0.6 stores result as 'unknown' rather than a wrong
+      label
+    depends_on:
+    - 8
+  DATA:
+    description: 'Build the compliance analytics pipeline: scheduled job that aggregates
+      noise_readings per sensor per compliance zone into hourly/daily statistics (Leq,
+      Lmax, L10, L90), compares against compliance_thresholds, flags exceedances,
+      and materializes results into a compliance_events table used by the reporting
+      API.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Leq computation matches ISO 1996-1 formula verified against reference dataset
+    - Hourly aggregation job completes in < 10 s for 1000 active sensors
+    - Compliance exceedance events are written within 5 minutes of the measurement
+      period ending
+    - Redis Streams event is emitted for every new exceedance, consumed by alerting
+      service
+    - Backfill job correctly re-computes historical stats when compliance_thresholds
+      are updated
+    depends_on:
+    - 8
+    - 3
+  AGENTIC:
+    description: 'Implement a Multi-Agent Coordinator pattern for automated environmental
+      analysis: a coordinator agent receives compliance violation events and citizen
+      complaints, routes to a Noise Analyst agent (root cause analysis using historical
+      readings + source classifications), an Enforcement Recommender agent (generates
+      regulatory action proposals), and a Citizen Communication agent (drafts acknowledgement
+      responses). All enforcement proposals go through HITL approval before dispatch.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes a compliance violation event to noise_analyst within
+      5 s of event emission
+    - Enforcement proposals are created in the SAGE approval queue and NOT executed
+      until approved
+    - Citizen communication drafts are created in approval queue and NOT sent until
+      approved
+    - Analyst agent retrieves relevant historical readings from vector store (top-5
+      similar past events)
+    - End-to-end flow from compliance event to approval queue entry completes in <
+      30 s
+    - Integration test simulates a violation event and verifies all 3 specialist agents
+      produce outputs
+    depends_on:
+    - 10
+    - 11
+    - 9
+  FRONTEND:
+    description: 'Build the real-time noise monitoring dashboard: interactive map
+      (Leaflet.js) showing sensor locations color-coded by current dB level, time-series
+      chart (Recharts) of dB(A) over selectable period, 1/3-octave spectrum bar chart
+      for selected sensor, compliance status badges, and a live feed of recent exceedance
+      events.'
+    agent_role: developer
+    acceptance_criteria:
+    - Map renders 500 sensor markers at 60 fps on a standard laptop Chrome browser
+    - SSE connection updates sensor color on map within 2 s of a new reading arriving
+    - Spectrum bar chart updates when user clicks a sensor marker without page reload
+    - Compliance badges correctly reflect current exceedance status from the compliance_events
+      table
+    - Dashboard is usable on 768 px wide tablet viewport (responsive layout)
+    depends_on:
+    - 4
+    - 8
+    - 13
+  EMBEDDED_TEST:
+    description: 'Design and implement hardware-in-the-loop (HIL) test harness for
+      sensor nodes: audio signal generator (DDS or soundcard loopback) injecting reference
+      tones and pink noise, automated measurement of dB(A) accuracy, A-weighting filter
+      frequency response, FFT band accuracy, MQTT publish latency, OTA update flow,
+      and power consumption profiling.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - HIL test suite runs fully automated without manual intervention in < 20 minutes
+    - dB(A) accuracy test passes with ± 1.5 dB tolerance at 94 dB 1 kHz reference
+    - A-weighting frequency response matches IEC 61672 Class 2 tolerance at all 10
+      test frequencies
+    - MQTT publish latency test confirms 95th percentile < 500 ms over 1000 consecutive
+      publishes
+    - OTA test confirms successful update and rollback-on-failure behavior
+    - All test results are written to hil_report.html and archived in CI artifacts
+    depends_on:
+    - 6
+    - 7
+  COMPLIANCE:
+    description: 'Produce IEC 62443 compliance artifacts for the noise monitoring
+      IoT system: Security Level target justification (SL-2 for field, SL-3 for cloud),
+      security requirements specification (SRS) mapped to IEC 62443-3-3 system requirements,
+      zone and conduit model documentation, supplier security assessment checklist
+      for MEMS sensor and MCU vendors, and a compliance traceability matrix linking
+      requirements to implementation and tests.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Traceability matrix covers 100% of mandatory IEC 62443-3-3 FR requirements for
+      SL-2
+    - Every requirement row links to at least one implementation reference and one
+      test reference
+    - Zone and conduit model is reviewed by the safety_engineer and regulatory_specialist
+      and has no unmitigated conduit crossings
+    - Supplier assessment checklist is completed for at least 2 key component vendors
+    - 'Compliance package is audit-ready: a reviewer unfamiliar with the project can
+      trace any requirement to its implementation in < 5 minutes'
+    depends_on:
+    - 5
+    - 7
+    - 16
+  DEVOPS:
+    description: 'Set up CI/CD pipelines, container orchestration, and observability:
+      GitHub Actions pipelines for firmware CI (cross-compile + HIL smoke test gate),
+      backend CI (pytest + linting), and frontend CI (vitest + playwright e2e). Docker
+      Compose for local dev; Kubernetes Helm chart for production. Prometheus + Grafana
+      for sensor ingestion metrics, API latency, and compliance event alerting. PagerDuty
+      integration for critical exceedance alerts.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Every PR triggers all three CI pipelines; merge is blocked if any pipeline fails
+    - Firmware cross-compile step produces a valid .bin artifact and publishes it
+      as a CI artifact
+    - Helm chart deploys to a test cluster with `helm install` without errors
+    - Grafana dashboard shows live ingestion rate, p99 API latency, and active sensor
+      count
+    - PagerDuty alert fires within 5 minutes of a simulated sensor data gap
+    - Production deployment achieves zero-downtime rolling update via Kubernetes RollingUpdate
+      strategy
+    depends_on:
+    - 8
+    - 14
+    - 16
+  QA:
+    description: 'Develop the quality assurance test plan covering all system tiers:
+      sensor accuracy acceptance testing procedure, backend API test matrix, compliance
+      calculation verification, ML source classification test cases, citizen complaint
+      correlation edge cases, and UI regression test suite. Includes traceability
+      from test cases back to requirements.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan documents test cases for all 8 endpoints in the OpenAPI spec
+    - Compliance calculation tests verify Leq formula against 5 hand-calculated reference
+      datasets
+    - Hypothesis property-based tests cover dB range boundaries (0, 140, negative,
+      non-numeric)
+    - Playwright e2e covers the full citizen complaint submission flow on mobile viewport
+    - OpenAPI fuzzing (schemathesis) returns no 5xx errors on the ingestion endpoint
+      under random valid inputs
+    depends_on:
+    - 13
+    - 15
+    - 12
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system integration tests across the full stack:
+      simulate 50 virtual sensor nodes publishing realistic noise data (traffic scenario),
+      verify data flow from MQTT → ingestion → TimescaleDB → ML classification → compliance
+      computation → dashboard SSE update. Run a full citizen complaint scenario through
+      to correlation and HITL approval queue. Measure system throughput and latency
+      under load.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 50-sensor simulation runs for 30 minutes with 0 message loss verified via sequence
+      numbers
+    - Compliance violation scenario produces compliance_events within 5 minutes of
+      threshold breach
+    - Citizen complaint correlates to correct sensor readings with correlation_score
+      > 0.7 for co-located scenario
+    - Sensor dropout alert fires in PagerDuty within 5 minutes of simulated dropout
+    - 'Load test: p95 API latency < 200 ms at 200 concurrent users; error rate < 0.1%'
+    - All system test results are captured in a structured report and linked in CI
+      artifacts
+    depends_on:
+    - 18
+    - 19
+    - 12
+  DOCS:
+    description: 'Produce the complete technical documentation set: system architecture
+      diagram (C4 model levels 1–3), sensor node hardware setup and calibration guide,
+      API reference (auto-generated from OpenAPI spec via Redoc), operator runbook
+      (deployment, scaling, sensor provisioning), compliance report interpretation
+      guide for regulatory officers, and citizen portal user guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - C4 diagrams cover system context, container, and component levels without ambiguity
+    - Sensor calibration guide includes step-by-step procedure with photos/diagrams
+      for a technician with no prior SAGE knowledge
+    - API reference is generated automatically from openapi.yaml and stays in sync
+      via CI
+    - 'Runbook covers: first deploy, adding a new sensor zone, responding to PagerDuty
+      alert, and rotating device certificates'
+    - MkDocs site builds without warnings and deploys to GitHub Pages on every main
+      branch push
+    depends_on:
+    - 17
+    - 18
+    - 20

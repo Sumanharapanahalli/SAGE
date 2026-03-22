@@ -1,0 +1,1290 @@
+{
+  "run_id": "236c56db-4db3-44fa-a704-15fc3678279a",
+  "solution_name": "procurement_system",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T11:29:38.965798+00:00",
+  "updated_at": "2026-03-22T11:34:50.198931+00:00",
+  "product_description": "Enterprise procurement system with purchase requisitions, vendor management, RFQ process, PO generation, invoice matching, and spend analytics.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define enterprise procurement business requirements: purchase requisition workflows, vendor onboarding process, RFQ lifecycle, PO approval chains, invoice matching rules (2-way/3-way), and spend analytics KPIs. Produce process flow diagrams and user story backlog.",
+      "payload": {
+        "deliverables": [
+          "business_requirements_doc.md",
+          "process_flow_diagrams.pdf",
+          "user_story_backlog.csv"
+        ],
+        "processes": [
+          "purchase_requisition",
+          "vendor_management",
+          "rfq_process",
+          "po_generation",
+          "invoice_matching",
+          "spend_analytics"
+        ],
+        "stakeholders": [
+          "procurement_manager",
+          "finance_controller",
+          "vendor",
+          "approver",
+          "budget_owner"
+        ]
+      },
+      "acceptance_criteria": [
+        "All six core processes documented with swim-lane diagrams",
+        "User stories cover all stakeholder roles with acceptance criteria",
+        "Approval chain logic documented for requisitions and POs",
+        "2-way and 3-way invoice matching rules specified",
+        "Spend analytics KPIs and dimensions defined (category, vendor, department, period)",
+        "Integration points with existing systems mapped",
+        "Migration plan drafted"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce product requirements document (PRD) for the procurement system: define MVP scope, phased roadmap, prioritized feature backlog, success metrics (cycle time reduction, PO accuracy rate, vendor onboarding time), and RICE-scored prioritization.",
+      "payload": {
+        "deliverables": [
+          "prd.md",
+          "roadmap.md",
+          "feature_backlog_prioritized.csv"
+        ],
+        "mvp_modules": [
+          "purchase_requisitions",
+          "vendor_directory",
+          "rfq",
+          "po_generation",
+          "invoice_matching",
+          "spend_dashboard"
+        ],
+        "success_metrics": [
+          "requisition_cycle_time_days",
+          "po_accuracy_rate_pct",
+          "invoice_match_rate_pct",
+          "vendor_onboarding_days"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD approved by product owner with signed-off MVP scope",
+        "3-phase roadmap with milestones defined",
+        "All features RICE-scored and stack-ranked",
+        "Success metrics have baseline targets and measurement method",
+        "Non-functional requirements (performance, availability, security) documented"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "LEGAL",
+      "description": "Draft legal artifacts for the procurement platform: vendor terms of service, supplier data processing agreement (DPA) for GDPR compliance, IP ownership clauses for uploaded vendor documents, and software license review for third-party dependencies.",
+      "payload": {
+        "deliverables": [
+          "vendor_tos.md",
+          "data_processing_agreement.md",
+          "ip_policy.md",
+          "dependency_license_review.csv"
+        ],
+        "standards": [
+          "GDPR",
+          "CCPA"
+        ],
+        "coverage": [
+          "vendor_onboarding",
+          "data_retention",
+          "ip_ownership",
+          "liability_limits"
+        ]
+      },
+      "acceptance_criteria": [
+        "Vendor ToS covers data handling, liability, and termination clauses",
+        "DPA aligns with GDPR Article 28 requirements",
+        "All third-party dependency licenses inventoried and approved",
+        "IP policy covers uploaded RFQ documents and vendor catalog data",
+        "Legal review sign-off documented"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 4,
+      "task_type": "COMPLIANCE",
+      "description": "Create ISO 27001 and SOC 2 compliance framework for the procurement system: define information security controls, data classification policy, access control matrix, audit logging requirements, and produce initial risk register and evidence collection plan.",
+      "payload": {
+        "standards": [
+          "ISO_27001",
+          "SOC_2_Type_II"
+        ],
+        "deliverables": [
+          "risk_register.xlsx",
+          "control_matrix.xlsx",
+          "data_classification_policy.md",
+          "audit_evidence_plan.md"
+        ],
+        "control_domains": [
+          "access_control",
+          "data_encryption",
+          "audit_logging",
+          "incident_response",
+          "vendor_risk_management"
+        ]
+      },
+      "acceptance_criteria": [
+        "Risk register covers all six procurement modules with likelihood/impact ratings",
+        "ISO 27001 Annex A controls mapped to system components",
+        "SOC 2 Trust Service Criteria (Security, Availability, Confidentiality) mapped",
+        "Audit evidence collection schedule defined for 12-month period",
+        "Data classification levels (public, internal, confidential, restricted) applied to all data entities"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "UX_DESIGN",
+      "description": "Design UX for all procurement modules: requisition creation wizard, vendor portal onboarding flow, RFQ builder with line-item management, PO approval dashboard, invoice matching review screen, and spend analytics dashboards. Deliver wireframes and interactive prototype.",
+      "payload": {
+        "deliverables": [
+          "wireframes.figma",
+          "interactive_prototype_url",
+          "accessibility_audit.md",
+          "design_system_tokens.json"
+        ],
+        "screens": [
+          "requisition_wizard",
+          "vendor_portal",
+          "rfq_builder",
+          "po_approval_queue",
+          "invoice_matching_review",
+          "spend_dashboard",
+          "vendor_directory",
+          "admin_settings"
+        ],
+        "accessibility_standard": "WCAG_2.1_AA"
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all eight primary screen areas",
+        "Requisition wizard validated with 5 procurement staff via usability test",
+        "Spend dashboard supports drill-down: total \u2192 category \u2192 vendor \u2192 PO",
+        "Invoice matching UI shows 2-way/3-way match status with discrepancy highlighting",
+        "WCAG 2.1 AA accessibility audit passes for all screens",
+        "Design system tokens documented for developer handoff"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Design and implement the procurement data model: entities for requisitions, vendors, RFQs, quotes, purchase orders, line items, invoices, payments, spend categories, and approval workflows. Write migrations, indexes, and seed data for development.",
+      "payload": {
+        "deliverables": [
+          "schema.sql",
+          "migrations/",
+          "erd.png",
+          "seed_data.sql"
+        ],
+        "entities": [
+          "requisition",
+          "requisition_line_item",
+          "vendor",
+          "vendor_contact",
+          "rfq",
+          "rfq_line_item",
+          "quote",
+          "purchase_order",
+          "po_line_item",
+          "invoice",
+          "invoice_line_item",
+          "payment",
+          "approval_workflow",
+          "approval_step",
+          "spend_category",
+          "budget"
+        ],
+        "database": "PostgreSQL 15",
+        "features": [
+          "row_level_security",
+          "audit_triggers",
+          "full_text_search_vendor",
+          "partitioning_invoices_by_year"
+        ]
+      },
+      "acceptance_criteria": [
+        "ERD covers all entities with cardinality annotations",
+        "All foreign key constraints and indexes defined",
+        "Audit trigger captures created_at, updated_at, updated_by on all core tables",
+        "Row-level security policies restrict vendor data to assigned buyers",
+        "Invoice table partitioned by fiscal year for query performance",
+        "Migrations are idempotent and reversible",
+        "Seed data populates 10 sample vendors, 5 requisitions, 3 POs for dev"
+      ],
+      "depends_on": [
+        1,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "CONFIG",
+      "description": "Set up project infrastructure configuration: monorepo structure (backend Python/FastAPI + frontend React/TypeScript), environment configs (.env templates), Docker Compose for local development (PostgreSQL, Redis, MinIO for document storage), and pre-commit hooks for linting.",
+      "payload": {
+        "deliverables": [
+          "docker-compose.yml",
+          ".env.template",
+          "pyproject.toml",
+          "package.json",
+          "Makefile",
+          ".pre-commit-config.yaml"
+        ],
+        "services": [
+          "api",
+          "postgres",
+          "redis",
+          "minio"
+        ],
+        "backend_stack": "Python 3.12 + FastAPI + SQLAlchemy + Alembic",
+        "frontend_stack": "React 18 + TypeScript + Vite + TanStack Query",
+        "document_storage": "MinIO (S3-compatible)"
+      },
+      "acceptance_criteria": [
+        "`make dev` starts all services via Docker Compose in under 60 seconds",
+        "Environment template covers all required secrets with descriptions",
+        "Pre-commit hooks enforce ruff linting and mypy type checking",
+        "Database migrations run automatically on container start in dev",
+        "MinIO bucket created with lifecycle policy for document retention"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Implement purchase requisition service: create/update/submit/cancel requisition APIs, line-item management, budget validation against department budgets, and dynamic approval routing engine that resolves approver chains from org hierarchy and spend thresholds.",
+      "payload": {
+        "module": "requisitions",
+        "endpoints": [
+          "POST /requisitions",
+          "GET /requisitions/{id}",
+          "PATCH /requisitions/{id}",
+          "POST /requisitions/{id}/submit",
+          "POST /requisitions/{id}/cancel",
+          "GET /requisitions/{id}/approval-status"
+        ],
+        "business_rules": [
+          "budget_check_on_submit",
+          "auto_route_approvers_by_amount",
+          "escalation_on_timeout_24h",
+          "delegation_support"
+        ],
+        "agentic_pattern": "human_in_the_loop"
+      },
+      "acceptance_criteria": [
+        "Requisition state machine enforces valid transitions (draft\u2192submitted\u2192approved/rejected/cancelled)",
+        "Budget validation blocks submission when department budget is exceeded",
+        "Approver chain resolves correctly for amounts: <$1K (manager), $1K-$10K (+director), >$10K (+VP)",
+        "24-hour escalation timer triggers via background job",
+        "All state changes written to audit log with user_id and timestamp",
+        "API returns 400 with field-level validation errors"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Implement vendor management service: vendor registration and onboarding workflow, vendor profile CRUD, document vault (certificates, W-9, insurance), vendor classification by category, performance scoring model, and vendor portal authentication.",
+      "payload": {
+        "module": "vendors",
+        "endpoints": [
+          "POST /vendors/register",
+          "GET /vendors",
+          "GET /vendors/{id}",
+          "PATCH /vendors/{id}",
+          "POST /vendors/{id}/documents",
+          "GET /vendors/{id}/documents/{doc_id}",
+          "GET /vendors/{id}/score",
+          "POST /vendors/{id}/approve"
+        ],
+        "document_types": [
+          "w9",
+          "insurance_certificate",
+          "bank_details",
+          "certifications",
+          "nda"
+        ],
+        "features": [
+          "document_encryption_at_rest",
+          "expiry_alerts_30_60_90_days",
+          "performance_score_weighted_average"
+        ]
+      },
+      "acceptance_criteria": [
+        "Vendor registration triggers onboarding checklist with required document tracking",
+        "Documents stored encrypted in MinIO with signed URL access (15-min expiry)",
+        "Certificate expiry alerts sent 90/60/30 days before expiration",
+        "Vendor performance score computed from: on-time delivery (40%), quality (30%), responsiveness (30%)",
+        "Vendor portal login uses separate JWT with vendor-scoped permissions",
+        "Approved vendors searchable by category, location, certifications"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement RFQ (Request for Quotation) service: RFQ creation from approved requisitions, vendor invitation management, quote submission by vendors, quote comparison matrix, best-value scoring, and RFQ award workflow.",
+      "payload": {
+        "module": "rfq",
+        "endpoints": [
+          "POST /rfqs",
+          "GET /rfqs/{id}",
+          "POST /rfqs/{id}/invite-vendors",
+          "POST /rfqs/{id}/quotes (vendor)",
+          "GET /rfqs/{id}/comparison",
+          "POST /rfqs/{id}/award"
+        ],
+        "features": [
+          "rfq_to_po_conversion",
+          "weighted_scoring_price_quality_delivery",
+          "sealed_bids_until_deadline",
+          "automatic_vendor_reminders"
+        ],
+        "agentic_pattern": "review_and_critique"
+      },
+      "acceptance_criteria": [
+        "RFQ links to source requisition and inherits line items",
+        "Vendor quotes sealed until RFQ deadline passes (no premature disclosure)",
+        "Comparison matrix ranks vendors by weighted score: price (50%), delivery (30%), quality (20%)",
+        "Award triggers vendor notification and auto-generates draft PO",
+        "RFQ audit trail records all quote submissions with timestamps",
+        "Reminder emails sent 48h and 24h before quote deadline"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement purchase order service: PO generation from awarded RFQs or direct purchase, PO approval workflow, PO amendment with version tracking, goods receipt recording, and PO closure logic.",
+      "payload": {
+        "module": "purchase_orders",
+        "endpoints": [
+          "POST /purchase-orders",
+          "GET /purchase-orders/{id}",
+          "POST /purchase-orders/{id}/approve",
+          "POST /purchase-orders/{id}/amend",
+          "POST /purchase-orders/{id}/receive-goods",
+          "POST /purchase-orders/{id}/close"
+        ],
+        "features": [
+          "po_numbering_sequential",
+          "multi_currency_support",
+          "partial_receipt_tracking",
+          "po_pdf_generation"
+        ],
+        "document_output": "PDF via WeasyPrint"
+      },
+      "acceptance_criteria": [
+        "PO number auto-increments with fiscal-year prefix (e.g. PO-2026-00001)",
+        "PO PDF generated with company letterhead, line items, terms",
+        "Multi-currency: amounts stored in transaction currency + USD equivalent at rate-of-day",
+        "Partial goods receipt updates outstanding quantity on each line item",
+        "PO auto-closes when all lines fully received and invoiced",
+        "Amendment creates new PO version; prior versions immutable in audit log"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement invoice matching service: vendor invoice ingestion (upload + email parsing), 2-way match (invoice vs PO), 3-way match (invoice vs PO vs goods receipt), tolerance rules, discrepancy flagging, and approval-to-pay workflow.",
+      "payload": {
+        "module": "invoice_matching",
+        "endpoints": [
+          "POST /invoices",
+          "GET /invoices/{id}",
+          "GET /invoices/{id}/match-result",
+          "POST /invoices/{id}/approve-for-payment",
+          "POST /invoices/{id}/dispute",
+          "GET /invoices/unmatched"
+        ],
+        "matching_logic": {
+          "2_way": "invoice_line vs po_line (qty + price within tolerance)",
+          "3_way": "invoice_line vs po_line vs goods_receipt_line",
+          "tolerance": "price_variance_3pct OR amount_variance_$50_whichever_lower"
+        },
+        "agentic_pattern": "review_and_critique"
+      },
+      "acceptance_criteria": [
+        "2-way match compares invoice qty/price against PO within configured tolerance",
+        "3-way match additionally validates against goods receipt quantities",
+        "Discrepancies flagged with specific field-level diff (expected vs actual)",
+        "Auto-approve invoices that pass match within tolerance",
+        "Disputed invoices routed to buyer for resolution with vendor communication thread",
+        "Match rate KPI queryable: matched_auto / total_invoices per period"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement spend analytics service: real-time spend aggregation pipeline, spend by category/vendor/department/period, budget vs actual variance, savings tracking from RFQ negotiation, and REST API for dashboard queries with caching.",
+      "payload": {
+        "module": "spend_analytics",
+        "endpoints": [
+          "GET /analytics/spend-summary",
+          "GET /analytics/spend-by-category",
+          "GET /analytics/spend-by-vendor",
+          "GET /analytics/budget-vs-actual",
+          "GET /analytics/savings",
+          "GET /analytics/vendor-performance"
+        ],
+        "aggregation": "Materialized views refreshed every 15 minutes",
+        "cache": "Redis with 5-minute TTL",
+        "filters": [
+          "date_range",
+          "department",
+          "category",
+          "vendor",
+          "currency"
+        ]
+      },
+      "acceptance_criteria": [
+        "Spend summary returns totals within 500ms for 12-month range",
+        "Budget vs actual shows variance in dollars and percentage per department",
+        "Savings calculated as: (RFQ initial estimate - awarded amount) aggregated",
+        "Materialized views refresh on schedule without blocking OLTP queries",
+        "All analytics endpoints support CSV export",
+        "Redis cache invalidated on new PO approval or invoice posting"
+      ],
+      "depends_on": [
+        11,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "API",
+      "description": "Define and publish OpenAPI 3.1 specification for all procurement endpoints. Include authentication (OAuth2 + JWT), role-based access scopes, request/response schemas, error codes, rate limiting headers, and webhook event catalog for PO/invoice status changes.",
+      "payload": {
+        "deliverables": [
+          "openapi.yaml",
+          "webhook_event_catalog.md"
+        ],
+        "auth": "OAuth2 with PKCE + JWT (RS256)",
+        "roles": [
+          "procurement_admin",
+          "buyer",
+          "approver",
+          "finance",
+          "vendor",
+          "read_only"
+        ],
+        "webhooks": [
+          "po.approved",
+          "po.cancelled",
+          "invoice.matched",
+          "invoice.disputed",
+          "vendor.approved"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates without errors against OpenAPI 3.1 schema",
+        "Every endpoint has request/response examples and error schema",
+        "Role-based scopes documented for all 6 roles",
+        "Webhook event payloads fully specified with example JSON",
+        "Rate limiting headers (X-RateLimit-*) documented",
+        "Spec published to /docs (Swagger UI) and /redoc"
+      ],
+      "depends_on": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Build the buyer portal: purchase requisition creation wizard (multi-step form with line items, budget check feedback, file attachments), requisition list with status filters, approval inbox with approve/reject/delegate actions, and requisition detail view.",
+      "payload": {
+        "pages": [
+          "RequisitionWizard",
+          "RequisitionList",
+          "RequisitionDetail",
+          "ApprovalInbox"
+        ],
+        "components": [
+          "LineItemTable",
+          "BudgetIndicator",
+          "ApprovalTimeline",
+          "DocumentUpload",
+          "StatusBadge"
+        ],
+        "state_management": "TanStack Query + Zustand",
+        "realtime": "WebSocket for approval notifications"
+      },
+      "acceptance_criteria": [
+        "Requisition wizard completes in 3 steps: details \u2192 line items \u2192 review/submit",
+        "Budget indicator shows real-time remaining budget on line item entry",
+        "Approval inbox shows pending items with SLA countdown timer",
+        "Approve/reject action submits comment and triggers optimistic UI update",
+        "File attachments support drag-and-drop, max 25MB, PDF/DOCX/XLSX",
+        "All tables support sort, filter, and pagination"
+      ],
+      "depends_on": [
+        5,
+        8,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build the vendor management portal: vendor directory with search and category filters, vendor detail view with documents and performance scores, vendor onboarding form, and separate vendor-facing portal for profile management and quote submission.",
+      "payload": {
+        "pages": [
+          "VendorDirectory",
+          "VendorDetail",
+          "VendorOnboarding",
+          "VendorPortal/Dashboard",
+          "VendorPortal/Profile",
+          "VendorPortal/Quotes"
+        ],
+        "features": [
+          "document_upload_with_expiry_tracking",
+          "performance_scorecard_chart",
+          "vendor_portal_separate_auth"
+        ],
+        "charts": "Recharts"
+      },
+      "acceptance_criteria": [
+        "Vendor directory search returns results within 300ms with type-ahead",
+        "Vendor detail shows performance scorecard with trend sparklines",
+        "Document expiry alerts displayed as banner warnings on vendor detail",
+        "Vendor portal login isolated from buyer portal (separate route prefix /vendor)",
+        "Quote submission form pre-populated with RFQ line items",
+        "Onboarding checklist shows completion percentage"
+      ],
+      "depends_on": [
+        5,
+        9,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build RFQ management UI: RFQ builder with vendor invitation multi-select, quote comparison matrix with sortable columns and weighted scoring visualization, award decision screen, and RFQ status timeline.",
+      "payload": {
+        "pages": [
+          "RFQBuilder",
+          "RFQDetail",
+          "QuoteComparison",
+          "RFQAward"
+        ],
+        "components": [
+          "VendorInviteSelector",
+          "QuoteMatrix",
+          "WeightedScoreBar",
+          "RFQTimeline"
+        ],
+        "features": [
+          "sealed_bid_countdown_timer",
+          "side_by_side_quote_comparison",
+          "one_click_award_to_po"
+        ]
+      },
+      "acceptance_criteria": [
+        "RFQ builder imports line items from approved requisition in one click",
+        "Quote matrix renders all vendor quotes side-by-side with score highlighting",
+        "Best-value vendor highlighted with trophy icon and score breakdown tooltip",
+        "Sealed bid shows redacted amounts until deadline passes",
+        "Award screen generates draft PO preview before confirmation",
+        "RFQ timeline shows all events with timestamps"
+      ],
+      "depends_on": [
+        5,
+        10,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build PO management UI: PO list with status filters, PO detail view with line items and goods receipt entry, PO PDF preview and download, amendment request flow, and mobile-responsive PO approval screen.",
+      "payload": {
+        "pages": [
+          "POList",
+          "PODetail",
+          "POApproval",
+          "GoodsReceipt"
+        ],
+        "components": [
+          "POLineItemTable",
+          "GoodsReceiptForm",
+          "POStatusStepper",
+          "POPDFPreview"
+        ],
+        "mobile_breakpoint": "768px"
+      },
+      "acceptance_criteria": [
+        "PO detail renders PDF preview inline via iframe",
+        "Goods receipt form allows partial quantity entry per line item",
+        "PO approval screen renders correctly on mobile (320px+)",
+        "Amendment request shows diff between current and proposed PO versions",
+        "PO status stepper: Draft \u2192 Approved \u2192 Sent \u2192 Partial Receipt \u2192 Fully Received \u2192 Closed",
+        "Print-friendly CSS applied for PO detail page"
+      ],
+      "depends_on": [
+        5,
+        11,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build invoice matching UI: invoice upload and ingestion form, match result review screen with field-level discrepancy highlighting (green/red/yellow), dispute resolution thread, payment approval queue, and invoice aging report.",
+      "payload": {
+        "pages": [
+          "InvoiceList",
+          "InvoiceMatchReview",
+          "InvoiceDispute",
+          "PaymentApprovalQueue"
+        ],
+        "components": [
+          "MatchStatusIndicator",
+          "DiscrepancyHighlighter",
+          "DisputeThread",
+          "InvoiceAgingChart"
+        ],
+        "features": [
+          "drag_drop_invoice_upload",
+          "email_ingestion_display",
+          "discrepancy_diff_view"
+        ]
+      },
+      "acceptance_criteria": [
+        "Match result shows invoice line vs PO line vs receipt line in 3-column diff",
+        "Discrepancies highlighted: green (match), red (mismatch >tolerance), yellow (within tolerance)",
+        "Dispute thread supports back-and-forth messages with vendor",
+        "Payment queue sorted by invoice due date with aging color codes",
+        "Bulk approve action available for matched invoices in queue",
+        "Invoice aging chart shows 0-30/31-60/61-90/90+ day buckets"
+      ],
+      "depends_on": [
+        5,
+        12,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build spend analytics dashboard: interactive charts for spend by category (treemap), spend by vendor (bar), budget vs actual (grouped bar with variance), savings waterfall chart, vendor performance scatter plot, and date range / department / category filter panel.",
+      "payload": {
+        "pages": [
+          "SpendDashboard",
+          "SpendDrilldown",
+          "VendorPerformanceDashboard"
+        ],
+        "components": [
+          "SpendTreemap",
+          "BudgetVarianceChart",
+          "SavingsWaterfall",
+          "FilterPanel",
+          "ExportButton"
+        ],
+        "charts": "Recharts + D3 for treemap",
+        "features": [
+          "drill_down_click_through",
+          "csv_export",
+          "date_range_picker",
+          "saved_filters"
+        ]
+      },
+      "acceptance_criteria": [
+        "Treemap drills from category to subcategory to vendor on click",
+        "Budget vs actual chart renders variance annotations on bars",
+        "Savings waterfall shows cumulative savings from each awarded RFQ",
+        "Filter panel state persisted in URL query params for shareability",
+        "CSV export downloads all visible chart data",
+        "Dashboard loads within 2 seconds on initial render"
+      ],
+      "depends_on": [
+        5,
+        13,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "AGENTIC",
+      "description": "Implement AI procurement assistant using the coordinator pattern: central coordinator routes to specialist agents \u2014 spend_analyzer (identifies savings opportunities), vendor_recommender (suggests vendors for new requisitions), and anomaly_detector (flags unusual spend patterns). Integrates with spend analytics and vendor history.",
+      "payload": {
+        "pattern": "coordinator",
+        "agents": {
+          "coordinator": "routes user natural-language queries to appropriate specialist",
+          "spend_analyzer": "analyzes spend data, identifies consolidation and savings opportunities",
+          "vendor_recommender": "matches requisition requirements to approved vendor catalog",
+          "anomaly_detector": "flags spend anomalies: duplicate invoices, off-contract purchases, budget overruns"
+        },
+        "api_endpoint": "POST /ai/procurement-assist",
+        "hitl": "anomaly alerts require buyer acknowledgment before suppression"
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly routes 90%+ of test queries to appropriate specialist",
+        "Spend analyzer produces actionable savings recommendations with estimated value",
+        "Vendor recommender returns ranked vendor list with match rationale",
+        "Anomaly detector identifies duplicate invoices (same vendor, amount, \u00b17 days) with >95% precision",
+        "All AI suggestions logged to audit trail with trace_id",
+        "HITL gate: anomaly suppression requires explicit buyer acknowledgment"
+      ],
+      "depends_on": [
+        13,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "SECURITY",
+      "description": "Conduct security review: threat model for procurement data flows, OWASP Top 10 assessment for API and frontend, vendor portal isolation verification, document access control audit, SQL injection and auth bypass testing, and produce remediation plan.",
+      "payload": {
+        "deliverables": [
+          "threat_model.md",
+          "owasp_assessment.md",
+          "pen_test_findings.md",
+          "remediation_plan.md"
+        ],
+        "threat_areas": [
+          "vendor_portal_privilege_escalation",
+          "document_signed_url_abuse",
+          "invoice_tampering",
+          "approval_bypass",
+          "spend_data_exfiltration"
+        ],
+        "standards": [
+          "OWASP_Top_10_2021",
+          "ISO_27001"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all six procurement modules",
+        "OWASP Top 10 items assessed with finding per item (pass/fail/partial)",
+        "Vendor portal cannot access buyer data (verified via auth boundary test)",
+        "Signed URL for documents expires in \u226415 minutes (tested)",
+        "No high/critical findings unmitigated before go-live",
+        "Remediation plan has owner and target date for each finding"
+      ],
+      "depends_on": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all backend services: requisition state machine, approval routing logic, invoice match algorithm (2-way and 3-way), spend aggregation accuracy, and vendor scoring model. Target 80%+ code coverage.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio + factory_boy",
+        "test_targets": [
+          "requisition_state_machine",
+          "approval_chain_resolution",
+          "invoice_2way_match",
+          "invoice_3way_match",
+          "spend_aggregation",
+          "vendor_performance_score",
+          "budget_validation"
+        ],
+        "coverage_target": "80",
+        "fixtures": "pytest fixtures with PostgreSQL testcontainer"
+      },
+      "acceptance_criteria": [
+        "All state machine transitions tested including invalid transition rejection",
+        "Approval chain tests cover: amount thresholds, delegation, escalation timeout",
+        "Invoice match tests cover: exact match, within tolerance, outside tolerance, partial receipt",
+        "Spend aggregation tests verify arithmetic accuracy against known fixtures",
+        "Coverage report shows \u226580% for all modules in src/",
+        "Tests run in under 60 seconds in CI"
+      ],
+      "depends_on": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "QA",
+      "description": "Create QA test plan and execute functional test cases for all procurement workflows: end-to-end requisition-to-PO flow, 3-way invoice match happy path and exception paths, RFQ award and vendor notification, vendor onboarding document expiry alerts, and spend dashboard accuracy.",
+      "payload": {
+        "deliverables": [
+          "qa_test_plan.md",
+          "test_cases.xlsx",
+          "qa_execution_report.md"
+        ],
+        "test_categories": [
+          "functional",
+          "boundary",
+          "negative",
+          "regression"
+        ],
+        "tools": [
+          "Playwright for UI",
+          "Postman for API"
+        ],
+        "environments": [
+          "staging"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan covers all six modules with functional + negative test cases",
+        "Requisition-to-PO end-to-end flow passes without manual workaround",
+        "3-way match test cases cover: full match, price variance, qty variance, missing receipt",
+        "RFQ award triggers vendor email notification within 5 minutes",
+        "Spend dashboard totals match database aggregation within $0.01",
+        "QA execution report shows pass/fail for each test case with evidence screenshots"
+      ],
+      "depends_on": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        23
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline: GitHub Actions workflows for lint/test/build on PR, staging deploy on merge to main, production deploy on release tag, infrastructure as code (Terraform for AWS ECS + RDS + ElastiCache + S3), and monitoring with CloudWatch alarms.",
+      "payload": {
+        "deliverables": [
+          "terraform/",
+          ".github/workflows/ci.yml",
+          ".github/workflows/deploy-staging.yml",
+          ".github/workflows/deploy-prod.yml",
+          "monitoring/alerts.tf"
+        ],
+        "infrastructure": "AWS ECS Fargate + RDS PostgreSQL + ElastiCache Redis + S3 (docs) + CloudFront",
+        "monitoring": "CloudWatch + PagerDuty for P1 alerts",
+        "secrets_management": "AWS Secrets Manager"
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs lint + tests + build in under 5 minutes on PR",
+        "Staging deploy completes automatically on merge to main",
+        "Production deploy requires manual approval gate in GitHub Actions",
+        "Terraform plan reviewed in PR before apply",
+        "CloudWatch alarms configured for: API error rate >1%, P99 latency >2s, DB CPU >80%",
+        "PagerDuty alert triggers on P1 alarm within 5 minutes",
+        "Zero-downtime ECS rolling deployment verified"
+      ],
+      "depends_on": [
+        7,
+        23
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute system-level integration tests: full requisition-to-payment lifecycle across all services, concurrent user load test (500 concurrent buyers), invoice match throughput test (1000 invoices/hour), vendor portal isolation penetration test, and disaster recovery failover test.",
+      "payload": {
+        "deliverables": [
+          "system_test_report.md",
+          "load_test_results.html",
+          "dr_test_runbook.md"
+        ],
+        "tools": [
+          "k6 for load testing",
+          "Playwright for E2E",
+          "AWS Fault Injection Simulator for DR"
+        ],
+        "sla_targets": {
+          "api_p99_latency_ms": 2000,
+          "availability_pct": 99.9,
+          "invoice_throughput_per_hour": 1000
+        },
+        "environment": "staging (production-equivalent)"
+      },
+      "acceptance_criteria": [
+        "Full requisition-to-payment lifecycle completes end-to-end without manual intervention",
+        "Load test: 500 concurrent users, P99 API latency <2s, error rate <0.1%",
+        "Invoice match throughput: 1000 invoices/hour sustained for 30 minutes",
+        "Vendor portal user cannot access or enumerate buyer requisitions (verified)",
+        "DR failover: RDS failover to standby completes in <60 seconds",
+        "All SLA targets met under load with results documented",
+        "Load test simulates expected concurrent users",
+        "Failover scenario tested"
+      ],
+      "depends_on": [
+        24,
+        25
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 27,
+      "task_type": "COMPLIANCE",
+      "description": "Produce ISO 27001 and SOC 2 evidence artifacts: audit log completeness verification, access control review report, encryption-at-rest and in-transit validation, incident response procedure test, vendor risk assessment, and control effectiveness assessment.",
+      "payload": {
+        "deliverables": [
+          "audit_log_completeness_report.md",
+          "access_control_review.xlsx",
+          "encryption_validation.md",
+          "incident_response_test_report.md",
+          "vendor_risk_assessment.xlsx",
+          "soc2_control_matrix_evidence.xlsx"
+        ],
+        "standards": [
+          "ISO_27001:2022",
+          "SOC_2_Type_II"
+        ],
+        "audit_period": "first_90_days"
+      },
+      "acceptance_criteria": [
+        "Audit log records 100% of state changes across all six modules (verified by sampling)",
+        "Access control review confirms no user has permissions beyond their role",
+        "Encryption validated: RDS encrypted at rest (AES-256), TLS 1.2+ in transit",
+        "Incident response tabletop exercise completed and findings documented",
+        "All third-party vendors assessed against vendor risk criteria",
+        "SOC 2 control matrix shows evidence link for each applicable criterion"
+      ],
+      "depends_on": [
+        22,
+        26
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 28,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: system startup/shutdown procedures, database backup and restore procedures, incident response playbook (P1/P2/P3 classification), on-call escalation matrix, capacity planning model, and SLA definitions.",
+      "payload": {
+        "deliverables": [
+          "runbooks/startup_shutdown.md",
+          "runbooks/db_backup_restore.md",
+          "runbooks/incident_response.md",
+          "runbooks/escalation_matrix.md",
+          "runbooks/capacity_planning.md",
+          "sla_definitions.md"
+        ],
+        "sla_tiers": {
+          "p1_response_minutes": 15,
+          "p2_response_minutes": 60,
+          "p3_response_hours": 4
+        },
+        "backup_policy": "RDS automated daily snapshots, 30-day retention, cross-region copy"
+      },
+      "acceptance_criteria": [
+        "Incident response playbook covers P1/P2/P3 with specific response steps and owners",
+        "DB restore procedure tested and documented with RTO (< 1 hour)",
+        "Escalation matrix has primary + backup for each on-call tier",
+        "Capacity planning model projects resource needs for 10x user growth",
+        "SLA definitions include measurement methodology and exclusion criteria",
+        "All runbooks reviewed and approved by operations lead"
+      ],
+      "depends_on": [
+        25,
+        26
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 29,
+      "task_type": "TRAINING",
+      "description": "Create user training materials: buyer quick-start guide (requisition to PO in 5 steps), approver guide (inbox management and delegation), finance team guide (invoice matching and payment approval), vendor onboarding guide (portal setup and quote submission), and admin guide (user management and configuration).",
+      "payload": {
+        "deliverables": [
+          "guides/buyer_quickstart.pdf",
+          "guides/approver_guide.pdf",
+          "guides/finance_guide.pdf",
+          "guides/vendor_portal_guide.pdf",
+          "guides/admin_guide.pdf",
+          "video_scripts/buyer_walkthrough.md"
+        ],
+        "formats": [
+          "PDF",
+          "in-app contextual help tooltips",
+          "video script"
+        ],
+        "reading_level": "grade_8",
+        "localization_ready": true
+      },
+      "acceptance_criteria": [
+        "Buyer quick-start guide covers create \u2192 submit \u2192 track in \u226410 pages with screenshots",
+        "Approver guide covers mobile approval workflow",
+        "Vendor guide usable by non-technical vendor contact",
+        "Admin guide covers: add user, assign role, configure approval threshold, manage categories",
+        "All guides reviewed by one representative user per role for comprehension",
+        "In-app tooltip text written for all major form fields (help icon)",
+        "Admin guide separate from end-user guide",
+        "Role-based training paths defined"
+      ],
+      "depends_on": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 30,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: architecture decision records (ADRs) for key design choices, API reference (auto-generated from OpenAPI spec), deployment guide, developer onboarding README, data model documentation, and integration guide for ERP/accounting system connectors.",
+      "payload": {
+        "deliverables": [
+          "docs/architecture/ADRs/",
+          "docs/api-reference/",
+          "docs/deployment-guide.md",
+          "docs/developer-onboarding.md",
+          "docs/data-model.md",
+          "docs/integrations/erp-connector-guide.md"
+        ],
+        "adrs": [
+          "database_choice_postgresql",
+          "document_storage_minio_s3",
+          "invoice_match_algorithm",
+          "approval_routing_engine",
+          "agentic_coordinator_pattern"
+        ],
+        "auto_generated": "OpenAPI \u2192 Redoc static site"
+      },
+      "acceptance_criteria": [
+        "ADR exists for each major architectural decision with context, decision, and consequences",
+        "Developer can run `make dev` and hit first API endpoint within 15 minutes using README",
+        "Data model doc includes ERD + field-level descriptions for all tables",
+        "ERP integration guide covers: webhook setup, field mapping, error handling",
+        "API reference published as static site from OpenAPI spec",
+        "All docs reviewed for accuracy against implemented system"
+      ],
+      "depends_on": [
+        14,
+        25,
+        27
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 30,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "Step 24 (QA) requires a staging environment and declares dependencies on Steps 15-20 and 23, but Step 25 (which creates the staging infrastructure via Terraform) is sequenced AFTER Step 24. QA has no environment to run in. This is a hard sequencing deadlock.",
+            "Email notification service is never configured. Steps 9, 10, 12 all require transactional email (expiry alerts, vendor invitations, award notifications, reminders) but neither Step 7 (Docker Compose) nor Step 25 (Terraform) provisions SES, SendGrid, or any SMTP service. These features will silently not work.",
+            "Background task queue worker is absent. Step 7 includes Redis as a dependency but never sets up a Celery worker or equivalent. Steps 8 (24h escalation timer), 9 (90/60/30-day expiry alerts), 10 (48h/24h reminder emails), and 13 (15-min materialized view refresh) all require scheduled/async job execution. Docker Compose in Step 7 has no worker service.",
+            "No FX rate provider integration. Step 11 specifies 'amounts stored in transaction currency + USD equivalent at rate-of-day' but no step integrates an exchange rate API (ECB, Open Exchange Rates, etc.). Without this, multi-currency POs cannot populate the USD equivalent field.",
+            "Org hierarchy data is assumed to exist but never imported. The approval routing engine in Step 8 resolves approvers from 'org hierarchy' but no step addresses how org structure is ingested \u2014 no HR system integration, no org hierarchy CRUD, no import tooling. The engine will have no data to route against.",
+            "Budget data has no population path. Step 8 validates requisitions against 'department budgets' and the schema in Step 6 has a `budget` entity, but no step implements budget creation UI, budget import from finance systems, or fiscal period setup. Budget validation will always fail or be bypassed.",
+            "Step 21 AI agent acceptance criteria are unverifiable assertions. '90%+ routing accuracy' and '>95% duplicate detection precision' are stated without a benchmark dataset, labeled test set, or evaluation harness. These pass/fail criteria cannot be objectively tested at handoff.",
+            "WeasyPrint PDF generation (Step 11) requires system-level dependencies (Cairo, Pango, fonts) that are not addressed in the Docker setup (Step 7). This silently fails in Alpine-based containers, which is the default for FastAPI deployments.",
+            "ERP/accounting integration is documented in Step 30 but never implemented. The ERD has no ERP foreign keys, no webhook receiver for ERP events, and no field mapping layer. A procurement system that can't post approved POs and matched invoices to the general ledger is a workflow dead end for finance.",
+            "Sealed bid confidentiality is enforced only at the application layer. Quotes are stored unencrypted in PostgreSQL. Any user with DB read access (DBA, reporting tool, compromised service account) can read competitor bids before the deadline. Column-level encryption or a separate sealed bid vault is not specified.",
+            "Tax and VAT handling is completely absent. Enterprise procurement in any multi-jurisdiction deployment requires tax calculation, VAT registration validation, withholding tax on vendor payments, and tax-line reporting. The invoice schema has no tax fields. This is a blocker for EU, UK, and many APAC markets.",
+            "Payment terms are never modeled. Step 12 leads to 'approve-for-payment' but there is no Net 30/60/90 payment terms entity, no due date calculation, and no accounts payable posting step. The invoice aging chart in Step 19 has no due dates to age against.",
+            "Webhook delivery reliability is unaddressed. Step 14 defines 5 webhook event types but no step implements delivery retry logic, dead letter queues, subscription management (register/unregister), HMAC signature verification, or idempotency keys. Webhooks will drop silently under any transient failure.",
+            "Vendor deduplication is not addressed. Two vendor reps from the same company can each submit registration, creating duplicates in the vendor directory. No step implements duplicate detection (EIN/VAT number uniqueness, fuzzy name matching) or a merge workflow.",
+            "Data migration from legacy systems is called out in Step 1 acceptance criteria ('migration plan drafted') but there is no implementation step for migration tooling, data validation, or cutover procedure. Step 1 produces a plan; nothing executes it."
+          ],
+          "suggestions": [
+            "Insert a Step 7b or move Step 25 staging infrastructure before Step 15 to unblock QA. At minimum, Stage 24 must declare a dependency on Step 25, or Step 25 must be split into 'staging' (early) and 'production' (late).",
+            "Add an explicit infrastructure sub-step to Step 7 that provisions a Docker Compose worker service (Celery + Beat) and an email service container (MailHog for dev, SES/SendGrid config for prod). Add a `celery` service to docker-compose.yml.",
+            "Add a Step 6b or 7b for 'Reference Data Bootstrap': fiscal calendar configuration, spend category taxonomy import, org hierarchy import (CSV or HR system API), and initial department budget seeding. Without this, Steps 8 and 13 have no reference data.",
+            "Replace the AI agent acceptance criteria in Step 21 with a concrete evaluation protocol: create a labeled query dataset of 100 test inputs with expected specialist routing, a labeled duplicate invoice dataset with ground-truth labels, and automate the eval as part of Step 23's test suite.",
+            "Add MFA enforcement for high-value approval actions (POs above configurable threshold). OAuth2 + JWT alone is insufficient for audit-grade approval trails in regulated procurement environments.",
+            "Specify column-level encryption for sealed bid quote amounts using pgcrypto or application-layer encryption with a key stored in AWS KMS, not in the application config.",
+            "Add a tax engine decision to the PRD (Step 2) and schema (Step 6): even if full tax calculation is out of scope for MVP, reserve tax_amount, tax_code, and tax_jurisdiction fields on invoice and PO line items to avoid a schema migration at the worst possible time.",
+            "Add webhook subscription CRUD endpoints to Step 14's API and implement delivery with exponential backoff retry (max 3 attempts), HMAC-SHA256 request signing, and a dead letter log queryable at GET /webhooks/delivery-log.",
+            "Step 7 Docker Compose should include a WeasyPrint-compatible base image (Debian/Ubuntu, not Alpine) for the API service, or isolate PDF generation to a dedicated sidecar container.",
+            "Add a FX rate integration step (can be a sub-task of Step 7 config): daily ECB/Open Exchange Rates pull, stored in a `exchange_rate` table, consumed by PO and invoice services. Fallback: reject multi-currency input if today's rate is unavailable."
+          ],
+          "missing": [
+            "Background task queue service (Celery + Beat or equivalent) \u2014 required by at least 5 steps",
+            "Transactional email service configuration (SES/SendGrid) \u2014 required by at least 4 steps",
+            "FX exchange rate provider integration",
+            "Org hierarchy import/sync mechanism",
+            "Budget data import and fiscal period management UI",
+            "Tax/VAT data model and calculation hook (even if deferred to Phase 2, schema must accommodate it)",
+            "Payment terms data model (Net 30/60/90, due date field on invoices)",
+            "Webhook subscription management API and reliable delivery infrastructure",
+            "Vendor deduplication logic and merge workflow",
+            "Data migration tooling and cutover procedure (Step 1 produces a plan; nothing implements it)",
+            "API rate limiting middleware implementation (Step 14 documents headers; nothing enforces them)",
+            "MFA requirement for high-value approval actions",
+            "Audit log retention policy implementation (GDPR and SOC 2 require defined retention, not just 'logs exist')",
+            "ERP/accounting system integration implementation (currently docs-only)",
+            "Vendor email domain verification during registration (prevents impersonation)"
+          ],
+          "security_risks": [
+            "Sealed bids stored unencrypted in PostgreSQL. Any DB-level access (reporting, compromised credentials, backup restore to dev) leaks all competitor quotes before deadline. This is a procurement integrity violation and potential legal liability.",
+            "W-9 forms and bank account details stored in MinIO with application-managed keys. No AWS KMS integration specified in Step 7 or Step 9. If the application config is compromised, all vendor financial data is exposed.",
+            "Email-ingested invoices (Step 12) are a primary fraud vector \u2014 no DKIM/SPF validation of sender domain, no digital signature requirement, no amount-change detection between email parse and human review. Business Email Compromise attacks will succeed undetected.",
+            "Vendor portal XSS: vendor-submitted content (company name, quote notes, document metadata, dispute thread messages) is rendered in the buyer portal (Steps 16, 17, 19). No step explicitly specifies HTML sanitization of vendor-controlled input fields.",
+            "IDOR risk on approval bypass: Step 8's approval routing engine resolves chains dynamically. Without server-side enforcement that the calling user_id matches the expected approver_id for the current step, a buyer could POST to the approve endpoint for a step not yet reached.",
+            "Signed URL pre-generation for documents is stateless. If a signed URL leaks (email forward, browser history, proxy log), the document is accessible for up to 15 minutes with no revocation mechanism. For NDAs and bank details, this window is too long without download tracking and IP logging.",
+            "No mention of SQL injection protection beyond SQLAlchemy ORM use. Step 13's materialized view refresh and spend aggregation queries likely involve dynamic filter construction (date_range, department, category) \u2014 these are injection targets if not using parameterized queries throughout.",
+            "AI vendor recommender (Step 21) can be poisoned: if the vector store or vendor scoring history is compromised, the recommender systematically steers buyers toward fraudulent vendors. No adversarial input validation or recommendation confidence floor is specified.",
+            "OAuth2 PKCE is specified for human users but vendor portal uses 'separate JWT' (Step 9). If vendor JWTs are long-lived and not rotatable, a compromised vendor credential provides persistent access to all RFQ quote submission endpoints with no forced re-auth.",
+            "No mention of Content Security Policy headers, CORS policy enforcement, or Subresource Integrity for the React frontend. The vendor portal and buyer portal sharing a domain (different route prefix only) creates risk of credential sharing via shared localStorage/cookies."
+          ],
+          "summary": "This is one of the more thorough enterprise procurement plans I've reviewed \u2014 the scope coverage across 30 steps, the data model depth (16 entities), the compliance framing (ISO 27001 + SOC 2), and the agentic layer are all well-conceived. However, the plan has a hard sequencing deadlock (QA requires staging, staging is built after QA), several missing infrastructure services that would cause silent feature failures at runtime (email, task queue, FX rates), and a complete absence of tax/VAT modeling that will block go-live in any EU or multi-jurisdiction deployment. The sealed bid confidentiality is enforced only at the application layer, creating real legal liability for bid manipulation. The AI agent acceptance criteria cannot be objectively tested without labeled datasets. For an enterprise-grade, production procurement system \u2014 where financial controls and vendor integrity are existential concerns \u2014 these gaps represent rework, not polish. The architecture direction is correct; the execution plan has approximately 8-10 concrete blockers that would prevent shipping or create compliance failures. Rework the sequencing dependency on staging, add the missing infrastructure services, specify tax field reservations in the schema, and harden the sealed bid and document storage security before treating this as production-ready.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "Step 24 (QA) requires a staging environment and declares dependencies on Steps 15-20 and 23, but Step 25 (which creates the staging infrastructure via Terraform) is sequenced AFTER Step 24. QA has no environment to run in. This is a hard sequencing deadlock.",
+              "Email notification service is never configured. Steps 9, 10, 12 all require transactional email (expiry alerts, vendor invitations, award notifications, reminders) but neither Step 7 (Docker Compose) nor Step 25 (Terraform) provisions SES, SendGrid, or any SMTP service. These features will silently not work.",
+              "Background task queue worker is absent. Step 7 includes Redis as a dependency but never sets up a Celery worker or equivalent. Steps 8 (24h escalation timer), 9 (90/60/30-day expiry alerts), 10 (48h/24h reminder emails), and 13 (15-min materialized view refresh) all require scheduled/async job execution. Docker Compose in Step 7 has no worker service.",
+              "No FX rate provider integration. Step 11 specifies 'amounts stored in transaction currency + USD equivalent at rate-of-day' but no step integrates an exchange rate API (ECB, Open Exchange Rates, etc.). Without this, multi-currency POs cannot populate the USD equivalent field.",
+              "Org hierarchy data is assumed to exist but never imported. The approval routing engine in Step 8 resolves approvers from 'org hierarchy' but no step addresses how org structure is ingested \u2014 no HR system integration, no org hierarchy CRUD, no import tooling. The engine will have no data to route against.",
+              "Budget data has no population path. Step 8 validates requisitions against 'department budgets' and the schema in Step 6 has a `budget` entity, but no step implements budget creation UI, budget import from finance systems, or fiscal period setup. Budget validation will always fail or be bypassed.",
+              "Step 21 AI agent acceptance criteria are unverifiable assertions. '90%+ routing accuracy' and '>95% duplicate detection precision' are stated without a benchmark dataset, labeled test set, or evaluation harness. These pass/fail criteria cannot be objectively tested at handoff.",
+              "WeasyPrint PDF generation (Step 11) requires system-level dependencies (Cairo, Pango, fonts) that are not addressed in the Docker setup (Step 7). This silently fails in Alpine-based containers, which is the default for FastAPI deployments.",
+              "ERP/accounting integration is documented in Step 30 but never implemented. The ERD has no ERP foreign keys, no webhook receiver for ERP events, and no field mapping layer. A procurement system that can't post approved POs and matched invoices to the general ledger is a workflow dead end for finance.",
+              "Sealed bid confidentiality is enforced only at the application layer. Quotes are stored unencrypted in PostgreSQL. Any user with DB read access (DBA, reporting tool, compromised service account) can read competitor bids before the deadline. Column-level encryption or a separate sealed bid vault is not specified.",
+              "Tax and VAT handling is completely absent. Enterprise procurement in any multi-jurisdiction deployment requires tax calculation, VAT registration validation, withholding tax on vendor payments, and tax-line reporting. The invoice schema has no tax fields. This is a blocker for EU, UK, and many APAC markets.",
+              "Payment terms are never modeled. Step 12 leads to 'approve-for-payment' but there is no Net 30/60/90 payment terms entity, no due date calculation, and no accounts payable posting step. The invoice aging chart in Step 19 has no due dates to age against.",
+              "Webhook delivery reliability is unaddressed. Step 14 defines 5 webhook event types but no step implements delivery retry logic, dead letter queues, subscription management (register/unregister), HMAC signature verification, or idempotency keys. Webhooks will drop silently under any transient failure.",
+              "Vendor deduplication is not addressed. Two vendor reps from the same company can each submit registration, creating duplicates in the vendor directory. No step implements duplicate detection (EIN/VAT number uniqueness, fuzzy name matching) or a merge workflow.",
+              "Data migration from legacy systems is called out in Step 1 acceptance criteria ('migration plan drafted') but there is no implementation step for migration tooling, data validation, or cutover procedure. Step 1 produces a plan; nothing executes it."
+            ],
+            "suggestions": [
+              "Insert a Step 7b or move Step 25 staging infrastructure before Step 15 to unblock QA. At minimum, Stage 24 must declare a dependency on Step 25, or Step 25 must be split into 'staging' (early) and 'production' (late).",
+              "Add an explicit infrastructure sub-step to Step 7 that provisions a Docker Compose worker service (Celery + Beat) and an email service container (MailHog for dev, SES/SendGrid config for prod). Add a `celery` service to docker-compose.yml.",
+              "Add a Step 6b or 7b for 'Reference Data Bootstrap': fiscal calendar configuration, spend category taxonomy import, org hierarchy import (CSV or HR system API), and initial department budget seeding. Without this, Steps 8 and 13 have no reference data.",
+              "Replace the AI agent acceptance criteria in Step 21 with a concrete evaluation protocol: create a labeled query dataset of 100 test inputs with expected specialist routing, a labeled duplicate invoice dataset with ground-truth labels, and automate the eval as part of Step 23's test suite.",
+              "Add MFA enforcement for high-value approval actions (POs above configurable threshold). OAuth2 + JWT alone is insufficient for audit-grade approval trails in regulated procurement environments.",
+              "Specify column-level encryption for sealed bid quote amounts using pgcrypto or application-layer encryption with a key stored in AWS KMS, not in the application config.",
+              "Add a tax engine decision to the PRD (Step 2) and schema (Step 6): even if full tax calculation is out of scope for MVP, reserve tax_amount, tax_code, and tax_jurisdiction fields on invoice and PO line items to avoid a schema migration at the worst possible time.",
+              "Add webhook subscription CRUD endpoints to Step 14's API and implement delivery with exponential backoff retry (max 3 attempts), HMAC-SHA256 request signing, and a dead letter log queryable at GET /webhooks/delivery-log.",
+              "Step 7 Docker Compose should include a WeasyPrint-compatible base image (Debian/Ubuntu, not Alpine) for the API service, or isolate PDF generation to a dedicated sidecar container.",
+              "Add a FX rate integration step (can be a sub-task of Step 7 config): daily ECB/Open Exchange Rates pull, stored in a `exchange_rate` table, consumed by PO and invoice services. Fallback: reject multi-currency input if today's rate is unavailable."
+            ],
+            "missing": [
+              "Background task queue service (Celery + Beat or equivalent) \u2014 required by at least 5 steps",
+              "Transactional email service configuration (SES/SendGrid) \u2014 required by at least 4 steps",
+              "FX exchange rate provider integration",
+              "Org hierarchy import/sync mechanism",
+              "Budget data import and fiscal period management UI",
+              "Tax/VAT data model and calculation hook (even if deferred to Phase 2, schema must accommodate it)",
+              "Payment terms data model (Net 30/60/90, due date field on invoices)",
+              "Webhook subscription management API and reliable delivery infrastructure",
+              "Vendor deduplication logic and merge workflow",
+              "Data migration tooling and cutover procedure (Step 1 produces a plan; nothing implements it)",
+              "API rate limiting middleware implementation (Step 14 documents headers; nothing enforces them)",
+              "MFA requirement for high-value approval actions",
+              "Audit log retention policy implementation (GDPR and SOC 2 require defined retention, not just 'logs exist')",
+              "ERP/accounting system integration implementation (currently docs-only)",
+              "Vendor email domain verification during registration (prevents impersonation)"
+            ],
+            "security_risks": [
+              "Sealed bids stored unencrypted in PostgreSQL. Any DB-level access (reporting, compromised credentials, backup restore to dev) leaks all competitor quotes before deadline. This is a procurement integrity violation and potential legal liability.",
+              "W-9 forms and bank account details stored in MinIO with application-managed keys. No AWS KMS integration specified in Step 7 or Step 9. If the application config is compromised, all vendor financial data is exposed.",
+              "Email-ingested invoices (Step 12) are a primary fraud vector \u2014 no DKIM/SPF validation of sender domain, no digital signature requirement, no amount-change detection between email parse and human review. Business Email Compromise attacks will succeed undetected.",
+              "Vendor portal XSS: vendor-submitted content (company name, quote notes, document metadata, dispute thread messages) is rendered in the buyer portal (Steps 16, 17, 19). No step explicitly specifies HTML sanitization of vendor-controlled input fields.",
+              "IDOR risk on approval bypass: Step 8's approval routing engine resolves chains dynamically. Without server-side enforcement that the calling user_id matches the expected approver_id for the current step, a buyer could POST to the approve endpoint for a step not yet reached.",
+              "Signed URL pre-generation for documents is stateless. If a signed URL leaks (email forward, browser history, proxy log), the document is accessible for up to 15 minutes with no revocation mechanism. For NDAs and bank details, this window is too long without download tracking and IP logging.",
+              "No mention of SQL injection protection beyond SQLAlchemy ORM use. Step 13's materialized view refresh and spend aggregation queries likely involve dynamic filter construction (date_range, department, category) \u2014 these are injection targets if not using parameterized queries throughout.",
+              "AI vendor recommender (Step 21) can be poisoned: if the vector store or vendor scoring history is compromised, the recommender systematically steers buyers toward fraudulent vendors. No adversarial input validation or recommendation confidence floor is specified.",
+              "OAuth2 PKCE is specified for human users but vendor portal uses 'separate JWT' (Step 9). If vendor JWTs are long-lived and not rotatable, a compromised vendor credential provides persistent access to all RFQ quote submission endpoints with no forced re-auth.",
+              "No mention of Content Security Policy headers, CORS policy enforcement, or Subresource Integrity for the React frontend. The vendor portal and buyer portal sharing a domain (different route prefix only) creates risk of credential sharing via shared localStorage/cookies."
+            ],
+            "summary": "This is one of the more thorough enterprise procurement plans I've reviewed \u2014 the scope coverage across 30 steps, the data model depth (16 entities), the compliance framing (ISO 27001 + SOC 2), and the agentic layer are all well-conceived. However, the plan has a hard sequencing deadlock (QA requires staging, staging is built after QA), several missing infrastructure services that would cause silent feature failures at runtime (email, task queue, FX rates), and a complete absence of tax/VAT modeling that will block go-live in any EU or multi-jurisdiction deployment. The sealed bid confidentiality is enforced only at the application layer, creating real legal liability for bid manipulation. The AI agent acceptance criteria cannot be objectively tested without labeled datasets. For an enterprise-grade, production procurement system \u2014 where financial controls and vendor integrity are existential concerns \u2014 these gaps represent rework, not polish. The architecture direction is correct; the execution plan has approximately 8-10 concrete blockers that would prevent shipping or create compliance failures. Rework the sequencing dependency on staging, add the missing infrastructure services, specify tax field reservations in the schema, and harden the sealed bid and document storage security before treating this as production-ready.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T11:34:50.198902+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 182.06,
+    "critic_plan": 129.17
+  }
+}

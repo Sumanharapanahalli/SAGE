@@ -1,0 +1,413 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements document for AI-powered chest X-ray analysis
+      SaMD covering pneumonia, tuberculosis, and lung nodule detection. Document intended
+      use, indications for use, target user population (radiologists, clinicians),
+      operating environment, and success metrics. Establish FDA 510(k) predicate device
+      strategy and De Novo classification rationale.
+    agent_role: product_manager
+    acceptance_criteria:
+    - Intended use statement approved by regulatory_specialist
+    - Three predicate devices identified for 510(k) with K-number references
+    - De Novo classification request rationale documented for novel ML algorithm
+    - 'Success metrics defined: sensitivity ≥ 90%, specificity ≥ 85% per condition'
+    - User population and use environment fully described
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: Document clinical workflow integration requirements, user stories
+      for radiologist worklist, PACS/RIS integration needs, escalation workflows for
+      AI-flagged findings, and system failure mode behaviors. Define ALARP risk tolerance
+      and clinician override requirements.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - 25+ user stories written in BDD format with acceptance criteria
+    - Clinical workflow diagrams showing AI touchpoints and human override paths
+    - PACS integration requirements documented with DICOM conformance needs
+    - 'System failure behavior defined: graceful degradation, no blocking of normal
+      reads'
+    - 'Clinician override mechanism designed: AI suggestions never mandatory'
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: Design DICOM viewer interface with AI overlay, confidence score visualization,
+      heatmap/saliency map display for detected findings, annotation tools for radiologist
+      corrections, and audit trail UI. Ensure accessibility (WCAG 2.1 AA) and radiologist-optimized
+      dark-mode layout.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes for all 6 screens reviewed and approved by clinical user representative
+    - AI findings overlay mockup shows confidence scores, condition labels, and saliency
+      heatmap
+    - Radiologist correction/annotation flow designed with undo/redo and audit capture
+    - Dark-mode DICOM-optimized color palette validated for diagnostic accuracy
+    - Accessibility audit passed for keyboard navigation and screen reader support
+    depends_on:
+    - 2
+  SAFETY:
+    description: Perform ISO 14971 hazard analysis and risk assessment for the AI
+      SaMD. Identify hazardous situations (false negatives, false positives, DICOM
+      parsing errors, model drift), estimate probability and severity, define risk
+      control measures, and produce risk management file. Include FMEA for software
+      failure modes per IEC 62304.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - Hazard identification table with ≥ 20 hazardous situations documented
+    - Risk matrix completed for all hazards with initial risk estimates
+    - Risk control measures defined for all unacceptable risks (RPN > threshold)
+    - Residual risk evaluation completed post-control
+    - FMEA spreadsheet covering all software modules with failure modes, effects,
+      and mitigations
+    - Risk management plan approved by safety_engineer and regulatory_specialist
+    - ISO 14971 risk management file complete
+    - Residual risk acceptable
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 specification for medical imaging AI services:
+      DICOM upload endpoints, inference request/response contracts, findings retrieval,
+      radiologist feedback capture, audit log API, and admin configuration endpoints.
+      Define FHIR R4 DiagnosticReport mapping for findings export.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec validated with no schema errors
+    - All endpoints documented with request/response examples and error codes
+    - FHIR R4 DiagnosticReport schema defined for AI findings export
+    - SMART on FHIR OAuth2 scopes documented for each endpoint
+    - Rate limiting and payload size limits specified
+    - API versioning strategy defined (URI versioning v1/)
+    depends_on:
+    - 2
+  DATABASE:
+    description: Design database schema for studies, DICOM metadata, AI inference
+      results, findings, radiologist corrections, audit events, model versions, and
+      performance metrics. Include PostgreSQL schema with HIPAA-compliant PHI separation,
+      row-level security, and time-series partitioning for audit logs.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram reviewed and approved with all relationships documented
+    - PHI fields identified and isolated in separate schema with RLS policies
+    - Audit trigger on all PHI-touching tables capturing user, timestamp, operation
+    - Alembic migration scripts for all tables with rollback support
+    - Database indexes defined for worklist query patterns (study date, status, urgency)
+    - Data retention policy schema support for 7-year HIPAA requirement
+    depends_on:
+    - 5
+  DATA:
+    description: 'Build DICOM ingestion and preprocessing pipeline: C-STORE SCP listener,
+      DICOM validation, metadata extraction, pixel data normalization (CLAHE, window/level),
+      lung segmentation preprocessing, dataset versioning with DVC, and train/val/test
+      split management. Support DICOM SR for structured reporting output.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - C-STORE SCP listener accepts and validates DICOM CR/DX images
+    - Preprocessing pipeline produces normalized 512x512 images with CLAHE enhancement
+    - Lung segmentation mask generated for each study with QC check
+    - DVC pipeline tracks dataset versions with reproducible train/val/test splits
+    - DICOM metadata extracted to database with all required DICOM tags
+    - Pipeline processes 100 studies/hour at minimum on reference hardware
+    - Corrupt or non-conformant DICOM files quarantined with error logging
+    depends_on:
+    - 6
+  ML_MODEL:
+    description: Train and validate multi-label CNN ensemble for pneumonia, tuberculosis,
+      and lung nodule detection. Use DenseNet-121/EfficientNet-B4 architectures with
+      Grad-CAM saliency maps. Implement separate calibrated classifiers per condition,
+      uncertainty quantification, and model card documentation. Establish OOD detection
+      for unsupported image types.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Pneumonia detection AUC ≥ 0.92 on held-out test set
+    - TB detection AUC ≥ 0.94 on held-out test set
+    - Lung nodule sensitivity ≥ 0.90 at specificity ≥ 0.85 on LUNA16
+    - Grad-CAM saliency maps visually validated by radiologist on 50 cases
+    - Calibration curves within ±5% expected calibration error
+    - OOD detector flags non-chest or non-CR/DX images with > 95% accuracy
+    - Model card completed with training data, performance metrics, known limitations
+    - MLflow experiment runs reproducible from logged artifacts
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 7
+  CONFIG:
+    description: Configure Human-in-the-Loop (HITL) agentic pattern for AI finding
+      proposals. Every AI-generated finding is a proposal requiring radiologist approval
+      before inclusion in the diagnostic report. Integrate review_and_critique pattern
+      for AI quality scoring. Set up SAGE proposal store, approval queue, and feedback
+      ingestion pipeline for continuous model improvement.
+    agent_role: developer
+    acceptance_criteria:
+    - 'HITL approval gate configured: AI findings enter proposal queue, never auto-published'
+    - Radiologist approval/rejection captured with structured feedback per finding
+    - Critic agent reviews AI finding quality against acceptance criteria before proposal
+    - Feedback pipeline ingests corrections into vector store for retrieval context
+    - Escalation proposal auto-generated for high-confidence TB/nodule findings
+    - Audit trail captures every proposal state transition with timestamp and user
+    depends_on:
+    - 5
+  BACKEND:
+    description: 'Build FastAPI backend services: DICOM study management, ML inference
+      orchestration, findings CRUD, radiologist feedback processing, SMART on FHIR
+      authentication, HL7 FHIR R4 export, HIPAA audit logging middleware, and async
+      inference queue with Celery/Redis. Implement model versioning and A/B testing
+      capability.'
+    agent_role: developer
+    acceptance_criteria:
+    - All OpenAPI endpoints implemented and returning correct HTTP status codes
+    - SMART on FHIR token validation working with test FHIR authorization server
+    - Inference job queued asynchronously, status polled via GET /studies/{id}/status
+    - FHIR R4 DiagnosticReport generated correctly for approved findings
+    - HIPAA audit log records every PHI access with user, action, timestamp, IP
+    - All PHI transmitted only over TLS 1.3+
+    - Model registry tracks deployed versions with rollback capability
+    - 'Load test: 50 concurrent inference requests handled without timeout'
+    depends_on:
+    - 6
+    - 8
+    - 9
+  FRONTEND:
+    description: Build React 18 + TypeScript DICOM viewer with AI findings overlay,
+      Cornerstone.js DICOM rendering, confidence score badges, Grad-CAM heatmap toggle,
+      radiologist annotation tools, worklist with AI urgency sorting, approval queue
+      UI, and FHIR-integrated report editor.
+    agent_role: developer
+    acceptance_criteria:
+    - DICOM images rendered correctly in Cornerstone3D with window/level controls
+    - AI bounding boxes and confidence scores overlaid on correct anatomical regions
+    - Grad-CAM heatmap toggleable per finding without page reload
+    - Radiologist can approve, reject, or modify each AI finding with one-click actions
+    - Worklist sorted by AI urgency score with color-coded risk indicators
+    - Approval queue shows pending proposals with diff view before accepting
+    - Report editor pre-populated with approved findings in structured format
+    - All UI interactions captured in audit log via backend API calls
+    depends_on:
+    - 3
+    - 10
+  COMPLIANCE:
+    description: 'Produce IEC 62304 software lifecycle artifacts: Software Development
+      Plan, Software Requirements Specification, Software Architecture Document, traceability
+      matrix (requirements → design → code → tests), Software Verification and Validation
+      Plan, and anomaly resolution records. Map all artifacts to FDA 510(k) Special
+      Controls and Software Documentation guidance.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Software classified as IEC 62304 Class C with justification documented
+    - SRS covers all functional and non-functional requirements traceable to PRD
+    - SAD includes architecture diagrams, module decomposition, and interface specs
+    - Traceability matrix links every requirement to design element, code module,
+      and test case
+    - SVV Plan defines test levels (unit, integration, system, UAT) with entry/exit
+      criteria
+    - All artifacts reviewed and signed by regulatory_specialist
+    - 'Document control: version numbers, change history, approval signatures'
+    - DHF (Design History File) structure created
+    - V&V protocol drafted
+    depends_on:
+    - 4
+    - 8
+    - 10
+  INFRA:
+    description: 'Build HIPAA-compliant containerized infrastructure: Docker Compose
+      for development, Kubernetes manifests for production, GPU node pools for inference,
+      encrypted storage for DICOM data, VPC network isolation, secrets management
+      with Vault/AWS Secrets Manager, and DICOM DICOMweb proxy.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Docker Compose starts all services (backend, frontend, Orthanc, Redis, Postgres)
+      with single command
+    - Kubernetes manifests deploy to staging cluster with GPU inference pods
+    - All DICOM data encrypted at rest with AES-256, in transit with TLS 1.3
+    - 'VPC with private subnets: backend and database not publicly reachable'
+    - 'Vault integration working: no secrets in environment variables or config files'
+    - Orthanc DICOM server operational with DICOMweb (WADO-RS/STOW-RS/QIDO-RS)
+    - 'Infrastructure-as-code with Terraform: all resources reproducible'
+    depends_on:
+    - 10
+  DEVOPS:
+    description: 'Configure CI/CD pipeline with automated quality gates: GitHub Actions
+      for build/test/scan, container image signing, SAST/DAST security scans, ML model
+      regression testing gate, DICOM conformance test suite, staging deployment, and
+      production promotion workflow with approval gate.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - 'CI pipeline runs on every PR: build, test, scan in < 15 minutes'
+    - ML model regression check blocks deploy if AUC drops > 2% from baseline
+    - SAST scan (Bandit) blocks merge on critical findings
+    - Container images signed with cosign, verified at deploy time
+    - Blue-green deployment with automated rollback on health check failure
+    - DICOM conformance suite runs against staging Orthanc instance
+    - Production deploys require explicit approval in GitHub Actions environment
+    depends_on:
+    - 13
+  SECURITY:
+    description: Conduct security threat modeling (STRIDE), PHI data flow analysis,
+      HIPAA Technical Safeguard controls implementation review, OAuth2/SMART on FHIR
+      penetration test plan, API security review (OWASP API Top 10), and produce SBOM
+      for all dependencies. Address medical device cybersecurity per FDA premarket
+      guidance.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model completed for all system components with mitigations mapped
+    - 'PHI data flow diagram reviewed: all PHI stores and transmissions identified'
+    - 'HIPAA Technical Safeguards controls checklist: 100% addressed'
+    - OWASP API Top 10 pen test report with all High/Critical findings remediated
+    - 'Adversarial robustness test: model behavior documented under pixel perturbation
+      attacks'
+    - SBOM generated in SPDX 2.3 for all backend and ML dependencies
+    - FDA cybersecurity premarket checklist completed for SaMD submission
+    - Zero known CVEs with CVSS ≥ 7.0 in production dependencies
+    depends_on:
+    - 10
+    - 13
+  TESTS:
+    description: 'Write comprehensive unit and integration test suites: DICOM parsing
+      unit tests, ML inference service tests, FHIR export tests, HIPAA audit middleware
+      tests, SMART on FHIR auth tests, findings CRUD tests, feedback ingestion tests,
+      and API contract tests with Dredd/Schemathesis.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - ≥ 90% line coverage on all backend modules
+    - DICOM parsing tests cover valid, corrupt, and non-standard edge cases
+    - ML inference service tests mock model and validate response schema
+    - 'HIPAA audit middleware: every PHI-touching endpoint verified to produce audit
+      event'
+    - Schemathesis contract tests pass with no unhandled exceptions on all endpoints
+    - 'SMART on FHIR auth tests: invalid token returns 401, expired token returns
+      401'
+    - All tests run in CI under 5 minutes using parallel execution
+    depends_on:
+    - 10
+  EMBEDDED_TEST:
+    description: 'Build ML model validation harness: clinical performance evaluation
+      on independent test sets, subgroup analysis (age, sex, disease severity), reader
+      study comparison protocol (AI vs radiologist alone vs AI-assisted), confusion
+      matrix per condition, ROC/PRC curves, and performance degradation detection
+      for model drift monitoring.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - 'Independent test set performance: all AUC/sensitivity targets met per step
+      8'
+    - 'Subgroup analysis: performance disparity across sex/age groups < 5% AUC gap'
+    - 'Reader study: AI-assisted reads show statistically significant improvement
+      over unassisted (p < 0.05)'
+    - Confusion matrices and ROC/PRC curves generated for all three conditions
+    - 'PSI drift detector tested: triggers alert when distribution shift PSI > 0.2'
+    - FDA Algorithm Performance Summary document completed per guidance
+    - All validation results reproducible from logged MLflow artifacts
+    depends_on:
+    - 8
+    - 7
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test plan: DICOM upload to finding approval
+      workflow, PACS integration test with Orthanc, FHIR export validation, high-volume
+      load test (500 studies/day), failover testing, HIPAA audit completeness test,
+      and user acceptance testing with simulated radiologist sessions.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 'End-to-end workflow: DICOM received → AI analysis → proposal created → radiologist
+      approved → FHIR report exported in < 15 minutes'
+    - 'PACS C-STORE integration: 100 test studies transferred and processed without
+      error'
+    - FHIR DiagnosticReport validated against FHIR R4 validator with zero errors
+    - 'Load test: 500 concurrent studies processed, P95 inference latency < 10s'
+    - 'Failover test: database failover completes in < 30s with zero data loss'
+    - 'Model unavailable: system serves cached results and alerts, does not block
+      radiologist reads'
+    - 'HIPAA audit: every PHI access has corresponding audit event (100% coverage
+      verified)'
+    - 'UAT: 10 radiologist sessions completed, ≥ 85% task completion rate'
+    depends_on:
+    - 11
+    - 14
+    - 16
+    - 17
+  QA:
+    description: Execute Design History File (DHF) review, software quality audit
+      per ISO 13485, defect tracking review, test traceability completeness check,
+      and produce Software Verification and Validation Report. Conduct final QA sign-off
+      against all acceptance criteria.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - 'DHF completeness checklist: 100% of required documents present and approved'
+    - 'Traceability matrix: every SRS requirement covered by ≥ 1 passing test case'
+    - Zero open Critical or Major defects at QA sign-off
+    - 'SVV Report signed: all planned tests executed, all pass criteria met'
+    - 'ISO 13485 audit: no major nonconformities identified'
+    - All anomaly records closed or risk-accepted with documented rationale
+    depends_on:
+    - 12
+    - 18
+  REGULATORY:
+    description: Prepare FDA 510(k) premarket notification submission package and
+      De Novo classification request for the ML/AI SaMD component. Include device
+      description, substantial equivalence argument, performance data summary, software
+      documentation summary, cybersecurity documentation, and labeling. Address FDA
+      AI/ML-Based SaMD Action Plan requirements.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - 510(k) cover letter formatted per FDA eCopy guidance
+    - Substantial equivalence argument identifies predicate device(s) with K-numbers
+    - Performance testing summary includes sensitivity/specificity tables per condition
+      with confidence intervals
+    - Software documentation summary maps to IEC 62304 software safety class C evidence
+    - AI/ML Predetermined Change Control Plan addresses model retraining triggers
+      and resubmission criteria
+    - Cybersecurity documentation references FDA 2023 premarket guidance controls
+    - Labeling includes intended use, contraindications, and 'for assistive use only,
+      not for standalone diagnosis' statement
+    - Full submission package reviewed by regulatory_specialist and legal_advisor
+    depends_on:
+    - 20
+    - 15
+    - 17
+  LEGAL:
+    description: Review software licensing for all ML dependencies, DICOM libraries,
+      and open-source components. Draft HIPAA Business Associate Agreement template,
+      data use agreements for training datasets, terms of service, and privacy policy.
+      Review IP ownership of trained model weights.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - 'License audit: no GPL licenses in production code without explicit approval'
+    - BAA template compliant with HIPAA 45 CFR Part 164
+    - 'Training dataset data use agreements reviewed: all datasets used within permitted
+      terms'
+    - Privacy policy compliant with HIPAA, CCPA, and GDPR (EU users)
+    - IP ownership of model weights clearly attributed and documented
+    - Patent landscape search completed for AI-based chest X-ray diagnosis
+    depends_on:
+    - 1
+    - 8
+  DOCS:
+    description: 'Produce complete documentation suite: system architecture README,
+      API reference (generated from OpenAPI spec), radiologist user guide, hospital
+      IT integration guide (PACS/DICOM setup), administrator operations guide, model
+      card, and developer onboarding guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - README includes architecture diagram, prerequisites, and 5-minute quickstart
+    - API reference generated directly from OpenAPI spec with zero manual sync
+    - Radiologist user guide covers worklist, viewer, AI overlay, and approval workflow
+      with screenshots
+    - PACS integration guide covers DICOM C-STORE configuration for 3 major PACS vendors
+    - Model card includes training data sources, performance metrics, known failure
+      modes, and update cadence
+    - All docs reviewed by a non-developer (QA or clinical user) for clarity
+    - Docs published to internal documentation site via CI pipeline
+    depends_on:
+    - 18
+    - 21
+  TRAINING:
+    description: 'Develop clinical training program for radiologist and clinical staff
+      users: onboarding curriculum, AI limitations awareness module, case-based training
+      scenarios, competency assessment, and train-the-trainer materials. Required
+      for FDA-cleared SaMD deployment and liability management.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Training curriculum covers all FDA-required labeling statements and intended
+      use scope
+    - AI limitations module includes documented failure modes from safety analysis
+    - 'Competency assessment validated: ≥ 85% of pilot users achieve ≥ 80% score'
+    - SCORM package compatible with major LMS platforms (Cornerstone, Docebo, Moodle)
+    - Adverse event reporting procedure documented with FDA MedWatch reference
+    - Training completion tracked and reportable for compliance audits
+    depends_on:
+    - 23

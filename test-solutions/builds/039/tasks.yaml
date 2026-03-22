@@ -1,0 +1,353 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the email marketing platform landscape: competitor feature
+      matrix (Mailchimp, Klaviyo, Brevo, ActiveCampaign), pricing benchmarks, ICP
+      definition, TAM/SAM/SOM, and go-to-market positioning for email_marketing.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covers ≥5 competitors across ≥8 feature dimensions
+    - Pricing benchmarks documented for all tiers (free, starter, growth, enterprise)
+    - ICP personas defined with pain points and willingness-to-pay estimates
+    - TAM/SAM/SOM calculated with cited data sources
+    - Positioning statement drafted and differentiation rationale documented
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements, user stories, and process flows for
+      all six core capabilities: drag-and-drop template builder, audience segmentation,
+      A/B testing, automation workflows, deliverability monitoring, and GDPR consent
+      management.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories written in 'As a [persona], I want [action], so that [value]' format
+      for all six epics
+    - Acceptance criteria defined for each user story
+    - Process flows cover happy path and error paths for each epic
+    - ROI analysis includes CAC/LTV projections and payback period estimate
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  FINANCIAL:
+    description: Build financial model covering unit economics, infrastructure cost
+      projections, pricing tiers, breakeven analysis, and 3-year P&L forecast for
+      email_marketing platform.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Pricing tiers defined with send volume limits and feature gates
+    - Infrastructure cost per 1M emails calculated with provider comparison (SES,
+      SendGrid, Postmark)
+    - Breakeven MRR calculated at each tier
+    - 3-year P&L with sensitivity analysis on churn rate and ARPU
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (DPA) for GDPR compliance, CAN-SPAM and CASL compliance requirements, and IP/licensing
+      review for all third-party dependencies.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers acceptable use, email sending limits, anti-spam obligations, and
+      termination clauses
+    - Privacy Policy enumerates all data categories collected and retention periods
+    - DPA template ready for B2B customers (controller-processor relationship)
+    - CAN-SPAM and CASL compliance checklist mapped to platform features
+    - All third-party libraries reviewed for license compatibility
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  PRODUCT_MGMT:
+    description: Author Product Requirements Document (PRD), prioritized roadmap (MoSCoW),
+      success metrics (OKRs), and feature flag strategy for email_marketing v1.0.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all six feature areas with scope, out-of-scope, and constraints sections
+    - MoSCoW breakdown applied to all user stories from step 2
+    - 3-quarter roadmap defined with milestones
+    - 'OKRs defined for launch quarter: activation rate, send volume, deliverability
+      rate targets'
+    - Feature flag strategy defined for gradual rollout of A/B testing and automation
+    depends_on:
+    - 2
+    - 3
+  UX_DESIGN:
+    description: Conduct user research (surveys + competitor usability audit), then
+      produce wireframes and interaction designs for all six feature areas with accessibility
+      audit (WCAG 2.1 AA).
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research report summarizes ≥10 responses with key pain points ranked
+    - Wireframes produced for all 8 screen categories covering desktop and responsive
+      breakpoints
+    - Drag-and-drop template builder interaction design includes block palette, canvas,
+      and properties panel
+    - Automation canvas wireframe shows trigger→condition→action node layout
+    - WCAG 2.1 AA audit checklist completed with all critical issues flagged
+    - Design system tokens (colors, typography, spacing) documented
+    depends_on:
+    - 2
+    - 5
+  API:
+    description: 'Design OpenAPI 3.1 specification for all platform APIs: authentication,
+      contacts/segmentation, templates, campaigns, A/B tests, automation workflows,
+      deliverability webhooks, and GDPR consent endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against OpenAPI 3.1 schema
+    - All endpoints have request/response schemas with examples
+    - Authentication schemes documented (JWT bearer, API key header)
+    - Pagination strategy consistent (cursor-based) across all list endpoints
+    - Webhook payload schemas defined for bounce, complaint, open, click, unsubscribe
+      events
+    - GDPR endpoints cover consent record, withdrawal, data export, and erasure
+    depends_on:
+    - 5
+    - 6
+  DATABASE:
+    description: 'Design and implement database schema for email_marketing: contacts,
+      lists, segments, templates, campaigns, A/B tests, automation workflows, deliverability
+      events, GDPR consent records, and audit log. Include migrations and seed data.'
+    agent_role: developer
+    acceptance_criteria:
+    - All table schemas defined with correct foreign keys and NOT NULL constraints
+    - Alembic migration scripts run cleanly on empty and existing databases
+    - Segment rules table supports boolean operator trees (AND/OR/NOT) for complex
+      segmentation
+    - 'GDPR consent records table includes: contact_id, consent_type, granted_at,
+      withdrawn_at, source, ip_address'
+    - Suppression list enforces uniqueness on (org_id, email) with reason and timestamp
+    - Seed data script populates demo org, contacts, and a sample campaign
+    - All timestamp columns use UTC with timezone awareness
+    depends_on:
+    - 7
+  CONFIG:
+    description: Set up development environment, project scaffolding, environment
+      configuration, secrets management, and agentic AI pattern configuration (Multi-Agent
+      Coordinator) for email_marketing solution.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose.yml spins up postgres, redis, backend, worker, and frontend with
+      single command
+    - All secrets referenced via environment variables — no hardcoded credentials
+    - 'Makefile targets: setup, run, test, lint, migrate, worker'
+    - Coordinator agent configuration registered in solution prompts.yaml with specialist
+      agent roles defined
+    - Pre-commit hooks configured (black, ruff, mypy, eslint, prettier)
+    - README documents local setup in ≤5 steps
+    depends_on:
+    - 7
+    - 8
+  COMPLIANCE:
+    description: Define SOC 2 Type II compliance scope, control mapping, and evidence
+      collection plan for email_marketing. Cover Security, Availability, and Confidentiality
+      trust service criteria.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All CC6 (Logical Access) controls mapped to platform features (MFA, RBAC, audit
+      log)
+    - CC7 (System Operations) controls mapped to monitoring and incident response
+      procedures
+    - Availability criteria mapped to uptime SLAs and disaster recovery targets
+    - Evidence collection plan specifies owner, collection cadence, and artifact type
+      for each control
+    - Vendor risk register covers all third-party processors (email sending, cloud,
+      analytics)
+    - Data retention and destruction controls documented for GDPR/SOC 2 overlap
+    depends_on:
+    - 4
+    - 5
+  BACKEND:
+    description: 'Implement core backend: authentication (JWT + OAuth2), organization
+      multi-tenancy, RBAC (Owner/Admin/Member/Viewer roles), user management, API
+      key management, and audit logging middleware.'
+    agent_role: developer
+    acceptance_criteria:
+    - POST /auth/register, /auth/login, /auth/refresh, /auth/logout endpoints functional
+    - All API endpoints enforce org-scoped authorization — cross-org data access returns
+      403
+    - RBAC middleware blocks unauthorized role actions with descriptive 403 messages
+    - API key creation, rotation, and revocation endpoints implemented
+    - Every mutating request writes structured audit event (user_id, org_id, action,
+      resource, timestamp)
+    - Password hashing uses bcrypt with cost factor ≥12
+    depends_on:
+    - 9
+  AGENTIC:
+    description: 'Implement Multi-Agent Coordinator pattern for AI-powered campaign
+      optimization: coordinator decomposes campaign requests to specialist agents
+      — segmentation_agent (audience recommendations), content_optimizer_agent (subject
+      line and copy suggestions using iterative_refinement), and deliverability_advisor_agent
+      (send time optimization, risk scoring).'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator agent registered in email_marketing solution prompts.yaml with all
+      three specialist roles
+    - POST /ai/campaign-suggestions endpoint accepts campaign brief and returns coordinator
+      recommendations
+    - Content optimizer runs ≥2 refinement cycles before surfacing suggestion
+    - Deliverability risk score (0–100) returned with actionable recommendations
+    - All coordinator proposals stored in SAGE proposal_store with HITL approval gate
+    - Specialist agent reasoning traces written to audit log
+    depends_on:
+    - 17
+    - 18
+    - 16
+  FRONTEND:
+    description: 'Build React app shell: routing (React Router v6), authentication
+      pages (login, register, password reset), organization switcher, RBAC-aware nav,
+      global notification system, and responsive layout following UX wireframes from
+      step 6.'
+    agent_role: developer
+    acceptance_criteria:
+    - App bootstraps without errors, all routes render
+    - Auth guards redirect unauthenticated users to /login
+    - RBAC-aware nav hides/disables actions based on current user role
+    - Organization switcher allows switching between orgs without full page reload
+    - Toast notification system handles success, error, and warning states
+    - Responsive breakpoints functional at 375px, 768px, 1280px, 1440px
+    depends_on:
+    - 11
+    - 6
+  SECURITY:
+    description: 'Conduct security review: threat model (STRIDE), OWASP Top 10 assessment,
+      authentication hardening (MFA, session management), injection testing (SQL,
+      XSS via template merge tags), data encryption review (at-rest, in-transit),
+      and GDPR data flow mapping.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model produced for all six feature areas
+    - Merge tag renderer confirmed sandboxed — arbitrary Jinja2 code execution blocked
+    - OWASP ZAP scan produces zero high-severity findings
+    - All API endpoints confirmed to enforce authentication and org-scoped authorization
+    - PII fields (email, name, phone) encrypted at rest
+    - Data flow map documents all PII flows for GDPR Article 30 Record of Processing
+      Activities
+    depends_on:
+    - 18
+    - 17
+    - 16
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: auth,
+      contacts, segmentation engine, template renderer, campaign/A/B logic, automation
+      state machine, deliverability event processing, and GDPR consent flows. Target
+      ≥80% coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest --cov reports ≥80% line coverage across src/
+    - Segment rule evaluator tested with ≥15 rule combinations including nested AND/OR
+    - 'A/B variant assignment tested for determinism: same contact always gets same
+      variant'
+    - Workflow state machine tests cover all valid and invalid transition attempts
+    - Consent withdrawal test confirms suppression list entry created synchronously
+    - All tests pass in CI in ≤3 minutes
+    depends_on:
+    - 19
+  QA:
+    description: Author QA test plan covering manual and automated test cases for
+      all six feature areas, edge cases (bulk operations, timezone handling, merge
+      tag fallback), cross-browser testing matrix, and accessibility testing against
+      WCAG 2.1 AA.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test cases written in Gherkin for all user stories from step 2
+    - 'Edge cases documented: empty segment (0 contacts), campaign send to 0 recipients,
+      expired double opt-in token'
+    - Timezone test cases cover DST transitions for scheduled sends
+    - Browser matrix test execution results documented
+    - axe-core scan on all pages produces zero critical violations
+    - Screen reader test confirms template builder and automation canvas are keyboard
+      navigable
+    depends_on:
+    - 26
+    - 25
+    - 24
+    - 23
+    - 22
+    - 21
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests: full campaign lifecycle (create
+      → segment → build template → A/B test → schedule → send → track opens/clicks
+      → view analytics), automation workflow trigger-to-completion, GDPR withdrawal-to-suppression,
+      and load test (10k concurrent recipients).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full campaign lifecycle E2E test passes end-to-end in Playwright
+    - 'Automation workflow E2E: contact joins list → receives email → waits → receives
+      follow-up — all within test timeout'
+    - 'GDPR withdrawal E2E: preference center withdrawal → contact suppressed → subsequent
+      campaign excludes contact'
+    - 'Load test: 10k email events processed within 60 seconds at p95 latency ≤500ms'
+    - 'Load test: API reads at 500 VUs show ≤200ms p95 response time'
+    - Zero data leakage between orgs confirmed in cross-tenant isolation test
+    depends_on:
+    - 28
+    - 29
+  DEVOPS:
+    description: Set up CI/CD pipelines (GitHub Actions), production infrastructure
+      (Docker + Kubernetes or ECS), auto-scaling configuration, uptime monitoring
+      (Uptime Robot / Datadog), alerting rules, SRE runbook stubs, and log aggregation
+      (CloudWatch or ELK).
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs lint + test + build on every PR in ≤5 minutes
+    - Deployment to staging triggered automatically on PR merge to main
+    - Production deployment requires manual approval gate in GitHub Actions
+    - 'ECS auto-scaling verified: load spike triggers new task within 90 seconds'
+    - All four alert rules active in Datadog with PagerDuty routing
+    - Log aggregation captures structured JSON logs from all services with trace_id
+      correlation
+    depends_on:
+    - 30
+  OPERATIONS:
+    description: 'Author operational runbooks: SLA definitions (99.9% uptime, ≤4h
+      email delivery, ≤72h DSAR response), on-call incident response procedures, capacity
+      planning model, deliverability incident playbook (ISP block / feedback loop
+      setup), and backup/DR procedures.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA targets documented and mapped to monitoring alert thresholds
+    - 'Deliverability incident runbook covers: ISP block detection, feedback loop
+      enrollment (Gmail, Yahoo), warm-up resume'
+    - Database failover runbook tested in staging with RTO verified ≤4 hours
+    - 'Worker backlog runbook covers: queue depth spike, dead letter queue investigation,
+      worker restart'
+    - 'GDPR erasure ops runbook covers: request intake, 30-day deadline tracking,
+      confirmation to data subject'
+    - All runbooks linked from ops wiki index
+    depends_on:
+    - 31
+    - 32
+  DOCS:
+    description: 'Produce developer and user documentation: API reference (generated
+      from OpenAPI spec), integration guides (webhook setup, custom field API, segment
+      API), architecture decision records (ADRs), and in-app contextual help copy.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference hosted at /docs/api with all 7 endpoint groups rendered
+    - Each integration guide includes a working curl example
+    - ADRs document context, decision, and consequences for each architectural choice
+    - In-app tooltips present on all major settings fields in template builder and
+      automation canvas
+    - GDPR API guide documents the full data subject request flow with request/response
+      examples
+    depends_on:
+    - 30
+  TRAINING:
+    description: 'Create user onboarding materials: interactive product tour (first-login
+      wizard), quick-start guide (send first campaign in 5 minutes), feature deep-dive
+      tutorials for automation and segmentation, admin setup guide (domain authentication,
+      team management), and video script outlines.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - 'First-login tour covers: dashboard orientation, contacts import, template creation,
+      campaign send'
+    - Quick-start guide achieves 'send first campaign' in ≤5 documented steps
+    - Automation tutorial walks through building a welcome series (trigger → wait
+      → follow-up)
+    - Admin setup guide covers SPF/DKIM/DMARC DNS setup for top 3 registrars
+    - Video scripts reviewed and timed at ≤3 minutes per video
+    - All training materials reviewed by a non-technical user for clarity
+    depends_on:
+    - 34

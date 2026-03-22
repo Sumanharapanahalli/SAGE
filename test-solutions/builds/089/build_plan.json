@@ -1,0 +1,1003 @@
+{
+  "run_id": "37faba7c-01a6-402c-9394-92b112e631ad",
+  "status": {
+    "run_id": "37faba7c-01a6-402c-9394-92b112e631ad",
+    "solution_name": "habit_tracker",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T10:45:40.189768+00:00",
+    "updated_at": "2026-03-22T10:54:20.371851+00:00",
+    "product_description": "Habit tracking app with streak management, reminders, statistics, social accountability groups, and integration with Apple Health and Google Fit.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Competitive analysis of habit tracking apps (Habitica, Streaks, Finch, Loop, Fabulous). Map feature gaps, monetization models, Apple Health/Google Fit integration patterns, and social accountability mechanics.",
+        "payload": {
+          "competitors": [
+            "Habitica",
+            "Streaks",
+            "Finch",
+            "Loop Habit Tracker",
+            "Fabulous",
+            "Strides"
+          ],
+          "focus_areas": [
+            "streak mechanics",
+            "social features",
+            "health platform integration",
+            "pricing models",
+            "retention strategies"
+          ],
+          "deliverables": [
+            "competitive_matrix.md",
+            "positioning_brief.md",
+            "differentiation_opportunities.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitive matrix covers \u22656 direct competitors across iOS and Android",
+          "Identifies \u22653 unmet user needs in the current market",
+          "Documents Apple Health and Google Fit integration approach for top 3 competitors",
+          "Includes monetization analysis: freemium vs subscription vs one-time",
+          "Defines target market segment and positioning statement"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Author PRD for habit_tracker: define MVP scope, user personas, MoSCoW feature prioritization, success metrics (DAU, streak retention, D7/D30 retention), and phased roadmap across MVP \u2192 Social Layer \u2192 Health Integration \u2192 AI Coaching.",
+        "payload": {
+          "solution_name": "habit_tracker",
+          "core_features": [
+            "habit CRUD",
+            "streak tracking",
+            "push reminders",
+            "statistics dashboard",
+            "social groups",
+            "Apple Health integration",
+            "Google Fit integration"
+          ],
+          "mvp_scope": "habit CRUD + streaks + reminders",
+          "north_star_metric": "30-day streak retention rate",
+          "roadmap_phases": [
+            "MVP",
+            "Social Layer",
+            "Health Platform Integration",
+            "AI Coaching"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD defines \u22653 user personas with jobs-to-be-done",
+          "MoSCoW feature list with clear MVP boundary documented",
+          "Success metrics defined: DAU, D7 retention, D30 retention, streak completion rate",
+          "Phased roadmap with milestones per phase approved by stakeholders",
+          "API integration requirements documented for Apple Health (HealthKit) and Google Fit (Health Connect)"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "User research (5 interviews), affinity mapping, information architecture, and high-fidelity wireframes for all core screens: onboarding, habit list, streak calendar heatmap, reminder config, statistics, social group feed, health sync settings. WCAG 2.1 AA audit.",
+        "payload": {
+          "screens": [
+            "onboarding flow",
+            "home / habit list",
+            "habit creation wizard",
+            "streak detail + calendar heatmap",
+            "reminder scheduling UI",
+            "statistics dashboard (charts, trends)",
+            "social group creation + feed",
+            "member progress cards",
+            "Apple Health / Google Fit sync settings",
+            "profile + settings"
+          ],
+          "design_tool": "Figma",
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "\u22655 user research interviews completed with affinity map",
+          "Complete information architecture diagram approved",
+          "High-fidelity Figma prototype covering all core screens",
+          "Usability test with \u22655 participants, \u226580% task completion rate",
+          "WCAG 2.1 AA audit passed: color contrast, touch targets \u226544px, screen reader labels",
+          "Streak calendar heatmap visualisation validated with users",
+          "App store screenshot mockups prepared",
+          "Onboarding flow under 3 steps"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "DATABASE",
+        "description": "Design PostgreSQL 16 schema: users, habits, habit_completions, streaks, reminders, social_groups, group_memberships, group_posts, health_sync_configs, audit_log. Define indexes, FK constraints, soft-delete patterns, and Alembic migration scripts.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "tables": [
+            "users",
+            "habits",
+            "habit_completions",
+            "streaks",
+            "reminders",
+            "social_groups",
+            "group_memberships",
+            "group_posts",
+            "health_sync_configs",
+            "audit_log"
+          ],
+          "migrations_tool": "Alembic",
+          "security": "health sync tokens AES-256 column-level encryption"
+        },
+        "acceptance_criteria": [
+          "ERD reviewed and approved by engineering lead",
+          "All FK constraints and indexes defined",
+          "Soft-delete (deleted_at/archived_at) applied to user-facing entities",
+          "Alembic migration scripts generate clean schema from empty DB",
+          "Streak query (last 30 days completions) executes in <10ms on 100k rows",
+          "Health sync tokens encrypted at rest (column-level AES-256)"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 5,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 REST API contract for all habit_tracker endpoints: auth, habits CRUD, completions, streaks, reminders, social groups, health sync. Define JWT RS256 auth strategy, rate limits, RFC 7807 error schema, and cursor-based pagination.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "auth": "JWT RS256 + refresh token rotation",
+          "endpoint_groups": [
+            "auth",
+            "habits",
+            "completions",
+            "streaks",
+            "reminders",
+            "social groups",
+            "health-sync",
+            "users"
+          ],
+          "rate_limits": {
+            "default": "100 req/min",
+            "auth": "10 req/min"
+          },
+          "pagination": "cursor-based"
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 spec passes spectral lint with zero errors",
+          "All endpoints have request/response schemas with examples",
+          "Error responses follow RFC 7807 Problem Details format",
+          "Auth flow documented: register \u2192 login \u2192 JWT \u2192 refresh \u2192 logout",
+          "Health sync OAuth2 PKCE callback flow documented for HealthKit and Health Connect",
+          "Contract signed off by frontend and backend leads"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 6,
+        "task_type": "SECURITY",
+        "description": "STRIDE threat model on auth, social group access control, and health data handling. Define controls: HTTPS enforcement, JWT validation, RBAC for group roles, rate limiting, input sanitization, OWASP Top 10 checklist. Health data compliance review vs HealthKit and Health Connect policies.",
+        "payload": {
+          "methodology": "STRIDE",
+          "focus_areas": [
+            "JWT token forgery",
+            "horizontal privilege escalation",
+            "group invitation code brute force",
+            "health OAuth token exfiltration",
+            "SQL injection"
+          ],
+          "compliance_targets": [
+            "GDPR",
+            "CCPA",
+            "Apple HealthKit guidelines",
+            "Google Health Connect policy"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "security_controls_checklist.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model completed for all 5 API surface areas",
+          "OWASP Top 10 checklist completed with mitigations",
+          "Health data handling complies with Apple HealthKit and Google Health Connect privacy policies",
+          "RBAC matrix defined: group owner, member, admin roles with permission matrix",
+          "Data retention and deletion policy documented (GDPR right to erasure)",
+          "Health OAuth tokens stored encrypted; refresh tokens in httpOnly cookies"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 7,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, and Data Processing Agreement covering health data (HealthKit, Health Connect), social features, UGC in groups, and account deletion. Ensure GDPR Article 17, CCPA, and Apple/Google platform policies compliance.",
+        "payload": {
+          "jurisdictions": [
+            "US",
+            "EU",
+            "UK"
+          ],
+          "data_types": [
+            "health metrics",
+            "habit completion data",
+            "social posts",
+            "push tokens",
+            "OAuth tokens"
+          ],
+          "key_provisions": [
+            "health data usage restrictions",
+            "user-generated content in groups",
+            "data portability and export",
+            "account deletion within 30 days"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy covers all data types collected including health data",
+          "ToS includes acceptable use policy for social groups",
+          "GDPR data subject rights described: access, erasure, portability",
+          "HealthKit and Health Connect data usage restrictions clearly stated",
+          "Data Processing Agreement template available for B2B use",
+          "Reviewed by legal counsel before publishing"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 8,
+        "task_type": "COMPLIANCE",
+        "description": "Build compliance traceability matrix mapping PRD requirements to implementation tasks and test cases. Define health data handling procedures aligned with Apple HealthKit guidelines and Google Health Connect policy. Establish audit log specification.",
+        "payload": {
+          "standards": [
+            "Apple HealthKit developer guidelines",
+            "Google Health Connect policy",
+            "GDPR",
+            "CCPA"
+          ],
+          "deliverables": [
+            "requirements_traceability_matrix.xlsx",
+            "health_data_handling_procedure.md",
+            "audit_log_specification.md",
+            "data_flow_diagram.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Every PRD requirement traces to \u22651 implementation task and \u22651 test case",
+          "Health data flow diagram shows complete path from HealthKit/Health Connect to DB",
+          "Audit log captures: user ID, action, resource, timestamp for all data mutations",
+          "Data retention schedule defined per data type",
+          "Health data never stored in cleartext logs or analytics events"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 9,
+        "task_type": "INFRA",
+        "description": "Provision AWS cloud infrastructure via Terraform: EKS cluster, RDS PostgreSQL 16 Multi-AZ, ElastiCache Redis 7, S3+CloudFront for media assets, SES for email, SNS/FCM bridge for push notifications, Secrets Manager, VPC with private subnets. Three environments: dev/staging/prod.",
+        "payload": {
+          "cloud": "AWS",
+          "iac_tool": "Terraform",
+          "services": [
+            "EKS",
+            "RDS PostgreSQL 16 Multi-AZ",
+            "ElastiCache Redis 7",
+            "S3 + CloudFront",
+            "SES",
+            "SNS",
+            "Secrets Manager",
+            "VPC private subnets"
+          ],
+          "environments": [
+            "dev",
+            "staging",
+            "prod"
+          ]
+        },
+        "acceptance_criteria": [
+          "Terraform modules pass `terraform plan` with zero errors for all 3 environments",
+          "RDS in private subnet, accessible only from EKS worker nodes",
+          "Redis TLS enabled with AUTH required",
+          "S3 blocks public access; CloudFront uses signed URLs for private assets",
+          "Secrets Manager rotation configured for DB credentials and JWT signing keys",
+          "RDS automated backups: 7-day retention, point-in-time restore tested"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 10,
+        "task_type": "CONFIG",
+        "description": "Configure SAGE habit_tracker solution using Multi-Agent Coordinator pattern. Set up three specialist agents: reminder-intelligence (optimal send-time via ReAct), streak-coach (motivational nudges at risk points), social-engagement (group activity summarization). Author project.yaml, prompts.yaml, tasks.yaml.",
+        "payload": {
+          "agentic_pattern": "coordinator",
+          "solution_name": "habit_tracker",
+          "agents": [
+            {
+              "role": "reminder_intelligence",
+              "tools": [
+                "completion_history_query",
+                "timezone_lookup",
+                "push_send"
+              ]
+            },
+            {
+              "role": "streak_coach",
+              "tools": [
+                "streak_query",
+                "habit_query",
+                "push_send",
+                "in_app_notification"
+              ]
+            },
+            {
+              "role": "social_engagement",
+              "tools": [
+                "group_completions_query",
+                "group_post_create",
+                "push_send"
+              ]
+            }
+          ],
+          "hitl_level": "standard",
+          "config_files": [
+            "solutions/habit_tracker/project.yaml",
+            "solutions/habit_tracker/prompts.yaml",
+            "solutions/habit_tracker/tasks.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "project.yaml defines solution name, active_modules, theme, and coordinator config",
+          "prompts.yaml contains system prompts for all 3 specialist agents",
+          "tasks.yaml defines task types: reminder_optimization, streak_coaching, group_engagement",
+          "SAGE loads habit_tracker solution without errors: `make run PROJECT=habit_tracker`",
+          "Coordinator routes tasks to correct specialist agent by task_type"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement FastAPI backend: auth service (JWT RS256 + refresh rotation), habits CRUD, streak calculation engine (daily/weekly/custom frequencies, freeze logic), reminder scheduler (APScheduler + Redis), social groups service, push notification dispatcher (FCM + APNs), Celery async workers.",
+        "payload": {
+          "framework": "FastAPI",
+          "language": "Python 3.12",
+          "key_modules": [
+            "src/auth/",
+            "src/habits/",
+            "src/streaks/",
+            "src/reminders/",
+            "src/social/",
+            "src/health_sync/",
+            "src/notifications/",
+            "src/workers/"
+          ],
+          "orm": "SQLAlchemy 2.0 + Alembic",
+          "task_queue": "Celery + Redis"
+        },
+        "acceptance_criteria": [
+          "All OpenAPI spec endpoints implemented with correct response schemas",
+          "StreakCalculator handles: daily habits, weekly habits, custom days, freeze/forgiveness, longest streak",
+          "Reminder scheduler fires within \u00b160 seconds of scheduled time",
+          "Group invitation codes are cryptographically random (secrets.token_urlsafe)",
+          "Health sync OAuth2 PKCE flow completes end-to-end for both HealthKit and Health Connect",
+          "Push notifications delivered via FCM (Android) and APNs (iOS) with delivery receipts logged",
+          "`make test` passes with \u226580% line coverage on streak and auth modules"
+        ],
+        "depends_on": [
+          4,
+          5,
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "FIRMWARE",
+        "description": "Implement BLE companion firmware for optional wearable habit-tracker band: STM32L4 MCU, FreeRTOS 10.6, Nordic SoftDevice BLE, haptic feedback driver (DRV2605L) for reminder alerts and streak milestones, accelerometer (LIS2DH12) step detection, GATT server for habit completion offload.",
+        "payload": {
+          "mcu": "STM32L4",
+          "rtos": "FreeRTOS 10.6",
+          "ble_stack": "Nordic SoftDevice S140",
+          "hal_drivers": [
+            "HAL_UART",
+            "HAL_I2C (accelerometer)",
+            "HAL_GPIO (haptic motor)",
+            "HAL_RTC",
+            "HAL_BLE GATT server"
+          ],
+          "rtos_tasks": [
+            "BLECommsTask",
+            "AccelTask (10Hz step detection)",
+            "ReminderTask (RTC alarm \u2192 haptic)",
+            "PowerMgmtTask"
+          ],
+          "build_system": "CMake + arm-none-eabi-gcc",
+          "targets": [
+            "256KB flash",
+            "64KB SRAM",
+            "<15\u00b5A sleep current"
+          ]
+        },
+        "acceptance_criteria": [
+          "Firmware compiles clean (zero warnings -Wall -Wextra) for STM32L4 target",
+          "BLE GATT profile exposes: habit_completion write characteristic, reminder_alert notify characteristic",
+          "Haptic patterns: short pulse 100ms (reminder), long pulse 500ms (streak milestone)",
+          "Sleep current <15\u00b5A measured with multimeter in series",
+          "Step detection accuracy \u226590% vs pedometer ground truth over 1000-step test",
+          "OTA firmware update via nRF DFU functional on physical hardware"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "PCB_DESIGN",
+        "description": "Design PCB schematic and layout for habit-tracker wearable band in KiCad 8: STM32L4 + nRF52840, BQ25185 LiPo charger, DRV2605L haptic driver, LIS2DH12 accelerometer, USB-C charging. 4-layer stackup, 38\u00d718mm wrist-form-factor. Generate Gerbers and BOM.",
+        "payload": {
+          "eda_tool": "KiCad 8",
+          "stackup": "4-layer (signal / GND / power / signal)",
+          "key_components": [
+            "STM32L476RG",
+            "nRF52840",
+            "BQ25185 LiPo charger 500mA",
+            "DRV2605L haptic driver",
+            "LIS2DH12 accelerometer",
+            "USB-C CC resistors",
+            "150mAh LiPo"
+          ],
+          "form_factor": "38mm \u00d7 18mm",
+          "certifications_planned": [
+            "FCC Part 15",
+            "CE RED",
+            "RoHS"
+          ]
+        },
+        "acceptance_criteria": [
+          "Schematic ERC passes with zero errors in KiCad",
+          "PCB layout DRC passes with zero errors at 0.1mm minimum clearance",
+          "BOM generated with LCSC part numbers for all components",
+          "Gerbers pass JLCPCB DFM check",
+          "Power trace width \u22650.5mm for charging path, \u22650.25mm for logic signals",
+          "BLE antenna clearance meets Nordic reference design keep-out zone guidelines"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "HARDWARE_SIM",
+        "description": "LTspice SPICE model of BQ25185 CC/CV charging circuit and SystemC power model of FreeRTOS task duty cycle to validate battery life (\u22655 days), charge time (\u22641 hour), and sleep current (<15\u00b5A) before PCB fabrication.",
+        "payload": {
+          "tools": [
+            "LTspice XVII",
+            "SystemC 2.3.4"
+          ],
+          "simulations": [
+            "SPICE: BQ25185 CC/CV charge cycle for 150mAh at 500mA \u2014 validate charge time",
+            "SPICE: LDO dropout at low battery (3.0V) \u2014 verify MCU rail stability",
+            "SystemC: FreeRTOS BLE advertising + sleep duty cycle \u2014 daily battery life estimate",
+            "SystemC: Peak TX current (7mA BLE) \u2014 LDO output ripple <50mV"
+          ],
+          "success_targets": {
+            "charge_time_hours": "\u22641.0",
+            "sleep_current_ua": "\u226415",
+            "battery_life_days": "\u22655"
+          }
+        },
+        "acceptance_criteria": [
+          "SPICE charge simulation completes CC/CV within \u22641.0 hours for 150mAh cell",
+          "SystemC model estimates \u22655 days battery life under normal usage (6 reminders/day)",
+          "Sleep current simulation confirms <15\u00b5A in deep sleep",
+          "LDO output ripple <50mV under peak BLE TX current",
+          "Results documented in power_budget_analysis.pdf",
+          "Simulation values within 10% of prototype measurements post-fabrication"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Implement cross-platform mobile app in React Native 0.74 + Expo SDK 51: onboarding, habit list, streak calendar heatmap (52-week), habit creation wizard, statistics charts (Victory Native), social group feed, reminder configuration, Apple Health (react-native-health) and Google Fit (react-native-google-fit) sync screens.",
+        "payload": {
+          "framework": "React Native 0.74 + Expo SDK 51",
+          "navigation": "Expo Router (file-based)",
+          "state_management": "Zustand + React Query",
+          "ui_library": "NativeWind",
+          "key_screens": [
+            "onboarding",
+            "home / habit list",
+            "habit detail + calendar heatmap",
+            "create/edit habit",
+            "statistics",
+            "social groups + feed",
+            "health sync settings",
+            "profile + settings"
+          ],
+          "charting_lib": "Victory Native",
+          "notifications": "expo-notifications",
+          "health_libs": [
+            "react-native-health (iOS)",
+            "react-native-google-fit (Android)"
+          ]
+        },
+        "acceptance_criteria": [
+          "App builds and runs on iOS 16+ and Android 12+ without crashes",
+          "Habit list loads within 300ms on Pixel 6",
+          "Calendar heatmap renders 52 weeks of completions with correct color gradient",
+          "Reminder notifications fire at scheduled time (\u00b160s) when app is backgrounded",
+          "HealthKit sync reads step count and writes habit completions as mindful sessions",
+          "Health Connect sync reads steps and writes habit completion events",
+          "Social group feed loads with infinite scroll, <500ms initial paint",
+          "All screens match Figma designs within \u00b12px / \u00b12% color tolerance"
+        ],
+        "depends_on": [
+          3,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "DEVOPS",
+        "description": "CI/CD pipelines via GitHub Actions: backend (ruff \u2192 mypy \u2192 pytest \u2192 Docker \u2192 EKS rolling deploy) and mobile (tsc \u2192 Jest \u2192 Expo EAS Build \u2192 TestFlight + Play Internal). Monitoring: Datadog APM, Sentry crash reporting, PagerDuty alerting on P95 > 200ms or error rate > 1%.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "backend_pipeline": [
+            "ruff lint + mypy",
+            "pytest",
+            "Docker build + ECR push",
+            "kubectl rolling deploy to EKS"
+          ],
+          "mobile_pipeline": [
+            "tsc --noEmit",
+            "Jest",
+            "EAS Build",
+            "EAS Submit (TestFlight + Play Internal)"
+          ],
+          "monitoring": [
+            "Datadog APM",
+            "Sentry (iOS + Android + backend)",
+            "Uptime Robot",
+            "PagerDuty"
+          ],
+          "slo": {
+            "availability": "99.9%",
+            "api_p95_ms": 200
+          }
+        },
+        "acceptance_criteria": [
+          "Backend pipeline completes in <8 minutes for a standard PR",
+          "EAS Build produces signed IPA and APK in <15 minutes",
+          "Zero-downtime rolling deployment to EKS (maxSurge: 1, maxUnavailable: 0)",
+          "Sentry alerts fire within 2 minutes of a new crash",
+          "Datadog dashboard shows API latency, error rate, active users",
+          "Rollback procedure documented and tested: manual tag rollback <5 minutes"
+        ],
+        "depends_on": [
+          9,
+          11,
+          15
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "TESTS",
+        "description": "Write pytest unit and integration test suite for backend: auth flows, streak calculator edge cases (timezone boundaries, freeze logic, longest streak), reminder scheduler, social group RBAC, health sync OAuth PKCE flow, push notification dispatch. Target \u226585% line coverage.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio",
+          "coverage_target": "85%",
+          "test_categories": [
+            "auth (register/login/refresh/expiry)",
+            "streak (daily, weekly, timezone midnight, freeze, longest)",
+            "reminder (schedule, cancel, fire)",
+            "social RBAC",
+            "health sync OAuth",
+            "push notifications"
+          ],
+          "fixtures": "factory-boy + respx HTTP mocking",
+          "db_strategy": "real PostgreSQL in Docker Compose (no DB mocks)"
+        },
+        "acceptance_criteria": [
+          "\u226585% line coverage across src/ (excluding migrations and fixtures)",
+          "Streak tests cover: 30-day daily streak, weekly habit, timezone midnight boundary, freeze, longest streak",
+          "Auth tests cover: JWT expiry, refresh token rotation, concurrent session limit",
+          "All tests pass in <120 seconds in CI",
+          "Zero flaky tests (no sleep() calls, all async properly awaited)",
+          "Integration tests hit real PostgreSQL \u2014 no DB mocks"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Firmware unit tests (Unity + CMock) and HIL test specification for wearable: BLE GATT write/notify validation, haptic pattern timing (oscilloscope), accelerometer step detection accuracy (1000-step walk), RTC alarm accuracy (24hr soak), sleep current measurement, OTA DFU flow.",
+        "payload": {
+          "unit_test_framework": "Unity + CMock",
+          "hil_hardware": [
+            "STM32L4 Nucleo-64",
+            "nRF52840 DK"
+          ],
+          "test_cases": [
+            "BLE GATT: write habit_completion characteristic \u2192 audit log entry created",
+            "BLE GATT: reminder_alert notify fires within 100ms of RTC alarm",
+            "Haptic: short pulse 100ms, long pulse 500ms \u2014 measured with oscilloscope",
+            "Accelerometer: \u226590% step detection accuracy over 1000-step walk",
+            "RTC: reminder fires within \u00b15 seconds over 24-hour soak",
+            "Power: sleep current <15\u00b5A measured with multimeter in series",
+            "OTA DFU: firmware update via nRF Connect completes without brick"
+          ]
+        },
+        "acceptance_criteria": [
+          "Unity unit test suite passes 100% on target hardware",
+          "HIL test report documents pass/fail for all 7 test categories",
+          "BLE GATT notify latency P95 <100ms measured over 100 trials",
+          "Step detection accuracy \u226590% in 3 independent 1000-step walks",
+          "RTC alarm accuracy \u00b15s confirmed over 24-hour soak",
+          "Sleep current \u226415\u00b5A confirmed on 3 prototype units",
+          "OTA DFU succeeds on 10 consecutive update cycles"
+        ],
+        "depends_on": [
+          12,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "QA",
+        "description": "QA test plan for habit_tracker mobile app: smoke (20 cases), regression (150 cases), health sync (30 cases), social (40 cases), and exploratory charter for edge cases (streak midnight boundary, timezone change mid-streak, concurrent group actions). Device matrix: 8 devices across iOS 16/17/18 and Android 12/13/14.",
+        "payload": {
+          "test_management": "TestRail",
+          "device_matrix": [
+            "iPhone 14 iOS 16",
+            "iPhone 15 Pro iOS 17",
+            "iPhone 16 iOS 18",
+            "Pixel 6 Android 12",
+            "Samsung Galaxy S23 Android 13",
+            "OnePlus 12 Android 14",
+            "iPad Air iOS 17",
+            "Samsung Tab S9 Android 14"
+          ],
+          "test_suites": {
+            "smoke": "20 cases \u2014 install, register, create habit, complete, check streak",
+            "regression": "150 cases \u2014 all features, error states, offline mode",
+            "health_sync": "30 cases \u2014 HealthKit and Health Connect grant/revoke/conflict",
+            "social": "40 cases \u2014 group create, join, post, accountability nudge",
+            "exploratory": "midnight streak boundary, timezone change, concurrent actions"
+          }
+        },
+        "acceptance_criteria": [
+          "Test plan reviewed and approved before any release candidate",
+          "Smoke suite passes 100% on all 8 devices before beta release",
+          "Regression suite passes \u226598% before production release",
+          "Health sync tested on physical iPhone (TestFlight) and Pixel (real Health Connect)",
+          "Zero P1 (crash/data loss) bugs open at release gate",
+          "Bug severity classification documented: P1=crash/data loss, P2=feature broken, P3=cosmetic"
+        ],
+        "depends_on": [
+          15,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "SYSTEM_TEST",
+        "description": "End-to-end system tests: full user journeys via Detox (React Native E2E on iOS Simulator + Android Emulator), load testing at 10k concurrent users via k6, and health sync integration against live HealthKit/Health Connect sandboxes on physical devices.",
+        "payload": {
+          "e2e_framework": "Detox 20",
+          "load_test_tool": "k6",
+          "e2e_scenarios": [
+            "register \u2192 create habit \u2192 complete \u2192 streak \u2192 reminder \u2192 notification",
+            "create group \u2192 invite \u2192 both complete \u2192 see group feed",
+            "enable HealthKit \u2192 complete habit \u2192 verify mindful session written",
+            "miss a day \u2192 re-engage \u2192 verify streak reset",
+            "account deletion \u2192 verify data purged"
+          ],
+          "load_targets": {
+            "concurrent_users": 10000,
+            "rps": 1000,
+            "duration_min": 5
+          },
+          "performance_slo": {
+            "p95_ms": 200,
+            "p99_ms": 500,
+            "error_rate_pct": 0.1
+          }
+        },
+        "acceptance_criteria": [
+          "All 5 E2E scenarios pass on iOS Simulator (iPhone 15 Pro, iOS 17) and Android Emulator (Pixel 6, API 33)",
+          "Load test: P95 <200ms, P99 <500ms, error rate <0.1% at 10k concurrent users",
+          "Streak recalculation for 5,000 simultaneous completions completes in <30 seconds",
+          "Health sync E2E verified on physical device (TestFlight) against real HealthKit sandbox",
+          "Account deletion E2E confirms zero DB rows for deleted user after purge job"
+        ],
+        "depends_on": [
+          17,
+          19
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 21,
+        "task_type": "LOCALIZATION",
+        "description": "Set up i18n infrastructure (i18n-js + expo-localization for mobile, Babel for backend email/push templates). Implement locale-aware date formatting for streak heatmap, 12h/24h reminder display, week start day. Initial translations: English, Spanish, French, Portuguese (BR).",
+        "payload": {
+          "i18n_library": "i18n-js 4 + expo-localization",
+          "backend_i18n": "Babel (Python) for email and push notification templates",
+          "initial_locales": [
+            "en-US",
+            "es-ES",
+            "fr-FR",
+            "pt-BR"
+          ],
+          "locale_sensitive_features": [
+            "date format in streak heatmap",
+            "week start day (Sun vs Mon)",
+            "12h vs 24h reminder time",
+            "push notification copy",
+            "streak count pluralization"
+          ],
+          "translation_workflow": "POEditor + automated PR on update"
+        },
+        "acceptance_criteria": [
+          "All user-visible strings extracted to translation files (zero hardcoded strings)",
+          "Spanish, French, Portuguese (BR) translations complete and reviewed by native speakers",
+          "Date and time display respects device locale on iOS and Android",
+          "Week start day uses locale default and is user-overridable in settings",
+          "Push notification copy delivered in user's app language",
+          "Pluralization rules correct for all 4 locales",
+          "Top 5 target locales identified",
+          "Store listing translated"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "TRAINING",
+        "description": "Create user-facing documentation and onboarding materials: 5-step in-app interactive tutorial, 20-article help center (Notion/Zendesk), App Store product page copy (iOS + Android), and 3-minute onboarding video script. All materials localized for 4 supported locales.",
+        "payload": {
+          "deliverables": [
+            "5-step in-app interactive tour",
+            "20 help center articles",
+            "App Store listing (title, subtitle, description, keywords, screenshots)",
+            "3-minute onboarding video script",
+            "FAQ top 10 (streak freeze, health sync troubleshooting, group privacy)"
+          ],
+          "style_guide": "Friendly, encouraging, \u22648th grade reading level",
+          "locales": [
+            "en-US",
+            "es-ES",
+            "fr-FR",
+            "pt-BR"
+          ]
+        },
+        "acceptance_criteria": [
+          "In-app tutorial completes without errors on iOS and Android",
+          "Help center covers all 20 feature areas with search working",
+          "App Store description within 4,000 character limit and passes review guidelines",
+          "Onboarding video reviewed and approved by product manager",
+          "All materials pass Flesch-Kincaid readability test at \u22648th grade level",
+          "Training materials localized for all 4 supported locales"
+        ],
+        "depends_on": [
+          15,
+          21
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 23,
+        "task_type": "DOCS",
+        "description": "Write technical documentation: Redoc API reference (auto-generated from OpenAPI 3.1), backend architecture README with system diagram, deployment runbook, schemaspy-generated database ERD, health sync integration guide for partners, and CHANGELOG in kept-a-changelog format.",
+        "payload": {
+          "deliverables": [
+            "Redoc API reference hosted at /docs",
+            "Architecture README + system diagram",
+            "Deployment runbook (prod deploy + rollback)",
+            "Database ERD (schemaspy auto-generated)",
+            "Health Sync Integration Guide (HealthKit + Health Connect OAuth setup)",
+            "CHANGELOG (semantic versioning)"
+          ],
+          "changelog_enforcement": "CI check ensures CHANGELOG updated on every release PR"
+        },
+        "acceptance_criteria": [
+          "Redoc API reference renders all endpoints with request/response examples",
+          "Architecture diagram reviewed by all team leads",
+          "Deployment runbook validated by running prod deploy from scratch following only the doc",
+          "Database ERD reflects current migration state (auto-generated, not hand-drawn)",
+          "Health sync guide enables a developer to implement integration in <4 hours",
+          "CHANGELOG update enforced as CI check on release PRs"
+        ],
+        "depends_on": [
+          16,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 23,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 52,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 52,
+          "final_review": {
+            "score": 52,
+            "flaws": [
+              "HealthKit does NOT use OAuth2 PKCE. HealthKit uses HKHealthStore.requestAuthorization() \u2014 a native iOS permission dialog with no callback URL or authorization code. The plan documents 'Health sync OAuth2 PKCE callback flow for HealthKit' (steps 5, 6, 11) which is architecturally wrong and will require rework across API design, backend, and security model.",
+              "Steps 12-13 introduce a dual-MCU design (STM32L476RG + nRF52840) but treat it as a single firmware target. These are two physically separate chips requiring separate firmware images, an inter-chip communication protocol (SPI or UART), and synchronized state machines. Step 12 only targets STM32L4 with Nordic SoftDevice \u2014 SoftDevice runs on nRF, not STM32. This is a fundamental hardware architecture contradiction.",
+              "Offline mode appears only in QA regression scope ('150 cases \u2014 all features, error states, offline mode') with zero implementation steps. A habit tracking app must work offline \u2014 users complete habits in planes, gyms, and subways. No local SQLite, no sync conflict resolution, no optimistic UI, no queue-and-sync pattern is specified anywhere in the build steps.",
+              "No monetization implementation exists. Step 1 analyzes pricing models; the PRD (step 2) mentions freemium vs subscription; but there is no implementation step for StoreKit 2 (iOS in-app purchases), Google Play Billing, subscription state management, paywall UI, entitlement checking, or receipt validation. A consumer app without a monetization implementation path cannot generate revenue.",
+              "Step 11 depends on Step 10 (SAGE agent config), meaning the core FastAPI backend cannot be built until AI agent YAML files are authored. This dependency is inverted \u2014 SAGE agents call the backend API, not the reverse. This blocks the critical path unnecessarily.",
+              "GDPR right to erasure is inconsistent: the legal step (7) states 'account deletion within 30 days' (async background job) but the E2E test (step 20) validates 'account deletion \u2192 verify data purged' immediately. The architecture needs a defined deletion model: soft-delete immediately, hard-delete by scheduled purge job within 30 days, with user-visible status.",
+              "No product analytics implementation. The north star metric is '30-day streak retention rate' but there is no Mixpanel, Amplitude, Firebase Analytics, or PostHog integration step. You cannot measure DAU, D7, D30, or streak retention without an event tracking pipeline. This makes the success metrics in the PRD unmeasurable.",
+              "FCC Part 15 + CE RED certification for BLE hardware is listed as 'planned' in the PCB step but has no corresponding implementation step, budget estimate, or timeline allocation. FCC certification alone takes 4-12 weeks and $15,000-$30,000 minimum. This is not a checkbox \u2014 it is a regulatory gate that blocks hardware shipping.",
+              "Step 20 system test load target (10,000 concurrent users, 1,000 RPS) has no corresponding EKS cluster sizing, RDS instance class specification, or Redis cache sizing. Running k6 at 1,000 RPS against an undersized cluster will produce meaningless results and false failures at test time.",
+              "The 'writing habit completions as mindful sessions' to HealthKit (step 15 acceptance criteria) is an architectural assumption that Apple may reject during App Store review. Apple scrutinizes HealthKit data type usage \u2014 writing habit completions as mindful sessions is a misuse of that category. This needs explicit validation against HealthKit developer guidelines before implementation."
+            ],
+            "suggestions": [
+              "Replace 'Health sync OAuth2 PKCE flow for HealthKit' with 'HKHealthStore.requestAuthorization() permission flow' across steps 5, 6, 11, and 15. Health Connect (Android) does use OAuth2; keep that. Audit every acceptance criterion that mentions HealthKit OAuth.",
+              "Split the wearable into a separate product workstream or explicitly gate it behind a post-MVP milestone. Steps 12-14 add 4-6 months of specialized embedded work, certification overhead, and supply chain risk with zero validated demand. Ship the app first.",
+              "Add a dedicated OFFLINE step between steps 11 and 15: define the local-first data model (WatermelonDB or expo-sqlite), optimistic completion writes, background sync with conflict resolution (last-write-wins or server-authoritative), and connectivity state indicators in UI.",
+              "Add a MONETIZATION step after step 2: StoreKit 2 integration (iOS), Google Play Billing 5 (Android), RevenueCat as the abstraction layer, subscription entitlement checking middleware in the FastAPI backend, and paywall screen in the frontend.",
+              "Move Step 10 (SAGE config) out of the critical path for Step 11. SAGE agents should be configured against a running backend, not as a prerequisite for building it. Step 10 can depend on step 11.",
+              "Add a PUSH_INFRASTRUCTURE step between steps 9 and 11: Firebase project setup, APNs certificate provisioning, device token registration endpoint, token refresh strategy, notification category definitions for iOS (actionable notifications), and opted-out user handling.",
+              "Define the timezone strategy for streak calculation in the PRD (step 2) not just as a QA edge case (step 19). Decision: does 'today' mean user local midnight or UTC midnight? What happens on DST transitions? What happens when a user changes their device timezone mid-streak? This is a data model decision, not a test case.",
+              "Add a CONTENT_MODERATION step for social features: abuse reporting endpoint, automated toxicity screening (Perspective API or equivalent), moderator review queue, and ban/mute mechanics. Social UGC without moderation creates platform liability.",
+              "Replace EKS with ECS Fargate for the initial deployment. EKS adds Kubernetes operational overhead (node groups, cluster autoscaler, control plane management) that is disproportionate for an unproven consumer app. Migrate to EKS when sustained load justifies it.",
+              "Add an APP_STORE_READINESS step before DevOps (step 16): App Store Connect setup, privacy nutrition labels, HealthKit usage justification strings, App Review information, TestFlight external test group creation, and Play Console setup with Health Connect permissions declaration."
+            ],
+            "missing": [
+              "Offline-first architecture and sync conflict resolution \u2014 not mentioned in any implementation step",
+              "In-app purchase / subscription implementation (StoreKit 2, Google Play Billing, RevenueCat)",
+              "Product analytics event tracking pipeline (required to measure the north star metric)",
+              "Push notification infrastructure setup (Firebase, APNs certificates, token lifecycle)",
+              "nRF52840 firmware specification \u2014 the BLE SoC has no firmware plan despite being on the PCB schematic",
+              "Inter-chip communication protocol between STM32L4 and nRF52840 (SPI/UART framing, command set)",
+              "FCC/CE certification workstream with timeline and cost estimate",
+              "App Store Connect and Google Play Console setup and submission workflow",
+              "Streak timezone strategy \u2014 a business logic decision missing from the PRD",
+              "Social content moderation system (reporting, review queue, enforcement)",
+              "Data export feature (GDPR Article 20 portability \u2014 mentioned legally but not implemented)",
+              "Database zero-downtime migration strategy for live production schema changes",
+              "Rate limiting implementation location (API gateway vs. application layer vs. Redis)",
+              "Background fetch / background app refresh entitlements for iOS reminder reliability"
+            ],
+            "security_risks": [
+              "HealthKit data written to push notification payloads or analytics events would violate HealthKit guidelines and potentially GDPR. Step 8 mentions 'health data never stored in cleartext logs or analytics events' as a compliance criterion but no enforcement mechanism (log scrubbing, PII filtering middleware) is specified in the implementation steps.",
+              "Group invitation codes: the plan specifies secrets.token_urlsafe (correct) but does not specify code expiry, single-use enforcement, or rate limiting on the join endpoint. A non-expiring group code is a permanent membership escalation vector.",
+              "JWT RS256 private key storage: Secrets Manager rotation is mentioned for DB credentials and JWT signing keys (step 9) but key rotation for RS256 requires coordinated key rollover \u2014 existing valid tokens must remain verifiable during rotation. No key versioning or rotation strategy is specified, risking authentication outages on key rotation.",
+              "Health OAuth tokens (Health Connect) stored encrypted at column level \u2014 but the encryption key management is unspecified beyond 'AES-256'. Who holds the key? Is it in Secrets Manager? Is it per-user or global? A global encryption key means a single key compromise decrypts all health tokens.",
+              "Social group posts (UGC) with no input length limits or content-type restrictions in the API spec create a stored XSS and database bloat risk. The OpenAPI spec step (5) does not mention max payload sizes for group_posts.",
+              "APNs device tokens stored in the database \u2014 if the users table is exfiltrated, attackers can send arbitrary push notifications to all users (push phishing). Device tokens should be stored in a separate table with restricted access, not inline in user records.",
+              "Refresh token rotation without concurrent session invalidation: if the plan allows multiple active refresh tokens (common for multi-device use), a stolen refresh token remains valid until it is used. The acceptance criteria mention 'concurrent session limit' in tests but the implementation step does not define the session model."
+            ],
+            "summary": "This plan is architecturally ambitious but contains one concrete technical error that will cause production rework (HealthKit OAuth2 PKCE does not exist), one hardware design contradiction that blocks firmware delivery (dual-MCU with single firmware target), and two major feature gaps that affect core product viability (offline mode for a habit app, no monetization implementation). The software-only portions of the plan (steps 1-11, 15-23) are well-structured with real database integration tests, proper security tooling, and a defensible tech stack. However, the wearable hardware workstream (steps 12-14) is underspecified, lacks certification timelines, and introduces firmware complexity that is disproportionate to an unvalidated consumer product. The plan also conflates MVP with full-product delivery \u2014 steps 12-23 represent 6+ months of additional work beyond a functional app. Scoring 52: the software foundation is sound but the HealthKit misconception is a concrete bug in the design, offline mode is a product-defining omission for a habit tracker, and the hardware workstream has blocking technical contradictions requiring rework before any fabrication.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 52,
+              "flaws": [
+                "HealthKit does NOT use OAuth2 PKCE. HealthKit uses HKHealthStore.requestAuthorization() \u2014 a native iOS permission dialog with no callback URL or authorization code. The plan documents 'Health sync OAuth2 PKCE callback flow for HealthKit' (steps 5, 6, 11) which is architecturally wrong and will require rework across API design, backend, and security model.",
+                "Steps 12-13 introduce a dual-MCU design (STM32L476RG + nRF52840) but treat it as a single firmware target. These are two physically separate chips requiring separate firmware images, an inter-chip communication protocol (SPI or UART), and synchronized state machines. Step 12 only targets STM32L4 with Nordic SoftDevice \u2014 SoftDevice runs on nRF, not STM32. This is a fundamental hardware architecture contradiction.",
+                "Offline mode appears only in QA regression scope ('150 cases \u2014 all features, error states, offline mode') with zero implementation steps. A habit tracking app must work offline \u2014 users complete habits in planes, gyms, and subways. No local SQLite, no sync conflict resolution, no optimistic UI, no queue-and-sync pattern is specified anywhere in the build steps.",
+                "No monetization implementation exists. Step 1 analyzes pricing models; the PRD (step 2) mentions freemium vs subscription; but there is no implementation step for StoreKit 2 (iOS in-app purchases), Google Play Billing, subscription state management, paywall UI, entitlement checking, or receipt validation. A consumer app without a monetization implementation path cannot generate revenue.",
+                "Step 11 depends on Step 10 (SAGE agent config), meaning the core FastAPI backend cannot be built until AI agent YAML files are authored. This dependency is inverted \u2014 SAGE agents call the backend API, not the reverse. This blocks the critical path unnecessarily.",
+                "GDPR right to erasure is inconsistent: the legal step (7) states 'account deletion within 30 days' (async background job) but the E2E test (step 20) validates 'account deletion \u2192 verify data purged' immediately. The architecture needs a defined deletion model: soft-delete immediately, hard-delete by scheduled purge job within 30 days, with user-visible status.",
+                "No product analytics implementation. The north star metric is '30-day streak retention rate' but there is no Mixpanel, Amplitude, Firebase Analytics, or PostHog integration step. You cannot measure DAU, D7, D30, or streak retention without an event tracking pipeline. This makes the success metrics in the PRD unmeasurable.",
+                "FCC Part 15 + CE RED certification for BLE hardware is listed as 'planned' in the PCB step but has no corresponding implementation step, budget estimate, or timeline allocation. FCC certification alone takes 4-12 weeks and $15,000-$30,000 minimum. This is not a checkbox \u2014 it is a regulatory gate that blocks hardware shipping.",
+                "Step 20 system test load target (10,000 concurrent users, 1,000 RPS) has no corresponding EKS cluster sizing, RDS instance class specification, or Redis cache sizing. Running k6 at 1,000 RPS against an undersized cluster will produce meaningless results and false failures at test time.",
+                "The 'writing habit completions as mindful sessions' to HealthKit (step 15 acceptance criteria) is an architectural assumption that Apple may reject during App Store review. Apple scrutinizes HealthKit data type usage \u2014 writing habit completions as mindful sessions is a misuse of that category. This needs explicit validation against HealthKit developer guidelines before implementation."
+              ],
+              "suggestions": [
+                "Replace 'Health sync OAuth2 PKCE flow for HealthKit' with 'HKHealthStore.requestAuthorization() permission flow' across steps 5, 6, 11, and 15. Health Connect (Android) does use OAuth2; keep that. Audit every acceptance criterion that mentions HealthKit OAuth.",
+                "Split the wearable into a separate product workstream or explicitly gate it behind a post-MVP milestone. Steps 12-14 add 4-6 months of specialized embedded work, certification overhead, and supply chain risk with zero validated demand. Ship the app first.",
+                "Add a dedicated OFFLINE step between steps 11 and 15: define the local-first data model (WatermelonDB or expo-sqlite), optimistic completion writes, background sync with conflict resolution (last-write-wins or server-authoritative), and connectivity state indicators in UI.",
+                "Add a MONETIZATION step after step 2: StoreKit 2 integration (iOS), Google Play Billing 5 (Android), RevenueCat as the abstraction layer, subscription entitlement checking middleware in the FastAPI backend, and paywall screen in the frontend.",
+                "Move Step 10 (SAGE config) out of the critical path for Step 11. SAGE agents should be configured against a running backend, not as a prerequisite for building it. Step 10 can depend on step 11.",
+                "Add a PUSH_INFRASTRUCTURE step between steps 9 and 11: Firebase project setup, APNs certificate provisioning, device token registration endpoint, token refresh strategy, notification category definitions for iOS (actionable notifications), and opted-out user handling.",
+                "Define the timezone strategy for streak calculation in the PRD (step 2) not just as a QA edge case (step 19). Decision: does 'today' mean user local midnight or UTC midnight? What happens on DST transitions? What happens when a user changes their device timezone mid-streak? This is a data model decision, not a test case.",
+                "Add a CONTENT_MODERATION step for social features: abuse reporting endpoint, automated toxicity screening (Perspective API or equivalent), moderator review queue, and ban/mute mechanics. Social UGC without moderation creates platform liability.",
+                "Replace EKS with ECS Fargate for the initial deployment. EKS adds Kubernetes operational overhead (node groups, cluster autoscaler, control plane management) that is disproportionate for an unproven consumer app. Migrate to EKS when sustained load justifies it.",
+                "Add an APP_STORE_READINESS step before DevOps (step 16): App Store Connect setup, privacy nutrition labels, HealthKit usage justification strings, App Review information, TestFlight external test group creation, and Play Console setup with Health Connect permissions declaration."
+              ],
+              "missing": [
+                "Offline-first architecture and sync conflict resolution \u2014 not mentioned in any implementation step",
+                "In-app purchase / subscription implementation (StoreKit 2, Google Play Billing, RevenueCat)",
+                "Product analytics event tracking pipeline (required to measure the north star metric)",
+                "Push notification infrastructure setup (Firebase, APNs certificates, token lifecycle)",
+                "nRF52840 firmware specification \u2014 the BLE SoC has no firmware plan despite being on the PCB schematic",
+                "Inter-chip communication protocol between STM32L4 and nRF52840 (SPI/UART framing, command set)",
+                "FCC/CE certification workstream with timeline and cost estimate",
+                "App Store Connect and Google Play Console setup and submission workflow",
+                "Streak timezone strategy \u2014 a business logic decision missing from the PRD",
+                "Social content moderation system (reporting, review queue, enforcement)",
+                "Data export feature (GDPR Article 20 portability \u2014 mentioned legally but not implemented)",
+                "Database zero-downtime migration strategy for live production schema changes",
+                "Rate limiting implementation location (API gateway vs. application layer vs. Redis)",
+                "Background fetch / background app refresh entitlements for iOS reminder reliability"
+              ],
+              "security_risks": [
+                "HealthKit data written to push notification payloads or analytics events would violate HealthKit guidelines and potentially GDPR. Step 8 mentions 'health data never stored in cleartext logs or analytics events' as a compliance criterion but no enforcement mechanism (log scrubbing, PII filtering middleware) is specified in the implementation steps.",
+                "Group invitation codes: the plan specifies secrets.token_urlsafe (correct) but does not specify code expiry, single-use enforcement, or rate limiting on the join endpoint. A non-expiring group code is a permanent membership escalation vector.",
+                "JWT RS256 private key storage: Secrets Manager rotation is mentioned for DB credentials and JWT signing keys (step 9) but key rotation for RS256 requires coordinated key rollover \u2014 existing valid tokens must remain verifiable during rotation. No key versioning or rotation strategy is specified, risking authentication outages on key rotation.",
+                "Health OAuth tokens (Health Connect) stored encrypted at column level \u2014 but the encryption key management is unspecified beyond 'AES-256'. Who holds the key? Is it in Secrets Manager? Is it per-user or global? A global encryption key means a single key compromise decrypts all health tokens.",
+                "Social group posts (UGC) with no input length limits or content-type restrictions in the API spec create a stored XSS and database bloat risk. The OpenAPI spec step (5) does not mention max payload sizes for group_posts.",
+                "APNs device tokens stored in the database \u2014 if the users table is exfiltrated, attackers can send arbitrary push notifications to all users (push phishing). Device tokens should be stored in a separate table with restricted access, not inline in user records.",
+                "Refresh token rotation without concurrent session invalidation: if the plan allows multiple active refresh tokens (common for multi-device use), a stolen refresh token remains valid until it is used. The acceptance criteria mention 'concurrent session limit' in tests but the implementation step does not define the session model."
+              ],
+              "summary": "This plan is architecturally ambitious but contains one concrete technical error that will cause production rework (HealthKit OAuth2 PKCE does not exist), one hardware design contradiction that blocks firmware delivery (dual-MCU with single firmware target), and two major feature gaps that affect core product viability (offline mode for a habit app, no monetization implementation). The software-only portions of the plan (steps 1-11, 15-23) are well-structured with real database integration tests, proper security tooling, and a defensible tech stack. However, the wearable hardware workstream (steps 12-14) is underspecified, lacks certification timelines, and introduces firmware complexity that is disproportionate to an unvalidated consumer product. The plan also conflates MVP with full-product delivery \u2014 steps 12-23 represent 6+ months of additional work beyond a functional app. Scoring 52: the software foundation is sound but the HealthKit misconception is a concrete bug in the design, offline mode is a product-defining omission for a habit tracker, and the hardware workstream has blocking technical contradictions requiring rework before any fabrication.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T10:54:20.371823+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 383.98,
+      "critic_plan": 136.2
+    }
+  }
+}

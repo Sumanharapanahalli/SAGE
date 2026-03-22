@@ -1,0 +1,282 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the recipe and meal planning app market: identify top competitors
+      (Yummly, Mealime, Paprika, MyFitnessPal), user segments, pricing models, and
+      differentiation opportunities for ingredient-based search and social features.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers at least 5 direct competitors with feature scoring
+    - At least 3 distinct user personas defined with goals and pain points
+    - Clear differentiation statement for ingredient-based search USP
+    - GTM brief includes pricing recommendation and launch channel strategy
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Define product requirements document (PRD) for recipe_app: feature
+      list, prioritized roadmap (MoSCoW), success metrics (DAU, recipe saves, grocery
+      list exports, social shares), and v1 scope boundary.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved with full MoSCoW feature list
+    - v1 scope explicitly bounded with out-of-scope items listed
+    - Success metrics defined with baseline targets and measurement method
+    - Roadmap covers 3 horizons with dependency mapping
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all key flows:
+      ingredient search, recipe detail and nutritional panel, grocery list builder,
+      step-by-step cooking mode (voice-friendly), and social share sheet. Include
+      WCAG 2.1 AA accessibility audit.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - At least 5 user interviews completed and synthesized into design insights
+    - All 7 wireframe flows delivered in Figma with annotations
+    - Cooking mode supports large-text and voice-activation affordances
+    - Accessibility audit checklist passes for all screens
+    - Design tokens (colors, typography, spacing) documented
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design and implement PostgreSQL schema: recipes, ingredients, nutritional_facts,
+      user_pantry, grocery_lists, grocery_items, social_posts, follows, and likes
+      tables. Write Alembic migrations. Seed with 500 sample recipes with full nutritional
+      data.'
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations run cleanly from scratch with alembic upgrade head
+    - Full-text search index on recipe title and ingredient names functional
+    - Seed script populates 500 recipes with complete nutritional data
+    - Foreign key constraints and cascade rules validated
+    - Schema ER diagram exported and committed to /docs
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 contract for all recipe_app endpoints: ingredient
+      search, recipe CRUD, nutritional info retrieval, grocery list CRUD, cooking
+      session state machine, social posts/follows/likes, and user profile. Define
+      request/response schemas and RFC 7807 error envelopes.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with zero errors via openapi-spec-validator
+    - All endpoints have complete request and response examples
+    - Authentication and authorization scopes documented per endpoint
+    - Error responses follow RFC 7807 Problem Details format
+    - Spec committed to /docs/api/openapi.yaml
+    depends_on:
+    - 4
+  BACKEND:
+    description: 'Implement core FastAPI backend: ingredient-based recipe search (PostgreSQL
+      FTS plus fuzzy trigram matching), nutritional info aggregation from USDA FoodData
+      Central API with Redis caching, user pantry management, and dietary preference
+      filtering (vegan, gluten-free, keto, halal).'
+    agent_role: developer
+    acceptance_criteria:
+    - Ingredient search returns results in under 200ms for single-ingredient queries
+    - Multi-ingredient pantry search ranks recipes by ingredient match percentage
+    - Nutritional info returns macros and micros with USDA source attribution
+    - Dietary filters correctly exclude non-compliant recipes validated against known
+      dataset
+    - Redis cache hit rate above 80% on repeated nutritional lookups
+    depends_on:
+    - 5
+  CONFIG:
+    description: 'Configure the multi_agent_coordinator agentic pattern for recipe_app:
+      wire nutrition_analyst, substitution_advisor, and meal_planner specialist agents
+      to SAGE llm_gateway. Register roles in prompts.yaml and tasks.yaml. Configure
+      HITL approval gate for weekly meal plan proposals.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 3 agent roles defined in solutions/recipe_app/prompts.yaml with system prompts
+    - Task types registered in solutions/recipe_app/tasks.yaml for each role
+    - Coordinator correctly routes to specialist agents based on request type
+    - HITL gate creates pending proposal for meal plan — does not auto-execute
+    - SAGE /analyze endpoint invokes coordinator for recipe_app solution
+    depends_on:
+    - 6
+    - 7
+  FRONTEND:
+    description: 'Build React 18 + TypeScript app shell: routing, ingredient pantry
+      chip input with autocomplete, recipe search results grid with filter sidebar,
+      and recipe detail page with nutritional breakdown panel and macro donut chart.'
+    agent_role: developer
+    acceptance_criteria:
+    - Ingredient autocomplete returns suggestions within 150ms of keystroke
+    - Recipe grid renders 24 items with lazy-loaded images and no layout shift
+    - Filter sidebar applies dietary filters without full page reload
+    - Nutrition panel displays macros and top 5 micros with RDA percentage bars
+    - Lighthouse performance score at least 85 on recipe search page
+    depends_on:
+    - 3
+    - 6
+  FIRMWARE:
+    description: 'Develop embedded firmware for smart kitchen display companion device
+      (Raspberry Pi Zero 2W + 7.5-inch e-ink display): recipe step rendering daemon,
+      BLE 5.0 pairing with mobile app, deep sleep with PIR motion wake, and OTA firmware
+      update via recipe_app backend.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - Recipe step renders on e-ink display within 2 seconds of mobile app next-step
+      command
+    - BLE pairing completes in under 5 seconds from app-initiated discovery
+    - Deep sleep current draw below 0.5mA between step updates
+    - OTA update applies and reboots without manual intervention
+    - Firmware passes cppcheck static analysis with zero critical findings
+    depends_on:
+    - 11
+  HARDWARE_SIM:
+    description: 'Build SystemC simulation model for the kitchen display power subsystem:
+      LiPo charging circuit, BLE radio duty-cycle power draw, e-ink refresh power
+      spikes, and PIR sensor standby. Validate 7-day standby battery life target.'
+    agent_role: developer
+    acceptance_criteria:
+    - SystemC model compiles and runs a 30-day simulation in under 60 seconds
+    - Simulated battery life at least 7 days at 10 recipe steps per day usage
+    - Power spike model within 10% of datasheet values for e-ink refresh
+    - Simulation outputs CSV with per-component power breakdown
+    - Model includes parameterized light, medium, and heavy usage scenarios
+    depends_on:
+    - 13
+  PCB_DESIGN:
+    description: 'Design PCB for the smart kitchen display companion module using
+      KiCad 7: Raspberry Pi Zero 2W carrier board with e-ink FFC connector, TP4056
+      LiPo charging circuit, USB-C power, PIR sensor header, and 2.4GHz BLE antenna
+      keep-out zone. Generate Gerbers and BOM.'
+    agent_role: developer
+    acceptance_criteria:
+    - Schematic ERC passes with zero errors
+    - PCB DRC passes with zero errors using JLCPCB design rules
+    - BOM CSV includes manufacturer part numbers for all components
+    - Gerber set verified with online Gerber viewer before export
+    - BLE antenna keep-out area has at least 3mm clearance from copper pours
+    depends_on:
+    - 14
+  EMBEDDED_TEST:
+    description: 'Write HIL test harness and firmware unit tests: BLE pairing sequence
+      tests with mock BLE stack, e-ink display driver unit tests (frame buffer diff
+      logic), OTA update integrity tests (hash verification and rollback), and power
+      state machine transition tests.'
+    agent_role: developer
+    acceptance_criteria:
+    - All Unity unit tests pass on x86 host build with no failures
+    - HIL BLE pairing sequence test completes successfully on real hardware
+    - OTA corrupted-image test correctly halts and retains current firmware
+    - Power state machine test covers all 4 transitions with correct current assertions
+    - Coverage report shows at least 80% line coverage across firmware modules
+    depends_on:
+    - 13
+  LOCALIZATION:
+    description: 'Set up i18n for recipe_app using react-i18next (frontend) and Python
+      Babel (backend): extract all UI strings to en.json, add es, fr, ja, pt-BR locale
+      files, implement browser-preference locale detection, and configure locale-appropriate
+      unit systems (metric vs imperial).'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - Zero hardcoded UI strings remain in React components
+    - All 5 locale files complete with no missing keys verified by CI script
+    - Locale auto-detects from browser Accept-Language header on first load
+    - Ingredient quantities render in correct unit system per locale
+    - CI check fails the build when new strings are added without locale entries
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 10
+    - 11
+    - 12
+  QA:
+    description: 'Develop QA test plan: define test scope, risk-based test prioritization
+      for nutritional data accuracy and ingredient fuzzy-match false positives, 120+
+      test cases in TestRail, regression matrix, and UAT acceptance criteria. Define
+      exploratory charter for cooking mode edge cases.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan document approved with full scope definition
+    - At least 120 test cases written and loaded into TestRail
+    - Risk matrix identifies top 10 risks with mitigation per item
+    - Regression suite tagged and executable in CI via Playwright
+    - UAT acceptance criteria signed off by product_manager
+    depends_on:
+    - 2
+    - 3
+  TESTS:
+    description: 'Implement automated test suite: FastAPI pytest unit and integration
+      tests (85% coverage, testcontainers PostgreSQL), Playwright E2E tests for ingredient
+      search to grocery export, cooking mode full flow, and social post and share
+      journeys across 3 browsers. Locust load test for /recipes/search at 500 RPS.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Backend test suite achieves at least 85% line coverage
+    - All 3 Playwright journeys pass across 3 browsers with no flakes in 3 consecutive
+      runs
+    - Load test sustains 500 RPS with p99 under 500ms and zero 5xx errors
+    - CI pipeline runs full test suite on every PR and blocks merge on failure
+    - Test results artifact published to CI dashboard
+    depends_on:
+    - 6
+    - 7
+    - 8
+    - 11
+    - 12
+  SECURITY:
+    description: 'Perform security review: STRIDE threat model for auth, ingredient
+      data ingestion, social content, and photo uploads. Implement OWASP Top 10 mitigations
+      (parameterized queries, JWT rotation, HTML sanitization, file type validation,
+      auth rate limiting). Generate SBOM with syft.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model document covers all 4 surfaces
+    - OWASP Top 10 checklist completed with PASS or MITIGATED or ACCEPTED per item
+    - Bandit and manual review find zero SQL injection vulnerabilities
+    - Photo upload rejects non-image MIME types and files over 10MB
+    - SBOM generated with syft and committed to /docs/security/sbom.json
+    depends_on:
+    - 6
+    - 7
+    - 8
+  LEGAL:
+    description: 'Draft Terms of Service, Privacy Policy, data retention policy, and
+      cookie policy for recipe_app: cover UGC licensing for recipe posts, USDA data
+      attribution, GDPR and CCPA data subject rights (erasure and portability), photo
+      upload rights, and third-party share platform compliance.'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - All 4 legal documents drafted and reviewed
+    - GDPR right-to-erasure flow mapped to backend DELETE /users/{id} endpoint
+    - Data portability endpoint documented in OpenAPI spec
+    - USDA attribution text included in nutritional info display
+    - Cookie consent banner wired to analytics opt-in
+    depends_on:
+    - 2
+  TRAINING:
+    description: 'Create user onboarding and training materials: 5-stop in-app tooltip
+      tour (Shepherd.js) covering pantry input, recipe search, grocery list, cooking
+      mode, and social feed. Help center articles for all 5 features. 90-second app
+      overview video script. Community recipe submission guidelines.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - In-app tour implemented with Shepherd.js and triggers on first login
+    - All 5 help articles published to /help with search indexing
+    - Video script reviewed and approved reading at 90 seconds plus or minus 10 seconds
+    - Community guidelines include moderation criteria and reporting flow
+    - Help center search returns relevant results for top 20 anticipated support queries
+    depends_on:
+    - 10
+    - 11
+    - 12
+  DEVOPS:
+    description: Set up CI/CD with GitHub Actions, Docker multi-stage builds, Kubernetes
+      deployment manifests (recipe-app namespace), Helm charts for PostgreSQL and
+      Redis, database migration Kubernetes Job, and Prometheus/Grafana/Loki/Tempo
+      observability stack with SLO alerting.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs lint, test, build on every PR and blocks merge on failure
+    - CD pipeline auto-deploys to staging on main branch merge
+    - Production deploy requires manual approval gate in GitHub Actions
+    - Database migration runs as Kubernetes Job before deployment rollout
+    - Grafana dashboard shows recipe_search_p99 and api_error_rate SLO panels
+    - Alert fires within 2 minutes of p99 exceeding 500ms for more than 5 minutes
+    depends_on:
+    - 19
+    - 20

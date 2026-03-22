@@ -1,0 +1,62 @@
+project_name: lms_platform
+display_name: Lms Platform
+version: 1.0.0
+domain: edtech
+description: Learning management system with course builder, video hosting, quizzes,
+  progress tracking, certificates, SCORM/xAPI compliance, and LTI integration.
+detected_domains: []
+compliance_standards:
+- FERPA
+- COPPA
+- WCAG 2.1
+- SCORM/xAPI
+task_types:
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- LOCALIZATION
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- analyst
+- business_analyst
+- developer
+- devops_engineer
+- localization_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

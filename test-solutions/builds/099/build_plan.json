@@ -1,0 +1,1099 @@
+{
+  "run_id": "27906e5d-5efc-4e57-a1c0-147010ef6685",
+  "status": {
+    "run_id": "27906e5d-5efc-4e57-a1c0-147010ef6685",
+    "solution_name": "visitor_management",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T11:39:45.619885+00:00",
+    "updated_at": "2026-03-22T11:45:10.238734+00:00",
+    "product_description": "Enterprise visitor management with pre-registration, kiosk check-in, badge printing, NDA signing, host notification, and evacuation list.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document (PRD) covering pre-registration flows, kiosk check-in UX, badge printing specs, NDA signing workflow, host notification triggers, and evacuation list generation. Include success metrics: check-in time < 90s, host notification latency < 30s, badge print time < 15s.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "deliverables": [
+            "PRD",
+            "feature_roadmap",
+            "success_metrics",
+            "KPI_dashboard_spec"
+          ],
+          "key_flows": [
+            "pre_registration",
+            "walk_in_checkin",
+            "kiosk_checkin",
+            "nda_signing",
+            "badge_printing",
+            "host_notification",
+            "evacuation_export"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all six core flows with user stories in Given/When/Then format",
+          "Success metrics defined and measurable for each flow",
+          "Roadmap with phased delivery: MVP (check-in + badge), Phase 2 (NDA + pre-reg), Phase 3 (evacuation + analytics)",
+          "Stakeholder sign-off checklist included"
+        ],
+        "depends_on": [],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Capture business requirements: visitor data retention policies, multi-location site support, host directory integration (LDAP/AD), compliance obligations for visitor PII, evacuation drill workflows, and ROI model (receptionist hours saved, security incident reduction).",
+        "payload": {
+          "solution_name": "visitor_management",
+          "deliverables": [
+            "BRD",
+            "process_flow_diagrams",
+            "ROI_model",
+            "data_retention_policy",
+            "stakeholder_map"
+          ],
+          "integrations_to_analyze": [
+            "LDAP_AD",
+            "email_SMTP",
+            "badge_printer_API",
+            "e_signature_provider",
+            "emergency_notification_system"
+          ]
+        },
+        "acceptance_criteria": [
+          "All visitor lifecycle states documented: pre-registered, checked-in, signed-NDA, badged, checked-out, flagged",
+          "LDAP/AD host lookup process flow diagrammed",
+          "Data retention rules specified per jurisdiction (GDPR, CCPA minimum)",
+          "ROI model shows break-even analysis for enterprise deployment",
+          "Edge cases documented: denied entry, NDA refusal, host unavailable, printer offline",
+          "Integration points with existing systems mapped",
+          "Migration plan drafted"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "LEGAL",
+        "description": "Draft NDA template (mutual and one-way variants), visitor privacy notice (GDPR Article 13 compliant), terms of use for kiosk and pre-registration portal, data processing agreement template for enterprise customers, and IP ownership clauses for visitor-submitted information.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "deliverables": [
+            "nda_template_mutual.docx",
+            "nda_template_one_way.docx",
+            "visitor_privacy_notice.html",
+            "kiosk_terms_of_use.html",
+            "data_processing_agreement_template.docx"
+          ],
+          "jurisdictions": [
+            "US",
+            "EU",
+            "UK"
+          ],
+          "standards_referenced": [
+            "GDPR",
+            "CCPA",
+            "ISO_27001"
+          ]
+        },
+        "acceptance_criteria": [
+          "NDA templates reviewed and approved by legal counsel",
+          "Privacy notice includes all GDPR Article 13 mandatory disclosures",
+          "Kiosk ToU is accessible, plain-language, and version-stamped",
+          "DPA template covers data sub-processors and breach notification obligations",
+          "All documents include effective date and amendment process"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 4,
+        "task_type": "SECURITY",
+        "description": "Produce threat model for visitor management system: PII data at rest and in transit, kiosk physical attack surface, session isolation between visitors, badge cloning risks, evacuation list access controls, and admin portal authentication. Map threats to ISO 27001 Annex A controls and SOC 2 Trust Service Criteria.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "methodology": "STRIDE",
+          "deliverables": [
+            "threat_model.md",
+            "iso27001_control_mapping.xlsx",
+            "soc2_criteria_mapping.xlsx",
+            "pentest_scope.md"
+          ],
+          "threat_surfaces": [
+            "kiosk_browser",
+            "admin_portal",
+            "pre_registration_portal",
+            "badge_printer_network",
+            "evacuation_export_api",
+            "host_notification_webhooks"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE analysis completed for all six threat surfaces",
+          "Each threat mapped to ISO 27001 Annex A control (A.5\u2013A.18)",
+          "SOC 2 CC criteria (CC6, CC7, CC9) mapped to mitigations",
+          "High and critical risks have documented mitigations before development begins",
+          "Penetration test scope and rules of engagement documented"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Design wireframes and interaction flows for: (1) kiosk check-in touchscreen UI (large-touch, accessibility AA compliant), (2) pre-registration web portal for hosts and assistants, (3) admin dashboard (visitor log, evacuation list, badge reprint), (4) host notification email/SMS templates. Include error states and offline fallback screens.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "deliverables": [
+            "kiosk_wireframes.figma",
+            "pre_registration_wireframes.figma",
+            "admin_dashboard_wireframes.figma",
+            "notification_templates.html",
+            "design_system_tokens.json"
+          ],
+          "accessibility_standard": "WCAG_2.1_AA",
+          "kiosk_constraints": {
+            "screen_size": "21.5in_touch",
+            "input": "touch_only",
+            "session_timeout": "60s"
+          }
+        },
+        "acceptance_criteria": [
+          "Kiosk check-in flow completable in under 5 taps with no keyboard for standard visitors",
+          "All interactive elements meet 44x44px minimum touch target size",
+          "Colour contrast ratios pass WCAG 2.1 AA for all text",
+          "Offline fallback screen shown when network is unavailable",
+          "Admin evacuation list view shows count, names, and last-known location sortable in < 2 clicks"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "DATABASE",
+        "description": "Design PostgreSQL schema for visitor_management: visitors, pre_registrations, visits, nda_signatures, badges, hosts, sites, evacuation_snapshots, audit_log tables. Include soft-delete, PII encryption-at-rest column annotations, row-level security policies per site_id, and migration scripts.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "engine": "PostgreSQL 15",
+          "deliverables": [
+            "schema.sql",
+            "migrations/001_initial.sql",
+            "migrations/002_rls_policies.sql",
+            "seed_data.sql",
+            "erd.png"
+          ],
+          "pii_columns": [
+            "visitor.full_name",
+            "visitor.email",
+            "visitor.phone",
+            "visitor.photo_path",
+            "nda_signature.signature_blob"
+          ],
+          "encryption": "pgcrypto AES-256 for PII columns"
+        },
+        "acceptance_criteria": [
+          "All PII columns encrypted at rest using pgcrypto or column-level encryption",
+          "Row-level security policies enforce site_id isolation \u2014 cross-site queries return empty",
+          "Audit_log table is append-only (INSERT only, no UPDATE/DELETE grants)",
+          "Migrations are idempotent and include rollback scripts",
+          "ERD reviewed and approved before BACKEND tasks begin"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 spec for all visitor_management endpoints: visitor CRUD, pre-registration lifecycle, kiosk check-in session, NDA signature submission, badge generation, host lookup, evacuation list export, and admin reporting. Include authentication (JWT + API key for kiosk), rate limiting, and webhook schemas for host notification.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "spec_file": "openapi.yaml",
+          "auth_schemes": [
+            "JWT_Bearer",
+            "API_Key_for_kiosk"
+          ],
+          "endpoint_groups": [
+            "visitors",
+            "pre_registrations",
+            "check_in",
+            "nda",
+            "badges",
+            "hosts",
+            "evacuation",
+            "admin",
+            "webhooks"
+          ],
+          "webhook_events": [
+            "visitor.checked_in",
+            "visitor.checked_out",
+            "nda.signed",
+            "nda.declined",
+            "visitor.flagged"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 spec validates with no errors using spectral lint",
+          "All endpoints have request/response schemas with examples",
+          "Evacuation list endpoint supports CSV and JSON export formats",
+          "Webhook payloads include idempotency key and timestamp",
+          "API versioning strategy documented (v1 prefix, deprecation policy)"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "COMPLIANCE",
+        "description": "Produce initial ISO 27001 and SOC 2 evidence artifacts: information security policy, asset inventory (visitor PII data assets), risk assessment register, access control policy, and data classification scheme. These seed the compliance evidence library used throughout development.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "standards": [
+            "ISO_27001:2022",
+            "SOC_2_Type_II"
+          ],
+          "deliverables": [
+            "information_security_policy.pdf",
+            "asset_inventory.xlsx",
+            "risk_register.xlsx",
+            "access_control_policy.pdf",
+            "data_classification_scheme.pdf"
+          ],
+          "soc2_criteria": [
+            "CC1",
+            "CC2",
+            "CC3",
+            "CC6",
+            "CC7",
+            "CC9",
+            "A1",
+            "P1",
+            "P3",
+            "P4",
+            "P8"
+          ]
+        },
+        "acceptance_criteria": [
+          "Risk register covers all threats identified in threat model (step 4)",
+          "Asset inventory classifies all PII data assets with owner, location, and retention period",
+          "Access control policy defines least-privilege roles: kiosk, receptionist, site_admin, global_admin",
+          "Data classification scheme applied to all database tables",
+          "All documents version-controlled and include review/approval signatures"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up project infrastructure: Docker Compose for local dev (PostgreSQL, Redis, MinIO for badge/NDA storage, MailHog), environment variable schema (.env.example), pre-commit hooks (lint, type-check, secret scan), and monorepo structure (backend/, frontend-admin/, frontend-kiosk/, frontend-prereg/).",
+        "payload": {
+          "solution_name": "visitor_management",
+          "stack": {
+            "backend": "FastAPI + Python 3.12",
+            "admin_frontend": "React 18 + TypeScript",
+            "kiosk_frontend": "React 18 + TypeScript (kiosk mode)",
+            "prereg_frontend": "React 18 + TypeScript",
+            "queue": "Redis + Celery",
+            "storage": "MinIO S3-compatible"
+          },
+          "deliverables": [
+            "docker-compose.yml",
+            "docker-compose.prod.yml",
+            ".env.example",
+            ".pre-commit-config.yaml",
+            "Makefile",
+            "pyproject.toml",
+            "package.json workspaces"
+          ]
+        },
+        "acceptance_criteria": [
+          "`make dev` starts all services and passes health checks within 60s",
+          "All secrets read from environment variables \u2014 no hardcoded values in any file",
+          "Pre-commit hooks block commits with detected secrets (gitleaks) or lint failures",
+          "MinIO bucket policies enforce private access for visitor photos and NDA blobs",
+          "Docker images build reproducibly from pinned base images"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement core backend services: JWT authentication with role-based access control (kiosk, receptionist, site_admin, global_admin), site/tenant management, LDAP/Active Directory host lookup integration, visitor profile CRUD with PII encryption, and audit logging middleware that writes every state transition to audit_log.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "framework": "FastAPI",
+          "modules": [
+            "auth",
+            "sites",
+            "hosts_directory",
+            "visitors",
+            "audit_middleware"
+          ],
+          "ldap_lib": "python-ldap3",
+          "encryption": "cryptography (Fernet AES-128-CBC for application-layer PII)",
+          "agentic_pattern": "single_agent"
+        },
+        "acceptance_criteria": [
+          "JWT tokens expire in 8h for staff, 15min for kiosk sessions",
+          "LDAP host lookup returns name, email, phone, and department within 500ms",
+          "Visitor CRUD correctly encrypts/decrypts PII columns \u2014 raw PII never logged",
+          "Audit middleware logs user, action, resource_id, site_id, and timestamp for every mutating request",
+          "Role-based access control tested: kiosk role cannot access admin endpoints"
+        ],
+        "depends_on": [
+          6,
+          7,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement pre-registration service: hosts create visitor invitations (name, email, purpose, expected arrival window, NDA required flag), system sends branded confirmation email with QR code, visitor completes pre-registration form including emergency contact and vehicle registration, system validates and stores pre-registration record.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "module": "pre_registration",
+          "qr_lib": "qrcode",
+          "email_lib": "FastMail + Jinja2 templates",
+          "qr_payload": "signed JWT with pre_registration_id and expiry",
+          "celery_tasks": [
+            "send_confirmation_email",
+            "send_reminder_24h",
+            "expire_stale_preregistrations"
+          ]
+        },
+        "acceptance_criteria": [
+          "Host can create pre-registration and confirmation email delivered within 60s",
+          "QR code JWT signature verified on scan \u2014 tampered QR codes rejected",
+          "24-hour reminder email sent via Celery scheduled task",
+          "Pre-registrations expire after visit window + 24h and are marked expired (not deleted)",
+          "Pre-registration form collects emergency contact and validates email format"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement kiosk check-in service: scan QR code to load pre-registration or manual entry for walk-ins, capture visitor photo via webcam API, validate visitor against watchlist, create visit record, determine NDA requirement, sequence badge printing and host notification. Handle offline queue with Redis for intermittent connectivity.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "module": "kiosk_checkin",
+          "session_model": "stateless JWT kiosk session per site",
+          "watchlist_check": "async background check against internal denied-entry list",
+          "offline_queue": "Redis LPUSH with idempotency key per kiosk device",
+          "celery_tasks": [
+            "process_offline_checkin_queue",
+            "watchlist_sync"
+          ]
+        },
+        "acceptance_criteria": [
+          "QR scan to check-in completion in under 30s for pre-registered visitors",
+          "Walk-in check-in completes in under 90s including photo capture",
+          "Watchlist match triggers immediate alert to security and blocks badge printing",
+          "Offline queue processes within 30s of connectivity restoration",
+          "Visit record created with check_in_time, kiosk_id, site_id, and visit_type"
+        ],
+        "depends_on": [
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement badge printing service: generate badge PDF with visitor name, company, host name, date, visitor photo, site logo, badge color by visitor type, and expiry time. Support ZPL output for Zebra label printers and PDF for standard printers. Expose print job status polling endpoint and handle printer-offline gracefully.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "module": "badge_printing",
+          "pdf_lib": "reportlab or WeasyPrint",
+          "zpl_lib": "zpl2 or raw ZPL string generation",
+          "badge_fields": [
+            "visitor_name",
+            "company",
+            "host_name",
+            "date",
+            "expiry_time",
+            "visitor_photo",
+            "site_logo",
+            "badge_type_color",
+            "barcode_visit_id"
+          ],
+          "printer_protocols": [
+            "CUPS_IPP",
+            "direct_TCP_9100_ZPL"
+          ],
+          "badge_types": {
+            "contractor": "orange",
+            "vendor": "blue",
+            "interview": "green",
+            "vip": "gold",
+            "standard": "white"
+          }
+        },
+        "acceptance_criteria": [
+          "Badge PDF generated in under 3s including photo embedding",
+          "ZPL output renders correctly on Zebra ZD421 test printer",
+          "Printer-offline returns graceful error with retry instructions on kiosk screen",
+          "Badge includes a barcode encoding visit_id scannable for check-out",
+          "Badge expiry time printed and enforced: expired badges rejected on re-scan"
+        ],
+        "depends_on": [
+          10,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement NDA signing service: render NDA template with visitor and host details, present on kiosk touchscreen with scroll-to-bottom requirement, capture wet-ink-style stylus/finger signature, store signed PDF with signature blob in MinIO, record signature metadata (timestamp, IP, device_id, visitor_id, nda_version) for legal enforceability.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "module": "nda_signing",
+          "signature_capture": "canvas-based finger/stylus capture \u2192 PNG blob",
+          "pdf_signing": "reportlab embed signature image + metadata into NDA PDF",
+          "storage": "MinIO with server-side encryption, bucket policy: private, lifecycle: retain 7 years",
+          "nda_versioning": "NDA templates versioned by hash \u2014 visitor always signs current version"
+        },
+        "acceptance_criteria": [
+          "Scroll-to-bottom enforced before sign button is enabled",
+          "Signed PDF stored in MinIO within 5s of signature submission",
+          "Signature metadata includes RFC 3339 timestamp, kiosk device_id, visitor_id, and NDA template hash",
+          "NDA declined event triggers visit status update to nda_declined and notifies host",
+          "Signed NDAs retrievable by legal/admin with full audit trail",
+          "Retention lifecycle policy configured: 7-year minimum before deletion eligible"
+        ],
+        "depends_on": [
+          10,
+          12,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement host notification service: send real-time notifications via email, SMS (Twilio), and optional Slack/Teams webhook when visitor checks in or NDA is signed. Include meeting room directions, visitor photo thumbnail, and one-click check-out link. Handle escalation if host doesn't acknowledge within configurable timeout.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "module": "host_notification",
+          "channels": [
+            "email_SMTP",
+            "SMS_Twilio",
+            "Slack_webhook",
+            "MS_Teams_webhook"
+          ],
+          "celery_tasks": [
+            "send_arrival_notification",
+            "escalate_unacknowledged_arrival"
+          ],
+          "escalation_timeout_minutes": 10,
+          "notification_payload": [
+            "visitor_name",
+            "visitor_company",
+            "visitor_photo_url",
+            "check_in_time",
+            "kiosk_location",
+            "checkout_link"
+          ]
+        },
+        "acceptance_criteria": [
+          "Email notification delivered within 15s of check-in event",
+          "SMS delivered within 30s via Twilio with visitor name and location",
+          "Host acknowledgement tracked \u2014 unacknowledged arrivals escalate to backup contact after configurable timeout",
+          "One-click check-out link uses signed token valid for visit duration only",
+          "Notification channel preferences configurable per host in admin portal"
+        ],
+        "depends_on": [
+          10,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Implement evacuation list service: maintain real-time on-site visitor roster per site, support point-in-time snapshots for drills, export to CSV/JSON/PDF with visitor name, company, host, check-in time, and last-known zone. Provide mobile-friendly endpoint for security staff on handheld devices during emergencies.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "module": "evacuation",
+          "real_time_store": "Redis sorted set per site_id with visit_id scores by check_in_timestamp",
+          "export_formats": [
+            "CSV",
+            "JSON",
+            "PDF"
+          ],
+          "snapshot_trigger": [
+            "manual_admin",
+            "fire_alarm_webhook",
+            "scheduled_drill"
+          ],
+          "mobile_endpoint": "GET /evacuation/live?site_id=X \u2014 returns paginated JSON, no auth token required for emergency access (IP whitelist only)"
+        },
+        "acceptance_criteria": [
+          "Live roster reflects check-in/check-out within 2s",
+          "CSV export with all required fields generated in under 5s for 500 concurrent visitors",
+          "PDF export includes site name, snapshot timestamp, page numbers, and total count",
+          "Emergency mobile endpoint requires no login but restricted to site security IP range",
+          "Drill snapshots stored with immutable timestamp for compliance reporting"
+        ],
+        "depends_on": [
+          10,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "AGENTIC",
+        "description": "Implement AI visitor intelligence layer using Multi-Agent Coordinator pattern: coordinator routes check-in context to specialist agents \u2014 (1) risk_assessor agent cross-checks visitor against watchlist, flags anomalies (unusual visit frequency, blacklisted domains); (2) routing_agent determines NDA requirement and badge type from visit purpose; (3) host_assistant agent drafts personalised welcome message and meeting notes for host.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "pattern": "coordinator",
+          "coordinator": "check_in_coordinator",
+          "specialist_agents": [
+            {
+              "name": "risk_assessor",
+              "tools": [
+                "watchlist_lookup",
+                "visit_history_query",
+                "domain_reputation_check"
+              ]
+            },
+            {
+              "name": "routing_agent",
+              "tools": [
+                "nda_policy_lookup",
+                "badge_type_classifier",
+                "room_availability_check"
+              ]
+            },
+            {
+              "name": "host_assistant",
+              "tools": [
+                "host_preference_lookup",
+                "meeting_context_fetcher",
+                "welcome_message_generator"
+              ]
+            }
+          ],
+          "hitl_gates": [
+            "risk_flag_review",
+            "nda_waiver_approval"
+          ],
+          "llm_provider": "claude-sonnet-4-6"
+        },
+        "acceptance_criteria": [
+          "Coordinator dispatches to all three agents in parallel, aggregates results within 10s",
+          "Risk flags above threshold pause check-in and notify security before badge prints",
+          "Routing agent correctly classifies badge type from visit purpose in > 95% of test cases",
+          "Host welcome message generated and included in host notification",
+          "HITL gate pauses check-in flow and logs pending approval in SAGE proposal store"
+        ],
+        "depends_on": [
+          10,
+          12,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build admin web portal (React 18 + TypeScript): visitor log with search/filter/export, pre-registration management, host management, evacuation list view with live count, badge reprint action, NDA document viewer, site configuration, user management, and analytics dashboard (daily visitors, peak hours, average check-in time).",
+        "payload": {
+          "solution_name": "visitor_management",
+          "app": "frontend-admin",
+          "pages": [
+            "dashboard",
+            "visitors",
+            "pre_registrations",
+            "hosts",
+            "evacuation",
+            "badges",
+            "ndas",
+            "sites",
+            "users",
+            "settings",
+            "analytics"
+          ],
+          "component_lib": "shadcn/ui + Tailwind CSS",
+          "state_management": "TanStack Query for server state, Zustand for UI state",
+          "export_formats": [
+            "CSV",
+            "PDF"
+          ]
+        },
+        "acceptance_criteria": [
+          "Visitor log loads 1000 records in under 2s with virtual scrolling",
+          "Evacuation list auto-refreshes every 10s with live visitor count badge",
+          "NDA PDF renders in-browser without download for legal review",
+          "Analytics dashboard shows 7/30/90-day visitor trends with chart.js visualizations",
+          "All admin actions (badge reprint, visitor flag, user role change) write to audit log"
+        ],
+        "depends_on": [
+          5,
+          11,
+          14,
+          15,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build pre-registration web portal (React 18 + TypeScript): host-facing invitation creation form, visitor-facing pre-registration completion form (accessible via email link), visit confirmation page with QR code download, and optional assistant delegation (assistant can register on behalf of host).",
+        "payload": {
+          "solution_name": "visitor_management",
+          "app": "frontend-prereg",
+          "pages": [
+            "create_invitation",
+            "complete_registration",
+            "confirmation_qr",
+            "manage_invitations"
+          ],
+          "accessibility": "WCAG_2.1_AA",
+          "mobile_responsive": true,
+          "qr_display_lib": "qrcode.react"
+        },
+        "acceptance_criteria": [
+          "Pre-registration form completable on mobile in under 3 minutes",
+          "QR code downloadable as PNG and displayable for screen scanning",
+          "Form validates email, phone format, and required fields before submission",
+          "Confirmation page shows visit details, host contact, and directions field",
+          "Delegation flow allows assistant to create invitation with host's name"
+        ],
+        "depends_on": [
+          5,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build kiosk check-in UI (React 18 + TypeScript, kiosk mode): full-screen touchscreen interface with large tap targets, QR scan flow, walk-in manual entry, photo capture, NDA scroll-and-sign screen, badge printing confirmation, and idle screen with branding. Implement session auto-clear after 60s inactivity and physical keyboard lockout.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "app": "frontend-kiosk",
+          "screens": [
+            "idle_branding",
+            "entry_type_select",
+            "qr_scan",
+            "manual_entry",
+            "photo_capture",
+            "nda_scroll_sign",
+            "badge_printing_confirm",
+            "checkin_complete",
+            "error_offline"
+          ],
+          "kiosk_mode": "Chrome kiosk flags + CSS full-screen lock",
+          "webcam_lib": "react-webcam",
+          "signature_lib": "react-signature-canvas",
+          "qr_scanner_lib": "zxing-js"
+        },
+        "acceptance_criteria": [
+          "Full check-in flow (QR scan \u2192 NDA \u2192 badge) completable without keyboard on touchscreen",
+          "Session auto-cleared and idle screen shown after 60s with no interaction",
+          "Offline error screen shown within 3s of network loss with fallback instructions",
+          "NDA scroll progress bar shows percentage scrolled; sign button disabled until 100%",
+          "Photo capture preview shown to visitor for confirmation before proceeding"
+        ],
+        "depends_on": [
+          5,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline (GitHub Actions), container registry, staging and production deployment (Kubernetes or Docker Swarm), monitoring (Prometheus + Grafana: check-in latency p95, badge print queue depth, notification delivery rate, active visitor count), alerting (PagerDuty for printer offline, notification failures, high error rates), and log aggregation (Loki).",
+        "payload": {
+          "solution_name": "visitor_management",
+          "ci_cd": "GitHub Actions",
+          "deployment_target": "Kubernetes (self-hosted) or Docker Swarm",
+          "monitoring_stack": [
+            "Prometheus",
+            "Grafana",
+            "Loki",
+            "Alertmanager"
+          ],
+          "alert_conditions": [
+            "printer_offline > 5min",
+            "notification_delivery_rate < 95%",
+            "checkin_error_rate > 1%",
+            "evacuation_api_latency_p95 > 2s"
+          ],
+          "sre_deliverables": [
+            "runbooks/printer_offline.md",
+            "runbooks/db_failover.md",
+            "runbooks/kiosk_recovery.md",
+            "SLA_definition.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs lint, type-check, unit tests, and integration tests on every PR",
+          "Deployment to staging automatic on merge to main; production requires manual approval gate",
+          "Grafana dashboard shows real-time check-in latency p50/p95/p99",
+          "Alert fires within 2 minutes of printer going offline",
+          "Log aggregation captures structured JSON logs with trace_id for all services"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "QA",
+        "description": "Design and execute quality assurance test plan: test cases for all six core flows (pre-registration, walk-in, NDA, badge, notification, evacuation), boundary cases (printer offline, LDAP unavailable, watchlist match, NDA declined, session timeout), accessibility testing, and cross-browser/device matrix.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "test_framework": "pytest (backend) + Playwright (frontend E2E)",
+          "deliverables": [
+            "test_plan.md",
+            "test_cases_matrix.xlsx",
+            "defect_report_template.md",
+            "accessibility_audit_report.md"
+          ],
+          "test_devices": [
+            "21.5in_touch_kiosk",
+            "iPad_Safari",
+            "Chrome_desktop",
+            "Android_mobile"
+          ],
+          "coverage_target": "backend 85%, frontend 70%"
+        },
+        "acceptance_criteria": [
+          "Test plan covers all six core flows with at least 3 negative test cases each",
+          "Accessibility audit completed using axe-core with zero critical violations",
+          "Cross-browser matrix tested on Chrome, Firefox, Safari, and Edge",
+          "All P1 defects resolved before system test begins",
+          "Test coverage meets targets: backend 85%, frontend 70%"
+        ],
+        "depends_on": [
+          18,
+          19,
+          20
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test suite: full visitor lifecycle from invitation email through check-out, load test (100 concurrent kiosk check-ins), evacuation list accuracy test (verify count matches visits within 2s), notification delivery latency test, badge print throughput test (target: 4 badges/min per printer), and disaster recovery test (DB failover).",
+        "payload": {
+          "solution_name": "visitor_management",
+          "test_tool": "Playwright E2E + k6 load test",
+          "load_test_scenarios": [
+            {
+              "name": "peak_morning_checkin",
+              "vus": 100,
+              "duration": "10m"
+            },
+            {
+              "name": "evacuation_export_load",
+              "vus": 50,
+              "endpoint": "GET /evacuation/live"
+            }
+          ],
+          "acceptance_thresholds": {
+            "checkin_latency_p95": "30s",
+            "notification_latency": "30s",
+            "evacuation_export": "5s",
+            "badge_throughput": "4/min"
+          },
+          "dr_test": "PostgreSQL primary failover to replica within 30s with zero visit data loss"
+        },
+        "acceptance_criteria": [
+          "Full pre-registration \u2192 check-in \u2192 NDA \u2192 badge \u2192 notification flow passes in under 90s",
+          "Load test: p95 check-in latency under 30s at 100 concurrent users",
+          "Evacuation list count matches actual visit count within 2s at 500 visitors on-site",
+          "Host notification delivered within 30s in 99% of test runs",
+          "DR failover completes within 30s with no visit records lost",
+          "Load test simulates expected concurrent users",
+          "Failover scenario tested"
+        ],
+        "depends_on": [
+          21,
+          22
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 24,
+        "task_type": "OPERATIONS",
+        "description": "Produce operational runbooks: kiosk hardware setup and recovery, badge printer calibration and offline recovery, LDAP sync failure recovery, database backup and restore procedures, incident response playbook for security events (watchlist match, data breach), SLA definitions (99.5% uptime, check-in latency SLO), and capacity planning model for multi-site scaling.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "deliverables": [
+            "runbook_kiosk_setup.md",
+            "runbook_printer_recovery.md",
+            "runbook_ldap_failure.md",
+            "runbook_db_restore.md",
+            "incident_response_security.md",
+            "SLA_document.pdf",
+            "capacity_plan.xlsx"
+          ],
+          "sla_targets": {
+            "uptime": "99.5%",
+            "checkin_latency_p95": "30s",
+            "notification_delivery": "99%",
+            "rto": "4h",
+            "rpo": "1h"
+          }
+        },
+        "acceptance_criteria": [
+          "Each runbook tested end-to-end by ops team member not involved in authoring",
+          "SLA document specifies measurement methodology, exclusions, and breach credits",
+          "Capacity model projects compute/storage requirements for 10, 50, and 100 sites",
+          "Incident response playbook specifies escalation contacts and communication templates",
+          "DB restore runbook tested: restore from backup verified under 1h"
+        ],
+        "depends_on": [
+          21,
+          23
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 25,
+        "task_type": "TRAINING",
+        "description": "Produce training materials: receptionist onboarding guide (kiosk operation, manual override, printer troubleshooting), host user guide (creating pre-registrations, managing invitations, responding to notifications), admin user guide (evacuation procedures, reporting, user management), and security staff quick-reference card for evacuation.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "deliverables": [
+            "guide_receptionist.pdf",
+            "guide_host.pdf",
+            "guide_admin.pdf",
+            "quickref_evacuation.pdf",
+            "video_scripts/receptionist_onboarding.md",
+            "video_scripts/kiosk_walkthrough.md"
+          ],
+          "format": "PDF + HTML (LMS-compatible SCORM if requested)",
+          "reading_level": "Grade 8 (plain language)"
+        },
+        "acceptance_criteria": [
+          "Receptionist guide covers all six core flows with step-by-step screenshots",
+          "Evacuation quick-reference card is single-page, printable, laminate-ready",
+          "Host guide covers invitation creation and notification response in under 10 steps",
+          "All guides reviewed by a non-technical test reader and revised for clarity",
+          "Video scripts contain scene descriptions, speaker notes, and on-screen action cues",
+          "Admin guide separate from end-user guide",
+          "Role-based training paths defined"
+        ],
+        "depends_on": [
+          18,
+          19,
+          20
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 26,
+        "task_type": "COMPLIANCE",
+        "description": "Compile final ISO 27001 and SOC 2 evidence package: statement of applicability (SoA) for ISO 27001 Annex A controls, SOC 2 Type II readiness checklist, penetration test report and remediation evidence, access control review evidence (user list, role assignments, MFA enforcement), data retention deletion evidence (automated purge logs), and audit log completeness report.",
+        "payload": {
+          "solution_name": "visitor_management",
+          "standards": [
+            "ISO_27001:2022",
+            "SOC_2_Type_II"
+          ],
+          "deliverables": [
+            "statement_of_applicability.xlsx",
+            "soc2_readiness_checklist.xlsx",
+            "pentest_report.pdf",
+            "pentest_remediation_evidence.pdf",
+            "access_control_review.pdf",
+            "data_retention_purge_log.pdf",
+            "audit_log_completeness_report.pdf"
+          ],
+          "evidence_review": "Third-party auditor pre-assessment before certification submission"
+        },
+        "acceptance_criteria": [
+          "Statement of Applicability covers all 93 ISO 27001:2022 Annex A controls with include/exclude justification",
+          "SOC 2 readiness checklist maps each Trust Service Criteria to implemented control with evidence reference",
+          "All critical/high pentest findings remediated with evidence before evidence package finalised",
+          "Access control review confirms no dormant accounts and MFA enforced for all admin roles",
+          "Audit log completeness report shows zero gaps in check-in/check-out event trail for 90-day sample"
+        ],
+        "depends_on": [
+          8,
+          23,
+          24
+        ],
+        "agent_role": "regulatory_specialist"
+      }
+    ],
+    "task_count": 26,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 61,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 61,
+          "final_review": {
+            "score": 61,
+            "flaws": [
+              "NDA signing (Step 14) uses canvas PNG blob embedded in a reportlab PDF. This is NOT a legally enforceable e-signature under ESIGN Act (US), eIDAS (EU), or ECA (UK). A PNG image in a PDF has zero cryptographic provenance. Without a proper e-signature provider (DocuSign, Adobe Sign, or at minimum a hash-sealed audit trail from a recognised TSP), every NDA signed through this system is contestable in court. This is not a legal edge case \u2014 it is a fundamental design failure for a compliance-claiming product.",
+              "Watchlist check (Step 12) is specified as an 'async background check'. This creates a race condition where a flagged visitor can complete check-in, trigger badge printing, and have a physical badge in hand before the watchlist result returns. For a security-sensitive system, this is not a latency optimisation \u2014 it is a security bypass. The check must be synchronous and block badge printing.",
+              "Evacuation endpoint (Step 16) is 'no auth token required for emergency access (IP whitelist only)'. IP whitelisting on a local network is not access control \u2014 it is a comfort blanket. Any device on the site LAN (visitor laptop on guest WiFi, compromised IoT device, attacker who tailgated in) can enumerate the full visitor roster. The 'emergency access' argument is false: pre-issued emergency bearer tokens stored offline on security tablets take 0 seconds longer to use than an unprotected endpoint.",
+              "PII encryption is inconsistent between Step 6 (pgcrypto AES-256 at database column level) and Step 10 (Fernet AES-128-CBC at application layer). These are different algorithms, different key lengths, and different key management surfaces. Double-encrypting adds complexity without a defined key rotation strategy. The plan never specifies where encryption keys live, how they are rotated, or who manages them \u2014 omitting this from an ISO 27001 candidate system is a gap the auditor will immediately flag.",
+              "Step 17 requires the routing_agent to classify badge type correctly in >95% of test cases with no discussion of training data source, confidence thresholds, or fallback behaviour in the 5% failure case. A misclassified badge type (e.g., 'standard' instead of 'contractor') is a security incident in regulated facilities. Stating a 95% accuracy SLA for an LLM classifier without a deterministic fallback is not an acceptance criterion \u2014 it is wishful thinking.",
+              "LDAP host lookup (Step 10) requires a 500ms SLA with no mention of connection pooling, local cache, or replica failover. Active Directory outages are common. Without a cached fallback, an AD timeout blocks every check-in across every site simultaneously. This is a single point of failure in the critical path.",
+              "Kiosk OS hardening is absent. 'Chrome kiosk flags + CSS full-screen lock' (Step 20) is not kiosk security. ESC, F11, Ctrl+W, Win+L, or a Bluetooth keyboard attachment all break it on a standard Windows or Linux install. A production kiosk requires OS-level lockdown: ChromeOS managed enrollment, Windows IoT with shell replacement, or equivalent. This is not optional for a device handling PII in a public-facing context.",
+              "Badge expiry enforcement (Step 13) is stated as 'expired badges rejected on re-scan' but the plan contains no specification of badge readers at entry/exit points, no access control system integration, and no defined scanner hardware. Who scans the badge, with what device, at what point? The enforcement mechanism is undefined, making the acceptance criterion untestable.",
+              "Step 15 (SMS via Twilio) specifies delivery within 30s but ignores Twilio throughput limits. Short-code throughput is 100 msg/s; long-code is 1 msg/s in the US and heavily filtered in the EU. A 100-concurrent-kiosk load scenario (Step 23) would queue 100 SMS messages simultaneously. With a 1 msg/s long-code limit, the last notification arrives after 100 seconds \u2014 3x over SLA. No carrier-specific rate limit strategy or number provisioning plan is included.",
+              "GDPR consent capture is never implemented technically. Step 3 produces a privacy notice HTML file. Steps 11 and 20 collect PII (emergency contact, vehicle registration, photo). Nowhere is there a GDPR-compliant consent checkbox with granular purpose selection, consent withdrawal mechanism, or right-to-erasure implementation for captured visitor photos. The legal artifact exists; the technical enforcement does not."
+            ],
+            "suggestions": [
+              "Replace canvas-signature PDF with a PKCS#7 / PAdES-compliant e-signature flow. Minimum viable: integrate a provider like DocuSign Embedded Signing or use a hash-sealed audit record (visitor_id, timestamp, IP, device_id, document_hash signed with server private key) that satisfies ESIGN's 'intent to sign' and 'record retention' requirements. Get this reviewed by legal before Step 14 begins.",
+              "Make the watchlist check synchronous in the critical path. If the check cannot complete within a defined timeout (e.g., 3s), default to 'hold for manual review' \u2014 do not default to 'allow'. Add a 'pending clearance' visit state that shows on the kiosk with a 'please wait' screen and notifies the receptionist.",
+              "Replace IP-whitelist-only evacuation access with offline-capable emergency tokens: pre-generate short-lived tokens (24h TTL) monthly, print and laminate them with the site's evacuation quick-reference card. Security staff enter the token on first use; subsequent requests in the same session reuse the session cookie. Zero extra steps in a real emergency; auditable access.",
+              "Pick one encryption layer and document the key management strategy. Recommendation: application-layer encryption (AES-256-GCM via cryptography library) with keys stored in HashiCorp Vault or AWS KMS, not pgcrypto, so key rotation does not require DB-layer changes. Remove pgcrypto from Step 6 or explicitly document why both layers exist.",
+              "For the routing/badge classifier in Step 17: define a confidence threshold (e.g., >0.85) below which the agent outputs 'unknown' and the system falls back to a deterministic rule table keyed on visit_purpose enum values. LLM classifiers in security workflows must have deterministic fallbacks, not just accuracy targets.",
+              "Add an LDAP cache layer (Redis, 5-minute TTL) with a read-through pattern. On AD unavailability, serve cached host records and log a degraded-mode audit event. Acceptance criteria should include: 'LDAP cache serves host lookup within 50ms when AD is unreachable; degraded mode persists for up to 30 minutes before requiring admin intervention.'",
+              "Separate kiosk OS specification into its own CONFIG/INFRA step. Specify the target OS (ChromeOS Managed, Windows IoT Enterprise, or Ubuntu with openbox + xdotool lockdown), the management enrollment process, and BIOS password + secure boot requirements. This should be a prerequisite for Step 20, not an afterthought in the payload.",
+              "Add an explicit GDPR consent step to both the pre-registration form (Step 11/19) and the kiosk walk-in flow (Step 12/20). Consent must be: per-purpose (photo capture, email notifications, emergency contact storage), revocable, and stored with timestamp + version in a separate consent_records table. Right-to-erasure must cascade to MinIO photos and all PII columns within 30 days.",
+              "For multi-site enterprise deployments, clarify whether this is single-tenant (one DB, RLS by site_id) or multi-tenant SaaS (separate schema or DB per enterprise customer). Several enterprise buyers will have data sovereignty requirements (EU data must not leave EU) that RLS alone cannot satisfy. Document the architecture decision and its compliance implications in Step 2.",
+              "Add Celery dead letter queue (DLQ) configuration and alerting for all async tasks. A silently-dropped 'send_confirmation_email' or 'send_arrival_notification' task is invisible without DLQ monitoring. Define retry policies (3 retries, exponential backoff) and alert on DLQ depth > 0 for security-critical tasks like watchlist_sync."
+            ],
+            "missing": [
+              "Key management specification: where encryption keys live, rotation policy, and break-glass procedure. Without this, the entire PII encryption design is incomplete regardless of algorithm choice.",
+              "Physical kiosk hardening specification: OS image, management enrollment, BIOS lockdown, USB port disablement, tamper detection. None of these appear in any step.",
+              "Badge reader / access control system integration: the plan assumes badges are enforced but never specifies the enforcement hardware, API, or integration. Step 13's expiry enforcement criterion is untestable without this.",
+              "Right-to-erasure (GDPR Article 17) technical implementation: how visitor data is fully purged from PostgreSQL, MinIO (photos, NDAs), Redis (evacuation roster), and all backups within the 30-day obligation window.",
+              "Consent management technical implementation: consent_records table, per-purpose granularity, revocation endpoint, and audit trail for consent changes.",
+              "Network segmentation specification: kiosk network zone, badge printer network zone, admin portal zone, and firewall rules between them. The threat model (Step 4) identifies these surfaces but the config step (Step 9) has no network architecture.",
+              "Backup and point-in-time recovery specification for PostgreSQL: backup frequency, retention, encryption, and tested restore time. The DR test in Step 23 assumes this exists but it is never designed.",
+              "Twilio number provisioning plan: short-code vs long-code vs alpha-sender per target country, and throughput capacity matched to expected peak load.",
+              "Offline kiosk operation design: Step 12 mentions Redis offline queue but the frontend (Step 20) only shows an error screen. There is no design for fully offline check-in (paper log, manual badge) or the reconciliation process when connectivity is restored.",
+              "Multi-jurisdiction NDA enforceability review: Step 3 produces templates for US/EU/UK but does not address whether a touchscreen finger signature (even with a proper e-sig provider) satisfies the specific requirements of each jurisdiction for the NDA type (trade secret protection, IP assignment).",
+              "Penetration test execution: Step 4 produces a pentest scope document and Step 26 references a pentest report, but no step in the plan actually executes the penetration test. This is a missing step between Steps 21 and 26.",
+              "Multi-language / internationalisation support: enterprise visitor management at global sites requires at minimum the kiosk UI and NDA to be presented in the visitor's language. No i18n step exists."
+            ],
+            "security_risks": [
+              "Async watchlist check race condition (Step 12): flagged visitor receives physical badge before security alert fires. This is the highest-severity risk in the plan \u2014 a determined bad actor who appears on the watchlist can complete check-in and be inside the building before security is notified.",
+              "Unauthenticated evacuation endpoint (Step 16): exposes full on-site visitor roster (names, companies, check-in times) to any device on the local network. In a social engineering or insider threat scenario, this is a pre-attack reconnaissance goldmine.",
+              "ZPL over raw TCP 9100 (Step 13): badge printers accepting unauthenticated raw TCP connections on the corporate LAN allow any device on the network to print arbitrary visitor badges. An attacker could print a badge claiming to be any person with any badge type. The threat model identifies this surface but no mitigation is specified in the implementation.",
+              "Canvas PNG NDA signature (Step 14): beyond legal unenforceability, the PNG blob provides no cryptographic binding between the signature image and the document content. An attacker with database write access could swap the NDA document hash while leaving the signature intact, or vice versa, with no detection mechanism.",
+              "Kiosk session residue (Step 20): a 60-second idle timeout with no specification of what 'session clear' means technically (memory wipe, cookie deletion, IndexedDB clear, React state reset) could leave PII from visitor A accessible to visitor B if the timeout logic is incomplete. Browser storage APIs retain data across soft reloads.",
+              "QR code JWT secret management (Step 11): pre-registration QR codes contain signed JWTs. The signing key is not specified. If this key is shared across all sites and rotated infrequently, a compromise at one site invalidates or forges pre-registrations across all sites.",
+              "Photo storage without access expiry (Steps 12/14): visitor photos are stored in MinIO and referenced in badge generation and host notifications via URLs. If these URLs are not pre-signed with short expiry times, any person with the URL (forwarded email, browser history, log file) can access visitor photos indefinitely.",
+              "LDAP credentials in config (Step 10): the python-ldap3 integration requires a service account DN and password. These credentials are not mentioned in the secrets management section. Hardcoded or .env-stored LDAP service account credentials with broad read access to the AD tree are a high-value target."
+            ],
+            "summary": "This is a structurally sound, unusually comprehensive plan for enterprise visitor management \u2014 the dependency graph is logical, acceptance criteria are specific, and compliance concerns are addressed earlier than most plans attempt. However, it has several production-blocking flaws that require rework before implementation begins. The most critical: (1) the NDA signing mechanism (canvas PNG) is legally unenforceable and would expose every signed NDA to challenge; (2) the async watchlist check creates a race condition where a flagged visitor receives a physical badge before security is alerted \u2014 a fundamental security failure; (3) the unauthenticated evacuation endpoint is a PII exposure risk dressed up as an operational convenience. Beyond these three blockers, the plan has significant gaps in key management, GDPR consent mechanics, kiosk OS hardening, and physical badge enforcement that would cause either compliance failure or operational embarrassment post-launch. Score of 61 reflects a plan with the right instincts and wrong execution on several high-stakes items. Fix the NDA signing approach, make the watchlist check synchronous with a blocking gate, and secure the evacuation endpoint before any backend sprint begins.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 61,
+              "flaws": [
+                "NDA signing (Step 14) uses canvas PNG blob embedded in a reportlab PDF. This is NOT a legally enforceable e-signature under ESIGN Act (US), eIDAS (EU), or ECA (UK). A PNG image in a PDF has zero cryptographic provenance. Without a proper e-signature provider (DocuSign, Adobe Sign, or at minimum a hash-sealed audit trail from a recognised TSP), every NDA signed through this system is contestable in court. This is not a legal edge case \u2014 it is a fundamental design failure for a compliance-claiming product.",
+                "Watchlist check (Step 12) is specified as an 'async background check'. This creates a race condition where a flagged visitor can complete check-in, trigger badge printing, and have a physical badge in hand before the watchlist result returns. For a security-sensitive system, this is not a latency optimisation \u2014 it is a security bypass. The check must be synchronous and block badge printing.",
+                "Evacuation endpoint (Step 16) is 'no auth token required for emergency access (IP whitelist only)'. IP whitelisting on a local network is not access control \u2014 it is a comfort blanket. Any device on the site LAN (visitor laptop on guest WiFi, compromised IoT device, attacker who tailgated in) can enumerate the full visitor roster. The 'emergency access' argument is false: pre-issued emergency bearer tokens stored offline on security tablets take 0 seconds longer to use than an unprotected endpoint.",
+                "PII encryption is inconsistent between Step 6 (pgcrypto AES-256 at database column level) and Step 10 (Fernet AES-128-CBC at application layer). These are different algorithms, different key lengths, and different key management surfaces. Double-encrypting adds complexity without a defined key rotation strategy. The plan never specifies where encryption keys live, how they are rotated, or who manages them \u2014 omitting this from an ISO 27001 candidate system is a gap the auditor will immediately flag.",
+                "Step 17 requires the routing_agent to classify badge type correctly in >95% of test cases with no discussion of training data source, confidence thresholds, or fallback behaviour in the 5% failure case. A misclassified badge type (e.g., 'standard' instead of 'contractor') is a security incident in regulated facilities. Stating a 95% accuracy SLA for an LLM classifier without a deterministic fallback is not an acceptance criterion \u2014 it is wishful thinking.",
+                "LDAP host lookup (Step 10) requires a 500ms SLA with no mention of connection pooling, local cache, or replica failover. Active Directory outages are common. Without a cached fallback, an AD timeout blocks every check-in across every site simultaneously. This is a single point of failure in the critical path.",
+                "Kiosk OS hardening is absent. 'Chrome kiosk flags + CSS full-screen lock' (Step 20) is not kiosk security. ESC, F11, Ctrl+W, Win+L, or a Bluetooth keyboard attachment all break it on a standard Windows or Linux install. A production kiosk requires OS-level lockdown: ChromeOS managed enrollment, Windows IoT with shell replacement, or equivalent. This is not optional for a device handling PII in a public-facing context.",
+                "Badge expiry enforcement (Step 13) is stated as 'expired badges rejected on re-scan' but the plan contains no specification of badge readers at entry/exit points, no access control system integration, and no defined scanner hardware. Who scans the badge, with what device, at what point? The enforcement mechanism is undefined, making the acceptance criterion untestable.",
+                "Step 15 (SMS via Twilio) specifies delivery within 30s but ignores Twilio throughput limits. Short-code throughput is 100 msg/s; long-code is 1 msg/s in the US and heavily filtered in the EU. A 100-concurrent-kiosk load scenario (Step 23) would queue 100 SMS messages simultaneously. With a 1 msg/s long-code limit, the last notification arrives after 100 seconds \u2014 3x over SLA. No carrier-specific rate limit strategy or number provisioning plan is included.",
+                "GDPR consent capture is never implemented technically. Step 3 produces a privacy notice HTML file. Steps 11 and 20 collect PII (emergency contact, vehicle registration, photo). Nowhere is there a GDPR-compliant consent checkbox with granular purpose selection, consent withdrawal mechanism, or right-to-erasure implementation for captured visitor photos. The legal artifact exists; the technical enforcement does not."
+              ],
+              "suggestions": [
+                "Replace canvas-signature PDF with a PKCS#7 / PAdES-compliant e-signature flow. Minimum viable: integrate a provider like DocuSign Embedded Signing or use a hash-sealed audit record (visitor_id, timestamp, IP, device_id, document_hash signed with server private key) that satisfies ESIGN's 'intent to sign' and 'record retention' requirements. Get this reviewed by legal before Step 14 begins.",
+                "Make the watchlist check synchronous in the critical path. If the check cannot complete within a defined timeout (e.g., 3s), default to 'hold for manual review' \u2014 do not default to 'allow'. Add a 'pending clearance' visit state that shows on the kiosk with a 'please wait' screen and notifies the receptionist.",
+                "Replace IP-whitelist-only evacuation access with offline-capable emergency tokens: pre-generate short-lived tokens (24h TTL) monthly, print and laminate them with the site's evacuation quick-reference card. Security staff enter the token on first use; subsequent requests in the same session reuse the session cookie. Zero extra steps in a real emergency; auditable access.",
+                "Pick one encryption layer and document the key management strategy. Recommendation: application-layer encryption (AES-256-GCM via cryptography library) with keys stored in HashiCorp Vault or AWS KMS, not pgcrypto, so key rotation does not require DB-layer changes. Remove pgcrypto from Step 6 or explicitly document why both layers exist.",
+                "For the routing/badge classifier in Step 17: define a confidence threshold (e.g., >0.85) below which the agent outputs 'unknown' and the system falls back to a deterministic rule table keyed on visit_purpose enum values. LLM classifiers in security workflows must have deterministic fallbacks, not just accuracy targets.",
+                "Add an LDAP cache layer (Redis, 5-minute TTL) with a read-through pattern. On AD unavailability, serve cached host records and log a degraded-mode audit event. Acceptance criteria should include: 'LDAP cache serves host lookup within 50ms when AD is unreachable; degraded mode persists for up to 30 minutes before requiring admin intervention.'",
+                "Separate kiosk OS specification into its own CONFIG/INFRA step. Specify the target OS (ChromeOS Managed, Windows IoT Enterprise, or Ubuntu with openbox + xdotool lockdown), the management enrollment process, and BIOS password + secure boot requirements. This should be a prerequisite for Step 20, not an afterthought in the payload.",
+                "Add an explicit GDPR consent step to both the pre-registration form (Step 11/19) and the kiosk walk-in flow (Step 12/20). Consent must be: per-purpose (photo capture, email notifications, emergency contact storage), revocable, and stored with timestamp + version in a separate consent_records table. Right-to-erasure must cascade to MinIO photos and all PII columns within 30 days.",
+                "For multi-site enterprise deployments, clarify whether this is single-tenant (one DB, RLS by site_id) or multi-tenant SaaS (separate schema or DB per enterprise customer). Several enterprise buyers will have data sovereignty requirements (EU data must not leave EU) that RLS alone cannot satisfy. Document the architecture decision and its compliance implications in Step 2.",
+                "Add Celery dead letter queue (DLQ) configuration and alerting for all async tasks. A silently-dropped 'send_confirmation_email' or 'send_arrival_notification' task is invisible without DLQ monitoring. Define retry policies (3 retries, exponential backoff) and alert on DLQ depth > 0 for security-critical tasks like watchlist_sync."
+              ],
+              "missing": [
+                "Key management specification: where encryption keys live, rotation policy, and break-glass procedure. Without this, the entire PII encryption design is incomplete regardless of algorithm choice.",
+                "Physical kiosk hardening specification: OS image, management enrollment, BIOS lockdown, USB port disablement, tamper detection. None of these appear in any step.",
+                "Badge reader / access control system integration: the plan assumes badges are enforced but never specifies the enforcement hardware, API, or integration. Step 13's expiry enforcement criterion is untestable without this.",
+                "Right-to-erasure (GDPR Article 17) technical implementation: how visitor data is fully purged from PostgreSQL, MinIO (photos, NDAs), Redis (evacuation roster), and all backups within the 30-day obligation window.",
+                "Consent management technical implementation: consent_records table, per-purpose granularity, revocation endpoint, and audit trail for consent changes.",
+                "Network segmentation specification: kiosk network zone, badge printer network zone, admin portal zone, and firewall rules between them. The threat model (Step 4) identifies these surfaces but the config step (Step 9) has no network architecture.",
+                "Backup and point-in-time recovery specification for PostgreSQL: backup frequency, retention, encryption, and tested restore time. The DR test in Step 23 assumes this exists but it is never designed.",
+                "Twilio number provisioning plan: short-code vs long-code vs alpha-sender per target country, and throughput capacity matched to expected peak load.",
+                "Offline kiosk operation design: Step 12 mentions Redis offline queue but the frontend (Step 20) only shows an error screen. There is no design for fully offline check-in (paper log, manual badge) or the reconciliation process when connectivity is restored.",
+                "Multi-jurisdiction NDA enforceability review: Step 3 produces templates for US/EU/UK but does not address whether a touchscreen finger signature (even with a proper e-sig provider) satisfies the specific requirements of each jurisdiction for the NDA type (trade secret protection, IP assignment).",
+                "Penetration test execution: Step 4 produces a pentest scope document and Step 26 references a pentest report, but no step in the plan actually executes the penetration test. This is a missing step between Steps 21 and 26.",
+                "Multi-language / internationalisation support: enterprise visitor management at global sites requires at minimum the kiosk UI and NDA to be presented in the visitor's language. No i18n step exists."
+              ],
+              "security_risks": [
+                "Async watchlist check race condition (Step 12): flagged visitor receives physical badge before security alert fires. This is the highest-severity risk in the plan \u2014 a determined bad actor who appears on the watchlist can complete check-in and be inside the building before security is notified.",
+                "Unauthenticated evacuation endpoint (Step 16): exposes full on-site visitor roster (names, companies, check-in times) to any device on the local network. In a social engineering or insider threat scenario, this is a pre-attack reconnaissance goldmine.",
+                "ZPL over raw TCP 9100 (Step 13): badge printers accepting unauthenticated raw TCP connections on the corporate LAN allow any device on the network to print arbitrary visitor badges. An attacker could print a badge claiming to be any person with any badge type. The threat model identifies this surface but no mitigation is specified in the implementation.",
+                "Canvas PNG NDA signature (Step 14): beyond legal unenforceability, the PNG blob provides no cryptographic binding between the signature image and the document content. An attacker with database write access could swap the NDA document hash while leaving the signature intact, or vice versa, with no detection mechanism.",
+                "Kiosk session residue (Step 20): a 60-second idle timeout with no specification of what 'session clear' means technically (memory wipe, cookie deletion, IndexedDB clear, React state reset) could leave PII from visitor A accessible to visitor B if the timeout logic is incomplete. Browser storage APIs retain data across soft reloads.",
+                "QR code JWT secret management (Step 11): pre-registration QR codes contain signed JWTs. The signing key is not specified. If this key is shared across all sites and rotated infrequently, a compromise at one site invalidates or forges pre-registrations across all sites.",
+                "Photo storage without access expiry (Steps 12/14): visitor photos are stored in MinIO and referenced in badge generation and host notifications via URLs. If these URLs are not pre-signed with short expiry times, any person with the URL (forwarded email, browser history, log file) can access visitor photos indefinitely.",
+                "LDAP credentials in config (Step 10): the python-ldap3 integration requires a service account DN and password. These credentials are not mentioned in the secrets management section. Hardcoded or .env-stored LDAP service account credentials with broad read access to the AD tree are a high-value target."
+              ],
+              "summary": "This is a structurally sound, unusually comprehensive plan for enterprise visitor management \u2014 the dependency graph is logical, acceptance criteria are specific, and compliance concerns are addressed earlier than most plans attempt. However, it has several production-blocking flaws that require rework before implementation begins. The most critical: (1) the NDA signing mechanism (canvas PNG) is legally unenforceable and would expose every signed NDA to challenge; (2) the async watchlist check creates a race condition where a flagged visitor receives a physical badge before security is alerted \u2014 a fundamental security failure; (3) the unauthenticated evacuation endpoint is a PII exposure risk dressed up as an operational convenience. Beyond these three blockers, the plan has significant gaps in key management, GDPR consent mechanics, kiosk OS hardening, and physical badge enforcement that would cause either compliance failure or operational embarrassment post-launch. Score of 61 reflects a plan with the right instincts and wrong execution on several high-stakes items. Fix the NDA signing approach, make the watchlist check synchronous with a blocking gate, and secure the evacuation endpoint before any backend sprint begins.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T11:45:10.238714+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 196.32,
+      "critic_plan": 128.3
+    }
+  }
+}
