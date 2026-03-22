@@ -1,0 +1,1355 @@
+{
+  "run_id": "bc14e575-7744-416b-bf40-b99b3b0663f1",
+  "status": {
+    "run_id": "bc14e575-7744-416b-bf40-b99b3b0663f1",
+    "solution_name": "email_marketing",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T05:29:19.453593+00:00",
+    "updated_at": "2026-03-22T05:35:17.651833+00:00",
+    "product_description": "Email marketing platform with drag-and-drop template builder, audience segmentation, A/B testing, automation workflows, deliverability monitoring, and GDPR consent management.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the email marketing platform landscape: competitor feature matrix (Mailchimp, Klaviyo, Brevo, ActiveCampaign), pricing benchmarks, ICP definition, TAM/SAM/SOM, and go-to-market positioning for email_marketing.",
+        "payload": {
+          "competitors": [
+            "Mailchimp",
+            "Klaviyo",
+            "Brevo",
+            "ActiveCampaign",
+            "HubSpot Email"
+          ],
+          "dimensions": [
+            "pricing",
+            "feature_depth",
+            "deliverability_reputation",
+            "GDPR_tooling",
+            "automation_capabilities"
+          ],
+          "output": "market_research_report.md"
+        },
+        "acceptance_criteria": [
+          "Competitor feature matrix covers \u22655 competitors across \u22658 feature dimensions",
+          "Pricing benchmarks documented for all tiers (free, starter, growth, enterprise)",
+          "ICP personas defined with pain points and willingness-to-pay estimates",
+          "TAM/SAM/SOM calculated with cited data sources",
+          "Positioning statement drafted and differentiation rationale documented"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user stories, and process flows for all six core capabilities: drag-and-drop template builder, audience segmentation, A/B testing, automation workflows, deliverability monitoring, and GDPR consent management.",
+        "payload": {
+          "epic_areas": [
+            "template_builder",
+            "segmentation",
+            "ab_testing",
+            "automation",
+            "deliverability",
+            "gdpr_consent"
+          ],
+          "output_artifacts": [
+            "user_stories.md",
+            "process_flows.md",
+            "roi_analysis.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "User stories written in 'As a [persona], I want [action], so that [value]' format for all six epics",
+          "Acceptance criteria defined for each user story",
+          "Process flows cover happy path and error paths for each epic",
+          "ROI analysis includes CAC/LTV projections and payback period estimate",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model covering unit economics, infrastructure cost projections, pricing tiers, breakeven analysis, and 3-year P&L forecast for email_marketing platform.",
+        "payload": {
+          "pricing_tiers": [
+            "free_tier",
+            "starter",
+            "growth",
+            "enterprise"
+          ],
+          "cost_drivers": [
+            "email_sending_infra",
+            "compute",
+            "storage",
+            "support"
+          ],
+          "output": "financial_model.xlsx"
+        },
+        "acceptance_criteria": [
+          "Pricing tiers defined with send volume limits and feature gates",
+          "Infrastructure cost per 1M emails calculated with provider comparison (SES, SendGrid, Postmark)",
+          "Breakeven MRR calculated at each tier",
+          "3-year P&L with sensitivity analysis on churn rate and ARPU",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 4,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (DPA) for GDPR compliance, CAN-SPAM and CASL compliance requirements, and IP/licensing review for all third-party dependencies.",
+        "payload": {
+          "regulations": [
+            "GDPR",
+            "CAN-SPAM",
+            "CASL",
+            "CCPA"
+          ],
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "dpa_template.md",
+            "ip_review.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "ToS covers acceptable use, email sending limits, anti-spam obligations, and termination clauses",
+          "Privacy Policy enumerates all data categories collected and retention periods",
+          "DPA template ready for B2B customers (controller-processor relationship)",
+          "CAN-SPAM and CASL compliance checklist mapped to platform features",
+          "All third-party libraries reviewed for license compatibility",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 5,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Author Product Requirements Document (PRD), prioritized roadmap (MoSCoW), success metrics (OKRs), and feature flag strategy for email_marketing v1.0.",
+        "payload": {
+          "prioritization_method": "MoSCoW",
+          "okr_cadence": "quarterly",
+          "output": [
+            "prd_v1.md",
+            "roadmap.md",
+            "success_metrics.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all six feature areas with scope, out-of-scope, and constraints sections",
+          "MoSCoW breakdown applied to all user stories from step 2",
+          "3-quarter roadmap defined with milestones",
+          "OKRs defined for launch quarter: activation rate, send volume, deliverability rate targets",
+          "Feature flag strategy defined for gradual rollout of A/B testing and automation"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 6,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research (surveys + competitor usability audit), then produce wireframes and interaction designs for all six feature areas with accessibility audit (WCAG 2.1 AA).",
+        "payload": {
+          "research_methods": [
+            "competitor_usability_audit",
+            "user_survey"
+          ],
+          "wireframe_tool": "Figma",
+          "screens": [
+            "dashboard",
+            "template_builder",
+            "audience_builder",
+            "campaign_wizard",
+            "ab_test_setup",
+            "automation_canvas",
+            "deliverability_dashboard",
+            "consent_settings"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "User research report summarizes \u226510 responses with key pain points ranked",
+          "Wireframes produced for all 8 screen categories covering desktop and responsive breakpoints",
+          "Drag-and-drop template builder interaction design includes block palette, canvas, and properties panel",
+          "Automation canvas wireframe shows trigger\u2192condition\u2192action node layout",
+          "WCAG 2.1 AA audit checklist completed with all critical issues flagged",
+          "Design system tokens (colors, typography, spacing) documented"
+        ],
+        "depends_on": [
+          2,
+          5
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specification for all platform APIs: authentication, contacts/segmentation, templates, campaigns, A/B tests, automation workflows, deliverability webhooks, and GDPR consent endpoints.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "auth_scheme": "OAuth2 + API keys",
+          "output": "openapi.yaml",
+          "endpoint_groups": [
+            "auth",
+            "contacts",
+            "lists",
+            "segments",
+            "templates",
+            "campaigns",
+            "ab_tests",
+            "automations",
+            "deliverability",
+            "gdpr",
+            "webhooks",
+            "analytics"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors against OpenAPI 3.1 schema",
+          "All endpoints have request/response schemas with examples",
+          "Authentication schemes documented (JWT bearer, API key header)",
+          "Pagination strategy consistent (cursor-based) across all list endpoints",
+          "Webhook payload schemas defined for bounce, complaint, open, click, unsubscribe events",
+          "GDPR endpoints cover consent record, withdrawal, data export, and erasure"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema for email_marketing: contacts, lists, segments, templates, campaigns, A/B tests, automation workflows, deliverability events, GDPR consent records, and audit log. Include migrations and seed data.",
+        "payload": {
+          "database": "PostgreSQL 16",
+          "orm": "SQLAlchemy / Alembic",
+          "tables": [
+            "organizations",
+            "users",
+            "contacts",
+            "lists",
+            "list_memberships",
+            "segments",
+            "segment_rules",
+            "templates",
+            "campaigns",
+            "campaign_variants",
+            "ab_tests",
+            "automation_workflows",
+            "workflow_nodes",
+            "workflow_enrollments",
+            "email_events",
+            "deliverability_stats",
+            "gdpr_consent_records",
+            "suppression_list",
+            "audit_log"
+          ],
+          "indexes": "covering indexes on contact email + org_id, event timestamps, segment rule evaluation columns"
+        },
+        "acceptance_criteria": [
+          "All table schemas defined with correct foreign keys and NOT NULL constraints",
+          "Alembic migration scripts run cleanly on empty and existing databases",
+          "Segment rules table supports boolean operator trees (AND/OR/NOT) for complex segmentation",
+          "GDPR consent records table includes: contact_id, consent_type, granted_at, withdrawn_at, source, ip_address",
+          "Suppression list enforces uniqueness on (org_id, email) with reason and timestamp",
+          "Seed data script populates demo org, contacts, and a sample campaign",
+          "All timestamp columns use UTC with timezone awareness"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up development environment, project scaffolding, environment configuration, secrets management, and agentic AI pattern configuration (Multi-Agent Coordinator) for email_marketing solution.",
+        "payload": {
+          "stack": {
+            "backend": "FastAPI + Python 3.12",
+            "frontend": "React 18 + TypeScript + Vite",
+            "queue": "Celery + Redis",
+            "email_sending": "AWS SES / SendGrid adapter",
+            "cache": "Redis",
+            "search": "PostgreSQL full-text"
+          },
+          "agentic_pattern": "coordinator",
+          "agentic_components": [
+            "coordinator_agent",
+            "segmentation_agent",
+            "content_optimizer_agent",
+            "deliverability_advisor_agent"
+          ],
+          "secrets_manager": "dotenv + AWS Secrets Manager (prod)",
+          "output_files": [
+            ".env.example",
+            "docker-compose.yml",
+            "pyproject.toml",
+            "Makefile"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker-compose.yml spins up postgres, redis, backend, worker, and frontend with single command",
+          "All secrets referenced via environment variables \u2014 no hardcoded credentials",
+          "Makefile targets: setup, run, test, lint, migrate, worker",
+          "Coordinator agent configuration registered in solution prompts.yaml with specialist agent roles defined",
+          "Pre-commit hooks configured (black, ruff, mypy, eslint, prettier)",
+          "README documents local setup in \u22645 steps"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 10,
+        "task_type": "COMPLIANCE",
+        "description": "Define SOC 2 Type II compliance scope, control mapping, and evidence collection plan for email_marketing. Cover Security, Availability, and Confidentiality trust service criteria.",
+        "payload": {
+          "standard": "SOC 2 Type II",
+          "trust_service_criteria": [
+            "Security (CC)",
+            "Availability (A)",
+            "Confidentiality (C)"
+          ],
+          "output_artifacts": [
+            "soc2_control_matrix.xlsx",
+            "evidence_collection_plan.md",
+            "vendor_risk_register.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "All CC6 (Logical Access) controls mapped to platform features (MFA, RBAC, audit log)",
+          "CC7 (System Operations) controls mapped to monitoring and incident response procedures",
+          "Availability criteria mapped to uptime SLAs and disaster recovery targets",
+          "Evidence collection plan specifies owner, collection cadence, and artifact type for each control",
+          "Vendor risk register covers all third-party processors (email sending, cloud, analytics)",
+          "Data retention and destruction controls documented for GDPR/SOC 2 overlap"
+        ],
+        "depends_on": [
+          4,
+          5
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement core backend: authentication (JWT + OAuth2), organization multi-tenancy, RBAC (Owner/Admin/Member/Viewer roles), user management, API key management, and audit logging middleware.",
+        "payload": {
+          "framework": "FastAPI",
+          "auth": "JWT (python-jose) + OAuth2 password flow + API key header",
+          "tenancy": "organization-scoped row-level isolation via org_id",
+          "rbac_roles": [
+            "owner",
+            "admin",
+            "member",
+            "viewer"
+          ],
+          "audit_log": "structured JSON to PostgreSQL audit_log table"
+        },
+        "acceptance_criteria": [
+          "POST /auth/register, /auth/login, /auth/refresh, /auth/logout endpoints functional",
+          "All API endpoints enforce org-scoped authorization \u2014 cross-org data access returns 403",
+          "RBAC middleware blocks unauthorized role actions with descriptive 403 messages",
+          "API key creation, rotation, and revocation endpoints implemented",
+          "Every mutating request writes structured audit event (user_id, org_id, action, resource, timestamp)",
+          "Password hashing uses bcrypt with cost factor \u226512"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement contacts and list management API: contact CRUD, bulk import (CSV/JSON), list creation, list membership management, contact field customization (custom attributes), and global suppression list enforcement.",
+        "payload": {
+          "endpoints": [
+            "POST /contacts",
+            "GET /contacts",
+            "PATCH /contacts/{id}",
+            "DELETE /contacts/{id}",
+            "POST /contacts/bulk-import",
+            "POST /lists",
+            "GET /lists",
+            "POST /lists/{id}/members",
+            "DELETE /lists/{id}/members/{contact_id}",
+            "GET /suppression"
+          ],
+          "bulk_import": "async Celery task, CSV/JSON, \u2264500k rows, field mapping UI support",
+          "custom_fields": "JSONB column on contacts table"
+        },
+        "acceptance_criteria": [
+          "Contact CRUD endpoints functional with org-scoped isolation",
+          "Bulk CSV import handles 100k contacts without timeout (async Celery task with progress endpoint)",
+          "Duplicate contacts deduplicated by email within org on import",
+          "Custom field schema validated on write (type enforcement)",
+          "Any email in suppression list blocked from future sends \u2014 enforced at queue time",
+          "Soft-delete on contact respects GDPR erasure flow"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement audience segmentation engine: dynamic segment definition (boolean rule trees on contact attributes + engagement events), segment size estimation, segment evaluation/materialization, and segment membership refresh.",
+        "payload": {
+          "rule_engine": "recursive boolean tree evaluator (AND/OR/NOT nodes, leaf = field condition)",
+          "condition_types": [
+            "field_equals",
+            "field_contains",
+            "field_gt_lt",
+            "event_occurred",
+            "event_count",
+            "list_membership",
+            "tag_present",
+            "date_relative"
+          ],
+          "evaluation": "on-demand SQL query generation from rule tree",
+          "refresh": "background Celery task on schedule or pre-send"
+        },
+        "acceptance_criteria": [
+          "Segment rules support \u22653 levels of boolean nesting",
+          "All condition types produce correct SQL predicates with parameterized queries (no SQL injection)",
+          "Segment size estimate endpoint returns count within 2 seconds for lists \u22641M contacts",
+          "Segment materialization (contact_id snapshot) stored for campaign send targeting",
+          "Segment re-evaluation runs automatically before each campaign send",
+          "API returns validation errors for malformed rule trees before saving"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement drag-and-drop template engine backend: template CRUD, block schema (text, image, button, divider, columns, social), HTML rendering, preview generation, template versioning, and merge tag substitution engine.",
+        "payload": {
+          "template_format": "JSON block schema \u2192 rendered HTML/text",
+          "block_types": [
+            "text",
+            "image",
+            "button",
+            "divider",
+            "columns_1_2",
+            "columns_2_1",
+            "social_links",
+            "spacer",
+            "raw_html"
+          ],
+          "merge_tags": "Jinja2-style {{ contact.first_name }} with fallback values",
+          "versioning": "immutable template_versions table, current_version pointer",
+          "preview_endpoint": "POST /templates/{id}/preview \u2192 returns rendered HTML with sample data"
+        },
+        "acceptance_criteria": [
+          "Template JSON schema validated against block-type registry on save",
+          "HTML renderer produces valid, email-client-safe HTML (inline CSS)",
+          "Merge tag substitution tested with missing field fallback (blank or custom default)",
+          "Template versioning: previous versions retrievable, rollback supported",
+          "Preview endpoint renders with sample contact data within 500ms",
+          "Spam score check integrated (SpamAssassin-style scoring) on preview endpoint"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement campaign management and A/B testing backend: campaign CRUD, multi-variant A/B test configuration, send scheduling, winning variant selection (by open rate / click rate / revenue), and campaign status state machine.",
+        "payload": {
+          "campaign_states": [
+            "draft",
+            "scheduled",
+            "sending",
+            "sent",
+            "paused",
+            "cancelled"
+          ],
+          "ab_config": {
+            "variant_split": "percentage-based, must sum to 100",
+            "test_variables": [
+              "subject_line",
+              "from_name",
+              "email_content",
+              "send_time"
+            ],
+            "winner_metric": [
+              "open_rate",
+              "click_rate",
+              "custom_conversion"
+            ],
+            "auto_winner_after": "configurable duration or sample size"
+          },
+          "send_scheduling": "Celery beat + timezone-aware datetime"
+        },
+        "acceptance_criteria": [
+          "Campaign state machine enforces valid transitions (e.g., sent\u2192draft is forbidden)",
+          "A/B test variants assigned to contacts deterministically (consistent hashing on contact_id)",
+          "Variant split enforced within \u00b11% of configured percentage",
+          "Winner auto-selection fires after configured duration with statistical significance check (p<0.05)",
+          "Campaign cannot be sent without confirmed GDPR consent on list",
+          "Scheduled sends within \u00b130 seconds of requested send time"
+        ],
+        "depends_on": [
+          13,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Implement automation workflow engine: visual workflow execution runtime, trigger types (contact joins list, date-based, event-based, webhook), condition branches, action nodes (send email, wait, add/remove tag, update field, webhook call), and enrollment management.",
+        "payload": {
+          "engine": "Celery + Redis state machine per enrolled contact",
+          "trigger_types": [
+            "list_join",
+            "contact_created",
+            "tag_added",
+            "date_field",
+            "webhook",
+            "campaign_engagement"
+          ],
+          "action_types": [
+            "send_email",
+            "wait_duration",
+            "wait_until_date",
+            "if_else_branch",
+            "add_tag",
+            "remove_tag",
+            "update_field",
+            "send_webhook",
+            "unsubscribe"
+          ],
+          "enrollment": "one active enrollment per contact per workflow (dedup by default)"
+        },
+        "acceptance_criteria": [
+          "Workflow node graph validated for cycles before activation (DAG enforcement)",
+          "Wait nodes resume within \u00b160 seconds of scheduled time",
+          "If/else branch evaluates contact properties at runtime (not enrollment time)",
+          "Enrolled contact state persisted in Redis with PostgreSQL fallback on worker restart",
+          "Unenrollment (manual or triggered) halts workflow without sending pending emails",
+          "Workflow execution events written to audit log for compliance"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "BACKEND",
+        "description": "Implement email sending pipeline and deliverability monitoring: sending adapter (AWS SES + SendGrid), bounce/complaint webhook receivers, engagement event tracking (open pixel, click tracking), deliverability metrics aggregation, domain authentication helpers (SPF/DKIM/DMARC guidance), and IP warming schedule.",
+        "payload": {
+          "sending_adapters": [
+            "aws_ses",
+            "sendgrid"
+          ],
+          "webhook_events": [
+            "bounce_hard",
+            "bounce_soft",
+            "spam_complaint",
+            "open",
+            "click",
+            "unsubscribe"
+          ],
+          "tracking": "open pixel (1x1 GIF), click redirect via tracking URL",
+          "metrics": [
+            "delivery_rate",
+            "open_rate",
+            "click_rate",
+            "bounce_rate",
+            "complaint_rate",
+            "unsubscribe_rate"
+          ],
+          "auto_suppression": "hard bounce \u2192 permanent suppression; complaint \u2192 suppression"
+        },
+        "acceptance_criteria": [
+          "Hard bounce automatically adds contact to suppression list within 30 seconds of webhook receipt",
+          "Spam complaint automatically unsubscribes contact and adds to suppression",
+          "Complaint rate > 0.1% triggers deliverability alert",
+          "All tracking URLs route through redirect endpoint and record event before forwarding",
+          "Open/click deduplication: unique opens/clicks counted once per campaign per contact",
+          "SPF/DKIM/DMARC validation checker endpoint returns DNS record recommendations",
+          "Sending adapter abstraction allows switching providers without campaign code changes"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "BACKEND",
+        "description": "Implement GDPR consent management backend: consent record CRUD, consent withdrawal, suppression-on-withdrawal, data subject access request (DSAR) export, right-to-erasure (contact anonymization), consent audit trail, and double opt-in flow.",
+        "payload": {
+          "consent_types": [
+            "marketing_email",
+            "transactional_email",
+            "sms",
+            "profiling"
+          ],
+          "dsar_export": "JSON export of all contact data within 72 hours",
+          "erasure": "anonymize PII fields, retain aggregate stats, preserve audit events as anonymized",
+          "double_opt_in": "confirmation email \u2192 token link \u2192 POST /consent/confirm/{token}",
+          "audit_trail": "every consent change logged with IP, source, timestamp"
+        },
+        "acceptance_criteria": [
+          "Consent withdrawal immediately blocks future marketing sends (synchronous suppression)",
+          "DSAR export endpoint returns all contact data in structured JSON within 200ms for single contacts",
+          "Erasure anonymizes: email \u2192 hash, name \u2192 'Deleted User', phone \u2192 null, custom fields \u2192 null",
+          "Audit trail preserved after erasure (anonymized) for compliance evidence",
+          "Double opt-in token expires after 48 hours",
+          "Consent records exportable as CSV for DPA/audit purposes"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "AGENTIC",
+        "description": "Implement Multi-Agent Coordinator pattern for AI-powered campaign optimization: coordinator decomposes campaign requests to specialist agents \u2014 segmentation_agent (audience recommendations), content_optimizer_agent (subject line and copy suggestions using iterative_refinement), and deliverability_advisor_agent (send time optimization, risk scoring).",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator": "campaign_coordinator_agent",
+          "specialists": [
+            {
+              "name": "segmentation_agent",
+              "capability": "Recommends optimal audience segments based on campaign goal and historical engagement",
+              "pattern": "react"
+            },
+            {
+              "name": "content_optimizer_agent",
+              "capability": "Iteratively refines subject lines and email copy using review_and_critique loop",
+              "pattern": "iterative_refinement"
+            },
+            {
+              "name": "deliverability_advisor_agent",
+              "capability": "Scores campaigns for deliverability risk, recommends send time windows",
+              "pattern": "react"
+            }
+          ],
+          "hitl_gate": "standard \u2014 coordinator proposals surface to SAGE approval queue before execution"
+        },
+        "acceptance_criteria": [
+          "Coordinator agent registered in email_marketing solution prompts.yaml with all three specialist roles",
+          "POST /ai/campaign-suggestions endpoint accepts campaign brief and returns coordinator recommendations",
+          "Content optimizer runs \u22652 refinement cycles before surfacing suggestion",
+          "Deliverability risk score (0\u2013100) returned with actionable recommendations",
+          "All coordinator proposals stored in SAGE proposal_store with HITL approval gate",
+          "Specialist agent reasoning traces written to audit log"
+        ],
+        "depends_on": [
+          17,
+          18,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build React app shell: routing (React Router v6), authentication pages (login, register, password reset), organization switcher, RBAC-aware nav, global notification system, and responsive layout following UX wireframes from step 6.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "ui_library": "shadcn/ui + Tailwind CSS",
+          "state": "Zustand",
+          "data_fetching": "TanStack Query v5",
+          "routes": [
+            "/login",
+            "/register",
+            "/dashboard",
+            "/contacts",
+            "/lists",
+            "/segments",
+            "/templates",
+            "/campaigns",
+            "/automations",
+            "/deliverability",
+            "/settings/gdpr",
+            "/settings/team",
+            "/settings/integrations"
+          ]
+        },
+        "acceptance_criteria": [
+          "App bootstraps without errors, all routes render",
+          "Auth guards redirect unauthenticated users to /login",
+          "RBAC-aware nav hides/disables actions based on current user role",
+          "Organization switcher allows switching between orgs without full page reload",
+          "Toast notification system handles success, error, and warning states",
+          "Responsive breakpoints functional at 375px, 768px, 1280px, 1440px"
+        ],
+        "depends_on": [
+          11,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "FRONTEND",
+        "description": "Build drag-and-drop email template builder UI: block palette sidebar, drag-to-canvas with react-dnd or dnd-kit, block property panel, real-time preview (desktop/mobile toggle), merge tag picker, undo/redo history, and save/version controls.",
+        "payload": {
+          "dnd_library": "dnd-kit",
+          "block_types": [
+            "text",
+            "image",
+            "button",
+            "divider",
+            "columns",
+            "social_links",
+            "spacer"
+          ],
+          "preview_modes": [
+            "desktop",
+            "mobile"
+          ],
+          "undo_redo": "command pattern with 50-step history",
+          "merge_tag_picker": "dropdown triggered by {{ with searchable contact field list"
+        },
+        "acceptance_criteria": [
+          "All block types draggable from palette onto canvas",
+          "Blocks reorderable within canvas via drag",
+          "Property panel shows correct editable fields for each block type",
+          "Mobile preview renders in 375px iframe simulation",
+          "Undo/redo works across \u226510 operations without state corruption",
+          "Merge tag picker inserts correct Jinja2-style tag at cursor position",
+          "Template auto-saves every 30 seconds with dirty-state indicator"
+        ],
+        "depends_on": [
+          14,
+          20
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 22,
+        "task_type": "FRONTEND",
+        "description": "Build audience and segmentation UI: contact list with search/filter/sort, bulk actions, custom field manager, list management, and visual segment rule builder (drag-and-drop condition tree with AND/OR operators and live count preview).",
+        "payload": {
+          "contact_table": "virtualized table (TanStack Virtual) for large lists",
+          "segment_builder": "visual tree builder \u2014 add condition, add group, toggle AND/OR",
+          "live_count": "debounced segment count fetch on rule change (500ms debounce)",
+          "bulk_actions": [
+            "add_to_list",
+            "remove_from_list",
+            "add_tag",
+            "delete",
+            "export"
+          ]
+        },
+        "acceptance_criteria": [
+          "Contact table renders 10k+ rows without UI jank (virtualization active)",
+          "Segment rule builder supports \u22653 nested condition groups",
+          "Live count updates within 1 second of rule change",
+          "Bulk action on \u2265500 selected contacts executes without timeout",
+          "Custom field manager allows add/edit/delete of text, number, date, and boolean field types"
+        ],
+        "depends_on": [
+          13,
+          20
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 23,
+        "task_type": "FRONTEND",
+        "description": "Build campaign creation wizard and A/B test UI: multi-step campaign wizard (audience \u2192 template \u2192 schedule \u2192 review), A/B variant configuration panel, real-time send-time optimizer, campaign summary with spam score, and confirmation/launch screen.",
+        "payload": {
+          "wizard_steps": [
+            "select_audience",
+            "choose_template",
+            "configure_ab",
+            "schedule",
+            "review_launch"
+          ],
+          "ab_ui": "side-by-side variant cards with split percentage sliders",
+          "spam_score_display": "traffic-light indicator (green/amber/red) with issue list",
+          "send_time_optimizer": "heatmap of historical engagement by hour/day"
+        },
+        "acceptance_criteria": [
+          "Wizard enforces step completion before advance (validates required fields per step)",
+          "A/B variant split sliders enforce sum = 100% in real time",
+          "Spam score fetched from backend and displayed before confirmation step",
+          "Scheduled send time displayed in user's local timezone with UTC displayed alongside",
+          "Review step shows: recipient count, variant breakdown, estimated send cost, spam score",
+          "Launch confirmation requires explicit checkbox acknowledgment for irreversibility"
+        ],
+        "depends_on": [
+          15,
+          22,
+          21
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 24,
+        "task_type": "FRONTEND",
+        "description": "Build automation workflow canvas UI: node-based visual editor (React Flow), trigger/condition/action node palette, node configuration side panel, workflow activation toggle, enrollment counter, and workflow analytics (active enrollments, completion rate).",
+        "payload": {
+          "canvas_library": "React Flow (xyflow)",
+          "node_types": [
+            "trigger",
+            "condition_branch",
+            "send_email",
+            "wait",
+            "update_field",
+            "webhook",
+            "end"
+          ],
+          "layout": "auto-layout on node add (dagre)",
+          "analytics_panel": "sidebar showing enrollment counts per node and drop-off rates"
+        },
+        "acceptance_criteria": [
+          "Nodes connectable via drag from output handle to input handle",
+          "Condition branch node creates two output handles (Yes/No paths)",
+          "Invalid connections (e.g., trigger \u2192 trigger) rejected with error tooltip",
+          "Workflow validation runs before activation and lists all errors",
+          "Active workflow shows live enrollment count badge per node",
+          "Canvas supports \u226550 nodes without performance degradation"
+        ],
+        "depends_on": [
+          16,
+          20
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 25,
+        "task_type": "FRONTEND",
+        "description": "Build deliverability monitoring dashboard: real-time metrics cards (delivery rate, open rate, click rate, bounce rate, complaint rate), time-series charts, per-campaign breakdown table, domain authentication status panel, and deliverability alert feed.",
+        "payload": {
+          "charts": "Recharts \u2014 area charts for time series, bar charts for campaign comparison",
+          "refresh": "10-second polling for near-real-time metrics",
+          "domain_auth_panel": "SPF/DKIM/DMARC status with DNS record copy helper",
+          "alert_feed": "complaint rate threshold alerts, bounce spike alerts"
+        },
+        "acceptance_criteria": [
+          "Dashboard loads with metrics for last 30 days by default",
+          "Date range picker allows custom range selection",
+          "Complaint rate > 0.1% displayed with red alert badge",
+          "Domain authentication panel shows green/amber/red status per record type",
+          "Campaign breakdown table sortable by all metric columns",
+          "Charts render correctly with zero-data states (no empty chart errors)"
+        ],
+        "depends_on": [
+          17,
+          20
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 26,
+        "task_type": "FRONTEND",
+        "description": "Build GDPR consent management UI: consent preference center (embeddable widget + hosted page), consent status display per contact, DSAR submission and status tracking, erasure request flow, consent audit log viewer, and double opt-in settings.",
+        "payload": {
+          "consent_widget": "embeddable iframe + standalone hosted page at /p/{org_slug}/preferences",
+          "contact_consent_panel": "consent history timeline per contact in contact detail view",
+          "dsar_portal": "self-service portal for data subjects to request export or erasure",
+          "audit_log_viewer": "filterable table of all consent events"
+        },
+        "acceptance_criteria": [
+          "Embeddable consent widget renders correctly in cross-origin iframe",
+          "Consent preference center loads without authentication for data subjects",
+          "Withdrawal on preference center takes effect within 60 seconds (suppression enforced)",
+          "DSAR portal accepts email, generates verification token, returns data on confirmation",
+          "Erasure request confirmation screen clearly explains what data will be anonymized",
+          "Consent audit log exports to CSV"
+        ],
+        "depends_on": [
+          18,
+          20
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 27,
+        "task_type": "SECURITY",
+        "description": "Conduct security review: threat model (STRIDE), OWASP Top 10 assessment, authentication hardening (MFA, session management), injection testing (SQL, XSS via template merge tags), data encryption review (at-rest, in-transit), and GDPR data flow mapping.",
+        "payload": {
+          "threat_model": "STRIDE per API surface area",
+          "owasp_top10": "manual checklist + automated DAST (OWASP ZAP)",
+          "encryption": "TLS 1.2+ in transit, AES-256 at rest for PII fields",
+          "special_concern": "merge tag injection \u2014 template rendering must sandbox user input",
+          "output": [
+            "threat_model.md",
+            "owasp_assessment.md",
+            "pen_test_plan.md",
+            "data_flow_map.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model produced for all six feature areas",
+          "Merge tag renderer confirmed sandboxed \u2014 arbitrary Jinja2 code execution blocked",
+          "OWASP ZAP scan produces zero high-severity findings",
+          "All API endpoints confirmed to enforce authentication and org-scoped authorization",
+          "PII fields (email, name, phone) encrypted at rest",
+          "Data flow map documents all PII flows for GDPR Article 30 Record of Processing Activities"
+        ],
+        "depends_on": [
+          18,
+          17,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 28,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend services: auth, contacts, segmentation engine, template renderer, campaign/A/B logic, automation state machine, deliverability event processing, and GDPR consent flows. Target \u226580% coverage.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio",
+          "fixtures": "factory_boy for test data, pytest-postgresql for isolated DB per test",
+          "coverage_target": 80,
+          "focus_areas": [
+            "segment rule evaluator edge cases",
+            "A/B split determinism",
+            "workflow state transitions",
+            "consent withdrawal side effects",
+            "suppression list enforcement"
+          ]
+        },
+        "acceptance_criteria": [
+          "pytest --cov reports \u226580% line coverage across src/",
+          "Segment rule evaluator tested with \u226515 rule combinations including nested AND/OR",
+          "A/B variant assignment tested for determinism: same contact always gets same variant",
+          "Workflow state machine tests cover all valid and invalid transition attempts",
+          "Consent withdrawal test confirms suppression list entry created synchronously",
+          "All tests pass in CI in \u22643 minutes"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 29,
+        "task_type": "QA",
+        "description": "Author QA test plan covering manual and automated test cases for all six feature areas, edge cases (bulk operations, timezone handling, merge tag fallback), cross-browser testing matrix, and accessibility testing against WCAG 2.1 AA.",
+        "payload": {
+          "test_case_format": "Gherkin BDD scenarios",
+          "browser_matrix": [
+            "Chrome 120+",
+            "Firefox 120+",
+            "Safari 17+",
+            "Edge 120+"
+          ],
+          "accessibility_tool": "axe-core + manual screen reader test (NVDA/VoiceOver)",
+          "output": "qa_test_plan.md"
+        },
+        "acceptance_criteria": [
+          "Test cases written in Gherkin for all user stories from step 2",
+          "Edge cases documented: empty segment (0 contacts), campaign send to 0 recipients, expired double opt-in token",
+          "Timezone test cases cover DST transitions for scheduled sends",
+          "Browser matrix test execution results documented",
+          "axe-core scan on all pages produces zero critical violations",
+          "Screen reader test confirms template builder and automation canvas are keyboard navigable"
+        ],
+        "depends_on": [
+          26,
+          25,
+          24,
+          23,
+          22,
+          21
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 30,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system tests: full campaign lifecycle (create \u2192 segment \u2192 build template \u2192 A/B test \u2192 schedule \u2192 send \u2192 track opens/clicks \u2192 view analytics), automation workflow trigger-to-completion, GDPR withdrawal-to-suppression, and load test (10k concurrent recipients).",
+        "payload": {
+          "e2e_tool": "Playwright",
+          "load_test_tool": "Locust",
+          "load_test_scenarios": [
+            {
+              "name": "campaign_send_10k",
+              "vusers": 100,
+              "duration": "5m"
+            },
+            {
+              "name": "concurrent_api_reads",
+              "vusers": 500,
+              "duration": "2m"
+            }
+          ],
+          "critical_paths": [
+            "full_campaign_lifecycle",
+            "automation_enrollment_to_completion",
+            "gdpr_withdrawal_suppression"
+          ]
+        },
+        "acceptance_criteria": [
+          "Full campaign lifecycle E2E test passes end-to-end in Playwright",
+          "Automation workflow E2E: contact joins list \u2192 receives email \u2192 waits \u2192 receives follow-up \u2014 all within test timeout",
+          "GDPR withdrawal E2E: preference center withdrawal \u2192 contact suppressed \u2192 subsequent campaign excludes contact",
+          "Load test: 10k email events processed within 60 seconds at p95 latency \u2264500ms",
+          "Load test: API reads at 500 VUs show \u2264200ms p95 response time",
+          "Zero data leakage between orgs confirmed in cross-tenant isolation test"
+        ],
+        "depends_on": [
+          28,
+          29
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 31,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines (GitHub Actions), production infrastructure (Docker + Kubernetes or ECS), auto-scaling configuration, uptime monitoring (Uptime Robot / Datadog), alerting rules, SRE runbook stubs, and log aggregation (CloudWatch or ELK).",
+        "payload": {
+          "ci_cd": "GitHub Actions \u2014 lint, test, build, push to ECR, deploy to staging on PR, production on tag",
+          "infrastructure": "AWS ECS Fargate (backend + worker) + RDS PostgreSQL + ElastiCache Redis + SES",
+          "auto_scaling": "ECS target tracking on CPU 70% and SQS queue depth",
+          "monitoring": "Datadog APM + custom metrics (emails_sent_per_min, bounce_rate, complaint_rate)",
+          "alerting": [
+            "complaint_rate > 0.1%",
+            "bounce_rate > 5%",
+            "worker_queue_depth > 1000",
+            "API p95 > 500ms"
+          ],
+          "output": [
+            "ci_cd_pipeline.yml",
+            "ecs_task_definition.json",
+            "terraform/",
+            "runbooks/"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs lint + test + build on every PR in \u22645 minutes",
+          "Deployment to staging triggered automatically on PR merge to main",
+          "Production deployment requires manual approval gate in GitHub Actions",
+          "ECS auto-scaling verified: load spike triggers new task within 90 seconds",
+          "All four alert rules active in Datadog with PagerDuty routing",
+          "Log aggregation captures structured JSON logs from all services with trace_id correlation"
+        ],
+        "depends_on": [
+          30
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 32,
+        "task_type": "COMPLIANCE",
+        "description": "Produce SOC 2 evidence artifacts: access control evidence (RBAC screenshots + audit log exports), encryption certificates, vulnerability scan reports, change management records, and vendor assessment questionnaires.",
+        "payload": {
+          "evidence_artifacts": [
+            "rbac_configuration_evidence.pdf",
+            "tls_certificate_screenshots.pdf",
+            "owasp_zap_scan_report.html",
+            "penetration_test_report.pdf",
+            "access_review_log_export.csv",
+            "vendor_soc2_reports.zip",
+            "change_management_policy.md",
+            "incident_response_plan.md"
+          ],
+          "soc2_trust_criteria": [
+            "CC6.1 Logical Access",
+            "CC6.2 Authentication",
+            "CC6.3 Authorization",
+            "CC7.1 Vulnerability Management",
+            "A1.2 Availability Commitments"
+          ]
+        },
+        "acceptance_criteria": [
+          "Each SOC 2 control mapped to at least one concrete evidence artifact",
+          "Audit log export demonstrates 90-day retention of access events",
+          "Vulnerability scan report shows remediation status for all high/critical findings",
+          "Vendor SOC 2 reports collected for AWS, sending provider, and Datadog",
+          "Incident response plan reviewed and approved by operations_manager",
+          "Evidence package organized in auditor-ready folder structure with control cross-reference"
+        ],
+        "depends_on": [
+          27,
+          31,
+          10
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 33,
+        "task_type": "OPERATIONS",
+        "description": "Author operational runbooks: SLA definitions (99.9% uptime, \u22644h email delivery, \u226472h DSAR response), on-call incident response procedures, capacity planning model, deliverability incident playbook (ISP block / feedback loop setup), and backup/DR procedures.",
+        "payload": {
+          "sla_targets": {
+            "uptime": "99.9% monthly",
+            "email_delivery_latency": "\u22644 hours under normal load",
+            "dsar_response": "\u226472 hours",
+            "data_recovery_rpo": "1 hour",
+            "data_recovery_rto": "4 hours"
+          },
+          "runbooks": [
+            "incident_response.md",
+            "deliverability_incident.md",
+            "database_failover.md",
+            "worker_backlog.md",
+            "gdpr_erasure_ops.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "SLA targets documented and mapped to monitoring alert thresholds",
+          "Deliverability incident runbook covers: ISP block detection, feedback loop enrollment (Gmail, Yahoo), warm-up resume",
+          "Database failover runbook tested in staging with RTO verified \u22644 hours",
+          "Worker backlog runbook covers: queue depth spike, dead letter queue investigation, worker restart",
+          "GDPR erasure ops runbook covers: request intake, 30-day deadline tracking, confirmation to data subject",
+          "All runbooks linked from ops wiki index"
+        ],
+        "depends_on": [
+          31,
+          32
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 34,
+        "task_type": "DOCS",
+        "description": "Produce developer and user documentation: API reference (generated from OpenAPI spec), integration guides (webhook setup, custom field API, segment API), architecture decision records (ADRs), and in-app contextual help copy.",
+        "payload": {
+          "api_docs": "Scalar or Redoc from openapi.yaml",
+          "guides": [
+            "webhook_integration.md",
+            "custom_fields_api.md",
+            "segmentation_api.md",
+            "gdpr_api.md"
+          ],
+          "adrs": [
+            "ADR-001-sending-adapter-abstraction",
+            "ADR-002-segment-evaluation-sql",
+            "ADR-003-celery-workflow-engine"
+          ],
+          "in_app_help": "tooltip copy and empty-state guidance for all 6 feature areas"
+        },
+        "acceptance_criteria": [
+          "API reference hosted at /docs/api with all 7 endpoint groups rendered",
+          "Each integration guide includes a working curl example",
+          "ADRs document context, decision, and consequences for each architectural choice",
+          "In-app tooltips present on all major settings fields in template builder and automation canvas",
+          "GDPR API guide documents the full data subject request flow with request/response examples"
+        ],
+        "depends_on": [
+          30
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 35,
+        "task_type": "TRAINING",
+        "description": "Create user onboarding materials: interactive product tour (first-login wizard), quick-start guide (send first campaign in 5 minutes), feature deep-dive tutorials for automation and segmentation, admin setup guide (domain authentication, team management), and video script outlines.",
+        "payload": {
+          "onboarding_tour": "in-app step-by-step overlay for new users (using product tour library)",
+          "quick_start_guide": "docs/quick-start.md \u2014 5 steps, \u2264500 words",
+          "tutorials": [
+            "automation_first_workflow.md",
+            "segmentation_101.md",
+            "ab_test_guide.md"
+          ],
+          "admin_guide": "docs/admin-setup.md \u2014 DNS records, DKIM, team roles",
+          "video_scripts": [
+            "welcome_and_dashboard.md",
+            "template_builder_tour.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "First-login tour covers: dashboard orientation, contacts import, template creation, campaign send",
+          "Quick-start guide achieves 'send first campaign' in \u22645 documented steps",
+          "Automation tutorial walks through building a welcome series (trigger \u2192 wait \u2192 follow-up)",
+          "Admin setup guide covers SPF/DKIM/DMARC DNS setup for top 3 registrars",
+          "Video scripts reviewed and timed at \u22643 minutes per video",
+          "All training materials reviewed by a non-technical user for clarity"
+        ],
+        "depends_on": [
+          34
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 35,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 55,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 55,
+          "final_review": {
+            "score": 55,
+            "flaws": [
+              "SSTI risk is architectural, not a checklist item: Step 14 commits to Jinja2-style merge tags AND a `raw_html` block type, but sandboxing is deferred to Step 27's security review. Jinja2's SandboxedEnvironment has known bypasses. On a multi-tenant platform, one tenant exploiting SSTI can read other tenants' data or execute code. The rendering architecture must be decided in Step 14, not audited 13 steps later.",
+              "SOC 2 Type II is not a documentation exercise: Steps 10 and 32 treat SOC 2 Type II as producing artifacts and writing policies. Type II requires a minimum 6-month observation period of controls operating effectively. You cannot produce Type II evidence from a freshly built system. The plan never acknowledges this \u2014 it will either miss the timeline or produce a meaningless report. Target Type I first.",
+              "Cross-tenant data leakage has no database-level protection: Step 11 specifies 'org-scoped row-level isolation via org_id' enforced entirely at the application layer. Without PostgreSQL Row Level Security (RLS), any single missed `WHERE org_id = ?` filter in any query leaks cross-tenant data. The cross-tenant test in Step 30 is one E2E scenario \u2014 not a systematic audit of every query path.",
+              "No per-organization sending rate limits: One tenant can exhaust the entire AWS SES account quota, triggering account-level reputation damage that affects all other tenants. This is a critical multi-tenancy flaw for an email platform \u2014 the entire product value is deliverability.",
+              "Webhook event idempotency is missing: Step 17 processes bounce/complaint webhooks with no mention of deduplication. SES and SendGrid both send duplicate webhook events under failure/retry conditions. Without idempotency keys, one hard bounce event could suppress a contact twice (no harm) but one complaint event could double-count in complaint rate metrics, triggering false deliverability alerts.",
+              "Segment estimation at 1M contacts in 2 seconds is unrealistic: Step 13 uses 'on-demand SQL query generation from rule tree' for segment size estimates. Complex nested boolean trees against 1M contacts with event join conditions (event_occurred, event_count) will not complete in 2 seconds without pre-built partial indexes per condition type. This acceptance criterion will fail in production load testing.",
+              "DSAR export in 200ms is architecturally incompatible with contact data volume: Step 18 requires 'all contact data in structured JSON within 200ms.' A contact with 50k engagement events (normal for an active subscriber over 2 years) cannot be aggregated and serialized in 200ms without pre-aggregation. GDPR gives 30 days \u2014 this constraint solves the wrong problem and creates a false engineering requirement.",
+              "A/B test statistical significance is naive: Step 15 specifies p<0.05 as the winner selection criterion with 'configurable duration.' This is textbook p-value peeking \u2014 checking significance repeatedly until it reaches 0.05 inflates the false positive rate to ~30% or higher. No mention of minimum sample size, statistical power, or sequential testing corrections (e.g., Bonferroni, O'Brien-Fleming). Customers will pick losers.",
+              "Double opt-in creates a suppression deadlock: Step 18 implements double opt-in where a confirmation email is sent before consent is confirmed. Step 17 enforces suppression at queue time. If the contact's email is on the suppression list (e.g., previously unsubscribed and re-signed-up), the confirmation email will be blocked and the contact can never re-consent. The plan does not address this re-subscription flow.",
+              "Automation engine durability is insufficient: Step 16 uses 'Redis state machine per enrolled contact with PostgreSQL fallback on worker restart.' Redis without AOF/RDB persistence (which docker-compose won't configure) loses all in-flight workflow state on restart. The 'PostgreSQL fallback' is vague \u2014 how does a restarted worker know which contacts were mid-wait when Redis was wiped? This needs a proper state persistence design, not a footnote.",
+              "Celery + Redis as single stack for both queue and cache: Steps 9 and 16 use Redis for both Celery task queue AND workflow state. A single Redis failure simultaneously kills: task queuing, campaign sends, automation state, session cache, and segment count caching. These should be separate Redis instances or the failure blast radius is documented.",
+              "Financial model output as .xlsx is unimplementable for an AI agent: Step 3 expects an agent to produce a working Excel file with formulas, sensitivity analysis tabs, and P&L projections. No current LLM agent can reliably generate a non-corrupt .xlsx with live cell references. This will produce a file that looks like a spreadsheet but has broken formulas. Output should be Markdown tables or CSV.",
+              "IP warming has no implementation: Step 17 mentions 'IP warming schedule' in the description but the acceptance criteria contain zero IP warming requirements. Warming is not a runbook \u2014 it is a daily volume ramp (typically 50\u2192100\u2192500\u21922000\u2192... over 6+ weeks) that must be enforced by the sending pipeline. Without this, dedicated IPs will be blacklisted within 48 hours of first production send.",
+              "Missing List-Unsubscribe headers: CAN-SPAM compliance and Gmail's 2024 bulk sender requirements mandate List-Unsubscribe and List-Unsubscribe-Post headers on all marketing emails. Step 17's acceptance criteria do not mention this. Gmail will reject or send to spam emails from senders missing one-click unsubscribe headers at volume \u2014 this is a deliverability-breaking omission."
+            ],
+            "suggestions": [
+              "Decide on merge tag rendering architecture in Step 14: use a purpose-built safe expression evaluator (e.g., restricted AST evaluation) rather than Jinja2, or commit explicitly to Jinja2 SandboxedEnvironment with a documented bypass audit. Eliminate the `raw_html` block type from v1 or process it server-side through an HTML sanitizer (DOMPurify equivalent).",
+              "Add PostgreSQL Row Level Security policies in Step 8 as a hard requirement, not application-layer convention. Every table with org_id should have an RLS policy enforced at the database level. Application-layer filters become defense-in-depth, not the primary guard.",
+              "Replace the Celery Redis state machine in Step 16 with a proper durable workflow pattern: either Temporal (already referenced in SAGE), AWS Step Functions, or at minimum persist workflow enrollment state to PostgreSQL on every node transition \u2014 not just on worker restart.",
+              "Reframe Step 10 as SOC 2 Type I readiness, not Type II. Add a note that Type II requires 6 months of control operation evidence post-launch. This is an honest timeline and avoids the audit failure.",
+              "Add per-organization sending quotas as a first-class database concept in Step 8: an `org_sending_limits` table with daily/hourly caps, enforced at Celery task dispatch time. Start conservative (e.g., 10k/hour) and require org upgrade to raise limits.",
+              "Add List-Unsubscribe and List-Unsubscribe-Post headers to Step 17's acceptance criteria. Add DKIM signing architecture decision (SES DKIM vs. custom domain) as an explicit requirement.",
+              "Add FBL enrollment (Gmail Postmaster Tools, Yahoo Complaint Feedback Loop, Microsoft SNDS) as an operational prerequisite in Step 17 or 33, with implementation steps \u2014 not just a runbook mention.",
+              "Add email client rendering compatibility testing to Step 29 QA plan: Litmus or Email on Acid API integration, covering Outlook 2019/365, Gmail web/app, Apple Mail, iOS Mail. Outlook's Word-based renderer breaks standard HTML \u2014 this is the #1 support ticket for any email builder.",
+              "Change A/B winner selection in Step 15 to require minimum sample size calculation (based on expected effect size) and sequential testing methodology (e.g., always-valid p-values or Bayesian updating). Remove pure 'configurable duration' as the sole trigger.",
+              "Add webhook signature verification to Step 17's acceptance criteria: SES uses SNS topic signatures, SendGrid uses HMAC-SHA256. Without signature verification, the bounce/complaint endpoints are open to spoofing that could suppress arbitrary contacts.",
+              "Add API rate limiting as a cross-cutting concern in Step 11 \u2014 not optional. Minimum: per-API-key rate limits on all write endpoints, stricter limits on computationally expensive endpoints (segment count, DSAR export, template preview).",
+              "Strengthen the DSAR portal identity verification in Step 26: accepting an email address alone and sending a verification token to that email is trivially abusable to confirm whether any email address is a customer. Add CAPTCHA and consider requiring the data subject to confirm their identity attribute before returning data."
+            ],
+            "missing": [
+              "Email client compatibility testing matrix (Outlook 2019/365, Gmail, Apple Mail) \u2014 the #1 deliverability-adjacent failure mode for any email template builder",
+              "List-Unsubscribe / List-Unsubscribe-Post header implementation in outgoing email pipeline (required by Gmail bulk sender policy 2024, CAN-SPAM)",
+              "ISP Feedback Loop (FBL) enrollment implementation steps for Gmail Postmaster Tools, Yahoo CFL, Microsoft SNDS",
+              "DKIM signing architecture decision: who signs outgoing emails and how (SES DKIM vs. Bring Your Own Domain with DNS-side CNAME)",
+              "PostgreSQL Row Level Security (RLS) policies \u2014 application-layer org_id filtering alone is insufficient for a multi-tenant SaaS",
+              "Per-organization sending quotas enforced at the task queue level \u2014 without this, one tenant can consume all sending capacity",
+              "Webhook event idempotency design (dedup keys, processed_webhook_events table)",
+              "Re-subscription flow for previously suppressed contacts attempting double opt-in",
+              "IP warming enforcement mechanism in the sending pipeline (not just an ops runbook reference)",
+              "SOC 2 Type I vs Type II distinction and realistic timeline \u2014 the current plan is unachievable as written",
+              "API rate limiting specification (per-key, per-endpoint, per-org)",
+              "Webhook signature verification for SES/SendGrid inbound events",
+              "Minimum sample size and power analysis for A/B winner selection",
+              "DSAR portal identity verification beyond email token (trivially abusable for email enumeration)",
+              "Disaster recovery drill procedure and results \u2014 not just a runbook that says it was 'tested in staging'"
+            ],
+            "security_risks": [
+              "Server-Side Template Injection (SSTI): Jinja2-style merge tags + `raw_html` block type + server-side preview rendering = critical SSTI surface on a multi-tenant platform. One payload like `{{ ''.__class__.__mro__[1].__subclasses__() }}` can expose the process environment. Architecture must sandbox at Step 14, not audit at Step 27.",
+              "Cross-tenant data leakage: application-layer org_id filtering with no database RLS means a single missing WHERE clause anywhere in 19 endpoint groups leaks all tenants' data to any authenticated user. Step 30's single cross-tenant test is not a systematic audit.",
+              "Bounce/complaint webhook spoofing: without SES SNS signature verification and SendGrid HMAC verification on inbound webhook endpoints, any external party can POST fabricated bounce events to suppress arbitrary contacts or inflate complaint metrics.",
+              "DSAR portal data exfiltration: Step 26 allows any person to submit an email address, receive a verification token to that email, and retrieve all data associated with it. A threat actor who compromises one subscriber's email inbox can extract that contact's full profile, engagement history, and custom fields \u2014 including data the org may consider sensitive.",
+              "Redis exposure in docker-compose: without explicit requirepass and bind configuration, the Redis instance used for both Celery queue and workflow state will bind to 0.0.0.0 by default in Docker bridge networking, potentially accessible beyond the container network depending on host configuration.",
+              "Merge tag exfiltration via crafted templates: even without SSTI, a malicious org admin could craft merge tags referencing internal system variables if the expression evaluator is not strictly scoped to contact fields. The plan does not define the allowed variable namespace.",
+              "Mass contact suppression DoS: if the bounce webhook endpoint lacks rate limiting and signature verification, an attacker can POST thousands of fake hard bounces to suppress an entire organization's contact list within seconds."
+            ],
+            "summary": "This is a thorough, well-structured plan that covers the right domains in the right order and has genuinely good acceptance criteria for most steps. However, it earns a 55 because it has two reputation-ending gaps for an email platform specifically. First, the SSTI vulnerability is an architectural decision deferred to a security checklist \u2014 on a multi-tenant SaaS where templates are user-authored and server-rendered, this is a P0 breach waiting to happen. Second, the deliverability infrastructure is incomplete in ways that will prevent the product from working: missing List-Unsubscribe headers will get emails rejected by Gmail at volume (2024 policy), missing FBL enrollment means complaint spikes go undetected at the ISP level, and IP warming without pipeline enforcement means dedicated IPs are blacklisted before the first real customer sends. The SOC 2 Type II treatment is also a fundamental misconception \u2014 executing this plan will not produce a valid Type II report. The automation workflow engine's durability model (Redis state with vague PostgreSQL fallback) will lose in-flight enrollments on any Redis restart. These are not MVP-scope misses \u2014 deliverability is the product's core value proposition, and getting IPs blacklisted or being rejected by Gmail kills the product on day one regardless of how polished the UI is. Fix the SSTI architecture, add List-Unsubscribe, add FBL implementation, and harden the automation state persistence before considering this plan production-ready.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 55,
+              "flaws": [
+                "SSTI risk is architectural, not a checklist item: Step 14 commits to Jinja2-style merge tags AND a `raw_html` block type, but sandboxing is deferred to Step 27's security review. Jinja2's SandboxedEnvironment has known bypasses. On a multi-tenant platform, one tenant exploiting SSTI can read other tenants' data or execute code. The rendering architecture must be decided in Step 14, not audited 13 steps later.",
+                "SOC 2 Type II is not a documentation exercise: Steps 10 and 32 treat SOC 2 Type II as producing artifacts and writing policies. Type II requires a minimum 6-month observation period of controls operating effectively. You cannot produce Type II evidence from a freshly built system. The plan never acknowledges this \u2014 it will either miss the timeline or produce a meaningless report. Target Type I first.",
+                "Cross-tenant data leakage has no database-level protection: Step 11 specifies 'org-scoped row-level isolation via org_id' enforced entirely at the application layer. Without PostgreSQL Row Level Security (RLS), any single missed `WHERE org_id = ?` filter in any query leaks cross-tenant data. The cross-tenant test in Step 30 is one E2E scenario \u2014 not a systematic audit of every query path.",
+                "No per-organization sending rate limits: One tenant can exhaust the entire AWS SES account quota, triggering account-level reputation damage that affects all other tenants. This is a critical multi-tenancy flaw for an email platform \u2014 the entire product value is deliverability.",
+                "Webhook event idempotency is missing: Step 17 processes bounce/complaint webhooks with no mention of deduplication. SES and SendGrid both send duplicate webhook events under failure/retry conditions. Without idempotency keys, one hard bounce event could suppress a contact twice (no harm) but one complaint event could double-count in complaint rate metrics, triggering false deliverability alerts.",
+                "Segment estimation at 1M contacts in 2 seconds is unrealistic: Step 13 uses 'on-demand SQL query generation from rule tree' for segment size estimates. Complex nested boolean trees against 1M contacts with event join conditions (event_occurred, event_count) will not complete in 2 seconds without pre-built partial indexes per condition type. This acceptance criterion will fail in production load testing.",
+                "DSAR export in 200ms is architecturally incompatible with contact data volume: Step 18 requires 'all contact data in structured JSON within 200ms.' A contact with 50k engagement events (normal for an active subscriber over 2 years) cannot be aggregated and serialized in 200ms without pre-aggregation. GDPR gives 30 days \u2014 this constraint solves the wrong problem and creates a false engineering requirement.",
+                "A/B test statistical significance is naive: Step 15 specifies p<0.05 as the winner selection criterion with 'configurable duration.' This is textbook p-value peeking \u2014 checking significance repeatedly until it reaches 0.05 inflates the false positive rate to ~30% or higher. No mention of minimum sample size, statistical power, or sequential testing corrections (e.g., Bonferroni, O'Brien-Fleming). Customers will pick losers.",
+                "Double opt-in creates a suppression deadlock: Step 18 implements double opt-in where a confirmation email is sent before consent is confirmed. Step 17 enforces suppression at queue time. If the contact's email is on the suppression list (e.g., previously unsubscribed and re-signed-up), the confirmation email will be blocked and the contact can never re-consent. The plan does not address this re-subscription flow.",
+                "Automation engine durability is insufficient: Step 16 uses 'Redis state machine per enrolled contact with PostgreSQL fallback on worker restart.' Redis without AOF/RDB persistence (which docker-compose won't configure) loses all in-flight workflow state on restart. The 'PostgreSQL fallback' is vague \u2014 how does a restarted worker know which contacts were mid-wait when Redis was wiped? This needs a proper state persistence design, not a footnote.",
+                "Celery + Redis as single stack for both queue and cache: Steps 9 and 16 use Redis for both Celery task queue AND workflow state. A single Redis failure simultaneously kills: task queuing, campaign sends, automation state, session cache, and segment count caching. These should be separate Redis instances or the failure blast radius is documented.",
+                "Financial model output as .xlsx is unimplementable for an AI agent: Step 3 expects an agent to produce a working Excel file with formulas, sensitivity analysis tabs, and P&L projections. No current LLM agent can reliably generate a non-corrupt .xlsx with live cell references. This will produce a file that looks like a spreadsheet but has broken formulas. Output should be Markdown tables or CSV.",
+                "IP warming has no implementation: Step 17 mentions 'IP warming schedule' in the description but the acceptance criteria contain zero IP warming requirements. Warming is not a runbook \u2014 it is a daily volume ramp (typically 50\u2192100\u2192500\u21922000\u2192... over 6+ weeks) that must be enforced by the sending pipeline. Without this, dedicated IPs will be blacklisted within 48 hours of first production send.",
+                "Missing List-Unsubscribe headers: CAN-SPAM compliance and Gmail's 2024 bulk sender requirements mandate List-Unsubscribe and List-Unsubscribe-Post headers on all marketing emails. Step 17's acceptance criteria do not mention this. Gmail will reject or send to spam emails from senders missing one-click unsubscribe headers at volume \u2014 this is a deliverability-breaking omission."
+              ],
+              "suggestions": [
+                "Decide on merge tag rendering architecture in Step 14: use a purpose-built safe expression evaluator (e.g., restricted AST evaluation) rather than Jinja2, or commit explicitly to Jinja2 SandboxedEnvironment with a documented bypass audit. Eliminate the `raw_html` block type from v1 or process it server-side through an HTML sanitizer (DOMPurify equivalent).",
+                "Add PostgreSQL Row Level Security policies in Step 8 as a hard requirement, not application-layer convention. Every table with org_id should have an RLS policy enforced at the database level. Application-layer filters become defense-in-depth, not the primary guard.",
+                "Replace the Celery Redis state machine in Step 16 with a proper durable workflow pattern: either Temporal (already referenced in SAGE), AWS Step Functions, or at minimum persist workflow enrollment state to PostgreSQL on every node transition \u2014 not just on worker restart.",
+                "Reframe Step 10 as SOC 2 Type I readiness, not Type II. Add a note that Type II requires 6 months of control operation evidence post-launch. This is an honest timeline and avoids the audit failure.",
+                "Add per-organization sending quotas as a first-class database concept in Step 8: an `org_sending_limits` table with daily/hourly caps, enforced at Celery task dispatch time. Start conservative (e.g., 10k/hour) and require org upgrade to raise limits.",
+                "Add List-Unsubscribe and List-Unsubscribe-Post headers to Step 17's acceptance criteria. Add DKIM signing architecture decision (SES DKIM vs. custom domain) as an explicit requirement.",
+                "Add FBL enrollment (Gmail Postmaster Tools, Yahoo Complaint Feedback Loop, Microsoft SNDS) as an operational prerequisite in Step 17 or 33, with implementation steps \u2014 not just a runbook mention.",
+                "Add email client rendering compatibility testing to Step 29 QA plan: Litmus or Email on Acid API integration, covering Outlook 2019/365, Gmail web/app, Apple Mail, iOS Mail. Outlook's Word-based renderer breaks standard HTML \u2014 this is the #1 support ticket for any email builder.",
+                "Change A/B winner selection in Step 15 to require minimum sample size calculation (based on expected effect size) and sequential testing methodology (e.g., always-valid p-values or Bayesian updating). Remove pure 'configurable duration' as the sole trigger.",
+                "Add webhook signature verification to Step 17's acceptance criteria: SES uses SNS topic signatures, SendGrid uses HMAC-SHA256. Without signature verification, the bounce/complaint endpoints are open to spoofing that could suppress arbitrary contacts.",
+                "Add API rate limiting as a cross-cutting concern in Step 11 \u2014 not optional. Minimum: per-API-key rate limits on all write endpoints, stricter limits on computationally expensive endpoints (segment count, DSAR export, template preview).",
+                "Strengthen the DSAR portal identity verification in Step 26: accepting an email address alone and sending a verification token to that email is trivially abusable to confirm whether any email address is a customer. Add CAPTCHA and consider requiring the data subject to confirm their identity attribute before returning data."
+              ],
+              "missing": [
+                "Email client compatibility testing matrix (Outlook 2019/365, Gmail, Apple Mail) \u2014 the #1 deliverability-adjacent failure mode for any email template builder",
+                "List-Unsubscribe / List-Unsubscribe-Post header implementation in outgoing email pipeline (required by Gmail bulk sender policy 2024, CAN-SPAM)",
+                "ISP Feedback Loop (FBL) enrollment implementation steps for Gmail Postmaster Tools, Yahoo CFL, Microsoft SNDS",
+                "DKIM signing architecture decision: who signs outgoing emails and how (SES DKIM vs. Bring Your Own Domain with DNS-side CNAME)",
+                "PostgreSQL Row Level Security (RLS) policies \u2014 application-layer org_id filtering alone is insufficient for a multi-tenant SaaS",
+                "Per-organization sending quotas enforced at the task queue level \u2014 without this, one tenant can consume all sending capacity",
+                "Webhook event idempotency design (dedup keys, processed_webhook_events table)",
+                "Re-subscription flow for previously suppressed contacts attempting double opt-in",
+                "IP warming enforcement mechanism in the sending pipeline (not just an ops runbook reference)",
+                "SOC 2 Type I vs Type II distinction and realistic timeline \u2014 the current plan is unachievable as written",
+                "API rate limiting specification (per-key, per-endpoint, per-org)",
+                "Webhook signature verification for SES/SendGrid inbound events",
+                "Minimum sample size and power analysis for A/B winner selection",
+                "DSAR portal identity verification beyond email token (trivially abusable for email enumeration)",
+                "Disaster recovery drill procedure and results \u2014 not just a runbook that says it was 'tested in staging'"
+              ],
+              "security_risks": [
+                "Server-Side Template Injection (SSTI): Jinja2-style merge tags + `raw_html` block type + server-side preview rendering = critical SSTI surface on a multi-tenant platform. One payload like `{{ ''.__class__.__mro__[1].__subclasses__() }}` can expose the process environment. Architecture must sandbox at Step 14, not audit at Step 27.",
+                "Cross-tenant data leakage: application-layer org_id filtering with no database RLS means a single missing WHERE clause anywhere in 19 endpoint groups leaks all tenants' data to any authenticated user. Step 30's single cross-tenant test is not a systematic audit.",
+                "Bounce/complaint webhook spoofing: without SES SNS signature verification and SendGrid HMAC verification on inbound webhook endpoints, any external party can POST fabricated bounce events to suppress arbitrary contacts or inflate complaint metrics.",
+                "DSAR portal data exfiltration: Step 26 allows any person to submit an email address, receive a verification token to that email, and retrieve all data associated with it. A threat actor who compromises one subscriber's email inbox can extract that contact's full profile, engagement history, and custom fields \u2014 including data the org may consider sensitive.",
+                "Redis exposure in docker-compose: without explicit requirepass and bind configuration, the Redis instance used for both Celery queue and workflow state will bind to 0.0.0.0 by default in Docker bridge networking, potentially accessible beyond the container network depending on host configuration.",
+                "Merge tag exfiltration via crafted templates: even without SSTI, a malicious org admin could craft merge tags referencing internal system variables if the expression evaluator is not strictly scoped to contact fields. The plan does not define the allowed variable namespace.",
+                "Mass contact suppression DoS: if the bounce webhook endpoint lacks rate limiting and signature verification, an attacker can POST thousands of fake hard bounces to suppress an entire organization's contact list within seconds."
+              ],
+              "summary": "This is a thorough, well-structured plan that covers the right domains in the right order and has genuinely good acceptance criteria for most steps. However, it earns a 55 because it has two reputation-ending gaps for an email platform specifically. First, the SSTI vulnerability is an architectural decision deferred to a security checklist \u2014 on a multi-tenant SaaS where templates are user-authored and server-rendered, this is a P0 breach waiting to happen. Second, the deliverability infrastructure is incomplete in ways that will prevent the product from working: missing List-Unsubscribe headers will get emails rejected by Gmail at volume (2024 policy), missing FBL enrollment means complaint spikes go undetected at the ISP level, and IP warming without pipeline enforcement means dedicated IPs are blacklisted before the first real customer sends. The SOC 2 Type II treatment is also a fundamental misconception \u2014 executing this plan will not produce a valid Type II report. The automation workflow engine's durability model (Redis state with vague PostgreSQL fallback) will lose in-flight enrollments on any Redis restart. These are not MVP-scope misses \u2014 deliverability is the product's core value proposition, and getting IPs blacklisted or being rejected by Gmail kills the product on day one regardless of how polished the UI is. Fix the SSTI architecture, add List-Unsubscribe, add FBL implementation, and harden the automation state persistence before considering this plan production-ready.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T05:35:17.651823+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 214.75,
+      "critic_plan": 143.44
+    }
+  }
+}

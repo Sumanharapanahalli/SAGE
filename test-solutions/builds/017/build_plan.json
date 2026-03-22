@@ -1,0 +1,1201 @@
+{
+  "run_id": "5e60433e-4348-494b-98a2-ea3b82a919fb",
+  "status": {
+    "run_id": "5e60433e-4348-494b-98a2-ea3b82a919fb",
+    "solution_name": "cross_border_payments",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-21T23:49:56.789786+00:00",
+    "updated_at": "2026-03-21T23:55:30.250911+00:00",
+    "product_description": "Cross-border payment platform with multi-currency wallets, FX rate engine, SWIFT/SEPA integration, sanctions screening, and remittance tracking. PSD2 and FATF compliance.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user stories, and process flows for cross-border payment platform including multi-currency wallet operations, FX conversion, SWIFT/SEPA rails, sanctions screening, and remittance lifecycle tracking.",
+        "payload": {
+          "solution_name": "cross_border_payments",
+          "deliverables": [
+            "BRD",
+            "user_stories",
+            "process_flow_diagrams",
+            "use_case_matrix"
+          ],
+          "stakeholders": [
+            "compliance_officer",
+            "product_owner",
+            "payment_ops",
+            "end_users"
+          ],
+          "key_flows": [
+            "wallet_funding",
+            "fx_conversion",
+            "outbound_swift",
+            "outbound_sepa",
+            "sanctions_check",
+            "remittance_tracking"
+          ]
+        },
+        "acceptance_criteria": [
+          "BRD covers all payment corridors and currency pairs in scope",
+          "User stories defined for sender, receiver, compliance officer, and ops roles",
+          "SWIFT MT103 and SEPA Credit Transfer process flows documented",
+          "Remittance lifecycle state machine (initiated \u2192 screened \u2192 routed \u2192 settled \u2192 confirmed) documented"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "REGULATORY",
+        "description": "Map PSD2 (Strong Customer Authentication, open banking APIs, liability framework), FATF Recommendation 16 (Travel Rule for transfers \u2265 \u20ac1000), and applicable AML/KYC obligations. Produce standards-to-requirements traceability matrix.",
+        "payload": {
+          "standards": [
+            "PSD2",
+            "FATF_R16",
+            "6AMLD",
+            "OFAC",
+            "EU_2015_847"
+          ],
+          "deliverables": [
+            "regulatory_requirements_register",
+            "traceability_matrix",
+            "gap_analysis"
+          ],
+          "jurisdictions": [
+            "EU",
+            "UK",
+            "US"
+          ]
+        },
+        "acceptance_criteria": [
+          "Every PSD2 Article requirement mapped to a system control or process",
+          "FATF Travel Rule originator/beneficiary data fields identified and mapped to data model",
+          "Gap analysis complete with risk-ranked remediation items",
+          "Traceability matrix links regulation \u2192 requirement \u2192 control \u2192 test case"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 3,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (GDPR-aligned), data retention policy, and payment service provider licensing framework. Define liability caps and dispute resolution procedures for failed or delayed transfers.",
+        "payload": {
+          "deliverables": [
+            "terms_of_service",
+            "privacy_policy",
+            "data_retention_policy",
+            "dispute_resolution_procedure"
+          ],
+          "gdpr_articles": [
+            "Art6",
+            "Art17",
+            "Art20",
+            "Art30"
+          ],
+          "regulatory_licenses": [
+            "EMI",
+            "PSP",
+            "MSB"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy covers all personal data categories processed (name, IBAN, transaction history)",
+          "Data retention periods aligned with AML requirements (5 years minimum)",
+          "ToS includes PSD2 consumer rights (refund windows, liability rules)",
+          "Dispute resolution SLAs defined (T+1 acknowledgement, T+15 resolution)"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 4,
+        "task_type": "SECURITY",
+        "description": "Produce threat model (STRIDE), penetration test plan, cryptographic controls specification, and Software Bill of Materials (SBOM). Address payment-specific threats: replay attacks, IBAN swapping, sanctions bypass, and credential stuffing.",
+        "payload": {
+          "methodology": "STRIDE",
+          "threat_categories": [
+            "spoofing",
+            "tampering",
+            "repudiation",
+            "info_disclosure",
+            "DoS",
+            "privilege_escalation"
+          ],
+          "payment_specific_threats": [
+            "replay_attack",
+            "IBAN_swap",
+            "sanctions_bypass",
+            "credential_stuffing",
+            "man_in_the_middle"
+          ],
+          "standards": [
+            "PCI_DSS_v4",
+            "OWASP_ASVS_L2",
+            "ISO_27001"
+          ],
+          "deliverables": [
+            "threat_model",
+            "pentest_plan",
+            "crypto_spec",
+            "SBOM"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all data flows in architecture diagram",
+          "All HIGH/CRITICAL threats have mitigation controls assigned",
+          "Cryptographic spec mandates TLS 1.3, AES-256 at rest, RSA-4096 for key exchange",
+          "SBOM generated covering all third-party libraries and their CVE status",
+          "Pentest plan covers OWASP API Security Top 10",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "COMPLIANCE",
+        "description": "Build PCI DSS v4.0 compliance framework: cardholder data environment scoping, control mapping, evidence collection plan, and SAQ/RoC preparation checklist. Map SOC 2 Type II trust service criteria (Security, Availability, Confidentiality, Processing Integrity). Produce risk matrix.",
+        "payload": {
+          "standards": [
+            "PCI_DSS_v4",
+            "SOC2_TypeII",
+            "SOX_ITGC"
+          ],
+          "deliverables": [
+            "CDE_scope_diagram",
+            "control_matrix",
+            "evidence_collection_plan",
+            "risk_matrix",
+            "V&V_protocol"
+          ],
+          "trust_criteria": [
+            "CC6",
+            "CC7",
+            "CC8",
+            "PI1",
+            "A1"
+          ]
+        },
+        "acceptance_criteria": [
+          "CDE scoped and network segmentation controls documented",
+          "All 12 PCI DSS requirements mapped to system controls with evidence owners",
+          "SOC 2 control matrix covers all 5 trust service categories",
+          "Risk matrix rates likelihood \u00d7 impact for top 20 risks with residual risk after mitigations",
+          "V&V protocol defines IQ/OQ/PQ stages for payment processing subsystems"
+        ],
+        "depends_on": [
+          2,
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "UX_DESIGN",
+        "description": "Design user flows, wireframes, and accessibility audit for sender dashboard (wallet overview, send money, FX rate display, transfer history), compliance officer portal (sanctions queue, AML alerts, KYC review), and operations dashboard (transfer monitoring, failure triage).",
+        "payload": {
+          "personas": [
+            "individual_sender",
+            "business_treasurer",
+            "compliance_officer",
+            "ops_agent"
+          ],
+          "screens": [
+            "wallet_dashboard",
+            "send_money_flow",
+            "fx_rate_quote",
+            "transfer_history",
+            "kyc_onboarding",
+            "sanctions_review_queue",
+            "ops_monitoring"
+          ],
+          "accessibility_standard": "WCAG_2.1_AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all critical flows end-to-end for each persona",
+          "FX rate quote screen shows mid-rate, spread, total cost, and estimated arrival time",
+          "Accessibility audit passes WCAG 2.1 AA for all primary flows",
+          "Compliance officer portal has one-click approve/reject for sanctions queue items"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specifications for all platform APIs: wallet management, FX quote/execute, payment initiation, sanctions screening, remittance status, and PSD2 AIS/PIS open banking endpoints. Define error codes, idempotency keys, and pagination contracts.",
+        "payload": {
+          "api_groups": [
+            "wallets",
+            "fx",
+            "payments",
+            "sanctions",
+            "remittance",
+            "psd2_openbanking",
+            "webhooks",
+            "admin"
+          ],
+          "auth_schemes": [
+            "OAuth2_PKCE",
+            "mTLS",
+            "HMAC_webhook_signatures"
+          ],
+          "idempotency": "X-Idempotency-Key header on all POST endpoints",
+          "pagination": "cursor-based",
+          "versioning": "URL path versioning /v1/"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors against 3.1 schema",
+          "All payment initiation endpoints require idempotency key",
+          "PSD2 PIS and AIS endpoints conform to Berlin Group NextGenPSD2 1.3.12 spec",
+          "Error response schema is consistent: {code, message, trace_id, details}",
+          "Webhook event catalog documented with payload examples for all event types"
+        ],
+        "depends_on": [
+          2,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design PostgreSQL schema for multi-currency wallets, ledger entries (double-entry bookkeeping), FX rates cache, SWIFT/SEPA transaction records, sanctions screening results, KYC profiles, and audit trail. Define migrations, indexes, and partitioning strategy for high-volume transaction tables.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "schema_tables": [
+            "users",
+            "kyc_profiles",
+            "wallets",
+            "wallet_balances",
+            "ledger_entries",
+            "fx_rates",
+            "fx_quotes",
+            "payments",
+            "swift_messages",
+            "sepa_transfers",
+            "sanctions_screenings",
+            "sanctions_hits",
+            "remittance_events",
+            "audit_log",
+            "webhooks"
+          ],
+          "double_entry": true,
+          "partitioning": "ledger_entries and remittance_events partitioned by month",
+          "currency_storage": "NUMERIC(38,18) for all monetary amounts",
+          "migrations_tool": "Alembic"
+        },
+        "acceptance_criteria": [
+          "Double-entry ledger enforces that debit sum equals credit sum via DB constraint",
+          "All monetary amounts stored as NUMERIC(38,18) with explicit currency_code column",
+          "ledger_entries table partitioned by month with partition pruning verified",
+          "Migrations are idempotent and reversible (up/down)",
+          "All foreign keys indexed; query plan confirms index usage on payment lookup by trace_id",
+          "sanctions_screenings table stores full screening payload for audit trail",
+          "Transaction isolation level documented",
+          "Audit trail on all writes"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up project scaffold: FastAPI backend, React + TypeScript frontend, Docker Compose (postgres, redis, localstack for AWS simulation), pre-commit hooks (ruff, mypy, bandit), environment variable schema, and secrets management via HashiCorp Vault integration. Configure agentic pattern: coordinator with specialist agents for FX, compliance, and routing.",
+        "payload": {
+          "backend_stack": "Python 3.12 + FastAPI + SQLAlchemy 2 + Alembic + Celery + Redis",
+          "frontend_stack": "React 18 + TypeScript + Vite + TanStack Query + Tailwind",
+          "agentic_pattern": "coordinator",
+          "coordinator_agents": [
+            "fx_agent",
+            "sanctions_agent",
+            "routing_agent",
+            "compliance_agent"
+          ],
+          "infra_local": "Docker Compose with postgres:16, redis:7, localstack",
+          "secrets": "HashiCorp Vault + .env.example with all required vars documented",
+          "linting": [
+            "ruff",
+            "mypy --strict",
+            "bandit",
+            "eslint",
+            "prettier"
+          ]
+        },
+        "acceptance_criteria": [
+          "`docker compose up` starts all services with health checks passing",
+          "All environment variables documented in .env.example with descriptions",
+          "Pre-commit hooks run and pass on clean repo",
+          "Vault integration tested: secrets injected at runtime, not in env files",
+          "Coordinator agent pattern scaffolded with task router and specialist agent interfaces"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement multi-currency wallet service: wallet creation, balance inquiry, funding (top-up), and internal transfer between wallets. Enforce double-entry ledger writes within database transactions. Implement idempotency layer using Redis for deduplication of concurrent requests.",
+        "payload": {
+          "endpoints": [
+            "POST /v1/wallets",
+            "GET /v1/wallets/{id}",
+            "GET /v1/wallets/{id}/balances",
+            "POST /v1/wallets/{id}/fund",
+            "POST /v1/transfers"
+          ],
+          "patterns": [
+            "double_entry_ledger",
+            "idempotency_via_redis",
+            "optimistic_locking"
+          ],
+          "concurrency": "SELECT FOR UPDATE NOWAIT on wallet_balances to prevent race conditions"
+        },
+        "acceptance_criteria": [
+          "Concurrent fund + transfer requests with same idempotency key return identical response",
+          "Double-entry constraint: every debit has matching credit in same DB transaction",
+          "Wallet balance never goes negative (enforced at DB and application layer)",
+          "Funding and transfer endpoints return within 200ms at p99 under 100 RPS load test",
+          "All mutations emit audit_log entry with actor_id, trace_id, and timestamp"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement FX rate engine: real-time rate ingestion from provider (ECB/OpenExchangeRates/Fixer), rate caching in Redis with TTL, spread calculation, quote generation with expiry (30-second lock), and quote execution that locks the rate at execution time. Support 50+ currency pairs.",
+        "payload": {
+          "rate_providers": [
+            "ECB_reference_rates",
+            "OpenExchangeRates",
+            "Fixer_io"
+          ],
+          "cache": "Redis with 60s TTL, fallback to DB snapshot",
+          "quote_lock_ttl_seconds": 30,
+          "spread_config": "per-corridor spread defined in YAML config",
+          "endpoints": [
+            "GET /v1/fx/rates",
+            "POST /v1/fx/quotes",
+            "POST /v1/fx/quotes/{id}/execute"
+          ],
+          "currency_pairs": 50
+        },
+        "acceptance_criteria": [
+          "Rate cache refreshes every 60s; stale rates older than 5 minutes rejected",
+          "Quote execution fails with 409 if quote has expired",
+          "Executed FX rate persisted to fx_quotes table and immutable post-execution",
+          "Rate provider failover: if primary fails, secondary used within 2s",
+          "Spread configuration overridable per currency corridor without code deploy"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement sanctions screening service using OFAC SDN list, EU consolidated list, and UN sanctions list. Implement fuzzy name matching (Levenshtein + phonetic), exact IBAN/BIC matching, and real-time screening on payment initiation. Integrate with third-party screening provider (Dow Jones / ComplyAdvantage) via API. All hits routed to compliance officer review queue.",
+        "payload": {
+          "lists": [
+            "OFAC_SDN",
+            "EU_CONSOLIDATED",
+            "UN_SANCTIONS",
+            "HMT_UK"
+          ],
+          "matching_algorithms": [
+            "exact",
+            "levenshtein_distance",
+            "metaphone_phonetic",
+            "alias_expansion"
+          ],
+          "threshold_fuzzy_match": 85,
+          "third_party": "ComplyAdvantage API (configurable)",
+          "endpoints": [
+            "POST /v1/sanctions/screen",
+            "GET /v1/sanctions/screenings/{id}",
+            "POST /v1/sanctions/screenings/{id}/review"
+          ],
+          "review_queue": "compliance officer portal with approve/reject/escalate"
+        },
+        "acceptance_criteria": [
+          "Every payment initiation triggers sanctions screen before funds move",
+          "Fuzzy match at \u226585% similarity flags as potential hit requiring review",
+          "Confirmed hits block payment and create immutable sanctions_hits record",
+          "Compliance officer review completes within 24h SLA (monitored via alerting)",
+          "Screening result (including no-hit) stored with full payload for 7-year audit retention",
+          "False positive rate < 2% on regression test set of 1000 known clean names"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement SWIFT MT103 message generation, validation, and dispatch via SWIFT Alliance Access or partner bank connectivity. Support BIC/IBAN validation, correspondent bank routing, and message status tracking (ACK/NACK/confirmation). Implement SWIFT gpi (global payments innovation) tracker for end-to-end visibility.",
+        "payload": {
+          "message_types": [
+            "MT103",
+            "MT199",
+            "MT299",
+            "MT900",
+            "MT910"
+          ],
+          "validation": [
+            "BIC_ISO_9362",
+            "IBAN_ISO_13616",
+            "amount_format"
+          ],
+          "connectivity": "SWIFT Alliance Access (configurable) or SWIFT Service Bureau",
+          "gpi": true,
+          "endpoints": [
+            "POST /v1/payments/swift",
+            "GET /v1/payments/swift/{uetr}/status"
+          ],
+          "uetr": "UUID v4 per SWIFT gpi spec"
+        },
+        "acceptance_criteria": [
+          "MT103 messages pass SWIFT message validation before dispatch",
+          "UETR generated and attached to every outbound SWIFT payment",
+          "gpi status polling updates remittance_events table within 5 minutes of status change",
+          "Invalid BIC/IBAN rejected with specific error code before message generation",
+          "NACK handling: payment moved to manual review queue with SWIFT error code preserved"
+        ],
+        "depends_on": [
+          12,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement SEPA Credit Transfer (SCT) and SEPA Instant Credit Transfer (SCT Inst) via EPC XML (pain.001.001.09) message generation, IBAN/BIC validation, and submission to clearing system (STEP2 / RT1). Handle recall (pain.007) and return (pacs.004) flows.",
+        "payload": {
+          "message_schemas": [
+            "pain.001.001.09",
+            "pain.007.001.09",
+            "pacs.004.001.09",
+            "camt.054.001.08"
+          ],
+          "clearing_systems": [
+            "STEP2",
+            "RT1_instant"
+          ],
+          "instant_payment_timeout_seconds": 10,
+          "endpoints": [
+            "POST /v1/payments/sepa",
+            "POST /v1/payments/sepa/{id}/recall",
+            "GET /v1/payments/sepa/{id}/status"
+          ],
+          "validation": [
+            "IBAN_ISO_13616",
+            "creditor_name_max_70_chars",
+            "amount_max_100k_instant"
+          ]
+        },
+        "acceptance_criteria": [
+          "Generated pain.001 XML validates against EPC XSD schema",
+          "SCT Inst payments rejected after 10s timeout with appropriate error",
+          "Recall flow generates pain.007 and tracks recall status",
+          "Returns (pacs.004) update payment status and trigger ledger reversal",
+          "End-to-end SEPA test against sandbox environment passes with 0 rejections"
+        ],
+        "depends_on": [
+          12,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement remittance tracking service: state machine for payment lifecycle (created \u2192 screened \u2192 approved \u2192 routed \u2192 submitted \u2192 settled \u2192 confirmed / failed / recalled), event sourcing for all state transitions, and webhook dispatch on state changes. Implement FATF Travel Rule data package assembly and transmission.",
+        "payload": {
+          "states": [
+            "created",
+            "sanctions_screening",
+            "compliance_review",
+            "approved",
+            "routed",
+            "submitted",
+            "pending_settlement",
+            "settled",
+            "confirmed",
+            "failed",
+            "recalled",
+            "refunded"
+          ],
+          "pattern": "event_sourcing",
+          "travel_rule_fields": [
+            "originator_name",
+            "originator_account",
+            "originator_address",
+            "beneficiary_name",
+            "beneficiary_account"
+          ],
+          "travel_rule_threshold_eur": 1000,
+          "webhook_events": [
+            "payment.created",
+            "payment.approved",
+            "payment.settled",
+            "payment.failed"
+          ]
+        },
+        "acceptance_criteria": [
+          "Invalid state transitions rejected (e.g. settled \u2192 submitted)",
+          "Every state transition creates immutable remittance_events record",
+          "Travel Rule data attached to all payments \u2265 \u20ac1000",
+          "Webhooks delivered with HMAC-SHA256 signature within 5s of state change",
+          "Webhook retry: exponential backoff up to 24h, dead-letter queue after 10 failures",
+          "Full payment timeline queryable via GET /v1/remittances/{id}/timeline"
+        ],
+        "depends_on": [
+          13,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Implement PSD2 Strong Customer Authentication (SCA): TOTP + push notification second factor, device binding, transaction risk analysis (TRA) for exemptions, and open banking AIS/PIS endpoints conforming to Berlin Group NextGenPSD2 1.3.12. Implement OAuth2 consent management.",
+        "payload": {
+          "sca_methods": [
+            "TOTP",
+            "push_notification",
+            "SMS_OTP_fallback"
+          ],
+          "exemptions": [
+            "TRA_under_30EUR",
+            "low_risk_recurring",
+            "trusted_beneficiary"
+          ],
+          "openbanking_spec": "Berlin_Group_NextGenPSD2_1.3.12",
+          "consent_store": "PostgreSQL consent table with scope, expiry, revocation",
+          "endpoints": [
+            "POST /v1/auth/sca/initiate",
+            "POST /v1/auth/sca/verify",
+            "POST /v1/openbanking/consents",
+            "GET /v1/openbanking/accounts",
+            "GET /v1/openbanking/transactions",
+            "POST /v1/openbanking/payments"
+          ]
+        },
+        "acceptance_criteria": [
+          "SCA required for all transactions above \u20ac30 (unless TRA exemption applies)",
+          "Failed SCA after 3 attempts locks account and triggers fraud alert",
+          "PSD2 AIS consent expires after 90 days with re-authentication required",
+          "Berlin Group API returns correct HTTP status codes per specification",
+          "TRA exemption logic logs decision with risk score to audit trail"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "AGENTIC",
+        "description": "Implement coordinator-pattern agentic AI layer: FxAgent (monitors rate movements, suggests hedge alerts), SanctionsAgent (autonomous list refresh, pattern detection on frequent hitters), RoutingAgent (Q-learning adaptive routing to cheapest/fastest corridor), and ComplianceAgent (AML transaction monitoring, STR draft generation). All proposals routed through HITL approval queue.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": {
+            "fx_agent": "Monitors FX volatility, proposes rate alerts and hedging windows",
+            "sanctions_agent": "Refreshes screening lists, detects emerging risk patterns",
+            "routing_agent": "Q-learning corridor optimizer: cost vs speed vs reliability",
+            "compliance_agent": "AML rule engine, SAR/STR draft generation for compliance officer review"
+          },
+          "hitl_required": true,
+          "hitl_proposal_types": [
+            "route_change",
+            "sar_filing",
+            "account_freeze",
+            "list_update"
+          ],
+          "coordinator_endpoint": "POST /v1/agent/coordinate"
+        },
+        "acceptance_criteria": [
+          "Coordinator routes tasks to correct specialist agent based on task type",
+          "All agent proposals stored in approval queue \u2014 zero autonomous side effects",
+          "RoutingAgent selects lowest-cost corridor within latency SLA for test payment matrix",
+          "ComplianceAgent STR drafts include all FATF-required fields",
+          "Agent reasoning traces logged to audit_log with trace_id for examiner review"
+        ],
+        "depends_on": [
+          15,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build sender dashboard: wallet balance cards per currency, send money wizard (recipient, amount, FX quote with rate lock countdown, review, SCA step), transfer history with status timeline, and notification center for payment events.",
+        "payload": {
+          "pages": [
+            "dashboard",
+            "send_money",
+            "fx_quote_review",
+            "sca_challenge",
+            "transfer_history",
+            "transfer_detail"
+          ],
+          "state_management": "TanStack Query for server state, Zustand for UI state",
+          "realtime": "WebSocket for payment status updates",
+          "fx_countdown": "30-second rate lock countdown timer with auto-refresh"
+        },
+        "acceptance_criteria": [
+          "Send money wizard completes in \u22645 steps with progress indicator",
+          "FX rate lock countdown displayed and quote auto-expired on timer end",
+          "SCA challenge renders TOTP input and push notification status",
+          "Transfer history paginated (cursor-based), loads in < 1s",
+          "Payment status updates in real-time via WebSocket without page refresh",
+          "All screens pass WCAG 2.1 AA automated audit"
+        ],
+        "depends_on": [
+          16,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build compliance officer portal: sanctions screening queue (approve/reject/escalate with reason capture), AML alert inbox, KYC document review workflow, STR/SAR drafts from ComplianceAgent with edit and file actions, and audit log viewer with filtering.",
+        "payload": {
+          "pages": [
+            "sanctions_queue",
+            "aml_alerts",
+            "kyc_review",
+            "sar_drafts",
+            "audit_log"
+          ],
+          "queue_sla_indicator": "color-coded age badges (green <4h, amber 4-24h, red >24h)",
+          "decision_capture": "mandatory reason text + decision type for every sanctions review",
+          "export": "CSV and PDF export of audit log for regulator submission"
+        },
+        "acceptance_criteria": [
+          "Sanctions queue shows SLA age indicator and sorts by oldest first by default",
+          "Approve/reject/escalate requires reason text (enforced client-side and server-side)",
+          "STR draft pre-populated with ComplianceAgent output; officer can edit before filing",
+          "Audit log export generates regulator-ready PDF within 5s for up to 10k records",
+          "Role-based access: compliance officer cannot initiate payments; sender cannot see compliance queue"
+        ],
+        "depends_on": [
+          17,
+          18
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build operations monitoring dashboard: live payment pipeline view (payments in each state with counts), SWIFT/SEPA submission status, FX rate feed health, system health indicators, and failure triage panel with retry/cancel actions.",
+        "payload": {
+          "pages": [
+            "ops_dashboard",
+            "payment_pipeline",
+            "swift_monitor",
+            "sepa_monitor",
+            "fx_health",
+            "failure_triage"
+          ],
+          "polling_interval_seconds": 10,
+          "charts": [
+            "payment_volume_by_corridor",
+            "fx_spread_over_time",
+            "sanctions_hit_rate",
+            "settlement_latency_p99"
+          ],
+          "actions": [
+            "retry_failed_payment",
+            "cancel_payment",
+            "manual_route_override"
+          ]
+        },
+        "acceptance_criteria": [
+          "Dashboard auto-refreshes every 10s without full page reload",
+          "Payment pipeline shows real-time count per state with drill-down",
+          "Retry action requires confirmation modal and creates new audit_log entry",
+          "Settlement latency p99 chart renders last 24h of data",
+          "SWIFT gpi tracker status shown per payment with UETR link"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "TESTS",
+        "description": "Write unit tests for all backend services: wallet ledger (balance invariants, concurrency), FX engine (rate expiry, spread calculation), sanctions screening (fuzzy match accuracy, hit/no-hit classification), SWIFT MT103 generation, SEPA XML generation, state machine transitions, and FATF Travel Rule assembly.",
+        "payload": {
+          "framework": "pytest with pytest-asyncio",
+          "coverage_target": 90,
+          "test_categories": [
+            "ledger_double_entry_invariants",
+            "wallet_concurrency_race_conditions",
+            "fx_quote_expiry",
+            "sanctions_fuzzy_match_matrix",
+            "swift_mt103_field_validation",
+            "sepa_pain001_xsd_validation",
+            "state_machine_invalid_transitions",
+            "travel_rule_threshold_enforcement"
+          ],
+          "fixtures": "factory_boy for test data generation"
+        },
+        "acceptance_criteria": [
+          "Unit test coverage \u2265 90% for all service modules",
+          "Ledger tests assert debit == credit for every transaction permutation",
+          "Concurrency test spawns 50 simultaneous transfers and verifies no balance inconsistency",
+          "Sanctions fuzzy match test covers 500 name pairs with known ground truth labels",
+          "MT103 generation test validates output against SWIFT schema for 20 payment scenarios",
+          "All tests run in < 60s in CI (no external I/O in unit tests)"
+        ],
+        "depends_on": [
+          15,
+          16
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write integration tests for payment flows end-to-end using testcontainers (real PostgreSQL + Redis): fund wallet \u2192 FX quote \u2192 sanctions screen (mocked provider) \u2192 SWIFT submit (sandbox) \u2192 state machine to settled. Test SEPA flow, recall flow, and SCA challenge flow.",
+        "payload": {
+          "framework": "pytest + testcontainers-python",
+          "external_mocks": [
+            "swift_sandbox",
+            "comply_advantage_mock",
+            "fx_provider_mock"
+          ],
+          "flows_covered": [
+            "happy_path_swift_eur_usd",
+            "happy_path_sepa_instant",
+            "sanctions_hit_blocks_payment",
+            "fx_quote_expired_before_execute",
+            "swift_nack_triggers_review",
+            "sepa_recall_flow",
+            "sca_challenge_and_bypass_attempt"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 7 integration flows pass against real DB with mocked external services",
+          "Sanctions hit correctly blocks payment at screening step with audit record",
+          "Expired FX quote returns 409 and does not move funds",
+          "SWIFT NACK moves payment to manual_review state",
+          "SCA bypass attempt (replaying OTP) rejected",
+          "Integration test suite runs in < 5 minutes in CI"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute system-level performance and resilience tests: 1000 TPS payment throughput benchmark, FX rate engine under load, sanctions screening latency (p99 < 500ms), chaos testing (DB failover, Redis outage, SWIFT connectivity loss), and PSD2 SCA flow under concurrent users.",
+        "payload": {
+          "load_tool": "k6",
+          "scenarios": [
+            {
+              "name": "payment_throughput",
+              "tps": 1000,
+              "duration": "10m"
+            },
+            {
+              "name": "fx_rate_cache_stampede",
+              "concurrent_users": 500
+            },
+            {
+              "name": "sanctions_screening_latency",
+              "p99_target_ms": 500
+            }
+          ],
+          "chaos_tool": "Chaos Monkey / Toxiproxy",
+          "chaos_scenarios": [
+            "postgres_failover",
+            "redis_outage_30s",
+            "swift_timeout",
+            "fx_provider_down"
+          ]
+        },
+        "acceptance_criteria": [
+          "Platform sustains 1000 TPS with p99 latency < 2s and 0% error rate",
+          "Sanctions screening p99 < 500ms at 500 concurrent screens",
+          "PostgreSQL failover: payments queue (not drop) during 30s outage and resume",
+          "Redis outage: idempotency degrades gracefully (no duplicate payments)",
+          "SWIFT connectivity loss: payments queued and auto-retried when connectivity restored",
+          "k6 HTML report generated and stored as CI artifact"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 24,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipeline (GitHub Actions): lint + type-check, unit tests, integration tests, Docker image build, SBOM generation, container image vulnerability scan (Trivy), staging deploy, smoke test, and production deploy with manual approval gate. Configure Prometheus + Grafana observability stack with payment-specific dashboards and PagerDuty alerting.",
+        "payload": {
+          "ci_tool": "GitHub Actions",
+          "stages": [
+            "lint",
+            "type_check",
+            "unit_test",
+            "integration_test",
+            "build",
+            "sbom",
+            "scan",
+            "deploy_staging",
+            "smoke_test",
+            "deploy_prod"
+          ],
+          "registry": "GHCR (GitHub Container Registry)",
+          "vulnerability_scanner": "Trivy (block on CRITICAL CVEs)",
+          "observability": "Prometheus + Grafana + Loki",
+          "alerting": "PagerDuty (P1: payment failures > 1%, P2: sanctions queue age > 4h)",
+          "prod_deploy_gate": "manual approval required"
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs in < 15 minutes end-to-end",
+          "CRITICAL CVEs in container images block deployment",
+          "SBOM published to release artifacts on every prod deploy",
+          "Grafana dashboard shows payment volume, FX rate health, sanctions queue depth, and error rates",
+          "PagerDuty alert fires within 2 minutes of payment failure rate exceeding 1%",
+          "Production deploy requires explicit manual approval in GitHub Actions"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "INFRA",
+        "description": "Define Terraform infrastructure for AWS: VPC with private subnets, RDS PostgreSQL Multi-AZ, ElastiCache Redis cluster, ECS Fargate services, ALB, WAF rules (OWASP managed rules + rate limiting), ACM certificates, KMS keys for encryption at rest, CloudTrail, and S3 with versioning for compliance artifacts.",
+        "payload": {
+          "cloud": "AWS",
+          "iac_tool": "Terraform 1.7+",
+          "resources": [
+            "VPC + private/public subnets + NAT gateway",
+            "RDS PostgreSQL 16 Multi-AZ + automated backups 35 days",
+            "ElastiCache Redis 7 cluster mode",
+            "ECS Fargate (backend, workers, frontend)",
+            "ALB + WAF (OWASP_CRS + rate limit 1000 req/min/IP)",
+            "ACM + Route53",
+            "KMS CMK for RDS + S3 + Secrets Manager",
+            "CloudTrail + Config + GuardDuty",
+            "S3 compliance-artifacts (versioning + MFA delete + Glacier lifecycle)"
+          ],
+          "environments": [
+            "staging",
+            "production"
+          ]
+        },
+        "acceptance_criteria": [
+          "`terraform plan` produces 0 errors for both staging and production workspaces",
+          "RDS configured with Multi-AZ, automated backups, and encryption at rest via KMS CMK",
+          "WAF rules block OWASP Top 10 attack patterns (verified with OWASP test suite)",
+          "CloudTrail enabled in all regions with log integrity validation",
+          "S3 compliance bucket rejects deletes without MFA",
+          "All resources tagged with environment, cost_center, and data_classification"
+        ],
+        "depends_on": [
+          24
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "COMPLIANCE",
+        "description": "Produce final PCI DSS v4.0 Report on Compliance (RoC) evidence package: network diagrams, data flow diagrams showing cardholder data scope, vulnerability scan reports, penetration test summary, key management procedures, and incident response plan. Map all SOC 2 trust criteria to implemented controls.",
+        "payload": {
+          "deliverables": [
+            "CDE_network_diagram",
+            "cardholder_data_flow_diagram",
+            "ASV_vulnerability_scan_report",
+            "pentest_executive_summary",
+            "key_management_procedure",
+            "incident_response_plan",
+            "SOC2_control_matrix_with_evidence_pointers"
+          ],
+          "evidence_retention_years": 7,
+          "review_cadence": "quarterly_vulnerability_scans + annual_pentest"
+        },
+        "acceptance_criteria": [
+          "All 12 PCI DSS requirements have at least one evidence artifact mapped",
+          "Network diagram shows all CDE components, segmentation controls, and data flows",
+          "ASV scan shows zero high/critical findings in CDE",
+          "Key management procedure covers generation, distribution, storage, rotation, and destruction",
+          "Incident response plan tested via tabletop exercise with findings documented",
+          "SOC 2 bridge letter ready for auditor covering all 5 trust service categories"
+        ],
+        "depends_on": [
+          25,
+          23
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 27,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: payment failure triage (SWIFT NACK codes, SEPA reject reasons), FX rate feed outage recovery, sanctions list emergency update procedure, database failover playbook, and on-call rotation definition. Define SLAs and SLOs.",
+        "payload": {
+          "runbooks": [
+            "swift_nack_triage",
+            "sepa_reject_triage",
+            "fx_feed_outage",
+            "sanctions_list_emergency_update",
+            "db_failover",
+            "redis_failover",
+            "sanctions_queue_backlog_clearance"
+          ],
+          "slos": {
+            "payment_success_rate": "99.9%",
+            "sanctions_screening_p99_ms": 500,
+            "fx_quote_availability": "99.95%",
+            "sepa_instant_settlement_seconds": 10
+          },
+          "on_call": "PagerDuty rotation: primary + secondary, 1-week shifts"
+        },
+        "acceptance_criteria": [
+          "Each runbook has estimated resolution time and escalation path",
+          "SWIFT NACK code reference table covers all codes in MT199 error catalogue",
+          "DB failover runbook tested in staging with RTO < 5 minutes verified",
+          "SLO error budget dashboard configured in Grafana",
+          "On-call rotation defined with clear escalation: L1 ops \u2192 L2 engineering \u2192 L3 compliance"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 28,
+        "task_type": "DOCS",
+        "description": "Produce developer documentation: API reference (auto-generated from OpenAPI spec), integration guide (SWIFT setup, SEPA onboarding, sanctions provider config), architecture decision records (ADRs) for key choices (double-entry ledger, event sourcing, coordinator agent pattern), and operator manual.",
+        "payload": {
+          "tools": [
+            "Redoc for OpenAPI",
+            "MkDocs Material for narrative docs"
+          ],
+          "adrs": [
+            "ADR-001: double-entry ledger over balance columns",
+            "ADR-002: event sourcing for remittance state",
+            "ADR-003: coordinator agent pattern for FX/compliance",
+            "ADR-004: cursor-based pagination for transaction history",
+            "ADR-005: HMAC-SHA256 for webhook signatures"
+          ],
+          "audience": [
+            "integrating_developers",
+            "payment_ops",
+            "compliance_officers",
+            "security_auditors"
+          ]
+        },
+        "acceptance_criteria": [
+          "API reference auto-generated from OpenAPI spec with zero broken links",
+          "Integration guide covers end-to-end SEPA test payment from zero to submitted",
+          "All 5 ADRs document context, decision, consequences, and alternatives considered",
+          "Operator manual includes startup, shutdown, backup restore, and log access procedures",
+          "Docs site deployable via `mkdocs build` with no warnings"
+        ],
+        "depends_on": [
+          26,
+          27
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 28,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 55,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 55,
+          "final_review": {
+            "score": 55,
+            "flaws": [
+              "KYC backend implementation is completely absent. The DB schema has a kyc_profiles table, the UX has a KYC onboarding screen, and the legal step mentions KYC obligations \u2014 but there is no implementation step for identity document collection, liveness checks, identity verification provider integration (Jumio/Onfido/Persona), risk tiering, or KYC refresh workflows. For a PSD2/FATF-regulated payment platform this is not optional \u2014 it is the gating condition for allowing any user to send money.",
+              "Regulatory licensing is documented but not obtained. Step 3 drafts an EMI/PSP/MSB licensing framework. EU EMI licenses take 12\u201324 months from application to authorization from a national competent authority (e.g., DNB, BaFin, FCA post-Brexit equivalent). The plan has zero steps for filing, engaging regulators, or operating under a passporting arrangement. You cannot legally move customer funds cross-border without these. This is not a documentation gap \u2014 it is a hard legal blocker that invalidates the entire production timeline.",
+              "SWIFT connectivity is catastrophically underestimated. Step 13 treats SWIFT Alliance Access as a configuration toggle. In practice: SWIFT membership requires an application process (months), a BIC allocation, an HSM (Luna/Thales) for key storage, alliance gateway installation, annual SWIFT CSCF certification, and often a correspondent banking relationship or service bureau contract. Most fintechs take 12\u201318 months to go live on SWIFT. Treating it as 'SWIFT Alliance Access (configurable)' will blindside any engineering team.",
+              "FX rate providers chosen are not suitable for regulated money movement. OpenExchangeRates and Fixer.io are information aggregators licensed for display purposes only \u2014 their terms of service explicitly prohibit use for financial transactions. For live FX execution on a regulated platform you need Reuters/Refinitiv Elektron, Bloomberg BFWR, or rates sourced directly from a banking partner. Using these providers for actual fund conversion exposes the operator to regulatory censure and contractual liability.",
+              "PCI DSS compliance is extensively planned but the payment rails are bank transfers (SWIFT/SEPA), not card transactions. PCI DSS applies to cardholder data (PANs, CVVs). If no card acquiring is in scope, steps 4, 5, and 26 are largely irrelevant compliance overhead. If cards ARE in scope there is no card processing implementation step anywhere in the plan. This is a fundamental scope confusion that will waste significant engineering and compliance budget.",
+              "FATF Travel Rule transmission protocol is unspecified. Step 15 assembles the Travel Rule data package but does not name the interoperability protocol for transmitting it to the beneficiary VASP/PSP (TRISA, OpenVASP, Sygna Bridge, Shyft, or bilateral API). Without a protocol decision, Travel Rule data is assembled but cannot be delivered. The receiving institution also needs to be onboarded to the same network \u2014 a business development dependency with multi-month lead time.",
+              "UK payment rail is missing. The jurisdiction scope includes the UK but the only rails implemented are SWIFT (international) and SEPA (EU only \u2014 UK exited SEPA post-Brexit). GBP domestic payments require Faster Payments (via Pay.UK access or an agency bank) and potentially CHAPS for high-value. UK-to-EU remittances cannot use SEPA from a UK-based sender without an EU-licensed entity. This is a product gap, not a minor omission.",
+              "System tests (step 23) depend on step 22 but are structurally ordered before infrastructure (step 25). Chaos testing PostgreSQL Multi-AZ failover and Redis cluster outage requires actual RDS Multi-AZ and ElastiCache \u2014 not Docker Compose. The 1000 TPS benchmark against a local containerized stack is meaningless for production sizing. The dependency chain has this backwards.",
+              "GDPR data subject rights have no implementation step. Step 3 cites Art17 (right to erasure) and Art20 (data portability) but there is no backend implementation of DSR workflows. Right to erasure conflicts directly with AML 5-year retention obligations and the immutable audit log \u2014 this tension must be resolved in code (pseudonymization strategy, legal hold logic), not just in the privacy policy.",
+              "AML transaction monitoring rules engine is absent. The ComplianceAgent generates STR drafts, but there is no defined rule engine for detecting structuring (smurfing), velocity anomalies, round-dollar patterns, or sudden account activity spikes. The agent cannot draft an STR without upstream detection logic. This is the core of AML compliance and it is missing.",
+              "Fraud detection is not present. Beyond SCA and sanctions screening there is no real-time fraud scoring, device fingerprinting, behavioral analytics, or velocity controls per account/IP/device. Credential stuffing is listed as a threat in the security step but has no corresponding implementation countermeasure beyond SCA.",
+              "Sanctions screening false positive target of <2% is operationally naive. Production Levenshtein-at-85% matching against OFAC SDN + EU + UN lists produces false positive rates of 20\u201360% in real deployments depending on corpus. The plan does not model the compliance officer queue volume this generates (which could overwhelm step 19's portal), nor does it specify list update frequency (OFAC updates multiple times per week).",
+              "The agentic HITL gate has a deadlock risk in the payment state machine. Step 17's RoutingAgent proposes a route_change which goes to the approval queue. Step 15's state machine has the payment sitting in 'routed' state. If the HITL approval takes hours and the FX quote (30s TTL from step 11) expires, the payment is in an undefined state. There is no compensation transaction or timeout-driven state resolution defined.",
+              "Tests are written after all implementation (step 21 depends on steps 15\u201316). No TDD or test-first approach is specified anywhere. For a double-entry ledger and state machine handling real money, discovering invariant violations during a test-writing phase rather than during development is a high-risk approach.",
+              "No multi-region or data residency strategy. GDPR requires EU personal data to remain in EU jurisdictions. A cross-border platform serving EU, UK, and US users from a single AWS region creates data residency violations. Terraform step 25 mentions only staging and production in presumably one region with no geo-redundancy or data sovereignty controls."
+            ],
+            "suggestions": [
+              "Add a dedicated KYC implementation step (step 10.5) covering: identity document upload API, liveness/selfie verification via provider SDK, KYC status state machine (pending \u2192 verified \u2192 rejected \u2192 expired), risk tier assignment, and periodic re-verification scheduling. Wire the KYC status check as a hard gate before any payment initiation.",
+              "Add a licensing and regulatory authorization step as step 0 (before everything else) that maps required licenses per jurisdiction, identifies the fastest path (e.g., UK EMI license, EU passporting from an existing authorized partner, or a banking-as-a-service provider like ClearBank/Modulr as a shortcut), and defines the go-live gating condition. Without this, all subsequent steps are pre-legal.",
+              "Replace SWIFT direct connectivity with a SWIFT Service Bureau or a BaaS provider (ClearBank, Banking Circle, Currencycloud) for MVP. Model direct SWIFT Alliance Access as a phase 2 upgrade after licensing and volume justify it. This de-risks months of infrastructure work.",
+              "Replace OpenExchangeRates/Fixer.io with a bank-sourced rate feed or a regulated FX data vendor (XE Enterprise, Refinitiv, or rates pulled directly from the BaaS partner). Update step 11's acceptance criteria to include vendor licensing verification.",
+              "Clarify card scope definitively in step 1 (BRD). If cards are out of scope, strip PCI DSS work from steps 4, 5, and 26. If cards are in scope, add a card processing implementation step using a card-acquiring partner (Stripe, Adyen, or direct scheme membership).",
+              "In step 15 (Travel Rule), select a specific interoperability protocol (recommend TRISA for VASPs or bilateral API for PSPs) and add a business development sub-task to onboard at least 3 counterparty corridors before go-live.",
+              "Add UK Faster Payments rail implementation (step 14.5): access via an agency bank or Pay.UK direct participant, Faster Payments message format (ISO 20022 pacs.008), 2-hour settlement cycle, and \u00a31M transaction limit handling.",
+              "Move system tests (step 23) to depend on step 25 (infra) or create a staging-environment variant that runs against RDS Multi-AZ and ElastiCache rather than Docker Compose. The chaos scenarios are meaningless without the actual infrastructure components.",
+              "Add a GDPR DSR implementation step covering: pseudonymization strategy for audit logs (replace PII with a pseudonym token after retention period), legal hold logic that prevents erasure when AML retention clock is running, and a DSR request API (GET /v1/users/{id}/export, DELETE /v1/users/{id}).",
+              "Add an AML rules engine implementation step (step 17.5) defining: velocity rules (>N transactions in 24h, >X amount in 7 days), structuring detection (multiple transactions just below \u20ac10k threshold), dormant account activation alerts, and geographic risk scoring. The ComplianceAgent in step 17 should consume this engine's output, not generate it from scratch.",
+              "Add a sanctions screening capacity model to step 12: given the expected transaction volume and the false positive rate at the chosen threshold, compute the daily compliance officer review queue depth. If the queue exceeds officer capacity, either raise the threshold, add tiered review (automated pre-filter), or hire. This should gate the go/no-go on the 85% Levenshtein threshold.",
+              "In step 17, define a compensation transaction protocol for the HITL deadlock case: if a payment is awaiting route approval and the FX quote expires, automatically transition the payment to a 'rate_expired' state, refund the reserved balance, and notify the sender to retry. Document this as a named saga with rollback steps.",
+              "Add data residency annotations to the Terraform step (25): tag each resource with its data classification and map EU-resident user data to eu-west-1/eu-central-1 only. Add S3 bucket policy and RDS subnet group constraints to enforce this. This is required for GDPR and will affect the architecture of multi-tenant routing."
+            ],
+            "missing": [
+              "KYC backend service implementation (identity verification provider integration, document collection API, risk tiering, re-verification scheduling)",
+              "Regulatory licensing acquisition plan and go-live gating criteria",
+              "UK domestic payment rail (Faster Payments / CHAPS)",
+              "FATF Travel Rule interoperability protocol selection and counterparty onboarding plan",
+              "AML transaction monitoring rules engine (structuring detection, velocity rules, geographic risk scoring)",
+              "Real-time fraud scoring service (device fingerprinting, behavioral analytics, velocity controls)",
+              "GDPR data subject rights implementation (erasure workflow, data export API, pseudonymization strategy)",
+              "HSM specification for SWIFT key management (if direct Alliance Access is pursued)",
+              "FX P&L ledger and nostro/vostro account reconciliation (the platform needs to account for its own FX book, not just customer conversions)",
+              "Multi-region deployment and data residency enforcement in Terraform",
+              "Business continuity plan with formal RPO/RTO targets (runbooks exist but no BCP document)",
+              "Card payment processing rail (if intended \u2014 scope is ambiguous)",
+              "Account limits and velocity controls per customer tier (daily/monthly send limits enforced at API layer)",
+              "Correspondent banking relationship documentation (required for SWIFT and often for SEPA corridor access)",
+              "SWIFT CSCF annual certification plan (mandatory for SWIFT members, includes customer security programme self-attestation)"
+            ],
+            "security_risks": [
+              "IBAN enumeration via timing side-channel: IBAN validation that short-circuits on format check before account lookup leaks whether an IBAN is registered. Constant-time comparison required for account lookups.",
+              "Sanctions screening bypass via Unicode transliteration: Cyrillic/Arabic/CJK characters that visually resemble Latin characters will defeat Levenshtein matching. The plan lists 'alias_expansion' but does not specify Unicode normalization (NFC/NFD) and homoglyph canonicalization before matching.",
+              "FX quote race condition: two concurrent requests for the same quote_id could both pass the expiry check before either records execution. The acceptance criteria require a 409 on expired quotes but the optimistic locking pattern in step 10 is not applied to quote execution in step 11. Missing SELECT FOR UPDATE on fx_quotes at execution time.",
+              "Q-learning routing agent adversarial manipulation: a sophisticated actor sending synthetic low-value payments across a specific corridor could poison the RoutingAgent's reward function to prefer that corridor for subsequent high-value payments. No adversarial robustness testing or reward function anomaly detection is defined.",
+              "Webhook SSRF via attacker-controlled callback URLs: if the platform allows users to register webhook endpoints, an attacker could register an internal metadata URL (169.254.169.254 for AWS IMDSv1) or internal service address. SSRF protection on webhook URL validation is not mentioned.",
+              "Replay attack on SCA OTP: step 16 mentions SMS OTP fallback but does not specify OTP single-use enforcement across distributed instances. A Redis-based used-OTP set is implied but not specified, and the Redis outage scenario in step 23 creates a window where OTP reuse checking is unavailable.",
+              "JWT/session token scope escalation: the role-based access model (step 19) restricts compliance officers from initiating payments and senders from seeing the compliance queue, but there is no specification of token claims validation on the backend. A stolen compliance officer token must not be usable against payment initiation endpoints \u2014 server-side role enforcement must be explicit per endpoint.",
+              "SWIFT MT103 field injection: if originator/beneficiary name fields are populated from user-supplied input without sanitization, a SWIFT message could contain malformed field delimiters (colons, hyphens in specific positions) that corrupt downstream parsing. SWIFT field content validation beyond length checks is not specified.",
+              "Secrets rotation gap: Vault integration is specified for initial secret injection but there is no secret rotation policy defined. Long-lived SWIFT BIC certificates, FX provider API keys, and database credentials that are never rotated are a persistent compromise risk. Vault's dynamic secrets for database credentials should be explicitly specified."
+            ],
+            "summary": "This plan is architecturally coherent and more thorough than most fintech implementation plans \u2014 the double-entry ledger, event sourcing for remittance state, idempotency via Redis, and coordinator-pattern HITL agent design are all correct choices. The documentation artifacts (BRD, threat model, ADRs, runbooks) are well-scoped. However, the plan has three existential blockers that will prevent production launch regardless of engineering quality: (1) no regulatory licensing acquisition plan \u2014 EMI/PSP licenses are business authorizations that take 12\u201324 months, not documents to draft; (2) SWIFT direct connectivity is treated as a configuration option when it is actually a multi-year infrastructure and compliance programme \u2014 the MVP should use a banking-as-a-service intermediary; and (3) KYC backend implementation is entirely absent despite being the legal prerequisite for allowing any customer to move money. Beyond these blockers, significant implementation gaps exist in AML rules engines, UK payment rails, FATF Travel Rule protocol interoperability, GDPR data subject rights, and fraud detection. The security analysis correctly identifies major threat categories but misses several payment-specific attack vectors including sanctions bypass via Unicode transliteration and FX quote race conditions. Scored 55 for a production regulated payments system: the planning layer is strong, but the gaps are not cosmetic \u2014 they are the load-bearing walls.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 55,
+              "flaws": [
+                "KYC backend implementation is completely absent. The DB schema has a kyc_profiles table, the UX has a KYC onboarding screen, and the legal step mentions KYC obligations \u2014 but there is no implementation step for identity document collection, liveness checks, identity verification provider integration (Jumio/Onfido/Persona), risk tiering, or KYC refresh workflows. For a PSD2/FATF-regulated payment platform this is not optional \u2014 it is the gating condition for allowing any user to send money.",
+                "Regulatory licensing is documented but not obtained. Step 3 drafts an EMI/PSP/MSB licensing framework. EU EMI licenses take 12\u201324 months from application to authorization from a national competent authority (e.g., DNB, BaFin, FCA post-Brexit equivalent). The plan has zero steps for filing, engaging regulators, or operating under a passporting arrangement. You cannot legally move customer funds cross-border without these. This is not a documentation gap \u2014 it is a hard legal blocker that invalidates the entire production timeline.",
+                "SWIFT connectivity is catastrophically underestimated. Step 13 treats SWIFT Alliance Access as a configuration toggle. In practice: SWIFT membership requires an application process (months), a BIC allocation, an HSM (Luna/Thales) for key storage, alliance gateway installation, annual SWIFT CSCF certification, and often a correspondent banking relationship or service bureau contract. Most fintechs take 12\u201318 months to go live on SWIFT. Treating it as 'SWIFT Alliance Access (configurable)' will blindside any engineering team.",
+                "FX rate providers chosen are not suitable for regulated money movement. OpenExchangeRates and Fixer.io are information aggregators licensed for display purposes only \u2014 their terms of service explicitly prohibit use for financial transactions. For live FX execution on a regulated platform you need Reuters/Refinitiv Elektron, Bloomberg BFWR, or rates sourced directly from a banking partner. Using these providers for actual fund conversion exposes the operator to regulatory censure and contractual liability.",
+                "PCI DSS compliance is extensively planned but the payment rails are bank transfers (SWIFT/SEPA), not card transactions. PCI DSS applies to cardholder data (PANs, CVVs). If no card acquiring is in scope, steps 4, 5, and 26 are largely irrelevant compliance overhead. If cards ARE in scope there is no card processing implementation step anywhere in the plan. This is a fundamental scope confusion that will waste significant engineering and compliance budget.",
+                "FATF Travel Rule transmission protocol is unspecified. Step 15 assembles the Travel Rule data package but does not name the interoperability protocol for transmitting it to the beneficiary VASP/PSP (TRISA, OpenVASP, Sygna Bridge, Shyft, or bilateral API). Without a protocol decision, Travel Rule data is assembled but cannot be delivered. The receiving institution also needs to be onboarded to the same network \u2014 a business development dependency with multi-month lead time.",
+                "UK payment rail is missing. The jurisdiction scope includes the UK but the only rails implemented are SWIFT (international) and SEPA (EU only \u2014 UK exited SEPA post-Brexit). GBP domestic payments require Faster Payments (via Pay.UK access or an agency bank) and potentially CHAPS for high-value. UK-to-EU remittances cannot use SEPA from a UK-based sender without an EU-licensed entity. This is a product gap, not a minor omission.",
+                "System tests (step 23) depend on step 22 but are structurally ordered before infrastructure (step 25). Chaos testing PostgreSQL Multi-AZ failover and Redis cluster outage requires actual RDS Multi-AZ and ElastiCache \u2014 not Docker Compose. The 1000 TPS benchmark against a local containerized stack is meaningless for production sizing. The dependency chain has this backwards.",
+                "GDPR data subject rights have no implementation step. Step 3 cites Art17 (right to erasure) and Art20 (data portability) but there is no backend implementation of DSR workflows. Right to erasure conflicts directly with AML 5-year retention obligations and the immutable audit log \u2014 this tension must be resolved in code (pseudonymization strategy, legal hold logic), not just in the privacy policy.",
+                "AML transaction monitoring rules engine is absent. The ComplianceAgent generates STR drafts, but there is no defined rule engine for detecting structuring (smurfing), velocity anomalies, round-dollar patterns, or sudden account activity spikes. The agent cannot draft an STR without upstream detection logic. This is the core of AML compliance and it is missing.",
+                "Fraud detection is not present. Beyond SCA and sanctions screening there is no real-time fraud scoring, device fingerprinting, behavioral analytics, or velocity controls per account/IP/device. Credential stuffing is listed as a threat in the security step but has no corresponding implementation countermeasure beyond SCA.",
+                "Sanctions screening false positive target of <2% is operationally naive. Production Levenshtein-at-85% matching against OFAC SDN + EU + UN lists produces false positive rates of 20\u201360% in real deployments depending on corpus. The plan does not model the compliance officer queue volume this generates (which could overwhelm step 19's portal), nor does it specify list update frequency (OFAC updates multiple times per week).",
+                "The agentic HITL gate has a deadlock risk in the payment state machine. Step 17's RoutingAgent proposes a route_change which goes to the approval queue. Step 15's state machine has the payment sitting in 'routed' state. If the HITL approval takes hours and the FX quote (30s TTL from step 11) expires, the payment is in an undefined state. There is no compensation transaction or timeout-driven state resolution defined.",
+                "Tests are written after all implementation (step 21 depends on steps 15\u201316). No TDD or test-first approach is specified anywhere. For a double-entry ledger and state machine handling real money, discovering invariant violations during a test-writing phase rather than during development is a high-risk approach.",
+                "No multi-region or data residency strategy. GDPR requires EU personal data to remain in EU jurisdictions. A cross-border platform serving EU, UK, and US users from a single AWS region creates data residency violations. Terraform step 25 mentions only staging and production in presumably one region with no geo-redundancy or data sovereignty controls."
+              ],
+              "suggestions": [
+                "Add a dedicated KYC implementation step (step 10.5) covering: identity document upload API, liveness/selfie verification via provider SDK, KYC status state machine (pending \u2192 verified \u2192 rejected \u2192 expired), risk tier assignment, and periodic re-verification scheduling. Wire the KYC status check as a hard gate before any payment initiation.",
+                "Add a licensing and regulatory authorization step as step 0 (before everything else) that maps required licenses per jurisdiction, identifies the fastest path (e.g., UK EMI license, EU passporting from an existing authorized partner, or a banking-as-a-service provider like ClearBank/Modulr as a shortcut), and defines the go-live gating condition. Without this, all subsequent steps are pre-legal.",
+                "Replace SWIFT direct connectivity with a SWIFT Service Bureau or a BaaS provider (ClearBank, Banking Circle, Currencycloud) for MVP. Model direct SWIFT Alliance Access as a phase 2 upgrade after licensing and volume justify it. This de-risks months of infrastructure work.",
+                "Replace OpenExchangeRates/Fixer.io with a bank-sourced rate feed or a regulated FX data vendor (XE Enterprise, Refinitiv, or rates pulled directly from the BaaS partner). Update step 11's acceptance criteria to include vendor licensing verification.",
+                "Clarify card scope definitively in step 1 (BRD). If cards are out of scope, strip PCI DSS work from steps 4, 5, and 26. If cards are in scope, add a card processing implementation step using a card-acquiring partner (Stripe, Adyen, or direct scheme membership).",
+                "In step 15 (Travel Rule), select a specific interoperability protocol (recommend TRISA for VASPs or bilateral API for PSPs) and add a business development sub-task to onboard at least 3 counterparty corridors before go-live.",
+                "Add UK Faster Payments rail implementation (step 14.5): access via an agency bank or Pay.UK direct participant, Faster Payments message format (ISO 20022 pacs.008), 2-hour settlement cycle, and \u00a31M transaction limit handling.",
+                "Move system tests (step 23) to depend on step 25 (infra) or create a staging-environment variant that runs against RDS Multi-AZ and ElastiCache rather than Docker Compose. The chaos scenarios are meaningless without the actual infrastructure components.",
+                "Add a GDPR DSR implementation step covering: pseudonymization strategy for audit logs (replace PII with a pseudonym token after retention period), legal hold logic that prevents erasure when AML retention clock is running, and a DSR request API (GET /v1/users/{id}/export, DELETE /v1/users/{id}).",
+                "Add an AML rules engine implementation step (step 17.5) defining: velocity rules (>N transactions in 24h, >X amount in 7 days), structuring detection (multiple transactions just below \u20ac10k threshold), dormant account activation alerts, and geographic risk scoring. The ComplianceAgent in step 17 should consume this engine's output, not generate it from scratch.",
+                "Add a sanctions screening capacity model to step 12: given the expected transaction volume and the false positive rate at the chosen threshold, compute the daily compliance officer review queue depth. If the queue exceeds officer capacity, either raise the threshold, add tiered review (automated pre-filter), or hire. This should gate the go/no-go on the 85% Levenshtein threshold.",
+                "In step 17, define a compensation transaction protocol for the HITL deadlock case: if a payment is awaiting route approval and the FX quote expires, automatically transition the payment to a 'rate_expired' state, refund the reserved balance, and notify the sender to retry. Document this as a named saga with rollback steps.",
+                "Add data residency annotations to the Terraform step (25): tag each resource with its data classification and map EU-resident user data to eu-west-1/eu-central-1 only. Add S3 bucket policy and RDS subnet group constraints to enforce this. This is required for GDPR and will affect the architecture of multi-tenant routing."
+              ],
+              "missing": [
+                "KYC backend service implementation (identity verification provider integration, document collection API, risk tiering, re-verification scheduling)",
+                "Regulatory licensing acquisition plan and go-live gating criteria",
+                "UK domestic payment rail (Faster Payments / CHAPS)",
+                "FATF Travel Rule interoperability protocol selection and counterparty onboarding plan",
+                "AML transaction monitoring rules engine (structuring detection, velocity rules, geographic risk scoring)",
+                "Real-time fraud scoring service (device fingerprinting, behavioral analytics, velocity controls)",
+                "GDPR data subject rights implementation (erasure workflow, data export API, pseudonymization strategy)",
+                "HSM specification for SWIFT key management (if direct Alliance Access is pursued)",
+                "FX P&L ledger and nostro/vostro account reconciliation (the platform needs to account for its own FX book, not just customer conversions)",
+                "Multi-region deployment and data residency enforcement in Terraform",
+                "Business continuity plan with formal RPO/RTO targets (runbooks exist but no BCP document)",
+                "Card payment processing rail (if intended \u2014 scope is ambiguous)",
+                "Account limits and velocity controls per customer tier (daily/monthly send limits enforced at API layer)",
+                "Correspondent banking relationship documentation (required for SWIFT and often for SEPA corridor access)",
+                "SWIFT CSCF annual certification plan (mandatory for SWIFT members, includes customer security programme self-attestation)"
+              ],
+              "security_risks": [
+                "IBAN enumeration via timing side-channel: IBAN validation that short-circuits on format check before account lookup leaks whether an IBAN is registered. Constant-time comparison required for account lookups.",
+                "Sanctions screening bypass via Unicode transliteration: Cyrillic/Arabic/CJK characters that visually resemble Latin characters will defeat Levenshtein matching. The plan lists 'alias_expansion' but does not specify Unicode normalization (NFC/NFD) and homoglyph canonicalization before matching.",
+                "FX quote race condition: two concurrent requests for the same quote_id could both pass the expiry check before either records execution. The acceptance criteria require a 409 on expired quotes but the optimistic locking pattern in step 10 is not applied to quote execution in step 11. Missing SELECT FOR UPDATE on fx_quotes at execution time.",
+                "Q-learning routing agent adversarial manipulation: a sophisticated actor sending synthetic low-value payments across a specific corridor could poison the RoutingAgent's reward function to prefer that corridor for subsequent high-value payments. No adversarial robustness testing or reward function anomaly detection is defined.",
+                "Webhook SSRF via attacker-controlled callback URLs: if the platform allows users to register webhook endpoints, an attacker could register an internal metadata URL (169.254.169.254 for AWS IMDSv1) or internal service address. SSRF protection on webhook URL validation is not mentioned.",
+                "Replay attack on SCA OTP: step 16 mentions SMS OTP fallback but does not specify OTP single-use enforcement across distributed instances. A Redis-based used-OTP set is implied but not specified, and the Redis outage scenario in step 23 creates a window where OTP reuse checking is unavailable.",
+                "JWT/session token scope escalation: the role-based access model (step 19) restricts compliance officers from initiating payments and senders from seeing the compliance queue, but there is no specification of token claims validation on the backend. A stolen compliance officer token must not be usable against payment initiation endpoints \u2014 server-side role enforcement must be explicit per endpoint.",
+                "SWIFT MT103 field injection: if originator/beneficiary name fields are populated from user-supplied input without sanitization, a SWIFT message could contain malformed field delimiters (colons, hyphens in specific positions) that corrupt downstream parsing. SWIFT field content validation beyond length checks is not specified.",
+                "Secrets rotation gap: Vault integration is specified for initial secret injection but there is no secret rotation policy defined. Long-lived SWIFT BIC certificates, FX provider API keys, and database credentials that are never rotated are a persistent compromise risk. Vault's dynamic secrets for database credentials should be explicitly specified."
+              ],
+              "summary": "This plan is architecturally coherent and more thorough than most fintech implementation plans \u2014 the double-entry ledger, event sourcing for remittance state, idempotency via Redis, and coordinator-pattern HITL agent design are all correct choices. The documentation artifacts (BRD, threat model, ADRs, runbooks) are well-scoped. However, the plan has three existential blockers that will prevent production launch regardless of engineering quality: (1) no regulatory licensing acquisition plan \u2014 EMI/PSP licenses are business authorizations that take 12\u201324 months, not documents to draft; (2) SWIFT direct connectivity is treated as a configuration option when it is actually a multi-year infrastructure and compliance programme \u2014 the MVP should use a banking-as-a-service intermediary; and (3) KYC backend implementation is entirely absent despite being the legal prerequisite for allowing any customer to move money. Beyond these blockers, significant implementation gaps exist in AML rules engines, UK payment rails, FATF Travel Rule protocol interoperability, GDPR data subject rights, and fraud detection. The security analysis correctly identifies major threat categories but misses several payment-specific attack vectors including sanctions bypass via Unicode transliteration and FX quote race conditions. Scored 55 for a production regulated payments system: the planning layer is strong, but the gaps are not cosmetic \u2014 they are the load-bearing walls.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-21T23:55:30.250885+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 177.91,
+      "critic_plan": 155.55
+    }
+  }
+}

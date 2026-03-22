@@ -1,0 +1,335 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define enterprise procurement business requirements: purchase requisition
+      workflows, vendor onboarding process, RFQ lifecycle, PO approval chains, invoice
+      matching rules (2-way/3-way), and spend analytics KPIs. Produce process flow
+      diagrams and user story backlog.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All six core processes documented with swim-lane diagrams
+    - User stories cover all stakeholder roles with acceptance criteria
+    - Approval chain logic documented for requisitions and POs
+    - 2-way and 3-way invoice matching rules specified
+    - Spend analytics KPIs and dimensions defined (category, vendor, department, period)
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Produce product requirements document (PRD) for the procurement
+      system: define MVP scope, phased roadmap, prioritized feature backlog, success
+      metrics (cycle time reduction, PO accuracy rate, vendor onboarding time), and
+      RICE-scored prioritization.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved by product owner with signed-off MVP scope
+    - 3-phase roadmap with milestones defined
+    - All features RICE-scored and stack-ranked
+    - Success metrics have baseline targets and measurement method
+    - Non-functional requirements (performance, availability, security) documented
+    depends_on:
+    - 1
+  LEGAL:
+    description: 'Draft legal artifacts for the procurement platform: vendor terms
+      of service, supplier data processing agreement (DPA) for GDPR compliance, IP
+      ownership clauses for uploaded vendor documents, and software license review
+      for third-party dependencies.'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Vendor ToS covers data handling, liability, and termination clauses
+    - DPA aligns with GDPR Article 28 requirements
+    - All third-party dependency licenses inventoried and approved
+    - IP policy covers uploaded RFQ documents and vendor catalog data
+    - Legal review sign-off documented
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Create ISO 27001 and SOC 2 compliance framework for the procurement
+      system: define information security controls, data classification policy, access
+      control matrix, audit logging requirements, and produce initial risk register
+      and evidence collection plan.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Risk register covers all six procurement modules with likelihood/impact ratings
+    - ISO 27001 Annex A controls mapped to system components
+    - SOC 2 Trust Service Criteria (Security, Availability, Confidentiality) mapped
+    - Audit evidence collection schedule defined for 12-month period
+    - Data classification levels (public, internal, confidential, restricted) applied
+      to all data entities
+    depends_on:
+    - 1
+    - 2
+  UX_DESIGN:
+    description: 'Design UX for all procurement modules: requisition creation wizard,
+      vendor portal onboarding flow, RFQ builder with line-item management, PO approval
+      dashboard, invoice matching review screen, and spend analytics dashboards. Deliver
+      wireframes and interactive prototype.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all eight primary screen areas
+    - Requisition wizard validated with 5 procurement staff via usability test
+    - 'Spend dashboard supports drill-down: total → category → vendor → PO'
+    - Invoice matching UI shows 2-way/3-way match status with discrepancy highlighting
+    - WCAG 2.1 AA accessibility audit passes for all screens
+    - Design system tokens documented for developer handoff
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design and implement the procurement data model: entities for requisitions,
+      vendors, RFQs, quotes, purchase orders, line items, invoices, payments, spend
+      categories, and approval workflows. Write migrations, indexes, and seed data
+      for development.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all entities with cardinality annotations
+    - All foreign key constraints and indexes defined
+    - Audit trigger captures created_at, updated_at, updated_by on all core tables
+    - Row-level security policies restrict vendor data to assigned buyers
+    - Invoice table partitioned by fiscal year for query performance
+    - Migrations are idempotent and reversible
+    - Seed data populates 10 sample vendors, 5 requisitions, 3 POs for dev
+    depends_on:
+    - 1
+    - 5
+  CONFIG:
+    description: 'Set up project infrastructure configuration: monorepo structure
+      (backend Python/FastAPI + frontend React/TypeScript), environment configs (.env
+      templates), Docker Compose for local development (PostgreSQL, Redis, MinIO for
+      document storage), and pre-commit hooks for linting.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`make dev` starts all services via Docker Compose in under 60 seconds'
+    - Environment template covers all required secrets with descriptions
+    - Pre-commit hooks enforce ruff linting and mypy type checking
+    - Database migrations run automatically on container start in dev
+    - MinIO bucket created with lifecycle policy for document retention
+    depends_on:
+    - 6
+  BACKEND:
+    description: 'Implement purchase requisition service: create/update/submit/cancel
+      requisition APIs, line-item management, budget validation against department
+      budgets, and dynamic approval routing engine that resolves approver chains from
+      org hierarchy and spend thresholds.'
+    agent_role: developer
+    acceptance_criteria:
+    - Requisition state machine enforces valid transitions (draft→submitted→approved/rejected/cancelled)
+    - Budget validation blocks submission when department budget is exceeded
+    - 'Approver chain resolves correctly for amounts: <$1K (manager), $1K-$10K (+director),
+      >$10K (+VP)'
+    - 24-hour escalation timer triggers via background job
+    - All state changes written to audit log with user_id and timestamp
+    - API returns 400 with field-level validation errors
+    depends_on:
+    - 6
+    - 7
+  API:
+    description: Define and publish OpenAPI 3.1 specification for all procurement
+      endpoints. Include authentication (OAuth2 + JWT), role-based access scopes,
+      request/response schemas, error codes, rate limiting headers, and webhook event
+      catalog for PO/invoice status changes.
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors against OpenAPI 3.1 schema
+    - Every endpoint has request/response examples and error schema
+    - Role-based scopes documented for all 6 roles
+    - Webhook event payloads fully specified with example JSON
+    - Rate limiting headers (X-RateLimit-*) documented
+    - Spec published to /docs (Swagger UI) and /redoc
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+  FRONTEND:
+    description: 'Build the buyer portal: purchase requisition creation wizard (multi-step
+      form with line items, budget check feedback, file attachments), requisition
+      list with status filters, approval inbox with approve/reject/delegate actions,
+      and requisition detail view.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'Requisition wizard completes in 3 steps: details → line items → review/submit'
+    - Budget indicator shows real-time remaining budget on line item entry
+    - Approval inbox shows pending items with SLA countdown timer
+    - Approve/reject action submits comment and triggers optimistic UI update
+    - File attachments support drag-and-drop, max 25MB, PDF/DOCX/XLSX
+    - All tables support sort, filter, and pagination
+    depends_on:
+    - 5
+    - 8
+    - 14
+  AGENTIC:
+    description: 'Implement AI procurement assistant using the coordinator pattern:
+      central coordinator routes to specialist agents — spend_analyzer (identifies
+      savings opportunities), vendor_recommender (suggests vendors for new requisitions),
+      and anomaly_detector (flags unusual spend patterns). Integrates with spend analytics
+      and vendor history.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes 90%+ of test queries to appropriate specialist
+    - Spend analyzer produces actionable savings recommendations with estimated value
+    - Vendor recommender returns ranked vendor list with match rationale
+    - Anomaly detector identifies duplicate invoices (same vendor, amount, ±7 days)
+      with >95% precision
+    - All AI suggestions logged to audit trail with trace_id
+    - 'HITL gate: anomaly suppression requires explicit buyer acknowledgment'
+    depends_on:
+    - 13
+    - 14
+  SECURITY:
+    description: 'Conduct security review: threat model for procurement data flows,
+      OWASP Top 10 assessment for API and frontend, vendor portal isolation verification,
+      document access control audit, SQL injection and auth bypass testing, and produce
+      remediation plan.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all six procurement modules
+    - OWASP Top 10 items assessed with finding per item (pass/fail/partial)
+    - Vendor portal cannot access buyer data (verified via auth boundary test)
+    - Signed URL for documents expires in ≤15 minutes (tested)
+    - No high/critical findings unmitigated before go-live
+    - Remediation plan has owner and target date for each finding
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: requisition
+      state machine, approval routing logic, invoice match algorithm (2-way and 3-way),
+      spend aggregation accuracy, and vendor scoring model. Target 80%+ code coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All state machine transitions tested including invalid transition rejection
+    - 'Approval chain tests cover: amount thresholds, delegation, escalation timeout'
+    - 'Invoice match tests cover: exact match, within tolerance, outside tolerance,
+      partial receipt'
+    - Spend aggregation tests verify arithmetic accuracy against known fixtures
+    - Coverage report shows ≥80% for all modules in src/
+    - Tests run in under 60 seconds in CI
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+  QA:
+    description: 'Create QA test plan and execute functional test cases for all procurement
+      workflows: end-to-end requisition-to-PO flow, 3-way invoice match happy path
+      and exception paths, RFQ award and vendor notification, vendor onboarding document
+      expiry alerts, and spend dashboard accuracy.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all six modules with functional + negative test cases
+    - Requisition-to-PO end-to-end flow passes without manual workaround
+    - '3-way match test cases cover: full match, price variance, qty variance, missing
+      receipt'
+    - RFQ award triggers vendor email notification within 5 minutes
+    - Spend dashboard totals match database aggregation within $0.01
+    - QA execution report shows pass/fail for each test case with evidence screenshots
+    depends_on:
+    - 15
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+    - 23
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: GitHub Actions workflows for lint/test/build
+      on PR, staging deploy on merge to main, production deploy on release tag, infrastructure
+      as code (Terraform for AWS ECS + RDS + ElastiCache + S3), and monitoring with
+      CloudWatch alarms.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs lint + tests + build in under 5 minutes on PR
+    - Staging deploy completes automatically on merge to main
+    - Production deploy requires manual approval gate in GitHub Actions
+    - Terraform plan reviewed in PR before apply
+    - 'CloudWatch alarms configured for: API error rate >1%, P99 latency >2s, DB CPU
+      >80%'
+    - PagerDuty alert triggers on P1 alarm within 5 minutes
+    - Zero-downtime ECS rolling deployment verified
+    depends_on:
+    - 7
+    - 23
+  SYSTEM_TEST:
+    description: 'Execute system-level integration tests: full requisition-to-payment
+      lifecycle across all services, concurrent user load test (500 concurrent buyers),
+      invoice match throughput test (1000 invoices/hour), vendor portal isolation
+      penetration test, and disaster recovery failover test.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full requisition-to-payment lifecycle completes end-to-end without manual intervention
+    - 'Load test: 500 concurrent users, P99 API latency <2s, error rate <0.1%'
+    - 'Invoice match throughput: 1000 invoices/hour sustained for 30 minutes'
+    - Vendor portal user cannot access or enumerate buyer requisitions (verified)
+    - 'DR failover: RDS failover to standby completes in <60 seconds'
+    - All SLA targets met under load with results documented
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 24
+    - 25
+  OPERATIONS:
+    description: 'Write operational runbooks: system startup/shutdown procedures,
+      database backup and restore procedures, incident response playbook (P1/P2/P3
+      classification), on-call escalation matrix, capacity planning model, and SLA
+      definitions.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Incident response playbook covers P1/P2/P3 with specific response steps and
+      owners
+    - DB restore procedure tested and documented with RTO (< 1 hour)
+    - Escalation matrix has primary + backup for each on-call tier
+    - Capacity planning model projects resource needs for 10x user growth
+    - SLA definitions include measurement methodology and exclusion criteria
+    - All runbooks reviewed and approved by operations lead
+    depends_on:
+    - 25
+    - 26
+  TRAINING:
+    description: 'Create user training materials: buyer quick-start guide (requisition
+      to PO in 5 steps), approver guide (inbox management and delegation), finance
+      team guide (invoice matching and payment approval), vendor onboarding guide
+      (portal setup and quote submission), and admin guide (user management and configuration).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Buyer quick-start guide covers create → submit → track in ≤10 pages with screenshots
+    - Approver guide covers mobile approval workflow
+    - Vendor guide usable by non-technical vendor contact
+    - 'Admin guide covers: add user, assign role, configure approval threshold, manage
+      categories'
+    - All guides reviewed by one representative user per role for comprehension
+    - In-app tooltip text written for all major form fields (help icon)
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 15
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+  DOCS:
+    description: 'Write technical documentation: architecture decision records (ADRs)
+      for key design choices, API reference (auto-generated from OpenAPI spec), deployment
+      guide, developer onboarding README, data model documentation, and integration
+      guide for ERP/accounting system connectors.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - ADR exists for each major architectural decision with context, decision, and
+      consequences
+    - Developer can run `make dev` and hit first API endpoint within 15 minutes using
+      README
+    - Data model doc includes ERD + field-level descriptions for all tables
+    - 'ERP integration guide covers: webhook setup, field mapping, error handling'
+    - API reference published as static site from OpenAPI spec
+    - All docs reviewed for accuracy against implemented system
+    depends_on:
+    - 14
+    - 25
+    - 27

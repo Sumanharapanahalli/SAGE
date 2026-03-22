@@ -1,0 +1,208 @@
+task_types:
+  CONFIG:
+    description: Initialize repository structure, dev tooling, environment configs,
+      and Docker Compose for local dev (MQTT broker, OPC-UA server, TimescaleDB, Redis,
+      Kafka).
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up brings all services healthy
+    - .env.example documents every required variable
+    - pre-commit hooks run black + mypy on commit
+    - README describes local setup in <5 steps
+    depends_on: []
+  SECURITY:
+    description: Produce IEC 62443 threat model covering MQTT broker, OPC-UA server,
+      SCADA integration, and cloud ingestion boundary. Define security zones, conduits,
+      and required controls.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All STRIDE threats enumerated per component
+    - Security zones and conduits mapped per IEC 62443-3-3
+    - SBOM generated listing all third-party dependencies
+    - Risk rating assigned (Critical/High/Medium/Low) to each threat
+    - Mitigations mapped to each High/Critical threat
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 1
+  DATABASE:
+    description: Design and migrate TimescaleDB schema for time-series sensor data,
+      device registry, alert history, and ML prediction results. Include hypertable
+      partitioning and retention policies.
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations run idempotently via Alembic
+    - sensor_readings hypertable chunks by 1-day intervals
+    - Indexes on device_id + timestamp for all time-series tables
+    - Retention policy enforced automatically after 365 days
+    - Schema ERD document committed to /docs
+    depends_on:
+    - 1
+  FIRMWARE:
+    description: 'Implement edge gateway firmware in C (FreeRTOS) for industrial sensors:
+      MQTT publish over TLS, OPC-UA client polling, watchdog, and OTA update stub.
+      Targets ARM Cortex-M4.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - Firmware compiles without warnings under -Wall -Wextra
+    - MQTT task publishes sensor payload to broker every 1s under load
+    - OPC-UA client reads node values and enqueues to MQTT pipeline
+    - Watchdog resets device if MQTT task starves for >30s
+    - OTA stub receives firmware chunk and writes to secondary flash partition
+    - TLS certificate validation enforced — plain-text connection refused
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 1
+  BACKEND:
+    description: 'Build MQTT ingestion service (Python/asyncio + aiomqtt): subscribe
+      to device topics, validate payloads against JSON Schema, enqueue validated messages
+      to Kafka, dead-letter invalid messages.'
+    agent_role: developer
+    acceptance_criteria:
+    - Service processes 10,000 msg/s without message loss under load test
+    - Invalid payloads routed to DLQ with error details
+    - Reconnect logic handles broker restart within 5s
+    - Metrics endpoint exposes messages_received, messages_invalid, lag counters
+    - Structured logs include trace_id, device_id, topic
+    depends_on:
+    - 1
+    - 2
+    - 3
+  ML_MODEL:
+    description: 'Build predictive maintenance ML pipeline: feature engineering from
+      sensor time-series (FFT, rolling stats, lag features), anomaly detection (Isolation
+      Forest baseline), RUL regression model (LSTM), training and evaluation pipeline.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Feature pipeline reproducible with DVC or equivalent versioning
+    - Isolation Forest F1 >= 0.80 on held-out anomaly test set
+    - LSTM RUL MAE <= 10% of mean RUL on held-out test set
+    - Model artifacts versioned and stored in MLflow or equivalent registry
+    - Inference endpoint returns anomaly_score and rul_hours within 200ms
+    - Model cards document training data, metrics, and known limitations
+    depends_on:
+    - 7
+  API:
+    description: 'Design and document REST + WebSocket API: OpenAPI 3.1 spec for sensor
+      data query, device management, alert CRUD, ML predictions, SCADA tag write,
+      and SSE/WebSocket for real-time streaming.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors via Redocly linter
+    - All endpoints documented with request/response examples
+    - Auth schemes (JWT + API key) documented with acquisition flow
+    - WebSocket protocol documented (message format, heartbeat, reconnect)
+    - Breaking change policy documented
+    depends_on:
+    - 3
+    - 8
+    - 9
+    - 10
+  FRONTEND:
+    description: 'Build real-time dashboard UI (React 18 + TypeScript + Recharts/ECharts):
+      device map overview, live sensor charts, alert inbox with acknowledge/silence
+      actions, maintenance prediction cards.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Live sensor charts update within 2s of new data without full re-render
+    - Alert inbox shows FIRING/ACKNOWLEDGED/RESOLVED with color coding
+    - Device map shows online/offline/alert state per device
+    - Predictive maintenance cards show anomaly score + RUL estimate with confidence
+      interval
+    - SCADA write commands surface HITL approval flow before submission
+    - Lighthouse performance score >= 85 on Dashboard page
+    - WCAG 2.1 AA accessibility audit passes
+    depends_on:
+    - 12
+  EMBEDDED_TEST:
+    description: 'Write firmware unit tests (Unity framework) and HIL test specs for
+      edge gateway: MQTT publish under connectivity loss, OPC-UA reconnect, watchdog
+      trigger, OTA state machine, and sensor data integrity.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All Unity unit tests pass in CI (QEMU emulation)
+    - HIL test spec covers all listed scenarios with pass/fail criteria
+    - MQTT retry test confirms no message loss across 100 broker disconnects
+    - Watchdog test confirms reset within 35s of deliberate task starvation
+    - OTA partial write test confirms device boots from primary partition on failure
+    depends_on:
+    - 4
+  TESTS:
+    description: 'Write backend unit and integration tests: ingestion services, alert
+      rule engine, SCADA adapter, ML inference endpoint, and FastAPI endpoints. Target
+      >=85% line coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest -x passes with zero failures
+    - Line coverage >= 85% across src/
+    - Schemathesis contract tests cover all API endpoints
+    - Kafka consumer integration test confirms at-least-once delivery
+    - Alert rule engine tests cover all rule types and edge cases (no_data, flapping)
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 12
+  DEVOPS:
+    description: 'Build CI/CD pipeline (GitHub Actions): lint, test, Docker build,
+      SAST scan, container vulnerability scan, staging deploy, smoke test, production
+      deploy gate with manual approval.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Pipeline runs end-to-end on every PR in <15 minutes
+    - SAST scan fails build on HIGH severity findings
+    - Trivy fails build on CRITICAL CVEs
+    - Staging deploy runs smoke test against /health and 3 key API endpoints
+    - Production deploy requires manual approval in GitHub Environments
+    - Helm chart parameterized for dev/staging/prod via values files
+    depends_on:
+    - 15
+    - 16
+  COMPLIANCE:
+    description: 'Produce IEC 62443 compliance evidence artifacts: Security Management
+      Plan, System Security Requirements (SSR), Security Design Specification, risk
+      matrix, and traceability matrix linking threats to controls to tests.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - SMP documents roles, responsibilities, and security lifecycle
+    - SSR maps to IEC 62443-3-3 Security Requirements (SR 1.x–7.x)
+    - Risk matrix covers all threats from threat model (step 2) with CVSS scores
+    - Traceability matrix has zero unmitigated HIGH/CRITICAL threats
+    - All artifacts version-controlled under /docs/compliance/
+    depends_on:
+    - 2
+    - 16
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite: simulate 100 edge devices
+      sending MQTT and OPC-UA data, validate ingestion pipeline throughput, alert
+      firing latency, ML prediction accuracy under load, SCADA write approval flow,
+      and dashboard real-time update.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 100% of nominal sensor readings arrive in TimescaleDB within 5s
+    - Alert FIRING latency <= 5s from threshold breach
+    - ML anomaly detection rate >= 80% on injected fault signatures
+    - SCADA write approval flow completes and actuator tag updates within 10s of approval
+    - Zero message loss during Kafka broker failover and restart
+    - Dashboard chart updates within 2s of new data publish
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 17
+  DOCS:
+    description: 'Write operator and developer documentation: system architecture
+      overview, deployment guide, MQTT/OPC-UA device onboarding guide, alert rule
+      configuration reference, ML model retraining guide, and SCADA integration runbook.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - mkdocs build completes with zero warnings
+    - Device onboarding guide tested end-to-end by a developer not on the team
+    - API reference auto-generated from OpenAPI spec and linked from docs
+    - All architecture diagrams use consistent notation (C4 or equivalent)
+    - Security configuration guide cross-references IEC 62443 controls
+    depends_on:
+    - 11
+    - 18
+    - 19

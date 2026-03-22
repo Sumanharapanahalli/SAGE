@@ -1,0 +1,186 @@
+task_types:
+  PRODUCT_MGMT:
+    description: 'Define product requirements: data ingestion contracts, anomaly detection
+      SLAs, alert deduplication rules, root cause correlation scope, and success metrics.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - 'PRD covers all five pillars: ingestion, detection, seasonality, deduplication,
+      correlation'
+    - Success metrics defined (false positive rate < X%, alert noise reduction % target)
+    - Supported metric sources listed (Prometheus, StatsD, CloudWatch, custom)
+    depends_on: []
+  UX_DESIGN:
+    description: 'Design dashboard wireframes: metric explorer, anomaly timeline,
+      alert inbox with deduplication view, root cause graph, and configuration panels.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all six screens
+    - Anomaly timeline supports zoom/pan and threshold overlay
+    - Root cause graph shows correlated metric clusters with edge weights
+    - Accessibility audit passes WCAG 2.1 AA
+    depends_on:
+    - 1
+  DATA:
+    description: 'Design time-series data model: metric schema, anomaly event schema,
+      alert record schema, correlation edge schema, and data retention tiers.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - All schemas documented with field types and cardinality estimates
+    - Metric schema supports tags/labels for multi-dimensional filtering
+    - 'Anomaly event schema includes: metric_id, timestamp, score, model_id, seasonality_adjusted
+      flag'
+    - Correlation edge schema includes confidence score and lag offset
+    depends_on:
+    - 1
+  DATABASE:
+    description: 'Implement TimescaleDB schema: hypertables for raw metrics and anomaly
+      events, continuous aggregates for 1m/5m/1h rollups, retention policies, and
+      indexes.'
+    agent_role: developer
+    acceptance_criteria:
+    - All hypertables created with correct chunk intervals
+    - Continuous aggregates refresh automatically on schedule
+    - Retention policies enforce hot/cold tiers via pg_partman or TimescaleDB policies
+    - Query for last 24h of a single metric completes < 50ms on 1M rows
+    depends_on:
+    - 3
+  ML_MODEL:
+    description: 'Implement unsupervised anomaly detection models: Isolation Forest
+      baseline, LSTM Autoencoder for pattern learning, and STL decomposition for seasonality-aware
+      scoring.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Each model exposes .fit(X) and .score(X) -> anomaly_score interface
+    - STL correctly extracts daily/weekly seasonality on synthetic test series
+    - Ensemble scorer returns calibrated [0,1] anomaly score
+    - LSTM Autoencoder reconstruction error < 5% on clean test data
+    - 'Unit tests cover edge cases: constant series, spike series, step-change series'
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 3
+  BACKEND:
+    description: 'Implement anomaly scoring service: real-time scoring worker that
+      consumes from ingestion buffer, applies ensemble model, writes anomaly events,
+      and exposes /score endpoint for on-demand queries.'
+    agent_role: developer
+    acceptance_criteria:
+    - Scoring worker processes ingestion buffer with < 2s lag
+    - POST /score returns anomaly score and contributing model weights
+    - 'GET /anomalies supports filters: metric_id, time_range, min_score, tags'
+    - Model cache refreshes on new registry version without service restart
+    - Service handles model unavailability gracefully with fallback to IsolationForest
+    depends_on:
+    - 7
+    - 5
+  API:
+    description: 'Design and implement public REST + WebSocket API: metric ingestion,
+      anomaly query, alert management, correlation graph, model status, and real-time
+      SSE stream for live anomaly feed.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec generated and passes schema validation
+    - All endpoints return correct HTTP status codes per spec
+    - SSE stream delivers anomaly events within 3s of detection
+    - API key auth rejects invalid keys with 401
+    - 'Rate limiting enforced: 1000 req/min per key'
+    depends_on:
+    - 10
+  CONFIG:
+    description: 'Set up SAGE solution configuration: anomaly_detection project.yaml,
+      prompts.yaml (data_scientist, platform_engineer roles), tasks.yaml (anomaly
+      detection task types), and agentic pattern config for coordinator orchestration.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml loads without validation errors via POST /config/switch
+    - prompts.yaml defines system prompts for all four roles
+    - tasks.yaml registers all five task types with correct routing
+    - Coordinator pattern wires analyst → data_scientist → developer task chain
+    - Solution .sage/ directory auto-created on first start
+    depends_on:
+    - 1
+  FRONTEND:
+    description: 'Build metric explorer page: searchable metric browser with tag filters,
+      time-range selector, multi-series chart overlay, and anomaly score band visualization.'
+    agent_role: developer
+    acceptance_criteria:
+    - Metric search returns results in < 200ms with 10k metric names
+    - Chart renders 10k data points without frame drops on modern browser
+    - Anomaly score band toggleable; color-coded by severity
+    - Time range picker supports relative (last 1h/6h/24h/7d) and absolute ISO range
+    depends_on:
+    - 11
+    - 2
+  INFRA:
+    description: 'Containerize all services with Docker Compose (dev) and Kubernetes
+      Helm chart (prod): ingestion workers, scoring service, API server, TimescaleDB,
+      Redis, MLflow, Celery beat, and Flower.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up --build starts all services healthy within 2 min
+    - Helm chart deploys to local kind cluster without errors
+    - HPA scales scoring workers at 70% CPU
+    - All sensitive config injected via env/secrets — no hardcoded credentials
+    depends_on:
+    - 12
+    - 13
+  DEVOPS:
+    description: 'Build CI/CD pipeline: GitHub Actions for lint, test, Docker build,
+      Helm lint, staging deploy on PR merge, and production deploy on release tag.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR pipeline completes in < 8 min
+    - Staging deploy triggers automatically on merge to main
+    - Production deploy requires manual approval gate in GitHub Actions
+    - Rollback executes within 2 min of failed health check
+    depends_on:
+    - 18
+  SECURITY:
+    description: 'Security review: threat model for ingestion endpoint, API key rotation
+      flow, RBAC for alert management, dependency SBOM, and input validation audit.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model documented with mitigations for all HIGH risks
+    - API key stored hashed; rotation invalidates old key immediately
+    - 'RBAC enforced: viewers cannot ack alerts or modify config'
+    - SBOM generated and scanned; no CRITICAL CVEs in direct dependencies
+    - Input validation rejects metric payloads > 1MB and malformed timestamps
+    depends_on:
+    - 11
+  TESTS:
+    description: 'Write unit tests for ML models, ingestion pipeline, deduplication
+      engine, and correlation engine: edge cases, known anomaly patterns, and regression
+      fixtures.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest passes with 0 failures on clean checkout
+    - Coverage >= 85% for src/models, src/ingestion, src/deduplication, src/correlation
+    - Synthetic series generator produces reproducible fixtures via seed
+    - ML model tests run in < 60s without GPU
+    depends_on:
+    - 10
+  SYSTEM_TEST:
+    description: 'End-to-end system test: inject synthetic metric stream with embedded
+      anomalies, verify detection, deduplication, correlation, and notification dispatch
+      within SLA.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - System test script runs end-to-end without manual intervention
+    - All four assertion conditions pass
+    - Total pipeline latency (ingest → alert notification) < 3 min
+    - No data loss in 24h stream replay
+    depends_on:
+    - 22
+    - 19
+  DOCS:
+    description: 'Write operations documentation: deployment guide, configuration
+      reference, alert routing cookbook, model sensitivity tuning guide, and runbook
+      for common incidents.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - README quickstart produces working local stack from scratch in < 5 min
+    - All config keys documented with type, default, and example
+    - 'Each runbook has: symptom, diagnosis steps, remediation, escalation path'
+    - API reference generated from OpenAPI spec (Redoc or Swagger UI)
+    depends_on:
+    - 23

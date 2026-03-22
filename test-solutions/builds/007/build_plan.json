@@ -1,0 +1,1042 @@
+{
+  "run_id": "e56dffe2-28fc-4833-a6b4-69120cfb82ff",
+  "status": {
+    "run_id": "e56dffe2-28fc-4833-a6b4-69120cfb82ff",
+    "solution_name": "rehab_exercise_tracker",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-21T22:57:02.980101+00:00",
+    "updated_at": "2026-03-21T23:02:20.628571+00:00",
+    "product_description": "Physical rehabilitation exercise tracking app using smartphone camera for pose estimation, progress tracking, and therapist reporting. FDA Class I wellness device.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define product requirements, user personas (patient, therapist, clinic admin), and core workflows. Map out exercise library scope, session flow, and therapist reporting needs. Produce a PRD and user story backlog.",
+        "payload": {
+          "solution_name": "rehab_exercise_tracker",
+          "outputs": [
+            "PRD",
+            "user_stories",
+            "persona_definitions",
+            "workflow_diagrams"
+          ],
+          "stakeholders": [
+            "physical_therapist",
+            "patient",
+            "clinic_admin"
+          ],
+          "exercise_domains": [
+            "shoulder",
+            "knee",
+            "back",
+            "hip",
+            "ankle"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD documents all three user personas with goals and pain points",
+          "At least 20 prioritized user stories with acceptance criteria",
+          "Core session workflow (assign \u2192 perform \u2192 review \u2192 report) is fully mapped",
+          "Exercise library scope defined with \u2265 30 initial exercises",
+          "Therapist reporting requirements captured including export formats"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze competing rehab exercise apps (Kaia Health, Reflexion Health, MedBridge Go), FDA Class I device landscape, reimbursement codes (CPT 97110/97530), and therapist adoption barriers.",
+        "payload": {
+          "competitors": [
+            "Kaia Health",
+            "Reflexion Health",
+            "MedBridge Go",
+            "PT Pal"
+          ],
+          "regulatory_class": "FDA Class I 21 CFR Part 880",
+          "reimbursement_codes": [
+            "CPT 97110",
+            "CPT 97530",
+            "RPM 99457"
+          ],
+          "outputs": [
+            "competitive_matrix",
+            "gtm_strategy",
+            "pricing_model"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitive matrix covers \u2265 5 competitors across pose accuracy, pricing, therapist workflow",
+          "FDA Class I wellness device exemption pathway documented with rationale",
+          "Reimbursement landscape analyzed with 3 viable billing models",
+          "Go-to-market strategy identifies initial clinic partnerships and distribution channels"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "Design the full UX for patient mobile app and therapist web portal. Include exercise demo screens, real-time pose feedback UI, session history, progress charts, and therapist report builder. WCAG 2.1 AA compliance required for accessibility.",
+        "payload": {
+          "platforms": [
+            "iOS",
+            "Android",
+            "web_portal"
+          ],
+          "user_flows": [
+            "onboarding",
+            "session_execution",
+            "progress_review",
+            "report_generation"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA",
+          "design_system": "Material Design 3"
+        },
+        "acceptance_criteria": [
+          "Wireframes complete for all patient app screens (\u2265 15 screens)",
+          "Therapist web portal wireframes cover patient management, assignment, and report builder",
+          "Real-time pose feedback visualization designed (skeleton overlay, rep counter, form alerts)",
+          "Usability tested with \u2265 3 physical therapists and \u2265 3 patients \u2014 critical issues resolved",
+          "Accessibility audit passes WCAG 2.1 AA for all primary flows"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "SAFETY",
+        "description": "Conduct ISO 14971 hazard analysis and FMEA for the pose estimation system. Identify hazards: incorrect exercise guidance leading to patient injury, false confidence from inaccurate pose scoring, data loss corrupting therapy records. Define risk controls and residual risk acceptability criteria.",
+        "payload": {
+          "standard": "ISO 14971:2019",
+          "hazard_categories": [
+            "incorrect_pose_feedback_causing_injury",
+            "missed_contraindicated_movement_detection",
+            "data_integrity_failure_corrupting_therapy_record",
+            "software_crash_during_active_session",
+            "privacy_breach_of_PHI"
+          ],
+          "risk_acceptability_matrix": "5x5_ALARP",
+          "outputs": [
+            "hazard_analysis_report",
+            "FMEA_table",
+            "risk_control_measures",
+            "residual_risk_report"
+          ]
+        },
+        "acceptance_criteria": [
+          "All identified hazards categorized by severity (S1-S4) and probability (P1-P5)",
+          "FMEA table covers \u2265 25 failure modes across pose engine, data storage, and UI",
+          "Risk controls defined for every unacceptable risk (above ALARP threshold)",
+          "Residual risk report demonstrates all risks reduced to acceptable level",
+          "Safety requirements derived and traceable to hazard controls",
+          "ISO 14971 risk management file structure established",
+          "ISO 14971 risk management file complete",
+          "Residual risk acceptable"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 5,
+        "task_type": "COMPLIANCE",
+        "description": "Establish the Design History File (DHF) framework, quality management plan per ISO 13485, and IEC 62304 software lifecycle plan. Define software safety classification (Class B \u2014 non-life-supporting), V&V strategy, and traceability matrix structure.",
+        "payload": {
+          "standards": [
+            "FDA 21 CFR Part 820",
+            "IEC 62304",
+            "ISO 13485:2016",
+            "ISO 14971:2019"
+          ],
+          "software_class": "IEC 62304 Class B",
+          "dhf_sections": [
+            "design_input",
+            "design_output",
+            "design_review",
+            "design_verification",
+            "design_validation",
+            "design_transfer",
+            "design_changes"
+          ],
+          "outputs": [
+            "DHF_framework",
+            "QMS_plan",
+            "software_development_plan",
+            "traceability_matrix_template",
+            "VV_strategy"
+          ]
+        },
+        "acceptance_criteria": [
+          "DHF framework covers all 7 required sections per 21 CFR Part 820.30",
+          "IEC 62304 software development plan documents lifecycle phases with entry/exit criteria",
+          "ISO 13485 QMS plan identifies all required procedures and document controls",
+          "Traceability matrix template links: requirements \u2192 design \u2192 implementation \u2192 test",
+          "V&V strategy distinguishes verification (unit/integration) from validation (clinical usability)",
+          "Software safety class B justification documented and approved",
+          "DHF (Design History File) structure created",
+          "V&V protocol drafted"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "LEGAL",
+        "description": "Draft HIPAA Business Associate Agreement templates, Terms of Service, Privacy Policy, and software license. Review FDA General Wellness Policy applicability for Class I exemption. Assess GDPR implications for EU expansion.",
+        "payload": {
+          "regulations": [
+            "HIPAA Privacy Rule",
+            "HIPAA Security Rule",
+            "GDPR",
+            "CCPA",
+            "FDA General Wellness Policy"
+          ],
+          "outputs": [
+            "BAA_template",
+            "terms_of_service",
+            "privacy_policy",
+            "software_license",
+            "FDA_wellness_policy_memo"
+          ],
+          "phi_handling": "encrypted_at_rest_and_in_transit"
+        },
+        "acceptance_criteria": [
+          "HIPAA BAA template reviewed by legal counsel and covers all required elements",
+          "Privacy policy explicitly addresses PHI collection, use, and disclosure",
+          "FDA General Wellness Policy memo documents low-risk determination rationale",
+          "Terms of Service include liability limitations appropriate for wellness device",
+          "GDPR data subject rights procedures documented for EU readiness"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 7,
+        "task_type": "DATABASE",
+        "description": "Design HIPAA-compliant database schema for users, therapists, exercise library, sessions, pose keypoint time-series, rep counts, progress metrics, and therapist reports. Include audit log tables for PHI access tracking. Use PostgreSQL with row-level encryption for PHI fields.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "encryption": "column-level AES-256 for PHI fields",
+          "tables": [
+            "users",
+            "therapists",
+            "clinics",
+            "patients",
+            "exercise_definitions",
+            "exercise_programs",
+            "sessions",
+            "session_reps",
+            "pose_keypoints_timeseries",
+            "progress_metrics",
+            "therapist_reports",
+            "phi_audit_log"
+          ],
+          "compliance": "HIPAA Security Rule technical safeguards",
+          "migrations_tool": "Alembic"
+        },
+        "acceptance_criteria": [
+          "ERD covers all tables with FK relationships and cardinality documented",
+          "PHI fields (name, DOB, diagnosis, session video) use column-level encryption",
+          "phi_audit_log table records every SELECT/UPDATE/DELETE on PHI with user_id and timestamp",
+          "Alembic migration scripts produce schema without errors on clean PostgreSQL instance",
+          "Row-level security policies prevent cross-tenant PHI access",
+          "Pose keypoints time-series table benchmarked: insert 30fps \u00d7 33 keypoints for 60s session < 500ms"
+        ],
+        "depends_on": [
+          1,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specification for all backend services: auth (OAuth2/SMART on FHIR), exercise library CRUD, session management, pose data ingestion, progress analytics, and therapist reporting endpoints. Define FHIR R4 Observation resources for session data interoperability.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "auth": "OAuth2 PKCE + SMART on FHIR",
+          "fhir_version": "R4",
+          "endpoint_groups": [
+            "/auth",
+            "/exercises",
+            "/programs",
+            "/sessions",
+            "/pose-data",
+            "/progress",
+            "/reports",
+            "/admin"
+          ],
+          "fhir_resources": [
+            "Patient",
+            "Practitioner",
+            "Observation",
+            "CarePlan",
+            "Procedure"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 spec validates without errors in Swagger Validator",
+          "All endpoints have request/response schemas with example payloads",
+          "SMART on FHIR authorization flow documented with launch sequence",
+          "FHIR R4 Observation resource mapping for session rep data is complete",
+          "Rate limiting and pagination defined for all list endpoints",
+          "Error response schemas standardized across all endpoints (RFC 7807 Problem Details)"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "ML_MODEL",
+        "description": "Integrate and fine-tune a pose estimation model (MoveNet Thunder or MediaPipe Pose Landmarker) for rehab-specific exercises. Build rep counting algorithm using joint angle time-series, form quality scorer, and exercise-specific range-of-motion thresholds. Export as TFLite for on-device inference.",
+        "payload": {
+          "base_model": "MoveNet Thunder v4 (TF Hub)",
+          "fallback_model": "MediaPipe Pose Landmarker (Lite)",
+          "keypoints": 17,
+          "tasks": [
+            "rep_counting_via_joint_angle_peaks",
+            "form_quality_scoring_per_exercise",
+            "range_of_motion_measurement",
+            "exercise_recognition_classifier"
+          ],
+          "target_runtime": "TFLite + GPU delegate",
+          "accuracy_target": "mean_keypoint_error < 5px on rehab exercise test set",
+          "latency_target": "< 33ms per frame on iPhone 12 / Pixel 6"
+        },
+        "acceptance_criteria": [
+          "MoveNet Thunder integrated and producing 17 keypoints at \u2265 30fps on target devices",
+          "Rep counting algorithm validated on \u2265 10 exercise types with < 5% error rate vs ground truth",
+          "Form quality scorer outputs normalized score 0\u2013100 with exercise-specific joint angle checks",
+          "Range-of-motion measurement validated against goniometer readings within \u00b15 degrees",
+          "TFLite model file \u2264 15MB, inference latency < 33ms on iPhone 12",
+          "Model card documents training data, known limitations, and accuracy by exercise type"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 10,
+        "task_type": "FIRMWARE",
+        "description": "Implement native mobile camera pipeline and hardware acceleration layer for real-time pose inference. This covers the native iOS (AVFoundation) and Android (Camera2 API) camera capture modules, GPU/NPU delegate configuration for TFLite, frame preprocessing pipeline (resize, normalize, YUV\u2192RGB), and device capability detection (Neural Engine, NNAPI).",
+        "payload": {
+          "platforms": [
+            "iOS 16+ (Swift)",
+            "Android 10+ (Kotlin)"
+          ],
+          "ios_apis": [
+            "AVFoundation",
+            "CoreML",
+            "Metal GPU delegate"
+          ],
+          "android_apis": [
+            "Camera2 API",
+            "NNAPI",
+            "TFLite Android delegate"
+          ],
+          "frame_pipeline": "YUV_420_888 \u2192 RGB \u2192 resize 192x192 \u2192 normalize \u2192 TFLite inference",
+          "target_fps": 30,
+          "outputs": [
+            "iOS CameraCapturePipeline.swift",
+            "Android CameraCapturePipeline.kt",
+            "TFLite inference wrapper (iOS + Android)",
+            "device capability probe module"
+          ]
+        },
+        "acceptance_criteria": [
+          "Camera pipeline delivers frames at \u2265 30fps on iPhone 12 and Pixel 6 without dropping > 5% frames",
+          "GPU/Neural Engine delegate enabled by default with CPU fallback on unsupported devices",
+          "YUV\u2192RGB conversion and resize completes in < 3ms per frame",
+          "TFLite inference wrapper exposes unified API callable from Flutter/React Native",
+          "Device capability probe correctly identifies Neural Engine availability on iOS A12+",
+          "Memory footprint of camera pipeline < 150MB RAM during active session",
+          "IEC 62304 software class documented",
+          "SOUP components listed"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement FastAPI backend services: authentication (OAuth2/SMART on FHIR), exercise library management, session lifecycle, pose data ingestion API with time-series storage, progress analytics engine, and therapist report generation (PDF via WeasyPrint). Implement HIPAA audit logging middleware.",
+        "payload": {
+          "framework": "FastAPI + Python 3.12",
+          "auth": "OAuth2 PKCE via Authlib + SMART on FHIR",
+          "async_queue": "Celery + Redis for report generation",
+          "pdf_generation": "WeasyPrint",
+          "modules": [
+            "auth_service",
+            "exercise_service",
+            "session_service",
+            "pose_ingestion_service",
+            "analytics_service",
+            "report_service",
+            "hipaa_audit_middleware",
+            "rate_limiter"
+          ],
+          "deployment": "Docker container",
+          "agentic_pattern": "review_and_critique \u2014 AI-generated therapy reports reviewed by critic agent before delivery to therapist"
+        },
+        "acceptance_criteria": [
+          "All OpenAPI endpoints from step 8 implemented and passing contract tests",
+          "HIPAA audit middleware logs every PHI access to phi_audit_log table with < 1ms overhead",
+          "Session pose data ingestion handles 30fps \u00d7 33 keypoints sustained for 60 minutes without OOM",
+          "Progress analytics engine computes trend charts (7d, 30d, 90d) in < 200ms",
+          "PDF report generation produces formatted therapist report in < 5s",
+          "Actor-Critic pattern: AI report drafts reviewed by critic agent before therapist delivery",
+          "All endpoints return proper HTTP status codes and RFC 7807 error bodies",
+          "OAuth2 PKCE flow tested end-to-end with token refresh"
+        ],
+        "depends_on": [
+          7,
+          8,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "FRONTEND",
+        "description": "Build the patient mobile app (React Native + Expo) and therapist web portal (React 18 + TypeScript). Patient app: onboarding, exercise assignment view, live camera session with skeleton overlay, rep counter, form feedback alerts, session history, progress charts. Therapist portal: patient roster, program builder, session review, report generation UI.",
+        "payload": {
+          "patient_app": "React Native + Expo SDK 52",
+          "therapist_portal": "React 18 + TypeScript + Vite",
+          "ui_library": "React Native Paper (mobile) + shadcn/ui (web)",
+          "charts": "Victory Native (mobile) + Recharts (web)",
+          "camera_integration": "Native module bridge to Camera pipeline from step 10",
+          "state_management": "Zustand + React Query",
+          "key_screens": [
+            "onboarding_flow",
+            "exercise_library",
+            "live_session_camera",
+            "session_summary",
+            "progress_dashboard",
+            "therapist_patient_roster",
+            "program_builder",
+            "report_viewer"
+          ]
+        },
+        "acceptance_criteria": [
+          "Patient app runs on iOS 16+ and Android 10+ without crashes on target device matrix",
+          "Live session camera view renders skeleton overlay at \u2265 30fps with rep counter and form score",
+          "Form feedback alerts appear within 200ms of pose quality threshold violation",
+          "Progress charts render 90-day trend data in < 300ms",
+          "Therapist portal loads patient roster of 100 patients in < 1s",
+          "Program builder allows drag-and-drop exercise assignment with sets/reps/rest configuration",
+          "All screens pass WCAG 2.1 AA accessibility audit (axe-core)",
+          "Lighthouse performance score \u2265 85 for therapist portal"
+        ],
+        "depends_on": [
+          3,
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "SECURITY",
+        "description": "Conduct threat modeling (STRIDE) for the full system, penetration test plan, HIPAA Security Rule gap analysis, and SBOM generation. Focus on: PHI data at rest/in transit, camera feed privacy, OAuth2 token security, and injection attacks in session data pipeline.",
+        "payload": {
+          "threat_model": "STRIDE",
+          "scope": [
+            "mobile_app",
+            "backend_api",
+            "therapist_portal",
+            "database",
+            "camera_pipeline"
+          ],
+          "hipaa_rules": [
+            "Privacy Rule",
+            "Security Rule",
+            "Breach Notification Rule"
+          ],
+          "sbom_format": "SPDX 2.3",
+          "outputs": [
+            "threat_model_report",
+            "pentest_plan",
+            "HIPAA_gap_analysis",
+            "SBOM_spdx",
+            "security_controls_matrix"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all 6 categories for each component in system diagram",
+          "HIPAA Security Rule gap analysis identifies all 45 implementation specifications with status",
+          "All PHI verified encrypted in transit (TLS 1.3 minimum) and at rest (AES-256)",
+          "Penetration test plan covers OWASP Mobile Top 10 and OWASP Top 10 Web",
+          "SBOM generated for all dependencies with known CVE scan showing 0 critical vulnerabilities",
+          "OAuth2 token storage uses device Keychain/Keystore \u2014 never plaintext storage verified"
+        ],
+        "depends_on": [
+          11,
+          12
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 14,
+        "task_type": "DATA",
+        "description": "Build the progress analytics data pipeline: session metrics aggregation (rep counts, form scores, ROM measurements), longitudinal trend computation, therapist report data model, and de-identified research data export pipeline for outcomes analysis.",
+        "payload": {
+          "pipeline_tool": "Apache Airflow (DAG-based)",
+          "storage": "PostgreSQL time-series tables + Redis cache for dashboards",
+          "metrics": [
+            "reps_completed_vs_prescribed",
+            "avg_form_score_per_session",
+            "ROM_improvement_over_time",
+            "session_adherence_rate",
+            "pain_score_trend",
+            "exercise_completion_rate"
+          ],
+          "report_data_model": "FHIR R4 Observation + CarePlan",
+          "de_identification": "HIPAA Safe Harbor method"
+        },
+        "acceptance_criteria": [
+          "Aggregation pipeline processes session data within 30s of session completion",
+          "All 6 core metrics computed correctly on 1000-session test dataset (validated against manual calc)",
+          "Longitudinal trend charts accurate to within 1% across 90-day windows",
+          "FHIR R4 Observation resources generated for each session validate against FHIR validator",
+          "De-identified export pipeline removes all 18 HIPAA Safe Harbor identifiers with automated verification",
+          "Dashboard cache refresh latency < 5s for therapist portal on 100-patient roster"
+        ],
+        "depends_on": [
+          7,
+          11
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 15,
+        "task_type": "CONFIG",
+        "description": "Set up the agentic AI pattern for the product: Human-in-the-Loop (HITL) for therapist-reviewed AI session reports, and Actor-Critic pattern for pose form quality analysis. Configure SAGE solution YAML files (project.yaml, prompts.yaml, tasks.yaml) for the rehab_exercise_tracker solution with appropriate agent roles.",
+        "payload": {
+          "agentic_patterns": [
+            "human_in_the_loop",
+            "review_and_critique"
+          ],
+          "hitl_gates": [
+            "AI-generated therapy progress reports before delivery to therapist",
+            "Automated exercise program adjustments before patient notification"
+          ],
+          "critic_gates": [
+            "Pose form quality scoring \u2014 critic validates before patient feedback",
+            "Progress trend analysis \u2014 critic checks before report generation"
+          ],
+          "solution_yaml_files": [
+            "project.yaml",
+            "prompts.yaml",
+            "tasks.yaml"
+          ],
+          "agent_roles_defined": [
+            "rehab_analyst",
+            "pose_quality_critic",
+            "therapy_report_generator",
+            "program_optimizer"
+          ]
+        },
+        "acceptance_criteria": [
+          "project.yaml defines solution identity, active modules, and compliance standards",
+          "prompts.yaml defines all 4 agent roles with domain-specific system prompts",
+          "tasks.yaml registers all task types with routing rules",
+          "HITL approval gate configured for AI report delivery \u2014 no report sent without therapist approval",
+          "Actor-Critic loop configured for pose scoring with critic threshold \u2265 0.8 before patient feedback",
+          "SAGE solution loads without errors: make run PROJECT=rehab_exercise_tracker"
+        ],
+        "depends_on": [
+          1,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline (GitHub Actions), containerized deployment (Docker + Kubernetes), monitoring (Prometheus + Grafana), HIPAA-compliant cloud infrastructure on AWS (VPC, KMS, CloudTrail, S3 with SSE), and automated security scanning in pipeline.",
+        "payload": {
+          "ci_cd": "GitHub Actions",
+          "container_orchestration": "Kubernetes (EKS)",
+          "cloud": "AWS \u2014 HIPAA-eligible services only",
+          "aws_services": [
+            "EKS",
+            "RDS PostgreSQL",
+            "ElastiCache Redis",
+            "S3 + SSE-KMS",
+            "KMS",
+            "CloudTrail",
+            "WAF",
+            "Secrets Manager"
+          ],
+          "monitoring": "Prometheus + Grafana + PagerDuty alerts",
+          "security_scanning": "Trivy (container CVE) + Semgrep (SAST) + OWASP ZAP (DAST)",
+          "environments": [
+            "dev",
+            "staging",
+            "production"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs unit tests, SAST scan, and container build on every PR \u2014 fails on critical CVE",
+          "CD pipeline deploys to staging automatically on main merge, production requires manual approval",
+          "AWS infrastructure uses HIPAA-eligible services with encryption at rest enabled on all storage",
+          "CloudTrail captures all API calls \u2014 audit logs retained \u2265 6 years per HIPAA requirement",
+          "Prometheus metrics cover: API latency p95/p99, error rates, pose inference latency, session throughput",
+          "PagerDuty alerts fire within 2 minutes for: API error rate > 1%, database connection failures",
+          "AWS BAA signed and documented in compliance records"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Create device testing harness for the native camera pipeline and on-device ML inference layer. Test across iOS and Android device matrix covering different Neural Engine/NPU generations, memory profiles, and camera hardware variations. Include stress tests for extended session use.",
+        "payload": {
+          "test_framework": "XCTest (iOS) + Espresso/Robolectric (Android)",
+          "device_matrix": [
+            "iPhone 12 (A14)",
+            "iPhone 14 (A15)",
+            "iPhone 16 (A18)",
+            "Pixel 6 (Tensor G1)",
+            "Pixel 8 (Tensor G3)",
+            "Samsung Galaxy S23 (Snapdragon 8 Gen 2)"
+          ],
+          "test_categories": [
+            "camera_pipeline_fps_stability",
+            "tflite_inference_latency_per_device",
+            "memory_leak_detection_60min_session",
+            "device_thermal_throttling_behavior",
+            "background_foreground_transition_recovery",
+            "low_light_pose_detection_accuracy"
+          ]
+        },
+        "acceptance_criteria": [
+          "Camera pipeline maintains \u2265 28fps average across all 6 devices in matrix for 60-minute session",
+          "TFLite inference latency < 33ms p95 on all devices (with GPU/NPU delegate enabled)",
+          "Zero memory leaks detected after 10 sequential 60-minute sessions (Instruments / LeakCanary)",
+          "App recovers correctly from background/foreground transition without pose engine crash",
+          "Thermal throttling test: if device throttles to 20fps, app shows degraded-mode warning",
+          "Low-light test (< 100 lux): app shows insufficient lighting alert rather than producing wrong pose"
+        ],
+        "depends_on": [
+          10,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "QA",
+        "description": "Design and execute the quality assurance test plan covering functional testing, usability testing with physical therapists and patients, pose accuracy validation against clinical ground truth, and regression test suite. Produce QA test report for DHF.",
+        "payload": {
+          "test_types": [
+            "functional_regression",
+            "pose_accuracy_clinical_validation",
+            "therapist_usability_testing",
+            "patient_usability_testing",
+            "data_integrity_testing",
+            "hipaa_phi_access_controls"
+          ],
+          "clinical_validation": {
+            "method": "goniometer_comparison",
+            "exercises": 15,
+            "participants": 10,
+            "acceptance_threshold": "ROM within \u00b15 degrees of goniometer"
+          },
+          "regression_suite_coverage_target": "90% code coverage",
+          "outputs": [
+            "QA_test_plan",
+            "test_execution_report",
+            "defect_log",
+            "QA_summary_for_DHF"
+          ]
+        },
+        "acceptance_criteria": [
+          "QA test plan covers all user stories from step 1 with traceability links",
+          "Clinical validation study: ROM measurements within \u00b15 degrees of goniometer on all 15 exercises",
+          "Usability testing with \u2265 5 PTs: SUS score \u2265 75 (above 'Good' threshold)",
+          "Usability testing with \u2265 5 patients: task completion rate \u2265 90% for core session flow",
+          "Regression test suite achieves \u2265 90% code coverage on backend and ML pipeline",
+          "All P1/P2 defects resolved before sign-off; defect log included in DHF",
+          "HIPAA access control tests verify zero cross-patient data access in all test cases"
+        ],
+        "depends_on": [
+          11,
+          12,
+          14,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute full end-to-end system integration tests: therapist assigns program \u2192 patient completes session \u2192 pose data processed \u2192 progress updated \u2192 therapist reviews report. Include load testing (500 concurrent sessions), failover testing, and FHIR interoperability testing with EHR sandbox.",
+        "payload": {
+          "e2e_scenarios": [
+            "full_session_lifecycle_therapist_to_patient_to_report",
+            "concurrent_500_session_load_test",
+            "database_failover_recovery",
+            "fhir_ehr_interoperability_epic_sandbox",
+            "push_notification_delivery_for_session_reminders",
+            "data_export_de_identification_pipeline"
+          ],
+          "load_test_tool": "Locust",
+          "fhir_sandbox": "Epic FHIR R4 Sandbox",
+          "performance_targets": {
+            "api_p95_latency_ms": 500,
+            "concurrent_sessions": 500,
+            "report_generation_s": 5
+          }
+        },
+        "acceptance_criteria": [
+          "Full lifecycle E2E test passes: program assignment \u2192 session \u2192 pose analysis \u2192 report \u2192 therapist approval",
+          "Load test: 500 concurrent sessions sustain with API p95 latency < 500ms, zero data loss",
+          "Database failover: RDS failover completes in < 60s with zero data corruption",
+          "FHIR R4 Observation resources successfully written to Epic FHIR sandbox and readable by EHR",
+          "Push notifications delivered within 30s of scheduled session reminder trigger",
+          "All system test results documented in test execution report for DHF traceability"
+        ],
+        "depends_on": [
+          16,
+          18
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 20,
+        "task_type": "COMPLIANCE",
+        "description": "Compile complete Design History File (DHF) artifacts per FDA 21 CFR Part 820.30. Produce: design inputs document, design outputs, design review records, verification test report, validation study report, risk management file (ISO 14971), and IEC 62304 software lifecycle records. Populate traceability matrix linking requirements \u2192 design \u2192 code \u2192 tests.",
+        "payload": {
+          "standard": "FDA 21 CFR Part 820.30",
+          "dhf_documents": [
+            "design_input_requirements_spec",
+            "design_output_spec",
+            "design_review_records_x3",
+            "verification_test_report",
+            "validation_study_report_clinical",
+            "risk_management_file_ISO14971",
+            "software_lifecycle_records_IEC62304",
+            "traceability_matrix_full",
+            "configuration_management_records"
+          ],
+          "traceability_coverage": "100% of design inputs traced to verification/validation evidence"
+        },
+        "acceptance_criteria": [
+          "DHF index document lists all required artifacts with document numbers and revision history",
+          "Traceability matrix achieves 100% bidirectional coverage: every requirement has a test, every test links to a requirement",
+          "Risk management file includes all ISO 14971 elements: hazard analysis, risk controls, residual risk acceptance",
+          "IEC 62304 software lifecycle records document Class B software development with all phase artifacts",
+          "Design review records show \u2265 3 formal reviews (concept, detailed design, pre-validation)",
+          "Validation study report includes statistical analysis of clinical pose accuracy study (step 18)",
+          "All documents version-controlled with change history and approval signatures",
+          "DHF (Design History File) structure created",
+          "V&V protocol drafted"
+        ],
+        "depends_on": [
+          5,
+          18,
+          19
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 21,
+        "task_type": "REGULATORY",
+        "description": "Prepare FDA 510(k) Substantial Equivalence analysis (if pursuing clearance) or confirm General Wellness Policy exemption pathway. Draft FDA submission package including device description, intended use, predicate device comparison, performance testing summary, and software documentation per FDA guidance on Software as Medical Device (SaMD).",
+        "payload": {
+          "pathway": "FDA General Wellness Policy (Low-Risk Device) OR 510(k) if therapeutic claims added",
+          "primary_documents": [
+            "intended_use_statement",
+            "device_description",
+            "general_wellness_policy_determination_memo",
+            "samd_documentation_per_fda_guidance",
+            "cybersecurity_premarket_submission_per_FDA_2023_guidance"
+          ],
+          "fda_guidance_refs": [
+            "FDA General Wellness Policy (2019)",
+            "FDA Cybersecurity in Medical Devices (2023)",
+            "FDA Software as Medical Device Guidance (2023)"
+          ]
+        },
+        "acceptance_criteria": [
+          "Intended use statement clearly scoped to wellness/exercise tracking without therapeutic claims",
+          "General Wellness Policy determination memo documents all 5 criteria for low-risk device",
+          "SaMD documentation covers software description, hazard analysis reference, and V&V summary",
+          "Cybersecurity submission section addresses FDA 2023 guidance: SBOM, patch management, security testing",
+          "Legal review confirms intended use language does not trigger 510(k) requirement",
+          "Submission package reviewed by regulatory consultant and ready for FDA submission if needed"
+        ],
+        "depends_on": [
+          20
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "DOCS",
+        "description": "Produce complete technical and user documentation: backend API reference (auto-generated from OpenAPI), architecture decision records (ADRs), system architecture diagram, ML model card, iOS/Android integration guide for native modules, therapist portal user guide, and patient app user guide.",
+        "payload": {
+          "doc_types": [
+            "api_reference_openapi",
+            "architecture_decision_records",
+            "system_architecture_diagram_c4",
+            "ml_model_card",
+            "native_module_integration_guide",
+            "therapist_portal_user_guide",
+            "patient_app_user_guide",
+            "deployment_runbook",
+            "incident_response_runbook"
+          ],
+          "diagram_format": "C4 Model (Context, Container, Component)",
+          "doc_platform": "Docusaurus"
+        },
+        "acceptance_criteria": [
+          "API reference generated from OpenAPI spec with examples for all endpoints",
+          "C4 architecture diagrams cover Context, Container, and Component levels",
+          "ML model card documents accuracy, limitations, training data, and known failure modes",
+          "Therapist portal user guide covers all workflows with annotated screenshots",
+          "Patient app user guide covers onboarding through session completion with plain language",
+          "ADRs document \u2265 10 key architectural decisions (ML model choice, FHIR adoption, encryption strategy, etc.)",
+          "All docs reviewed by non-technical stakeholder (therapist) for clarity"
+        ],
+        "depends_on": [
+          11,
+          12,
+          20
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 23,
+        "task_type": "TRAINING",
+        "description": "Create onboarding and training materials for physical therapists and clinic administrators. Include video walkthroughs of therapist portal, exercise program builder guide, patient onboarding checklist, and HIPAA privacy training for clinical staff using the platform.",
+        "payload": {
+          "audiences": [
+            "physical_therapist",
+            "clinic_admin",
+            "patient"
+          ],
+          "formats": [
+            "video_walkthrough",
+            "quick_start_guide",
+            "PDF_reference_card",
+            "in_app_tooltips"
+          ],
+          "topics": [
+            "therapist_portal_onboarding",
+            "building_exercise_programs",
+            "reviewing_session_reports",
+            "patient_onboarding_workflow",
+            "HIPAA_privacy_training_for_clinical_staff",
+            "troubleshooting_camera_setup"
+          ],
+          "hipaa_training": "required before clinic admin activates account"
+        },
+        "acceptance_criteria": [
+          "Therapist onboarding video covers full workflow in \u2264 10 minutes",
+          "HIPAA privacy training module includes quiz with \u2265 80% pass threshold for account activation",
+          "Quick start guide enables a new therapist to assign their first program within 15 minutes",
+          "Patient app onboarding flow (in-app) achieves \u2265 90% completion rate in usability test",
+          "All training materials reviewed by \u2265 2 physical therapists for accuracy and clarity"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 24,
+        "task_type": "OPERATIONS",
+        "description": "Define operational runbooks for production operations: incident response procedures, PHI breach response plan (HIPAA Breach Notification Rule \u2014 60-day notification requirement), database backup and recovery procedures, on-call escalation matrix, and SLA definitions for clinic customers.",
+        "payload": {
+          "runbooks": [
+            "incident_response_P1_P2_P3",
+            "HIPAA_breach_notification_procedure",
+            "RDS_backup_restore_procedure",
+            "kubernetes_node_failure_recovery",
+            "on_call_escalation_matrix"
+          ],
+          "sla_tiers": {
+            "production": "99.9% uptime, < 4h P1 resolution",
+            "session_api": "p95 latency < 500ms"
+          },
+          "breach_notification": "60-day HIPAA rule \u2014 documented procedure with HHS notification template"
+        },
+        "acceptance_criteria": [
+          "HIPAA breach response procedure documents all steps within 60-day notification window with HHS template",
+          "Incident response runbook covers P1\u2013P3 with escalation paths and war room procedures",
+          "RDS restore procedure tested: recovery from snapshot completes in < 30 minutes with zero data loss",
+          "SLA definitions documented and reviewed by legal for customer contract inclusion",
+          "On-call schedule and escalation matrix covers 24/7 for production incidents"
+        ],
+        "depends_on": [
+          16,
+          22
+        ],
+        "agent_role": "operations_manager"
+      }
+    ],
+    "task_count": 24,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 62,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 62,
+          "final_review": {
+            "score": 62,
+            "flaws": [
+              "FDA classification is internally contradictory. 'General Wellness Policy' devices are NOT medical devices and are exempt from 21 CFR Part 820, ISO 14971, and IEC 62304 entirely. Yet the plan mandates a full DHF, ISO 13485 QMS, IEC 62304 Class B lifecycle, and ISO 14971 FMEA. If the device qualifies for General Wellness exemption, this compliance layer is ~6 months of wasted effort. If it makes ROM improvement or therapeutic exercise claims, it is a Class II medical device requiring 510(k) \u2014 not Class I. The plan tries to have both simultaneously, which is not a legal position.",
+              "Step 9 assumes MoveNet fine-tuning on 'rehab exercise test set' but no step creates or acquires this dataset. MoveNet Thunder was trained on fitness/yoga imagery. Clinical rehabilitation exercises (post-surgical shoulder flexion, knee extension after ACL repair) are distribution-shifted from training data. Fine-tuning requires IRB-approved clinical data collection with patient consent \u2014 a process that typically takes 4-6 months and is completely absent from the plan.",
+              "Clinical validation study (Step 18) uses n=10 participants across 15 exercises. This is statistically underpowered for a \u00b15-degree ROM accuracy claim. A one-sample t-test against goniometer ground truth with SD typical of pose estimation (~3-8 degrees) requires n\u226525 per exercise type for 80% power at \u03b1=0.05. With n=10, you will fail to detect meaningful error in borderline exercises. This study design will not survive FDA scrutiny.",
+              "React Native + Expo SDK 52 with a complex custom native camera pipeline (Step 10) creates a fundamental technical conflict. Expo's managed workflow does not support arbitrary native modules. Switching to bare workflow or Expo Dev Client negates most of the Expo productivity benefit and adds native build complexity equivalent to writing native apps. The plan treats this as trivial bridging but it is a major architectural decision that determines the entire mobile development strategy.",
+              "PostgreSQL is chosen for 30fps \u00d7 33 keypoints \u00d7 60-minute sessions (\u22483.56M rows per session at 17 keypoints or \u22487.1M if tracking all 33). At 500 concurrent sessions (load test target), that's 1.78B inserts/hour during peak. PostgreSQL with column-level AES-256 encryption on each row will not sustain this without TimescaleDB extension or a dedicated time-series backend (InfluxDB/QuestDB). The Step 7 benchmark of '<500ms for a single 60s session insert' is far too narrow \u2014 it tests the happy path, not concurrent write saturation.",
+              "Apache Airflow in Step 14 for session metric aggregation is 10x the operational complexity required. Airflow needs its own scheduler, webserver, worker pool, Celery, Redis, and a separate PostgreSQL metadata database \u2014 adding 5+ new K8s deployments. The actual work (aggregate reps, compute form scores, run trend calcs) is 6 SQL queries that belong in a Celery beat task or a PostgreSQL scheduled function. This will consume disproportionate DevOps time to operate.",
+              "Security threat modeling (Step 13) depends on Steps 11 and 12 \u2014 meaning security is designed after the entire system is built. STRIDE analysis at this point becomes a documentation exercise rather than a design input. PHI encryption strategy, camera feed privacy, and injection attack surfaces need to be in Step 7-8 as design constraints, not Step 13 as a post-hoc audit.",
+              "No IRB (Institutional Review Board) approval process is present anywhere in the plan. The clinical validation study in Step 18 \u2014 comparing app ROM measurements to goniometer readings on human participants \u2014 requires IRB approval before a single subject is enrolled. IRB submission, review, and approval typically takes 3-6 months at academic medical centers. This is a hard gating dependency that is completely absent, making Step 18's timeline unrealistic.",
+              "No offline mode is designed. Physical rehabilitation patients perform home exercise programs without reliable internet access. The plan's entire session flow assumes live API connectivity. A patient mid-session who loses connectivity will get no pose feedback and no rep counting. For a home rehab product, offline-first session execution with sync-on-reconnect is a core functional requirement, not an enhancement.",
+              "Step 10 is labeled 'FIRMWARE' but implements native mobile SDK code. This is either a naming error or signals that the build orchestrator has incorrectly classified this task, which means agent routing is wrong and the firmware agent (with embedded/RTOS expertise) may be producing iOS Swift code."
+            ],
+            "suggestions": [
+              "Resolve the FDA classification before writing a single line of code. If the intended use is 'exercise guidance and tracking for general wellness' with no diagnostic or therapeutic claims, operate under the General Wellness Policy \u2014 drop ISO 14971, IEC 62304, and DHF entirely. If ROM measurement is compared against clinical norms or used to guide clinical decisions, file a Pre-Sub meeting request with FDA to determine whether 510(k) is required. The answer changes the budget by 12-18 months and $500K-$2M.",
+              "Add a Step 0 (Data Collection) before Step 9: design an IRB-approved study to collect labeled video of rehabilitation exercises performed by actual patients under physical therapist supervision, with concurrent goniometer ground truth. Minimum 500 labeled sessions across 30 exercise types from 50+ participants. Without this, the 'fine-tuning' in Step 9 and the clinical validation in Step 18 have no foundation.",
+              "Replace Expo managed workflow with either (a) a true native app (Swift + Kotlin) if performance is the priority, or (b) React Native bare workflow with explicit bridging contracts defined before Step 10 begins. The current plan conflates framework choices in a way that will cause integration failure at Step 12.",
+              "Replace PostgreSQL time-series storage for pose keypoints with TimescaleDB (drop-in PostgreSQL extension) or partition the pose_keypoints table by session_id with hypertables. Alternatively, store raw keypoint streams in S3 as compressed binary blobs and compute aggregates (rep counts, form scores) server-side before persisting only derived metrics to PostgreSQL.",
+              "Replace Apache Airflow with Celery beat tasks that are already in the stack (Step 11 uses Celery + Redis). A single Celery periodic task triggered on session completion handles all 6 metrics with zero additional infrastructure.",
+              "Move security threat modeling to Step 4.5 (between Safety and Compliance) as a design input, not a post-implementation audit. The STRIDE output should feed the database design (Step 7) and API design (Step 8) with specific mitigations as requirements.",
+              "Add IRB engagement as a parallel step to Step 1-2, targeting academic medical center or clinic partner who can sponsor the study. IRB approval should be a hard dependency before Step 18 begins.",
+              "Add offline-first architecture as a requirement in Step 1. The session execution flow must function without connectivity: local TFLite inference (already planned), local SQLite session storage, background sync queue. This changes the API design (Step 8) to support idempotent session upload rather than live streaming.",
+              "The clinical validation statistical design needs a formal power analysis. Engage a biostatistician at Step 1 to define minimum sample sizes per exercise type, stratified by joint (shoulder vs. knee vs. hip), with pre-specified primary endpoint and non-inferiority margin vs. goniometer.",
+              "Pediatric use case: specify minimum age in intended use statement and add COPPA analysis in Step 6. Many sports/orthopedic rehab patients are 12-17. If the app is available to minors, parental consent flows and data handling for minors must be designed.",
+              "Add a model monitoring strategy to Step 16 DevOps: pose accuracy alerting when inference latency increases (indicating OS/hardware changes) or when form score distributions shift (indicating model drift). Without this, accuracy regression post-launch will go undetected."
+            ],
+            "missing": [
+              "IRB approval process and timeline \u2014 hard blocker for clinical validation study",
+              "Labeled clinical rehabilitation dataset acquisition plan \u2014 prerequisite for ML fine-tuning",
+              "Offline session execution architecture \u2014 core functional requirement for home rehab use",
+              "Formal statistical power analysis for clinical validation study design",
+              "App Store compliance review \u2014 Apple App Store guidelines Section 5.1.1 (Data Collection and Storage) has specific requirements for health apps; HealthKit integration review; Google Play health app policy",
+              "Consent management flows \u2014 camera access consent, PHI processing consent, research participation consent",
+              "Exercise contraindication enforcement logic \u2014 the safety FMEA identifies 'missed contraindicated movement' as a hazard but no implementation step builds contraindication checking into the exercise assignment or session flow",
+              "Data retention and right-to-deletion implementation \u2014 HIPAA requires appropriate retention (state laws add 7-10 year requirements); GDPR Article 17 right to erasure; no deletion pipeline designed",
+              "Mid-range Android device coverage \u2014 device matrix covers flagship devices only; rehab patient populations skew toward mid-range hardware (Samsung A-series, Moto G); Tensor G1 NPU support is materially different from Snapdragon NPU",
+              "BAA execution process with cloud providers \u2014 Step 16 mentions 'AWS BAA signed' as acceptance criteria but does not identify who is responsible, when it must be in place (before any PHI touches AWS), or the downstream vendor BAA chain (Twilio for SMS, SendGrid for email, etc.)",
+              "Push notification delivery for missed sessions \u2014 step 19 tests delivery but no implementation step builds the missed-session detection logic or notification scheduling system",
+              "Video storage strategy \u2014 Step 7 lists 'session video' as a PHI field requiring encryption, but no implementation step addresses whether video is recorded, stored, or streamed; this is either a major omitted feature or the field is a vestigial artifact"
+            ],
+            "security_risks": [
+              "Column-level AES-256 encryption on PostgreSQL without key rotation strategy: if the application-layer encryption key is compromised, all PHI is exposed retroactively. Key management via AWS KMS with automatic 90-day rotation must be specified in the database design, not assumed.",
+              "TFLite model file distribution: the on-device model is a proprietary asset. The plan has no model integrity verification (hash validation before loading) or anti-tampering protection. A compromised model could produce systematically wrong pose feedback \u2014 the exact hazard identified in the FMEA.",
+              "SMART on FHIR token storage on mobile: SMART on FHIR access tokens are long-lived bearer tokens. If stored incorrectly (AsyncStorage in React Native is NOT the Keychain), an attacker with device access can impersonate the patient. Step 13 mentions Keychain/Keystore but Step 12 (where token storage is actually implemented) has no corresponding acceptance criterion.",
+              "Camera feed privacy: the real-time camera pipeline processes video frames in memory. On Android, the Camera2 API frame buffer can be accessed by apps with CAMERA permission. If the app is compromised or a malicious library is included, live video of patients could be exfiltrated. No frame-level access controls or in-memory isolation is specified.",
+              "Pose keypoint ingestion API (POST /pose-data) accepts 30fps \u00d7 33 keypoints from mobile clients. Without strict input validation and rate limiting per session_id, this endpoint is vulnerable to coordinate injection \u2014 an attacker could submit fabricated pose data that generates fraudulent 'good form' scores, corrupting therapy records. Step 8 specifies rate limiting but not session-scoped validation or signed payloads.",
+              "Celery + Redis task queue: if Redis is not password-protected and network-isolated within the VPC, an attacker with internal network access can inject arbitrary Celery tasks, including report generation with attacker-controlled patient data. The plan does not specify Redis AUTH or TLS for the Celery broker connection.",
+              "WeasyPrint PDF generation: WeasyPrint renders HTML to PDF using a headless browser-like engine. If therapist report templates include any unsanitized patient-provided content (exercise notes, pain descriptions), this is a server-side HTML injection vector. The plan has no explicit output encoding requirement for the report generation pipeline."
+            ],
+            "summary": "This is a technically ambitious and clearly domain-knowledgeable plan that demonstrates familiarity with the regulatory, clinical, and engineering requirements of health software. However, it contains a foundational legal flaw that must be resolved before any other work begins: the FDA classification is inconsistent. A true General Wellness Policy device requires none of the ISO 14971, IEC 62304, or 21 CFR Part 820 overhead specified in steps 4, 5, and 20 \u2014 but if the device measures ROM against clinical norms and guides therapeutic exercise, it is almost certainly a 510(k)-required Class II device, not Class I. This single ambiguity could invalidate 6+ months of compliance work. Separately, the ML pipeline has no data foundation \u2014 fine-tuning MoveNet on rehabilitation exercises requires labeled clinical video data that does not exist in the plan and requires IRB approval to collect. The clinical validation study is statistically underpowered (n=10) and has no IRB process, making it unusable as regulatory evidence. The architecture has three significant operational risks: PostgreSQL under time-series write load at scale, Apache Airflow for simple metric aggregation, and the Expo/native module bridging decision. Security is treated as a post-build audit rather than a design input. The plan scores 62 \u2014 solid domain coverage and structure, but the regulatory classification ambiguity, missing dataset/IRB path, and ML data gap represent fundamental blockers, not refinements. Resolve the FDA classification first; everything else depends on it.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 62,
+              "flaws": [
+                "FDA classification is internally contradictory. 'General Wellness Policy' devices are NOT medical devices and are exempt from 21 CFR Part 820, ISO 14971, and IEC 62304 entirely. Yet the plan mandates a full DHF, ISO 13485 QMS, IEC 62304 Class B lifecycle, and ISO 14971 FMEA. If the device qualifies for General Wellness exemption, this compliance layer is ~6 months of wasted effort. If it makes ROM improvement or therapeutic exercise claims, it is a Class II medical device requiring 510(k) \u2014 not Class I. The plan tries to have both simultaneously, which is not a legal position.",
+                "Step 9 assumes MoveNet fine-tuning on 'rehab exercise test set' but no step creates or acquires this dataset. MoveNet Thunder was trained on fitness/yoga imagery. Clinical rehabilitation exercises (post-surgical shoulder flexion, knee extension after ACL repair) are distribution-shifted from training data. Fine-tuning requires IRB-approved clinical data collection with patient consent \u2014 a process that typically takes 4-6 months and is completely absent from the plan.",
+                "Clinical validation study (Step 18) uses n=10 participants across 15 exercises. This is statistically underpowered for a \u00b15-degree ROM accuracy claim. A one-sample t-test against goniometer ground truth with SD typical of pose estimation (~3-8 degrees) requires n\u226525 per exercise type for 80% power at \u03b1=0.05. With n=10, you will fail to detect meaningful error in borderline exercises. This study design will not survive FDA scrutiny.",
+                "React Native + Expo SDK 52 with a complex custom native camera pipeline (Step 10) creates a fundamental technical conflict. Expo's managed workflow does not support arbitrary native modules. Switching to bare workflow or Expo Dev Client negates most of the Expo productivity benefit and adds native build complexity equivalent to writing native apps. The plan treats this as trivial bridging but it is a major architectural decision that determines the entire mobile development strategy.",
+                "PostgreSQL is chosen for 30fps \u00d7 33 keypoints \u00d7 60-minute sessions (\u22483.56M rows per session at 17 keypoints or \u22487.1M if tracking all 33). At 500 concurrent sessions (load test target), that's 1.78B inserts/hour during peak. PostgreSQL with column-level AES-256 encryption on each row will not sustain this without TimescaleDB extension or a dedicated time-series backend (InfluxDB/QuestDB). The Step 7 benchmark of '<500ms for a single 60s session insert' is far too narrow \u2014 it tests the happy path, not concurrent write saturation.",
+                "Apache Airflow in Step 14 for session metric aggregation is 10x the operational complexity required. Airflow needs its own scheduler, webserver, worker pool, Celery, Redis, and a separate PostgreSQL metadata database \u2014 adding 5+ new K8s deployments. The actual work (aggregate reps, compute form scores, run trend calcs) is 6 SQL queries that belong in a Celery beat task or a PostgreSQL scheduled function. This will consume disproportionate DevOps time to operate.",
+                "Security threat modeling (Step 13) depends on Steps 11 and 12 \u2014 meaning security is designed after the entire system is built. STRIDE analysis at this point becomes a documentation exercise rather than a design input. PHI encryption strategy, camera feed privacy, and injection attack surfaces need to be in Step 7-8 as design constraints, not Step 13 as a post-hoc audit.",
+                "No IRB (Institutional Review Board) approval process is present anywhere in the plan. The clinical validation study in Step 18 \u2014 comparing app ROM measurements to goniometer readings on human participants \u2014 requires IRB approval before a single subject is enrolled. IRB submission, review, and approval typically takes 3-6 months at academic medical centers. This is a hard gating dependency that is completely absent, making Step 18's timeline unrealistic.",
+                "No offline mode is designed. Physical rehabilitation patients perform home exercise programs without reliable internet access. The plan's entire session flow assumes live API connectivity. A patient mid-session who loses connectivity will get no pose feedback and no rep counting. For a home rehab product, offline-first session execution with sync-on-reconnect is a core functional requirement, not an enhancement.",
+                "Step 10 is labeled 'FIRMWARE' but implements native mobile SDK code. This is either a naming error or signals that the build orchestrator has incorrectly classified this task, which means agent routing is wrong and the firmware agent (with embedded/RTOS expertise) may be producing iOS Swift code."
+              ],
+              "suggestions": [
+                "Resolve the FDA classification before writing a single line of code. If the intended use is 'exercise guidance and tracking for general wellness' with no diagnostic or therapeutic claims, operate under the General Wellness Policy \u2014 drop ISO 14971, IEC 62304, and DHF entirely. If ROM measurement is compared against clinical norms or used to guide clinical decisions, file a Pre-Sub meeting request with FDA to determine whether 510(k) is required. The answer changes the budget by 12-18 months and $500K-$2M.",
+                "Add a Step 0 (Data Collection) before Step 9: design an IRB-approved study to collect labeled video of rehabilitation exercises performed by actual patients under physical therapist supervision, with concurrent goniometer ground truth. Minimum 500 labeled sessions across 30 exercise types from 50+ participants. Without this, the 'fine-tuning' in Step 9 and the clinical validation in Step 18 have no foundation.",
+                "Replace Expo managed workflow with either (a) a true native app (Swift + Kotlin) if performance is the priority, or (b) React Native bare workflow with explicit bridging contracts defined before Step 10 begins. The current plan conflates framework choices in a way that will cause integration failure at Step 12.",
+                "Replace PostgreSQL time-series storage for pose keypoints with TimescaleDB (drop-in PostgreSQL extension) or partition the pose_keypoints table by session_id with hypertables. Alternatively, store raw keypoint streams in S3 as compressed binary blobs and compute aggregates (rep counts, form scores) server-side before persisting only derived metrics to PostgreSQL.",
+                "Replace Apache Airflow with Celery beat tasks that are already in the stack (Step 11 uses Celery + Redis). A single Celery periodic task triggered on session completion handles all 6 metrics with zero additional infrastructure.",
+                "Move security threat modeling to Step 4.5 (between Safety and Compliance) as a design input, not a post-implementation audit. The STRIDE output should feed the database design (Step 7) and API design (Step 8) with specific mitigations as requirements.",
+                "Add IRB engagement as a parallel step to Step 1-2, targeting academic medical center or clinic partner who can sponsor the study. IRB approval should be a hard dependency before Step 18 begins.",
+                "Add offline-first architecture as a requirement in Step 1. The session execution flow must function without connectivity: local TFLite inference (already planned), local SQLite session storage, background sync queue. This changes the API design (Step 8) to support idempotent session upload rather than live streaming.",
+                "The clinical validation statistical design needs a formal power analysis. Engage a biostatistician at Step 1 to define minimum sample sizes per exercise type, stratified by joint (shoulder vs. knee vs. hip), with pre-specified primary endpoint and non-inferiority margin vs. goniometer.",
+                "Pediatric use case: specify minimum age in intended use statement and add COPPA analysis in Step 6. Many sports/orthopedic rehab patients are 12-17. If the app is available to minors, parental consent flows and data handling for minors must be designed.",
+                "Add a model monitoring strategy to Step 16 DevOps: pose accuracy alerting when inference latency increases (indicating OS/hardware changes) or when form score distributions shift (indicating model drift). Without this, accuracy regression post-launch will go undetected."
+              ],
+              "missing": [
+                "IRB approval process and timeline \u2014 hard blocker for clinical validation study",
+                "Labeled clinical rehabilitation dataset acquisition plan \u2014 prerequisite for ML fine-tuning",
+                "Offline session execution architecture \u2014 core functional requirement for home rehab use",
+                "Formal statistical power analysis for clinical validation study design",
+                "App Store compliance review \u2014 Apple App Store guidelines Section 5.1.1 (Data Collection and Storage) has specific requirements for health apps; HealthKit integration review; Google Play health app policy",
+                "Consent management flows \u2014 camera access consent, PHI processing consent, research participation consent",
+                "Exercise contraindication enforcement logic \u2014 the safety FMEA identifies 'missed contraindicated movement' as a hazard but no implementation step builds contraindication checking into the exercise assignment or session flow",
+                "Data retention and right-to-deletion implementation \u2014 HIPAA requires appropriate retention (state laws add 7-10 year requirements); GDPR Article 17 right to erasure; no deletion pipeline designed",
+                "Mid-range Android device coverage \u2014 device matrix covers flagship devices only; rehab patient populations skew toward mid-range hardware (Samsung A-series, Moto G); Tensor G1 NPU support is materially different from Snapdragon NPU",
+                "BAA execution process with cloud providers \u2014 Step 16 mentions 'AWS BAA signed' as acceptance criteria but does not identify who is responsible, when it must be in place (before any PHI touches AWS), or the downstream vendor BAA chain (Twilio for SMS, SendGrid for email, etc.)",
+                "Push notification delivery for missed sessions \u2014 step 19 tests delivery but no implementation step builds the missed-session detection logic or notification scheduling system",
+                "Video storage strategy \u2014 Step 7 lists 'session video' as a PHI field requiring encryption, but no implementation step addresses whether video is recorded, stored, or streamed; this is either a major omitted feature or the field is a vestigial artifact"
+              ],
+              "security_risks": [
+                "Column-level AES-256 encryption on PostgreSQL without key rotation strategy: if the application-layer encryption key is compromised, all PHI is exposed retroactively. Key management via AWS KMS with automatic 90-day rotation must be specified in the database design, not assumed.",
+                "TFLite model file distribution: the on-device model is a proprietary asset. The plan has no model integrity verification (hash validation before loading) or anti-tampering protection. A compromised model could produce systematically wrong pose feedback \u2014 the exact hazard identified in the FMEA.",
+                "SMART on FHIR token storage on mobile: SMART on FHIR access tokens are long-lived bearer tokens. If stored incorrectly (AsyncStorage in React Native is NOT the Keychain), an attacker with device access can impersonate the patient. Step 13 mentions Keychain/Keystore but Step 12 (where token storage is actually implemented) has no corresponding acceptance criterion.",
+                "Camera feed privacy: the real-time camera pipeline processes video frames in memory. On Android, the Camera2 API frame buffer can be accessed by apps with CAMERA permission. If the app is compromised or a malicious library is included, live video of patients could be exfiltrated. No frame-level access controls or in-memory isolation is specified.",
+                "Pose keypoint ingestion API (POST /pose-data) accepts 30fps \u00d7 33 keypoints from mobile clients. Without strict input validation and rate limiting per session_id, this endpoint is vulnerable to coordinate injection \u2014 an attacker could submit fabricated pose data that generates fraudulent 'good form' scores, corrupting therapy records. Step 8 specifies rate limiting but not session-scoped validation or signed payloads.",
+                "Celery + Redis task queue: if Redis is not password-protected and network-isolated within the VPC, an attacker with internal network access can inject arbitrary Celery tasks, including report generation with attacker-controlled patient data. The plan does not specify Redis AUTH or TLS for the Celery broker connection.",
+                "WeasyPrint PDF generation: WeasyPrint renders HTML to PDF using a headless browser-like engine. If therapist report templates include any unsanitized patient-provided content (exercise notes, pain descriptions), this is a server-side HTML injection vector. The plan has no explicit output encoding requirement for the report generation pipeline."
+              ],
+              "summary": "This is a technically ambitious and clearly domain-knowledgeable plan that demonstrates familiarity with the regulatory, clinical, and engineering requirements of health software. However, it contains a foundational legal flaw that must be resolved before any other work begins: the FDA classification is inconsistent. A true General Wellness Policy device requires none of the ISO 14971, IEC 62304, or 21 CFR Part 820 overhead specified in steps 4, 5, and 20 \u2014 but if the device measures ROM against clinical norms and guides therapeutic exercise, it is almost certainly a 510(k)-required Class II device, not Class I. This single ambiguity could invalidate 6+ months of compliance work. Separately, the ML pipeline has no data foundation \u2014 fine-tuning MoveNet on rehabilitation exercises requires labeled clinical video data that does not exist in the plan and requires IRB approval to collect. The clinical validation study is statistically underpowered (n=10) and has no IRB process, making it unusable as regulatory evidence. The architecture has three significant operational risks: PostgreSQL under time-series write load at scale, Apache Airflow for simple metric aggregation, and the Expo/native module bridging decision. Security is treated as a post-build audit rather than a design input. The plan scores 62 \u2014 solid domain coverage and structure, but the regulatory classification ambiguity, missing dataset/IRB path, and ML data gap represent fundamental blockers, not refinements. Resolve the FDA classification first; everything else depends on it.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-21T23:02:20.628556+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 179.75,
+      "critic_plan": 137.89
+    }
+  }
+}

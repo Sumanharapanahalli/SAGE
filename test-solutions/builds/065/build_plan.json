@@ -1,0 +1,823 @@
+{
+  "run_id": "8a329b93-4d4c-4f6f-841a-6957930baf49",
+  "status": {
+    "run_id": "8a329b93-4d4c-4f6f-841a-6957930baf49",
+    "solution_name": "fraud_detection",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T08:41:07.861882+00:00",
+    "updated_at": "2026-03-22T08:44:51.805839+00:00",
+    "product_description": "Real-time fraud detection ML pipeline with transaction feature engineering, ensemble models (XGBoost + neural), explainability (SHAP), and case management dashboard.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "DATA",
+        "description": "Design the transaction data model and feature schema: raw transaction fields (amount, merchant, timestamp, location, device), engineered features (velocity, aggregates, behavioral patterns), and label schema for fraud/non-fraud.",
+        "payload": {
+          "tables": [
+            "raw_transactions",
+            "transaction_features",
+            "fraud_labels",
+            "merchant_profiles",
+            "device_fingerprints"
+          ],
+          "feature_groups": [
+            "temporal_velocity",
+            "merchant_risk",
+            "geo_behavioral",
+            "device_trust",
+            "amount_stats"
+          ],
+          "output": "solutions/fraud_detection/data/schema.yaml"
+        },
+        "acceptance_criteria": [
+          "Schema YAML defines all raw and engineered feature columns with types",
+          "Temporal velocity features cover 1m, 5m, 15m, 1h, 24h windows",
+          "Merchant and device risk features are documented",
+          "Label schema covers binary fraud flag and confidence score"
+        ],
+        "depends_on": [],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 2,
+        "task_type": "DATABASE",
+        "description": "Set up the database layer: PostgreSQL for case management and audit trail, Redis for real-time feature store (sliding window aggregates), and ClickHouse (or TimescaleDB) for time-series transaction analytics.",
+        "payload": {
+          "postgres_tables": [
+            "cases",
+            "case_events",
+            "analyst_decisions",
+            "model_predictions",
+            "audit_log"
+          ],
+          "redis_structures": [
+            "velocity_counters",
+            "merchant_risk_cache",
+            "device_trust_scores"
+          ],
+          "migrations_path": "solutions/fraud_detection/db/migrations/",
+          "seed_data": "solutions/fraud_detection/db/seeds/"
+        },
+        "acceptance_criteria": [
+          "PostgreSQL migrations run cleanly from scratch",
+          "Redis key schema documented with TTL strategy per counter type",
+          "TimescaleDB hypertable created for transactions with 30-day retention",
+          "All FK constraints and indexes defined for query patterns"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 3,
+        "task_type": "DATA",
+        "description": "Build the real-time feature engineering pipeline: streaming ingestion (Kafka consumer), sliding-window velocity counters written to Redis, merchant/device risk score computation, and feature vector assembly for model inference.",
+        "payload": {
+          "streaming_framework": "kafka",
+          "feature_store": "redis",
+          "pipeline_file": "solutions/fraud_detection/pipelines/feature_engineering.py",
+          "features": {
+            "velocity": [
+              "txn_count_1m",
+              "txn_count_5m",
+              "amount_sum_1h",
+              "amount_sum_24h"
+            ],
+            "merchant": [
+              "merchant_fraud_rate_7d",
+              "merchant_avg_amount",
+              "merchant_country_risk"
+            ],
+            "device": [
+              "device_age_days",
+              "device_fraud_rate",
+              "device_velocity_1h"
+            ],
+            "behavioral": [
+              "hour_of_day_risk",
+              "geo_distance_from_last",
+              "new_merchant_flag"
+            ]
+          }
+        },
+        "acceptance_criteria": [
+          "Kafka consumer processes >10k transactions/sec without lag",
+          "Velocity counters in Redis update within 50ms of event arrival",
+          "Feature vector assembled in <10ms end-to-end",
+          "Feature pipeline handles missing/null values gracefully with documented fallbacks",
+          "Unit tests cover all 20+ feature computations"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 4,
+        "task_type": "DATA",
+        "description": "Build the batch ETL pipeline for model training: historical transaction extraction, label joining, feature recomputation over historical windows, train/validation/test splits with temporal holdout (no future leakage), and output to Parquet.",
+        "payload": {
+          "etl_file": "solutions/fraud_detection/pipelines/training_etl.py",
+          "split_strategy": "temporal_holdout",
+          "train_cutoff": "T-30d",
+          "validation_window": "T-30d to T-7d",
+          "test_window": "T-7d to T",
+          "output_format": "parquet",
+          "output_path": "solutions/fraud_detection/data/processed/"
+        },
+        "acceptance_criteria": [
+          "No future data leakage validated by timestamp checks in test suite",
+          "Class imbalance ratio reported; SMOTE/undersampling strategy documented",
+          "Parquet output includes feature metadata (mean, std, null rate) per column",
+          "ETL is idempotent \u2014 re-running produces identical output",
+          "Pipeline completes on 12-month dataset in under 20 minutes"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 5,
+        "task_type": "ML_MODEL",
+        "description": "Train and tune the XGBoost model: hyperparameter search (Optuna), class-weight balancing, threshold calibration, and evaluation on temporal holdout with precision/recall/F1/AUC-PR metrics.",
+        "payload": {
+          "model_file": "solutions/fraud_detection/models/xgboost_model.py",
+          "hyperparameter_search": "optuna",
+          "n_trials": 100,
+          "eval_metrics": [
+            "auc_pr",
+            "f1",
+            "precision_at_90_recall",
+            "brier_score"
+          ],
+          "artifact_path": "solutions/fraud_detection/models/artifacts/xgboost/",
+          "mlflow_experiment": "fraud_detection_xgboost"
+        },
+        "acceptance_criteria": [
+          "AUC-PR > 0.85 on temporal holdout test set",
+          "Precision >= 0.60 at 90% recall threshold",
+          "Optuna study logged with all trial results",
+          "Model artifact serialized with versioned metadata (feature list, threshold, training date)",
+          "Feature importances exported as JSON",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 6,
+        "task_type": "ML_MODEL",
+        "description": "Train and tune the neural network model: tabular architecture (MLP or TabNet), BatchNorm + dropout regularization, focal loss for imbalance, training with early stopping, same temporal holdout evaluation.",
+        "payload": {
+          "model_file": "solutions/fraud_detection/models/neural_model.py",
+          "architecture": "TabNet",
+          "loss": "focal_loss",
+          "optimizer": "AdamW",
+          "scheduler": "cosine_annealing",
+          "artifact_path": "solutions/fraud_detection/models/artifacts/neural/",
+          "mlflow_experiment": "fraud_detection_neural"
+        },
+        "acceptance_criteria": [
+          "AUC-PR > 0.83 on temporal holdout test set",
+          "Training curves (loss, AUC-PR) logged to MLflow",
+          "Early stopping prevents overfitting \u2014 validation AUC-PR does not degrade >2% from peak",
+          "Model artifact exported to ONNX for production inference",
+          "Inference latency <5ms per transaction on CPU",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 7,
+        "task_type": "ML_MODEL",
+        "description": "Build the ensemble layer: stacked generalization (meta-learner on XGBoost + neural outputs), calibrated probability outputs via Platt scaling, and final threshold selection per business risk appetite (cost-sensitive optimization).",
+        "payload": {
+          "ensemble_file": "solutions/fraud_detection/models/ensemble.py",
+          "meta_learner": "logistic_regression",
+          "calibration": "platt_scaling",
+          "threshold_strategy": "cost_sensitive",
+          "cost_matrix": {
+            "false_negative": 100,
+            "false_positive": 1
+          },
+          "artifact_path": "solutions/fraud_detection/models/artifacts/ensemble/"
+        },
+        "acceptance_criteria": [
+          "Ensemble AUC-PR exceeds both base models on holdout set",
+          "Calibration curve shows reliable probability estimates (ECE < 0.05)",
+          "Cost-optimized threshold documented with expected FP/FN rates at production volume",
+          "Ensemble inference runs both base models + meta-learner in <15ms total",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 8,
+        "task_type": "ML_MODEL",
+        "description": "Integrate SHAP explainability: TreeExplainer for XGBoost, DeepExplainer for neural model, ensemble SHAP value aggregation, and per-prediction top-5 feature contribution generation for case management display.",
+        "payload": {
+          "explainability_file": "solutions/fraud_detection/models/explainability.py",
+          "shap_backends": [
+            "TreeExplainer",
+            "DeepExplainer"
+          ],
+          "output": {
+            "global": "feature_importance_summary",
+            "local": "top5_contributions_per_prediction"
+          },
+          "cache_strategy": "background_precompute_for_flagged"
+        },
+        "acceptance_criteria": [
+          "SHAP values computed for every flagged transaction within 200ms",
+          "Top-5 contributing features returned with human-readable labels and direction (increases/decreases risk)",
+          "Global SHAP summary plot generated for model documentation",
+          "SHAP values validated: sum of contributions + base value equals model output score",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Build the real-time scoring service: FastAPI endpoint that receives a transaction, assembles features from Redis, runs the ensemble, computes SHAP contributions for high-score transactions, persists prediction to DB, and returns decision + explanation.",
+        "payload": {
+          "service_file": "solutions/fraud_detection/backend/scoring_service.py",
+          "endpoint": "POST /score",
+          "sla_ms": 100,
+          "async_pattern": "asyncio",
+          "feature_source": "redis",
+          "model_loading": "singleton_with_lock",
+          "high_score_threshold": 0.7
+        },
+        "acceptance_criteria": [
+          "p99 latency <100ms under 500 concurrent requests (load tested)",
+          "Returns {transaction_id, fraud_score, decision, top_features, trace_id} in response",
+          "SHAP explanations only computed for score > 0.7 to control latency",
+          "All predictions persisted to PostgreSQL with model version and feature snapshot",
+          "Health check endpoint returns model version and feature store connectivity"
+        ],
+        "depends_on": [
+          3,
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build the case management API: CRUD for fraud cases (auto-created on high-score transactions), analyst assignment, decision capture (confirm/dismiss with reason), case timeline events, bulk review endpoints, and case search/filter.",
+        "payload": {
+          "service_file": "solutions/fraud_detection/backend/case_api.py",
+          "endpoints": [
+            "GET /cases (filter: status, score_range, date_range, analyst)",
+            "GET /cases/{id}",
+            "POST /cases/{id}/decision",
+            "POST /cases/{id}/events",
+            "GET /cases/{id}/transaction",
+            "GET /cases/{id}/explanation",
+            "POST /cases/bulk-assign",
+            "GET /analytics/summary"
+          ],
+          "auto_case_threshold": 0.7
+        },
+        "acceptance_criteria": [
+          "Cases auto-created for all transactions with score >= 0.7",
+          "Decision endpoint captures analyst ID, decision (fraud/legitimate), reason, and timestamp",
+          "All decisions written to audit log \u2014 immutable, append-only",
+          "Bulk assign distributes cases evenly across available analysts",
+          "Analytics summary returns open/closed/escalated counts and avg time-to-decision"
+        ],
+        "depends_on": [
+          2,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build the model feedback loop: collect analyst decisions as labeled ground truth, update merchant/device risk scores in Redis based on confirmed fraud, and expose a retraining trigger endpoint that kicks off incremental model update.",
+        "payload": {
+          "feedback_file": "solutions/fraud_detection/backend/feedback_loop.py",
+          "feedback_events": [
+            "analyst_confirmed_fraud",
+            "analyst_dismissed_fraud",
+            "chargeback_received"
+          ],
+          "risk_update_strategy": "exponential_moving_average",
+          "retraining_endpoint": "POST /model/retrain",
+          "retraining_mode": "incremental"
+        },
+        "acceptance_criteria": [
+          "Confirmed fraud events update merchant/device risk scores in Redis within 1 second",
+          "All feedback events appended to training feedback table for batch retraining",
+          "Retraining trigger validates minimum sample size (>500 new labels) before starting",
+          "Retrained model deployed only if AUC-PR >= current production model AUC-PR - 0.01"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "FRONTEND",
+        "description": "Build the case management dashboard: case queue with real-time updates (WebSocket or SSE), sortable/filterable case list, case detail view with transaction timeline, fraud score gauge, and SHAP explanation bar chart.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "pages": [
+            "CaseQueue",
+            "CaseDetail",
+            "ModelPerformance",
+            "AnalystMetrics"
+          ],
+          "realtime": "SSE for new case notifications",
+          "charts": [
+            "shap_bar_chart",
+            "fraud_score_gauge",
+            "timeline",
+            "decision_history"
+          ],
+          "ui_dir": "solutions/fraud_detection/frontend/src/"
+        },
+        "acceptance_criteria": [
+          "Case queue shows live count, color-coded by risk score (red >0.85, orange >0.7)",
+          "New high-score cases appear in queue within 2 seconds via SSE",
+          "Case detail shows: transaction details, fraud score, top-5 SHAP features with direction arrows, and prior decisions on same customer/device",
+          "Analyst can confirm/dismiss fraud in \u22643 clicks from case detail view",
+          "All views are responsive down to 1024px width"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 13,
+        "task_type": "FRONTEND",
+        "description": "Build the model performance monitoring dashboard: AUC-PR over time, precision/recall trend, fraud detection rate vs false positive rate, feature drift indicators, and analyst accuracy metrics.",
+        "payload": {
+          "page": "ModelPerformance",
+          "charts": [
+            "auc_pr_timeseries",
+            "precision_recall_curve_current",
+            "detection_rate_vs_fpr_trend",
+            "feature_drift_heatmap",
+            "analyst_accuracy_table"
+          ],
+          "refresh_interval_sec": 300
+        },
+        "acceptance_criteria": [
+          "All charts populate with real data from analytics API",
+          "Feature drift heatmap highlights features with >10% distribution shift",
+          "Analyst accuracy table shows: cases reviewed, accuracy vs ground truth, avg decision time",
+          "Dashboard loads within 2 seconds on first paint",
+          "Export to CSV available for all tabular data"
+        ],
+        "depends_on": [
+          10,
+          12
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 14,
+        "task_type": "SECURITY",
+        "description": "Security review for the fraud detection system: authentication/authorization on all API endpoints (JWT + RBAC for analyst/admin roles), PII data masking in logs, model prediction audit trail integrity, and threat model for model poisoning attacks.",
+        "payload": {
+          "auth": "JWT with role claims (analyst, senior_analyst, admin)",
+          "rbac_rules": {
+            "analyst": [
+              "read:cases",
+              "write:decisions"
+            ],
+            "senior_analyst": [
+              "read:cases",
+              "write:decisions",
+              "bulk:assign"
+            ],
+            "admin": [
+              "*",
+              "trigger:retrain",
+              "read:model_metrics"
+            ]
+          },
+          "pii_fields": [
+            "card_number",
+            "account_id",
+            "customer_name"
+          ],
+          "threat_model_output": "solutions/fraud_detection/docs/threat_model.md"
+        },
+        "acceptance_criteria": [
+          "All API endpoints return 401 without valid JWT",
+          "Analyst role cannot access model retraining or admin endpoints",
+          "PII fields masked in all log output (verified by log scan test)",
+          "Audit trail records are append-only \u2014 no UPDATE/DELETE on decisions table",
+          "Threat model documents model poisoning, adversarial input, and data exfiltration risks with mitigations"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "INFRA",
+        "description": "Containerize and orchestrate all services: Docker Compose for local development (Kafka, Redis, PostgreSQL, scoring service, case API, frontend), Kubernetes manifests for production deployment with HPA for the scoring service.",
+        "payload": {
+          "docker_compose": "solutions/fraud_detection/infra/docker-compose.yml",
+          "services": [
+            "kafka",
+            "zookeeper",
+            "redis",
+            "postgres",
+            "scoring-service",
+            "case-api",
+            "frontend",
+            "mlflow"
+          ],
+          "k8s_manifests": "solutions/fraud_detection/infra/k8s/",
+          "hpa_target": "scoring-service",
+          "hpa_metric": "requests_per_second",
+          "hpa_max_replicas": 20
+        },
+        "acceptance_criteria": [
+          "docker compose up brings up all services with a single command",
+          "All services pass health checks within 60 seconds of startup",
+          "Kubernetes HPA scales scoring service from 2 to 20 replicas under load",
+          "Persistent volumes defined for Kafka, Redis (AOF), and PostgreSQL",
+          "Resource requests/limits set for all containers"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline: GitHub Actions workflows for test\u2192build\u2192push\u2192deploy, MLflow model registry integration for model versioning and promotion, and automated model evaluation gate that blocks deployment if AUC-PR regresses.",
+        "payload": {
+          "ci_file": ".github/workflows/fraud_detection_ci.yml",
+          "stages": [
+            "lint",
+            "unit_tests",
+            "integration_tests",
+            "docker_build",
+            "model_eval_gate",
+            "deploy_staging",
+            "smoke_test",
+            "deploy_prod"
+          ],
+          "model_registry": "mlflow",
+          "eval_gate": "auc_pr >= production_model_auc_pr - 0.01",
+          "branch_strategy": "main\u2192prod, develop\u2192staging"
+        },
+        "acceptance_criteria": [
+          "Full pipeline runs on every PR to main/develop branches",
+          "Model eval gate blocks deployment and posts AUC-PR comparison as PR comment",
+          "Docker images tagged with git SHA and pushed to registry on merge to main",
+          "Staging deploy runs smoke test suite automatically after deployment",
+          "Pipeline run time under 15 minutes for full CI cycle"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "CONFIG",
+        "description": "Configure SAGE solution YAML files for fraud_detection: project.yaml with domain metadata and active modules, prompts.yaml with analyst/data scientist agent roles and domain-specific system prompts, tasks.yaml with fraud-domain task types.",
+        "payload": {
+          "project_yaml": "solutions/fraud_detection/project.yaml",
+          "prompts_yaml": "solutions/fraud_detection/prompts.yaml",
+          "tasks_yaml": "solutions/fraud_detection/tasks.yaml",
+          "active_modules": [
+            "dashboard",
+            "analyst",
+            "developer",
+            "monitor",
+            "knowledge",
+            "improvements",
+            "audit"
+          ],
+          "agent_roles": [
+            "fraud_analyst",
+            "ml_engineer",
+            "compliance_officer"
+          ],
+          "agentic_pattern": "multi_agent_sequential"
+        },
+        "acceptance_criteria": [
+          "make run PROJECT=fraud_detection starts backend without errors",
+          "All three YAML files pass SAGE YAML validation endpoint",
+          "Active modules appear in sidebar on solution load",
+          "Agent roles reference correct system prompts in prompts.yaml",
+          "Task types in tasks.yaml map to all pipeline operations"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "TESTS",
+        "description": "Write unit tests for the feature engineering pipeline: velocity counter correctness, edge cases (first transaction, midnight rollover, missing device), feature vector shape validation, and Redis TTL expiry behavior.",
+        "payload": {
+          "test_file": "solutions/fraud_detection/tests/test_feature_engineering.py",
+          "framework": "pytest",
+          "redis_mock": "fakeredis",
+          "coverage_target": 90,
+          "test_cases": [
+            "velocity_counter_increments_correctly",
+            "velocity_resets_after_window_expiry",
+            "missing_merchant_uses_global_average",
+            "geo_distance_handles_first_transaction",
+            "feature_vector_has_correct_shape_and_dtype"
+          ]
+        },
+        "acceptance_criteria": [
+          "All test cases pass with fakeredis (no real Redis dependency)",
+          "Feature engineering module reaches >90% line coverage",
+          "Midnight rollover test confirms counters reset correctly",
+          "Missing-value fallback paths all tested explicitly",
+          "Tests run in under 30 seconds"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for scoring service and case management API: prediction endpoint contract, SHAP output structure, case auto-creation on threshold breach, analyst decision persistence, and RBAC enforcement.",
+        "payload": {
+          "test_files": [
+            "solutions/fraud_detection/tests/test_scoring_service.py",
+            "solutions/fraud_detection/tests/test_case_api.py"
+          ],
+          "framework": "pytest + httpx (async)",
+          "db_strategy": "sqlite_in_memory",
+          "mock_model": true,
+          "coverage_target": 85
+        },
+        "acceptance_criteria": [
+          "Scoring endpoint returns correct schema on valid input",
+          "Case auto-creation triggered when score >= 0.7 in integration test",
+          "Analyst decision rejected with 403 when JWT role is insufficient",
+          "Audit log entry written for every decision \u2014 verified in integration test",
+          "All API tests run in under 60 seconds with mocked model"
+        ],
+        "depends_on": [
+          9,
+          10,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "TESTS",
+        "description": "Write model validation tests: feature importance consistency check, SHAP sum-to-output validation, prediction drift test (score distribution should be stable across data splits), and adversarial input robustness (extreme values, zero features).",
+        "payload": {
+          "test_file": "solutions/fraud_detection/tests/test_model_validation.py",
+          "framework": "pytest",
+          "test_cases": [
+            "shap_values_sum_to_model_output",
+            "top5_features_are_consistent_across_runs",
+            "score_distribution_ks_test_vs_holdout",
+            "extreme_values_produce_bounded_scores",
+            "zero_feature_vector_returns_base_rate_score"
+          ]
+        },
+        "acceptance_criteria": [
+          "SHAP sum test passes for all 3 models (XGB, neural, ensemble) with tolerance 1e-4",
+          "Score distribution KS test p-value > 0.05 between validation and test splits",
+          "All input scores remain in [0, 1] range under adversarial inputs",
+          "Top-5 features are deterministic on identical input (no randomness leak)",
+          "Tests run against serialized model artifacts \u2014 no retraining needed"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "SYSTEM_TEST",
+        "description": "End-to-end system test: simulate 10k transactions through Kafka \u2192 feature engineering \u2192 scoring \u2192 case creation \u2192 analyst review \u2192 feedback loop, validating the full pipeline latency budget, case queue accuracy, and feedback propagation.",
+        "payload": {
+          "test_file": "solutions/fraud_detection/tests/test_e2e_pipeline.py",
+          "transaction_count": 10000,
+          "injected_fraud_rate": 0.02,
+          "latency_budget_ms": 200,
+          "validation_points": [
+            "kafka_to_score_latency",
+            "case_creation_completeness",
+            "shap_present_on_flagged_cases",
+            "feedback_updates_redis_risk_scores",
+            "analyst_decision_appears_in_audit_log"
+          ]
+        },
+        "acceptance_criteria": [
+          "p99 end-to-end latency (Kafka ingest \u2192 score persisted) < 200ms",
+          "All 200 injected fraud transactions (2%) appear as cases in management queue",
+          "SHAP explanations present on 100% of cases with score >= 0.7",
+          "Confirmed fraud updates merchant risk score in Redis within 1 second",
+          "Zero transactions lost: input count = scored count = persisted count"
+        ],
+        "depends_on": [
+          18,
+          19,
+          20
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 22,
+        "task_type": "DOCS",
+        "description": "Write solution documentation: architecture diagram, feature engineering reference, model card (training data, evaluation metrics, known limitations, intended use, SHAP interpretation guide), API reference, and analyst user guide for the case management dashboard.",
+        "payload": {
+          "docs_dir": "solutions/fraud_detection/docs/",
+          "files": [
+            "architecture.md",
+            "model_card.md",
+            "feature_reference.md",
+            "api_reference.md",
+            "analyst_guide.md"
+          ],
+          "diagram_format": "mermaid"
+        },
+        "acceptance_criteria": [
+          "Architecture diagram shows all components and data flows with latency annotations",
+          "Model card documents: training period, class imbalance ratio, AUC-PR, precision@90%recall, and known failure modes",
+          "SHAP interpretation guide explains what each feature direction means for an analyst",
+          "API reference generated from OpenAPI spec (no manual duplication)",
+          "Analyst guide covers: case workflow, how to read the SHAP chart, escalation criteria"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 22,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 61,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 61,
+          "final_review": {
+            "score": 61,
+            "flaws": [
+              "Step 6 + Step 8: TabNet ONNX export is broken for most versions \u2014 the custom sequential attention mechanism uses unsupported ONNX ops. DeepExplainer does not work with TabNet at all; it requires PyTorch models with differentiable operations only. You will hit this wall during implementation, not during planning.",
+              "Step 7: Stacking meta-learner trained on base model outputs without explicit out-of-fold prediction strategy. If the meta-learner sees in-sample predictions from XGBoost/neural, it will overfit severely. The plan says 'meta-learner on XGBoost + neural outputs' but does not specify OOF cross-validation generation. This is a classic stacking leakage failure.",
+              "Steps 3 vs 4: Training-serving skew is unaddressed. The streaming feature pipeline (Redis sliding windows via INCR/EXPIRE) and the batch ETL (historical SQL aggregates) will compute velocity features differently \u2014 window boundaries, timezone handling, and null imputation will diverge. Models trained in batch will behave differently in production. This is the #1 production failure mode for real-time ML.",
+              "Step 3: Redis INCR+EXPIRE does not give true sliding windows \u2014 it gives fixed tumbling windows that reset at TTL expiry. True 1m/5m/15m sliding windows require ZRANGEBYSCORE on sorted sets with score=timestamp. The acceptance criterion says 'velocity counters update within 50ms' but the data structure choice will produce incorrect counts near window boundaries.",
+              "Step 3: 10k TPS through Kafka with multiple Redis lookups per transaction (velocity, merchant risk, device trust) + feature assembly in <10ms is not validated by any back-of-envelope math. At 10k TPS that is 10+ Redis round trips per transaction = 100k Redis ops/sec with sub-1ms target per op. Achievable with pipelining, but no pipelining strategy is specified.",
+              "Step 9: p99 <100ms with 500 concurrent requests is not achievable with SHAP for flagged transactions. Even with the >0.7 threshold gate, DeepExplainer on TabNet takes 50-500ms on CPU. The SHAP 200ms target in step 8 and the scoring service 100ms p99 in step 9 are contradictory for transactions above 0.7.",
+              "Step 11: 'Incremental retraining' for XGBoost via warm_start/booster.continue_training does not generalize well under concept drift \u2014 it compounds existing trees rather than adapting to distribution shifts. For TabNet, incremental learning is not natively supported without continual learning modifications. The plan does not address catastrophic forgetting.",
+              "Step 11: EMA risk score update strategy only increases scores on confirmed fraud. Analyst dismissals should decrease merchant/device risk scores, but the plan does not specify bidirectional updates. Repeated false positives on a legitimate merchant will permanently inflate their risk score.",
+              "Step 14: No rate limiting on POST /score. An adversary can probe the model with crafted inputs to reverse-engineer decision boundaries (model extraction attack). The threat model mentions adversarial inputs but the mitigation \u2014 rate limiting, input perturbation, confidence withholding \u2014 is absent from the security acceptance criteria.",
+              "Step 5: AUC-PR > 0.85 acceptance criterion is asserted without a baseline or feasibility analysis. With 2% fraud rate (from step 21) and no stated dataset size, this is a guess. If the real dataset has 0.1% fraud rate or significant label noise from chargebacks, 0.85 AUC-PR may be unachievable on the described feature set."
+            ],
+            "suggestions": [
+              "Replace DeepExplainer with KernelExplainer (model-agnostic, slower) or switch the neural model architecture to a standard MLP where GradientExplainer works reliably. Benchmark SHAP latency before committing to the 200ms SLA.",
+              "Add a dedicated feature store consistency test: run the same transaction through both the streaming pipeline and the batch ETL and assert feature values are identical within tolerance. Make this a blocking CI gate.",
+              "For true sliding windows, use Redis sorted sets with ZADD (score=unix_timestamp, member=txn_id) + ZCOUNT/ZRANGEBYSCORE. Document the memory tradeoff vs INCR/EXPIRE.",
+              "For stacking, explicitly generate out-of-fold predictions using StratifiedKFold on training data, then train the meta-learner on those OOF outputs only. Add a test that verifies meta-learner training data has zero overlap with base model training data.",
+              "Separate SHAP computation into an async background job for flagged cases rather than inline with the scoring response. Return fraud_score + decision synchronously; explanations are fetched by the UI on case detail load. This removes SHAP from the p99 latency path entirely.",
+              "Add a model rollback procedure: MLflow model registry supports staging/production/archived stages. Define a runbook for promoting, demoting, and emergency rollback. The CI/CD gate prevents regression but does not handle post-deployment issues.",
+              "Add schema evolution strategy: version the feature schema in schema.yaml (v1, v2, etc.), store the schema version in model artifacts, and validate at inference time that the feature schema matches the model's expected schema.",
+              "For the E2E test (step 21), use Testcontainers or docker-compose in CI rather than assuming a live Kafka cluster. The 15-minute CI target in step 16 will be exceeded if Kafka startup is uncontrolled.",
+              "Add GDPR/CCPA conflict resolution for the immutable audit log: the append-only requirement conflicts with right-to-erasure. Recommended pattern: pseudonymize PII in audit records using a key that can be deleted, preserving audit integrity while enabling erasure compliance.",
+              "Specify Kafka consumer group configuration, partition count, and backpressure strategy (max.poll.records, pause/resume on Redis saturation) in step 3. The 10k TPS claim needs a partition/consumer scaling model."
+            ],
+            "missing": [
+              "Runtime monitoring: no Prometheus metrics, no Grafana dashboards, no alerting on SLA breach, model score distribution drift, or Redis/Kafka lag. The CI/CD pipeline is defined but production observability is absent.",
+              "Model rollback runbook: what happens operationally when a deployed model starts producing garbage scores at 2am? MLflow supports it but the procedure is not defined.",
+              "Cold start strategy: new merchants, new devices, new customers have zero historical data. merchant_fraud_rate_7d returns null. The 'documented fallbacks' mentioned in step 3 are never specified \u2014 what is the actual fallback value and what bias does it introduce?",
+              "Feature schema versioning and backward compatibility: no strategy for deploying a new model with a different feature set without downtime or score inconsistency.",
+              "PCI DSS compliance scope: a fraud detection system processing card transactions almost certainly falls under PCI DSS. The security step mentions JWT/RBAC and PII masking but does not address PCI DSS requirements (tokenization, network segmentation, key management, quarterly scans).",
+              "Load test specification for the feature engineering pipeline (step 3): the 10k TPS target has no test harness defined. Without a Kafka load generator and Redis saturation test, this criterion is untestable.",
+              "Data lineage tracking: if a model makes a wrong fraud decision, analysts need to trace exactly which feature values influenced the prediction at inference time. The plan persists predictions but does not specify feature snapshot storage format or retention.",
+              "Analyst notification system: step 12 describes SSE for new cases, but there is no mention of escalation paths, SLA timers for unreviewed cases, or analyst workload balancing beyond bulk-assign."
+            ],
+            "security_risks": [
+              "Model extraction via /score endpoint: without rate limiting and query logging, an attacker can submit crafted transactions to map the model's decision boundary and build a surrogate model. Mitigations: per-IP/per-key rate limits, anomaly detection on query patterns, confidence score rounding.",
+              "Training data poisoning via feedback loop (step 11): an adversary who can trigger chargebacks or influence analyst decisions can inject mislabeled samples into the retraining pipeline. The 500-sample minimum gate in step 11 is insufficient protection. Mitigations: anomaly detection on label batch quality, human review of retraining datasets exceeding a drift threshold.",
+              "JWT without refresh token rotation: the security step specifies JWT with role claims but not token expiry, refresh strategy, or revocation. A stolen analyst JWT is valid until expiry with no revocation mechanism. Mitigations: short-lived access tokens (15min) + refresh token rotation, token revocation list in Redis.",
+              "Redis as trust boundary: merchant/device risk scores stored in Redis are modified by the feedback loop. If Redis is compromised or the feedback endpoint is abused, an attacker can suppress fraud scores for known bad actors. Redis should require AUTH, and risk score writes should be validated against expected distribution ranges.",
+              "SQL injection risk in case search/filter endpoint (GET /cases with filter parameters): if filter values are interpolated into queries rather than parameterized, the audit log and analyst decisions are exposed. Must enforce parameterized queries \u2014 not mentioned in security acceptance criteria.",
+              "SHAP value leakage: returning top-5 SHAP features in API responses reveals which features the model weighs most heavily. Sophisticated fraudsters can use this to craft transactions that score below threshold. Consider returning feature categories rather than raw feature names in external-facing responses."
+            ],
+            "summary": "This is a technically ambitious plan that demonstrates genuine ML engineering knowledge \u2014 temporal holdout, SHAP integration, ensemble stacking, RBAC, and CI/CD model gates are all present and correctly motivated. However, several concrete implementation blockers will halt delivery: TabNet ONNX export and DeepExplainer incompatibility are not theoretical concerns but known library limitations that will require architecture changes; the stacking meta-learner as described will overfit without explicit OOF generation; and the training-serving skew between the streaming pipeline and batch ETL is the most dangerous production failure mode and is entirely unaddressed. The latency targets (100ms p99 with SHAP, <10ms feature assembly at 10k TPS) are aggressive and unvalidated by any measurement. The plan is a solid foundation for an MVP but needs targeted rework on the neural model explainability strategy, sliding window implementation, stacking methodology, and a dedicated training-serving consistency layer before the core ML pipeline can be trusted in production.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 61,
+              "flaws": [
+                "Step 6 + Step 8: TabNet ONNX export is broken for most versions \u2014 the custom sequential attention mechanism uses unsupported ONNX ops. DeepExplainer does not work with TabNet at all; it requires PyTorch models with differentiable operations only. You will hit this wall during implementation, not during planning.",
+                "Step 7: Stacking meta-learner trained on base model outputs without explicit out-of-fold prediction strategy. If the meta-learner sees in-sample predictions from XGBoost/neural, it will overfit severely. The plan says 'meta-learner on XGBoost + neural outputs' but does not specify OOF cross-validation generation. This is a classic stacking leakage failure.",
+                "Steps 3 vs 4: Training-serving skew is unaddressed. The streaming feature pipeline (Redis sliding windows via INCR/EXPIRE) and the batch ETL (historical SQL aggregates) will compute velocity features differently \u2014 window boundaries, timezone handling, and null imputation will diverge. Models trained in batch will behave differently in production. This is the #1 production failure mode for real-time ML.",
+                "Step 3: Redis INCR+EXPIRE does not give true sliding windows \u2014 it gives fixed tumbling windows that reset at TTL expiry. True 1m/5m/15m sliding windows require ZRANGEBYSCORE on sorted sets with score=timestamp. The acceptance criterion says 'velocity counters update within 50ms' but the data structure choice will produce incorrect counts near window boundaries.",
+                "Step 3: 10k TPS through Kafka with multiple Redis lookups per transaction (velocity, merchant risk, device trust) + feature assembly in <10ms is not validated by any back-of-envelope math. At 10k TPS that is 10+ Redis round trips per transaction = 100k Redis ops/sec with sub-1ms target per op. Achievable with pipelining, but no pipelining strategy is specified.",
+                "Step 9: p99 <100ms with 500 concurrent requests is not achievable with SHAP for flagged transactions. Even with the >0.7 threshold gate, DeepExplainer on TabNet takes 50-500ms on CPU. The SHAP 200ms target in step 8 and the scoring service 100ms p99 in step 9 are contradictory for transactions above 0.7.",
+                "Step 11: 'Incremental retraining' for XGBoost via warm_start/booster.continue_training does not generalize well under concept drift \u2014 it compounds existing trees rather than adapting to distribution shifts. For TabNet, incremental learning is not natively supported without continual learning modifications. The plan does not address catastrophic forgetting.",
+                "Step 11: EMA risk score update strategy only increases scores on confirmed fraud. Analyst dismissals should decrease merchant/device risk scores, but the plan does not specify bidirectional updates. Repeated false positives on a legitimate merchant will permanently inflate their risk score.",
+                "Step 14: No rate limiting on POST /score. An adversary can probe the model with crafted inputs to reverse-engineer decision boundaries (model extraction attack). The threat model mentions adversarial inputs but the mitigation \u2014 rate limiting, input perturbation, confidence withholding \u2014 is absent from the security acceptance criteria.",
+                "Step 5: AUC-PR > 0.85 acceptance criterion is asserted without a baseline or feasibility analysis. With 2% fraud rate (from step 21) and no stated dataset size, this is a guess. If the real dataset has 0.1% fraud rate or significant label noise from chargebacks, 0.85 AUC-PR may be unachievable on the described feature set."
+              ],
+              "suggestions": [
+                "Replace DeepExplainer with KernelExplainer (model-agnostic, slower) or switch the neural model architecture to a standard MLP where GradientExplainer works reliably. Benchmark SHAP latency before committing to the 200ms SLA.",
+                "Add a dedicated feature store consistency test: run the same transaction through both the streaming pipeline and the batch ETL and assert feature values are identical within tolerance. Make this a blocking CI gate.",
+                "For true sliding windows, use Redis sorted sets with ZADD (score=unix_timestamp, member=txn_id) + ZCOUNT/ZRANGEBYSCORE. Document the memory tradeoff vs INCR/EXPIRE.",
+                "For stacking, explicitly generate out-of-fold predictions using StratifiedKFold on training data, then train the meta-learner on those OOF outputs only. Add a test that verifies meta-learner training data has zero overlap with base model training data.",
+                "Separate SHAP computation into an async background job for flagged cases rather than inline with the scoring response. Return fraud_score + decision synchronously; explanations are fetched by the UI on case detail load. This removes SHAP from the p99 latency path entirely.",
+                "Add a model rollback procedure: MLflow model registry supports staging/production/archived stages. Define a runbook for promoting, demoting, and emergency rollback. The CI/CD gate prevents regression but does not handle post-deployment issues.",
+                "Add schema evolution strategy: version the feature schema in schema.yaml (v1, v2, etc.), store the schema version in model artifacts, and validate at inference time that the feature schema matches the model's expected schema.",
+                "For the E2E test (step 21), use Testcontainers or docker-compose in CI rather than assuming a live Kafka cluster. The 15-minute CI target in step 16 will be exceeded if Kafka startup is uncontrolled.",
+                "Add GDPR/CCPA conflict resolution for the immutable audit log: the append-only requirement conflicts with right-to-erasure. Recommended pattern: pseudonymize PII in audit records using a key that can be deleted, preserving audit integrity while enabling erasure compliance.",
+                "Specify Kafka consumer group configuration, partition count, and backpressure strategy (max.poll.records, pause/resume on Redis saturation) in step 3. The 10k TPS claim needs a partition/consumer scaling model."
+              ],
+              "missing": [
+                "Runtime monitoring: no Prometheus metrics, no Grafana dashboards, no alerting on SLA breach, model score distribution drift, or Redis/Kafka lag. The CI/CD pipeline is defined but production observability is absent.",
+                "Model rollback runbook: what happens operationally when a deployed model starts producing garbage scores at 2am? MLflow supports it but the procedure is not defined.",
+                "Cold start strategy: new merchants, new devices, new customers have zero historical data. merchant_fraud_rate_7d returns null. The 'documented fallbacks' mentioned in step 3 are never specified \u2014 what is the actual fallback value and what bias does it introduce?",
+                "Feature schema versioning and backward compatibility: no strategy for deploying a new model with a different feature set without downtime or score inconsistency.",
+                "PCI DSS compliance scope: a fraud detection system processing card transactions almost certainly falls under PCI DSS. The security step mentions JWT/RBAC and PII masking but does not address PCI DSS requirements (tokenization, network segmentation, key management, quarterly scans).",
+                "Load test specification for the feature engineering pipeline (step 3): the 10k TPS target has no test harness defined. Without a Kafka load generator and Redis saturation test, this criterion is untestable.",
+                "Data lineage tracking: if a model makes a wrong fraud decision, analysts need to trace exactly which feature values influenced the prediction at inference time. The plan persists predictions but does not specify feature snapshot storage format or retention.",
+                "Analyst notification system: step 12 describes SSE for new cases, but there is no mention of escalation paths, SLA timers for unreviewed cases, or analyst workload balancing beyond bulk-assign."
+              ],
+              "security_risks": [
+                "Model extraction via /score endpoint: without rate limiting and query logging, an attacker can submit crafted transactions to map the model's decision boundary and build a surrogate model. Mitigations: per-IP/per-key rate limits, anomaly detection on query patterns, confidence score rounding.",
+                "Training data poisoning via feedback loop (step 11): an adversary who can trigger chargebacks or influence analyst decisions can inject mislabeled samples into the retraining pipeline. The 500-sample minimum gate in step 11 is insufficient protection. Mitigations: anomaly detection on label batch quality, human review of retraining datasets exceeding a drift threshold.",
+                "JWT without refresh token rotation: the security step specifies JWT with role claims but not token expiry, refresh strategy, or revocation. A stolen analyst JWT is valid until expiry with no revocation mechanism. Mitigations: short-lived access tokens (15min) + refresh token rotation, token revocation list in Redis.",
+                "Redis as trust boundary: merchant/device risk scores stored in Redis are modified by the feedback loop. If Redis is compromised or the feedback endpoint is abused, an attacker can suppress fraud scores for known bad actors. Redis should require AUTH, and risk score writes should be validated against expected distribution ranges.",
+                "SQL injection risk in case search/filter endpoint (GET /cases with filter parameters): if filter values are interpolated into queries rather than parameterized, the audit log and analyst decisions are exposed. Must enforce parameterized queries \u2014 not mentioned in security acceptance criteria.",
+                "SHAP value leakage: returning top-5 SHAP features in API responses reveals which features the model weighs most heavily. Sophisticated fraudsters can use this to craft transactions that score below threshold. Consider returning feature categories rather than raw feature names in external-facing responses."
+              ],
+              "summary": "This is a technically ambitious plan that demonstrates genuine ML engineering knowledge \u2014 temporal holdout, SHAP integration, ensemble stacking, RBAC, and CI/CD model gates are all present and correctly motivated. However, several concrete implementation blockers will halt delivery: TabNet ONNX export and DeepExplainer incompatibility are not theoretical concerns but known library limitations that will require architecture changes; the stacking meta-learner as described will overfit without explicit OOF generation; and the training-serving skew between the streaming pipeline and batch ETL is the most dangerous production failure mode and is entirely unaddressed. The latency targets (100ms p99 with SHAP, <10ms feature assembly at 10k TPS) are aggressive and unvalidated by any measurement. The plan is a solid foundation for an MVP but needs targeted rework on the neural model explainability strategy, sliding window implementation, stacking methodology, and a dedicated training-serving consistency layer before the core ML pipeline can be trusted in production.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T08:44:51.805801+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 123.79,
+      "critic_plan": 100.16
+    }
+  }
+}

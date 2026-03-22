@@ -1,0 +1,973 @@
+{
+  "run_id": "986d5c9c-f7e1-48c2-9f9d-9bc48184a1cf",
+  "status": {
+    "run_id": "986d5c9c-f7e1-48c2-9f9d-9bc48184a1cf",
+    "solution_name": "food_delivery",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T10:10:22.650782+00:00",
+    "updated_at": "2026-03-22T10:15:48.790061+00:00",
+    "product_description": "Food delivery app with restaurant discovery, menu browsing, cart management, real-time order tracking, driver assignment, and rating system.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the food delivery market: competitor landscape (DoorDash, Uber Eats, Grubhub), pricing models, restaurant acquisition strategies, driver incentive structures, and go-to-market positioning for a new entrant.",
+        "payload": {
+          "competitors": [
+            "DoorDash",
+            "Uber Eats",
+            "Grubhub",
+            "Instacart"
+          ],
+          "focus_areas": [
+            "pricing_models",
+            "driver_incentives",
+            "restaurant_fees",
+            "customer_acquisition",
+            "retention_mechanics"
+          ],
+          "deliverable": "market_research_report.md"
+        },
+        "acceptance_criteria": [
+          "Competitor feature matrix covering at least 4 major platforms",
+          "Commission fee benchmarks for restaurant partners",
+          "Driver pay model comparison (per-delivery vs hourly)",
+          "Identified top 3 differentiators for food_delivery positioning",
+          "Estimated TAM/SAM/SOM for initial launch market"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Write the Product Requirements Document for food_delivery covering all six feature areas: restaurant discovery, menu browsing, cart management, real-time order tracking, driver assignment, and rating system. Define success metrics and phased roadmap.",
+        "payload": {
+          "features": [
+            "restaurant_discovery",
+            "menu_browsing",
+            "cart_management",
+            "real_time_order_tracking",
+            "driver_assignment",
+            "rating_system"
+          ],
+          "personas": [
+            "customer",
+            "restaurant_operator",
+            "delivery_driver"
+          ],
+          "deliverable": "PRD_food_delivery_v1.md"
+        },
+        "acceptance_criteria": [
+          "PRD covers all six named feature areas with user stories per persona",
+          "Each feature has defined acceptance criteria and edge cases",
+          "P0/P1/P2 priority tiers assigned to all features",
+          "Success metrics defined: order conversion rate, avg delivery time, driver utilization, NPS",
+          "3-phase roadmap: MVP, growth, scale"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes for three app surfaces: customer app (discovery \u2192 cart \u2192 tracking \u2192 rating), restaurant dashboard (order management, menu editor), and driver app (assignment accept, navigation, delivery confirmation).",
+        "payload": {
+          "surfaces": [
+            "customer_app",
+            "restaurant_dashboard",
+            "driver_app"
+          ],
+          "research_methods": [
+            "user_interviews",
+            "competitor_teardowns",
+            "jobs_to_be_done"
+          ],
+          "deliverable": "wireframes_food_delivery.figma"
+        },
+        "acceptance_criteria": [
+          "Customer app flow covers: home discovery, search/filter, restaurant page, menu, cart, checkout, tracking screen, post-delivery rating",
+          "Restaurant dashboard covers: live order queue, menu CRUD, hours/availability toggle",
+          "Driver app covers: available orders list, accept/decline, turn-by-turn pickup & dropoff screens, earnings summary",
+          "Accessibility audit completed (WCAG 2.1 AA targets identified)",
+          "Wireframes validated with at least 3 user interviews per persona",
+          "App store screenshot mockups prepared",
+          "Onboarding flow under 3 steps"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, Driver Independent Contractor Agreement, and Restaurant Partner Agreement. Map data retention requirements for location data (GDPR/CCPA).",
+        "payload": {
+          "documents": [
+            "terms_of_service",
+            "privacy_policy",
+            "driver_contractor_agreement",
+            "restaurant_partner_agreement"
+          ],
+          "regulations": [
+            "GDPR",
+            "CCPA",
+            "PCI_DSS"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy policy explicitly covers real-time location data collection and retention window",
+          "Driver agreement classifies drivers as independent contractors with gig-economy clauses",
+          "Restaurant agreement covers commission structure, payout schedule, and dispute resolution",
+          "GDPR/CCPA data subject rights (access, deletion, portability) addressed in privacy policy",
+          "PCI DSS scope documented for payment card handling"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 5,
+        "task_type": "SECURITY",
+        "description": "Produce a threat model and security architecture for food_delivery covering authentication, payment card data, real-time location streams, driver identity verification, and API attack surfaces.",
+        "payload": {
+          "threat_model_method": "STRIDE",
+          "scope": [
+            "customer_auth",
+            "payment_flow",
+            "location_data",
+            "driver_identity",
+            "api_endpoints"
+          ],
+          "standards": [
+            "OWASP_Mobile_Top10",
+            "PCI_DSS_v4"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covering all six product surfaces",
+          "Payment flow scoped to PCI DSS SAQ A-EP (tokenized, no card storage)",
+          "Location data encrypted in transit (TLS 1.3) and at rest",
+          "Driver identity verification flow designed (government ID + selfie liveness check)",
+          "API rate limiting and auth token rotation policies defined",
+          "OWASP Mobile Top 10 checklist completed for both customer and driver apps"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "analyst"
+      },
+      {
+        "step": 6,
+        "task_type": "DATABASE",
+        "description": "Design the complete database schema for food_delivery: users, restaurants, menus, menu_items, orders, order_items, drivers, assignments, ratings, and real-time location tables. Include indexing strategy and migration files.",
+        "payload": {
+          "engine": "PostgreSQL",
+          "cache": "Redis",
+          "realtime_store": "Redis Pub/Sub + PostGIS for geospatial",
+          "entities": [
+            "users",
+            "addresses",
+            "restaurants",
+            "menu_categories",
+            "menu_items",
+            "carts",
+            "cart_items",
+            "orders",
+            "order_items",
+            "order_status_events",
+            "drivers",
+            "driver_locations",
+            "assignments",
+            "ratings"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD covers all entities with FK relationships and cardinality",
+          "orders table has status enum: PENDING, ACCEPTED, PREPARING, READY, PICKED_UP, DELIVERED, CANCELLED",
+          "driver_locations uses PostGIS POINT type with spatial index for proximity queries",
+          "Soft-delete pattern applied to restaurants and menu_items",
+          "Alembic migration files generated and tested on clean PostgreSQL instance",
+          "Redis data structures defined for cart (HASH), order pub/sub (CHANNEL), and driver location (GEO)"
+        ],
+        "depends_on": [
+          3,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design the OpenAPI 3.1 specification for all food_delivery REST + WebSocket endpoints covering auth, restaurant discovery, menu, cart, orders, driver assignment, real-time tracking, and ratings.",
+        "payload": {
+          "format": "OpenAPI 3.1",
+          "auth": "JWT Bearer + refresh tokens",
+          "realtime": "WebSocket /ws/orders/{order_id}/track",
+          "endpoint_groups": [
+            "auth",
+            "restaurants",
+            "menus",
+            "cart",
+            "orders",
+            "drivers",
+            "assignments",
+            "tracking",
+            "ratings",
+            "admin"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors via swagger-cli",
+          "All endpoints have request/response schemas with examples",
+          "WebSocket protocol documented: connection, message types (DRIVER_LOCATION, STATUS_UPDATE, ETA), disconnect",
+          "Pagination strategy defined (cursor-based) for restaurant and menu listing",
+          "Error response schema consistent across all endpoints (code, message, details)",
+          "Rate limit headers documented (X-RateLimit-*)"
+        ],
+        "depends_on": [
+          3,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "CONFIG",
+        "description": "Scaffold the food_delivery monorepo with packages: api (FastAPI), customer-app (React Native), driver-app (React Native), restaurant-dashboard (React), shared types. Set up Docker Compose for local development with Postgres, Redis, and PostGIS.",
+        "payload": {
+          "monorepo_tool": "pnpm workspaces",
+          "packages": {
+            "api": "Python FastAPI",
+            "customer-app": "React Native (Expo)",
+            "driver-app": "React Native (Expo)",
+            "restaurant-dashboard": "React + Vite",
+            "shared": "TypeScript types + API client"
+          },
+          "local_infra": "Docker Compose",
+          "services": [
+            "postgres-postgis",
+            "redis",
+            "localstack-s3"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker-compose up starts all services with health checks passing",
+          "pnpm install succeeds from repo root; all workspaces resolve",
+          "Environment variable schema documented in .env.example for each package",
+          "Makefile targets: dev, test, build, lint, migrate",
+          "Pre-commit hooks configured: ruff (Python), eslint+prettier (TS)",
+          "README includes first-run setup instructions verified on clean machine"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement authentication service: customer/restaurant/driver registration, JWT login, refresh token rotation, email verification, password reset, and OAuth2 (Google Sign-In for customers).",
+        "payload": {
+          "framework": "FastAPI",
+          "auth_lib": "python-jose + passlib",
+          "oauth": "Google OAuth2 via authlib",
+          "email": "SendGrid transactional"
+        },
+        "acceptance_criteria": [
+          "POST /auth/register creates user with hashed password and sends verification email",
+          "POST /auth/login returns access_token (15min TTL) and refresh_token (30d TTL, rotated on use)",
+          "POST /auth/refresh issues new token pair and invalidates old refresh token in Redis",
+          "GET /auth/google/callback handles OAuth2 code exchange and creates or links account",
+          "Role-based claims in JWT: customer | restaurant_operator | driver | admin",
+          "Brute-force protection: 5 failed logins triggers 15-minute lockout"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement restaurant discovery and menu service: geospatial search by lat/lng + radius, cuisine filters, open-now filter, restaurant CRUD for operators, menu categories and items CRUD with image upload to S3.",
+        "payload": {
+          "geo_query": "PostGIS ST_DWithin",
+          "image_storage": "S3 presigned upload",
+          "search": "PostgreSQL full-text search on restaurant name and cuisine"
+        },
+        "acceptance_criteria": [
+          "GET /restaurants?lat=&lng=&radius_km= returns restaurants within radius sorted by distance",
+          "Cuisine filter and open_now filter stackable as query params",
+          "Restaurant operators can CRUD their own restaurants only (ownership enforced)",
+          "Menu items support: name, description, price, dietary_tags (vegan, gluten_free, spicy), availability toggle",
+          "Image upload flow: client calls POST /restaurants/{id}/image \u2192 receives presigned S3 URL \u2192 uploads directly",
+          "Full-text search on /restaurants?q= returns ranked results"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement cart and order management service: cart persistence in Redis, checkout flow with Stripe payment intent, order lifecycle state machine, and restaurant order acceptance/rejection.",
+        "payload": {
+          "cart_store": "Redis HASH keyed by user_id",
+          "payment": "Stripe Payment Intents API",
+          "state_machine": "transitions library",
+          "order_events": "PostgreSQL order_status_events append-only log"
+        },
+        "acceptance_criteria": [
+          "Cart operations (add, update quantity, remove, clear) are idempotent and scoped per user",
+          "POST /orders/checkout validates cart, creates Stripe PaymentIntent, and creates order in PENDING state",
+          "Order state transitions enforced: PENDING\u2192ACCEPTED\u2192PREPARING\u2192READY\u2192PICKED_UP\u2192DELIVERED (or CANCELLED at any pre-delivery state)",
+          "Restaurant operators receive real-time notification (WebSocket) on new order",
+          "Order acceptance/rejection by restaurant transitions state and notifies customer",
+          "Stripe webhook /webhook/stripe handles payment_intent.succeeded and payment_intent.payment_failed"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement driver assignment service: available driver discovery using PostGIS proximity to restaurant, assignment algorithm (nearest available driver), driver accept/reject, and auto-reassignment on timeout.",
+        "payload": {
+          "assignment_algorithm": "nearest-first with 90s accept timeout",
+          "driver_state": "Redis HASH: available | on_delivery | offline",
+          "reassignment": "Celery delayed task triggered on accept timeout"
+        },
+        "acceptance_criteria": [
+          "When order reaches READY state, system queries available drivers within 5km of restaurant sorted by distance",
+          "Assignment offer sent to nearest driver; if not accepted within 90s, next driver is offered",
+          "Driver app receives push notification + WebSocket message with order details on assignment offer",
+          "Driver accept transitions assignment to ACCEPTED and order to PICKED_UP flow",
+          "Driver reject returns driver to available pool and triggers next-nearest offer",
+          "GET /assignments/{order_id}/status returns current assignment state and driver ETA"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement real-time order tracking: WebSocket hub for driver location broadcasting, driver location ingestion endpoint (mobile app pings every 5s), ETA calculation using OSRM routing, and customer-facing live map data feed.",
+        "payload": {
+          "websocket": "FastAPI WebSocket with room-per-order pattern",
+          "location_update": "POST /drivers/location (lat, lng, bearing, speed)",
+          "routing": "OSRM self-hosted or OpenRouteService API for ETA",
+          "location_store": "Redis GEO + Pub/Sub"
+        },
+        "acceptance_criteria": [
+          "Driver app sends location every 5s; endpoint accepts and stores in Redis GEO",
+          "Customer WebSocket /ws/orders/{order_id}/track receives driver location updates within 1s of driver ping",
+          "ETA recalculated on each location update using routing API and published to customer",
+          "WebSocket room closed and final location cleared after order reaches DELIVERED",
+          "Inactive driver (no ping > 30s) flagged as stale; customer shown last known location",
+          "Load test: 500 concurrent order tracking WebSocket connections handled without message lag > 2s"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement rating and review system: post-delivery prompts for customer (restaurant rating + driver rating), restaurant rating aggregation, driver rating aggregation, and review moderation queue.",
+        "payload": {
+          "rating_triggers": "webhook on order DELIVERED status event",
+          "aggregation": "PostgreSQL materialized view for avg ratings, refreshed on new rating insert",
+          "moderation": "keyword filter + manual review queue for flagged content"
+        },
+        "acceptance_criteria": [
+          "Customer receives in-app prompt within 30s of order DELIVERED transition",
+          "Ratings are 1\u20135 stars; text review optional, max 500 chars",
+          "Restaurant average rating recalculates and updates on restaurant record within 60s of new rating",
+          "Driver average rating updates on driver record; below 4.0 triggers internal alert",
+          "Duplicate rating prevention: one rating per (customer, order) enforced at DB level",
+          "Review text passes through profanity filter; flagged reviews enter moderation queue"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "LOCALIZATION",
+        "description": "Set up i18n/l10n for all three app surfaces (customer app, driver app, restaurant dashboard) supporting English (default), Spanish, and French. Configure locale-aware currency, date/time, and distance formatting.",
+        "payload": {
+          "library": "i18next (React/RN) + Babel plugin for extraction",
+          "locales": [
+            "en-US",
+            "es-MX",
+            "fr-FR"
+          ],
+          "locale_data": [
+            "currency",
+            "datetime",
+            "distance_units"
+          ],
+          "translation_workflow": "PO files \u2192 Crowdin \u2192 CI auto-import"
+        },
+        "acceptance_criteria": [
+          "All user-facing strings extracted to translation keys; zero hardcoded display strings",
+          "Currency formatted per locale: $12.50 (en-US), $12.50 MXN (es-MX), 12,50 \u20ac (fr-FR)",
+          "Distance shown in miles (en-US) and km (es-MX, fr-FR)",
+          "Date/time formatted per locale in order history and tracking ETA",
+          "RTL layout groundwork in place (even if no RTL language launched initially)",
+          "Language selector available in customer app settings; persisted to user profile",
+          "Top 5 target locales identified",
+          "Store listing translated"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build the customer React Native app: home screen with restaurant discovery map + list, search and filter UI, restaurant detail page, menu browsing with item customization modal, cart drawer, and checkout flow.",
+        "payload": {
+          "framework": "React Native (Expo)",
+          "map": "react-native-maps (Google Maps SDK)",
+          "state": "Zustand for cart, React Query for server state",
+          "navigation": "React Navigation v6 (stack + tab)"
+        },
+        "acceptance_criteria": [
+          "Home screen shows restaurants on map and in scrollable list sorted by distance",
+          "Search bar filters by name/cuisine with debounce (300ms); results update in real-time",
+          "Restaurant detail page shows hours, rating, estimated delivery time, and menu grouped by category",
+          "Menu item modal supports quantity, special instructions, and dietary tag display",
+          "Cart persists across app sessions (React Query + backend Redis sync)",
+          "Checkout screen shows cart summary, delivery address picker, and Stripe payment sheet"
+        ],
+        "depends_on": [
+          10,
+          11,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build the order tracking and rating screens in the customer app: live map with animated driver marker, ETA banner, order status timeline, and post-delivery rating prompt flow.",
+        "payload": {
+          "realtime": "WebSocket hook consuming /ws/orders/{order_id}/track",
+          "animation": "react-native-reanimated for driver marker interpolation",
+          "rating_ui": "5-star tap selector + optional text review"
+        },
+        "acceptance_criteria": [
+          "Tracking screen opens automatically after order confirmed; shows restaurant pin, driver pin, and delivery address",
+          "Driver marker animates smoothly between location updates (interpolated, not jumping)",
+          "ETA banner updates dynamically; formats as '12 min away'",
+          "Order status timeline (Accepted \u2192 Preparing \u2192 Ready \u2192 Picked Up \u2192 Delivered) shows completed steps highlighted",
+          "Rating prompt appears as bottom sheet within 30s of DELIVERED; dismissible with reminder in 24h",
+          "Submitted rating shows thank-you state and returns to home screen"
+        ],
+        "depends_on": [
+          13,
+          14,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build the driver React Native app: available orders list with map preview, assignment offer modal with accept/decline, turn-by-turn pickup and dropoff navigation screens, delivery confirmation, and earnings dashboard.",
+        "payload": {
+          "framework": "React Native (Expo)",
+          "navigation_sdk": "react-native-maps + Google Directions API",
+          "push": "Expo Notifications (FCM/APNS)"
+        },
+        "acceptance_criteria": [
+          "Driver app shows online/offline toggle; online status syncs to backend driver_state in Redis",
+          "Assignment offer modal shows restaurant name, delivery address, estimated pay, and 90s countdown timer",
+          "Pickup screen shows restaurant address with 'Navigate' CTA launching Google Maps/Apple Maps",
+          "Driver can mark 'Picked Up' only when within 200m of restaurant (geo-fence enforced client-side with backend validation)",
+          "Dropoff screen shows customer address; 'Mark Delivered' requires photo upload (proof of delivery)",
+          "Earnings dashboard shows daily/weekly totals, completed deliveries, and average rating"
+        ],
+        "depends_on": [
+          12,
+          13,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build the restaurant operator web dashboard: live order queue with status board, menu management (CRUD for categories and items with image upload), restaurant profile editor, availability toggle, and analytics overview.",
+        "payload": {
+          "framework": "React + Vite + TypeScript",
+          "ui": "shadcn/ui + Tailwind CSS",
+          "realtime": "WebSocket for live order board",
+          "charts": "Recharts for revenue and order volume analytics"
+        },
+        "acceptance_criteria": [
+          "Order queue board shows columns: New, Accepted, Preparing, Ready \u2014 orders move on status change without refresh",
+          "Restaurant can accept/reject incoming orders with one click; reject requires reason selection",
+          "Menu item form: name, description, price, image upload, dietary tags, available toggle",
+          "Profile editor: restaurant name, address, phone, cuisine types, opening hours per day-of-week",
+          "Availability toggle closes/opens restaurant for new orders in real-time",
+          "Analytics page shows: daily order volume, revenue, average order value, top 5 items (last 30 days)"
+        ],
+        "depends_on": [
+          11,
+          14,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "DATA",
+        "description": "Build the analytics data pipeline: event streaming from order lifecycle to analytics schema, daily aggregation jobs for restaurant revenue reports, driver earnings reports, and platform-level metrics (GMV, orders/day, avg delivery time).",
+        "payload": {
+          "event_source": "PostgreSQL order_status_events via CDC (Debezium) or scheduled ETL",
+          "analytics_store": "PostgreSQL analytics schema (star schema)",
+          "scheduler": "Celery Beat daily aggregation tasks",
+          "dashboard": "internal admin Metabase or Superset"
+        },
+        "acceptance_criteria": [
+          "fact_orders table populated with all completed orders including GMV, delivery_time_minutes, commission",
+          "dim_restaurant and dim_driver dimension tables updated nightly",
+          "Daily aggregation job runs at 02:00 UTC and completes within 10 minutes for 100k orders/day",
+          "Platform metrics API endpoint /admin/metrics returns: daily GMV, orders_count, avg_delivery_time, active_drivers",
+          "Restaurant revenue report available via /restaurants/{id}/analytics?period=30d",
+          "Data pipeline idempotent: rerunning for same date produces identical results"
+        ],
+        "depends_on": [
+          11,
+          12,
+          14
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 21,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines for all packages: GitHub Actions workflows for lint, test, build, and deploy. Container builds pushed to ECR. ECS Fargate deployment for API. Expo EAS Build for mobile apps. Monitoring with CloudWatch + Sentry.",
+        "payload": {
+          "ci": "GitHub Actions",
+          "registry": "AWS ECR",
+          "api_deploy": "AWS ECS Fargate (blue/green)",
+          "mobile_build": "Expo EAS Build (TestFlight + Play Store internal track)",
+          "monitoring": "CloudWatch metrics + Sentry error tracking",
+          "alerting": "PagerDuty on P1 alerts"
+        },
+        "acceptance_criteria": [
+          "PR to main triggers: lint, type-check, unit tests, build \u2014 all must pass before merge",
+          "Merge to main triggers: Docker build, ECR push, ECS blue/green deploy with automated rollback on health check failure",
+          "EAS Build triggered on version tag; produces .ipa and .apk submitted to TestFlight / Play Internal Track",
+          "Sentry DSN configured for all three apps; source maps uploaded on each build",
+          "CloudWatch alarms: API p99 latency > 2s, error rate > 1%, ECS CPU > 80% \u2192 PagerDuty",
+          "Deployment to production requires manual approval step in GitHub Actions workflow"
+        ],
+        "depends_on": [
+          16,
+          17,
+          18,
+          19
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "INFRA",
+        "description": "Provision production AWS infrastructure with Terraform: VPC, ECS Fargate cluster, RDS PostgreSQL with PostGIS, ElastiCache Redis cluster, ALB, S3 buckets, CloudFront CDN, Route53, and ACM certificates.",
+        "payload": {
+          "iac": "Terraform",
+          "region": "us-east-1 (primary), us-west-2 (DR)",
+          "services": [
+            "VPC with public/private subnets + NAT",
+            "ECS Fargate (API service, Celery workers)",
+            "RDS PostgreSQL 15 Multi-AZ with PostGIS extension",
+            "ElastiCache Redis 7 cluster mode",
+            "ALB with HTTPS termination",
+            "S3 + CloudFront for menu images",
+            "Route53 + ACM wildcard cert"
+          ]
+        },
+        "acceptance_criteria": [
+          "terraform plan produces zero errors on clean AWS account",
+          "RDS instance is Multi-AZ with automated backups retained 14 days",
+          "ECS tasks run in private subnets; only ALB is internet-facing",
+          "S3 bucket for images is private; all access via CloudFront signed URLs",
+          "Redis cluster has in-transit and at-rest encryption enabled",
+          "Terraform state stored in S3 with DynamoDB lock table",
+          "All resources tagged with environment, project=food_delivery, and team"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend services: auth, restaurant/menu, cart/order, driver assignment, tracking, and rating. Target 80% line coverage minimum.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio",
+          "db": "pytest-postgresql ephemeral instance",
+          "mocks": "httpx.MockTransport for external APIs (Stripe, OSRM, SendGrid)",
+          "coverage": "pytest-cov with 80% minimum gate"
+        },
+        "acceptance_criteria": [
+          "Unit tests cover all service-layer functions with happy path and at least 2 error cases each",
+          "Integration tests cover all API endpoints using TestClient against real PostgreSQL + Redis",
+          "Stripe webhook handler tested with fixture payloads for payment_intent.succeeded and .payment_failed",
+          "Order state machine tested for all valid and invalid transitions",
+          "Driver assignment algorithm tested: nearest driver selection, timeout reassignment, no-available-driver case",
+          "Coverage report shows \u226580% line coverage across src/; enforced in CI as required check"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "QA",
+        "description": "Develop the QA test plan covering all six product features: manual test cases for restaurant discovery, menu, cart, order flow, tracking accuracy, driver assignment, and rating. Include regression suite, device matrix, and performance benchmarks.",
+        "payload": {
+          "test_types": [
+            "functional",
+            "regression",
+            "performance",
+            "usability",
+            "compatibility"
+          ],
+          "device_matrix": {
+            "ios": [
+              "iPhone 15 Pro (iOS 17)",
+              "iPhone SE (iOS 16)"
+            ],
+            "android": [
+              "Pixel 7 (Android 14)",
+              "Samsung S22 (Android 13)"
+            ]
+          },
+          "performance_targets": {
+            "api_p99_latency": "< 500ms",
+            "restaurant_search": "< 1s for geo query",
+            "websocket_location_lag": "< 1s end-to-end"
+          }
+        },
+        "acceptance_criteria": [
+          "Test plan document covers all six feature areas with \u226510 test cases each",
+          "Critical path regression suite identified (30 test cases maximum for fast regression run)",
+          "Performance test suite defined using k6 targeting: 1000 concurrent users, 500 active order tracking connections",
+          "Device compatibility matrix signed off covering 4 devices (2 iOS, 2 Android)",
+          "Usability test protocol defined with 5 tasks per persona and success criteria",
+          "Bug severity classification defined: P1 (blocker), P2 (major), P3 (minor), P4 (trivial)"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test suite covering the full customer order journey (discovery \u2192 payment \u2192 tracking \u2192 rating), the driver assignment and delivery flow, and the restaurant acceptance workflow. Run performance tests under load.",
+        "payload": {
+          "e2e_framework": "Detox (mobile) + Playwright (restaurant dashboard)",
+          "load_test": "k6 scripts targeting API and WebSocket endpoints",
+          "test_environments": [
+            "staging"
+          ],
+          "scenarios": [
+            "happy_path_full_order",
+            "driver_reassignment_on_timeout",
+            "order_cancellation_at_each_state",
+            "concurrent_orders_same_restaurant",
+            "network_degradation_tracking"
+          ]
+        },
+        "acceptance_criteria": [
+          "Full order happy path E2E test passes on all 4 devices in device matrix",
+          "Driver reassignment scenario: original driver does not accept within 90s, next driver assigned within 10s",
+          "k6 load test: 1000 concurrent users placing orders, p99 latency < 500ms, error rate < 0.1%",
+          "500 concurrent WebSocket tracking connections sustained for 10 minutes with no message drop",
+          "Order cancellation tested at PENDING, ACCEPTED, and PREPARING states; refund flow verified",
+          "All P1 and P2 bugs resolved before sign-off; P3/P4 documented in backlog"
+        ],
+        "depends_on": [
+          23,
+          24,
+          21
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 26,
+        "task_type": "TRAINING",
+        "description": "Produce user-facing documentation and onboarding materials for all three personas: customer quick-start guide, restaurant operator onboarding guide (with menu setup walkthrough), and driver onboarding guide (account verification, first delivery walkthrough).",
+        "payload": {
+          "formats": [
+            "in-app tooltips",
+            "help center articles",
+            "onboarding video scripts"
+          ],
+          "personas": [
+            "customer",
+            "restaurant_operator",
+            "delivery_driver"
+          ],
+          "platform": "Intercom help center or Notion public docs"
+        },
+        "acceptance_criteria": [
+          "Customer guide covers: account creation, placing first order, tracking, and submitting a rating (with screenshots)",
+          "Restaurant operator guide covers: account setup, adding menu items with images, managing hours, and handling an order \u2014 verified with real operator beta tester",
+          "Driver guide covers: identity verification steps, going online, accepting a delivery, proof-of-delivery photo, and viewing earnings",
+          "In-app tooltip triggers identified for key friction points (cart, checkout payment, driver online toggle)",
+          "Video scripts written for 3 explainer videos (one per persona), each under 90 seconds",
+          "Help center searchable with at least 20 articles covering common support questions"
+        ],
+        "depends_on": [
+          17,
+          18,
+          19
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 27,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks for food_delivery production: incident response playbooks (API down, payment failure, driver assignment failure, tracking outage), on-call rotation setup, SLA definitions, and capacity planning model.",
+        "payload": {
+          "runbooks": [
+            "api_outage_response",
+            "payment_processor_degradation",
+            "driver_assignment_failure",
+            "realtime_tracking_outage",
+            "database_failover_procedure"
+          ],
+          "oncall_tool": "PagerDuty",
+          "sla_targets": {
+            "api_uptime": "99.9%",
+            "order_placement_success": "99.5%",
+            "avg_driver_assignment_time": "< 3 minutes"
+          }
+        },
+        "acceptance_criteria": [
+          "Each runbook includes: trigger condition, immediate mitigation steps, root cause investigation steps, escalation path, and communication template",
+          "Database failover runbook tested in staging: RDS failover to standby completes with < 30s downtime",
+          "PagerDuty on-call schedule configured with primary and secondary escalation",
+          "SLA definitions documented and acceptance criteria for each measurable in CloudWatch",
+          "Capacity model projects infrastructure costs at 10k, 50k, and 100k orders/day",
+          "Post-incident review template included in runbook package"
+        ],
+        "depends_on": [
+          22,
+          25
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 28,
+        "task_type": "DOCS",
+        "description": "Write engineering documentation: API reference (auto-generated from OpenAPI spec), architecture decision records (ADRs) for key choices (WebSocket vs SSE, Redis GEO for driver proximity, Stripe tokenization), developer onboarding README, and deployment guide.",
+        "payload": {
+          "api_docs": "Swagger UI hosted at /docs (FastAPI default) + Redoc at /redoc",
+          "adrs": [
+            "ADR-001: WebSocket for real-time tracking over SSE",
+            "ADR-002: Redis GEO for driver proximity over PostGIS-only approach",
+            "ADR-003: Stripe Payment Intents for PCI DSS scope reduction",
+            "ADR-004: Expo for cross-platform mobile over native builds"
+          ],
+          "readme_sections": [
+            "setup",
+            "architecture",
+            "env_vars",
+            "testing",
+            "deployment"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec renders correctly in Swagger UI with all endpoints explorable",
+          "Each ADR documents: context, decision, consequences, and alternatives considered",
+          "Developer README verified by new team member completing setup in < 30 minutes on clean machine",
+          "Deployment guide covers: staging deploy, production deploy, rollback procedure, and secret rotation",
+          "Architecture diagram (C4 context + container level) included in docs/",
+          "CHANGELOG.md initialized with v1.0.0 entry"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 28,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 64,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 64,
+          "final_review": {
+            "score": 64,
+            "flaws": [
+              "Payment-order consistency gap (Step 11): Stripe PaymentIntent creation and order DB write are not atomic. If the DB write fails after PaymentIntent is created, the customer is charged with no order. If the order is created before payment confirmation, an unpaid order enters the queue. No saga pattern, compensating transaction, or idempotency key strategy is defined.",
+              "WebSocket horizontal scaling failure (Step 13): The 'room-per-order' WebSocket hub is in-process. When ECS scales to multiple Fargate tasks, connections land on different instances. Redis Pub/Sub is mentioned but the fan-out architecture across multiple API instances is never designed. A customer on instance A will never receive location updates from a driver whose location was received by instance B.",
+              "Driver assignment race condition (Step 12): Two simultaneous orders near the same restaurant could both query Redis and select the same 'nearest available driver'. No distributed lock (Redis SETNX / Redlock) is specified to atomically claim a driver. This will cause double-assignment in any moderate-traffic scenario.",
+              "Driver payout system entirely absent: Steps 18 and 20 reference driver earnings dashboards and totals, but no backend step implements how drivers actually get paid. Stripe Connect (or equivalent) \u2014 account onboarding, transfer scheduling, 1099 reporting \u2014 is a multi-week implementation that is completely missing from the plan.",
+              "PostGIS vs. Redis GEO split-brain for driver assignment (Steps 6, 12, 13): The schema puts driver_locations in PostGIS (Step 6), but Step 13 stores real-time locations in Redis GEO for the tracking feed. Step 12's assignment query uses PostGIS ST_DWithin proximity. If the PostGIS table is only updated via batch sync from Redis, assignment queries use stale location data \u2014 potentially assigning a driver who has already moved 10km away.",
+              "Cart checkout race condition (Step 11): Multiple tabs or clients for the same user can simultaneously call POST /orders/checkout against the same Redis cart HASH. Without an atomic Redis WATCH/MULTI/EXEC or a checkout lock, the same cart can be checked out twice, producing duplicate orders and duplicate Stripe charges.",
+              "Celery broker persistence not specified for production (Steps 12, 14, 20): Redis is the implied Celery broker, but Redis-as-broker has no durable message persistence by default. A Redis restart drops all enqueued tasks \u2014 including the 90-second driver reassignment timers. A missed reassignment timer means an order is stuck forever. AOF/RDB persistence or a RabbitMQ broker is required but never specified.",
+              "OSRM self-hosting complexity underestimated (Step 13): OSRM requires preprocessing OpenStreetMap planet files (multi-hour job), a dedicated EC2 instance, and routing graph updates as roads change. 'Self-hosted or OpenRouteService API' is a one-line decision with weeks of infrastructure work behind it. No fallback is defined if the routing service is unavailable \u2014 ETA calculation silently fails.",
+              "Step 23 (tests) comes after all backend implementation: Writing tests after all backend is complete (Steps 9-14) removes the forcing function for testable design. The acceptance criteria don't require TDD or testability to be considered during implementation. Test-after has historically lower coverage quality and finds design problems too late.",
+              "Admin panel backend endpoints exist, frontend does not: Step 7 defines an 'admin' endpoint group. Step 20 exposes /admin/metrics. But no step builds an admin frontend. Moderation queues (Step 14), platform analytics, and restaurant approval workflows have no operator interface.",
+              "Stripe webhook signature validation not in acceptance criteria (Step 11): The webhook /webhook/stripe is specified but 'validate Stripe-Signature header before processing' is not listed as an acceptance criterion. Any unsigned request to this endpoint could trigger fraudulent state transitions."
+            ],
+            "suggestions": [
+              "Add a Step 11a or modify Step 11 to implement the checkout as a two-phase flow: (1) reserve cart with a DB-level lock, (2) create PaymentIntent, (3) on webhook confirmation, finalize order. Use Stripe idempotency keys keyed to a cart snapshot hash.",
+              "Redesign Step 13 WebSocket architecture explicitly: each API instance subscribes to Redis Pub/Sub channels named order:{order_id}. Driver location ingestion publishes to that channel. All instances relay to their local WebSocket connections. Document this in the API design step (Step 7), not just implicitly in Step 13.",
+              "Add a distributed lock step to Step 12: before dispatching an assignment offer, acquire a Redis lock with TTL=assignment_timeout+buffer on the key driver:{driver_id}:assignment. Only proceed if the lock is acquired. Document the lock acquisition as an acceptance criterion.",
+              "Add a dedicated Step for driver payout between Steps 14 and 15: Stripe Connect account onboarding, transfer scheduling (weekly/daily), earnings ledger, and 1099 generation. This is not optional \u2014 drivers won't work without payment.",
+              "Collapse driver location storage to a single source of truth: write to Redis GEO as the live store (Step 13's approach), and have a Celery task batch-sync to PostGIS driver_locations every 30s for historical queries. The assignment service (Step 12) should query Redis GEO directly, not PostGIS, for real-time proximity.",
+              "Step 5 security acceptance criteria should include: Stripe webhook Stripe-Signature HMAC validation, S3 presigned URL expiry <= 5 minutes, all PostGIS queries use parameterized inputs (explicit SQLAlchemy text() with bindparams), and CSP headers on the restaurant dashboard.",
+              "Add AWS WAF to Step 22 infra in front of the ALB: managed rule groups for SQL injection, known bad bots, and rate-based rules. Without this, the API is publicly exposed with only application-level rate limiting.",
+              "Replace 'OSRM self-hosted or OpenRouteService API' with a concrete decision in Step 13. Recommend Google Maps Routes API (simpler, no infra) for MVP, with OSRM as a cost-optimization in Phase 2. Add a fallback: if the routing API returns an error, publish last-known ETA unchanged rather than crashing the update.",
+              "Add restaurant onboarding/approval workflow: a restaurant submitting for the first time should enter a pending state with admin review before going live. This is a trust-and-safety requirement that affects the entire supply side of the marketplace.",
+              "Step 9 refresh token rotation needs a concurrent-request guard: if two requests arrive with the same refresh token simultaneously (mobile app background/foreground flip), both may pass the 'is token valid?' check before either invalidates it. Implement a Redis SETNX-based single-use token guard."
+            ],
+            "missing": [
+              "Driver payout system: Stripe Connect onboarding, transfer scheduling, earnings ledger, 1099-K generation \u2014 completely absent from all 28 steps.",
+              "Restaurant approval/onboarding workflow: no step covers how a new restaurant is vetted, approved, and activated on the platform. Without this, the supply side is ungoverned.",
+              "Rate limiting implementation: Step 5 defines policy, Step 7 documents headers, but no step implements the middleware, API Gateway rule, or Redis sliding-window counter that actually enforces rate limits.",
+              "Driver background check API integration: Step 4 mentions contractor agreement but no step integrates Checkr, Sterling, or equivalent. This is legally required in most US jurisdictions before a driver's first delivery.",
+              "Push notification backend service: FCM/APNS device token storage, notification dispatch service, delivery receipts, and silent push for location permission re-prompting are referenced in Step 18 but never implemented in any backend step.",
+              "Refund and dispute resolution flows: payment_intent.payment_failed is handled (Step 11), but no step covers: cancel-after-payment refund, partial refund for missing items, customer dispute, or chargeback webhook handling.",
+              "Admin frontend: Step 7 defines admin endpoints, Step 14 defines a moderation queue, Step 20 defines platform metrics \u2014 but no UI exists for any of these.",
+              "Secrets management: no step uses AWS Secrets Manager or equivalent for database credentials, Stripe keys, SendGrid API keys, or signing secrets. .env.example covers dev only.",
+              "Redis persistence configuration for auth and assignment: refresh tokens and driver assignment locks in Redis are lost on restart without AOF or RDB snapshots explicitly configured.",
+              "WebSocket authentication: Step 9 defines JWT auth for REST endpoints, but no step specifies how the WebSocket handshake at /ws/orders/{order_id}/track authenticates the connecting customer. Unauthenticated WebSocket upgrade is a common oversight.",
+              "Multi-currency and multi-region payment support: Step 15 covers i18n for en-US/es-MX/fr-FR with MXN and EUR, but no step addresses Stripe multi-currency configuration, payout currency matching, or tax jurisdiction differences.",
+              "Surge/demand-based pricing: mentioned as a competitor analysis focus area in Step 1 but no implementation step exists.",
+              "Data retention enforcement: GDPR/CCPA are covered in Step 4's legal documents and Step 5's policy, but no step implements automated data deletion jobs, retention policy enforcement, or a data subject request workflow."
+            ],
+            "security_risks": [
+              "WebSocket endpoint authentication gap: if /ws/orders/{order_id}/track does not validate JWT on upgrade, any user who knows an order ID can subscribe to another customer's live location feed \u2014 exposing the customer's home address and the driver's real-time position.",
+              "Stripe webhook endpoint without explicit signature validation in acceptance criteria: a missing or incorrect HMAC check allows any attacker to POST to /webhook/stripe and forge payment_intent.succeeded events, creating fulfilled orders without actual payment.",
+              "Driver location data is a high-value surveillance dataset: 5-second granularity GPS tracks for all drivers are stored in Redis GEO and potentially replicated to PostGIS. No data minimization, no retention TTL on historical tracks, and no access control on the /drivers/location ingestion endpoint beyond JWT role. A compromised driver token exposes all location data.",
+              "Presigned S3 URLs for image upload (Step 10): expiry time not defined. A long-lived presigned URL (e.g., 24h) obtained by a customer can be shared to upload arbitrary content to the S3 bucket, enabling content injection attacks on menu images served via CloudFront.",
+              "Refresh token rotation race condition enables token reuse: two simultaneous requests with the same refresh token (network retry, dual-tab) can both succeed if the invalidation is not atomic. The stolen-token window is the race window. Redis SETNX on the token value must be used, not a read-then-delete pattern.",
+              "PostGIS raw queries for geospatial search: ST_DWithin with lat/lng from query parameters is injection-safe only if SQLAlchemy parameterization is enforced. If any developer uses string interpolation for the geo query (common shortcut), it becomes a SQL injection vector directly against the PostGIS-enabled production database.",
+              "Driver independent contractor agreement (Step 4) assumes legal validity: AB5 (California), similar EU platform work directives, and evolving UK/Canadian gig-work law may reclassify drivers as employees, invalidating the entire contractor model and triggering retroactive liability for benefits, taxes, and social contributions. This is not a security risk but an existential legal risk for the business model.",
+              "No WAF or DDoS mitigation layer: the ALB is internet-facing with only application-level rate limiting. A volumetric L7 attack against the restaurant discovery endpoint (expensive PostGIS geo queries) or the WebSocket upgrade endpoint would exhaust ECS task capacity before CloudWatch alarms fire and autoscaling responds.",
+              "Proof-of-delivery photo upload (Step 18): no content validation on uploaded images is specified. Malicious image files (polyglots, oversized payloads, EXIF with GPS spoofing) could be uploaded. Lambda-based image reprocessing or strict content-type + size validation before S3 acceptance is missing."
+            ],
+            "summary": "This is a well-structured, thorough plan that covers an impressive breadth \u2014 28 steps from market research to operational runbooks, with correct technology choices (PostGIS, Redis GEO, Stripe Payment Intents, Expo EAS). The dependency graph is largely sound and the acceptance criteria are specific enough to be actionable. However, three critical production failures are baked into the current design: (1) the payment-to-order consistency gap will cause real-money incidents on day one under any retry or network-fault scenario; (2) the WebSocket fan-out architecture breaks the moment ECS scales beyond a single task, making 'real-time tracking' non-functional under any meaningful load; and (3) the driver assignment race condition will produce double-assignments in production within the first hour of concurrent orders. Beyond these critical flaws, the driver payout system \u2014 the mechanism by which drivers actually get paid \u2014 is entirely absent from all 28 steps, which makes the driver supply side inoperative. Security posture is adequate at the design level but has a critical gap in WebSocket authentication and Stripe webhook validation that would be exploitable in production. The plan scores 64: the architecture is sound, the scope is complete enough for an MVP evaluation, but the three critical design flaws and the missing driver payout system require fundamental rework before this is production-shippable.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 64,
+              "flaws": [
+                "Payment-order consistency gap (Step 11): Stripe PaymentIntent creation and order DB write are not atomic. If the DB write fails after PaymentIntent is created, the customer is charged with no order. If the order is created before payment confirmation, an unpaid order enters the queue. No saga pattern, compensating transaction, or idempotency key strategy is defined.",
+                "WebSocket horizontal scaling failure (Step 13): The 'room-per-order' WebSocket hub is in-process. When ECS scales to multiple Fargate tasks, connections land on different instances. Redis Pub/Sub is mentioned but the fan-out architecture across multiple API instances is never designed. A customer on instance A will never receive location updates from a driver whose location was received by instance B.",
+                "Driver assignment race condition (Step 12): Two simultaneous orders near the same restaurant could both query Redis and select the same 'nearest available driver'. No distributed lock (Redis SETNX / Redlock) is specified to atomically claim a driver. This will cause double-assignment in any moderate-traffic scenario.",
+                "Driver payout system entirely absent: Steps 18 and 20 reference driver earnings dashboards and totals, but no backend step implements how drivers actually get paid. Stripe Connect (or equivalent) \u2014 account onboarding, transfer scheduling, 1099 reporting \u2014 is a multi-week implementation that is completely missing from the plan.",
+                "PostGIS vs. Redis GEO split-brain for driver assignment (Steps 6, 12, 13): The schema puts driver_locations in PostGIS (Step 6), but Step 13 stores real-time locations in Redis GEO for the tracking feed. Step 12's assignment query uses PostGIS ST_DWithin proximity. If the PostGIS table is only updated via batch sync from Redis, assignment queries use stale location data \u2014 potentially assigning a driver who has already moved 10km away.",
+                "Cart checkout race condition (Step 11): Multiple tabs or clients for the same user can simultaneously call POST /orders/checkout against the same Redis cart HASH. Without an atomic Redis WATCH/MULTI/EXEC or a checkout lock, the same cart can be checked out twice, producing duplicate orders and duplicate Stripe charges.",
+                "Celery broker persistence not specified for production (Steps 12, 14, 20): Redis is the implied Celery broker, but Redis-as-broker has no durable message persistence by default. A Redis restart drops all enqueued tasks \u2014 including the 90-second driver reassignment timers. A missed reassignment timer means an order is stuck forever. AOF/RDB persistence or a RabbitMQ broker is required but never specified.",
+                "OSRM self-hosting complexity underestimated (Step 13): OSRM requires preprocessing OpenStreetMap planet files (multi-hour job), a dedicated EC2 instance, and routing graph updates as roads change. 'Self-hosted or OpenRouteService API' is a one-line decision with weeks of infrastructure work behind it. No fallback is defined if the routing service is unavailable \u2014 ETA calculation silently fails.",
+                "Step 23 (tests) comes after all backend implementation: Writing tests after all backend is complete (Steps 9-14) removes the forcing function for testable design. The acceptance criteria don't require TDD or testability to be considered during implementation. Test-after has historically lower coverage quality and finds design problems too late.",
+                "Admin panel backend endpoints exist, frontend does not: Step 7 defines an 'admin' endpoint group. Step 20 exposes /admin/metrics. But no step builds an admin frontend. Moderation queues (Step 14), platform analytics, and restaurant approval workflows have no operator interface.",
+                "Stripe webhook signature validation not in acceptance criteria (Step 11): The webhook /webhook/stripe is specified but 'validate Stripe-Signature header before processing' is not listed as an acceptance criterion. Any unsigned request to this endpoint could trigger fraudulent state transitions."
+              ],
+              "suggestions": [
+                "Add a Step 11a or modify Step 11 to implement the checkout as a two-phase flow: (1) reserve cart with a DB-level lock, (2) create PaymentIntent, (3) on webhook confirmation, finalize order. Use Stripe idempotency keys keyed to a cart snapshot hash.",
+                "Redesign Step 13 WebSocket architecture explicitly: each API instance subscribes to Redis Pub/Sub channels named order:{order_id}. Driver location ingestion publishes to that channel. All instances relay to their local WebSocket connections. Document this in the API design step (Step 7), not just implicitly in Step 13.",
+                "Add a distributed lock step to Step 12: before dispatching an assignment offer, acquire a Redis lock with TTL=assignment_timeout+buffer on the key driver:{driver_id}:assignment. Only proceed if the lock is acquired. Document the lock acquisition as an acceptance criterion.",
+                "Add a dedicated Step for driver payout between Steps 14 and 15: Stripe Connect account onboarding, transfer scheduling (weekly/daily), earnings ledger, and 1099 generation. This is not optional \u2014 drivers won't work without payment.",
+                "Collapse driver location storage to a single source of truth: write to Redis GEO as the live store (Step 13's approach), and have a Celery task batch-sync to PostGIS driver_locations every 30s for historical queries. The assignment service (Step 12) should query Redis GEO directly, not PostGIS, for real-time proximity.",
+                "Step 5 security acceptance criteria should include: Stripe webhook Stripe-Signature HMAC validation, S3 presigned URL expiry <= 5 minutes, all PostGIS queries use parameterized inputs (explicit SQLAlchemy text() with bindparams), and CSP headers on the restaurant dashboard.",
+                "Add AWS WAF to Step 22 infra in front of the ALB: managed rule groups for SQL injection, known bad bots, and rate-based rules. Without this, the API is publicly exposed with only application-level rate limiting.",
+                "Replace 'OSRM self-hosted or OpenRouteService API' with a concrete decision in Step 13. Recommend Google Maps Routes API (simpler, no infra) for MVP, with OSRM as a cost-optimization in Phase 2. Add a fallback: if the routing API returns an error, publish last-known ETA unchanged rather than crashing the update.",
+                "Add restaurant onboarding/approval workflow: a restaurant submitting for the first time should enter a pending state with admin review before going live. This is a trust-and-safety requirement that affects the entire supply side of the marketplace.",
+                "Step 9 refresh token rotation needs a concurrent-request guard: if two requests arrive with the same refresh token simultaneously (mobile app background/foreground flip), both may pass the 'is token valid?' check before either invalidates it. Implement a Redis SETNX-based single-use token guard."
+              ],
+              "missing": [
+                "Driver payout system: Stripe Connect onboarding, transfer scheduling, earnings ledger, 1099-K generation \u2014 completely absent from all 28 steps.",
+                "Restaurant approval/onboarding workflow: no step covers how a new restaurant is vetted, approved, and activated on the platform. Without this, the supply side is ungoverned.",
+                "Rate limiting implementation: Step 5 defines policy, Step 7 documents headers, but no step implements the middleware, API Gateway rule, or Redis sliding-window counter that actually enforces rate limits.",
+                "Driver background check API integration: Step 4 mentions contractor agreement but no step integrates Checkr, Sterling, or equivalent. This is legally required in most US jurisdictions before a driver's first delivery.",
+                "Push notification backend service: FCM/APNS device token storage, notification dispatch service, delivery receipts, and silent push for location permission re-prompting are referenced in Step 18 but never implemented in any backend step.",
+                "Refund and dispute resolution flows: payment_intent.payment_failed is handled (Step 11), but no step covers: cancel-after-payment refund, partial refund for missing items, customer dispute, or chargeback webhook handling.",
+                "Admin frontend: Step 7 defines admin endpoints, Step 14 defines a moderation queue, Step 20 defines platform metrics \u2014 but no UI exists for any of these.",
+                "Secrets management: no step uses AWS Secrets Manager or equivalent for database credentials, Stripe keys, SendGrid API keys, or signing secrets. .env.example covers dev only.",
+                "Redis persistence configuration for auth and assignment: refresh tokens and driver assignment locks in Redis are lost on restart without AOF or RDB snapshots explicitly configured.",
+                "WebSocket authentication: Step 9 defines JWT auth for REST endpoints, but no step specifies how the WebSocket handshake at /ws/orders/{order_id}/track authenticates the connecting customer. Unauthenticated WebSocket upgrade is a common oversight.",
+                "Multi-currency and multi-region payment support: Step 15 covers i18n for en-US/es-MX/fr-FR with MXN and EUR, but no step addresses Stripe multi-currency configuration, payout currency matching, or tax jurisdiction differences.",
+                "Surge/demand-based pricing: mentioned as a competitor analysis focus area in Step 1 but no implementation step exists.",
+                "Data retention enforcement: GDPR/CCPA are covered in Step 4's legal documents and Step 5's policy, but no step implements automated data deletion jobs, retention policy enforcement, or a data subject request workflow."
+              ],
+              "security_risks": [
+                "WebSocket endpoint authentication gap: if /ws/orders/{order_id}/track does not validate JWT on upgrade, any user who knows an order ID can subscribe to another customer's live location feed \u2014 exposing the customer's home address and the driver's real-time position.",
+                "Stripe webhook endpoint without explicit signature validation in acceptance criteria: a missing or incorrect HMAC check allows any attacker to POST to /webhook/stripe and forge payment_intent.succeeded events, creating fulfilled orders without actual payment.",
+                "Driver location data is a high-value surveillance dataset: 5-second granularity GPS tracks for all drivers are stored in Redis GEO and potentially replicated to PostGIS. No data minimization, no retention TTL on historical tracks, and no access control on the /drivers/location ingestion endpoint beyond JWT role. A compromised driver token exposes all location data.",
+                "Presigned S3 URLs for image upload (Step 10): expiry time not defined. A long-lived presigned URL (e.g., 24h) obtained by a customer can be shared to upload arbitrary content to the S3 bucket, enabling content injection attacks on menu images served via CloudFront.",
+                "Refresh token rotation race condition enables token reuse: two simultaneous requests with the same refresh token (network retry, dual-tab) can both succeed if the invalidation is not atomic. The stolen-token window is the race window. Redis SETNX on the token value must be used, not a read-then-delete pattern.",
+                "PostGIS raw queries for geospatial search: ST_DWithin with lat/lng from query parameters is injection-safe only if SQLAlchemy parameterization is enforced. If any developer uses string interpolation for the geo query (common shortcut), it becomes a SQL injection vector directly against the PostGIS-enabled production database.",
+                "Driver independent contractor agreement (Step 4) assumes legal validity: AB5 (California), similar EU platform work directives, and evolving UK/Canadian gig-work law may reclassify drivers as employees, invalidating the entire contractor model and triggering retroactive liability for benefits, taxes, and social contributions. This is not a security risk but an existential legal risk for the business model.",
+                "No WAF or DDoS mitigation layer: the ALB is internet-facing with only application-level rate limiting. A volumetric L7 attack against the restaurant discovery endpoint (expensive PostGIS geo queries) or the WebSocket upgrade endpoint would exhaust ECS task capacity before CloudWatch alarms fire and autoscaling responds.",
+                "Proof-of-delivery photo upload (Step 18): no content validation on uploaded images is specified. Malicious image files (polyglots, oversized payloads, EXIF with GPS spoofing) could be uploaded. Lambda-based image reprocessing or strict content-type + size validation before S3 acceptance is missing."
+              ],
+              "summary": "This is a well-structured, thorough plan that covers an impressive breadth \u2014 28 steps from market research to operational runbooks, with correct technology choices (PostGIS, Redis GEO, Stripe Payment Intents, Expo EAS). The dependency graph is largely sound and the acceptance criteria are specific enough to be actionable. However, three critical production failures are baked into the current design: (1) the payment-to-order consistency gap will cause real-money incidents on day one under any retry or network-fault scenario; (2) the WebSocket fan-out architecture breaks the moment ECS scales beyond a single task, making 'real-time tracking' non-functional under any meaningful load; and (3) the driver assignment race condition will produce double-assignments in production within the first hour of concurrent orders. Beyond these critical flaws, the driver payout system \u2014 the mechanism by which drivers actually get paid \u2014 is entirely absent from all 28 steps, which makes the driver supply side inoperative. Security posture is adequate at the design level but has a critical gap in WebSocket authentication and Stripe webhook validation that would be exploitable in production. The plan scores 64: the architecture is sound, the scope is complete enough for an MVP evaluation, but the three critical design flaws and the missing driver payout system require fundamental rework before this is production-shippable.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T10:15:48.790029+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 178.61,
+      "critic_plan": 147.53
+    }
+  }
+}

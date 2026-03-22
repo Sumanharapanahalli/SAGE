@@ -1,0 +1,1041 @@
+{
+  "run_id": "a826b705-7e49-4b8b-8e24-504fd0b54b64",
+  "solution_name": "ev_charging_network",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T00:47:54.687322+00:00",
+  "updated_at": "2026-03-22T00:53:12.501620+00:00",
+  "product_description": "EV charging station network management with OCPP 2.0.1, dynamic pricing, load balancing, payment processing, and fleet charging optimization.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user stories, and process flows for EV charging network operators, fleet managers, and end-users. Map OCPP 2.0.1 functional requirements, dynamic pricing triggers, load balancing SLAs, and fleet scheduling constraints.",
+      "payload": {
+        "deliverables": [
+          "business_requirements_doc.md",
+          "user_stories.yaml",
+          "process_flows.drawio",
+          "ocpp_feature_matrix.md"
+        ],
+        "stakeholders": [
+          "network_operator",
+          "fleet_manager",
+          "ev_driver",
+          "billing_admin"
+        ],
+        "standards_to_map": [
+          "OCPP 2.0.1",
+          "ISO 15118",
+          "PCI DSS",
+          "UNECE R155"
+        ]
+      },
+      "acceptance_criteria": [
+        "All OCPP 2.0.1 functional blocks are mapped to user stories",
+        "Dynamic pricing triggers (time-of-use, demand, spot) are defined with acceptance rules",
+        "Fleet charging optimization constraints (SoC targets, departure times, priority tiers) are documented",
+        "Load balancing SLA thresholds (max kW per site, per circuit) are specified",
+        "Payment processing flows (RFID, mobile app, credit card, fleet account) are fully described"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "SAFETY",
+      "description": "Perform FMEA and hazard analysis for the EV charging network. Identify failure modes in EVSE hardware, OCPP communication, load balancing decisions, and payment processing. Produce fault tree analysis for grid overload and electrical safety scenarios per IEC 61851 and ISO 26262 principles.",
+      "payload": {
+        "deliverables": [
+          "fmea_ev_charging.xlsx",
+          "fault_tree_analysis.pdf",
+          "hazard_log.md",
+          "safety_requirements.md"
+        ],
+        "failure_modes": [
+          "OCPP_disconnect",
+          "overcurrent",
+          "grid_overload",
+          "payment_fraud",
+          "firmware_update_failure",
+          "load_balancer_cascade"
+        ],
+        "standards": [
+          "IEC 61851",
+          "ISO 26262",
+          "ISO 14971"
+        ]
+      },
+      "acceptance_criteria": [
+        "FMEA covers all EVSE hardware failure modes with severity, occurrence, and detection ratings",
+        "Fault tree for grid overload scenario is complete with cut sets identified",
+        "Safety requirements are traceable to hazard log entries",
+        "All UNECE R155/R156 cybersecurity threat scenarios are enumerated",
+        "Safety requirements baseline is approved and version-controlled",
+        "ASIL level determined for each function",
+        "Fault tree analysis complete"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 3,
+      "task_type": "SECURITY",
+      "description": "Produce threat model, penetration test plan, and SBOM for the EV charging network. Cover OCPP WebSocket channel security, payment data flows (PCI DSS scope), fleet telematics API, firmware OTA update integrity, and CSMS portal access control. Map to UNECE R155/R156 and SOC 2 Type II controls.",
+      "payload": {
+        "deliverables": [
+          "threat_model_stride.md",
+          "pentest_plan.md",
+          "sbom.json",
+          "pci_dss_scope_diagram.pdf",
+          "security_controls_matrix.md"
+        ],
+        "threat_surfaces": [
+          "OCPP_websocket",
+          "payment_gateway_api",
+          "fleet_api",
+          "OTA_firmware_channel",
+          "CSMS_admin_portal",
+          "EV_driver_mobile_app"
+        ],
+        "compliance_targets": [
+          "PCI DSS v4.0",
+          "SOC 2 Type II",
+          "UNECE R155",
+          "UNECE R156"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all 6 threat surfaces with mitigations mapped",
+        "PCI DSS cardholder data environment boundary is documented and scoped",
+        "SBOM lists all third-party libraries with CVE status",
+        "UNECE R155 cybersecurity management system requirements are mapped to implementation controls",
+        "OTA firmware update integrity chain (signing, verification, rollback) is fully specified",
+        "Penetration test plan is approved by security team lead",
+        "PCI DSS SAQ completed",
+        "Encryption at rest and in transit"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 4,
+      "task_type": "DATABASE",
+      "description": "Design and implement the database schema for the EV charging network: charge points, connectors, sessions, transactions, pricing rules, load zones, fleet accounts, vehicles, schedules, and audit logs. Include TimescaleDB hypertables for telemetry and partitioned transaction tables for PCI DSS data isolation.",
+      "payload": {
+        "engine": "PostgreSQL 16 + TimescaleDB",
+        "core_tables": [
+          "charge_points",
+          "connectors",
+          "charging_sessions",
+          "transactions",
+          "meter_values",
+          "pricing_rules",
+          "price_snapshots",
+          "load_zones",
+          "circuit_limits",
+          "fleet_accounts",
+          "vehicles",
+          "charging_schedules",
+          "schedule_slots",
+          "rfid_tokens",
+          "users",
+          "audit_log",
+          "ocpp_messages"
+        ],
+        "deliverables": [
+          "schema.sql",
+          "migrations/",
+          "seed_data.sql",
+          "erd.drawio",
+          "data_retention_policy.md"
+        ],
+        "compliance": "PCI DSS tokenization for card data; all cardholder data in isolated schema with column-level encryption"
+      },
+      "acceptance_criteria": [
+        "All tables have primary keys, foreign keys, and relevant indexes",
+        "meter_values is a TimescaleDB hypertable partitioned by time with compression policy",
+        "transactions table has no raw card numbers; only payment_token references external vault",
+        "Audit log table is append-only with row-level security preventing updates/deletes",
+        "Migrations run cleanly from empty schema to current version",
+        "ERD is reviewed and approved",
+        "Seed data covers at least 3 charge sites, 10 charge points, 2 fleet accounts, and sample pricing rules",
+        "Transaction isolation level documented",
+        "Audit trail on all writes"
+      ],
+      "depends_on": [
+        1,
+        2,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 5,
+      "task_type": "CONFIG",
+      "description": "Set up the solution configuration for ev_charging_network: project.yaml (domain manifest, active modules, theme), prompts.yaml (OCPP analyst, load balancing optimizer, fleet scheduler, pricing engine agent roles), tasks.yaml (all task types for this domain). Configure the coordinator agentic pattern for multi-domain orchestration across pricing, load balancing, and fleet scheduling agents.",
+      "payload": {
+        "solution_name": "ev_charging_network",
+        "agentic_pattern": "coordinator",
+        "agent_roles": [
+          "ocpp_analyst",
+          "load_balancer_agent",
+          "fleet_scheduler_agent",
+          "pricing_engine_agent",
+          "payment_processor_agent"
+        ],
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "developer",
+          "monitor",
+          "approvals",
+          "queue",
+          "knowledge",
+          "audit",
+          "improvements",
+          "live-console"
+        ],
+        "files": [
+          "solutions/ev_charging_network/project.yaml",
+          "solutions/ev_charging_network/prompts.yaml",
+          "solutions/ev_charging_network/tasks.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "project.yaml validates against SAGE schema with no errors",
+        "All 5 agent roles have system prompts in prompts.yaml with OCPP/EV domain context",
+        "tasks.yaml defines task types for: ocpp_message_analysis, load_rebalance, fleet_schedule_optimize, price_update, session_audit",
+        "Coordinator pattern is wired: coordinator decomposes charging events and routes to specialist agents",
+        "make run PROJECT=ev_charging_network starts without errors"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "FIRMWARE",
+      "description": "Implement charge point controller firmware: OCPP 2.0.1 WebSocket client, IEC 61851 state machine (A/B/C/D/E/F), meter value sampling (Wh, W, V, A, SoC), smart charging profile execution (ChargingSchedule, SetChargingProfile), OTA firmware update (UpdateFirmware, FirmwareStatusNotification), and local authorization cache. Target STM32H7 MCU with FreeRTOS.",
+      "payload": {
+        "target_mcu": "STM32H7xx",
+        "rtos": "FreeRTOS 10.x",
+        "ocpp_version": "2.0.1",
+        "key_tasks": [
+          "ocpp_websocket_task (TLS 1.3, wss://)",
+          "iec61851_state_machine_task",
+          "meter_sampling_task (1s interval)",
+          "smart_charging_profile_executor_task",
+          "ota_update_task (signed firmware, rollback on failure)",
+          "local_auth_cache_task (RFID whitelist)"
+        ],
+        "deliverables": [
+          "firmware/src/",
+          "firmware/CMakeLists.txt",
+          "firmware/hal/",
+          "firmware/ocpp/",
+          "firmware/charging/",
+          "firmware/ota/"
+        ]
+      },
+      "acceptance_criteria": [
+        "OCPP 2.0.1 core profile messages are fully implemented: BootNotification, Heartbeat, StatusNotification, Authorize, StartTransaction, StopTransaction, MeterValues",
+        "Smart charging messages implemented: SetChargingProfile, GetChargingProfiles, ClearChargingProfile",
+        "IEC 61851 state machine handles all transitions including error and fault states",
+        "OTA update verifies Ed25519 firmware signature before applying; rolls back on integrity failure",
+        "Firmware compiles cleanly with arm-none-eabi-gcc for STM32H7 target",
+        "FreeRTOS task stack usage is within bounds for all tasks (verified with uxTaskGetStackHighWaterMark)",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        2,
+        3,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "BACKEND",
+      "description": "Build the Charge Point Management System (CPMS) backend: OCPP 2.0.1 WebSocket server (JSON-over-WS), charge point registry, session lifecycle manager, real-time telemetry ingestion pipeline, and OCPP message router. Implement all OCPP 2.0.1 Core, Smart Charging, and ISO 15118 Plug & Charge feature profiles.",
+      "payload": {
+        "language": "Python 3.12",
+        "framework": "FastAPI + websockets",
+        "ocpp_library": "ocpp (Python OCPP library)",
+        "key_services": [
+          "ocpp_websocket_server (wss://, TLS termination)",
+          "charge_point_registry (online/offline tracking)",
+          "session_manager (start, stop, meter value recording)",
+          "telemetry_ingestor (TimescaleDB writer)",
+          "ocpp_message_router (dispatch to handlers)"
+        ],
+        "deliverables": [
+          "backend/cpms/",
+          "backend/cpms/ocpp_server.py",
+          "backend/cpms/session_manager.py",
+          "backend/cpms/telemetry.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "OCPP 2.0.1 WebSocket server accepts connections from simulated charge points and authenticates via BasicAuth + TLS client cert",
+        "All Core profile messages are handled with correct response types and error codes",
+        "Smart charging profile messages (SetChargingProfile, GetChargingProfiles) are processed and stored",
+        "MeterValues are written to TimescaleDB within 500ms of receipt",
+        "Charge point online/offline state is published to Redis pub/sub for real-time dashboard",
+        "Session lifecycle (start \u2192 active \u2192 stop) is fully persisted with idempotent handling of duplicate messages",
+        "Unit test coverage \u2265 80% for OCPP message handlers"
+      ],
+      "depends_on": [
+        4,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Implement the dynamic pricing engine: time-of-use pricing, demand-based pricing (site peak demand), real-time spot market integration (day-ahead energy prices), and driver/fleet tier pricing. Expose pricing rule CRUD API and real-time price broadcast via WebSocket to charge points and driver app.",
+      "payload": {
+        "pricing_models": [
+          "time_of_use",
+          "peak_demand",
+          "spot_market",
+          "flat_rate",
+          "fleet_contracted"
+        ],
+        "integrations": [
+          "ENTSO-E API (day-ahead prices)",
+          "utility_tariff_feed"
+        ],
+        "key_components": [
+          "pricing_rule_engine (rule evaluation with priority)",
+          "spot_market_poller (15-min interval)",
+          "price_broadcaster (push to charge points via OCPP SetChargingProfile)",
+          "pricing_api (CRUD for rules, GET current price per connector)"
+        ],
+        "deliverables": [
+          "backend/pricing/",
+          "backend/pricing/engine.py",
+          "backend/pricing/spot_market.py",
+          "backend/pricing/api.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "Pricing engine evaluates all active rules in priority order and returns a single effective price per connector",
+        "Time-of-use rules support all days/hours configurations with timezone awareness",
+        "Spot market prices are fetched and cached every 15 minutes with fallback to last known price on API failure",
+        "Price changes are pushed to affected charge points via OCPP TriggerMessage within 60 seconds",
+        "Pricing API returns prices in multiple currencies with ISO 4217 codes",
+        "Fleet contracted rates override dynamic pricing for authorized fleet vehicles",
+        "All pricing rule changes are written to audit log with before/after values"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Implement the load balancing engine: real-time power distribution across charge points per site and per circuit, dynamic allocation using OCPP Smart Charging profiles, demand response integration, and overload protection. Support static (equal share), weighted, and priority-based allocation strategies.",
+      "payload": {
+        "algorithms": [
+          "equal_share",
+          "weighted_priority",
+          "vehicle_soc_optimal",
+          "departure_time_optimal"
+        ],
+        "constraints": [
+          "site_max_kw",
+          "circuit_breaker_amps",
+          "grid_import_limit",
+          "transformer_capacity"
+        ],
+        "key_components": [
+          "load_monitor (real-time kW aggregation per site/circuit)",
+          "allocation_solver (LP solver: scipy.optimize or OR-Tools)",
+          "ocpp_profile_pusher (SetChargingProfile to each CP)",
+          "demand_response_handler (utility signal intake)"
+        ],
+        "deliverables": [
+          "backend/load_balancing/",
+          "backend/load_balancing/solver.py",
+          "backend/load_balancing/monitor.py",
+          "backend/load_balancing/api.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "Load monitor aggregates real-time kW from all active sessions within 2 seconds of meter value receipt",
+        "Allocation solver rebalances within 5 seconds when a new session starts or site load crosses 90% threshold",
+        "OCPP charging profiles are pushed to all active charge points within 10 seconds of rebalancing decision",
+        "Overload protection reduces allocation to all non-priority sessions within 3 seconds of threshold breach",
+        "Demand response signal (0-1 scale) linearly scales site kW budget",
+        "Load balancing decisions are logged with allocation vector and trigger reason",
+        "Unit tests cover equal-share, weighted, and departure-time optimization cases"
+      ],
+      "depends_on": [
+        7,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement fleet charging optimization: vehicle scheduling engine that minimizes charging cost while guaranteeing SoC targets by departure time. Support fleet account management, vehicle profiles (battery capacity, max charge rate, SoC telemetry), priority tiers, and bulk schedule generation. Use linear programming for cost-optimal schedule assignment.",
+      "payload": {
+        "optimization_objective": "minimize_cost_subject_to_soc_targets",
+        "inputs": [
+          "vehicle_soc",
+          "departure_time",
+          "soc_target",
+          "max_charge_rate",
+          "dynamic_prices",
+          "site_load_budget"
+        ],
+        "key_components": [
+          "fleet_account_service (CRUD for accounts, vehicles, drivers)",
+          "schedule_optimizer (LP: OR-Tools, time-slotted charging plan)",
+          "schedule_executor (push OCPP profiles for scheduled slots)",
+          "fleet_reporting_api (session history, cost breakdown, carbon metrics)"
+        ],
+        "deliverables": [
+          "backend/fleet/",
+          "backend/fleet/optimizer.py",
+          "backend/fleet/scheduler.py",
+          "backend/fleet/api.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "Optimizer generates a valid charging schedule for a 20-vehicle fleet in under 10 seconds",
+        "Schedules respect site load budget, per-vehicle max charge rate, and SoC target constraints",
+        "Departure deadline is always met if physically feasible given available energy window",
+        "Fleet reporting API returns per-vehicle cost breakdown and total fleet energy cost per period",
+        "Priority tier 1 vehicles are always scheduled before tier 2 when energy is scarce",
+        "Schedule is regenerated automatically when dynamic price updates change cost landscape by >10%",
+        "All fleet schedule changes are persisted and auditable"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement payment processing: multi-method payment (RFID, mobile app, credit/debit card, fleet account invoicing), PCI DSS-compliant card tokenization via Stripe, real-time session billing, invoice generation, and refund handling. Implement payment webhook receiver for async confirmation.",
+      "payload": {
+        "payment_methods": [
+          "rfid_token",
+          "mobile_app_wallet",
+          "credit_card_stripe",
+          "fleet_invoice",
+          "free_charging_promo"
+        ],
+        "pci_dss_scope": "SAQ A-EP \u2014 card data never touches CSMS servers; tokenized via Stripe Elements",
+        "key_components": [
+          "payment_intent_service (create, confirm, capture)",
+          "rfid_authorization_service (whitelist + Stripe customer link)",
+          "invoice_generator (PDF, email delivery)",
+          "refund_service (partial/full, audit trail)",
+          "webhook_receiver (Stripe events: payment_intent.succeeded, charge.refunded)"
+        ],
+        "deliverables": [
+          "backend/payments/",
+          "backend/payments/stripe_service.py",
+          "backend/payments/invoice.py",
+          "backend/payments/webhook.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "Card numbers never touch CSMS backend; only Stripe payment_method tokens are stored",
+        "RFID authorization completes within 500ms (cached whitelist with async refresh)",
+        "Session billing calculates cost accurately using price snapshots recorded at session start and any mid-session price changes",
+        "Invoice PDF is generated and emailed within 60 seconds of session completion",
+        "Stripe webhook handles payment_intent.succeeded idempotently (duplicate events do not double-charge)",
+        "Refunds are processed via API and reflected in session record with audit entry",
+        "Fleet account invoicing aggregates all sessions for billing period into a single invoice"
+      ],
+      "depends_on": [
+        4,
+        7,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "API",
+      "description": "Design and document the complete CSMS REST API and WebSocket event API. Produce OpenAPI 3.1 specification covering: charge point management, session lifecycle, pricing rules, load balancing controls, fleet management, payment processing, reporting, and admin operations. Include authentication (OAuth 2.0 + API keys) and rate limiting specs.",
+      "payload": {
+        "spec_format": "OpenAPI 3.1",
+        "auth_schemes": [
+          "OAuth2 (PKCE for driver app)",
+          "API Key (fleet integrations)",
+          "mTLS (OCPP charge points)"
+        ],
+        "api_groups": [
+          "charge_points (CRUD, status, commands)",
+          "sessions (list, detail, stop)",
+          "pricing (rules CRUD, current prices)",
+          "load_balancing (site limits, allocation status)",
+          "fleet (accounts, vehicles, schedules, reports)",
+          "payments (intents, invoices, refunds)",
+          "reporting (energy, revenue, utilization)",
+          "admin (users, roles, audit log)"
+        ],
+        "deliverables": [
+          "docs/api/openapi.yaml",
+          "docs/api/websocket_events.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates with no errors against OpenAPI 3.1 schema",
+        "Every endpoint has request/response schemas with examples",
+        "Authentication requirements are specified per endpoint",
+        "Rate limits are documented (e.g., 100 req/min for public, 1000 req/min for fleet API keys)",
+        "WebSocket event catalog documents all server-push events with payload schemas",
+        "API spec is importable into Postman without modification"
+      ],
+      "depends_on": [
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "FRONTEND",
+      "description": "Build the network operator dashboard: real-time site map (charge point status, availability heatmap), live session table with meter values, load balancing visualizer (Sankey/gauge per site), pricing rule manager, fleet scheduling calendar, and revenue/utilization reporting charts.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "charting": "Recharts + D3.js",
+        "maps": "Mapbox GL",
+        "real_time": "WebSocket (site/CP status updates)",
+        "key_pages": [
+          "SiteMapPage (Mapbox, CP status pins, availability)",
+          "SessionsPage (live table, filter by site/CP/fleet)",
+          "LoadBalancingPage (per-site kW gauge, allocation bars)",
+          "PricingPage (rule builder, price calendar preview)",
+          "FleetPage (vehicle list, schedule Gantt, cost report)",
+          "ReportsPage (energy, revenue, utilization charts)",
+          "AuditPage (OCPP message log, payment audit trail)"
+        ],
+        "deliverables": [
+          "web/src/pages/ev_charging/"
+        ]
+      },
+      "acceptance_criteria": [
+        "Site map renders all charge points with correct status colors (available/occupied/faulted/offline) within 2s of page load",
+        "Live session table updates without page refresh when new sessions start or stop",
+        "Load balancing gauges reflect real-time kW within 5 seconds of meter value changes",
+        "Pricing rule builder validates rules before save and shows live price preview calendar",
+        "Fleet schedule Gantt chart renders 50 vehicles \u00d7 24 hours without performance degradation",
+        "All pages are responsive down to 1280px width",
+        "Accessibility: WCAG 2.1 AA compliance (keyboard navigation, ARIA labels, color contrast)"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 14,
+      "task_type": "FRONTEND",
+      "description": "Build the EV driver mobile-responsive web app: find nearby chargers (map), start/stop session via QR code or RFID, real-time session progress (SoC, kWh, cost), payment method management (Stripe Elements), session history, and receipts.",
+      "payload": {
+        "framework": "React 18 + TypeScript (PWA)",
+        "payment_ui": "Stripe Elements (PCI DSS compliant)",
+        "key_pages": [
+          "FindChargersPage (map, filter by availability/connector type)",
+          "SessionStartPage (QR scan, connector select, payment confirm)",
+          "ActiveSessionPage (live kWh, cost, SoC bar, stop button)",
+          "PaymentMethodsPage (Stripe Elements, saved cards)",
+          "SessionHistoryPage (list, filter, receipt download)"
+        ],
+        "deliverables": [
+          "web/src/pages/driver/"
+        ]
+      },
+      "acceptance_criteria": [
+        "Charger finder loads map with nearby available connectors within 3 seconds on 4G",
+        "Session start flow completes in \u2264 4 taps from map to active session",
+        "Active session page updates kWh and cost display every 30 seconds without full page reload",
+        "Stripe Elements card input is embedded (no redirect); card never touches app server",
+        "PWA installable (manifest.json, service worker, offline page)",
+        "All pages pass Lighthouse accessibility score \u2265 90"
+      ],
+      "depends_on": [
+        12,
+        13
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 15,
+      "task_type": "HARDWARE_SIM",
+      "description": "Build an OCPP 2.0.1 charge point simulator for integration testing and development: simulate 50 concurrent charge points with configurable connector counts, IEC 61851 state transitions, meter value generation (realistic EV charging curves), fault injection, and network interruption scenarios. Implement as a Python async simulator with WebSocket clients.",
+      "payload": {
+        "simulator_type": "Software OCPP client (Python asyncio)",
+        "capabilities": [
+          "50 concurrent simulated charge points",
+          "Configurable connector count per CP (1-4)",
+          "Realistic kW charging curves (EV model library: BEV 50kW, BEV 150kW, PHEV 7kW)",
+          "Fault injection: CP offline, connector fault, meter error",
+          "Network interruption: disconnect/reconnect with queued message replay",
+          "Smart charging profile execution simulation"
+        ],
+        "deliverables": [
+          "hardware_sim/ocpp_simulator/",
+          "hardware_sim/ev_models/",
+          "hardware_sim/scenarios/",
+          "hardware_sim/README.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Simulator connects 50 charge points to CPMS simultaneously without connection errors",
+        "Each simulated CP sends BootNotification, Heartbeat (every 30s), and MeterValues (every 60s)",
+        "Session simulation follows IEC 61851 states with realistic transition timing",
+        "Charging curve models match real-world kW profiles within \u00b110% for BEV 50kW and BEV 150kW models",
+        "Fault injection scenarios trigger correct CPMS alarm handling",
+        "Simulator is controllable via REST API (start/stop sessions, inject faults, adjust load)"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "INFRA",
+      "description": "Set up infrastructure: Docker Compose for local development (CPMS backend, pricing, load balancing, fleet, payments services, PostgreSQL+TimescaleDB, Redis, Nginx), Kubernetes manifests for production deployment, and Terraform for cloud infrastructure (AWS EKS, RDS Aurora, ElastiCache, ACM certificates, VPC).",
+      "payload": {
+        "local_stack": "Docker Compose",
+        "production": "Kubernetes (AWS EKS) + Terraform",
+        "services": [
+          "cpms_api",
+          "pricing_engine",
+          "load_balancer",
+          "fleet_optimizer",
+          "payment_service",
+          "postgres_timescaledb",
+          "redis",
+          "nginx_ingress"
+        ],
+        "deliverables": [
+          "infra/docker-compose.yml",
+          "infra/docker-compose.dev.yml",
+          "infra/k8s/",
+          "infra/terraform/",
+          "infra/nginx/"
+        ],
+        "security": "All inter-service communication via mTLS (cert-manager); secrets in AWS Secrets Manager"
+      },
+      "acceptance_criteria": [
+        "docker compose up starts all services and passes health checks within 120 seconds",
+        "All services have resource limits (CPU/memory) defined in K8s manifests",
+        "Terraform plan completes without errors for AWS target environment",
+        "OCPP WebSocket endpoint is exposed via NGINX with TLS termination and WSS upgrade headers",
+        "PostgreSQL uses encrypted storage (RDS encryption at rest) in Terraform config",
+        "Horizontal Pod Autoscaler is configured for CPMS API (target 70% CPU)",
+        "All secrets are injected via environment variables from Kubernetes Secrets (not hardcoded)"
+      ],
+      "depends_on": [
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 17,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline, monitoring, alerting, and SRE runbooks for the EV charging network. Implement GitHub Actions pipelines for backend and firmware builds, Prometheus + Grafana for metrics, PagerDuty integration for on-call alerting, and distributed tracing with OpenTelemetry.",
+      "payload": {
+        "ci_cd": "GitHub Actions",
+        "monitoring": "Prometheus + Grafana + AlertManager",
+        "tracing": "OpenTelemetry \u2192 Jaeger",
+        "alerting": "PagerDuty",
+        "key_pipelines": [
+          "backend_ci (lint, test, docker build, push)",
+          "firmware_ci (cross-compile STM32H7, unit tests, size report)",
+          "ota_release (sign firmware, publish to OTA server)",
+          "deploy_staging (helm upgrade, smoke test)",
+          "deploy_prod (manual approval gate, canary)"
+        ],
+        "key_alerts": [
+          "CP offline > 5 min",
+          "site_load > 95%",
+          "payment_failure_rate > 1%",
+          "OCPP_error_rate > 5%",
+          "DB_connection_pool_exhausted"
+        ],
+        "deliverables": [
+          ".github/workflows/",
+          "infra/monitoring/",
+          "infra/alerting/",
+          "docs/runbooks/"
+        ]
+      },
+      "acceptance_criteria": [
+        "Backend CI pipeline runs in under 8 minutes including tests",
+        "Firmware CI cross-compiles for STM32H7 and reports binary size",
+        "OTA release pipeline signs firmware with Ed25519 and uploads to OTA distribution server",
+        "Grafana dashboard shows: active sessions, site load kW, OCPP message rate, payment success rate, CP availability %",
+        "All 5 key alerts are configured in AlertManager with correct severity and PagerDuty routing",
+        "Production deployment requires manual approval in GitHub Actions",
+        "Runbooks cover: CP mass-disconnect, load balancer failure, payment gateway outage"
+      ],
+      "depends_on": [
+        16
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Write firmware unit tests and HIL test specifications for the charge point controller firmware. Cover OCPP message encoding/decoding, IEC 61851 state machine transitions, smart charging profile parsing, OTA update validation, and metering accuracy. Define HIL test bench configuration using STM32 Nucleo + EVSE hardware shield.",
+      "payload": {
+        "unit_test_framework": "Unity (C) + CMock for HAL mocking",
+        "hil_bench": "STM32 Nucleo-H745ZI + EVSE signal generator shield",
+        "test_categories": [
+          "ocpp_codec_tests (encode/decode all 30+ OCPP 2.0.1 messages)",
+          "state_machine_tests (all IEC 61851 valid + invalid transitions)",
+          "smart_charging_tests (profile parsing, schedule execution, conflict resolution)",
+          "ota_tests (valid update, signature failure, power-cycle during update)",
+          "meter_accuracy_tests (\u00b10.5% accuracy vs reference meter)"
+        ],
+        "deliverables": [
+          "firmware/tests/unit/",
+          "firmware/tests/hil/hil_test_spec.md",
+          "firmware/tests/hil/bench_setup.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test suite covers \u2265 85% of firmware source lines",
+        "All OCPP 2.0.1 message codec tests pass with no encoding errors",
+        "IEC 61851 state machine tests cover all 30+ valid transitions and 10+ invalid transition rejection cases",
+        "OTA update test: firmware with invalid signature is rejected and device remains on previous version",
+        "HIL test spec defines bench wiring, signal levels, test sequences, and pass/fail criteria",
+        "HIL meter accuracy test procedure references IEC 62053 measurement standards",
+        "Tests run in CI pipeline without HIL hardware using mocked HAL"
+      ],
+      "depends_on": [
+        6,
+        15
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "TESTS",
+      "description": "Write backend unit tests and integration tests for CPMS, pricing engine, load balancing solver, fleet optimizer, and payment service. Use pytest with async support. Integration tests run against Docker Compose stack with real PostgreSQL+TimescaleDB and the OCPP charge point simulator.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio + httpx",
+        "test_categories": [
+          "ocpp_handler_unit_tests (mock websocket, all message types)",
+          "pricing_engine_unit_tests (rule evaluation, spot market fallback)",
+          "load_balancing_solver_unit_tests (LP solver correctness, constraint violations)",
+          "fleet_optimizer_unit_tests (LP schedule generation, deadline miss handling)",
+          "payment_service_unit_tests (mock Stripe, idempotency, refund logic)",
+          "integration_tests (OCPP sim \u2192 CPMS \u2192 DB \u2192 billing pipeline end-to-end)"
+        ],
+        "coverage_target": "\u2265 80% line coverage across all backend modules",
+        "deliverables": [
+          "backend/tests/unit/",
+          "backend/tests/integration/",
+          "backend/tests/conftest.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "All unit tests pass in CI without external dependencies",
+        "Integration tests pass against Docker Compose stack with OCPP simulator generating 10 concurrent sessions",
+        "Load balancing solver unit tests verify allocation is within 1% of LP optimal for standard test cases",
+        "Fleet optimizer tests verify SoC targets are met for all vehicles when energy is sufficient",
+        "Payment service tests verify Stripe webhook idempotency (duplicate event does not double-charge)",
+        "Coverage report shows \u2265 80% line coverage",
+        "Test suite completes in under 5 minutes in CI"
+      ],
+      "depends_on": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        15
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system tests: full charge session lifecycle (connect \u2192 authorize \u2192 charge \u2192 stop \u2192 bill \u2192 receipt), dynamic pricing update propagation, load balancing rebalancing under simulated peak load, fleet schedule execution across 20 vehicles, and payment processing with Stripe test mode. Include performance test: 50 concurrent sessions for 30 minutes.",
+      "payload": {
+        "test_environment": "Staging (Docker Compose + OCPP simulator)",
+        "e2e_scenarios": [
+          "full_session_lifecycle (RFID auth, OCPP session, billing, receipt)",
+          "credit_card_payment_flow (Stripe test mode, session \u2192 invoice)",
+          "price_update_propagation (update rule \u2192 verify CP receives new profile within 60s)",
+          "load_balancing_peak (30 sessions, site at 95% \u2192 verify rebalancing within 10s)",
+          "fleet_schedule_execution (20 vehicles, 8h window, verify all SoC targets met)",
+          "cp_offline_recovery (disconnect CP, reconnect, verify queued messages replayed)"
+        ],
+        "performance_test": "Locust: 50 concurrent sessions \u00d7 30 min, p99 latency < 2s for session start API",
+        "deliverables": [
+          "tests/e2e/",
+          "tests/performance/locustfile.py",
+          "tests/e2e/results/"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 6 E2E scenarios pass without manual intervention",
+        "Full session lifecycle completes in under 30 seconds from connector plug-in to session active state",
+        "Price update propagates to all 50 simulated charge points within 60 seconds",
+        "Load rebalancing completes and all OCPP profiles are updated within 10 seconds of trigger",
+        "Fleet schedule meets SoC targets for all 20 vehicles in 8-hour test window",
+        "Performance test: p99 session start API latency < 2 seconds under 50 concurrent sessions",
+        "Performance test: zero OCPP message processing errors during 30-minute run"
+      ],
+      "depends_on": [
+        18,
+        19,
+        16
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 21,
+      "task_type": "COMPLIANCE",
+      "description": "Produce compliance artifacts for PCI DSS v4.0, SOC 2 Type II, and UNECE R155/R156. Generate: PCI DSS Self-Assessment Questionnaire A-EP, SOC 2 control mapping to system design, UNECE R155 cybersecurity management system evidence package, and traceability matrix from safety requirements (Step 2) to implementation and tests.",
+      "payload": {
+        "deliverables": [
+          "compliance/pci_dss/SAQ_A-EP_ev_charging.pdf",
+          "compliance/soc2/control_mapping.md",
+          "compliance/unece_r155/csms_evidence_package.md",
+          "compliance/traceability_matrix.xlsx",
+          "compliance/risk_matrix.xlsx",
+          "compliance/audit_checklist.md"
+        ],
+        "standards": [
+          "PCI DSS v4.0",
+          "SOC 2 Type II",
+          "UNECE R155",
+          "UNECE R156",
+          "ISO 27001"
+        ],
+        "traceability": "Safety requirement \u2192 System design \u2192 Implementation file \u2192 Test case \u2192 Test result"
+      },
+      "acceptance_criteria": [
+        "Traceability matrix links every safety requirement from Step 2 to at least one implementation artifact and one test case",
+        "PCI DSS SAQ A-EP is fully completed with evidence references for all applicable requirements",
+        "SOC 2 control mapping covers all 5 Trust Service Criteria (Security, Availability, Processing Integrity, Confidentiality, Privacy)",
+        "UNECE R155 evidence package documents all cybersecurity controls with implementation evidence pointers",
+        "Risk matrix assigns residual risk ratings to all identified risks after mitigation",
+        "All compliance documents are version-controlled and signed-off"
+      ],
+      "depends_on": [
+        2,
+        3,
+        19,
+        20
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 22,
+      "task_type": "DOCS",
+      "description": "Write operator and developer documentation: CPMS deployment guide, OCPP integration guide for third-party charge points, API reference (from OpenAPI spec), load balancing configuration guide, fleet management user guide, and payment integration guide.",
+      "payload": {
+        "deliverables": [
+          "docs/deployment/deployment_guide.md",
+          "docs/integration/ocpp_integration_guide.md",
+          "docs/api/README.md",
+          "docs/load_balancing/configuration_guide.md",
+          "docs/fleet/fleet_management_guide.md",
+          "docs/payments/payment_integration_guide.md",
+          "docs/architecture/system_architecture.md"
+        ],
+        "formats": [
+          "Markdown (MkDocs)",
+          "OpenAPI HTML (Redoc)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Deployment guide covers Docker Compose (local) and Kubernetes (production) installation end-to-end",
+        "OCPP integration guide documents WebSocket endpoint URL, authentication, supported feature profiles, and message examples",
+        "API reference is auto-generated from OpenAPI spec and renders correctly in Redoc",
+        "Fleet management guide includes step-by-step walkthrough: create account \u2192 add vehicles \u2192 configure schedule \u2192 view reports",
+        "Architecture document includes C4 context, container, and component diagrams",
+        "All docs pass markdown lint with no broken links"
+      ],
+      "depends_on": [
+        12,
+        13,
+        14,
+        21
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 22,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 52,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 52,
+        "final_review": {
+          "score": 52,
+          "flaws": [
+            "ISO 26262 misapplied in Step 2: ISO 26262 governs automotive road vehicle E/E systems (ASIL A-D). A charging network management system is not a road vehicle component. The correct functional safety standard is IEC 61508 (general) or IEC 62061 for machinery safety. ASIL ratings generated here will be meaningless and create false compliance assurance.",
+            "UNECE R155/R156 scope error in Steps 2, 3, 21: UNECE R155/R156 apply to vehicle OEMs and their Tier-1 suppliers \u2014 not to charging network operators. The CSMS operator is not a regulated party under R155. The correct cybersecurity frameworks are IEC 62443 (industrial control systems) and ISO 27001. Building a UNECE R155 evidence package for a CSMS is wasted effort and signals a fundamental misunderstanding of the regulatory landscape.",
+            "PCI DSS SAQ A-EP misclassification in Step 11: SAQ A-EP applies when the merchant's website directly receives card data before passing it to a processor. Stripe Elements (iframe-hosted) qualifies for SAQ A \u2014 a significantly lighter attestation. Targeting A-EP triggers unnecessary firewall, IDS, and vulnerability scanning requirements on the CPMS servers that Stripe Elements specifically exempts merchants from.",
+            "ISO 15118 Plug & Charge is catastrophically underestimated in Step 7: ISO 15118 PnC requires a full V2G PKI (Root CA, Sub-CA, OEM Provisioning Certificate, Contract Certificate), EVCC/SECC TLS mutual authentication with client certificates, OCSP stapling, and contract certificate provisioning workflow. This is a multi-month engineering effort on its own. Listing it as a feature of the OCPP server is a plan-level failure.",
+            "Python `ocpp` library (mobilityhouse) OCPP 2.0.1 support is immature: The library's 2.0.1 support is incomplete and community-maintained. Key 2.0.1 features (Device Management, ISO 15118, Security Profiles) are partially or not implemented. Building a production CPMS on this library without forking and completing the implementation is a high-probability failure.",
+            "OCPP WebSocket horizontal scaling is unaddressed: FastAPI WebSocket connections are stateful \u2014 a charge point holds a persistent connection to one server process. The plan specifies K8s HPA at 70% CPU but does not address sticky sessions, consistent hashing for CP-to-pod affinity, or distributed OCPP session state. Scaling out CPMS pods without this will result in message routing failures and dropped sessions.",
+            "Load balancer concurrency control is absent: Step 9's LP solver rebalances on events (new session, 90% threshold). No mutex, solver queue, or debounce is specified. In a 50-CP site with simultaneous session starts, multiple rebalancing triggers will race, potentially generating conflicting SetChargingProfile pushes to the same charge points, violating the OCPP spec constraint that only one charging profile per purpose per connector may be active.",
+            "RFID authorization cache invalidation is unspecified: The 500ms SLA relies on a local whitelist cache, but the plan does not specify how revoked or suspended RFID tokens are invalidated across all CPMS instances. A revoked token that remains in cache until TTL expiry could continue authorizing sessions \u2014 a fraud and liability risk.",
+            "ENTSO-E API is EU-only and requires registration: Step 8 hard-codes ENTSO-E as the spot market feed. ENTSO-E is the European network operator data platform. US markets use EIA/CAISO/ERCOT. No market-agnostic abstraction layer is specified, making the pricing engine geographically locked to Europe with no stated deployment scope.",
+            "Firmware MISRA C zero-violation target is unrealistic without tooling specification: FreeRTOS itself ships with documented MISRA C deviations. mbedTLS has known MISRA violations. The acceptance criteria 'MISRA C violations zero' is unachievable without specifying the static analysis tool (LDRA, PC-lint Plus, Polyspace), the MISRA C edition (2004/2012/2023), and an approved deviations list. This criterion will either be silently dropped or block firmware release indefinitely.",
+            "No GDPR/privacy analysis for EU deployments: The driver app collects GPS location (charging history = movement profile), SoC telemetry, payment history, and RFID identity. For any EU deployment, GDPR Articles 5, 17, 25 (data minimization, right to erasure, privacy by design) require explicit design decisions. Not one step addresses this. A data protection impact assessment (DPIA) is required under GDPR Article 35 for large-scale processing of location data.",
+            "Certificate lifecycle management is missing entirely: mTLS is specified for inter-service communication (cert-manager) and OCPP charge points. No cert rotation schedule, CRL/OCSP infrastructure, automated renewal (cert-manager + Let's Encrypt or private CA), or charge-point certificate revocation workflow is specified. Certificate expiry is the #1 cause of production outages in EV charging deployments.",
+            "Involuntary session curtailment billing logic is undefined: Load balancing (Step 9) can reduce or stop charging mid-session. The payment service (Step 11) calculates cost from session start/stop and price snapshots. There is no specification for how a load-balancer-terminated session is billed (partial refund? prorated? operator liability?). This gap will produce disputed charges.",
+            "OTA firmware signing key storage is unspecified: The CI/CD pipeline (Step 17) signs firmware with Ed25519. The private key location is not specified \u2014 environment variable in GitHub Actions Secrets is the implied default, which means it can be exfiltrated by any malicious workflow step or supply chain compromise. HSM-backed signing (AWS CloudHSM, Google Cloud HSM) is required for production firmware distribution to safety-critical devices."
+          ],
+          "suggestions": [
+            "Replace ISO 26262 with IEC 61508/IEC 62061 in Step 2. Assign SIL levels (not ASIL) to CPMS functions. If the charge point controller firmware controls an electrical contactor, it may qualify for SIL 2 under IEC 61508.",
+            "Replace UNECE R155 compliance with IEC 62443-4-2 (component security) for the charge point firmware and IEC 62443-3-3 (system security requirements) for the CSMS. These are the standards actual EV charging operators are assessed against.",
+            "Re-scope PCI DSS to SAQ A. Confirm with a QSA that Stripe Elements iframes are fully out-of-scope. If so, SAQ A requires only 22 requirements vs. SAQ A-EP's 191.",
+            "Extract ISO 15118 PnC into its own multi-step work stream: PKI design, EVCC/SECC implementation on firmware, contract certificate provisioning API, OCSP responder. If not in scope for MVP, explicitly exclude it and remove the reference from Step 7's acceptance criteria.",
+            "Evaluate alternative OCPP 2.0.1 server implementations: CitrineOS (TypeScript, actively maintained), SteVe (Java, 1.6 + 2.0), or building on the EVEREST framework. Alternatively, commission the mobilityhouse Python library's 2.0.1 completion as a tracked spike before committing to it.",
+            "Add an OCPP session affinity layer: use NGINX sticky sessions (IP hash or cookie) in front of multiple CPMS pods, store OCPP session state in Redis with the charge point ID as key, and ensure all pod replicas can handle failover by reading state from Redis on reconnect.",
+            "Add a rebalancing debounce and serialization queue to the load balancer: coalesce events within a 2-second window, serialize LP solver invocations with an asyncio.Lock, and version-stamp SetChargingProfile pushes so stale profile updates from a previous solver run are discarded.",
+            "Add a GDPR compliance step between Steps 3 and 4: define personal data inventory, legal basis for processing, retention periods (align with data_retention_policy.md in Step 4), and implement soft-delete + erasure API for driver accounts before building any PII-storing tables.",
+            "Add certificate lifecycle management to Step 16/17: define cert rotation period (90 days for inter-service), automate rotation via cert-manager CertificateRequest resources, implement charge-point certificate revocation via OCSP, and add a Grafana alert for certificates expiring within 30 days.",
+            "Specify OpenADR 2.0 (North America) or USEF (Europe) as the demand response protocol in Step 9, or build an adapter interface with two concrete implementations. The current 'utility signal (0-1 scale)' is a placeholder, not an integration specification.",
+            "Add an HSM requirement for OTA signing key in Step 17: use AWS CloudHSM or HashiCorp Vault with HSM backend for Ed25519 key storage. CI pipeline requests a signature from the HSM API; the private key never leaves the HSM.",
+            "Define OCPP Security Profile target explicitly in Step 7: Profile 1 (HTTP Basic Auth), Profile 2 (TLS + Client Certificate), or Profile 3 (Profile 2 + signed OCPP messages). Profile 3 is required for the threat model in Step 3 to be coherent."
+          ],
+          "missing": [
+            "Charge point provisioning and onboarding workflow: how a new physical EVSE is registered (certificate issuance, initial config push, network activation). This is a Day-2 operational gap that will block go-live.",
+            "GDPR Data Protection Impact Assessment (DPIA) and privacy-by-design decisions for driver data (location, SoC, payment history).",
+            "OpenADR 2.0 or USEF protocol specification for demand response integration (Step 9 references 'utility signal' without a wire protocol).",
+            "OCPP Security Profile selection and implementation specification.",
+            "Infeasibility handling in the fleet LP optimizer: what happens when the energy window cannot satisfy all SoC targets? The optimizer must produce a ranked partial solution, not crash or return an empty schedule.",
+            "Multi-region / multi-currency pricing architecture: ENTSO-E lock-in means the pricing engine has no defined path to non-EU markets.",
+            "Charge-point firmware version management: tracking deployed firmware versions across the fleet, rollout targeting (% of fleet, specific sites), and emergency rollback procedure at fleet scale.",
+            "Redis failure handling: if Redis pub/sub fails, charge point online/offline state cannot be published. The plan has no Redis sentinel, cluster, or fallback for this critical real-time path.",
+            "Billing dispute and chargeback handling workflow: not covered by payment service spec or compliance step.",
+            "ISO 14117 / IEC 62196 connector type support matrix: which connector types (CCS1, CCS2, CHAdeMO, Type 2, NACS) are supported and how connector type negotiation is handled in the OCPP session.",
+            "Rate limiting and DDoS protection for the OCPP WebSocket endpoint: charge points on cellular connections often share IP ranges; naive IP-based rate limiting will block legitimate CPs during carrier NAT events."
+          ],
+          "security_risks": [
+            "OTA signing key in CI secrets: a compromised GitHub Actions workflow can exfiltrate the Ed25519 private key, enabling malicious firmware distribution to all deployed charge points \u2014 a potentially safety-critical attack vector for hardware controlling electrical contactors.",
+            "OCPP WebSocket endpoint DoS: the CPMS WebSocket server is internet-exposed (charge points on cellular). No WebSocket upgrade rate limiting or connection-level authentication timeout is specified. An attacker can exhaust file descriptors with unauthenticated WebSocket connections before TLS handshake.",
+            "Redis as a trust boundary: charge point online/offline state is published to Redis pub/sub. If an attacker gains Redis access (no AUTH or ACL specified in the plan), they can spoof charge point status, causing operators to dispatch maintenance to functional chargers or miss actual faults.",
+            "Fleet API key with no expiry or rotation policy: fleet integrations use static API keys. A leaked key grants full fleet account access (vehicle SoC, schedules, invoices) with no time-bound revocation.",
+            "OCPP message injection via WebSocket: if Security Profile 1 (HTTP Basic Auth, no message signing) is used, a man-in-the-middle who breaks TLS (e.g., via a compromised intermediate CA) can inject RemoteStartTransaction or ChangeAvailability messages, enabling unauthorized charging or taking chargers offline.",
+            "TimescaleDB audit log integrity: Step 4 requires append-only audit log with RLS preventing updates/deletes. PostgreSQL RLS can be bypassed by a superuser or the application's own DB role if not specifically restricted. No specification for a separate audit DB user with INSERT-only grants or external immutable log sink (e.g., CloudTrail, WORM storage).",
+            "Stripe webhook endpoint authentication gap: Step 11 specifies webhook receiver but does not explicitly call out Stripe webhook signature verification (Stripe-Signature header HMAC validation). Without this, any party can POST to the webhook endpoint and trigger payment confirmation events."
+          ],
+          "summary": "This plan demonstrates strong domain breadth and commendable technical detail across firmware, backend, infrastructure, and testing \u2014 the dependency graph is logical and the acceptance criteria are mostly measurable. However, it contains three category-level compliance errors that would cause significant rework or audit failure in a regulated environment: ISO 26262 is misapplied to EVSE infrastructure (the correct standard is IEC 61508/62061), UNECE R155 is misscoped to a CSMS operator who is not a regulated party under that regulation, and the PCI DSS SAQ A-EP classification is likely incorrect for a Stripe Elements implementation. ISO 15118 Plug & Charge is listed as a feature but is a multi-month PKI and protocol engineering project. The OCPP 2.0.1 Python library dependency is a production risk given its incomplete 2.0.1 implementation. On the infrastructure side, horizontal scaling of stateful OCPP WebSocket connections is architecturally unresolved \u2014 HPA alone does not address session affinity \u2014 and certificate lifecycle management is entirely absent despite mTLS being specified throughout. GDPR is not mentioned despite the driver app collecting location and payment data in likely EU-regulated markets. The firmware MISRA C zero-violation target is unachievable without specifying a tool and deviation process. These are not polish items \u2014 they represent fundamental rework of the compliance framework (Steps 2, 3, 21), a significant addition to the firmware scope, and a resolvable but non-trivial infrastructure architecture change. Score 52 reflects a plan that is architecturally coherent and technically competent in many areas but would fail regulatory review and production reliability assessment without addressing these gaps.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 52,
+            "flaws": [
+              "ISO 26262 misapplied in Step 2: ISO 26262 governs automotive road vehicle E/E systems (ASIL A-D). A charging network management system is not a road vehicle component. The correct functional safety standard is IEC 61508 (general) or IEC 62061 for machinery safety. ASIL ratings generated here will be meaningless and create false compliance assurance.",
+              "UNECE R155/R156 scope error in Steps 2, 3, 21: UNECE R155/R156 apply to vehicle OEMs and their Tier-1 suppliers \u2014 not to charging network operators. The CSMS operator is not a regulated party under R155. The correct cybersecurity frameworks are IEC 62443 (industrial control systems) and ISO 27001. Building a UNECE R155 evidence package for a CSMS is wasted effort and signals a fundamental misunderstanding of the regulatory landscape.",
+              "PCI DSS SAQ A-EP misclassification in Step 11: SAQ A-EP applies when the merchant's website directly receives card data before passing it to a processor. Stripe Elements (iframe-hosted) qualifies for SAQ A \u2014 a significantly lighter attestation. Targeting A-EP triggers unnecessary firewall, IDS, and vulnerability scanning requirements on the CPMS servers that Stripe Elements specifically exempts merchants from.",
+              "ISO 15118 Plug & Charge is catastrophically underestimated in Step 7: ISO 15118 PnC requires a full V2G PKI (Root CA, Sub-CA, OEM Provisioning Certificate, Contract Certificate), EVCC/SECC TLS mutual authentication with client certificates, OCSP stapling, and contract certificate provisioning workflow. This is a multi-month engineering effort on its own. Listing it as a feature of the OCPP server is a plan-level failure.",
+              "Python `ocpp` library (mobilityhouse) OCPP 2.0.1 support is immature: The library's 2.0.1 support is incomplete and community-maintained. Key 2.0.1 features (Device Management, ISO 15118, Security Profiles) are partially or not implemented. Building a production CPMS on this library without forking and completing the implementation is a high-probability failure.",
+              "OCPP WebSocket horizontal scaling is unaddressed: FastAPI WebSocket connections are stateful \u2014 a charge point holds a persistent connection to one server process. The plan specifies K8s HPA at 70% CPU but does not address sticky sessions, consistent hashing for CP-to-pod affinity, or distributed OCPP session state. Scaling out CPMS pods without this will result in message routing failures and dropped sessions.",
+              "Load balancer concurrency control is absent: Step 9's LP solver rebalances on events (new session, 90% threshold). No mutex, solver queue, or debounce is specified. In a 50-CP site with simultaneous session starts, multiple rebalancing triggers will race, potentially generating conflicting SetChargingProfile pushes to the same charge points, violating the OCPP spec constraint that only one charging profile per purpose per connector may be active.",
+              "RFID authorization cache invalidation is unspecified: The 500ms SLA relies on a local whitelist cache, but the plan does not specify how revoked or suspended RFID tokens are invalidated across all CPMS instances. A revoked token that remains in cache until TTL expiry could continue authorizing sessions \u2014 a fraud and liability risk.",
+              "ENTSO-E API is EU-only and requires registration: Step 8 hard-codes ENTSO-E as the spot market feed. ENTSO-E is the European network operator data platform. US markets use EIA/CAISO/ERCOT. No market-agnostic abstraction layer is specified, making the pricing engine geographically locked to Europe with no stated deployment scope.",
+              "Firmware MISRA C zero-violation target is unrealistic without tooling specification: FreeRTOS itself ships with documented MISRA C deviations. mbedTLS has known MISRA violations. The acceptance criteria 'MISRA C violations zero' is unachievable without specifying the static analysis tool (LDRA, PC-lint Plus, Polyspace), the MISRA C edition (2004/2012/2023), and an approved deviations list. This criterion will either be silently dropped or block firmware release indefinitely.",
+              "No GDPR/privacy analysis for EU deployments: The driver app collects GPS location (charging history = movement profile), SoC telemetry, payment history, and RFID identity. For any EU deployment, GDPR Articles 5, 17, 25 (data minimization, right to erasure, privacy by design) require explicit design decisions. Not one step addresses this. A data protection impact assessment (DPIA) is required under GDPR Article 35 for large-scale processing of location data.",
+              "Certificate lifecycle management is missing entirely: mTLS is specified for inter-service communication (cert-manager) and OCPP charge points. No cert rotation schedule, CRL/OCSP infrastructure, automated renewal (cert-manager + Let's Encrypt or private CA), or charge-point certificate revocation workflow is specified. Certificate expiry is the #1 cause of production outages in EV charging deployments.",
+              "Involuntary session curtailment billing logic is undefined: Load balancing (Step 9) can reduce or stop charging mid-session. The payment service (Step 11) calculates cost from session start/stop and price snapshots. There is no specification for how a load-balancer-terminated session is billed (partial refund? prorated? operator liability?). This gap will produce disputed charges.",
+              "OTA firmware signing key storage is unspecified: The CI/CD pipeline (Step 17) signs firmware with Ed25519. The private key location is not specified \u2014 environment variable in GitHub Actions Secrets is the implied default, which means it can be exfiltrated by any malicious workflow step or supply chain compromise. HSM-backed signing (AWS CloudHSM, Google Cloud HSM) is required for production firmware distribution to safety-critical devices."
+            ],
+            "suggestions": [
+              "Replace ISO 26262 with IEC 61508/IEC 62061 in Step 2. Assign SIL levels (not ASIL) to CPMS functions. If the charge point controller firmware controls an electrical contactor, it may qualify for SIL 2 under IEC 61508.",
+              "Replace UNECE R155 compliance with IEC 62443-4-2 (component security) for the charge point firmware and IEC 62443-3-3 (system security requirements) for the CSMS. These are the standards actual EV charging operators are assessed against.",
+              "Re-scope PCI DSS to SAQ A. Confirm with a QSA that Stripe Elements iframes are fully out-of-scope. If so, SAQ A requires only 22 requirements vs. SAQ A-EP's 191.",
+              "Extract ISO 15118 PnC into its own multi-step work stream: PKI design, EVCC/SECC implementation on firmware, contract certificate provisioning API, OCSP responder. If not in scope for MVP, explicitly exclude it and remove the reference from Step 7's acceptance criteria.",
+              "Evaluate alternative OCPP 2.0.1 server implementations: CitrineOS (TypeScript, actively maintained), SteVe (Java, 1.6 + 2.0), or building on the EVEREST framework. Alternatively, commission the mobilityhouse Python library's 2.0.1 completion as a tracked spike before committing to it.",
+              "Add an OCPP session affinity layer: use NGINX sticky sessions (IP hash or cookie) in front of multiple CPMS pods, store OCPP session state in Redis with the charge point ID as key, and ensure all pod replicas can handle failover by reading state from Redis on reconnect.",
+              "Add a rebalancing debounce and serialization queue to the load balancer: coalesce events within a 2-second window, serialize LP solver invocations with an asyncio.Lock, and version-stamp SetChargingProfile pushes so stale profile updates from a previous solver run are discarded.",
+              "Add a GDPR compliance step between Steps 3 and 4: define personal data inventory, legal basis for processing, retention periods (align with data_retention_policy.md in Step 4), and implement soft-delete + erasure API for driver accounts before building any PII-storing tables.",
+              "Add certificate lifecycle management to Step 16/17: define cert rotation period (90 days for inter-service), automate rotation via cert-manager CertificateRequest resources, implement charge-point certificate revocation via OCSP, and add a Grafana alert for certificates expiring within 30 days.",
+              "Specify OpenADR 2.0 (North America) or USEF (Europe) as the demand response protocol in Step 9, or build an adapter interface with two concrete implementations. The current 'utility signal (0-1 scale)' is a placeholder, not an integration specification.",
+              "Add an HSM requirement for OTA signing key in Step 17: use AWS CloudHSM or HashiCorp Vault with HSM backend for Ed25519 key storage. CI pipeline requests a signature from the HSM API; the private key never leaves the HSM.",
+              "Define OCPP Security Profile target explicitly in Step 7: Profile 1 (HTTP Basic Auth), Profile 2 (TLS + Client Certificate), or Profile 3 (Profile 2 + signed OCPP messages). Profile 3 is required for the threat model in Step 3 to be coherent."
+            ],
+            "missing": [
+              "Charge point provisioning and onboarding workflow: how a new physical EVSE is registered (certificate issuance, initial config push, network activation). This is a Day-2 operational gap that will block go-live.",
+              "GDPR Data Protection Impact Assessment (DPIA) and privacy-by-design decisions for driver data (location, SoC, payment history).",
+              "OpenADR 2.0 or USEF protocol specification for demand response integration (Step 9 references 'utility signal' without a wire protocol).",
+              "OCPP Security Profile selection and implementation specification.",
+              "Infeasibility handling in the fleet LP optimizer: what happens when the energy window cannot satisfy all SoC targets? The optimizer must produce a ranked partial solution, not crash or return an empty schedule.",
+              "Multi-region / multi-currency pricing architecture: ENTSO-E lock-in means the pricing engine has no defined path to non-EU markets.",
+              "Charge-point firmware version management: tracking deployed firmware versions across the fleet, rollout targeting (% of fleet, specific sites), and emergency rollback procedure at fleet scale.",
+              "Redis failure handling: if Redis pub/sub fails, charge point online/offline state cannot be published. The plan has no Redis sentinel, cluster, or fallback for this critical real-time path.",
+              "Billing dispute and chargeback handling workflow: not covered by payment service spec or compliance step.",
+              "ISO 14117 / IEC 62196 connector type support matrix: which connector types (CCS1, CCS2, CHAdeMO, Type 2, NACS) are supported and how connector type negotiation is handled in the OCPP session.",
+              "Rate limiting and DDoS protection for the OCPP WebSocket endpoint: charge points on cellular connections often share IP ranges; naive IP-based rate limiting will block legitimate CPs during carrier NAT events."
+            ],
+            "security_risks": [
+              "OTA signing key in CI secrets: a compromised GitHub Actions workflow can exfiltrate the Ed25519 private key, enabling malicious firmware distribution to all deployed charge points \u2014 a potentially safety-critical attack vector for hardware controlling electrical contactors.",
+              "OCPP WebSocket endpoint DoS: the CPMS WebSocket server is internet-exposed (charge points on cellular). No WebSocket upgrade rate limiting or connection-level authentication timeout is specified. An attacker can exhaust file descriptors with unauthenticated WebSocket connections before TLS handshake.",
+              "Redis as a trust boundary: charge point online/offline state is published to Redis pub/sub. If an attacker gains Redis access (no AUTH or ACL specified in the plan), they can spoof charge point status, causing operators to dispatch maintenance to functional chargers or miss actual faults.",
+              "Fleet API key with no expiry or rotation policy: fleet integrations use static API keys. A leaked key grants full fleet account access (vehicle SoC, schedules, invoices) with no time-bound revocation.",
+              "OCPP message injection via WebSocket: if Security Profile 1 (HTTP Basic Auth, no message signing) is used, a man-in-the-middle who breaks TLS (e.g., via a compromised intermediate CA) can inject RemoteStartTransaction or ChangeAvailability messages, enabling unauthorized charging or taking chargers offline.",
+              "TimescaleDB audit log integrity: Step 4 requires append-only audit log with RLS preventing updates/deletes. PostgreSQL RLS can be bypassed by a superuser or the application's own DB role if not specifically restricted. No specification for a separate audit DB user with INSERT-only grants or external immutable log sink (e.g., CloudTrail, WORM storage).",
+              "Stripe webhook endpoint authentication gap: Step 11 specifies webhook receiver but does not explicitly call out Stripe webhook signature verification (Stripe-Signature header HMAC validation). Without this, any party can POST to the webhook endpoint and trigger payment confirmation events."
+            ],
+            "summary": "This plan demonstrates strong domain breadth and commendable technical detail across firmware, backend, infrastructure, and testing \u2014 the dependency graph is logical and the acceptance criteria are mostly measurable. However, it contains three category-level compliance errors that would cause significant rework or audit failure in a regulated environment: ISO 26262 is misapplied to EVSE infrastructure (the correct standard is IEC 61508/62061), UNECE R155 is misscoped to a CSMS operator who is not a regulated party under that regulation, and the PCI DSS SAQ A-EP classification is likely incorrect for a Stripe Elements implementation. ISO 15118 Plug & Charge is listed as a feature but is a multi-month PKI and protocol engineering project. The OCPP 2.0.1 Python library dependency is a production risk given its incomplete 2.0.1 implementation. On the infrastructure side, horizontal scaling of stateful OCPP WebSocket connections is architecturally unresolved \u2014 HPA alone does not address session affinity \u2014 and certificate lifecycle management is entirely absent despite mTLS being specified throughout. GDPR is not mentioned despite the driver app collecting location and payment data in likely EU-regulated markets. The firmware MISRA C zero-violation target is unachievable without specifying a tool and deviation process. These are not polish items \u2014 they represent fundamental rework of the compliance framework (Steps 2, 3, 21), a significant addition to the firmware scope, and a resolvable but non-trivial infrastructure architecture change. Score 52 reflects a plan that is architecturally coherent and technically competent in many areas but would fail regulatory review and production reliability assessment without addressing these gaps.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T00:53:12.501599+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 173.48,
+    "critic_plan": 144.33
+  }
+}

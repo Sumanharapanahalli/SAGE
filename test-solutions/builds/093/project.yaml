@@ -1,0 +1,69 @@
+project_name: workflow_automation
+display_name: Workflow Automation
+version: 1.0.0
+domain: enterprise
+description: Enterprise workflow automation platform with visual flow builder, 200+
+  app connectors, conditional logic, error handling, and execution monitoring.
+detected_domains: []
+compliance_standards:
+- SOC 2
+- ISO 27001
+- GDPR
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- FINANCIAL
+- FRONTEND
+- INFRA
+- LEGAL
+- LOCALIZATION
+- MARKET_RESEARCH
+- OPERATIONS
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- developer
+- devops_engineer
+- financial_analyst
+- legal_advisor
+- localization_engineer
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

@@ -1,0 +1,917 @@
+{
+  "run_id": "38a075d8-bb5b-4546-8b6e-8391185bac47",
+  "status": {
+    "run_id": "38a075d8-bb5b-4546-8b6e-8391185bac47",
+    "solution_name": "translation_service",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T09:01:23.013845+00:00",
+    "updated_at": "2026-03-22T09:06:33.118241+00:00",
+    "product_description": "Neural machine translation service with 50+ language pairs, domain adaptation, terminology management, translation memory, and quality estimation scoring.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "CONFIG",
+        "description": "Initialize translation_service project structure: Python monorepo layout, dependency management (uv/poetry), pre-commit hooks, linting (ruff), type-checking (mypy), and base configuration files for all sub-services.",
+        "payload": {
+          "solution_name": "translation_service",
+          "tools": [
+            "uv",
+            "ruff",
+            "mypy",
+            "pre-commit"
+          ],
+          "directories": [
+            "src/nmt",
+            "src/tm",
+            "src/terminology",
+            "src/qe",
+            "src/api",
+            "data/",
+            "models/",
+            "tests/",
+            "infra/"
+          ],
+          "config_files": [
+            "pyproject.toml",
+            ".env.example",
+            "config/settings.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "Project installs cleanly in a fresh virtualenv",
+          "ruff and mypy pass on empty stubs",
+          "Directory structure matches spec",
+          "settings.yaml loads without errors with sensible defaults"
+        ],
+        "depends_on": [],
+        "agent_role": "developer"
+      },
+      {
+        "step": 2,
+        "task_type": "DATABASE",
+        "description": "Design and implement PostgreSQL schema for translation memory (TM), terminology databases, quality estimation history, language pair registry, domain registry, and user/project metadata. Write Alembic migrations.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "migration_tool": "Alembic",
+          "tables": [
+            "language_pairs (id, src_lang, tgt_lang, domain, active)",
+            "translation_units (id, src_text, tgt_text, src_lang, tgt_lang, domain, project_id, fuzzy_score, created_at)",
+            "terminology_entries (id, src_term, tgt_term, src_lang, tgt_lang, domain, forbidden, created_at)",
+            "qe_scores (id, translation_unit_id, da_score, mqm_score, model_version, created_at)",
+            "domains (id, name, description, base_model_path, adapter_path)",
+            "projects (id, name, domain_id, owner, tm_enabled, terminology_enabled)"
+          ],
+          "indexes": [
+            "GIN index on src_text for fuzzy TM lookup",
+            "B-tree on (src_lang, tgt_lang, domain)"
+          ]
+        },
+        "acceptance_criteria": [
+          "All migrations apply cleanly on a fresh PostgreSQL instance",
+          "Schema passes normalization review (3NF)",
+          "Indexes verified via EXPLAIN ANALYZE on sample queries",
+          "Alembic downgrade migration works without data loss on empty tables"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 3,
+        "task_type": "DATA",
+        "description": "Build parallel corpus ingestion pipeline supporting 50+ language pairs. Sources: OPUS (CCAligned, MultiUN, WikiMatrix, TED2020, EuroParl), FLORES-200, WMT datasets. Implement deduplication, language ID filtering (fastText), length-ratio filtering, and bicleaner-AI scoring. Output: sharded JSONL per language pair.",
+        "payload": {
+          "sources": [
+            "OPUS-CCAligned",
+            "OPUS-MultiUN",
+            "WikiMatrix",
+            "TED2020",
+            "EuroParl",
+            "FLORES-200",
+            "WMT23"
+          ],
+          "target_language_pairs": 50,
+          "tools": [
+            "bicleaner-ai",
+            "fastText lid.176.bin",
+            "sacremoses"
+          ],
+          "output_format": "sharded JSONL (1M sentences/shard)",
+          "filters": [
+            "length_ratio < 3",
+            "langid_confidence > 0.85",
+            "bicleaner_score > 0.5",
+            "dedup via MinHash LSH"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 50+ language pairs have at least 100K clean sentence pairs",
+          "Language identification accuracy >= 99% on held-out sample",
+          "Deduplication reduces corpus size by at least 5%",
+          "Pipeline is idempotent and resumable from last checkpoint",
+          "Data manifest JSON produced listing pair counts and filter statistics"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 4,
+        "task_type": "DATA",
+        "description": "Build domain-specific corpus collection pipeline for 8 domains: legal, medical, finance, technical, news, e-commerce, academic, and general. Scrape or download domain corpora (JRC-Acquis for legal, EMEA for medical, etc.), apply domain classifiers, and partition training data by domain per language pair.",
+        "payload": {
+          "domains": [
+            "legal",
+            "medical",
+            "finance",
+            "technical",
+            "news",
+            "ecommerce",
+            "academic",
+            "general"
+          ],
+          "domain_corpora": [
+            "JRC-Acquis",
+            "EMEA",
+            "FinancialPhraseBank-multilingual",
+            "TICO-19",
+            "News-Commentary"
+          ],
+          "domain_classifier": "fastText trained on domain-labeled seed sets",
+          "output": "domain-partitioned JSONL with domain label per sentence pair"
+        },
+        "acceptance_criteria": [
+          "Each domain has labeled data for at least 20 language pairs",
+          "Domain classifier achieves F1 >= 0.88 on held-out test set",
+          "Domain distribution statistics logged per language pair",
+          "Pipeline outputs domain manifest JSON"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 5,
+        "task_type": "DATA",
+        "description": "Build translation memory (TM) ETL pipeline: ingest TMX files, normalize to internal TU schema, compute TF-IDF and BM25 indexes for fuzzy matching, and load into PostgreSQL + Redis cache. Implement segment-level deduplication and source-language normalization (lowercasing, Unicode NFKC).",
+        "payload": {
+          "input_formats": [
+            "TMX 1.4",
+            "XLIFF 1.2",
+            "CSV"
+          ],
+          "fuzzy_match_backend": "BM25 via Elasticsearch + TF-IDF fallback",
+          "cache": "Redis 7 (LRU, TTL 24h)",
+          "normalization": [
+            "Unicode NFKC",
+            "whitespace collapse",
+            "case-insensitive index"
+          ],
+          "batch_size": 10000
+        },
+        "acceptance_criteria": [
+          "TMX files with 100K TUs ingest in under 60 seconds",
+          "Fuzzy match returns results in < 50ms at p99 for 10K TM entries",
+          "Exact match hit rate verified against known TM test set >= 100%",
+          "Fuzzy match threshold configurable (default 0.75)",
+          "ETL pipeline handles malformed TMX gracefully with error logging"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 6,
+        "task_type": "ML_MODEL",
+        "description": "Train multilingual base NMT model using NLLB-200 (No Language Left Behind) architecture as starting point. Fine-tune on the cleaned 50+ language pair corpora using fairseq or HuggingFace Transformers. Implement SentencePiece tokenization with shared vocabulary of 256K tokens. Evaluate with BLEU, chrF++, and COMET.",
+        "payload": {
+          "architecture": "NLLB-200-distilled-600M (base) or mBART-50",
+          "framework": "HuggingFace Transformers + fairseq",
+          "tokenizer": "SentencePiece (256K shared vocab)",
+          "training": {
+            "optimizer": "Adam with inverse square root LR schedule",
+            "batch_size": 32768,
+            "max_tokens": 4096,
+            "gradient_accumulation": 8,
+            "fp16": true
+          },
+          "evaluation_metrics": [
+            "BLEU (sacreBLEU)",
+            "chrF++",
+            "COMET-22"
+          ],
+          "hardware": "4x A100 80GB or equivalent"
+        },
+        "acceptance_criteria": [
+          "Model trains to convergence without NaN loss",
+          "BLEU >= 28 on WMT newstest for high-resource pairs (en-de, en-fr, en-zh)",
+          "COMET score >= 0.82 on flores-200 devtest for top-10 language pairs",
+          "Model inference latency < 200ms per sentence on GPU",
+          "Model checkpoints versioned and stored in model registry",
+          "sacreBLEU evaluation script automated and reproducible",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          3,
+          4
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 7,
+        "task_type": "ML_MODEL",
+        "description": "Build domain adaptation pipeline using adapter-based fine-tuning (LoRA / MAD-X adapters via AdapterHub). Train one adapter per domain per language pair pivot. Implement adapter composition for multi-domain queries. Store adapter weights separately from base model.",
+        "payload": {
+          "adapter_framework": "AdapterHub / PEFT (LoRA)",
+          "adapter_config": {
+            "rank": 16,
+            "alpha": 32,
+            "target_modules": [
+              "q_proj",
+              "v_proj",
+              "encoder_attn"
+            ]
+          },
+          "domains": [
+            "legal",
+            "medical",
+            "finance",
+            "technical",
+            "news",
+            "ecommerce",
+            "academic"
+          ],
+          "composition": "AdapterFusion for multi-domain blending",
+          "storage": "adapter weights in S3/local under models/adapters/{domain}/{lang_pair}/"
+        },
+        "acceptance_criteria": [
+          "Domain-adapted model improves BLEU by >= 3 points vs base on domain test sets",
+          "Adapter loading/unloading adds < 20ms overhead to inference",
+          "Adapter composition (fusion) functional for 2-domain blend",
+          "All adapters versioned with metadata (domain, lang_pair, BLEU, COMET)",
+          "Adapter registry API returns correct adapter path for given (domain, lang_pair)",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          4,
+          6
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 8,
+        "task_type": "ML_MODEL",
+        "description": "Train quality estimation (QE) model using COMETKiwi architecture (reference-free). Train on DA-annotated and MQM-annotated data (WMT QE shared tasks). Output: sentence-level DA score [0,1] and MQM error span annotations. Also implement word-level QE for post-edit highlighting.",
+        "payload": {
+          "architecture": "COMETKiwi-22 (XLM-R large backbone)",
+          "training_data": [
+            "WMT21 QE DA annotations",
+            "WMT22 MQM",
+            "MLQE-PE"
+          ],
+          "outputs": {
+            "sentence_level": "DA score float [0,1]",
+            "word_level": "OK/BAD tag per token",
+            "span_level": "MQM error category + severity"
+          },
+          "loss": "MSE (DA) + CRF (word-level)",
+          "evaluation": "Pearson r on DA, F1 on word-level BAD"
+        },
+        "acceptance_criteria": [
+          "Sentence-level QE Pearson r >= 0.48 on WMT22 QE test set",
+          "Word-level F1 BAD >= 0.42 on WMT22 QE test set",
+          "QE model inference < 100ms per sentence on GPU",
+          "QE scores stored in qe_scores table after each translation",
+          "Model versioned and reproducible from training script",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement core NMT translation service in Python (FastAPI). Features: translate endpoint (single + batch), automatic language detection (langdetect + fastText), source/target lang validation, tokenization pipeline, model inference with beam search (beam=5), detokenization, and post-processing (truecaser, punctuation normalization).",
+        "payload": {
+          "framework": "FastAPI",
+          "endpoints": [
+            "POST /translate \u2014 single segment",
+            "POST /translate/batch \u2014 up to 100 segments",
+            "POST /translate/stream \u2014 SSE streaming for long docs"
+          ],
+          "inference": "HuggingFace generate() with beam_search, no_repeat_ngram_size=3",
+          "lang_detect": "fastText lid.176.bin with fallback to langdetect",
+          "post_processing": [
+            "sacremoses detokenizer",
+            "truecase",
+            "unicode normalization"
+          ]
+        },
+        "acceptance_criteria": [
+          "Single segment translation returns in < 300ms at p95 on GPU",
+          "Batch of 100 segments completes in < 5 seconds",
+          "Language detection accuracy >= 98% on 50-char+ inputs",
+          "API returns 400 with clear error for unsupported language pairs",
+          "All responses include detected_lang, model_version, latency_ms fields"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement translation memory (TM) service: fuzzy match lookup before NMT inference, TM hit injection into response, concordance search API, TM CRUD (import TMX, export TMX, delete TUs), and TM leverage reporting. Apply terminology constraints during NMT decoding via constrained beam search.",
+        "payload": {
+          "fuzzy_threshold": 0.75,
+          "exact_match_threshold": 1.0,
+          "endpoints": [
+            "GET /tm/lookup \u2014 fuzzy search",
+            "POST /tm/import \u2014 TMX upload",
+            "GET /tm/export \u2014 TMX download",
+            "DELETE /tm/units/{id}",
+            "GET /tm/concordance \u2014 source string search"
+          ],
+          "constrained_decoding": "HuggingFace constrained beam search with forced terminology tokens",
+          "tm_leverage_report": "exact/fuzzy/no-match counts per project"
+        },
+        "acceptance_criteria": [
+          "TM lookup returns exact matches instantly from Redis cache",
+          "Fuzzy matches scored 0-100 with Levenshtein + token overlap",
+          "Constrained decoding enforces terminology in >= 95% of cases",
+          "TMX import preserves metadata (creation date, author, domain)",
+          "TM leverage report accurate to within 1% of manual count"
+        ],
+        "depends_on": [
+          5,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement terminology management service: term extraction from monolingual/bilingual text, term CRUD API, domain-scoped glossaries, forbidden term enforcement, term consistency checking across translations, and import/export in TBX and CSV formats.",
+        "payload": {
+          "term_extraction": "KeyBERT + frequency-based candidate extraction",
+          "endpoints": [
+            "POST /terminology/extract \u2014 auto-extract from text",
+            "GET/POST/PUT/DELETE /terminology/terms",
+            "GET /terminology/glossaries \u2014 scoped by domain/project",
+            "POST /terminology/import \u2014 TBX/CSV",
+            "GET /terminology/export \u2014 TBX",
+            "POST /terminology/check \u2014 consistency check on translation"
+          ],
+          "enforcement": "pre-translation term injection into NMT prefix constraints",
+          "forbidden_terms": "block list applied post-translation with replacement suggestions"
+        },
+        "acceptance_criteria": [
+          "Term extraction identifies >= 80% of manually tagged terms on benchmark",
+          "TBX import preserves part-of-speech and domain fields",
+          "Forbidden term detection flags 100% of matches in test set",
+          "Terminology CRUD operations complete in < 50ms",
+          "Consistency checker returns term mismatch list with positions"
+        ],
+        "depends_on": [
+          2,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Integrate quality estimation service into the translation pipeline. After each translation, asynchronously score with QE model, store in qe_scores table, attach score to API response. Implement QE-based routing: if QE score < threshold, flag for human review. Add QE analytics endpoint.",
+        "payload": {
+          "async_scoring": "Celery task triggered post-translation",
+          "response_fields": [
+            "qe_score",
+            "qe_word_labels",
+            "qe_model_version"
+          ],
+          "routing_threshold": 0.65,
+          "endpoints": [
+            "GET /qe/scores/{translation_id}",
+            "GET /qe/analytics \u2014 aggregate stats by domain/lang_pair"
+          ],
+          "human_review_queue": "low-QE translations pushed to review_queue table"
+        },
+        "acceptance_criteria": [
+          "QE scoring adds < 50ms synchronous overhead (async path)",
+          "QE score present in 100% of translation API responses",
+          "Low-QE routing correctly flags translations below threshold",
+          "QE analytics endpoint returns per-domain/pair distributions",
+          "qe_scores table populated correctly after 1000-translation smoke test"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "API",
+        "description": "Design and document the unified Translation Service API: OpenAPI 3.1 spec, versioning strategy (v1 prefix), authentication (API key + JWT), rate limiting headers, error schema, webhook support for async batch jobs, and SDK generation for Python and JavaScript clients.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1 (YAML)",
+          "auth": [
+            "API key (X-API-Key header)",
+            "JWT Bearer"
+          ],
+          "rate_limiting": "100 req/min free tier, 1000 req/min paid (X-RateLimit-* headers)",
+          "error_schema": {
+            "code": "string",
+            "message": "string",
+            "details": "object"
+          },
+          "webhooks": "POST callback on batch job completion",
+          "sdk_gen": [
+            "openapi-generator (python)",
+            "openapi-generator (typescript-fetch)"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates without errors via swagger-parser",
+          "All endpoints documented with request/response examples",
+          "Python SDK generated and importable with type hints",
+          "JS/TS SDK generated and compilable",
+          "Authentication flow documented with curl examples",
+          "Rate limiting headers present in all responses"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "AGENTIC",
+        "description": "Implement an agentic translation orchestrator using the Multi-Agent Coordinator pattern. Coordinator receives translation requests, routes to specialist sub-agents: TM Lookup Agent (checks translation memory first), Terminology Agent (injects/validates terms), NMT Agent (runs inference), QE Agent (scores output), and Review Agent (flags low-quality). Implements ReAct reasoning for ambiguous domain detection.",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator": "TranslationOrchestrator \u2014 routes based on project config, domain, and TM hit rate",
+          "sub_agents": [
+            "TMAgent: exact/fuzzy TM lookup, returns hit or miss",
+            "TerminologyAgent: glossary lookup, constraint generation",
+            "NMTAgent: base or domain-adapted model inference",
+            "QEAgent: COMETKiwi scoring, word-level labeling",
+            "ReviewAgent: low-QE flagging, human review queue push"
+          ],
+          "react_loop": "domain ambiguity resolution via Thought\u2192Action\u2192Observation",
+          "state_passing": "TranslationContext dataclass through agent chain",
+          "hitl_gate": "ReviewAgent creates proposal for QE score < 0.65"
+        },
+        "acceptance_criteria": [
+          "Orchestrator correctly routes TM hits without calling NMT agent",
+          "Terminology constraints applied before NMT inference in 100% of cases",
+          "HITL gate creates review proposal for all low-QE translations",
+          "End-to-end orchestration latency < 400ms at p95 (GPU, no TM hit)",
+          "Agent execution trace stored in audit log with trace_id",
+          "ReAct loop resolves domain ambiguity correctly on 10-case benchmark"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build React 18 + TypeScript translation workbench UI. Pages: (1) Translation Editor \u2014 source/target panels, TM match panel, terminology highlights, QE score badge, word-level error highlights; (2) Glossary Manager \u2014 term CRUD, domain filter, TBX import/export; (3) Translation Memory \u2014 TU browser, TMX import, leverage stats; (4) Quality Dashboard \u2014 QE score distributions, review queue.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "styling": "Tailwind CSS",
+          "state": "Zustand",
+          "components": [
+            "TranslationEditor (source/target split pane)",
+            "TMMatchPanel (fuzzy matches with score badges)",
+            "TermHighlighter (inline term markup)",
+            "QEScoreBadge (green/yellow/red by threshold)",
+            "WordLevelHighlight (BAD token underlining)",
+            "GlossaryTable (sortable/filterable)",
+            "TMBrowser (paginated TU list)",
+            "QEDashboard (recharts histograms)"
+          ],
+          "api_client": "Generated from OpenAPI spec (typescript-fetch)"
+        },
+        "acceptance_criteria": [
+          "Translation editor renders source and target in < 100ms",
+          "TM matches display within 200ms of source input change (debounced)",
+          "QE score badge updates after translation completes",
+          "Word-level BAD tokens highlighted in yellow on translation output",
+          "Glossary table supports import of 10K term TBX in < 5s",
+          "All pages pass WCAG 2.1 AA accessibility audit",
+          "Lighthouse performance score >= 85"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 16,
+        "task_type": "SECURITY",
+        "description": "Conduct security review of the translation service: API authentication hardening (JWT expiry, key rotation), input sanitization (prevent prompt injection via source text), rate limiting implementation, model API access controls, PII detection in translation logs, and OWASP Top 10 review of the FastAPI backend.",
+        "payload": {
+          "scope": [
+            "FastAPI API layer",
+            "JWT/API key auth",
+            "database access",
+            "model inference endpoint",
+            "file upload (TMX/TBX)"
+          ],
+          "checks": [
+            "SQL injection via ORM parameter binding",
+            "File upload path traversal",
+            "JWT algorithm confusion (RS256 enforcement)",
+            "Rate limit bypass via header manipulation",
+            "PII leakage in translation logs (names, emails, IDs)",
+            "CORS policy review"
+          ],
+          "pii_detection": "presidio (Microsoft) for log scrubbing",
+          "output": "Security findings report + remediation PRs"
+        },
+        "acceptance_criteria": [
+          "Zero high/critical OWASP Top 10 findings unresolved",
+          "JWT tokens expire in <= 1 hour, refresh token rotation implemented",
+          "File upload restricted to .tmx/.tbx/.csv with MIME validation",
+          "PII scrubbed from all audit logs before persistence",
+          "Rate limiting tested and verified via load test",
+          "CORS restricted to allowlisted origins"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "INFRA",
+        "description": "Build Docker Compose development stack and Kubernetes production manifests. Services: FastAPI backend, PostgreSQL 16, Redis 7, Elasticsearch 8 (TM fuzzy search), Celery workers (QE async), Flower (Celery monitor), model server (TorchServe or Triton Inference Server). Include resource limits, health checks, and secrets management via environment variables.",
+        "payload": {
+          "dev": "docker-compose.yml with all services + hot-reload for backend",
+          "prod": "Kubernetes manifests (Deployment, Service, HPA, PDB, ConfigMap, Secret)",
+          "services": [
+            "api: FastAPI (2 replicas min)",
+            "worker: Celery QE workers (autoscale 1-8)",
+            "model-server: Triton Inference Server (GPU node selector)",
+            "postgres: PostgreSQL 16 (StatefulSet)",
+            "redis: Redis 7 (StatefulSet)",
+            "elasticsearch: 3-node cluster"
+          ],
+          "hpa": "scale api on CPU >= 60%, worker on queue depth >= 100",
+          "resource_limits": {
+            "api": "500m CPU / 1Gi RAM",
+            "model-server": "4 CPU / 16Gi RAM + 1 GPU"
+          }
+        },
+        "acceptance_criteria": [
+          "docker-compose up starts all services in < 2 minutes",
+          "All service health checks pass within 60s of startup",
+          "Kubernetes manifests validate via kubeval/kubeconform",
+          "HPA scales worker pods on queue depth trigger",
+          "GPU node selector correctly targets GPU nodes for model-server",
+          "Secrets not hardcoded in any manifest (env var references only)"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline (GitHub Actions): lint + type-check on PR, unit tests, integration tests against Docker Compose stack, model smoke test (translate 10 sentences, assert BLEU > threshold), Docker image build and push to registry, and staged rollout (dev \u2192 staging \u2192 prod) with manual approval gate for production.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "stages": [
+            "lint: ruff + mypy (2 min)",
+            "unit-tests: pytest with coverage (5 min)",
+            "integration-tests: docker-compose up + API tests (10 min)",
+            "model-smoke: translate benchmark + BLEU assertion (5 min)",
+            "build: docker buildx multi-arch (linux/amd64, linux/arm64)",
+            "deploy-staging: helm upgrade (auto)",
+            "deploy-prod: helm upgrade (manual approval)"
+          ],
+          "registry": "GitHub Container Registry (ghcr.io)",
+          "helm": "Helm 3 chart for Kubernetes deployment",
+          "secrets": "GitHub Actions encrypted secrets"
+        },
+        "acceptance_criteria": [
+          "CI pipeline completes in < 25 minutes for a passing build",
+          "Failed unit tests block merge to main",
+          "Model smoke test asserts BLEU >= 25 on fixed 10-sentence benchmark",
+          "Docker images tagged with git SHA and semantic version",
+          "Production deploy requires manual approval in GitHub Actions",
+          "Helm chart rolls back automatically on failed readiness probe"
+        ],
+        "depends_on": [
+          17
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "TESTS",
+        "description": "Write comprehensive test suite: unit tests for all service modules (NMT pipeline, TM lookup, terminology enforcement, QE integration), integration tests for API endpoints using pytest + httpx, property-based tests for tokenization/detokenization round-trip (Hypothesis), and contract tests for the OpenAPI spec (schemathesis).",
+        "payload": {
+          "framework": "pytest + httpx + Hypothesis + schemathesis",
+          "coverage_target": "85%",
+          "test_categories": [
+            "unit/test_tm_service.py \u2014 fuzzy match scoring, TU CRUD",
+            "unit/test_terminology_service.py \u2014 constraint generation, forbidden term detection",
+            "unit/test_qe_service.py \u2014 score thresholding, word-level labels",
+            "unit/test_nmt_pipeline.py \u2014 tokenization, detokenization, lang detection",
+            "integration/test_translate_api.py \u2014 full pipeline via HTTP",
+            "integration/test_tm_api.py \u2014 TMX import/export round-trip",
+            "property/test_tokenizer.py \u2014 Hypothesis round-trip invariants",
+            "contract/test_openapi.py \u2014 schemathesis fuzz on all endpoints"
+          ],
+          "fixtures": "Docker Compose test stack via pytest-docker"
+        },
+        "acceptance_criteria": [
+          "Test suite achieves >= 85% line coverage across src/",
+          "All integration tests pass against docker-compose stack",
+          "Schemathesis finds zero 500-level errors on any endpoint",
+          "Property tests run 1000 examples without failures",
+          "Test run completes in < 10 minutes in CI",
+          "Flaky tests flagged and quarantined (< 1% flake rate)"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11,
+          12,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "ML_MODEL",
+        "description": "Build model evaluation and benchmarking pipeline: automated BLEU/chrF++/COMET evaluation on FLORES-200 and WMT test sets for all 50+ language pairs, regression testing (new model must not drop > 1 BLEU vs previous), domain-specific eval on held-out domain test sets, and QE model calibration evaluation. Publish results to eval dashboard.",
+        "payload": {
+          "benchmarks": [
+            "FLORES-200 devtest (all 200 languages subset)",
+            "WMT23 newstest",
+            "TICO-19 (medical/legal)"
+          ],
+          "metrics": [
+            "sacreBLEU",
+            "chrF++ (sacrebleu)",
+            "COMET-22 (Unbabel)",
+            "TER"
+          ],
+          "regression_gate": "new_BLEU >= prev_BLEU - 1.0 (CI blocking)",
+          "eval_cadence": "triggered on every model checkpoint push",
+          "dashboard": "eval results stored in PostgreSQL eval_runs table + frontend chart"
+        },
+        "acceptance_criteria": [
+          "BLEU evaluated for all 50 language pairs on FLORES-200 in < 30 min",
+          "Regression gate blocks model promotion if BLEU drops > 1 point",
+          "Domain eval shows >= 3 BLEU improvement for adapted vs base model",
+          "Eval results persisted and queryable via GET /eval/runs",
+          "Evaluation script reproducible from a single command",
+          "COMET scores computed for all language pairs (not just BLEU)",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          6,
+          7,
+          8
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 21,
+        "task_type": "TESTS",
+        "description": "Write end-to-end system tests covering full translation workflows: TM-assisted translation flow, domain-adapted translation with terminology enforcement, batch document translation with QE scoring, low-QE review queue flow, and HITL approval workflow. Use pytest + Playwright for UI smoke tests.",
+        "payload": {
+          "framework": "pytest (API) + Playwright (UI)",
+          "e2e_scenarios": [
+            "TM hit: exact match skips NMT, returns 100 score",
+            "TM miss + domain adapt: medical EN\u2192DE with terminology enforcement",
+            "Batch 50-segment: all complete in < 30s, QE scores attached",
+            "Low QE: translation flagged, appears in review queue UI",
+            "HITL: reviewer approves from UI, audit log updated"
+          ],
+          "load_test": "Locust: 50 concurrent users, 10 req/s, 5-minute ramp"
+        },
+        "acceptance_criteria": [
+          "All 5 E2E scenarios pass on staging environment",
+          "Load test sustains 10 req/s with p95 latency < 500ms",
+          "Zero 5xx errors during load test",
+          "HITL workflow completes and audit log entry verified",
+          "Playwright UI tests pass on Chrome and Firefox",
+          "System test suite runs unattended in CI staging environment"
+        ],
+        "depends_on": [
+          14,
+          15,
+          17,
+          19
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 22,
+        "task_type": "DOCS",
+        "description": "Write comprehensive documentation: API reference (auto-generated from OpenAPI + narrative), Getting Started guide (Docker Compose quickstart, first translation in 5 minutes), Architecture Decision Records (ADRs) for NLLB model choice, adapter strategy, TM backend), integration guide (Python SDK, REST), and operator runbook (scaling, model updates, TM backup).",
+        "payload": {
+          "docs_tool": "MkDocs + Material theme",
+          "sections": [
+            "Getting Started \u2014 Docker Compose quickstart",
+            "API Reference \u2014 auto-generated from OpenAPI",
+            "Supported Language Pairs \u2014 table of 50+ pairs with BLEU scores",
+            "Domain Adaptation Guide \u2014 how to add a new domain",
+            "Terminology Management Guide \u2014 TBX workflow",
+            "Translation Memory Guide \u2014 TMX import/export",
+            "Quality Estimation Guide \u2014 interpreting scores",
+            "SDK Reference \u2014 Python and TypeScript",
+            "Architecture \u2014 system diagram + ADRs",
+            "Operations Runbook \u2014 model updates, scaling, backup"
+          ]
+        },
+        "acceptance_criteria": [
+          "Docs site builds without errors via mkdocs build",
+          "Getting Started guide tested: new user reaches first translation in < 5 minutes",
+          "All 50+ language pairs listed with FLORES-200 BLEU scores",
+          "API reference matches deployed OpenAPI spec",
+          "ADRs written for: model choice, adapter strategy, TM backend, QE model",
+          "Operator runbook covers model rollback procedure step-by-step"
+        ],
+        "depends_on": [
+          13,
+          15,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 22,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 41,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 41,
+          "final_review": {
+            "score": 41,
+            "flaws": [
+              "Training compute is catastrophically underestimated. Meta trained NLLB-200 with thousands of A100s over months. Fine-tuning a 600M distilled model on 50+ language pairs with meaningful domain coverage on '4x A100' is weeks of wall-clock time, not a plan step. No timeline, no cost estimate, no cloud budget. This single gap can sink the entire project.",
+              "Constrained beam search for terminology enforcement (Step 10) acceptance criterion of '>= 95% of cases' is unachievable and the '100% of cases' in Step 11 is flat wrong. HuggingFace PhrasalConstraint silently relaxes constraints when they produce degenerate outputs, decoding slows 5-10x per constrained phrase, and multi-term constraint composition degrades exponentially. This needs lexically-constrained decoding (Lexi, DESI, or FUDGE), not HuggingFace's beam search \u2014 that's a different implementation entirely.",
+              "BM25 (Elasticsearch) is a keyword relevance algorithm, not a string similarity algorithm. TM fuzzy matching uses edit distance + token overlap, which is what the scoring description says \u2014 but BM25 is not a valid index for this. A BM25 'match' on a paraphrased segment scores high even at 40% string similarity. The entire TM backend architectural choice is wrong for the stated use case.",
+              "Domain adapter loading/unloading for multi-tenant, multi-domain per-request serving is an unsolved engineering problem in this plan. You have 8 domains \u00d7 50+ language pairs = 400+ adapters. Triton Inference Server has no native support for dynamic LoRA swapping mid-request. TorchServe requires custom handlers. The '<20ms overhead' claim for adapter load/unload is not achievable without keeping all adapters resident in GPU VRAM simultaneously \u2014 which at 16-rank LoRA is feasible but needs explicit GPU memory planning that is absent.",
+              "ReAct loop for domain disambiguation (Step 14) in a <400ms p95 latency budget is internally contradictory. ReAct requires at minimum 2-3 LLM inference calls for a reasoning loop. At 100-200ms per call, you've blown the budget before NMT inference begins. This will either be a single-shot classifier disguised as ReAct, or it will routinely violate the SLA.",
+              "Catastrophic forgetting on base model is completely unaddressed. Fine-tuning NLLB-200 on selected language pairs will degrade performance on pairs not included in the fine-tuning batch. No regularization strategy (L2SP, EWC, distillation from frozen teacher) is mentioned. The regression gate in Step 20 catches post-hoc degradation but doesn't prevent it.",
+              "Data licensing is entirely missing. OPUS corpora have mixed licenses \u2014 several are research-only (WikiMatrix, CCAligned have CC-BY or research restrictions). JRC-Acquis is EU public domain; EMEA corpus is from the EMEA official journal. Using these to train a commercial translation service requires legal review for each corpus. This is a legal blocker, not a footnote.",
+              "Step 3's BiCleaner-AI scoring on 50+ language pairs at scale requires a language-pair-specific model for each pair \u2014 BiCleaner-AI is not a universal scorer. Only a subset of language pairs have pretrained BiCleaner-AI models. For low-resource pairs, you fall back to rule-based BiCleaner which has significantly lower quality. The '50K clean pairs minimum' acceptance criterion will silently pass with low-quality data for many pairs.",
+              "The QE async scoring architecture (Step 12) has a race condition: the API response includes `qe_score` but the Celery task is asynchronous. The acceptance criterion 'QE score present in 100% of translation API responses' contradicts the async architecture. Either QE is synchronous (adding latency) or the score is absent from the initial response and returned later \u2014 you cannot have both.",
+              "Acceptance criterion 'Exact match hit rate >= 100%' in Step 5 is meaningless and unverifiable as written. 100% is a tautology if your test set was built from the same TM \u2014 and impossible to guarantee in production where normalization may legitimately miss a match.",
+              "Step 6 uses both fairseq and HuggingFace Transformers \u2014 these are competing frameworks with different checkpoint formats, tokenizer APIs, and generation logic. NLLB-200 official weights are in fairseq format; converting to HuggingFace adds a non-trivial porting step. The plan treats them interchangeably, which they are not.",
+              "No mention of model quantization strategy. Running NLLB-200-600M in FP16 training is noted, but production inference quantization (INT8 via bitsandbytes, GPTQ, or TensorRT-LLM) is absent. This directly impacts GPU cost, throughput, and batch sizing for the entire service.",
+              "Language detection on short inputs (<50 chars) is unreliable with fastText, and the plan acknowledges this by restricting the acceptance criterion to '50-char+ inputs.' But real translation workloads are full of short segments (UI strings, labels, headers). No fallback for <50 char inputs is specified."
+            ],
+            "suggestions": [
+              "Replace the 'train from scratch on 50+ pairs' strategy with NLLB-200's published pre-trained weights as a frozen base and restrict fine-tuning to domain adapters only. This reduces Step 6 from 'train a multilingual model' to 'evaluate NLLB-200 baseline + train adapters,' which is achievable on 4x A100.",
+              "Replace constrained beam search with a post-edit enforcement pass: translate with NMT, then apply terminology substitution using span alignment (fast_align or awesome-align) with a confidence threshold. This is predictable, debuggable, and doesn't blow inference latency. Reserve constrained decoding only for high-confidence, short, single-token terminology.",
+              "Replace Elasticsearch BM25 for TM fuzzy matching with a dedicated fuzzy string index: either a character-level n-gram inverted index (fast, correct) or segment embeddings via LASER2 (semantic TM matching). Elasticsearch adds operational complexity without being the right tool.",
+              "Collapse Steps 3 and 4 into a single data pipeline with domain as a label field. The 50+ pairs \u00d7 8 domains matrix doesn't need separate pipelines \u2014 a single pipeline with domain classifiers and label propagation is sufficient and avoids the artificial dependency chain.",
+              "The agentic orchestrator (Step 14) should be replaced with a deterministic routing pipeline for the MVP. Domain detection can be a single fastText classifier call (<5ms). ReAct adds latency and non-determinism with no measurable quality benefit over a classifier for this task. Reserve ReAct for human-review escalation decisions, not inline routing.",
+              "Add a Step 0: compute and storage budget planning. Before any code is written, specify: GPU-hours for each model training step, storage for corpora (estimate 2-10TB), model checkpoints, adapter registry, and operational GPU costs for inference. Without this, the plan has no cost-of-failure boundary.",
+              "Separate the QE scoring into two modes: synchronous-fast (BLEURT or a tiny 70M QE model, <30ms) for the initial response, and asynchronous-deep (COMETKiwi, full word-level) stored in the DB and available via polling. The current plan conflates both and makes contradictory promises.",
+              "Add a data licensing audit step before Step 3. Document the license of each corpus, identify research-only restrictions, and get legal sign-off before training on restricted data. This is a blocking dependency that should precede all data work.",
+              "Add model serving architecture decision (Step 6.5): pick Triton with custom HuggingFace backend vs. vLLM vs. TGI vs. simple FastAPI+Transformers, document the trade-offs, and commit. This decision cascades through Steps 9, 14, and 17 \u2014 leaving it as 'TorchServe or Triton' creates forked implementation paths."
+            ],
+            "missing": [
+              "GPU compute budget and training time estimates. Each ML step (6, 7, 8, 20) needs wall-clock time, GPU-hours, and cost estimate. Without these, the plan has no schedule.",
+              "Model serving architecture decision record. The 'TorchServe or Triton' ambiguity in Step 17 is unresolved and cascades through inference design, API latency guarantees, and adapter swapping strategy.",
+              "Observability stack: Prometheus metrics, Grafana dashboards, alerting rules for latency SLAs, model drift detection (QE score trend degradation), and error rate alerting. A production translation service with no APM is not operable.",
+              "GDPR/data privacy design for the translation service itself. Users will translate medical records, legal contracts, and financial documents. There is no data retention policy, no per-user data isolation in TM, and no right-to-deletion implementation. This is a regulatory blocker in EU markets.",
+              "Storage architecture and sizing. 50+ language pair corpora, model checkpoints, adapter weights, TM entries (potentially 100M+ TUs), and QE history. No storage estimates, no lifecycle management, no archival strategy.",
+              "Tokenization alignment strategy between NLLB-200's SentencePiece model and new fine-tuning data. If adapting the tokenizer, how are new tokens added without breaking pretrained embeddings? If using the original tokenizer unchanged, the 256K shared vocabulary claim needs verification against the actual NLLB tokenizer.",
+              "Rollback and A/B testing strategy for model updates. When a new base model or adapter degrades quality for a specific language pair, how do you roll back per-pair without rolling back all pairs? Step 18 mentions Helm rollback on readiness probe failure but this is infrastructure-level, not model-level.",
+              "Multi-GPU inference batching strategy. Beam search on NLLB-200 is memory-intensive; dynamic batching for mixed-length inputs requires careful padding and masking. No mention of batching library (NVIDIA Triton dynamic batching, vLLM continuous batching, or manual implementation).",
+              "Adapter registry query performance at scale. With 400+ adapters, the registry API needs indexing on (domain, lang_pair, version). No schema for the adapter registry beyond 'S3 path' is specified.",
+              "Low-resource language pair handling. Of the 50+ language pairs, some will have <100K clean sentence pairs after filtering (Step 3 requires 100K minimum but this will fail for rare pairs). No fallback strategy (transfer learning, pivot translation, or explicit exclusion) is documented.",
+              "Translation of long documents beyond single segments. Step 9 has /translate/stream but no document segmentation strategy, paragraph boundary preservation, or cross-segment terminology consistency for multi-sentence documents.",
+              "Error recovery in the agentic orchestrator (Step 14). If the QE agent times out, if the TM lookup fails, or if the NMT model returns a degenerate output \u2014 the orchestrator has no defined fallback or circuit breaker behavior."
+            ],
+            "security_risks": [
+              "Prefix injection via source text: constrained decoding and TM prefix injection (Step 10) create a direct path where attacker-controlled source text can inject arbitrary token prefixes into the NMT decoder. This can cause model behavior manipulation, output poisoning, or DoS via crafted inputs that force exponential beam search expansion. Step 16's 'input sanitization' is insufficient \u2014 it must include token-level constraint validation and beam search budget caps.",
+              "TMX/TBX file upload path traversal and XML entity expansion: TMX and TBX are XML formats. A malicious upload can include XML External Entity (XXE) references, billion-laugh bombs, or path traversal in attributes. Step 16 mentions file upload path traversal but does not specify using a hardened XML parser (defusedxml) with entity expansion disabled.",
+              "Translation memory poisoning: an authenticated user can import TMX files that inject adversarial TM entries \u2014 e.g., entries that map source phrases to malicious or incorrect translations for other users. There is no TM isolation by project/user at the data layer; the schema has a project_id but no enforcement that TM lookups are scoped to the requesting project.",
+              "JWT algorithm confusion is mentioned in Step 16 but the mitigation ('RS256 enforcement') is incomplete. The API also accepts API keys via X-API-Key header \u2014 if key comparison is not constant-time, timing attacks can enumerate valid keys. No mention of key hashing at rest.",
+              "The Celery worker (QE async scoring) receives translation content over the message broker. If Redis is used as the Celery broker (common default), translation content \u2014 potentially sensitive documents \u2014 is stored in plaintext in Redis. No mention of broker-level encryption or message TTL for sensitive payloads.",
+              "Model inference endpoint exposure: if the Triton/TorchServe model server is reachable within the Kubernetes cluster without authentication, any compromised pod can call it directly and bypass rate limiting, API key checks, and audit logging. No mention of service mesh mTLS or network policy restricting model server access to only the API pods.",
+              "PII detection via Presidio (Step 16) applied only to logs is insufficient. Translation content itself may contain PII that gets stored permanently in the TM (translation_units table). Users querying the TM concordance endpoint could retrieve other users' PII-containing translations if project scoping is misconfigured."
+            ],
+            "summary": "This plan describes a genuinely comprehensive architecture for a production NMT service, and the overall system design \u2014 NLLB base + domain adapters + TM + QE + constrained decoding \u2014 is directionally correct. However, the plan systematically underestimates the hardest parts: ML training compute and time are unbudgeted, several acceptance criteria are either unachievable (100% terminology enforcement via constrained beam search) or undefined (100% exact match hit rate), and three foundational architectural choices are wrong or unresolved (BM25 for fuzzy TM matching, HuggingFace constrained beam search for terminology enforcement, 'TorchServe or Triton' left undecided). The agentic orchestrator adds latency risk with no quality benefit over deterministic routing. Critical production concerns \u2014 observability, GDPR compliance, data licensing, GPU cost modeling, and document-level translation \u2014 are entirely absent. As a research prototype or internal tool this could ship at 55-60 quality with the ML gaps accepted as known limitations; as a production commercial service it requires fundamental rework of the ML training strategy, TM backend, constrained decoding approach, and operational design before it is shippable.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 41,
+              "flaws": [
+                "Training compute is catastrophically underestimated. Meta trained NLLB-200 with thousands of A100s over months. Fine-tuning a 600M distilled model on 50+ language pairs with meaningful domain coverage on '4x A100' is weeks of wall-clock time, not a plan step. No timeline, no cost estimate, no cloud budget. This single gap can sink the entire project.",
+                "Constrained beam search for terminology enforcement (Step 10) acceptance criterion of '>= 95% of cases' is unachievable and the '100% of cases' in Step 11 is flat wrong. HuggingFace PhrasalConstraint silently relaxes constraints when they produce degenerate outputs, decoding slows 5-10x per constrained phrase, and multi-term constraint composition degrades exponentially. This needs lexically-constrained decoding (Lexi, DESI, or FUDGE), not HuggingFace's beam search \u2014 that's a different implementation entirely.",
+                "BM25 (Elasticsearch) is a keyword relevance algorithm, not a string similarity algorithm. TM fuzzy matching uses edit distance + token overlap, which is what the scoring description says \u2014 but BM25 is not a valid index for this. A BM25 'match' on a paraphrased segment scores high even at 40% string similarity. The entire TM backend architectural choice is wrong for the stated use case.",
+                "Domain adapter loading/unloading for multi-tenant, multi-domain per-request serving is an unsolved engineering problem in this plan. You have 8 domains \u00d7 50+ language pairs = 400+ adapters. Triton Inference Server has no native support for dynamic LoRA swapping mid-request. TorchServe requires custom handlers. The '<20ms overhead' claim for adapter load/unload is not achievable without keeping all adapters resident in GPU VRAM simultaneously \u2014 which at 16-rank LoRA is feasible but needs explicit GPU memory planning that is absent.",
+                "ReAct loop for domain disambiguation (Step 14) in a <400ms p95 latency budget is internally contradictory. ReAct requires at minimum 2-3 LLM inference calls for a reasoning loop. At 100-200ms per call, you've blown the budget before NMT inference begins. This will either be a single-shot classifier disguised as ReAct, or it will routinely violate the SLA.",
+                "Catastrophic forgetting on base model is completely unaddressed. Fine-tuning NLLB-200 on selected language pairs will degrade performance on pairs not included in the fine-tuning batch. No regularization strategy (L2SP, EWC, distillation from frozen teacher) is mentioned. The regression gate in Step 20 catches post-hoc degradation but doesn't prevent it.",
+                "Data licensing is entirely missing. OPUS corpora have mixed licenses \u2014 several are research-only (WikiMatrix, CCAligned have CC-BY or research restrictions). JRC-Acquis is EU public domain; EMEA corpus is from the EMEA official journal. Using these to train a commercial translation service requires legal review for each corpus. This is a legal blocker, not a footnote.",
+                "Step 3's BiCleaner-AI scoring on 50+ language pairs at scale requires a language-pair-specific model for each pair \u2014 BiCleaner-AI is not a universal scorer. Only a subset of language pairs have pretrained BiCleaner-AI models. For low-resource pairs, you fall back to rule-based BiCleaner which has significantly lower quality. The '50K clean pairs minimum' acceptance criterion will silently pass with low-quality data for many pairs.",
+                "The QE async scoring architecture (Step 12) has a race condition: the API response includes `qe_score` but the Celery task is asynchronous. The acceptance criterion 'QE score present in 100% of translation API responses' contradicts the async architecture. Either QE is synchronous (adding latency) or the score is absent from the initial response and returned later \u2014 you cannot have both.",
+                "Acceptance criterion 'Exact match hit rate >= 100%' in Step 5 is meaningless and unverifiable as written. 100% is a tautology if your test set was built from the same TM \u2014 and impossible to guarantee in production where normalization may legitimately miss a match.",
+                "Step 6 uses both fairseq and HuggingFace Transformers \u2014 these are competing frameworks with different checkpoint formats, tokenizer APIs, and generation logic. NLLB-200 official weights are in fairseq format; converting to HuggingFace adds a non-trivial porting step. The plan treats them interchangeably, which they are not.",
+                "No mention of model quantization strategy. Running NLLB-200-600M in FP16 training is noted, but production inference quantization (INT8 via bitsandbytes, GPTQ, or TensorRT-LLM) is absent. This directly impacts GPU cost, throughput, and batch sizing for the entire service.",
+                "Language detection on short inputs (<50 chars) is unreliable with fastText, and the plan acknowledges this by restricting the acceptance criterion to '50-char+ inputs.' But real translation workloads are full of short segments (UI strings, labels, headers). No fallback for <50 char inputs is specified."
+              ],
+              "suggestions": [
+                "Replace the 'train from scratch on 50+ pairs' strategy with NLLB-200's published pre-trained weights as a frozen base and restrict fine-tuning to domain adapters only. This reduces Step 6 from 'train a multilingual model' to 'evaluate NLLB-200 baseline + train adapters,' which is achievable on 4x A100.",
+                "Replace constrained beam search with a post-edit enforcement pass: translate with NMT, then apply terminology substitution using span alignment (fast_align or awesome-align) with a confidence threshold. This is predictable, debuggable, and doesn't blow inference latency. Reserve constrained decoding only for high-confidence, short, single-token terminology.",
+                "Replace Elasticsearch BM25 for TM fuzzy matching with a dedicated fuzzy string index: either a character-level n-gram inverted index (fast, correct) or segment embeddings via LASER2 (semantic TM matching). Elasticsearch adds operational complexity without being the right tool.",
+                "Collapse Steps 3 and 4 into a single data pipeline with domain as a label field. The 50+ pairs \u00d7 8 domains matrix doesn't need separate pipelines \u2014 a single pipeline with domain classifiers and label propagation is sufficient and avoids the artificial dependency chain.",
+                "The agentic orchestrator (Step 14) should be replaced with a deterministic routing pipeline for the MVP. Domain detection can be a single fastText classifier call (<5ms). ReAct adds latency and non-determinism with no measurable quality benefit over a classifier for this task. Reserve ReAct for human-review escalation decisions, not inline routing.",
+                "Add a Step 0: compute and storage budget planning. Before any code is written, specify: GPU-hours for each model training step, storage for corpora (estimate 2-10TB), model checkpoints, adapter registry, and operational GPU costs for inference. Without this, the plan has no cost-of-failure boundary.",
+                "Separate the QE scoring into two modes: synchronous-fast (BLEURT or a tiny 70M QE model, <30ms) for the initial response, and asynchronous-deep (COMETKiwi, full word-level) stored in the DB and available via polling. The current plan conflates both and makes contradictory promises.",
+                "Add a data licensing audit step before Step 3. Document the license of each corpus, identify research-only restrictions, and get legal sign-off before training on restricted data. This is a blocking dependency that should precede all data work.",
+                "Add model serving architecture decision (Step 6.5): pick Triton with custom HuggingFace backend vs. vLLM vs. TGI vs. simple FastAPI+Transformers, document the trade-offs, and commit. This decision cascades through Steps 9, 14, and 17 \u2014 leaving it as 'TorchServe or Triton' creates forked implementation paths."
+              ],
+              "missing": [
+                "GPU compute budget and training time estimates. Each ML step (6, 7, 8, 20) needs wall-clock time, GPU-hours, and cost estimate. Without these, the plan has no schedule.",
+                "Model serving architecture decision record. The 'TorchServe or Triton' ambiguity in Step 17 is unresolved and cascades through inference design, API latency guarantees, and adapter swapping strategy.",
+                "Observability stack: Prometheus metrics, Grafana dashboards, alerting rules for latency SLAs, model drift detection (QE score trend degradation), and error rate alerting. A production translation service with no APM is not operable.",
+                "GDPR/data privacy design for the translation service itself. Users will translate medical records, legal contracts, and financial documents. There is no data retention policy, no per-user data isolation in TM, and no right-to-deletion implementation. This is a regulatory blocker in EU markets.",
+                "Storage architecture and sizing. 50+ language pair corpora, model checkpoints, adapter weights, TM entries (potentially 100M+ TUs), and QE history. No storage estimates, no lifecycle management, no archival strategy.",
+                "Tokenization alignment strategy between NLLB-200's SentencePiece model and new fine-tuning data. If adapting the tokenizer, how are new tokens added without breaking pretrained embeddings? If using the original tokenizer unchanged, the 256K shared vocabulary claim needs verification against the actual NLLB tokenizer.",
+                "Rollback and A/B testing strategy for model updates. When a new base model or adapter degrades quality for a specific language pair, how do you roll back per-pair without rolling back all pairs? Step 18 mentions Helm rollback on readiness probe failure but this is infrastructure-level, not model-level.",
+                "Multi-GPU inference batching strategy. Beam search on NLLB-200 is memory-intensive; dynamic batching for mixed-length inputs requires careful padding and masking. No mention of batching library (NVIDIA Triton dynamic batching, vLLM continuous batching, or manual implementation).",
+                "Adapter registry query performance at scale. With 400+ adapters, the registry API needs indexing on (domain, lang_pair, version). No schema for the adapter registry beyond 'S3 path' is specified.",
+                "Low-resource language pair handling. Of the 50+ language pairs, some will have <100K clean sentence pairs after filtering (Step 3 requires 100K minimum but this will fail for rare pairs). No fallback strategy (transfer learning, pivot translation, or explicit exclusion) is documented.",
+                "Translation of long documents beyond single segments. Step 9 has /translate/stream but no document segmentation strategy, paragraph boundary preservation, or cross-segment terminology consistency for multi-sentence documents.",
+                "Error recovery in the agentic orchestrator (Step 14). If the QE agent times out, if the TM lookup fails, or if the NMT model returns a degenerate output \u2014 the orchestrator has no defined fallback or circuit breaker behavior."
+              ],
+              "security_risks": [
+                "Prefix injection via source text: constrained decoding and TM prefix injection (Step 10) create a direct path where attacker-controlled source text can inject arbitrary token prefixes into the NMT decoder. This can cause model behavior manipulation, output poisoning, or DoS via crafted inputs that force exponential beam search expansion. Step 16's 'input sanitization' is insufficient \u2014 it must include token-level constraint validation and beam search budget caps.",
+                "TMX/TBX file upload path traversal and XML entity expansion: TMX and TBX are XML formats. A malicious upload can include XML External Entity (XXE) references, billion-laugh bombs, or path traversal in attributes. Step 16 mentions file upload path traversal but does not specify using a hardened XML parser (defusedxml) with entity expansion disabled.",
+                "Translation memory poisoning: an authenticated user can import TMX files that inject adversarial TM entries \u2014 e.g., entries that map source phrases to malicious or incorrect translations for other users. There is no TM isolation by project/user at the data layer; the schema has a project_id but no enforcement that TM lookups are scoped to the requesting project.",
+                "JWT algorithm confusion is mentioned in Step 16 but the mitigation ('RS256 enforcement') is incomplete. The API also accepts API keys via X-API-Key header \u2014 if key comparison is not constant-time, timing attacks can enumerate valid keys. No mention of key hashing at rest.",
+                "The Celery worker (QE async scoring) receives translation content over the message broker. If Redis is used as the Celery broker (common default), translation content \u2014 potentially sensitive documents \u2014 is stored in plaintext in Redis. No mention of broker-level encryption or message TTL for sensitive payloads.",
+                "Model inference endpoint exposure: if the Triton/TorchServe model server is reachable within the Kubernetes cluster without authentication, any compromised pod can call it directly and bypass rate limiting, API key checks, and audit logging. No mention of service mesh mTLS or network policy restricting model server access to only the API pods.",
+                "PII detection via Presidio (Step 16) applied only to logs is insufficient. Translation content itself may contain PII that gets stored permanently in the TM (translation_units table). Users querying the TM concordance endpoint could retrieve other users' PII-containing translations if project scoping is misconfigured."
+              ],
+              "summary": "This plan describes a genuinely comprehensive architecture for a production NMT service, and the overall system design \u2014 NLLB base + domain adapters + TM + QE + constrained decoding \u2014 is directionally correct. However, the plan systematically underestimates the hardest parts: ML training compute and time are unbudgeted, several acceptance criteria are either unachievable (100% terminology enforcement via constrained beam search) or undefined (100% exact match hit rate), and three foundational architectural choices are wrong or unresolved (BM25 for fuzzy TM matching, HuggingFace constrained beam search for terminology enforcement, 'TorchServe or Triton' left undecided). The agentic orchestrator adds latency risk with no quality benefit over deterministic routing. Critical production concerns \u2014 observability, GDPR compliance, data licensing, GPU cost modeling, and document-level translation \u2014 are entirely absent. As a research prototype or internal tool this could ship at 55-60 quality with the ML gaps accepted as known limitations; as a production commercial service it requires fundamental rework of the ML training strategy, TM backend, constrained decoding approach, and operational design before it is shippable.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T09:06:33.118229+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 175.09,
+      "critic_plan": 135.01
+    }
+  }
+}

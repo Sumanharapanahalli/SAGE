@@ -1,0 +1,343 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the API management market: profile Kong, Apigee, AWS API
+      Gateway, Tyk, MuleSoft, and Azure APIM. Identify pricing tiers, differentiation
+      gaps, ICP segments (startups vs enterprise), and positioning opportunity for
+      api_gateway.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers pricing, features, and target segments for at least
+      5 competitors
+    - Positioning map identifies at least 2 defensible differentiation angles
+    - ICP segments defined with firmographic and behavioral attributes
+    - GTM strategy includes channel mix and launch sequencing
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements and user stories for all personas:
+      API consumers (developers), API publishers, and platform admins. Map end-to-end
+      process flows for onboarding, key provisioning, rate limit configuration, and
+      analytics review.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 20 user stories written in standard format with acceptance criteria
+    - All three persona journeys fully mapped with swimlane diagrams
+    - ROI analysis includes payback period and NPV projections
+    - Business requirements traceable to product features
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on: []
+  FINANCIAL:
+    description: 'Build the financial model for api_gateway: pricing tiers (free,
+      developer, pro, enterprise), unit economics (cost per API call, infra cost per
+      tenant), revenue projections for 3 years, and break-even analysis.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Pricing tiers defined with request quotas, rate limits, and feature gates
+    - Unit economics calculated for each tier at 3 scale levels (100, 1k, 10k tenants)
+    - 3-year P&L projection with monthly granularity in year 1
+    - Break-even analysis identifies customer count threshold per tier
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on: []
+  LEGAL:
+    description: 'Draft all legal artifacts for api_gateway: Terms of Service, Privacy
+      Policy (GDPR/CCPA aligned), API usage policy, data processing agreement (DPA)
+      template for enterprise customers, and open-source license review for dependencies.'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers acceptable use, SLA disclaimers, rate limit enforcement rights, and
+      termination clauses
+    - Privacy Policy addresses data retention, processing basis, and user rights under
+      GDPR/CCPA
+    - API usage policy defines prohibited use cases and enforcement actions
+    - DPA template compliant with GDPR Article 28 requirements
+    - All key open-source dependencies license-reviewed for commercial use compatibility
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Produce the Product Requirements Document (PRD), feature prioritization
+      matrix (RICE scored), and 12-month roadmap with quarterly milestones. Define
+      success metrics and KPIs for each major feature cluster: gateway, rate limiting,
+      key management, developer portal, analytics.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all 6 feature clusters with functional and non-functional requirements
+    - Every feature RICE-scored with reach, impact, confidence, effort values documented
+    - 12-month roadmap with quarterly milestones and explicit MVP scope
+    - Success metrics defined for each cluster (e.g., p99 gateway latency < 5ms, API
+      key provisioning < 3 clicks)
+    - PRD reviewed against business requirements from step 2 — all BRs traceable
+    depends_on:
+    - 1
+    - 2
+    - 3
+    - 4
+  UX_DESIGN:
+    description: 'Conduct user research interviews with 5+ API developers. Produce
+      wireframes and interaction designs for: developer portal (registration, key
+      management, docs explorer, usage dashboard), admin dashboard (tenant management,
+      rate limit config, analytics), and onboarding flow.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research report synthesizes findings from at least 5 interviews with actionable
+      insights
+    - Wireframes cover all 5 surfaces with annotated interaction notes
+    - Onboarding flow achieves first API call in under 5 user actions in prototype
+      testing
+    - Accessibility audit confirms WCAG 2.1 AA compliance for all designed components
+    - Interaction spec defines error states, loading states, and empty states for
+      each surface
+    depends_on:
+    - 2
+    - 5
+  API:
+    description: 'Design the complete OpenAPI 3.1 specification for all api_gateway
+      internal and external APIs: gateway proxy endpoint schema, admin API (tenant/key/rate-limit
+      CRUD), developer portal API, analytics query API, and webhook event schema.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints defined with request/response schemas, error codes, and authentication
+      requirements
+    - OpenAPI specs pass validation with no errors (openapi-validator)
+    - Rate limiting headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
+      standardized across all specs
+    - 'Webhook event schema covers: key.created, key.revoked, rate_limit.exceeded,
+      quota.exhausted'
+    - Specs reviewed against PRD — all required operations covered
+    depends_on:
+    - 5
+  DATABASE:
+    description: 'Design the data schema for api_gateway: tenants, API keys (hashed),
+      routes, rate limit policies (token bucket config), request logs (time-series),
+      usage aggregates, audit events. Choose PostgreSQL for relational data and Redis
+      for rate limit counters.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all entities with cardinality and FK constraints documented
+    - API key stored as bcrypt hash — plaintext never persisted after creation
+    - Rate limit counter schema supports sliding window and token bucket algorithms
+    - Migrations are idempotent and include rollback scripts
+    - Seed data includes 3 tiers of test tenants, 10 sample routes, and 50 test API
+      keys
+    - Redis key naming convention documented and enforced with TTL strategy per key
+      type
+    depends_on:
+    - 5
+    - 7
+  COMPLIANCE:
+    description: Define the SOC 2 Type II evidence collection framework for api_gateway.
+      Map Trust Service Criteria (Security, Availability, Confidentiality) to implemented
+      controls. Produce control matrix, audit log requirements, and evidence collection
+      runbook.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Control matrix maps every applicable TSC criterion to a specific technical or
+      procedural control
+    - Audit log spec defines retention (minimum 12 months), immutability requirement,
+      and query interface
+    - Evidence collection runbook is executable — each control has named artifact
+      and collection cadence
+    - Vendor review checklist covers all third-party services (cloud provider, monitoring,
+      email) with risk ratings
+    - Gap analysis identifies any controls not yet implemented with remediation priority
+    depends_on:
+    - 4
+    - 5
+  CONFIG:
+    description: 'Scaffold the api_gateway project: monorepo structure, Docker Compose
+      dev environment (PostgreSQL, Redis, gateway, portal, admin), environment variable
+      schema (.env.example), Makefile targets, pre-commit hooks (lint, type-check,
+      secret scanning), and dependency manifests.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`make dev` brings up all services with health checks passing within 60 seconds'
+    - .env.example documents every required variable with description and example
+      value
+    - 'Pre-commit hooks block commits with: lint errors, type errors, or detected
+      secrets'
+    - Docker Compose uses named volumes for PostgreSQL and Redis persistence across
+      restarts
+    - All services declare explicit healthcheck endpoints used by Docker Compose depends_on
+    depends_on:
+    - 5
+  BACKEND:
+    description: 'Build the core gateway proxy service: reverse proxy with dynamic
+      route resolution from DB, request/response transformation (header injection,
+      path rewriting), upstream health checking, circuit breaker, and TLS termination.
+      Implement async request handling targeting p99 < 5ms overhead.'
+    agent_role: developer
+    acceptance_criteria:
+    - Gateway proxies requests to registered upstream routes with correct header forwarding
+    - p99 added latency < 5ms measured under 1000 req/s load in local benchmark
+    - Circuit breaker trips after 5 consecutive upstream failures and recovers after
+      30s
+    - Unknown routes return RFC 7807 Problem Details JSON with 404 status
+    - TLS termination works with self-signed cert in dev and configurable cert paths
+      in prod
+    - All route configs loaded from DB at startup with 30s hot-reload interval
+    depends_on:
+    - 7
+    - 8
+    - 10
+  DATA:
+    description: 'Build the usage analytics data pipeline: async request log emission
+      from gateway (Kafka or Redis Streams), aggregation worker (hourly/daily rollups
+      by tenant, key, route, status code), storage in time-series table, and query
+      API with filtering, grouping, and time bucketing.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Gateway emits structured log events to Redis Stream with < 0.5ms overhead per
+      request
+    - Analytics worker processes 10k events/s without lag accumulation under sustained
+      load
+    - Hourly aggregates available within 5 minutes of the close of each hour
+    - 'Query API supports: time range, tenant_id, api_key_id, route_id, status_code
+      filters'
+    - Data retention policy enforced by scheduled cleanup job with idempotent execution
+    - Query for 30-day dashboard data returns in < 500ms for p95
+    depends_on:
+    - 8
+    - 10
+  FRONTEND:
+    description: 'Build the developer portal React frontend: registration/login, API
+      key management dashboard (create/list/revoke/rotate), interactive OpenAPI docs
+      explorer (Swagger UI or Redoc), real-time usage charts, and account settings.
+      Implement designs from UX step 6.'
+    agent_role: developer
+    acceptance_criteria:
+    - First meaningful paint < 1.5s on 3G simulated connection (Lighthouse audit)
+    - 'Onboarding flow: registration → key creation → first test request completable
+      in under 5 clicks'
+    - OpenAPI explorer renders all routes with try-it-out working against live gateway
+      using developer's key
+    - Usage charts update without page reload; polling interval configurable (default
+      30s)
+    - All pages pass WCAG 2.1 AA automated checks (axe-core)
+    - Key creation modal shows plaintext key exactly once with copy button and clear
+      warning
+    depends_on:
+    - 6
+    - 15
+  SECURITY:
+    description: 'Conduct a full security review: threat model (STRIDE) for gateway
+      proxy and key management, OWASP API Security Top 10 mapping, secrets scanning,
+      dependency vulnerability audit (SBOM generation), SQL injection / header injection
+      review, and penetration test plan.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Threat model covers all 6 STRIDE categories for gateway and key management components
+    - OWASP API Top 10 items each mapped to a control or documented as accepted risk
+      with rationale
+    - SBOM generated in SPDX format covering all direct and transitive dependencies
+    - Zero high or critical CVEs in dependencies — medium CVEs documented with remediation
+      timeline
+    - SQL injection review confirms all DB queries use parameterized statements (no
+      string interpolation)
+    - 'Penetration test plan covers: auth bypass, rate limit bypass, key enumeration,
+      SSRF via proxy upstream'
+    depends_on:
+    - 11
+    - 12
+    - 13
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: gateway
+      proxy routing logic, rate limiter algorithm correctness (sliding window boundary
+      cases, token bucket refill accuracy), API key hashing and lookup, analytics
+      aggregation worker, and portal API authentication flows.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥ 85% across all backend services
+    - 'Rate limiter tests include: exact boundary requests, concurrent request races,
+      Redis failure fallback'
+    - 'API key tests include: creation entropy validation, revocation cache invalidation
+      timing, rotation grace period'
+    - Integration tests use testcontainers (real PostgreSQL + Redis, not mocks) to
+      catch schema mismatches
+    - All tests pass in CI in under 3 minutes on GitHub Actions standard runner
+    - Test report published as CI artifact with per-module coverage breakdown
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+  DEVOPS:
+    description: Set up CI/CD pipelines (GitHub Actions), production deployment configs
+      (Kubernetes Helm chart or Docker Compose with Traefik), monitoring stack (Prometheus
+      + Grafana dashboards for gateway p99 latency, error rate, rate limit hit rate),
+      alerting rules, and SRE runbooks.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - 'CI pipeline runs on every PR: lint → type-check → unit tests → integration
+      tests → security scan'
+    - CD pipeline deploys to staging automatically on merge to main; production requires
+      manual approval
+    - 'Grafana dashboard includes: gateway p99 latency, request rate, error rate (4xx/5xx),
+      rate limit hit rate, key lookup cache hit rate'
+    - 'Alerting rules fire within 2 minutes for: error rate > 1%, p99 latency > 50ms,
+      service health check failure'
+    - Zero-downtime deployment verified by rolling update strategy with readiness
+      probe validation
+    - Helm chart configures resource requests/limits for each service with documented
+      sizing guidance
+    depends_on:
+    - 19
+    - 20
+  OPERATIONS:
+    description: Define SLAs for api_gateway (uptime, latency, support response times
+      per tier), incident response runbooks (gateway outage, Redis failure, PostgreSQL
+      failover, rate limit misconfiguration), capacity planning model, and on-call
+      rotation guide.
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA document defines uptime %, latency SLO, and support response time for each
+      tier
+    - 'Each runbook includes: detection signal, diagnosis steps, mitigation steps,
+      escalation path, and post-mortem template'
+    - API key compromise runbook covers mass revocation procedure executable in <
+      5 minutes
+    - Capacity planning model projects infra cost at 1M, 10M, and 100M requests/day
+    - On-call guide defines severity levels P1–P4 with response time expectations
+      and escalation contacts
+    depends_on:
+    - 21
+  DOCS:
+    description: 'Produce all public and internal documentation: developer quickstart
+      guide (first API call in < 5 minutes), API reference (auto-generated from OpenAPI
+      specs), admin operations guide, architecture decision records (ADRs) for key
+      technical choices, and onboarding guide for new engineers.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Quickstart guide enables a new developer to make their first authenticated API
+      call in < 5 minutes following docs alone
+    - API reference generated directly from OpenAPI specs — no manual drift possible
+    - 'ADRs cover: choice of Redis for rate limiting, key hashing strategy, time-series
+      storage approach, auth token strategy'
+    - 'Admin guide covers: tenant onboarding, route configuration, rate limit policy
+      management, and SOC 2 evidence export'
+    - Engineering onboarding guide enables new team member to run `make dev` and pass
+      all tests within 30 minutes
+    depends_on:
+    - 15
+    - 16
+  SYSTEM_TEST:
+    description: 'Execute full system integration test suite: end-to-end load test
+      (10k req/s sustained for 10 minutes via k6), rate limit enforcement correctness
+      under concurrent load, API key revocation propagation timing, failover scenarios
+      (kill Redis → verify degraded mode), and SOC 2 control verification.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Gateway sustains 10k req/s for 10 minutes with p99 latency < 10ms and error
+      rate < 0.1%
+    - Rate limiter correctly enforces limits with < 0.01% over-admission under concurrent
+      load (race condition test)
+    - Key revocation propagates to all gateway instances within 5 seconds under load
+    - 'Redis failure degrades gracefully: rate limiting falls back to allow-all mode
+      with alert; no 5xx errors'
+    - PostgreSQL failover (primary → replica) completes with < 30s service interruption
+    - SOC 2 control test evidence collected and stored for each applicable control
+      in control matrix
+    depends_on:
+    - 16
+    - 17
+    - 21

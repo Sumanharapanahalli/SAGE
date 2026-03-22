@@ -1,0 +1,226 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze meditation app market: competitor landscape (Calm, Headspace,
+      Insight Timer), pricing models, user acquisition channels, and positioning for
+      meditation_app'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covers all 6 app features (guided sessions, sleep
+      stories, breathing, mood, streaks, Watch)
+    - Pricing benchmarks for 3+ competitors documented
+    - Unique differentiation opportunities identified
+    - Target user personas (2–3) defined with demographics and pain points
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Author Product Requirements Document (PRD) for meditation_app covering
+      all 6 feature pillars, success metrics, release milestones, and Apple Watch
+      companion scope
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD contains user stories for all 6 feature pillars
+    - MoSCoW prioritization applied to all features
+    - Measurable KPIs defined (DAU, streak retention %, session completion rate)
+    - v1.0 scope explicitly bounded — Apple Watch is companion (not standalone)
+    - Roadmap covers 3 milestones (MVP, v1.1, v1.2)
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes + interaction design
+      for iOS app and Apple Watch companion: onboarding, session player, mood check-in,
+      breathing guide, sleep stories, streak dashboard'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research summary with 5+ interview insights
+    - Information architecture diagram covering all navigation flows
+    - Lo-fi wireframes for all 8 screens on iOS
+    - Apple Watch wireframes for quick session and mood check-in
+    - Accessibility audit checklist completed (WCAG 2.1 AA baseline)
+    - Design reviewed against PRD — no unaddressed requirement
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR + CCPA compliant), and
+      HealthKit data usage disclosure for mood tracking and biometric data
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all 4 data types with retention periods
+    - GDPR data subject rights section present (access, deletion, portability)
+    - CCPA opt-out mechanism documented
+    - HealthKit data usage disclosure matches Apple App Store review requirements
+    - Terms of Service covers subscription auto-renewal disclosures
+    depends_on:
+    - 2
+  CONFIG:
+    description: 'Scaffold meditation_app solution directory: Flutter iOS project,
+      WatchKit extension, FastAPI backend, configure agentic pattern (coordinator)
+      for personalized session recommendation engine'
+    agent_role: developer
+    acceptance_criteria:
+    - Flutter project runs on iOS simulator with empty home screen
+    - WatchKit extension target added and builds without errors
+    - FastAPI backend starts with `uvicorn main:app` on port 8000
+    - project.yaml, prompts.yaml, tasks.yaml committed with meditation_app domain
+      config
+    - Coordinator agent pattern configured with 3 specialist sub-agents defined in
+      prompts.yaml
+    - .env.example documents all required env vars
+    depends_on:
+    - 2
+  DATABASE:
+    description: Design and implement database schema for users, sessions, sleep stories,
+      mood logs, streaks, and subscription state. Include migrations.
+    agent_role: developer
+    acceptance_criteria:
+    - All 8 tables created with correct foreign keys and indexes
+    - Alembic migration runs cleanly on fresh database
+    - mood_logs table stores valence (1–10), notes, and timestamp with user_id FK
+    - streaks table tracks current_streak, longest_streak, last_active_date
+    - content_library supports tagging by category (sleep, breathing, guided, ambient)
+    - All timestamps stored in UTC
+    depends_on:
+    - 5
+  BACKEND:
+    description: 'Implement FastAPI authentication service: user registration, JWT
+      login, Apple Sign In, subscription tier enforcement (free vs premium)'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT access token (15min) + refresh token (30d) issued on login
+    - Apple Sign In verifies identity token against Apple's public keys
+    - Premium-gated endpoints return 403 for free-tier users
+    - Password stored as bcrypt hash — never plaintext
+    - Rate limiting applied to /auth/login (5 req/min per IP)
+    depends_on:
+    - 6
+  AGENTIC:
+    description: 'Implement coordinator agentic pattern for personalized session recommendation:
+      mood_analyzer reads last 7 mood entries, content_recommender selects matching
+      sessions, streak_coach nudges based on streak status'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator decomposes recommendation request into 3 parallel specialist calls
+    - mood_analyzer correctly maps low valence (1–4) to calming/sleep content
+    - content_recommender excludes already-completed sessions from top recommendations
+    - streak_coach nudge changes tone based on streak (new user vs 30+ day veteran)
+    - Full recommendation cycle completes in < 3 seconds
+    - Agent reasoning trace logged to audit_log.db
+    depends_on:
+    - 8
+    - 9
+    - 10
+  FRONTEND:
+    description: 'Build Flutter iOS app: onboarding flow (goal selection, notification
+      preferences, trial start), bottom nav shell, and theming system'
+    agent_role: developer
+    acceptance_criteria:
+    - Onboarding completes in 3 steps and stores user goals locally
+    - Bottom navigation persists state across tab switches
+    - Theme colors match UX wireframes from step 3
+    - Onboarding skippable for returning users (persisted flag)
+    - App builds and runs on iOS 16+ simulator without warnings
+    depends_on:
+    - 5
+    - 3
+  LOCALIZATION:
+    description: Set up i18n infrastructure for Flutter app (flutter_localizations
+      + ARB files) and FastAPI backend (locale-aware content fields). Seed English,
+      Spanish, and French translations.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - App language switches correctly when device locale changes to es or fr
+    - All UI strings sourced from ARB files — no hardcoded English strings in Dart
+    - Backend content API returns title/description in requested Accept-Language locale
+    - Fallback to English when translation missing for a locale
+    - RTL layout tested and documented (not required for v1, but noted)
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+  SECURITY:
+    description: 'Security review: threat model for user health data, API authentication
+      hardening, HealthKit data encryption at rest, and OWASP Mobile Top 10 assessment'
+    agent_role: developer
+    acceptance_criteria:
+    - Threat model document covers all 4 data scope areas with mitigations
+    - Certificate pinning implemented for all API calls
+    - Mood and health data encrypted at rest using iOS Keychain / Data Protection
+      API
+    - OWASP Mobile Top 10 checklist completed — all Critical items addressed
+    - No high-severity CVEs in dependency scan at time of release
+    depends_on:
+    - 18
+    - 19
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: GitHub Actions for Flutter iOS build + test,
+      FastAPI backend test + Docker build, TestFlight distribution, and environment
+      promotion (staging → production)'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR to main triggers Flutter tests + backend tests in parallel
+    - iOS build signs with correct provisioning profile via Fastlane match
+    - Successful main merge auto-deploys backend to staging within 5 minutes
+    - TestFlight upload triggered on version tag (e.g. v1.0.0)
+    - Staging and production use separate AWS accounts and databases
+    depends_on:
+    - 5
+  QA:
+    description: 'Design comprehensive QA test plan: test cases for all 6 feature
+      pillars, device matrix (iPhone 14/15/16, Apple Watch Series 8/9/Ultra), regression
+      suite, and exploratory testing charter'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 6 feature pillars with ≥ 10 test cases each
+    - Device matrix tests executed on at least 3 real devices before release
+    - Regression suite covers all P0 user flows (login → session → mood → streak)
+    - Accessibility test cases include VoiceOver navigation for all main screens
+    - Localization smoke test validates Spanish and French on 1 device each
+    depends_on:
+    - 18
+    - 20
+  TESTS:
+    description: 'Write unit and integration tests for backend: auth service, content
+      API, mood endpoints, streak engine, subscription validation, and coordinator
+      recommendation agent'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All tests pass in CI with testcontainers PostgreSQL (no mocked DB)
+    - Backend coverage ≥ 85% across all modules
+    - 'Streak engine tests cover: increment, reset, freeze, grace period, milestones'
+    - Subscription tests cover all 5 lifecycle events
+    - Coordinator agent tests mock LLM calls and verify routing logic
+    depends_on:
+    - 11
+    - 19
+  TRAINING:
+    description: Produce user-facing help content, onboarding tooltips, App Store
+      listing copy, and a video script for the 60-second promotional video
+    agent_role: technical_writer
+    acceptance_criteria:
+    - In-app tooltips cover all 6 feature areas (≥ 2 tips per feature)
+    - FAQ answers top 10 anticipated user questions (subscription, data privacy, Watch
+      sync)
+    - App Store description ≤ 4000 characters with keyword-optimized headline
+    - Promo video script is exactly 60 seconds at normal reading pace
+    - All content reviewed against Privacy Policy — no contradictory claims
+    depends_on:
+    - 4
+    - 20
+  DOCS:
+    description: Write API documentation (OpenAPI spec), developer README, architecture
+      decision records (ADRs) for key decisions (auth flow, streaming, agentic recommendation),
+      and solution YAML comments
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec validates against OpenAPI 3.1 schema with 0 errors
+    - 'README covers: setup, running locally, environment variables, testing, deployment'
+    - 3 ADRs written with context, decision, and consequences sections
+    - All solution YAML files have inline comments explaining each section
+    depends_on:
+    - 24
+    - 25

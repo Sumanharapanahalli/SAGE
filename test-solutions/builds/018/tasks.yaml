@@ -1,0 +1,397 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze emerging market micro-lending landscape: target geographies,
+      competitor products (M-Pesa, Branch, Tala, FairMoney), regulatory environments,
+      and borrower personas. Identify top 3 markets for initial launch.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers at least 8 competitors with feature/pricing breakdown
+    - 3 borrower personas defined with income range, device type, data availability
+    - Top 3 launch markets ranked with regulatory risk score
+    - TAM/SAM/SOM estimates provided per market
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements: loan products (nano, micro, SME),
+      repayment schedules, interest rate models, default thresholds, collection tiers,
+      and agent network model for cash disbursement in low-connectivity markets.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All loan product specs documented with min/max amounts, tenors, and APR ranges
+    - Business rules for credit score thresholds documented per product tier
+    - Collection escalation workflow defined with SLA per tier
+    - Revenue model with unit economics for break-even analysis
+    depends_on:
+    - 1
+  REGULATORY:
+    description: 'Map applicable regulations per target market: money lending licenses,
+      mobile money regulations, data privacy laws (NDPR Nigeria, PDPA Thailand, PDPB
+      India), KYC/AML requirements (FATF), and consumer protection rules. Produce
+      regulatory gap analysis.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Regulatory requirement matrix covering all 3 target markets
+    - KYC/AML requirement checklist with data fields required per jurisdiction
+    - Interest rate cap constraints documented per market
+    - License acquisition checklist and estimated timeline per market
+    - Data residency requirements mapped to infrastructure decisions
+    depends_on:
+    - 1
+  LEGAL:
+    description: 'Draft legal framework: terms of service, loan agreements, privacy
+      policy, data processing agreements, agent network contracts, and IP ownership
+      structure. Ensure GDPR/local privacy law compliance.'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Loan agreement template reviewed for enforceability in each target jurisdiction
+    - Privacy policy covers all data collection points including mobile metadata
+    - Data processing agreement template compliant with applicable privacy laws
+    - Agent network contract defines liability, float management, and commission structure
+    depends_on:
+    - 3
+  FINANCIAL:
+    description: 'Build financial model: unit economics per loan product, cost of
+      capital, provisioning model, expected loss curves, pricing sensitivity analysis,
+      and 3-year P&L projection with break-even analysis.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Unit economics model shows LTV/CAC ratio per product tier
+    - Provisioning model includes vintage analysis structure with expected loss by
+      DPD bucket
+    - Break-even loan volume calculated per market with sensitivity ranges
+    - 3-year P&L projection includes conservative, base, and optimistic scenarios
+    depends_on:
+    - 2
+  PRODUCT_MGMT:
+    description: 'Define product requirements document (PRD): alternative credit scoring
+      engine spec (mobile usage patterns, utility payment history, social graph signals),
+      loan lifecycle states, borrower app features, lender dashboard features, and
+      admin panel requirements.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all 8 modules with user stories and acceptance criteria
+    - Credit scoring signal list approved with data collection consent flow
+    - Loan lifecycle state machine diagram produced (draft→approved→disbursed→active→closed/defaulted)
+    - MVP feature set vs future phases clearly delineated
+    - Success metrics defined per module (activation rate, approval rate, default
+      rate, repayment rate)
+    depends_on:
+    - 2
+    - 3
+  SECURITY:
+    description: 'Produce threat model and security architecture for the platform:
+      STRIDE analysis on loan origination, disbursement, and repayment flows; PCI
+      DSS scoping for payment card data; define encryption-at-rest and in-transit
+      requirements; API security model; fraud detection touchpoints.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 threat surfaces with mitigations
+    - PCI DSS cardholder data environment (CDE) scope defined and minimized
+    - 'Encryption standards specified: AES-256 at rest, TLS 1.3 in transit'
+    - 'API authentication model defined: OAuth 2.0 + JWT with refresh token rotation'
+    - 'Fraud signal list documented: device fingerprint, velocity checks, geo-anomalies'
+    - SBOM template created for dependency tracking
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 6
+  UX_DESIGN:
+    description: Design borrower mobile app UX (low-literacy optimized, Android-first,
+      USSD fallback) and lender/admin dashboard wireframes. Include onboarding flow,
+      loan application flow, repayment flow, and collection agent interface.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Borrower app wireframes for all 8 core screens with annotated interaction flows
+    - Lender dashboard wireframes showing portfolio health, default rates, and cohort
+      analysis
+    - Admin panel wireframes for user management, product config, and compliance reporting
+    - USSD flow diagram for feature-phone fallback
+    - 'Accessibility audit checklist passed: contrast ratio, icon-based navigation,
+      <3-tap critical paths'
+    - Usability testing plan with 5 representative borrower personas
+    depends_on:
+    - 6
+  DATABASE:
+    description: 'Design and implement the core database schema: borrowers, loans,
+      repayments, credit scores, mobile data signals, disbursements, collection events,
+      agent network, audit log, and tenant/market configuration tables. Implement
+      migrations using Alembic (PostgreSQL).'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram produced covering all 16 core tables with relationships
+    - All migrations run cleanly from scratch on PostgreSQL 15
+    - Indexes created for all foreign keys and high-cardinality query paths
+    - Row-level security policies implemented for multi-market tenant isolation
+    - PII fields identified and encrypted at column level (borrower name, phone, NIN)
+    - Seed data script populates all lookup tables and creates test borrowers
+    - Schema passes normalization review (3NF minimum)
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 6
+    - 7
+  ML_MODEL:
+    description: 'Build the alternative credit scoring engine: feature engineering
+      pipeline from mobile data signals and utility payments, gradient boosting model
+      (XGBoost/LightGBM), scorecard calibration, model explainability (SHAP), bias
+      audit across demographic groups, and real-time scoring API.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Feature engineering pipeline handles missing signals gracefully with documented
+      imputation strategy
+    - Model AUC-ROC >= 0.72 on holdout validation set
+    - SHAP explainability output provides top 5 factors per decision for regulatory
+      disclosure
+    - Bias audit confirms no demographic group has >10% disparity in approval rate
+      vs statistical base
+    - Model versioned in MLflow with performance metrics logged
+    - Real-time scoring API responds in <200ms p99 for single borrower
+    - Model card documentation produced for regulatory review
+    depends_on:
+    - 9
+  AGENTIC:
+    description: 'Implement the credit decisioning agent using the review_and_critique
+      pattern: CreditAnalystAgent (generator) produces a loan decision with score
+      breakdown and recommended terms; CreditCriticAgent reviews for policy compliance,
+      regulatory constraints, and fairness; loop iterates until confidence threshold
+      met. Strict HITL gate for edge cases (score in 400-500 band).'
+    agent_role: developer
+    acceptance_criteria:
+    - CreditAnalystAgent generates structured decision JSON with score, tier, approved
+      amount, and rate
+    - CreditCriticAgent validates against all product policy rules and regulatory
+      constraints
+    - HITL approval queue triggered for all edge-case decisions (score 400-500 band)
+    - Critic feedback stored in audit log with trace_id for regulatory inspection
+    - Average decisioning time <5s for auto-approve/decline path
+    - All HITL decisions logged with human reviewer ID and decision rationale
+    depends_on:
+    - 10
+  BACKEND:
+    description: 'Build the core loan origination service: borrower registration,
+      KYC document upload and verification orchestration, consent management, loan
+      application submission, product eligibility check, and origination state machine.
+      Python/FastAPI.'
+    agent_role: developer
+    acceptance_criteria:
+    - All loan lifecycle state transitions enforced by state machine with invalid
+      transition rejection
+    - KYC document upload supports JPEG/PNG/PDF with virus scan before storage
+    - Consent management stores explicit consent records with timestamp and IP for
+      each data type collected
+    - Product eligibility check validates borrower against all active product rules
+    - All API endpoints return structured JSON errors with error_code and user-friendly
+      message
+    - OpenAPI spec auto-generated and accurate
+    - Loan origination service handles 100 concurrent applications without degradation
+    depends_on:
+    - 9
+    - 11
+  FRONTEND:
+    description: 'Build borrower Android mobile app (React Native): onboarding + KYC
+      flow, loan application, approval notification, disbursement confirmation, repayment
+      schedule view, payment initiation, and loan history. Optimized for low-end Android
+      devices and intermittent connectivity.'
+    agent_role: developer
+    acceptance_criteria:
+    - App runs on Android 8+ on low-end device (2GB RAM, Snapdragon 430 equivalent)
+    - KYC document capture uses device camera with quality validation (blur, brightness
+      checks)
+    - Offline mode queues actions and syncs on connectivity restore
+    - All 4 languages complete with no untranslated strings in production build
+    - Biometric auth implemented for payment confirmation with fallback to PIN
+    - App bundle size <25MB
+    - Critical path (apply→decision) completable in <3 minutes on 3G connection
+    - 'Accessibility: all interactive elements have content descriptions'
+    depends_on:
+    - 16
+    - 8
+  COMPLIANCE:
+    description: 'Produce PCI DSS v4 compliance artifacts: cardholder data flow diagrams,
+      network segmentation documentation, access control matrix, encryption key management
+      procedure, vulnerability management plan, and security awareness training records.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Cardholder data flow diagram reviewed and approved by QSA-equivalent reviewer
+    - Network segmentation confirms CDE is isolated from all non-CDE systems
+    - Access control matrix covers all system components with principle of least privilege
+    - Key management procedure covers key generation, rotation (annual), revocation,
+      and destruction
+    - Vulnerability management plan includes monthly internal scan and quarterly external
+      scan schedule
+    - All PCI DSS v4 requirements mapped to platform controls with evidence pointers
+    depends_on:
+    - 7
+    - 16
+  DATA:
+    description: 'Build the data pipeline: real-time event streaming (loan events
+      → Kafka), ETL for mobile signal ingestion (daily batch), data warehouse schema
+      (dbt + BigQuery/Redshift), analytics views for portfolio reporting, and credit
+      model feature store.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Loan event stream processes 1000 events/second with <500ms end-to-end latency
+    - Mobile signal ingestion pipeline runs nightly with data quality checks and alerting
+      on failure
+    - dbt models produce all analytics views needed for lender dashboard without direct
+      DB queries
+    - Feature store refreshes credit scoring features within 1 hour of new mobile
+      data availability
+    - Data lineage tracked in dbt for all warehouse models
+    - PII fields masked in analytics warehouse (tokenized borrower ID, no raw phone
+      numbers)
+    depends_on:
+    - 9
+    - 10
+  INFRA:
+    description: 'Set up cloud infrastructure (AWS or GCP): multi-region deployment
+      for target markets, Kubernetes cluster, PostgreSQL RDS with read replicas, Redis
+      cluster, Kafka managed service, S3/GCS for document storage, CloudFront/CDN,
+      VPC with private subnets, and WAF configuration.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform modules produce reproducible infrastructure from scratch in <30 minutes
+    - All compute in private subnets; only API gateway and CDN publicly accessible
+    - PostgreSQL RDS has automated backups with 7-day retention and tested restore
+      procedure
+    - KMS manages all encryption keys for PCI DSS compliance
+    - WAF configured with OWASP Core Rule Set + custom rules for lending API patterns
+    - 'Data residency enforced: Nigerian borrower data stored only in af-south-1'
+    - Multi-AZ deployment for all stateful services
+    depends_on:
+    - 7
+  DEVOPS:
+    description: 'Build CI/CD pipeline: GitHub Actions workflows for backend (pytest,
+      security scan, Docker build, deploy to K8s), mobile app (React Native build,
+      APK signing, Play Store upload), and infrastructure (terraform plan/apply with
+      approval gate). Include SAST, dependency scanning, and container scanning.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Backend CI pipeline runs pytest, Bandit, Safety, and Trivy — fails on any HIGH/CRITICAL
+      finding
+    - Mobile app CI builds signed APK for staging and uploads to Play Store internal
+      track automatically
+    - Infrastructure changes require manual approval in GitHub Actions before terraform
+      apply to prod
+    - ML model pipeline runs retraining, evaluation, and deploys only if AUC-ROC >=
+      0.72
+    - Blue-green deployment enables zero-downtime backend updates
+    - Pipeline run time <15 minutes for backend CI from commit to staging deploy
+    - All secrets managed via GitHub Secrets + AWS Secrets Manager, never in code
+    depends_on:
+    - 24
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for all business logic
+      (credit scoring, state machine, repayment calculations), integration tests for
+      all API endpoints, contract tests for mobile money provider integrations, and
+      property-based tests for financial calculations.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage >= 85% across all backend services
+    - All loan state machine transitions tested including invalid transition rejection
+    - Repayment calculation tests use property-based testing with 1000+ generated
+      cases
+    - Contract tests for all 4 mobile money providers run in CI with provider sandbox
+    - 'Integration tests cover full loan lifecycle: apply→score→approve→disburse→repay→close'
+    - Test suite runs in <10 minutes in CI
+    - 'No flaky tests: all tests pass consistently across 3 sequential CI runs'
+    depends_on:
+    - 13
+    - 14
+    - 15
+  LOCALIZATION:
+    description: 'Implement i18n for mobile app and dashboard: extract all user-facing
+      strings, set up translation pipeline, provide translations for Swahili (Kenya),
+      Hausa (Nigeria), and Filipino. Implement right-to-left layout support as future-proofing.'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - Zero hardcoded user-facing strings in mobile app or web app code
+    - All 4 languages complete (no fallback to English in production builds)
+    - Number formatting (currency, dates) correct per locale
+    - Language selection persists across app restarts
+    - Translation pipeline allows non-developer translators to update strings without
+      code changes
+    depends_on:
+    - 17
+    - 18
+  OPERATIONS:
+    description: 'Write operational runbooks: loan lifecycle operations (manual state
+      override, bulk status update), disbursement failure resolution, collection agent
+      onboarding, daily reconciliation procedures, end-of-day financial close, and
+      regulatory reporting generation.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - All 7 runbooks reviewed and signed off by operations team lead
+    - Runbooks include screenshots of admin panel for each manual step
+    - SLA targets documented with escalation path if breached
+    - Data breach response runbook covers notification timelines per jurisdiction
+      (72h GDPR, etc.)
+    - Regulatory reporting runbook includes report formats and submission instructions
+      per market
+    depends_on:
+    - 19
+    - 26
+  TRAINING:
+    description: 'Produce training materials: borrower onboarding video scripts (4
+      languages), collection agent training program, KYC review officer training,
+      and lender dashboard user guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Borrower video script covers app install, KYC, loan application, and repayment
+      in <5 minutes
+    - Collection agent training covers system usage, regulatory compliance, and ethical
+      collection practices
+    - KYC officer training covers document verification standards and rejection criteria
+    - Lender dashboard guide covers all charts and report types with annotated screenshots
+    - All materials reviewed by a representative from each target market
+    depends_on:
+    - 31
+  DOCS:
+    description: 'Write technical documentation: API reference (OpenAPI + Markdown),
+      architecture decision records (ADRs), credit model card, data dictionary, developer
+      onboarding guide, and security architecture document.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference auto-generated from OpenAPI spec and covers 100% of endpoints
+    - 4 ADRs written covering major technology decisions with alternatives considered
+    - Model card documents training data, performance metrics, limitations, and fairness
+      analysis
+    - Data dictionary covers all database columns with type, description, and PII
+      classification
+    - Developer onboarding guide enables new engineer to run full stack locally in
+      <30 minutes
+    depends_on:
+    - 27
+    - 29
+  QA:
+    description: 'Execute system-level QA: test plan covering all loan product types
+      across all markets, regulatory compliance test cases (KYC rejection scenarios,
+      interest rate cap enforcement, consent management), performance testing at target
+      scale (10K concurrent users), and user acceptance testing coordination.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - QA test plan covers 200+ test cases across functional, compliance, and edge-case
+      scenarios
+    - All compliance test cases pass with documented evidence for regulatory submission
+    - Load test confirms system handles 10K concurrent users with SLOs maintained
+    - 500 loan applications/minute sustained for 30 minutes without degradation
+    - UAT sign-off obtained from representative borrowers in each target market
+    - Zero critical bugs, <5 high-severity bugs open at launch clearance
+    depends_on:
+    - 27
+    - 28
+    - 29
+  CONFIG:
+    description: 'Configure SAGE solution YAML for micro_lending_platform: project.yaml
+      with credit and fintech domain configuration, prompts.yaml with specialist agent
+      roles (credit analyst, collection strategist, compliance monitor, disbursement
+      ops), and tasks.yaml with full task type registry for lending domain operations.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml loads without validation errors via SAGE config endpoint
+    - All 6 agent roles defined in prompts.yaml with domain-appropriate system prompts
+    - tasks.yaml covers all 32 task types needed for lending domain operations
+    - active_modules list matches the modules built in steps 17-19
+    - HITL level set to strict — all loan decisions and disbursements require approval
+    - make run PROJECT=micro_lending_platform starts without errors
+    depends_on:
+    - 6

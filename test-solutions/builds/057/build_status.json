@@ -1,0 +1,1001 @@
+{
+  "run_id": "b714ce8a-6206-479f-9c08-ba9be90ed34e",
+  "solution_name": "wearable_fitness",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T08:06:11.721414+00:00",
+  "updated_at": "2026-03-22T08:11:17.712393+00:00",
+  "product_description": "Fitness wearable platform with heart rate, SpO2, step counting, sleep tracking, workout detection, and health insights. BLE sync with mobile app.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze fitness wearable market: competitor landscape (Fitbit, Apple Watch, Garmin, Whoop), pricing tiers, feature gaps, target demographics (athletes, health-conscious consumers, clinical monitoring). Assess BLE sync patterns and mobile app expectations.",
+      "payload": {
+        "competitors": [
+          "Fitbit",
+          "Apple Watch",
+          "Garmin Forerunner",
+          "Whoop 4.0",
+          "Oura Ring"
+        ],
+        "segments": [
+          "consumer fitness",
+          "clinical remote monitoring",
+          "sports performance"
+        ],
+        "research_areas": [
+          "BLE protocol adoption",
+          "subscription vs one-time pricing",
+          "SpO2 regulatory landscape",
+          "sleep tracking accuracy benchmarks"
+        ],
+        "deliverables": [
+          "competitor matrix",
+          "positioning statement",
+          "TAM/SAM/SOM estimate"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix covers \u22656 products with feature/price/BLE-stack comparison",
+        "Positioning statement identifies 2+ defensible differentiators",
+        "TAM/SAM/SOM estimates include source citations",
+        "Go-to-market channel recommendations documented"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product requirements document (PRD) for wearable_fitness: sensor feature set (HR, SpO2, steps, sleep, workout detection), BLE sync spec, mobile app MVP scope, health insights engine scope, success metrics (DAU, sync reliability, sensor accuracy targets), and phased roadmap.",
+      "payload": {
+        "solution_name": "wearable_fitness",
+        "mvp_features": [
+          "heart_rate_continuous",
+          "spo2_spot_check",
+          "step_counting",
+          "sleep_staging",
+          "workout_auto_detection",
+          "ble_sync",
+          "health_insights_daily_summary"
+        ],
+        "v2_features": [
+          "ECG_single_lead",
+          "stress_HRV",
+          "menstrual_cycle_tracking",
+          "coaching_agent"
+        ],
+        "success_metrics": {
+          "step_accuracy": "\u226597% vs reference pedometer",
+          "hr_accuracy": "\u00b12 bpm vs chest strap at rest",
+          "spo2_accuracy": "\u00b12% vs clinical pulse oximeter",
+          "sleep_staging_accuracy": "\u226580% vs PSG gold standard",
+          "ble_sync_success_rate": "\u226599.5% under normal conditions",
+          "battery_life_target": "\u22657 days continuous monitoring"
+        },
+        "compliance_flags": [
+          "IEC 62443",
+          "FDA wellness device guidance",
+          "GDPR health data"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD approved by stakeholder review with sign-off recorded",
+        "All sensor accuracy targets defined with measurement methodology",
+        "BLE protocol version and profiles specified (BLE 5.x, GATT profiles)",
+        "3-phase roadmap with milestones and success criteria per phase",
+        "RACI chart for cross-functional teams included"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes for mobile app (iOS/Android): onboarding flow, daily health dashboard, workout session view, sleep report, SpO2 history, health insights feed, BLE pairing wizard, settings. Accessibility audit for WCAG 2.1 AA compliance.",
+      "payload": {
+        "research_methods": [
+          "user interviews (n\u22658)",
+          "diary study (1 week)",
+          "competitive UX teardown"
+        ],
+        "screens": [
+          "onboarding/pairing",
+          "daily_dashboard",
+          "heart_rate_detail",
+          "spo2_detail",
+          "step_activity",
+          "sleep_report",
+          "workout_session_live",
+          "workout_history",
+          "health_insights_feed",
+          "settings_profile",
+          "device_management"
+        ],
+        "design_system": "Material Design 3 baseline with brand tokens",
+        "accessibility_targets": [
+          "WCAG 2.1 AA",
+          "Dynamic Type support",
+          "VoiceOver/TalkBack compatibility"
+        ]
+      },
+      "acceptance_criteria": [
+        "User research synthesis report with \u22653 validated persona definitions",
+        "Full wireframe set covers all listed screens at mid-fidelity",
+        "Interactive prototype linked for usability testing",
+        "Accessibility audit report with zero critical violations",
+        "Design tokens exported for mobile engineering handoff",
+        "App store screenshot mockups prepared",
+        "Onboarding flow under 3 steps"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "CONFIG",
+      "description": "Set up wearable_fitness solution scaffold: SAGE YAML files (project.yaml, prompts.yaml, tasks.yaml), firmware build toolchain (Zephyr RTOS or FreeRTOS + CMake + ARM cross-compiler), mobile app project skeleton (React Native or Flutter), backend project skeleton (FastAPI), CI/CD pipeline stubs, monorepo structure.",
+      "payload": {
+        "solution_name": "wearable_fitness",
+        "repo_structure": {
+          "firmware/": "Zephyr RTOS project, nRF5340 target, CMakeLists",
+          "mobile/": "Flutter app, BLE plugin, health charts",
+          "backend/": "FastAPI, PostgreSQL, TimescaleDB for time-series",
+          "ml/": "sleep staging model, workout detection model",
+          "solutions/wearable_fitness/": "SAGE YAML configs"
+        },
+        "toolchain": {
+          "firmware": "Zephyr SDK 3.x, nRF Connect SDK, CMake 3.20+",
+          "mobile": "Flutter 3.x, flutter_blue_plus, health package",
+          "backend": "Python 3.12, FastAPI, SQLAlchemy, TimescaleDB",
+          "ci": "GitHub Actions, QEMU-based firmware test runner"
+        },
+        "agentic_pattern": "coordinator",
+        "sage_active_modules": [
+          "dashboard",
+          "analyst",
+          "developer",
+          "monitor",
+          "improvements",
+          "knowledge"
+        ]
+      },
+      "acceptance_criteria": [
+        "All three SAGE YAML files validate against schema without errors",
+        "Firmware project compiles for target MCU with zero errors",
+        "Mobile app runs on simulator with blank home screen",
+        "Backend starts with `make run PROJECT=wearable_fitness` successfully",
+        "CI pipeline runs green on empty commit",
+        "README documents toolchain setup steps end-to-end"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 5,
+      "task_type": "FIRMWARE",
+      "description": "Implement HAL drivers for sensor suite: MAX30102 (HR + SpO2 via I2C), ADXL362 accelerometer (steps + motion via SPI), BMA423 or equivalent for sleep posture. Implement RTOS task architecture: sensor_task, ble_task, power_mgmt_task, data_store_task. Flash storage ring buffer for offline data. Low-power state machine (active/idle/sleep modes).",
+      "payload": {
+        "target_mcu": "Nordic nRF5340 (dual-core: app + net)",
+        "rtos": "Zephyr RTOS",
+        "sensors": {
+          "hr_spo2": {
+            "ic": "MAX30102",
+            "bus": "I2C",
+            "sample_rate_hz": 25
+          },
+          "accelerometer": {
+            "ic": "ADXL362",
+            "bus": "SPI",
+            "sample_rate_hz": 50
+          },
+          "temperature": {
+            "ic": "TMP117",
+            "bus": "I2C",
+            "sample_rate_hz": 0.1
+          }
+        },
+        "ble_profiles": [
+          "Heart Rate Service (0x180D)",
+          "SpO2 (custom GATT)",
+          "Health Thermometer (0x1809)",
+          "User Data Service (0x181C)"
+        ],
+        "flash_storage": "4MB NOR flash, FIFO ring buffer, 7-day retention",
+        "power_targets": {
+          "active_monitoring_mA": 8,
+          "sleep_mode_uA": 12,
+          "ble_advertising_mA": 3
+        }
+      },
+      "acceptance_criteria": [
+        "MAX30102 driver reads HR within \u00b15 bpm of reference at rest on bench",
+        "SpO2 reads within \u00b13% of clinical oximeter on bench",
+        "Accelerometer step count within \u00b15% of manual count over 100 steps",
+        "All RTOS tasks start without deadlock under valgrind-equivalent Zephyr sanitizer",
+        "Ring buffer stores and retrieves 48h of sensor data without corruption",
+        "Power consumption measured \u22648 mA in active mode, \u226415 \u00b5A in deep sleep",
+        "BLE GATT services advertise and are discoverable by nRF Connect mobile tool",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "firmware_engineer"
+    },
+    {
+      "step": 6,
+      "task_type": "FIRMWARE",
+      "description": "Implement on-device algorithm layer: step detection (peak detection on accelerometer Z-axis), sleep staging state machine (activity + HR variability heuristics: wake/light/deep/REM), workout auto-detection classifier (accelerometer pattern matching for walk/run/cycle/swim). Real-time HR derived from MAX30102 PPG peak interval. SpO2 via ratio-of-ratios (RoR) algorithm.",
+      "payload": {
+        "algorithms": {
+          "step_detection": "Dynamic threshold peak detector on filtered 50Hz accel Z",
+          "sleep_staging": "Rule-based HMM: HR+HRV+motion \u2192 {WAKE, LIGHT, DEEP, REM}",
+          "workout_detection": "SVM or decision tree on 10s feature windows: mean_accel, step_cadence, hr_zone",
+          "hr_from_ppg": "Pan-Tompkins adapted for PPG signal",
+          "spo2": "Ratio-of-ratios: (AC_red/DC_red) / (AC_ir/DC_ir), calibration LUT"
+        },
+        "output_format": "Packed structs \u2192 BLE notify + NOR flash log",
+        "algorithm_validation": "Compare against Polar H10 (HR), Nonin 3230 (SpO2), ActiGraph GT9X (steps/sleep)"
+      },
+      "acceptance_criteria": [
+        "Step detection F1-score \u22650.97 on 10-subject validation dataset",
+        "Sleep staging accuracy \u226580% epoch-by-epoch vs PSG on 5-subject pilot",
+        "Workout type classification accuracy \u226590% across walk/run/cycle on validation set",
+        "HR RMSE \u22643 bpm vs Polar H10 during mixed-intensity 30-min session",
+        "SpO2 RMSE \u22642% vs Nonin 3230 at SpO2 90\u2013100% range",
+        "Algorithm compute time <10 ms per epoch on nRF5340 app core at 64 MHz",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "firmware_engineer"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design and migrate time-series health data schema in TimescaleDB (PostgreSQL extension): hypertables for heart_rate_readings, spo2_readings, step_events, sleep_sessions, workout_sessions, health_insights. User account and device registry tables. GDPR-compliant data model with soft delete and retention policy hooks.",
+      "payload": {
+        "engine": "PostgreSQL 16 + TimescaleDB 2.x",
+        "hypertables": [
+          {
+            "table": "heart_rate_readings",
+            "time_col": "recorded_at",
+            "chunk_interval": "1 day"
+          },
+          {
+            "table": "spo2_readings",
+            "time_col": "recorded_at",
+            "chunk_interval": "1 day"
+          },
+          {
+            "table": "step_events",
+            "time_col": "recorded_at",
+            "chunk_interval": "1 day"
+          },
+          {
+            "table": "sleep_sessions",
+            "time_col": "start_at",
+            "chunk_interval": "7 days"
+          },
+          {
+            "table": "workout_sessions",
+            "time_col": "start_at",
+            "chunk_interval": "7 days"
+          },
+          {
+            "table": "health_insights",
+            "time_col": "generated_at",
+            "chunk_interval": "7 days"
+          }
+        ],
+        "retention_policies": {
+          "raw_sensor": "90 days",
+          "aggregated_daily": "5 years"
+        },
+        "encryption": "AES-256 at rest, per-user column encryption for health fields",
+        "gdpr": "soft_deleted_at column, data_export_job table, consent_log table"
+      },
+      "acceptance_criteria": [
+        "All hypertables created with correct chunk intervals and compression policies",
+        "Migrations run idempotently via Alembic with zero data loss on re-run",
+        "Query for 90-day HR history for one user executes in <200 ms with 10M rows loaded",
+        "Retention policy drops chunks older than policy window in nightly job",
+        "GDPR export job produces JSON export of all user data within 5 minutes",
+        "Soft delete cascades to all health tables for a given user_id"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Build FastAPI backend: user auth (JWT + refresh tokens), device registration and BLE sync data ingestion endpoint (bulk time-series upload), health metrics retrieval APIs (paginated, date-range filtered), health insights generation endpoint (calls ML service), push notification dispatch (FCM/APNs), WebSocket for real-time BLE-forwarded live HR during workout.",
+      "payload": {
+        "framework": "FastAPI 0.115+",
+        "auth": "JWT RS256, refresh token rotation, PKCE for mobile OAuth",
+        "endpoints": [
+          "POST /auth/register",
+          "POST /auth/login",
+          "POST /auth/refresh",
+          "POST /devices/register",
+          "POST /devices/{id}/sync",
+          "GET /health/heart-rate",
+          "GET /health/spo2",
+          "GET /health/steps",
+          "GET /health/sleep/{date}",
+          "GET /health/workouts",
+          "GET /insights/daily",
+          "GET /insights/weekly",
+          "WS /health/live/{device_id}",
+          "POST /notifications/register-token"
+        ],
+        "background_jobs": [
+          "insight_generator (nightly)",
+          "data_retention_pruner (weekly)",
+          "anomaly_detector (hourly)"
+        ],
+        "agentic_pattern": "review_and_critique",
+        "insights_engine": "calls ML service for sleep score, readiness score, activity score"
+      },
+      "acceptance_criteria": [
+        "All endpoints return correct HTTP status codes per OpenAPI spec",
+        "BLE sync ingestion handles 7-day backlog (\u2265100K rows) in <30 seconds",
+        "JWT auth rejects expired tokens with 401, invalid signatures with 403",
+        "WebSocket live HR stream delivers readings with <500 ms latency",
+        "Rate limiting enforced: \u2264100 req/min per user on sync endpoint",
+        "OpenAPI spec auto-generated and matches all implemented routes",
+        "Background insight generator produces daily insight record for all active users"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "ML_MODEL",
+      "description": "Train and package health insights ML models: (1) Sleep quality score regressor from sleep stage distribution + HR variability features, (2) Readiness score model from sleep + HRV + activity load (TRIMP), (3) Anomaly detector for SpO2 dips and HR spikes. Package as ONNX for on-device inference option and REST microservice for backend.",
+      "payload": {
+        "models": [
+          {
+            "name": "sleep_quality_scorer",
+            "type": "gradient_boosted_regressor",
+            "features": [
+              "rem_pct",
+              "deep_pct",
+              "sleep_efficiency",
+              "hr_overnight_mean",
+              "hrv_rmssd"
+            ],
+            "output": "sleep_score [0-100]",
+            "training_data": "open MESA dataset + synthetic augmentation"
+          },
+          {
+            "name": "readiness_scorer",
+            "type": "gradient_boosted_regressor",
+            "features": [
+              "sleep_score",
+              "hrv_trend_7d",
+              "trimp_7d_load",
+              "resting_hr_delta"
+            ],
+            "output": "readiness_score [0-100]"
+          },
+          {
+            "name": "spo2_anomaly_detector",
+            "type": "isolation_forest",
+            "features": [
+              "spo2_rolling_min_5m",
+              "spo2_variance_1h",
+              "hr_spo2_correlation"
+            ],
+            "output": "anomaly_flag, severity [low|medium|high]"
+          }
+        ],
+        "serving": "FastAPI ML microservice + ONNX Runtime",
+        "export_format": [
+          "ONNX",
+          "joblib"
+        ],
+        "evaluation_target": {
+          "sleep_scorer_mae": "\u22648 points",
+          "readiness_mae": "\u226410 points",
+          "anomaly_precision": "\u22650.90"
+        }
+      },
+      "acceptance_criteria": [
+        "Sleep quality scorer MAE \u22648 points on held-out test set",
+        "Readiness scorer MAE \u226410 points on held-out test set",
+        "Anomaly detector precision \u22650.90, recall \u22650.80 on labeled SpO2 dip dataset",
+        "ONNX models load and infer in <50 ms on mid-range mobile CPU",
+        "ML microservice responds in <200 ms at p95 under 50 concurrent requests",
+        "Model cards documenting training data, metrics, and limitations produced for each model"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 10,
+      "task_type": "FRONTEND",
+      "description": "Build Flutter mobile app (iOS + Android): BLE pairing wizard using flutter_blue_plus, daily health dashboard with sparkline charts, heart rate + SpO2 detail screens with 24h history, sleep report with stage hypnogram chart, step/activity ring, workout session live view (live HR via WebSocket), health insights feed cards, settings screen. Implement SAGE health insights agentic coordinator pattern for personalized tip generation.",
+      "payload": {
+        "framework": "Flutter 3.x (Dart)",
+        "state_management": "Riverpod 2.x",
+        "ble_library": "flutter_blue_plus",
+        "charts": "fl_chart for sparklines, hypnogram, activity rings",
+        "api_client": "Dio + Retrofit code-gen",
+        "offline_first": "Drift (SQLite) local cache, sync queue for offline writes",
+        "notifications": "firebase_messaging, local_notifications",
+        "agentic_pattern": "coordinator",
+        "health_insights_agent": "Calls backend /insights endpoint, coordinator routes to sleep/activity/anomaly specialist cards"
+      },
+      "acceptance_criteria": [
+        "BLE pairing completes with wearable in <10 seconds on first connect",
+        "Daily dashboard renders within 500 ms of app foreground on mid-range device",
+        "All chart screens display correct data matching backend API responses",
+        "Live workout HR updates within 1 second via WebSocket",
+        "App runs offline with last-synced data displayed, queues writes for reconnect",
+        "Health insights feed displays \u22651 personalized card per daily session",
+        "iOS TestFlight and Android internal track builds pass store review guidelines",
+        "No critical accessibility violations on VoiceOver/TalkBack audit"
+      ],
+      "depends_on": [
+        3,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "SECURITY",
+      "description": "Conduct threat model (STRIDE) for wearable_fitness: BLE channel security, health data in transit and at rest, mobile app binary security, backend API attack surface, ML model inversion risk. Produce SBOM for firmware and backend. Define BLE pairing security (LE Secure Connections, passkey entry). Penetration test plan for API.",
+      "payload": {
+        "methodology": "STRIDE + OWASP Mobile Top 10",
+        "ble_security": {
+          "pairing": "LE Secure Connections (LESC) with passkey entry",
+          "bonding": "encrypted link keys stored in secure element",
+          "data_encryption": "AES-128 CCM on all BLE notifications"
+        },
+        "api_security": [
+          "JWT RS256",
+          "HTTPS/TLS 1.3 only",
+          "rate limiting",
+          "input validation",
+          "SQL injection prevention"
+        ],
+        "mobile_security": [
+          "certificate pinning",
+          "no plaintext health data in local logs",
+          "biometric auth gate for health screens"
+        ],
+        "sbom_tools": [
+          "syft for firmware dependencies",
+          "cyclonedx for Python backend"
+        ],
+        "iec62443_controls": [
+          "SL-1 baseline: auth, audit, comms integrity",
+          "SL-2 add: zone separation, least privilege"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all data flows with mitigations documented per threat",
+        "BLE sniff test confirms all notifications are AES-CCM encrypted",
+        "OWASP Mobile Top 10 checklist completed with zero high-severity open items",
+        "SBOM generated for firmware (\u226595% dependency coverage) and backend (100%)",
+        "Penetration test plan covers \u226510 API attack scenarios with expected outcomes",
+        "IEC 62443 SL-1 control mapping table produced with evidence references",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        5,
+        8,
+        10
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 12,
+      "task_type": "COMPLIANCE",
+      "description": "Produce IEC 62443 compliance artifacts: security requirements specification (SRS), security level assessment (SL-1/SL-2 gap analysis), security development lifecycle (SDL) evidence, incident response procedure for health data breach. Map BLE security controls to IEC 62443-4-2 component requirements.",
+      "payload": {
+        "standard": "IEC 62443",
+        "artifacts": [
+          "Security Requirements Specification (SRS)",
+          "Security Level Assessment (SL-1 achieved, SL-2 gap list)",
+          "SDL evidence package (design review records, code review logs, pen test report)",
+          "Incident Response Plan (IRP) for health data breach",
+          "IEC 62443-4-2 component requirement traceability matrix"
+        ],
+        "scope": "BLE wearable device + mobile app + cloud backend as Industrial IoT system",
+        "review_cadence": "Quarterly security review gate"
+      },
+      "acceptance_criteria": [
+        "SRS covers all IEC 62443-3-3 security requirements applicable to SL-1",
+        "Gap analysis identifies \u22645 SL-2 gaps with remediation timeline",
+        "SDL evidence package references actual code review and test records (not placeholders)",
+        "IRP defines RTO <4 hours notification to affected users on confirmed breach",
+        "Traceability matrix links every SRS requirement to \u22651 test case and \u22651 code artifact",
+        "Document set reviewed and signed by designated security officer"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 13,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Write firmware unit tests (Zephyr Twister + Unity) for: MAX30102 driver mock, SpO2 RoR algorithm, step detection algorithm, sleep staging state machine, ring buffer logic. HIL test spec for bench validation using Keysight U2761A as PPG signal injector and Nordic PPK2 for power measurement.",
+      "payload": {
+        "test_framework": "Zephyr Twister + Unity assertions",
+        "unit_test_modules": [
+          "test_max30102_driver (mock I2C)",
+          "test_spo2_ror_algorithm (known signal \u2192 known SpO2)",
+          "test_step_detection (synthetic accel data, known step count)",
+          "test_sleep_staging (synthetic HR+motion time series, known stages)",
+          "test_ring_buffer (overflow, wraparound, concurrent read/write)"
+        ],
+        "hil_equipment": [
+          "Nordic PPK2 (power)",
+          "Keysight U2761A (DAQ for PPG injection)",
+          "nRF5340-DK dev board"
+        ],
+        "hil_test_cases": [
+          "HIL-001: HR accuracy 40\u2013200 bpm range with PPG injector",
+          "HIL-002: SpO2 accuracy 88\u2013100% with calibrated signal",
+          "HIL-003: Power consumption in active/idle/sleep modes",
+          "HIL-004: BLE connection stability over 8-hour session",
+          "HIL-005: Ring buffer integrity after simulated power loss"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test suite achieves \u226590% line coverage on algorithm modules",
+        "All unit tests pass in Zephyr QEMU without hardware required",
+        "HIL-001 passes: HR reading within \u00b12 bpm across full range on 5 test runs",
+        "HIL-002 passes: SpO2 within \u00b12% across 88\u2013100% range",
+        "HIL-003 passes: all power states within 10% of firmware spec targets",
+        "HIL-004 passes: zero BLE disconnections over 8-hour continuous session",
+        "HIL test report template populated with pass/fail for each case"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 14,
+      "task_type": "TESTS",
+      "description": "Write backend unit and integration tests (pytest): auth flows (register, login, token refresh, expiry), sync ingestion (bulk upload, idempotency, out-of-order packets), health metric retrieval (pagination, date filtering), insights generation (mock ML service), WebSocket live HR session, anomaly alert trigger. Load test sync endpoint to 500 concurrent devices.",
+      "payload": {
+        "framework": "pytest + httpx (async) + pytest-asyncio",
+        "test_categories": {
+          "unit": [
+            "auth service",
+            "sync parser",
+            "insight generator",
+            "anomaly detector"
+          ],
+          "integration": [
+            "full sync flow",
+            "insights pipeline end-to-end",
+            "notification dispatch"
+          ],
+          "load": "Locust: 500 concurrent device syncs, 7-day backlog each"
+        },
+        "coverage_target": "\u226585% line coverage on src/",
+        "load_targets": {
+          "sync_p95_latency": "<30s for 100K row backlog",
+          "api_rps": "\u22651000 RPS on GET /health endpoints at p99 <200ms"
+        }
+      },
+      "acceptance_criteria": [
+        "pytest suite passes with \u226585% coverage on backend src/",
+        "Auth expiry test confirms 401 returned for tokens expired >1 hour",
+        "Idempotency test confirms duplicate sync upload does not create duplicate rows",
+        "Load test report shows p95 sync latency <30s at 500 concurrent devices",
+        "WebSocket test verifies live HR delivery within 1s of firmware emission (mocked BLE)",
+        "Zero flaky tests in 5 consecutive CI runs"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 15,
+      "task_type": "QA",
+      "description": "Design and execute system QA test plan: end-to-end scenarios covering device pairing, 24h wear simulation, BLE sync, insight generation, anomaly alert, and data export. Regression suite for firmware OTA update flow. Usability testing sessions (n=5) against UX wireframes. Defect triage and severity classification.",
+      "payload": {
+        "test_plan_sections": [
+          "E2E-001: New user onboard \u2192 pair device \u2192 wear 24h simulation \u2192 sync \u2192 view insights",
+          "E2E-002: SpO2 dip detected \u2192 anomaly alert \u2192 push notification \u2192 user acknowledges",
+          "E2E-003: 7-day offline accumulation \u2192 BLE sync \u2192 all data present in app",
+          "E2E-004: OTA firmware update \u2192 device reboots \u2192 sync resumes with no data loss",
+          "E2E-005: GDPR data export \u2192 user receives complete JSON within 5 minutes"
+        ],
+        "usability_testing": "5 participants, think-aloud protocol, task completion rate target \u226585%",
+        "defect_severity": [
+          "Critical (P0): data loss, auth bypass",
+          "High (P1): wrong health readings",
+          "Medium (P2): UI glitches",
+          "Low (P3): cosmetic"
+        ]
+      },
+      "acceptance_criteria": [
+        "All E2E test cases executed with results documented as pass/fail",
+        "Zero P0 defects open at QA sign-off",
+        "Zero P1 defects open related to health data accuracy",
+        "Usability test task completion rate \u226585% across all core user journeys",
+        "QA sign-off report signed and linked to release candidate build",
+        "Regression suite covers OTA update flow with \u22653 firmware version transitions"
+      ],
+      "depends_on": [
+        13,
+        14,
+        10
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 16,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute system-level integration tests: BLE stack interoperability on 5 device models (iPhone 13+, Samsung S22+, Pixel 7+, OnePlus 10), long-haul 7-day wear simulation on bench (controlled HR signal via PPG injector), cross-timezone sleep detection validation, battery life measurement over 7 days, concurrent user load on backend (10K active users).",
+      "payload": {
+        "ble_interop_devices": [
+          "iPhone 15 Pro",
+          "Samsung Galaxy S24",
+          "Pixel 8",
+          "OnePlus 12",
+          "Xiaomi 14"
+        ],
+        "long_haul_test": {
+          "duration_days": 7,
+          "signal_source": "PPG signal generator with scripted HR/SpO2 profile",
+          "checks": [
+            "data completeness \u226599.5%",
+            "battery SOC \u226515% at day 7",
+            "no firmware crash"
+          ]
+        },
+        "backend_load": {
+          "concurrent_users": 10000,
+          "tool": "k6",
+          "scenarios": [
+            "daily sync burst",
+            "insights query peak",
+            "live workout WS connections"
+          ]
+        },
+        "timezone_test": "Simulate sleep session spanning midnight in UTC, EST, IST \u2014 verify sleep date attribution"
+      },
+      "acceptance_criteria": [
+        "BLE pairing and sync succeed on all 5 test devices without workarounds",
+        "7-day bench test completes with data completeness \u226599.5% and battery \u226515% SOC",
+        "No firmware crash or watchdog reset during 7-day test",
+        "Backend sustains 10K concurrent users with p99 API latency <500 ms",
+        "Sleep session date attribution correct across all 3 tested timezones",
+        "System test report produced with all results, defect links, and sign-off"
+      ],
+      "depends_on": [
+        15
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 17,
+      "task_type": "INFRA",
+      "description": "Provision production infrastructure: containerized backend (Docker + Kubernetes), TimescaleDB managed cluster, ML microservice deployment (GPU-optional), CDN for static assets, BLE data ingestion queue (Redis Streams), OTA firmware update service (S3 + signed manifests), observability stack (Prometheus + Grafana + Loki), auto-scaling policies.",
+      "payload": {
+        "cloud": "AWS (or GCP equivalent)",
+        "compute": "EKS with spot node groups for ML, on-demand for API",
+        "database": "AWS RDS PostgreSQL + TimescaleDB extension, Multi-AZ",
+        "queue": "Redis Streams for BLE sync ingestion buffering",
+        "ota_service": "S3 + CloudFront + signed firmware manifest + device version registry",
+        "observability": {
+          "metrics": "Prometheus + Grafana dashboards (sync lag, API latency, HR accuracy drift)",
+          "logs": "Loki + structured JSON logs",
+          "alerts": "PagerDuty integration for P0 alerts"
+        },
+        "scaling": "HPA on sync-ingestion pods (CPU >70%), RDS read replicas for query load"
+      },
+      "acceptance_criteria": [
+        "Backend deploys to Kubernetes with rolling update zero-downtime",
+        "TimescaleDB Multi-AZ failover completes in <30 seconds",
+        "OTA update delivers firmware binary to device within 2 minutes via BLE",
+        "Grafana dashboards display sync lag, API latency, and active device count in real time",
+        "PagerDuty alert fires within 2 minutes of synthetic P0 incident injection",
+        "Auto-scaling adds pods within 60 seconds of CPU threshold breach under load test"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "LOCALIZATION",
+      "description": "Implement i18n for mobile app and backend: extract all user-facing strings to ARB files (Flutter), configure locale detection, translate to EN/ES/FR/DE/JA as MVP locales. Localize health insight copy with culturally appropriate framing. Backend error messages and push notification copy localized.",
+      "payload": {
+        "framework": "Flutter Intl + ARB files",
+        "locales": [
+          "en",
+          "es",
+          "fr",
+          "de",
+          "ja"
+        ],
+        "string_count_estimate": 320,
+        "special_handling": [
+          "Date/time formats per locale (sleep report dates)",
+          "Metric vs imperial units (steps, distance, weight) per locale preference",
+          "RTL layout not required for MVP locales"
+        ],
+        "translation_process": "Machine translation (DeepL) + native speaker review for health copy",
+        "backend_i18n": "Accept-Language header \u2192 locale-specific insight copy and push notification text"
+      },
+      "acceptance_criteria": [
+        "All 320 strings extracted to ARB files with zero hardcoded UI text remaining",
+        "App switches locale at runtime without restart",
+        "All 5 locales render correctly on device with no truncated labels",
+        "Health insight copy reviewed by native speaker for each locale",
+        "Unit/imperial toggle persists per user profile and reflects in all metric displays",
+        "Backend push notifications deliver in user's preferred locale",
+        "Top 5 target locales identified",
+        "Store listing translated"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "TRAINING",
+      "description": "Produce end-user and clinical user documentation: in-app onboarding tutorial (6 steps), help center articles (20 topics), FDA-aligned accuracy and limitations disclosure for SpO2 and HR, quick-start guide for device setup, video script for 90-second product demo, internal engineering runbook for on-call.",
+      "payload": {
+        "user_docs": [
+          "Getting Started Guide (PDF + in-app)",
+          "Device Care & Charging",
+          "Understanding Your Health Metrics",
+          "Sleep Tracking Guide",
+          "Workout Detection Guide",
+          "Health Insights Explained",
+          "BLE Sync Troubleshooting",
+          "Privacy & Data Control"
+        ],
+        "clinical_disclosure": "SpO2 accuracy statement per FDA pulse oximeter guidance (\u00b12%, not for diagnostic use without clinical validation)",
+        "in_app_tutorial": "Coachmark overlay on first launch, 6 progressive tips, skippable",
+        "video_script": "90-second product demo covering HR, sleep, workout, and insights"
+      },
+      "acceptance_criteria": [
+        "All 20 help center articles complete and reviewed for accuracy by QA",
+        "SpO2 accuracy disclosure reviewed by legal/regulatory and approved",
+        "In-app tutorial tested by 3 first-time users with zero confusion points on core flows",
+        "Video script approved by product manager and ready for production",
+        "On-call engineering runbook covers all P0 alert scenarios with resolution steps",
+        "Documentation accessibility: all PDFs pass WCAG 2.1 AA PDF/UA check"
+      ],
+      "depends_on": [
+        15,
+        3
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 20,
+      "task_type": "AGENTIC",
+      "description": "Implement health insights coordinator agent using multi-agent coordinator pattern: central coordinator receives daily user data snapshot, routes to specialist sub-agents (SleepInsightAgent, ActivityInsightAgent, SpO2AnomalyAgent, TrendAgent), aggregates outputs into ranked insight cards with personalization tokens. Integrates with SAGE approval gate for anomaly escalation proposals.",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_input": "Daily snapshot: {sleep_session, hr_24h, steps_24h, spo2_24h, workout_sessions, 7d_trends}",
+        "specialist_agents": [
+          {
+            "name": "SleepInsightAgent",
+            "role": "sleep_quality_scorer + recovery tip generator"
+          },
+          {
+            "name": "ActivityInsightAgent",
+            "role": "goal progress + workout feedback generator"
+          },
+          {
+            "name": "SpO2AnomalyAgent",
+            "role": "dip detection + escalation proposal creator"
+          },
+          {
+            "name": "TrendAgent",
+            "role": "7-day trend narrator + predictive readiness score"
+          }
+        ],
+        "output": "Ranked list of InsightCard objects with {title, body, cta, severity, agent_source}",
+        "hitl_gate": "SpO2 anomaly escalations routed to SAGE approval queue before push notification sent",
+        "sage_integration": "POST /proposals with type=health_alert, requires human approval before notifying user",
+        "agentic_pattern_type": "coordinator"
+      },
+      "acceptance_criteria": [
+        "Coordinator routes daily snapshot to all 4 specialist agents in parallel (wave execution)",
+        "Daily insight generation completes in <5 seconds end-to-end",
+        "SpO2 anomaly proposal appears in SAGE approval queue before notification fires",
+        "InsightCard objects contain all required fields and pass schema validation",
+        "Coordinator handles sub-agent timeout gracefully (partial insights returned, no crash)",
+        "Insight relevance: A/B test shows \u226560% of users engage with \u22651 insight card daily"
+      ],
+      "depends_on": [
+        9,
+        8
+      ],
+      "agent_role": "developer"
+    }
+  ],
+  "task_count": 20,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 48,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 48,
+        "final_review": {
+          "score": 48,
+          "flaws": [
+            "IEC 62443 is an industrial automation/control systems cybersecurity standard \u2014 it does not apply to a consumer fitness wearable. The correct standards are IEC 62304 (medical device software lifecycle), ISO 14971 (risk management for medical devices), and IEC 60601-1-2 for EMC if SpO2 claims are made. Mapping to the wrong standard produces compliance artifacts that are worthless and potentially misleading to regulators.",
+            "SpO2 measurement is NOT a wellness feature. FDA classifies pulse oximeters under 21 CFR 880.2890 (Class II, 510(k) required) or requires De Novo petition. The plan's 'FDA wellness device guidance' flag is a category error. Shipping a device that measures SpO2 without 510(k) clearance exposes the company to enforcement action. The 'not for diagnostic use' disclaimer does not substitute for premarket authorization when the device outputs a specific SpO2 percentage.",
+            "Firmware acceptance criteria in Step 5 allow \u00b15 bpm / \u00b13% SpO2, but the PRD (Step 2) requires \u00b12 bpm / \u00b12% SpO2. The firmware team is building to tolerances that will fail product-level acceptance. This contradiction will surface late in integration testing.",
+            "No hardware development pipeline exists. There is no step for schematic design, PCB layout, component sourcing, first article build, or hardware bring-up. Firmware development (Steps 5-6) assumes validated hardware exists. For a new wearable product, hardware bring-up typically takes 3-6 months and is on the critical path before any firmware can run on target silicon.",
+            "Bluetooth SIG qualification (QDID/DID listing) is mandatory for any product using Bluetooth. Not mentioned anywhere in the plan. Without qualification, the product cannot legally carry the Bluetooth name/logo and risks BLE stack interop failures that are undebuggable without knowing the qualification status.",
+            "FCC Part 15 (US) and CE RED Directive (EU) certifications for RF devices are not mentioned. Pre-certification typically requires 6-12 weeks with an accredited test house. Missing this blocks market entry regardless of software readiness.",
+            "TimescaleDB is not natively available as an AWS RDS extension. Step 17 specifies 'AWS RDS PostgreSQL + TimescaleDB extension' \u2014 this requires either Timescale Cloud, a self-managed EC2 deployment, or Aurora PostgreSQL with unofficial extension loading. The infra spec will fail at provisioning time.",
+            "MESA dataset (Step 9) is a cardiovascular outcomes study in adults aged 45-84. Using it as primary training data for a fitness wearable targeting athletes and health-conscious consumers introduces severe demographic bias. Sleep quality models trained on MESA will systematically mis-score younger, fitter users.",
+            "OTA update mechanism is listed as an acceptance criterion in BOTH Step 5 and Step 6 \u2014 duplicated across two separate firmware implementation steps with no distinction. This is unowned work that will be deferred by both implementers.",
+            "Live workout HR WebSocket architecture (Step 8) routes BLE data from device \u2192 mobile app \u2192 backend \u2192 WebSocket \u2192 mobile app. The mobile app already has the BLE data directly; this round-trip adds 200-500ms latency and backend load for data that's already on-device. The <500ms latency acceptance criterion may fail due to this architectural choice.",
+            "Android BLE reliability at 99.5% sync success rate (Step 2) is not achievable across the device matrix in Step 16 (Xiaomi 14, OnePlus 12) without per-device workarounds. AOSP BLE stack divergence on Chinese OEM devices routinely causes connection drops and MTU negotiation failures. The PRD target will be a permanent miss metric.",
+            "Sleep staging validation on 5 subjects (Step 6) provides near-zero statistical power for a product accuracy claim. 5-subject PSG pilots produce confidence intervals of \u00b115-20% on epoch-by-epoch accuracy. The \u226580% target has no meaningful confidence bound and cannot be used to support a product claim.",
+            "Step 3 (UX) requires an accessibility audit for WCAG 2.1 AA but Step 10 (mobile app) lists accessibility as an acceptance criterion via VoiceOver/TalkBack only. There is no explicit WCAG audit step for the mobile app \u2014 WCAG 2.1 AA applies to mobile apps under ADA/EAA, not just web. The gap between 'wireframe audit' and 'shipped app audit' is unowned.",
+            "BLE background sync on iOS is severely restricted by CoreBluetooth. Background execution time is capped, central scanning is not permitted in background, and BLE sync requires the peripheral to re-advertise after a connection drop. None of the Flutter/iOS BLE steps address background mode entitlements, state restoration, or the 'use-bluetooth-peripheral' background mode configuration. The 7-day offline sync scenario (E2E-003) will fail on iOS unless the user keeps the app foregrounded.",
+            "HIPAA is not addressed. If the backend stores SpO2 and HR data for US users and the business model involves healthcare context (even indirect), HIPAA Business Associate Agreement obligations may apply. The plan's GDPR-only compliance posture creates legal exposure for US market launch."
+          ],
+          "suggestions": [
+            "Replace IEC 62443 throughout with the correct stack: IEC 62304 for software lifecycle, ISO 14971 for risk management, and IEC 60601-1-2 for electromagnetic compatibility. Engage a regulatory consultant before Step 2 is finalized.",
+            "Add a regulatory classification step (Step 0) before PRD: determine FDA device classification for SpO2 feature, decide between 510(k) pathway or 'wellness only' with SpO2 feature removed, and document the decision with legal review. Do not commit to SpO2 as a shipped feature without this decision.",
+            "Add a Hardware Development track as Steps 4a-4c: schematic design, PCB layout/review, component procurement and first article build. These are pre-conditions for Steps 5-6. The firmware steps cannot start without target hardware.",
+            "Add FCC/CE/Bluetooth SIG certification to the dependency graph. These should block the system test step (Step 16) and launch. Engage a test house at Step 4 to reserve slots 6 months out.",
+            "Fix TimescaleDB deployment: choose Timescale Cloud (managed, fully supported) or document the self-managed EC2 approach with HA configuration. Remove 'AWS RDS + TimescaleDB extension' as it will not work.",
+            "Replace MESA as primary training data with SHHS (Sleep Heart Health Study) or NSRR datasets which include younger adults and athletes. Augment with PhysioNet waveform data for PPG-specific features. Document dataset demographic distribution explicitly in the model card.",
+            "Reconcile firmware vs PRD accuracy targets in Step 2 review: either tighten firmware acceptance criteria to match PRD (\u00b12 bpm, \u00b12% SpO2) or update PRD to reflect what the hardware can realistically achieve with MAX30102.",
+            "Refactor Step 8 WebSocket to a direct BLE\u2192app display path for live workout HR. The backend WebSocket should receive forwarded data from the mobile app for cloud recording, not serve as the display path. This reduces latency and eliminates a single point of failure during live workouts.",
+            "Add iOS BLE background mode configuration to Step 10 acceptance criteria: 'use-bluetooth-peripheral' entitlement configured, Core Bluetooth state restoration implemented, reconnection logic handles CBManagerState.poweredOff transitions.",
+            "Increase sleep staging validation cohort to \u226520 subjects for a publishable accuracy claim. Consider partnering with a sleep clinic for PSG validation data early (Step 6 dependency)."
+          ],
+          "missing": [
+            "Hardware development pipeline: schematic, PCB layout, BOM, first article build, hardware bring-up. This entire track is absent.",
+            "FCC Part 15 / IC RSS-210 (CA) / CE RED Directive (EU) radio certification plan with test house engagement and timeline.",
+            "Bluetooth SIG qualification process (QDID listing) \u2014 required before product launch.",
+            "Regulatory classification decision document: FDA device class for SpO2, 510(k) vs De Novo vs wellness-only scope decision.",
+            "ISO 14971 risk management file: hazard identification, risk estimation, risk control measures for SpO2 mis-reading, HR alarm failure, battery thermal runaway.",
+            "Battery safety certification (UN 38.3 for LiPo transport, IEC 62133 for portable batteries) \u2014 blocks shipping product internationally.",
+            "Manufacturing readiness review (MRR) and Design for Manufacturing (DFM) checklist \u2014 no mention of how firmware + hardware transition to volume production.",
+            "Privacy impact assessment (DPIA under GDPR Art. 35) \u2014 SpO2 and health data are special category data under GDPR Art. 9, requiring DPIA before processing begins, not just GDPR-compliant schema design.",
+            "Data residency and sovereignty plan \u2014 where health data is stored matters for EU (GDPR), China (PIPL), and other regulated markets. Not addressed in infra step.",
+            "Device identity provisioning infrastructure \u2014 how are device certificates/keys burned at manufacturing time? Referenced as an acceptance criterion in Step 11 but the provisioning system and key management HSM are not designed anywhere.",
+            "Secure boot chain for firmware \u2014 Step 11 mentions 'firmware signing enabled' but there is no step designing the root of trust, key ceremony, or secure bootloader for nRF5340.",
+            "Post-market surveillance plan \u2014 for any device making health claims, a PMS process is required by both FDA and EU MDR. Not mentioned.",
+            "App store health entitlements review \u2014 Apple HealthKit and Google Health Connect have specific review requirements and privacy nutrition label disclosures for health data apps. No step addresses this.",
+            "Infrastructure cost model \u2014 Step 17 provisions Multi-AZ RDS + EKS + GPU nodes with zero cost estimate. At 10K users this architecture runs $8K-15K/month minimum. Needs validation against business model before provisioning."
+          ],
+          "security_risks": [
+            "Device identity and firmware signing are referenced only in Step 11 acceptance criteria ('Device identity provisioned', 'Firmware signing enabled') but no step actually designs or implements the PKI, HSM, or secure element key provisioning. If these are checked as 'done' at Step 11 without implementation artifacts, the OTA mechanism in Step 17 is unsigned and vulnerable to firmware injection attacks.",
+            "BLE LE Secure Connections with passkey entry (Step 11) requires the device to have a display or input mechanism. If the wearable has no display (common for slim form factors), LESC with passkey is not possible \u2014 the fallback is Just Works pairing which provides no MITM protection. The hardware UX must be defined before the BLE security model is finalized.",
+            "Certificate pinning (Step 11) on mobile apps requires a rotation strategy. The plan has no certificate rotation or pinning bypass mechanism for emergency revocation. Pinned certs that expire in production cause app-wide outages for all users simultaneously.",
+            "JWT RS256 with refresh token rotation (Step 8) \u2014 the plan doesn't specify where private keys are stored on the mobile client. If stored in SharedPreferences (Android) or UserDefaults (iOS) without Keystore/Keychain backing, private key extraction via rooted device is trivial on health data.",
+            "ML model inversion risk (Step 9) is listed as in scope for the threat model but the isolation forest anomaly detector running on user SpO2 data is a membership inference attack surface. No mitigations are described beyond flagging it as a risk area.",
+            "The health insights coordinator agent (Step 20) POSTs SpO2 anomaly proposals to the SAGE approval queue. If the approval queue is compromised or an attacker can inject proposals, they could suppress health alerts (delayed notification of real SpO2 dips) \u2014 a patient safety risk if the product is used for any health monitoring purpose.",
+            "ONNX model files served via the ML microservice have no integrity verification step described. A supply chain compromise of the ONNX model file would silently corrupt all health scores without triggering any monitoring alert."
+          ],
+          "summary": "This plan is well-structured at the software architecture level and shows genuine domain knowledge in firmware, ML, and mobile development. However, it contains a fundamental regulatory misclassification that could block market entry entirely: IEC 62443 is the wrong standard for a consumer wearable, and SpO2 measurement almost certainly requires FDA 510(k) clearance rather than a wellness disclaimer \u2014 a decision that must be made before Step 2 is finalized, not retrofitted at Step 12. The entire hardware development pipeline is absent: there is no PCB design, first article build, FCC/CE/Bluetooth SIG certification, or battery safety certification track, yet firmware development in Steps 5-6 implicitly assumes validated hardware exists. The deployment spec has a concrete error (TimescaleDB on AWS RDS is not supported). The firmware and PRD accuracy targets contradict each other and will cause late-stage integration failures. The ML training data (MESA dataset) is demographically mismatched to the target users. For a product that outputs health numbers and SpO2 readings to consumers, the 5-subject sleep staging validation and the missing risk management file (ISO 14971) are not just gaps \u2014 they are the difference between a defensible product and a liability. Score: 48. Fundamental rework is needed on the regulatory classification decision, hardware development track, and security key management before this plan can credibly reach production.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 48,
+            "flaws": [
+              "IEC 62443 is an industrial automation/control systems cybersecurity standard \u2014 it does not apply to a consumer fitness wearable. The correct standards are IEC 62304 (medical device software lifecycle), ISO 14971 (risk management for medical devices), and IEC 60601-1-2 for EMC if SpO2 claims are made. Mapping to the wrong standard produces compliance artifacts that are worthless and potentially misleading to regulators.",
+              "SpO2 measurement is NOT a wellness feature. FDA classifies pulse oximeters under 21 CFR 880.2890 (Class II, 510(k) required) or requires De Novo petition. The plan's 'FDA wellness device guidance' flag is a category error. Shipping a device that measures SpO2 without 510(k) clearance exposes the company to enforcement action. The 'not for diagnostic use' disclaimer does not substitute for premarket authorization when the device outputs a specific SpO2 percentage.",
+              "Firmware acceptance criteria in Step 5 allow \u00b15 bpm / \u00b13% SpO2, but the PRD (Step 2) requires \u00b12 bpm / \u00b12% SpO2. The firmware team is building to tolerances that will fail product-level acceptance. This contradiction will surface late in integration testing.",
+              "No hardware development pipeline exists. There is no step for schematic design, PCB layout, component sourcing, first article build, or hardware bring-up. Firmware development (Steps 5-6) assumes validated hardware exists. For a new wearable product, hardware bring-up typically takes 3-6 months and is on the critical path before any firmware can run on target silicon.",
+              "Bluetooth SIG qualification (QDID/DID listing) is mandatory for any product using Bluetooth. Not mentioned anywhere in the plan. Without qualification, the product cannot legally carry the Bluetooth name/logo and risks BLE stack interop failures that are undebuggable without knowing the qualification status.",
+              "FCC Part 15 (US) and CE RED Directive (EU) certifications for RF devices are not mentioned. Pre-certification typically requires 6-12 weeks with an accredited test house. Missing this blocks market entry regardless of software readiness.",
+              "TimescaleDB is not natively available as an AWS RDS extension. Step 17 specifies 'AWS RDS PostgreSQL + TimescaleDB extension' \u2014 this requires either Timescale Cloud, a self-managed EC2 deployment, or Aurora PostgreSQL with unofficial extension loading. The infra spec will fail at provisioning time.",
+              "MESA dataset (Step 9) is a cardiovascular outcomes study in adults aged 45-84. Using it as primary training data for a fitness wearable targeting athletes and health-conscious consumers introduces severe demographic bias. Sleep quality models trained on MESA will systematically mis-score younger, fitter users.",
+              "OTA update mechanism is listed as an acceptance criterion in BOTH Step 5 and Step 6 \u2014 duplicated across two separate firmware implementation steps with no distinction. This is unowned work that will be deferred by both implementers.",
+              "Live workout HR WebSocket architecture (Step 8) routes BLE data from device \u2192 mobile app \u2192 backend \u2192 WebSocket \u2192 mobile app. The mobile app already has the BLE data directly; this round-trip adds 200-500ms latency and backend load for data that's already on-device. The <500ms latency acceptance criterion may fail due to this architectural choice.",
+              "Android BLE reliability at 99.5% sync success rate (Step 2) is not achievable across the device matrix in Step 16 (Xiaomi 14, OnePlus 12) without per-device workarounds. AOSP BLE stack divergence on Chinese OEM devices routinely causes connection drops and MTU negotiation failures. The PRD target will be a permanent miss metric.",
+              "Sleep staging validation on 5 subjects (Step 6) provides near-zero statistical power for a product accuracy claim. 5-subject PSG pilots produce confidence intervals of \u00b115-20% on epoch-by-epoch accuracy. The \u226580% target has no meaningful confidence bound and cannot be used to support a product claim.",
+              "Step 3 (UX) requires an accessibility audit for WCAG 2.1 AA but Step 10 (mobile app) lists accessibility as an acceptance criterion via VoiceOver/TalkBack only. There is no explicit WCAG audit step for the mobile app \u2014 WCAG 2.1 AA applies to mobile apps under ADA/EAA, not just web. The gap between 'wireframe audit' and 'shipped app audit' is unowned.",
+              "BLE background sync on iOS is severely restricted by CoreBluetooth. Background execution time is capped, central scanning is not permitted in background, and BLE sync requires the peripheral to re-advertise after a connection drop. None of the Flutter/iOS BLE steps address background mode entitlements, state restoration, or the 'use-bluetooth-peripheral' background mode configuration. The 7-day offline sync scenario (E2E-003) will fail on iOS unless the user keeps the app foregrounded.",
+              "HIPAA is not addressed. If the backend stores SpO2 and HR data for US users and the business model involves healthcare context (even indirect), HIPAA Business Associate Agreement obligations may apply. The plan's GDPR-only compliance posture creates legal exposure for US market launch."
+            ],
+            "suggestions": [
+              "Replace IEC 62443 throughout with the correct stack: IEC 62304 for software lifecycle, ISO 14971 for risk management, and IEC 60601-1-2 for electromagnetic compatibility. Engage a regulatory consultant before Step 2 is finalized.",
+              "Add a regulatory classification step (Step 0) before PRD: determine FDA device classification for SpO2 feature, decide between 510(k) pathway or 'wellness only' with SpO2 feature removed, and document the decision with legal review. Do not commit to SpO2 as a shipped feature without this decision.",
+              "Add a Hardware Development track as Steps 4a-4c: schematic design, PCB layout/review, component procurement and first article build. These are pre-conditions for Steps 5-6. The firmware steps cannot start without target hardware.",
+              "Add FCC/CE/Bluetooth SIG certification to the dependency graph. These should block the system test step (Step 16) and launch. Engage a test house at Step 4 to reserve slots 6 months out.",
+              "Fix TimescaleDB deployment: choose Timescale Cloud (managed, fully supported) or document the self-managed EC2 approach with HA configuration. Remove 'AWS RDS + TimescaleDB extension' as it will not work.",
+              "Replace MESA as primary training data with SHHS (Sleep Heart Health Study) or NSRR datasets which include younger adults and athletes. Augment with PhysioNet waveform data for PPG-specific features. Document dataset demographic distribution explicitly in the model card.",
+              "Reconcile firmware vs PRD accuracy targets in Step 2 review: either tighten firmware acceptance criteria to match PRD (\u00b12 bpm, \u00b12% SpO2) or update PRD to reflect what the hardware can realistically achieve with MAX30102.",
+              "Refactor Step 8 WebSocket to a direct BLE\u2192app display path for live workout HR. The backend WebSocket should receive forwarded data from the mobile app for cloud recording, not serve as the display path. This reduces latency and eliminates a single point of failure during live workouts.",
+              "Add iOS BLE background mode configuration to Step 10 acceptance criteria: 'use-bluetooth-peripheral' entitlement configured, Core Bluetooth state restoration implemented, reconnection logic handles CBManagerState.poweredOff transitions.",
+              "Increase sleep staging validation cohort to \u226520 subjects for a publishable accuracy claim. Consider partnering with a sleep clinic for PSG validation data early (Step 6 dependency)."
+            ],
+            "missing": [
+              "Hardware development pipeline: schematic, PCB layout, BOM, first article build, hardware bring-up. This entire track is absent.",
+              "FCC Part 15 / IC RSS-210 (CA) / CE RED Directive (EU) radio certification plan with test house engagement and timeline.",
+              "Bluetooth SIG qualification process (QDID listing) \u2014 required before product launch.",
+              "Regulatory classification decision document: FDA device class for SpO2, 510(k) vs De Novo vs wellness-only scope decision.",
+              "ISO 14971 risk management file: hazard identification, risk estimation, risk control measures for SpO2 mis-reading, HR alarm failure, battery thermal runaway.",
+              "Battery safety certification (UN 38.3 for LiPo transport, IEC 62133 for portable batteries) \u2014 blocks shipping product internationally.",
+              "Manufacturing readiness review (MRR) and Design for Manufacturing (DFM) checklist \u2014 no mention of how firmware + hardware transition to volume production.",
+              "Privacy impact assessment (DPIA under GDPR Art. 35) \u2014 SpO2 and health data are special category data under GDPR Art. 9, requiring DPIA before processing begins, not just GDPR-compliant schema design.",
+              "Data residency and sovereignty plan \u2014 where health data is stored matters for EU (GDPR), China (PIPL), and other regulated markets. Not addressed in infra step.",
+              "Device identity provisioning infrastructure \u2014 how are device certificates/keys burned at manufacturing time? Referenced as an acceptance criterion in Step 11 but the provisioning system and key management HSM are not designed anywhere.",
+              "Secure boot chain for firmware \u2014 Step 11 mentions 'firmware signing enabled' but there is no step designing the root of trust, key ceremony, or secure bootloader for nRF5340.",
+              "Post-market surveillance plan \u2014 for any device making health claims, a PMS process is required by both FDA and EU MDR. Not mentioned.",
+              "App store health entitlements review \u2014 Apple HealthKit and Google Health Connect have specific review requirements and privacy nutrition label disclosures for health data apps. No step addresses this.",
+              "Infrastructure cost model \u2014 Step 17 provisions Multi-AZ RDS + EKS + GPU nodes with zero cost estimate. At 10K users this architecture runs $8K-15K/month minimum. Needs validation against business model before provisioning."
+            ],
+            "security_risks": [
+              "Device identity and firmware signing are referenced only in Step 11 acceptance criteria ('Device identity provisioned', 'Firmware signing enabled') but no step actually designs or implements the PKI, HSM, or secure element key provisioning. If these are checked as 'done' at Step 11 without implementation artifacts, the OTA mechanism in Step 17 is unsigned and vulnerable to firmware injection attacks.",
+              "BLE LE Secure Connections with passkey entry (Step 11) requires the device to have a display or input mechanism. If the wearable has no display (common for slim form factors), LESC with passkey is not possible \u2014 the fallback is Just Works pairing which provides no MITM protection. The hardware UX must be defined before the BLE security model is finalized.",
+              "Certificate pinning (Step 11) on mobile apps requires a rotation strategy. The plan has no certificate rotation or pinning bypass mechanism for emergency revocation. Pinned certs that expire in production cause app-wide outages for all users simultaneously.",
+              "JWT RS256 with refresh token rotation (Step 8) \u2014 the plan doesn't specify where private keys are stored on the mobile client. If stored in SharedPreferences (Android) or UserDefaults (iOS) without Keystore/Keychain backing, private key extraction via rooted device is trivial on health data.",
+              "ML model inversion risk (Step 9) is listed as in scope for the threat model but the isolation forest anomaly detector running on user SpO2 data is a membership inference attack surface. No mitigations are described beyond flagging it as a risk area.",
+              "The health insights coordinator agent (Step 20) POSTs SpO2 anomaly proposals to the SAGE approval queue. If the approval queue is compromised or an attacker can inject proposals, they could suppress health alerts (delayed notification of real SpO2 dips) \u2014 a patient safety risk if the product is used for any health monitoring purpose.",
+              "ONNX model files served via the ML microservice have no integrity verification step described. A supply chain compromise of the ONNX model file would silently corrupt all health scores without triggering any monitoring alert."
+            ],
+            "summary": "This plan is well-structured at the software architecture level and shows genuine domain knowledge in firmware, ML, and mobile development. However, it contains a fundamental regulatory misclassification that could block market entry entirely: IEC 62443 is the wrong standard for a consumer wearable, and SpO2 measurement almost certainly requires FDA 510(k) clearance rather than a wellness disclaimer \u2014 a decision that must be made before Step 2 is finalized, not retrofitted at Step 12. The entire hardware development pipeline is absent: there is no PCB design, first article build, FCC/CE/Bluetooth SIG certification, or battery safety certification track, yet firmware development in Steps 5-6 implicitly assumes validated hardware exists. The deployment spec has a concrete error (TimescaleDB on AWS RDS is not supported). The firmware and PRD accuracy targets contradict each other and will cause late-stage integration failures. The ML training data (MESA dataset) is demographically mismatched to the target users. For a product that outputs health numbers and SpO2 readings to consumers, the 5-subject sleep staging validation and the missing risk management file (ISO 14971) are not just gaps \u2014 they are the difference between a defensible product and a liability. Score: 48. Fundamental rework is needed on the regulatory classification decision, hardware development track, and security key management before this plan can credibly reach production.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T08:11:17.712351+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 196.89,
+    "critic_plan": 109.1
+  }
+}

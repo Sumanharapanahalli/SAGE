@@ -1,0 +1,310 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the project management SaaS market: competitors (Asana,
+      Monday.com, Linear, Jira, ClickUp), pricing models, feature gaps, and target
+      segments (SMB vs enterprise). Identify positioning opportunities.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix with feature comparison across 6+ tools
+    - Pricing benchmark for 3 tiers (free, pro, enterprise)
+    - Identified top 3 positioning differentiators
+    - Target ICP (Ideal Customer Profile) defined
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements and user stories for all core modules:
+      Kanban boards, Gantt charts, time tracking, resource allocation, sprint planning,
+      Slack integration, and Jira integration. Produce prioritized user story map.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories written for all 7 modules with acceptance criteria
+    - Process flow diagrams for core workflows (project creation, sprint cycle, time
+      log)
+    - MoSCoW prioritization applied to all stories
+    - ROI analysis document with projected time-savings per user persona
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Produce the Product Requirements Document (PRD), feature roadmap
+      (v1 MVP, v2, v3), success metrics (activation, retention, NPS, MRR), and go/no-go
+      criteria for each milestone.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD document with feature specs for all MVP modules
+    - Roadmap with milestones, owners, and dates
+    - Success metrics defined with baseline and target values
+    - Go/no-go criteria documented for each release
+    depends_on:
+    - 2
+  FINANCIAL:
+    description: Build a financial model covering SaaS pricing tiers, COGS (compute,
+      storage, third-party APIs), CAC, LTV, burn rate, and 3-year P&L projection.
+      Include Slack and Jira API cost modeling.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - 3-tier pricing model with feature gates defined
+    - COGS breakdown per active user per month
+    - 3-year P&L model with sensitivity analysis
+    - Break-even analysis and runway calculation
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, DPA (Data Processing Agreement),
+      and SLA. Review Slack and Jira API terms for redistribution and data residency
+      constraints.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS and Privacy Policy drafted and reviewed
+    - DPA template covering GDPR Article 28 obligations
+    - SLA with uptime commitments (99.9%) and credit structure
+    - Legal risk assessment for Slack/Jira API usage documented
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: Conduct user research interviews with 10 target users. Produce information
+      architecture, wireframes for all major views (board, Gantt, sprint, resource
+      grid, time log, dashboard), and an accessibility audit checklist (WCAG 2.1 AA).
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research synthesis report with 5+ validated pain points
+    - Complete wireframes for all 8 views reviewed by 3 stakeholders
+    - High-fidelity Figma mockups with design tokens (color, spacing, typography)
+    - Accessibility checklist with all critical items passing
+    - Mobile-responsive layouts defined
+    depends_on:
+    - 3
+  COMPLIANCE:
+    description: 'Produce SOC 2 Type II readiness artifacts: control mapping, trust
+      service criteria matrix (Security, Availability, Confidentiality), evidence
+      collection plan, and vendor risk register for Slack and Jira integrations.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - SOC 2 control matrix mapped to all trust service criteria
+    - Evidence collection plan with owner and frequency per control
+    - Vendor risk register for all third-party integrations
+    - Gap analysis identifying controls not yet implemented
+    depends_on:
+    - 5
+  API:
+    description: 'Design the full OpenAPI 3.1 specification for all backend endpoints:
+      projects, tasks, boards, sprints, time entries, resources, users, workspaces,
+      webhooks, and integration connectors (Slack, Jira). Define versioning strategy
+      (v1) and rate limiting contracts.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec covering all resource endpoints with request/response schemas
+    - Authentication flows documented (OAuth2 + API key)
+    - Webhook event catalog defined (task.created, sprint.started, etc.)
+    - Rate limiting and pagination contracts specified
+    - Integration endpoint contracts for Slack and Jira defined
+    depends_on:
+    - 3
+  DATABASE:
+    description: 'Design the multi-tenant PostgreSQL schema: workspaces, users, projects,
+      boards, columns, tasks, subtasks, sprints, time_entries, resource_allocations,
+      comments, attachments, integrations, audit_log. Include migration scripts and
+      seed data.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram with all tables and relationships
+    - Migration scripts for all tables with up/down
+    - Multi-tenant isolation verified (schema-per-tenant pattern)
+    - Seed data scripts for demo workspace
+    - Index strategy documented for high-query paths
+    depends_on:
+    - 8
+  CONFIG:
+    description: Set up the monorepo structure (Turborepo), environment configuration,
+      Docker Compose for local development (PostgreSQL, Redis, API, worker, frontend),
+      pre-commit hooks, ESLint/Prettier/Ruff configs, and secret management via dotenv
+      vault.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Monorepo bootstraps with single `pnpm install` command
+    - Docker Compose `up` starts full local stack in under 60 seconds
+    - Pre-commit hooks run lint and type-check on changed files
+    - Environment variable schema validated at startup
+    - README with 5-minute local setup instructions
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Build the core FastAPI backend: workspace and project CRUD, user
+      auth (JWT + OAuth2), multi-tenant middleware, task management (create/update/delete/reorder),
+      board column management, comments, file attachments (S3), and audit logging.'
+    agent_role: developer
+    acceptance_criteria:
+    - All CRUD endpoints pass integration tests
+    - JWT auth with refresh token rotation working
+    - RBAC enforced (owner, admin, member, viewer roles)
+    - File upload to S3 with presigned URL pattern
+    - Audit log entries written for all write operations
+    - Multi-tenant isolation verified in all queries
+    depends_on:
+    - 9
+    - 10
+  AGENTIC:
+    description: 'Implement the AI assistant using the coordinator agentic pattern:
+      a central coordinator routes to specialist agents (task decomposer, sprint planner,
+      workload balancer) to provide suggestions. The system surfaces smart recommendations
+      (task prioritization, sprint capacity warnings, bottleneck detection) but requires
+      user approval before applying changes — human_in_the_loop pattern at the action
+      layer.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator routes sprint planning queries to sprint_capacity_advisor
+    - Over-allocation event triggers workload_balancer suggestion within 5s
+    - All AI-suggested changes presented for user approval before applying
+    - Suggestion acceptance/rejection logged to audit trail
+    - AI suggestion accuracy tracked and reported in analytics
+    depends_on:
+    - 15
+    - 16
+  FRONTEND:
+    description: 'Build the React 18 + TypeScript frontend shell: routing (React Router
+      v6), global state (Zustand), API client (TanStack Query), design system (Radix
+      UI + Tailwind), auth flows (login, OAuth, invite), workspace switcher, and responsive
+      layout.'
+    agent_role: developer
+    acceptance_criteria:
+    - Auth flow (signup → email verify → workspace create) completes end-to-end
+    - OAuth login with Google and GitHub working
+    - Workspace switcher renders all workspaces and switches without full reload
+    - Responsive layout adapts correctly on 320px, 768px, 1280px, 1920px breakpoints
+    - Design system tokens match Figma spec (colors, spacing, typography)
+    depends_on:
+    - 6
+    - 10
+  SECURITY:
+    description: 'Conduct security review: threat model for multi-tenant data isolation,
+      OWASP Top 10 assessment, OAuth token storage and rotation audit, SQL injection
+      / IDOR review, rate limiting verification, and SBOM generation.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Threat model document covering all 4 scope areas
+    - OWASP Top 10 assessment with no Critical findings unmitigated
+    - OAuth token stored encrypted at rest, never in localStorage
+    - All API endpoints tested for IDOR vulnerabilities
+    - SBOM generated in SPDX format
+    - Rate limiting verified under load test (1000 req/min per tenant)
+    depends_on:
+    - 11
+    - 17
+    - 18
+  DEVOPS:
+    description: 'Build CI/CD pipelines (GitHub Actions): lint → test → build → docker
+      → deploy. Set up staging and production environments on AWS (ECS Fargate, RDS
+      Aurora PostgreSQL, ElastiCache Redis, S3, CloudFront). Configure monitoring
+      (Datadog), alerting, and SRE runbooks.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and blocks merge on failure
+    - Staging deploy automated on merge to main
+    - Production deploy requires manual approval gate in GitHub Actions
+    - Datadog dashboards for API latency p99, error rate, and DB connections
+    - PagerDuty alert fires when error rate > 1% for 5 minutes
+    - Terraform plan/apply tested in CI with state stored in S3
+    depends_on:
+    - 10
+    - 11
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response playbook (P0/P1/P2
+      classification), database failover procedure, Slack/Jira integration outage
+      handling, backup and restore verification, capacity scaling triggers, and on-call
+      rotation setup.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Incident classification matrix defined for P0/P1/P2 with response SLAs
+    - DB failover runbook tested in staging with RTO < 30 minutes
+    - Backup restore tested and RTO/RPO targets verified
+    - Capacity scaling triggers documented with CloudWatch metric thresholds
+    - On-call rotation configured in PagerDuty
+    depends_on:
+    - 29
+  TESTS:
+    description: 'Write the full test suite: unit tests for business logic (Pytest,
+      Vitest), integration tests for all API endpoints (httpx + TestClient), WebSocket
+      connection tests, database migration tests, and contract tests for Slack/Jira
+      API integrations (Pact).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage >= 80% for all backend business logic
+    - All API endpoint integration tests pass against real test DB
+    - WebSocket broadcast tests verify message delivery to all subscribers
+    - Pact consumer contracts defined for Slack and Jira API calls
+    - DB migration tests run up/down on clean schema
+    - Frontend component tests cover Kanban drag-and-drop scenarios
+    depends_on:
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests: full sprint lifecycle (create →
+      plan → execute → complete), Slack-triggered task creation flowing to board,
+      Jira sync round-trip, time tracking approval workflow, and load test (500 concurrent
+      users, 10k tasks per workspace).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full sprint lifecycle E2E test passes in < 2 minutes
+    - Slack slash command creates task visible on board within 5 seconds
+    - Jira status update propagates back within 10 seconds
+    - 'Load test: p99 API latency < 500ms under 500 concurrent users'
+    - No data leakage between tenants under load test
+    - All Playwright E2E tests pass in CI against staging environment
+    depends_on:
+    - 27
+    - 29
+    - 31
+  QA:
+    description: 'Execute QA test plan: exploratory testing of Kanban, Gantt, sprint,
+      and time tracking modules; accessibility audit (axe-core automated + manual
+      screen reader); cross-browser testing (Chrome, Firefox, Safari, Edge); and mobile
+      browser testing (iOS Safari, Android Chrome).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Exploratory test sessions covering all 7 modules documented
+    - Zero WCAG 2.1 AA critical violations in axe-core scan
+    - Screen reader can navigate Kanban board and create tasks
+    - All core flows pass in Chrome, Firefox, Safari, Edge
+    - 'Mobile: Kanban board usable on 375px viewport'
+    - Bug report with severity classification for all findings
+    depends_on:
+    - 27
+    - 31
+  DOCS:
+    description: 'Write developer documentation: API reference (auto-generated from
+      OpenAPI + manually enhanced), integration guides (Slack setup, Jira setup),
+      self-hosting guide, architecture decision records (ADRs), and contributing guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference auto-generated from OpenAPI spec with example payloads
+    - Slack integration guide walkthrough tested by non-developer
+    - Jira integration guide walkthrough tested by non-developer
+    - 'Self-hosting guide: user can deploy from scratch following docs in < 2 hours'
+    - 5 ADRs written for key architectural decisions (DB tenancy, auth, realtime,
+      Gantt renderer, AI pattern)
+    depends_on:
+    - 32
+    - 33
+  TRAINING:
+    description: 'Produce user onboarding materials: in-app interactive onboarding
+      checklist (7 steps), help center articles for each module, video script outlines
+      for Kanban, Gantt, and sprint planning tutorials, and admin setup guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - In-app onboarding checklist implemented and dismissable
+    - 7 help center articles published and searchable
+    - Video script outlines approved by product manager
+    - Admin setup guide covers workspace creation to first sprint in < 15 minutes
+    - Onboarding completion rate measurable via analytics event tracking
+    depends_on:
+    - 27
+    - 35

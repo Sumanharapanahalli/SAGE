@@ -1,0 +1,764 @@
+{
+  "run_id": "112962c0-fe36-4c67-aef8-c5c870b1df2d",
+  "solution_name": "cold_chain_monitor",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T08:11:17.735295+00:00",
+  "updated_at": "2026-03-22T08:14:42.626702+00:00",
+  "product_description": "Cold chain monitoring for pharmaceuticals with temperature/humidity sensors, GPS tracking, excursion alerting, audit trail, and GDP compliance.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product requirements document for cold chain monitoring system covering sensor specs, GPS tracking, excursion alerting thresholds, audit trail requirements, and GDP compliance scope.",
+      "payload": {
+        "deliverables": [
+          "PRD",
+          "user_stories",
+          "acceptance_criteria_matrix"
+        ],
+        "scope": [
+          "temperature_range",
+          "humidity_range",
+          "gps_accuracy",
+          "alert_thresholds",
+          "data_retention_policy",
+          "GDP_compliance_requirements"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD approved by stakeholder covering all sensor, GPS, alerting, and compliance requirements",
+        "Temperature range -25\u00b0C to +25\u00b0C with \u00b10.5\u00b0C accuracy documented",
+        "GDP (Good Distribution Practice) compliance requirements mapped to system features",
+        "Audit trail retention period (minimum 5 years) specified",
+        "Excursion alert thresholds defined per product type (frozen, refrigerated, controlled room temperature)"
+      ],
+      "depends_on": [],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 2,
+      "task_type": "SAFETY",
+      "description": "Perform hazard analysis and risk assessment for cold chain monitoring device per ISO 14971, covering sensor failure modes, GPS outages, network disconnection, and data integrity risks that could lead to patient harm from compromised pharmaceuticals.",
+      "payload": {
+        "standard": "ISO 14971",
+        "deliverables": [
+          "hazard_analysis.xlsx",
+          "risk_matrix.xlsx",
+          "FMEA.xlsx"
+        ],
+        "hazard_categories": [
+          "sensor_failure",
+          "gps_outage",
+          "network_loss",
+          "data_corruption",
+          "battery_failure",
+          "tamper_events"
+        ]
+      },
+      "acceptance_criteria": [
+        "FMEA completed for all sensor and hardware failure modes",
+        "Risk matrix with severity/probability scoring for each hazard",
+        "Mitigations identified for all high-severity risks",
+        "Residual risk deemed acceptable per ISO 14971 criteria",
+        "GPS outage fallback behavior documented and risk-assessed"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 3,
+      "task_type": "COMPLIANCE",
+      "description": "Produce GDP compliance framework mapping: WHO Technical Report 961 Annex 9, EU GDP Guidelines 2013/C 343/01, and IEC 62443 cybersecurity controls. Generate traceability matrix linking requirements to implementation tasks.",
+      "payload": {
+        "standards": [
+          "WHO_TR961_Annex9",
+          "EU_GDP_2013",
+          "IEC_62443"
+        ],
+        "deliverables": [
+          "compliance_framework.md",
+          "traceability_matrix.xlsx",
+          "audit_readiness_checklist.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "All GDP requirements mapped to specific system features and test cases",
+        "IEC 62443 security levels defined per zone (sensor, gateway, cloud)",
+        "Traceability matrix covers requirements \u2192 design \u2192 implementation \u2192 test",
+        "Audit readiness checklist approved by regulatory specialist",
+        "Data integrity (ALCOA+) requirements documented for audit trail"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 4,
+      "task_type": "CONFIG",
+      "description": "Set up cold_chain_monitor solution scaffold: SAGE YAML configuration (project.yaml, prompts.yaml, tasks.yaml), development toolchain (cross-compiler for target MCU, RTOS SDK, GPS library), and CI/CD pipeline configuration.",
+      "payload": {
+        "solution_name": "cold_chain_monitor",
+        "toolchain": [
+          "arm-none-eabi-gcc",
+          "FreeRTOS",
+          "u-blox_GNSS_lib",
+          "Sensirion_SHT4x_driver"
+        ],
+        "files": [
+          "project.yaml",
+          "prompts.yaml",
+          "tasks.yaml",
+          "Makefile",
+          ".github/workflows/ci.yml",
+          "docker/toolchain.Dockerfile"
+        ],
+        "agentic_pattern": "human_in_the_loop"
+      },
+      "acceptance_criteria": [
+        "Solution scaffold created under solutions/cold_chain_monitor/",
+        "Cross-compilation toolchain builds a hello-world firmware binary without errors",
+        "FreeRTOS kernel compiles for target MCU (STM32 or equivalent)",
+        "CI pipeline triggers on push and runs firmware lint + unit tests",
+        "SAGE project.yaml active_modules configured for compliance-heavy workflow"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 5,
+      "task_type": "SECURITY",
+      "description": "Perform threat model (STRIDE) for the cold chain system per IEC 62443. Cover device-to-cloud communication, firmware update integrity, sensor data tampering, GPS spoofing, and unauthorized access to audit trail.",
+      "payload": {
+        "methodology": "STRIDE",
+        "standard": "IEC_62443",
+        "zones": [
+          "sensor_node",
+          "gateway",
+          "cloud_backend",
+          "admin_portal"
+        ],
+        "deliverables": [
+          "threat_model.md",
+          "security_controls.md",
+          "SBOM.json",
+          "pentest_plan.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis completed for all four trust zones",
+        "SBOM generated listing all firmware and backend dependencies with CVE scan",
+        "GPS spoofing detection countermeasure specified",
+        "Firmware signing and secure boot requirements documented",
+        "TLS 1.3 minimum enforced for all device-to-cloud communication",
+        "Penetration test plan covers OWASP IoT Top 10",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        3,
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "HARDWARE_SIM",
+      "description": "Create hardware simulation models for SHT41 temperature/humidity sensor, u-blox GPS module, and battery management IC. Build SPICE/SystemC test bench to validate sensor reading accuracy and power consumption budget.",
+      "payload": {
+        "components": [
+          "SHT41_temp_humidity_sensor",
+          "ublox_M10_GPS",
+          "STM32L476_MCU",
+          "LiPo_BMS"
+        ],
+        "deliverables": [
+          "sensor_sim.spice",
+          "gps_stub.py",
+          "power_budget.xlsx",
+          "testbench_toplevel.v"
+        ],
+        "simulation_scenarios": [
+          "normal_operation",
+          "excursion_event",
+          "battery_low",
+          "gps_fix_lost"
+        ]
+      },
+      "acceptance_criteria": [
+        "SHT41 simulation produces readings within \u00b10.2\u00b0C and \u00b11.5% RH of datasheet spec",
+        "GPS simulation produces NMEA sentences at 1 Hz with configurable fix/no-fix states",
+        "Power budget model shows >7-day battery life at 1-minute logging interval",
+        "Excursion event simulation triggers within 500ms of threshold breach",
+        "All simulation models pass DRC/sanity checks"
+      ],
+      "depends_on": [
+        2,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "FIRMWARE",
+      "description": "Implement sensor node firmware: HAL drivers for SHT41 (I2C) and u-blox GPS (UART), FreeRTOS task scheduler, circular buffer for offline data storage, excursion detection FSM, and BLE/LoRaWAN radio stack for gateway communication.",
+      "payload": {
+        "language": "C",
+        "rtos": "FreeRTOS",
+        "drivers": [
+          "SHT41_i2c_driver.c",
+          "ublox_uart_driver.c",
+          "ble_stack.c",
+          "lorawan_stack.c",
+          "flash_storage.c"
+        ],
+        "tasks": [
+          "sensor_task.c",
+          "gps_task.c",
+          "radio_tx_task.c",
+          "excursion_monitor_task.c",
+          "watchdog_task.c"
+        ],
+        "features": [
+          "offline_buffering_72h",
+          "excursion_detection_fsm",
+          "secure_boot",
+          "firmware_ota_update"
+        ]
+      },
+      "acceptance_criteria": [
+        "SHT41 driver reads temperature and humidity at configurable interval (1s\u201360min)",
+        "GPS driver acquires fix within 60s cold start and maintains TTFF <10s warm start",
+        "Excursion detection FSM triggers alert within 1 sample period of threshold breach",
+        "Offline buffer stores minimum 72 hours of data at 1-minute interval without data loss",
+        "Firmware compiles with zero warnings at -Wall -Wextra",
+        "Secure boot validates firmware signature before execution",
+        "OTA update validates hash and rolls back on failed verification",
+        "All FreeRTOS tasks pass stack high-watermark check (>20% headroom)",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        4,
+        6
+      ],
+      "agent_role": "firmware_engineer"
+    },
+    {
+      "step": 8,
+      "task_type": "DATABASE",
+      "description": "Design and implement PostgreSQL schema for cold chain data: shipments, sensor readings (time-series partitioned), GPS tracks, excursion events, audit trail (immutable append-only), users, and GDP compliance records.",
+      "payload": {
+        "engine": "PostgreSQL 16 + TimescaleDB",
+        "tables": [
+          "shipments",
+          "sensor_readings",
+          "gps_tracks",
+          "excursion_events",
+          "audit_log",
+          "users",
+          "alert_configs",
+          "compliance_records"
+        ],
+        "features": [
+          "hypertable_partitioning_for_sensor_readings",
+          "row_level_security",
+          "immutable_audit_log_trigger",
+          "ALCOA_plus_metadata_columns"
+        ],
+        "migrations": [
+          "001_initial_schema.sql",
+          "002_timescale_hypertables.sql",
+          "003_audit_triggers.sql",
+          "004_rls_policies.sql"
+        ]
+      },
+      "acceptance_criteria": [
+        "All migrations run cleanly from empty database",
+        "sensor_readings hypertable partitioned by 1-week chunks with compression after 30 days",
+        "audit_log table has INSERT-only trigger \u2014 no UPDATE/DELETE permitted",
+        "Row-level security policies enforced per organization/shipment",
+        "ALCOA+ metadata columns (who, what, when, original_value) on all mutable tables",
+        "Database schema reviewed and approved by regulatory specialist for GDP compliance"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Build FastAPI backend: device ingestion endpoint (MQTT/HTTP), real-time excursion alerting engine, GPS track aggregation, audit trail API, GDP compliance report generation, and JWT-authenticated REST API for dashboard and mobile.",
+      "payload": {
+        "framework": "FastAPI",
+        "services": [
+          "device_ingestion.py",
+          "excursion_engine.py",
+          "alert_dispatcher.py",
+          "gps_aggregator.py",
+          "audit_api.py",
+          "compliance_reporter.py",
+          "auth_service.py"
+        ],
+        "integrations": [
+          "MQTT_broker",
+          "SendGrid_email",
+          "Twilio_SMS",
+          "AWS_S3_for_reports"
+        ],
+        "agentic_pattern": "review_and_critique",
+        "pattern_components": [
+          "excursion_analyst_agent",
+          "compliance_critic_agent",
+          "alert_generator_agent"
+        ]
+      },
+      "acceptance_criteria": [
+        "Device ingestion endpoint handles 1000 concurrent device connections without data loss",
+        "Excursion engine detects breach and dispatches alert within 5 seconds of receipt",
+        "All API endpoints protected by JWT authentication with role-based access control",
+        "GDP compliance report PDF generated with full chain-of-custody and excursion summary",
+        "Audit trail API returns immutable, tamper-evident logs with cryptographic hash chain",
+        "API passes OWASP API Security Top 10 review",
+        "OpenAPI spec auto-generated and accurate for all endpoints"
+      ],
+      "depends_on": [
+        5,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "AGENTIC",
+      "description": "Implement Review and Critique (Actor-Critic) agentic pattern for GDP compliance checking: ExcursionAnalystAgent evaluates each shipment's temperature/humidity profile, ComplianceCriticAgent scores against GDP thresholds, iterates until compliance verdict is confidence-scored above 95%.",
+      "payload": {
+        "pattern": "review_and_critique",
+        "agents": {
+          "generator": "ExcursionAnalystAgent \u2014 analyzes sensor time-series, identifies excursion events, generates narrative report",
+          "critic": "ComplianceCriticAgent \u2014 scores report against GDP standards, flags missing data, requests clarification"
+        },
+        "components": [
+          "generator_agent.py",
+          "critic_agent.py",
+          "compliance_scorer.py",
+          "iteration_loop.py"
+        ],
+        "termination_criteria": "confidence_score >= 0.95 OR max_iterations == 5",
+        "hitl_gate": "human_approval_required_for_compliance_verdict"
+      },
+      "acceptance_criteria": [
+        "Actor-Critic loop converges within 3 iterations for 90% of shipments in test dataset",
+        "Compliance verdict confidence score \u2265 0.95 before marking shipment compliant",
+        "HITL approval gate fires before any GDP non-compliance record is finalized",
+        "Critic agent correctly identifies missing data periods as excursions",
+        "Agent reasoning trace stored in audit log with full thought\u2192action\u2192observation chain",
+        "Pattern integrated with SAGE proposal store for HITL verdicts"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "FRONTEND",
+      "description": "Build React 18 + TypeScript dashboard: live shipment map with GPS tracks, real-time sensor charts, excursion alert inbox, audit trail viewer, GDP compliance report download, and admin panel for alert threshold configuration.",
+      "payload": {
+        "framework": "React 18 + TypeScript + Vite",
+        "pages": [
+          "ShipmentMap.tsx",
+          "SensorDashboard.tsx",
+          "ExcursionAlerts.tsx",
+          "AuditTrail.tsx",
+          "ComplianceReports.tsx",
+          "AlertConfig.tsx",
+          "DeviceManagement.tsx"
+        ],
+        "components": [
+          "TemperatureChart.tsx",
+          "HumidityChart.tsx",
+          "GPSTrackMap.tsx",
+          "ExcursionBadge.tsx",
+          "ComplianceStatusBar.tsx"
+        ],
+        "libraries": [
+          "recharts",
+          "mapbox-gl",
+          "react-query",
+          "react-hook-form"
+        ]
+      },
+      "acceptance_criteria": [
+        "Live GPS track renders on map with <2s latency from device transmission",
+        "Temperature and humidity charts display real-time data with 1-minute resolution",
+        "Excursion alert inbox shows active/resolved alerts with severity color coding",
+        "Audit trail viewer is read-only and shows full ALCOA+ metadata per entry",
+        "GDP compliance report downloadable as PDF directly from UI",
+        "All pages responsive and accessible (WCAG 2.1 AA)",
+        "Dashboard loads in <3s on standard 4G connection"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Write HIL (Hardware-in-the-Loop) test suite for sensor node firmware: sensor driver accuracy tests, GPS fix acquisition tests, excursion FSM state transition tests, offline buffer overflow handling, OTA update rollback, and watchdog recovery.",
+      "payload": {
+        "framework": "Unity + CMock",
+        "test_files": [
+          "test_sht41_driver.c",
+          "test_gps_driver.c",
+          "test_excursion_fsm.c",
+          "test_flash_buffer.c",
+          "test_ota_update.c",
+          "test_watchdog.c"
+        ],
+        "hil_scenarios": [
+          "sensor_drift_injection",
+          "gps_signal_loss",
+          "excursion_threshold_crossing",
+          "buffer_full_overwrite",
+          "power_cycle_recovery"
+        ],
+        "coverage_target": "90% branch coverage"
+      },
+      "acceptance_criteria": [
+        "All unit tests pass on target MCU via JTAG/SWD debug probe",
+        "Excursion FSM tested for all 8 state transitions including boundary conditions",
+        "Buffer overflow test confirms oldest data evicted and new data preserved",
+        "GPS fix lost \u2192 regained test confirms no data gap in stored records",
+        "OTA rollback test confirms device boots to previous firmware after failed update",
+        "Branch coverage \u2265 90% measured by gcov/lcov",
+        "HIL test results exported as JUnit XML for CI pipeline integration"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 13,
+      "task_type": "TESTS",
+      "description": "Write backend unit and integration tests: sensor ingestion pipeline, excursion detection logic, audit trail immutability, JWT auth, GDP report generation, and actor-critic compliance agent loop.",
+      "payload": {
+        "framework": "pytest + httpx",
+        "test_files": [
+          "test_ingestion.py",
+          "test_excursion_engine.py",
+          "test_audit_trail.py",
+          "test_auth.py",
+          "test_compliance_report.py",
+          "test_actor_critic_agent.py"
+        ],
+        "coverage_target": "85%",
+        "fixtures": [
+          "mock_device_payload",
+          "sample_excursion_timeseries",
+          "gdp_compliant_shipment",
+          "gdp_noncompliant_shipment"
+        ]
+      },
+      "acceptance_criteria": [
+        "All tests pass in CI with isolated test database",
+        "Audit trail immutability test confirms DELETE/UPDATE operations raise exception",
+        "Excursion engine test confirms alert fires within 1 processing cycle of threshold breach",
+        "GDP report generation test produces valid PDF with correct excursion summary",
+        "Actor-critic loop test confirms convergence within 5 iterations on synthetic dataset",
+        "Code coverage \u2265 85% for src/ backend modules"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 14,
+      "task_type": "DEVOPS",
+      "description": "Set up production infrastructure: Docker Compose for local dev, Kubernetes manifests for cloud deployment, GitHub Actions CI/CD pipeline with firmware build + backend tests + frontend build, MQTT broker (EMQX), monitoring (Prometheus + Grafana), and alerting.",
+      "payload": {
+        "tools": [
+          "Docker",
+          "Kubernetes",
+          "GitHub_Actions",
+          "EMQX_MQTT",
+          "Prometheus",
+          "Grafana",
+          "Loki"
+        ],
+        "deliverables": [
+          "docker-compose.yml",
+          "k8s/",
+          ".github/workflows/firmware-ci.yml",
+          ".github/workflows/backend-ci.yml",
+          "monitoring/dashboards/"
+        ],
+        "environments": [
+          "dev",
+          "staging",
+          "production"
+        ],
+        "secrets_management": "HashiCorp_Vault"
+      },
+      "acceptance_criteria": [
+        "docker-compose up starts full stack (backend, DB, MQTT, frontend) in <60s",
+        "GitHub Actions pipeline passes on main branch for firmware and backend",
+        "Kubernetes deployment rolls out without downtime (RollingUpdate strategy)",
+        "Prometheus scrapes backend metrics; Grafana dashboard shows device count, ingestion rate, excursion count",
+        "Alert fires to PagerDuty when excursion_alert_queue depth exceeds 100",
+        "All secrets stored in Vault \u2014 zero secrets in repository or environment variables in plain text"
+      ],
+      "depends_on": [
+        9,
+        11,
+        13
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 15,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system test: real firmware on sensor node transmitting to backend, GPS track appearing on dashboard, excursion event triggering alert email/SMS, audit trail capturing full chain-of-custody, and GDP compliance report generation.",
+      "payload": {
+        "test_scenarios": [
+          "normal_shipment_lifecycle",
+          "temperature_excursion_detection_and_alert",
+          "gps_track_loss_and_recovery",
+          "offline_buffer_sync_on_reconnect",
+          "gdp_compliance_report_generation",
+          "audit_trail_tamper_resistance",
+          "multi_device_concurrent_ingestion"
+        ],
+        "environment": "staging",
+        "load_test": "500_concurrent_devices_for_1_hour"
+      },
+      "acceptance_criteria": [
+        "Full shipment lifecycle test passes end-to-end from device power-on to compliance report",
+        "Excursion event detected and alert email received within 30 seconds of threshold breach",
+        "GPS track displayed on dashboard within 10 seconds of device transmission",
+        "Offline buffer sync delivers all buffered readings with correct timestamps after reconnect",
+        "GDP report PDF contains correct excursion summary, device calibration records, and chain-of-custody",
+        "Audit trail shows all events in correct chronological order with no gaps",
+        "500-device load test completes with <1% data loss and <5s P99 ingestion latency"
+      ],
+      "depends_on": [
+        12,
+        13,
+        14
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 16,
+      "task_type": "COMPLIANCE",
+      "description": "Generate IEC 62443 compliance evidence package: security assessment report, zone-and-conduit diagram, security level verification, SBOM with CVE status, and GDP audit trail validation report for regulatory submission.",
+      "payload": {
+        "standards": [
+          "IEC_62443-3-3",
+          "IEC_62443-4-2",
+          "EU_GDP_2013"
+        ],
+        "deliverables": [
+          "iec62443_security_assessment.pdf",
+          "zone_conduit_diagram.pdf",
+          "security_level_verification.xlsx",
+          "SBOM_CVE_report.json",
+          "gdp_audit_trail_validation.pdf",
+          "device_qualification_protocol.pdf"
+        ]
+      },
+      "acceptance_criteria": [
+        "IEC 62443-3-3 Security Level 2 requirements verified for cloud backend zone",
+        "IEC 62443-4-2 component requirements verified for sensor node firmware",
+        "SBOM lists all firmware and software components with zero critical CVEs unmitigated",
+        "GDP audit trail validation confirms ALCOA+ compliance for all data fields",
+        "Zone-and-conduit diagram reviewed and signed off by security engineer",
+        "All compliance deliverables version-controlled and linked in traceability matrix"
+      ],
+      "depends_on": [
+        5,
+        15
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 17,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: firmware integration guide, API reference (OpenAPI), device onboarding guide, GDP compliance user guide, system architecture document, and operator runbook.",
+      "payload": {
+        "deliverables": [
+          "docs/firmware_integration_guide.md",
+          "docs/api_reference.md",
+          "docs/device_onboarding.md",
+          "docs/gdp_compliance_guide.md",
+          "docs/architecture.md",
+          "docs/operator_runbook.md"
+        ],
+        "format": "Markdown + auto-generated OpenAPI HTML"
+      },
+      "acceptance_criteria": [
+        "API reference accurately reflects all endpoints with request/response examples",
+        "Device onboarding guide allows new engineer to provision device in <30 minutes",
+        "GDP compliance guide explains excursion workflow, audit trail access, and report generation",
+        "Architecture document includes data flow diagram from sensor to compliance report",
+        "Operator runbook covers alert escalation, device replacement, and backup procedures",
+        "All docs reviewed and approved by technical writer and regulatory specialist"
+      ],
+      "depends_on": [
+        15,
+        16
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 17,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "Step 10 uses LLM 'confidence_score >= 0.95' as a GDP compliance gate. LLMs do not produce calibrated confidence scores. This criterion is meaningless and would be immediately rejected by any regulatory inspector. A GDP compliance verdict requires a Qualified Person (QP) signature, not an AI convergence metric.",
+            "Step 5 assigns 'regulatory_specialist' as the agent role for STRIDE threat modeling. STRIDE is a security engineering discipline. This skill mismatch means the threat model will be superficial and compliance-framed rather than adversarial.",
+            "Step 7 implements both BLE and LoRaWAN radio stacks with no gateway architecture decision. These are fundamentally different topologies (BLE needs a nearby gateway; LoRaWAN is direct to network server). Implementing both without specifying when each is used doubles radio driver complexity and adds a fleet management dimension not addressed anywhere.",
+            "Step 8 defines the audit_log table as 'INSERT-only' but Step 9 acceptance criteria require a 'cryptographic hash chain' for tamper evidence. The hash chain columns (prev_hash, entry_hash) are not in the database schema design. The schema in step 8 will not support the tamper-evident requirement in step 9.",
+            "Step 9 sets '1000 concurrent device connections' as an acceptance criterion but Step 15 load-tests only 500 devices. These targets contradict each other. The load test will not validate the stated requirement.",
+            "Step 9 says 'device ingestion endpoint (MQTT/HTTP)' treating them as interchangeable. MQTT is a broker protocol; HTTP is request-response. Bridging EMQX (step 14) to FastAPI requires an explicit MQTT subscriber service that is never specified in the backend architecture.",
+            "Step 12 is labeled 'HIL (Hardware-in-the-Loop)' but there is no hardware procurement or bring-up step anywhere in the plan. Real HIL requires physical sensor nodes, JTAG debug probes, and a hardware test bench. This step cannot execute without hardware that was never planned.",
+            "Step 6 specifies excursion event simulation 'triggers within 500ms' but Step 7 firmware acceptance criteria say 'within 1 sample period' (which at 1-minute interval is 60 seconds). The simulation and firmware specifications are 120x apart with no reconciliation.",
+            "Step 4 sets up CI/CD before the threat model (step 5) is complete. The CI pipeline will lack security scanning gates derived from the threat model, meaning the pipeline is configured without knowing what it needs to enforce.",
+            "Step 16 claims IEC 62443-3-3 Security Level 2 verification as a deliverable but SL2 requires formal organizational security policies, incident response procedures, and security program documentation that are not created anywhere in the plan. 'Verification' cannot precede the policy artifacts it verifies."
+          ],
+          "suggestions": [
+            "Replace the LLM confidence score gate in step 10 with a deterministic rules engine for GDP threshold checking. Reserve the actor-critic loop for generating the narrative report only. The compliance verdict must be a human QP decision, not an AI score.",
+            "Add a dedicated PKI and device identity provisioning step between steps 4 and 5. Device certificates, root CA, provisioning HSM, and certificate rotation policy are critical path items for TLS mutual auth and secure boot \u2014 and are currently assumed to exist without being built.",
+            "Resolve the BLE vs LoRaWAN architecture decision in step 4 before implementing dual radio stacks in step 7. Choose one primary radio per deployment scenario and treat the other as a future option, or specify the gateway topology that connects both.",
+            "Add ALCOA+ hash chain columns (entry_hash, prev_hash, signed_by) to the step 8 database schema and implement a database-level trigger that computes them on INSERT. The audit trail's tamper evidence must be in the schema, not bolted on later.",
+            "Add a hardware procurement and bring-up step before step 6. Specify the target hardware (STM32L476 dev board + SHT41 eval kit + u-blox EVK), the bring-up acceptance criteria, and the JTAG/SWD debug probe required for HIL in step 12.",
+            "Add an excursion disposition workflow to the backend (step 9) and frontend (step 11). GDP requires documented QP review of each excursion \u2014 decision on product release/quarantine with signature \u2014 before shipment closure. This workflow is the core regulated process and is absent.",
+            "Add a device calibration management module: NIST-traceable calibration certificates, calibration due-date tracking, in-field drift detection algorithm, and automated alert when a device exceeds calibration interval. This is mandatory for pharmaceutical cold chain evidence.",
+            "Add 21 CFR Part 11 and EU Annex 11 compliance to step 3. If US pharma companies are customers, electronic records and electronic signatures (e-sig with audit trail) are required for the audit trail and compliance reports. These are distinct from GDP and currently unaddressed.",
+            "Specify NTP or GNSS-disciplined time sync in the firmware (step 7) and a server-side timestamp reconciliation algorithm. Offline buffering for 72 hours with a potentially drifted device clock will produce timestamp errors in the audit trail unless explicitly corrected.",
+            "Add a data residency and sovereignty analysis to step 3. GPS tracks of pharmaceutical shipments crossing EU borders are GDPR-scoped personal data (driver location). Cloud region selection and data processing agreements must be specified before backend deployment."
+          ],
+          "missing": [
+            "21 CFR Part 11 / EU Annex 11 compliance for electronic records and electronic signatures \u2014 mandatory if US or EU pharma QA systems will rely on this data",
+            "Device calibration management: NIST-traceable certificates, calibration intervals, drift detection, recalibration workflow",
+            "PKI infrastructure: root CA, device certificate provisioning at manufacturing, certificate rotation, revocation",
+            "Excursion disposition workflow: QP review, product release/quarantine decision, documented rationale, e-signature",
+            "Hardware procurement and bring-up plan \u2014 prerequisite for all HIL testing",
+            "Time synchronization specification and clock drift reconciliation for offline-buffered data",
+            "Gateway architecture decision and specification (BLE gateway fleet vs LoRaWAN network server)",
+            "IQ/OQ/PQ (Installation/Operational/Performance Qualification) for cloud infrastructure \u2014 required for GxP-validated computer systems",
+            "Data residency and GDPR analysis for cross-border shipment GPS tracking",
+            "Battery and power-loss handling: graceful shutdown, flash commit before power cut, corruption recovery on boot",
+            "Sensor calibration drift detection algorithm in firmware (SHT41 accuracy degrades without periodic recalibration)",
+            "Multi-tenant / multi-customer data isolation design if this is a SaaS cold chain service"
+          ],
+          "security_risks": [
+            "No certificate rotation mechanism specified for device TLS identity. Devices in the field for 5+ years (matching the 5-year data retention requirement) will have expired certificates with no rotation path defined.",
+            "MQTT broker (EMQX) authentication model is unspecified. If devices authenticate with shared credentials or username/password rather than mutual TLS client certificates, a single compromised device credential exposes all device identities.",
+            "GPS spoofing countermeasure in step 5 is listed as an acceptance criterion but no concrete detection algorithm is specified \u2014 just 'countermeasure specified.' GPS spoofing in pharmaceutical cold chain could falsify chain-of-custody location data, which has direct GDP compliance consequences.",
+            "OTA firmware update in step 7 specifies hash validation and rollback but does not specify the signing key management, key ceremony, or HSM requirements. If the signing key is compromised, malicious firmware can be pushed to the entire device fleet.",
+            "The 'immutable audit log' relies on a PostgreSQL trigger preventing UPDATE/DELETE. This is bypassable by any database superuser. True tamper evidence requires an append-only log with cryptographic chaining written by the application layer, not just a trigger that a DBA can disable.",
+            "HashiCorp Vault in step 14 is listed as the secrets manager but no unsealing strategy, high-availability configuration, or Vault DR plan is specified. Vault becoming unavailable would take down all backend services that depend on dynamic secrets.",
+            "No rate limiting or device authentication throttling specified for the ingestion endpoint. A compromised device identity could flood the ingestion pipeline, triggering a data loss or DoS scenario that masks a real excursion event."
+          ],
+          "summary": "This plan demonstrates serious domain knowledge across hardware, firmware, backend, compliance, and security \u2014 the 17-step structure is logical and the acceptance criteria are more specific than most plans at this scope. However, it fails at the exact points where pharmaceutical cold chain regulation is unforgiving. The LLM confidence-score-as-compliance-verdict in step 10 is a fundamental design error that would block regulatory submission in any GDP jurisdiction; no inspector will accept 'AI says 95% confident' as a compliance gate. The missing 21 CFR Part 11 / EU Annex 11 scope is a critical omission for pharma customers \u2014 electronic signature requirements on audit trail entries are non-negotiable. The absence of a device calibration management workflow is a GDP showstopper: sensor readings without traceable calibration certificates are inadmissible as evidence. Hardware procurement is never planned yet HIL testing is mandated, making step 12 unexecutable. For a regulated domain requiring 85+, this plan scores 54 \u2014 the engineering fundamentals are solid but the compliance and regulated-system gaps represent rework at the architecture level, not minor additions.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "Step 10 uses LLM 'confidence_score >= 0.95' as a GDP compliance gate. LLMs do not produce calibrated confidence scores. This criterion is meaningless and would be immediately rejected by any regulatory inspector. A GDP compliance verdict requires a Qualified Person (QP) signature, not an AI convergence metric.",
+              "Step 5 assigns 'regulatory_specialist' as the agent role for STRIDE threat modeling. STRIDE is a security engineering discipline. This skill mismatch means the threat model will be superficial and compliance-framed rather than adversarial.",
+              "Step 7 implements both BLE and LoRaWAN radio stacks with no gateway architecture decision. These are fundamentally different topologies (BLE needs a nearby gateway; LoRaWAN is direct to network server). Implementing both without specifying when each is used doubles radio driver complexity and adds a fleet management dimension not addressed anywhere.",
+              "Step 8 defines the audit_log table as 'INSERT-only' but Step 9 acceptance criteria require a 'cryptographic hash chain' for tamper evidence. The hash chain columns (prev_hash, entry_hash) are not in the database schema design. The schema in step 8 will not support the tamper-evident requirement in step 9.",
+              "Step 9 sets '1000 concurrent device connections' as an acceptance criterion but Step 15 load-tests only 500 devices. These targets contradict each other. The load test will not validate the stated requirement.",
+              "Step 9 says 'device ingestion endpoint (MQTT/HTTP)' treating them as interchangeable. MQTT is a broker protocol; HTTP is request-response. Bridging EMQX (step 14) to FastAPI requires an explicit MQTT subscriber service that is never specified in the backend architecture.",
+              "Step 12 is labeled 'HIL (Hardware-in-the-Loop)' but there is no hardware procurement or bring-up step anywhere in the plan. Real HIL requires physical sensor nodes, JTAG debug probes, and a hardware test bench. This step cannot execute without hardware that was never planned.",
+              "Step 6 specifies excursion event simulation 'triggers within 500ms' but Step 7 firmware acceptance criteria say 'within 1 sample period' (which at 1-minute interval is 60 seconds). The simulation and firmware specifications are 120x apart with no reconciliation.",
+              "Step 4 sets up CI/CD before the threat model (step 5) is complete. The CI pipeline will lack security scanning gates derived from the threat model, meaning the pipeline is configured without knowing what it needs to enforce.",
+              "Step 16 claims IEC 62443-3-3 Security Level 2 verification as a deliverable but SL2 requires formal organizational security policies, incident response procedures, and security program documentation that are not created anywhere in the plan. 'Verification' cannot precede the policy artifacts it verifies."
+            ],
+            "suggestions": [
+              "Replace the LLM confidence score gate in step 10 with a deterministic rules engine for GDP threshold checking. Reserve the actor-critic loop for generating the narrative report only. The compliance verdict must be a human QP decision, not an AI score.",
+              "Add a dedicated PKI and device identity provisioning step between steps 4 and 5. Device certificates, root CA, provisioning HSM, and certificate rotation policy are critical path items for TLS mutual auth and secure boot \u2014 and are currently assumed to exist without being built.",
+              "Resolve the BLE vs LoRaWAN architecture decision in step 4 before implementing dual radio stacks in step 7. Choose one primary radio per deployment scenario and treat the other as a future option, or specify the gateway topology that connects both.",
+              "Add ALCOA+ hash chain columns (entry_hash, prev_hash, signed_by) to the step 8 database schema and implement a database-level trigger that computes them on INSERT. The audit trail's tamper evidence must be in the schema, not bolted on later.",
+              "Add a hardware procurement and bring-up step before step 6. Specify the target hardware (STM32L476 dev board + SHT41 eval kit + u-blox EVK), the bring-up acceptance criteria, and the JTAG/SWD debug probe required for HIL in step 12.",
+              "Add an excursion disposition workflow to the backend (step 9) and frontend (step 11). GDP requires documented QP review of each excursion \u2014 decision on product release/quarantine with signature \u2014 before shipment closure. This workflow is the core regulated process and is absent.",
+              "Add a device calibration management module: NIST-traceable calibration certificates, calibration due-date tracking, in-field drift detection algorithm, and automated alert when a device exceeds calibration interval. This is mandatory for pharmaceutical cold chain evidence.",
+              "Add 21 CFR Part 11 and EU Annex 11 compliance to step 3. If US pharma companies are customers, electronic records and electronic signatures (e-sig with audit trail) are required for the audit trail and compliance reports. These are distinct from GDP and currently unaddressed.",
+              "Specify NTP or GNSS-disciplined time sync in the firmware (step 7) and a server-side timestamp reconciliation algorithm. Offline buffering for 72 hours with a potentially drifted device clock will produce timestamp errors in the audit trail unless explicitly corrected.",
+              "Add a data residency and sovereignty analysis to step 3. GPS tracks of pharmaceutical shipments crossing EU borders are GDPR-scoped personal data (driver location). Cloud region selection and data processing agreements must be specified before backend deployment."
+            ],
+            "missing": [
+              "21 CFR Part 11 / EU Annex 11 compliance for electronic records and electronic signatures \u2014 mandatory if US or EU pharma QA systems will rely on this data",
+              "Device calibration management: NIST-traceable certificates, calibration intervals, drift detection, recalibration workflow",
+              "PKI infrastructure: root CA, device certificate provisioning at manufacturing, certificate rotation, revocation",
+              "Excursion disposition workflow: QP review, product release/quarantine decision, documented rationale, e-signature",
+              "Hardware procurement and bring-up plan \u2014 prerequisite for all HIL testing",
+              "Time synchronization specification and clock drift reconciliation for offline-buffered data",
+              "Gateway architecture decision and specification (BLE gateway fleet vs LoRaWAN network server)",
+              "IQ/OQ/PQ (Installation/Operational/Performance Qualification) for cloud infrastructure \u2014 required for GxP-validated computer systems",
+              "Data residency and GDPR analysis for cross-border shipment GPS tracking",
+              "Battery and power-loss handling: graceful shutdown, flash commit before power cut, corruption recovery on boot",
+              "Sensor calibration drift detection algorithm in firmware (SHT41 accuracy degrades without periodic recalibration)",
+              "Multi-tenant / multi-customer data isolation design if this is a SaaS cold chain service"
+            ],
+            "security_risks": [
+              "No certificate rotation mechanism specified for device TLS identity. Devices in the field for 5+ years (matching the 5-year data retention requirement) will have expired certificates with no rotation path defined.",
+              "MQTT broker (EMQX) authentication model is unspecified. If devices authenticate with shared credentials or username/password rather than mutual TLS client certificates, a single compromised device credential exposes all device identities.",
+              "GPS spoofing countermeasure in step 5 is listed as an acceptance criterion but no concrete detection algorithm is specified \u2014 just 'countermeasure specified.' GPS spoofing in pharmaceutical cold chain could falsify chain-of-custody location data, which has direct GDP compliance consequences.",
+              "OTA firmware update in step 7 specifies hash validation and rollback but does not specify the signing key management, key ceremony, or HSM requirements. If the signing key is compromised, malicious firmware can be pushed to the entire device fleet.",
+              "The 'immutable audit log' relies on a PostgreSQL trigger preventing UPDATE/DELETE. This is bypassable by any database superuser. True tamper evidence requires an append-only log with cryptographic chaining written by the application layer, not just a trigger that a DBA can disable.",
+              "HashiCorp Vault in step 14 is listed as the secrets manager but no unsealing strategy, high-availability configuration, or Vault DR plan is specified. Vault becoming unavailable would take down all backend services that depend on dynamic secrets.",
+              "No rate limiting or device authentication throttling specified for the ingestion endpoint. A compromised device identity could flood the ingestion pipeline, triggering a data loss or DoS scenario that masks a real excursion event."
+            ],
+            "summary": "This plan demonstrates serious domain knowledge across hardware, firmware, backend, compliance, and security \u2014 the 17-step structure is logical and the acceptance criteria are more specific than most plans at this scope. However, it fails at the exact points where pharmaceutical cold chain regulation is unforgiving. The LLM confidence-score-as-compliance-verdict in step 10 is a fundamental design error that would block regulatory submission in any GDP jurisdiction; no inspector will accept 'AI says 95% confident' as a compliance gate. The missing 21 CFR Part 11 / EU Annex 11 scope is a critical omission for pharma customers \u2014 electronic signature requirements on audit trail entries are non-negotiable. The absence of a device calibration management workflow is a GDP showstopper: sensor readings without traceable calibration certificates are inadmissible as evidence. Hardware procurement is never planned yet HIL testing is mandated, making step 12 unexecutable. For a regulated domain requiring 85+, this plan scores 54 \u2014 the engineering fundamentals are solid but the compliance and regulated-system gaps represent rework at the architecture level, not minor additions.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T08:14:42.626685+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 101.08,
+    "critic_plan": 103.81
+  }
+}

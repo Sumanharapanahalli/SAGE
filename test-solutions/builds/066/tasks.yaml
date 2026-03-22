@@ -1,0 +1,285 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the no-code chatbot builder market: identify top competitors
+      (Botpress, Tidio, Landbot, Voiceflow, CustomGPT), pricing benchmarks, market
+      size, underserved segments, and positioning for multi-LLM RAG-native builders.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers ≥8 competitors with feature/price comparison
+    - Market size estimate with TAM/SAM/SOM breakdown
+    - Positioning statement identifying 2–3 differentiators
+    - Go-to-market segment priority list (SMB vs enterprise vs developer)
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas (no-code builder, developer,
+      enterprise admin), core user stories, and process flows for chatbot creation,
+      knowledge base upload, and widget deployment lifecycle.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - ≥3 detailed user personas with goals, pain points, and success metrics
+    - User stories in INVEST format covering all major flows
+    - Process flow diagrams for chatbot creation and knowledge base ingestion
+    - ROI analysis showing value vs incumbent tools
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Author the Product Requirements Document (PRD), define MVP feature
+      scope, prioritize backlog using RICE scoring, and establish success metrics
+      (activation rate, chatbot creation time, CSAT, widget embed rate).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all MVP features with acceptance criteria per feature
+    - RICE-scored backlog with ≥20 items, top 10 for v1 identified
+    - Success metrics baseline and targets defined
+    - 'Release roadmap: v1 (MVP), v1.5 (analytics), v2 (enterprise) milestones'
+    depends_on:
+    - 2
+  FINANCIAL:
+    description: Build a financial model covering infrastructure costs (LLM API costs
+      per token, vector DB, compute), pricing tiers (Free/Pro/Business/Enterprise),
+      unit economics, and 24-month revenue projection.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Per-conversation cost model for each LLM provider (GPT-4o, Claude 3.5, Gemini
+      1.5)
+    - Break-even analysis per tier
+    - 24-month P&L projection with 3 growth scenarios (pessimistic/base/optimistic)
+    - Pricing validated against competitive benchmarks from step 1
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+    - 3
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (DPA), and AI-generated content disclosure. Address third-party LLM data-handling
+      obligations (OpenAI, Anthropic, Google terms).
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers user data ownership of knowledge base content
+    - Privacy policy specifies retention periods and data processing for RAG pipeline
+    - DPA template suitable for enterprise customers
+    - AI disclosure meets EU AI Act transparency requirements
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: Conduct user research, create wireframes for the no-code builder
+      canvas, knowledge base manager, analytics dashboard, and widget configuration
+      panel. Produce an interaction design spec and accessibility audit (WCAG 2.1
+      AA).
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes for all 6 core screens at mid-fidelity
+    - Interaction spec covering drag-and-drop builder UX
+    - User research synthesis with ≥5 actionable insights
+    - Accessibility audit checklist — all critical paths pass WCAG 2.1 AA
+    - Design system tokens defined (colors, typography, spacing)
+    depends_on:
+    - 3
+  API:
+    description: 'Design the OpenAPI 3.1 specification for all backend APIs: chatbot
+      CRUD, knowledge base management, RAG query, multi-LLM routing, conversation
+      history, analytics events, and widget token issuance.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec passes linting (spectral) with zero errors
+    - All endpoints have request/response schemas with examples
+    - Streaming chat endpoint documented with SSE format
+    - Rate limiting and error response schemas defined
+    - Widget public API scoped separately from authenticated API
+    depends_on:
+    - 3
+    - 6
+  DATABASE:
+    description: Design and implement the database schema for users, organizations,
+      chatbots, knowledge base documents, conversation threads, messages, analytics
+      events, and LLM provider configs. Implement migrations using Alembic.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram with all relationships documented
+    - All tables have created_at, updated_at, soft-delete fields
+    - pgvector index on kb_chunks.embedding (HNSW)
+    - Alembic migrations run cleanly on fresh and existing DB
+    - Row-level security policies for multi-tenant isolation
+    - Seed data for local development
+    depends_on:
+    - 7
+  AGENTIC:
+    description: 'Configure the Multi-LLM Router using the coordinator pattern: a
+      central LLM router agent selects the appropriate provider (GPT-4o, Claude 3.5
+      Sonnet, Gemini 1.5 Pro) based on chatbot configuration, fallback rules, and
+      cost constraints. Implement provider adapters with a unified interface.'
+    agent_role: developer
+    acceptance_criteria:
+    - Router selects correct provider from chatbot config in <10ms overhead
+    - All 3 providers return streaming responses via unified async generator interface
+    - Fallback triggers automatically on provider 5xx errors
+    - Provider health check endpoint returning status per provider
+    - Token usage tracked per request per provider
+    depends_on:
+    - 7
+  ML_MODEL:
+    description: 'Build the RAG pipeline: document ingestion (PDF, DOCX, TXT, URL
+      scraping), chunking strategy (recursive character splitter with 512-token chunks,
+      50-token overlap), embedding generation (text-embedding-3-small / Gemini embedding),
+      vector storage in pgvector, and retrieval with MMR (Maximal Marginal Relevance)
+      reranking.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - PDF/DOCX/TXT ingestion pipeline processes 100-page document in <30s
+    - Embedding generation batched with retry on rate limits
+    - MMR retrieval returns top-5 diverse, relevant chunks
+    - RAG context injected into LLM system prompt with source citations
+    - Retrieval latency p95 <500ms for knowledge bases up to 10k chunks
+    - Incremental re-indexing when documents are added/deleted
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 8
+    - 9
+  DATA:
+    description: 'Build the conversation analytics data pipeline: real-time event
+      ingestion (message_sent, intent_matched, handoff_triggered, session_end), aggregation
+      jobs for daily/weekly metrics (CSAT, response latency, top queries, unanswered
+      rate), and export to CSV/JSON.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - All 8 event types ingested and stored within 1s of occurrence
+    - Materialized views refreshed nightly with correct aggregates
+    - Analytics API returns data within 200ms for 30-day window
+    - CSV/JSON export for any date range functional
+    - Unanswered question detection accuracy ≥85% (no RAG match + negative user signal)
+    depends_on:
+    - 8
+    - 10
+  BACKEND:
+    description: 'Implement the core FastAPI backend: authentication (JWT + API keys),
+      chatbot CRUD, knowledge base management endpoints, chat session handler with
+      streaming SSE, widget token issuance, and multi-tenant middleware. Wire together
+      the RAG pipeline and LLM router.'
+    agent_role: developer
+    acceptance_criteria:
+    - All OpenAPI spec endpoints implemented and passing contract tests
+    - JWT auth + API key auth both functional
+    - SSE streaming chat endpoint delivers first token <2s (GPT-4o benchmark)
+    - Document upload triggers async Celery job; status polled via GET /knowledge-base/{id}/status
+    - 'Multi-tenant isolation: org A cannot access org B''s chatbots or knowledge
+      bases'
+    - Health check endpoint returns 200 with dependency status
+    depends_on:
+    - 9
+    - 10
+    - 11
+  FRONTEND:
+    description: 'Build the no-code chatbot builder UI: drag-and-drop canvas (React
+      Flow) for conversation flow, knowledge base file uploader with progress tracking,
+      LLM provider selector with model picker, system prompt editor with variable
+      templating, and chatbot preview panel.'
+    agent_role: developer
+    acceptance_criteria:
+    - Builder canvas supports add/delete/connect nodes with auto-save
+    - File uploader accepts PDF/DOCX/TXT up to 50MB with progress bar
+    - LLM selector shows all 3 providers with model options and cost estimate
+    - Chatbot preview panel sends real messages to backend SSE endpoint
+    - All pages pass Lighthouse accessibility score ≥90
+    - Mobile-responsive layout (no builder canvas on mobile — graceful degradation)
+    depends_on:
+    - 6
+    - 12
+  SECURITY:
+    description: 'Perform threat modeling, implement security controls: input sanitization
+      against prompt injection, widget token rate limiting, API key scoping, SSRF
+      protection for URL knowledge base ingestion, and produce an SBOM.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model with mitigations documented for all 8 threat categories
+    - 'Prompt injection test suite: ≥20 adversarial prompts, all blocked or flagged'
+    - 'SSRF test: URL ingestion rejects private IP ranges (RFC 1918)'
+    - 'Rate limiting verified: 101st request in window returns 429'
+    - SBOM generated and checked against OSV vulnerability database — no critical
+      CVEs
+    - OWASP API Top 10 checklist completed with all High items mitigated
+    depends_on:
+    - 12
+  INFRA:
+    description: Set up Docker Compose for local development (FastAPI, PostgreSQL
+      + pgvector, Redis, Celery worker, Vite frontend). Create production Kubernetes
+      manifests or Render/Railway IaC configs for staging and production environments.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up --build starts all services within 60s with no errors
+    - Database migrations run automatically on API container start
+    - Production manifests include liveness/readiness probes for all services
+    - Widget JS bundle served from CDN with cache-control headers
+    - Horizontal pod autoscaling configured for API and Celery worker
+    depends_on:
+    - 12
+    - 15
+  DEVOPS:
+    description: 'Build CI/CD pipelines (GitHub Actions): lint + type-check → unit
+      tests → integration tests → build → staging deploy → smoke tests → production
+      deploy. Set up monitoring (Prometheus + Grafana), alerting (PagerDuty), and
+      structured logging (OpenTelemetry).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Full CI pipeline runs in <10 minutes
+    - Staging deploy triggers automatically on main branch merge
+    - Production deploy requires manual approval gate
+    - All 4 alert rules fire correctly in test conditions
+    - Grafana dashboard shows LLM cost per provider in real time
+    - OpenTelemetry trace IDs correlate across API → RAG → LLM calls
+    depends_on:
+    - 17
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for RAG pipeline (chunking,
+      embedding, retrieval), LLM router (provider selection, fallback), analytics
+      aggregations; integration tests for all API endpoints; E2E tests (Playwright)
+      for chatbot creation and widget embed flows.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥80% for src/ excluding migrations
+    - All API contract tests pass against OpenAPI spec
+    - 'E2E: chatbot creation flow completes in <2 minutes in CI'
+    - 'E2E: widget embed renders and exchanges message in headless Chromium'
+    - 'Celery integration test: document ingested and chunks queryable within 60s'
+    - 'SSE streaming test: first token received within 3s for GPT-4o'
+    depends_on:
+    - 12
+    - 13
+    - 15
+  COMPLIANCE:
+    description: 'Produce SOC 2 Type I readiness artifacts: security policy documentation,
+      access control matrix, encryption-at-rest/in-transit evidence, audit log completeness
+      review, vendor risk assessment (OpenAI, Anthropic, Google), and incident response
+      procedure.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All 7 SOC 2 artifacts complete and reviewed
+    - Access control matrix covers all system roles with least-privilege verified
+    - Encryption evidence documents TLS 1.3 for all external endpoints and AES-256
+      for DB
+    - Vendor risk assessment completed for all 3 LLM providers
+    - Incident response procedure tested via tabletop exercise
+    - Audit log retention policy (90 days minimum) implemented and documented
+    depends_on:
+    - 16
+    - 18
+  OPERATIONS:
+    description: 'Write operational runbooks: deployment runbook, database backup/restore
+      procedure, LLM provider failover playbook, Celery queue drain procedure, SLA
+      definitions (99.5% uptime, <2s p95 response), and on-call escalation matrix.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - All 5 runbooks reviewed and approved by engineering lead
+    - Database backup restore tested — RTO <1 hour, RPO <24 hours
+    - 'LLM failover playbook tested: provider outage simulation switches traffic in
+      <5 minutes'
+    - SLA metrics instrumented and visible in Grafana dashboard
+    - On-call rotation configured in PagerDuty with <5 min escalation
+    depends_on:
+    - 18
+    - 20

@@ -1,0 +1,230 @@
+task_types:
+  CONFIG:
+    description: 'Initialize smart_home_hub solution: monorepo structure, dev environment,
+      toolchain config (cross-compiler for hub MCU, Node/Python versions, Zigbee/Z-Wave/Matter
+      SDKs), and .env templates.'
+    agent_role: developer
+    acceptance_criteria:
+    - make dev bootstraps all services without manual steps
+    - All SDK dependencies resolve without conflicts
+    - .env.example covers every required environment variable
+    - Pre-commit hooks enforce linting for Python, TypeScript, and C/C++
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Define product requirements document covering all protocols (Zigbee
+      3.0, Z-Wave LR, Matter 1.3), device classes, automation rule capabilities, voice
+      assistant targets (Alexa, Google, Siri), energy monitoring granularity, and
+      user personas.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD reviewed and signed off covering all three protocol stacks
+    - User stories written for device pairing, rule creation, and energy dashboard
+      flows
+    - 'Success metrics defined: pairing time < 30s, rule evaluation latency < 100ms,
+      energy data refresh < 5s'
+    - Compliance scope for IEC 62443 SL-1 documented
+    depends_on: []
+  DATABASE:
+    description: 'Design and implement database schema: devices table (protocol, state,
+      metadata), automation_rules, energy_readings (time-series), users, homes, zones,
+      and audit_events. Include TimescaleDB hypertable for energy_readings.'
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations run cleanly on fresh Postgres + TimescaleDB instance
+    - energy_readings hypertable chunks by week, compression after 7 days
+    - Foreign key constraints enforce referential integrity across all tables
+    - Seed data includes 5 device types across all three protocols for dev testing
+    depends_on:
+    - 1
+  FIRMWARE:
+    description: 'Implement hub base firmware: FreeRTOS kernel setup, HAL drivers
+      (UART, SPI, I2C, USB, Ethernet), OTA update manager, secure boot chain, and
+      inter-task communication (message queues per protocol stack).'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - FreeRTOS boots on target hardware with all tasks initializing without fault
+    - OTA update downloads, verifies signature, and swaps partition within 60 seconds
+    - Secure boot rejects unsigned firmware image with logged error
+    - All HAL drivers pass loopback self-tests at startup
+    - Watchdog timer triggers reset on any task starvation > 5s
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 1
+  BACKEND:
+    description: 'Build core backend API service (FastAPI): device registry, home/zone
+      management, real-time device state via WebSocket, MQTT consumer (all protocol
+      bridges), and event bus for rule engine triggers.'
+    agent_role: developer
+    acceptance_criteria:
+    - GET /devices returns all devices for authenticated home within 50ms
+    - WebSocket pushes device state change within 200ms of MQTT message arrival
+    - MQTT consumer reconnects automatically on broker disconnect
+    - All endpoints return 401 for unauthenticated requests
+    - Health endpoint reports protocol bridge connectivity status
+    depends_on:
+    - 1
+    - 3
+  DATA:
+    description: 'Build energy monitoring data pipeline: per-device wattage ingestion
+      from Metering cluster / Z-Wave Meter CC / Matter Energy cluster, TimescaleDB
+      continuous aggregates (hourly/daily/monthly), cost estimation (user-defined
+      tariff), and carbon footprint calculation.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Energy readings insert at > 1000 events/second under load test
+    - Continuous aggregates refresh within 5 seconds of new data
+    - Cost calculation matches manual verification for 3 sample tariff configurations
+    - Data retention policy enforced automatically by TimescaleDB scheduler
+    - API endpoint GET /energy/{device_id}?granularity=hourly returns data within
+      200ms
+    depends_on:
+    - 3
+    - 8
+  SECURITY:
+    description: 'Perform IEC 62443 SL-1 threat model and security architecture review:
+      network segmentation, device authentication, communication encryption (TLS 1.3,
+      DTLS), secure credential storage, firmware integrity, and SBOM generation.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 protocol interface surfaces
+    - Every identified threat has a mapped countermeasure and residual risk rating
+    - SBOM generated for firmware and backend covering all dependencies
+    - Penetration test plan written covering OWASP IoT Top 10
+    - IEC 62443 SL-1 control mapping document completed with evidence pointers
+    - No high-severity unmitigated risks remain after countermeasure mapping
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 4
+    - 8
+  ML_MODEL:
+    description: Train energy anomaly detection model (Isolation Forest + LSTM autoencoder)
+      to flag abnormal device consumption patterns, and an automation suggestion model
+      (collaborative filtering on rule co-occurrence) to recommend new rules to users.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Anomaly model achieves F1 > 0.80 on held-out labeled test set
+    - Inference latency < 50ms per device per evaluation cycle
+    - Suggestion model returns at least 1 relevant rule suggestion for 80% of test
+      homes
+    - Models versioned and tracked in MLflow with reproducible training pipeline
+    - Retraining pipeline runs automatically when > 10,000 new energy readings accumulate
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 12
+  FRONTEND:
+    description: 'Build React dashboard: home overview with live device state tiles,
+      room/zone floor plan layout, real-time WebSocket connection indicator, global
+      status bar (alerts, active automations), and responsive mobile layout.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Dashboard loads in under 2 seconds on 4G mobile connection
+    - Device state tiles update within 300ms of WebSocket event
+    - Floor plan layout supports drag-to-assign device to zone
+    - Global alert banner appears within 1 second of energy anomaly detection
+    - All interactive elements meet WCAG 2.1 AA accessibility standard
+    depends_on:
+    - 8
+  INFRA:
+    description: 'Containerize all services and build CI/CD pipeline: Docker Compose
+      for local dev, Kubernetes manifests for production, GitHub Actions pipeline
+      (lint → test → build → security scan → deploy), and OTA firmware delivery CDN.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up starts full stack in under 90 seconds on clean machine
+    - CI pipeline completes PR gate in under 10 minutes
+    - Kubernetes pods restart automatically on crash with liveness probe
+    - OTA firmware manifest served from CDN with < 50ms latency globally
+    - Secrets never appear in container environment variables — only mounted as files
+      from Vault
+    depends_on:
+    - 8
+    - 14
+    - 16
+  EMBEDDED_TEST:
+    description: 'Write HIL test harness for hub firmware: protocol sniffer fixtures
+      (Zigbee Wireshark, Z-Wave PC Controller, Matter CHIP Tool), automated pairing
+      test cases, OTA update regression suite, and secure boot verification tests.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All 3 protocol pairing tests pass on real hardware without manual steps
+    - 'OTA update test suite covers: success, power-loss mid-update (rollback), and
+      signature failure'
+    - Secure boot test verifies signed image boots and unsigned image is rejected
+      with log
+    - Multi-protocol coexistence test runs Zigbee + Z-Wave + Matter simultaneously
+      for 1 hour without errors
+    - HIL suite runs fully automated in CI on dedicated hardware runner
+    depends_on:
+    - 5
+    - 6
+    - 7
+  TESTS:
+    description: 'Write backend unit and integration test suite: API endpoint tests
+      (pytest + httpx), rules engine logic unit tests, energy pipeline tests with
+      synthetic time-series data, WebSocket integration tests, and MQTT consumer tests
+      with mock broker.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test suite achieves > 85% line coverage on backend src/
+    - All API endpoints have at least 3 test cases (happy path, validation error,
+      auth error)
+    - Rules engine unit tests cover all condition types and logical operators
+    - Integration tests run against real PostgreSQL+TimescaleDB in CI (no mocks for
+      DB layer)
+    - Test run completes in under 3 minutes in CI
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+  COMPLIANCE:
+    description: 'Produce IEC 62443-3-3 SL-1 compliance evidence package: security
+      requirements traceability matrix (SRTM) mapping SR 1.1–7.7 to implementation
+      evidence, V&V protocol, penetration test report, and security assessment report.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - SRTM covers all 51 SL-1 requirements with evidence pointers (code, test, doc)
+    - Zero SL-1 requirements marked as 'not addressed' without documented rationale
+    - Penetration test covers all OWASP IoT Top 10 categories
+    - SBOM validates with NTIA minimum elements checker
+    - Security Assessment Report signed by regulatory_specialist and reviewed by safety_engineer
+    depends_on:
+    - 13
+    - 14
+    - 21
+    - 22
+  DEVOPS:
+    description: 'Set up production monitoring: Prometheus + Grafana dashboards (API
+      latency, MQTT throughput, device online rate, energy pipeline lag), PagerDuty
+      alerting, distributed tracing (OpenTelemetry → Jaeger), and SRE runbooks.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Grafana dashboard shows all 5 key metrics with 1-minute resolution
+    - PagerDuty alert fires within 2 minutes of device_online_ratio threshold breach
+    - Distributed trace visible end-to-end from frontend request to MQTT publish
+    - All 4 runbooks tested and validated in staging environment
+    - Alert noise rate < 1 false positive per week in staging load test
+    depends_on:
+    - 20
+  DOCS:
+    description: 'Write developer and user documentation: OpenAPI spec review, architecture
+      decision records (ADRs) for protocol selection and rules engine design, hub
+      setup guide, user guide for pairing and automations, and API integration guide
+      for voice assistant developers.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors and covers 100% of endpoints
+    - 'Each ADR follows RFC format: context, decision, consequences'
+    - User pairing guide tested by 3 non-technical users — all complete pairing without
+      assistance
+    - Developer quick-start guide results in working API call within 10 minutes of
+      reading
+    - All docs published to static site (Docusaurus) accessible at /docs
+    depends_on:
+    - 8
+    - 20
+    - 24

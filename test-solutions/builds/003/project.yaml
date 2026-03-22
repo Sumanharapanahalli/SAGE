@@ -1,0 +1,64 @@
+project_name: telehealth_platform
+display_name: Telehealth Platform
+version: 1.0.0
+domain: medtech
+description: HIPAA-compliant telehealth platform with video consultations, e-prescriptions,
+  electronic health records integration, and AI-powered symptom checker.
+detected_domains: []
+compliance_standards:
+- HIPAA
+- HITECH
+- HL7 FHIR
+- SOC 2
+task_types:
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- LEGAL
+- ML_MODEL
+- OPERATIONS
+- QA
+- REGULATORY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- legal_advisor
+- operations_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

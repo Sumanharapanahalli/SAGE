@@ -1,0 +1,827 @@
+{
+  "run_id": "d5b57a2e-42e5-41cb-8586-c6d9eb0834c0",
+  "status": {
+    "run_id": "d5b57a2e-42e5-41cb-8586-c6d9eb0834c0",
+    "solution_name": "compliance_platform",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T11:20:50.520812+00:00",
+    "updated_at": "2026-03-22T11:25:15.255425+00:00",
+    "product_description": "GRC (Governance, Risk, Compliance) platform with control framework mapping (SOC 2, ISO 27001, GDPR), evidence collection, risk register, and audit management.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document (PRD) for the compliance_platform GRC system: scope, personas (CISO, Compliance Officer, Auditor, Risk Manager), success metrics, and phased roadmap covering SOC 2 / ISO 27001 / GDPR control frameworks, evidence collection, risk register, and audit management modules.",
+        "payload": {
+          "solution_name": "compliance_platform",
+          "frameworks": [
+            "SOC 2 Type II",
+            "ISO 27001:2022",
+            "GDPR"
+          ],
+          "personas": [
+            "CISO",
+            "Compliance Officer",
+            "Internal Auditor",
+            "Risk Manager",
+            "External Auditor"
+          ],
+          "modules": [
+            "control_framework_mapping",
+            "evidence_collection",
+            "risk_register",
+            "audit_management"
+          ],
+          "success_metrics": [
+            "time-to-audit-readiness",
+            "control_coverage_pct",
+            "open_risk_closure_rate",
+            "evidence_completeness_score"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD document covers all four core modules with user stories per persona",
+          "Roadmap has at least two phases with milestone dates",
+          "Success metrics are quantifiable and tied to business outcomes",
+          "Scope explicitly states which compliance frameworks v1 supports"
+        ],
+        "depends_on": [],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Conduct business requirements analysis: map stakeholder workflows for each GRC process (control assessment, evidence gathering, risk treatment, audit lifecycle), produce process flow diagrams, identify integration touch-points with HRIS, ticketing (Jira/ServiceNow), cloud providers (AWS/GCP/Azure), and identity providers.",
+        "payload": {
+          "workflows": [
+            "control_assessment_cycle",
+            "evidence_request_and_upload",
+            "risk_identification_and_treatment",
+            "audit_planning_and_fieldwork",
+            "finding_remediation_tracking"
+          ],
+          "integration_targets": [
+            "LDAP/SAML SSO",
+            "Jira",
+            "ServiceNow",
+            "AWS Security Hub",
+            "GCP Security Command Center",
+            "GitHub"
+          ],
+          "deliverables": [
+            "BPMN process diagrams",
+            "data flow diagram",
+            "integration requirements matrix"
+          ]
+        },
+        "acceptance_criteria": [
+          "BPMN diagrams produced for all five core workflows",
+          "Integration requirements matrix lists data exchanged, direction, frequency, and auth method for each system",
+          "All personas from PRD are represented in at least one workflow",
+          "Non-functional requirements (availability, response time, data residency) documented",
+          "Integration points with existing systems mapped",
+          "Migration plan drafted"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (DPA) template for customers, and open-source license review for all third-party dependencies used in compliance_platform.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "dpa_template.md",
+            "oss_license_inventory.csv"
+          ],
+          "gdpr_articles": [
+            "Art. 28 (processor obligations)",
+            "Art. 32 (security of processing)",
+            "Art. 30 (records of processing)"
+          ],
+          "data_residency_clauses": true
+        },
+        "acceptance_criteria": [
+          "DPA template includes mandatory Art. 28 GDPR clauses",
+          "Privacy policy addresses data subject rights (access, erasure, portability)",
+          "OSS license inventory flags any copyleft licenses requiring review",
+          "Terms of Service includes liability limitations and SLA references"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 4,
+        "task_type": "COMPLIANCE",
+        "description": "Build the canonical control framework library: normalize SOC 2 TSC criteria, ISO 27001:2022 Annex A controls, and GDPR Articles into a unified control taxonomy. Produce cross-walk mapping table showing overlap/equivalence between frameworks. This becomes the seed data for the control_framework_mapping module.",
+        "payload": {
+          "frameworks": {
+            "soc2": "AICPA TSC 2017 \u2014 CC, A, C, PI, P categories",
+            "iso27001": "ISO/IEC 27001:2022 Annex A (93 controls, 4 themes)",
+            "gdpr": "GDPR Articles 5, 25, 28, 30, 32\u201334"
+          },
+          "output_format": "JSON control library with id, framework, category, title, description, guidance, related_controls[]",
+          "cross_walk": "CSV mapping SOC2\u2194ISO27001\u2194GDPR by equivalence strength (full/partial/none)"
+        },
+        "acceptance_criteria": [
+          "All 64 SOC 2 TSC criteria captured with category tags",
+          "All 93 ISO 27001:2022 Annex A controls captured",
+          "GDPR Articles relevant to security and privacy operations mapped",
+          "Cross-walk table covers 100% of SOC 2 criteria with ISO 27001 equivalents",
+          "Control library validated against official standard text for accuracy"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Design UX for all four modules: control framework dashboard (heat-map of coverage status), evidence collection (upload, link, expiry tracking), risk register (likelihood/impact matrix, treatment workflow), and audit management (audit calendar, PBC request list, finding tracker). Produce wireframes and component spec.",
+        "payload": {
+          "pages": [
+            "control_library",
+            "control_detail",
+            "evidence_locker",
+            "risk_register",
+            "risk_detail",
+            "audit_calendar",
+            "audit_detail",
+            "pbc_request_list",
+            "finding_tracker",
+            "reports_dashboard"
+          ],
+          "accessibility": "WCAG 2.1 AA",
+          "design_system": "shadcn/ui + Tailwind"
+        },
+        "acceptance_criteria": [
+          "Wireframes produced for all 10 listed pages",
+          "Risk matrix (5\u00d75) interaction design specified",
+          "Evidence upload component handles bulk upload and version history",
+          "Audit PBC (Provided By Client) request list shows status, due dates, and owner assignment",
+          "Color-coding scheme for control status (compliant / partial / gap / not-applicable) defined"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "DATABASE",
+        "description": "Design and implement the relational database schema for compliance_platform: tenants, users, roles, control_frameworks, controls, control_assessments, evidence_items, risk_register_items, risk_treatments, audits, audit_scopes, pbc_requests, findings, remediation_tasks. Include migrations, indexes, and audit trail triggers.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "migration_tool": "Alembic",
+          "core_tables": [
+            "tenants",
+            "users",
+            "roles",
+            "permissions",
+            "frameworks",
+            "controls",
+            "control_tags",
+            "control_assessments",
+            "assessment_evidence_links",
+            "evidence_items",
+            "evidence_versions",
+            "risks",
+            "risk_treatments",
+            "risk_review_history",
+            "audits",
+            "audit_controls",
+            "pbc_requests",
+            "findings",
+            "remediation_tasks",
+            "audit_log"
+          ],
+          "multi_tenancy": "row-level security via tenant_id on all tables",
+          "soft_deletes": true,
+          "audit_trail": "audit_log table captures all INSERT/UPDATE/DELETE with actor, timestamp, diff"
+        },
+        "acceptance_criteria": [
+          "All migrations run cleanly on a fresh PostgreSQL instance",
+          "Row-level security policies enforced \u2014 cross-tenant query returns 0 rows",
+          "Foreign key constraints and indexes defined on all join columns",
+          "Audit log trigger fires on every DML operation across all sensitive tables",
+          "Schema ER diagram generated and matches implementation"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design the OpenAPI 3.1 specification for compliance_platform REST API: authentication (OAuth2/JWT), tenant management, control framework CRUD, assessment workflows, evidence upload/download, risk register CRUD, audit lifecycle endpoints, finding management, and reporting endpoints.",
+        "payload": {
+          "spec_file": "openapi.yaml",
+          "auth": "OAuth2 Bearer + API keys for integrations",
+          "versioning": "/api/v1/",
+          "endpoint_groups": [
+            "auth",
+            "tenants",
+            "users",
+            "frameworks",
+            "controls",
+            "assessments",
+            "evidence",
+            "risks",
+            "risk_treatments",
+            "audits",
+            "pbc_requests",
+            "findings",
+            "remediations",
+            "reports",
+            "exports"
+          ],
+          "pagination": "cursor-based",
+          "file_upload": "multipart/form-data, max 100MB, virus scan hook"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors via swagger-parser",
+          "Every endpoint has request/response schemas, error responses, and auth requirements",
+          "File upload endpoint spec includes size limits and allowed MIME types",
+          "Report export endpoints support PDF and XLSX response formats",
+          "API changelog section documents breaking vs non-breaking changes"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Implement the FastAPI backend for compliance_platform: all API endpoints per OpenAPI spec, multi-tenant middleware, JWT auth with RBAC, control framework seeding from the canonical library (step 4), evidence storage service (S3-compatible), risk scoring engine (likelihood \u00d7 impact matrix), audit lifecycle state machine, and background job scheduler for evidence expiry reminders and overdue PBC notifications.",
+        "payload": {
+          "framework": "FastAPI + SQLAlchemy 2.0 async",
+          "storage": "S3-compatible (MinIO for local, configurable for AWS S3/GCS)",
+          "auth": "python-jose JWT, bcrypt password hashing, RBAC middleware",
+          "background_jobs": "APScheduler \u2014 evidence expiry checks (daily), PBC due date reminders (daily), risk review reminders (weekly)",
+          "risk_engine": "5x5 matrix, configurable thresholds, inherent vs residual risk tracking",
+          "seed_data": "Load control library JSON from step 4 on first boot",
+          "modules": [
+            "src/api/",
+            "src/models/",
+            "src/services/",
+            "src/schemas/",
+            "src/middleware/",
+            "src/tasks/",
+            "src/core/"
+          ]
+        },
+        "acceptance_criteria": [
+          "All OpenAPI endpoints implemented and return correct HTTP status codes",
+          "Multi-tenant isolation verified: user from tenant A cannot read tenant B data",
+          "Evidence files stored with tenant-scoped prefixes; pre-signed URLs expire in 1 hour",
+          "Risk score recalculates automatically when likelihood or impact is updated",
+          "Audit state machine enforces valid transitions (planning\u2192fieldwork\u2192review\u2192closed)",
+          "Background jobs execute on schedule and create notifications in DB",
+          "`make test-api` passes with 100% endpoint coverage"
+        ],
+        "depends_on": [
+          6,
+          7,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "AGENTIC",
+        "description": "Implement a Multi-Agent Coordinator (coordinator pattern) for automated compliance monitoring: a Coordinator agent decomposes compliance assessment tasks and routes to specialist agents \u2014 ControlGapAnalyst (identifies missing evidence and failing controls), RiskScoringAgent (recalculates risk exposure from new findings), and AuditPrepAgent (generates PBC request lists and audit readiness summaries). All agent proposals surface as HITL-gated approval items.",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator_agent": "ComplianceCoordinator \u2014 receives trigger (new finding, scheduled assessment, integration event), decomposes into sub-tasks, routes to specialists",
+          "specialist_agents": {
+            "ControlGapAnalyst": "Scans all controls for missing/expired evidence, generates gap report proposal",
+            "RiskScoringAgent": "Re-evaluates risk register after control changes, proposes risk treatment updates",
+            "AuditPrepAgent": "Generates PBC request list draft, readiness scorecard, and auditor summary report"
+          },
+          "hitl_gate": "All agent proposals require human approval before creating/updating records",
+          "trigger_events": [
+            "new_finding_created",
+            "evidence_expired",
+            "scheduled_weekly_assessment",
+            "audit_start"
+          ],
+          "output": "Proposals stored in SAGE proposal store with risk classification"
+        },
+        "acceptance_criteria": [
+          "Coordinator correctly routes trigger events to appropriate specialist agents",
+          "ControlGapAnalyst identifies controls with evidence older than policy threshold",
+          "RiskScoringAgent proposal includes before/after risk score with justification",
+          "AuditPrepAgent generates a PBC list covering all in-scope controls for an audit",
+          "All agent outputs create approval-gated proposals \u2014 none auto-execute",
+          "Agent reasoning traces written to audit log with trace_id"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "FRONTEND",
+        "description": "Implement the React 18 + TypeScript frontend per UX designs: control framework dashboard with coverage heat-map, control detail with assessment history, evidence locker with drag-and-drop upload and version history, risk register with 5\u00d75 matrix visualization, audit management with calendar view and PBC tracker, finding remediation board, and reports/export page. Wire all API calls via typed client.",
+        "payload": {
+          "tech_stack": "React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, React Router v6",
+          "pages": [
+            "ControlLibraryPage",
+            "ControlDetailPage",
+            "EvidenceLockerPage",
+            "EvidenceUploadModal",
+            "RiskRegisterPage",
+            "RiskDetailPage",
+            "AuditCalendarPage",
+            "AuditDetailPage",
+            "PBCRequestPage",
+            "FindingTrackerPage",
+            "RemediationDetailPage",
+            "ReportsDashboardPage",
+            "ExportPage",
+            "SettingsPage (tenant, users, integrations)"
+          ],
+          "components": [
+            "RiskMatrix5x5",
+            "ControlStatusBadge",
+            "EvidenceTimeline",
+            "AuditProgressBar",
+            "ComplianceScorecard"
+          ],
+          "charts": "Recharts \u2014 coverage by framework, risk distribution, finding trend over time",
+          "file_handling": "React Dropzone, chunked upload for large evidence files"
+        },
+        "acceptance_criteria": [
+          "All 13 pages render without console errors",
+          "Risk matrix renders correctly at all viewport sizes (desktop + tablet)",
+          "Evidence upload handles files up to 100MB with progress indicator",
+          "Control coverage heat-map updates in real-time after assessment status change",
+          "Export page triggers PDF and XLSX downloads from API",
+          "All forms include client-side validation with accessible error messages (WCAG 2.1 AA)",
+          "TypeScript strict mode \u2014 zero `any` types in API client layer"
+        ],
+        "depends_on": [
+          5,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "SECURITY",
+        "description": "Conduct security review of compliance_platform: threat model (STRIDE), OWASP Top 10 assessment, RBAC permission matrix review, evidence file upload security (MIME type validation, AV scan hook, path traversal prevention), JWT configuration review, SQL injection and XSS audit, and generate Software Bill of Materials (SBOM).",
+        "payload": {
+          "methodology": "STRIDE threat model + OWASP ASVS Level 2",
+          "focus_areas": [
+            "authentication and session management",
+            "multi-tenant data isolation",
+            "file upload security (MIME, AV, path traversal)",
+            "RBAC privilege escalation paths",
+            "API rate limiting and abuse prevention",
+            "secrets management (no hardcoded credentials)"
+          ],
+          "sbom_format": "CycloneDX JSON",
+          "output": [
+            "threat_model.md",
+            "security_findings.md",
+            "sbom.json",
+            "remediation_checklist.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all four GRC modules",
+          "No OWASP Top 10 Critical or High findings left unmitigated before release",
+          "RBAC matrix reviewed \u2014 Auditor role has read-only access to evidence (no write)",
+          "File upload rejects executables and validates MIME type against allowlist",
+          "SBOM generated with all dependencies, versions, and licenses",
+          "JWT tokens expire in \u2264 1 hour and refresh tokens are rotated on use"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 12,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for the compliance_platform backend: control framework seeding, assessment state transitions, risk scoring calculations, evidence versioning, audit lifecycle state machine, RBAC enforcement, and multi-tenant isolation. Target \u2265 85% backend coverage.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio + httpx AsyncClient",
+          "test_categories": [
+            "unit: risk scoring engine edge cases",
+            "unit: audit state machine valid/invalid transitions",
+            "unit: evidence expiry date calculation",
+            "integration: full control assessment workflow",
+            "integration: multi-tenant data isolation",
+            "integration: evidence upload + retrieval",
+            "integration: RBAC \u2014 each role's allowed and denied actions"
+          ],
+          "fixtures": "pytest fixtures for tenant, user, control, risk, audit objects",
+          "coverage_target": 85
+        },
+        "acceptance_criteria": [
+          "All tests pass with `pytest` \u2014 zero failures, zero errors",
+          "Coverage report shows \u2265 85% line coverage on src/",
+          "Multi-tenant isolation test proves cross-tenant data access returns 403",
+          "Audit state machine tests cover all valid transitions and all invalid transition rejections",
+          "Risk scoring tests cover all 25 cells of the 5\u00d75 matrix"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 13,
+        "task_type": "QA",
+        "description": "Produce QA test plan for compliance_platform: test strategy, test case catalog for each module (control mapping, evidence, risk register, audit), regression suite definition, UAT acceptance criteria per persona, and exploratory testing charters for edge cases (bulk evidence upload, concurrent audit edits, framework cross-walk accuracy).",
+        "payload": {
+          "test_levels": [
+            "unit",
+            "integration",
+            "system",
+            "UAT"
+          ],
+          "persona_UAT": {
+            "CISO": "Framework coverage dashboard accuracy, board-level risk summary report",
+            "Compliance Officer": "Control assessment workflow, evidence collection end-to-end",
+            "Internal Auditor": "Audit planning, PBC request issuance, finding creation and tracking",
+            "External Auditor": "Read-only access to evidence, audit report export"
+          },
+          "edge_cases": [
+            "bulk upload 50 evidence files simultaneously",
+            "two auditors editing the same finding concurrently",
+            "control mapped to all three frameworks simultaneously",
+            "risk treatment expiry and re-assessment trigger"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test plan document covers all four modules with at least 5 test cases each",
+          "UAT acceptance criteria defined per persona from PRD",
+          "Edge case charters specify preconditions, steps, and expected outcomes",
+          "Test case catalog stored in shared format (Excel/TestRail compatible)",
+          "Regression suite identifies the P0/P1 cases that must pass for every release"
+        ],
+        "depends_on": [
+          8,
+          10
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 14,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system tests for compliance_platform: full SOC 2 assessment cycle (map controls \u2192 assign owners \u2192 collect evidence \u2192 assess \u2192 generate readiness report), full audit lifecycle (create audit \u2192 issue PBC requests \u2192 upload evidence \u2192 raise findings \u2192 remediate \u2192 close), and load test with 50 concurrent users performing evidence uploads.",
+        "payload": {
+          "e2e_framework": "Playwright (browser E2E) + pytest (API E2E)",
+          "scenarios": [
+            "E2E-01: Onboard new tenant, seed SOC 2 framework, assign control owners",
+            "E2E-02: Complete SOC 2 CC6.1 assessment with evidence upload and approval",
+            "E2E-03: Create risk, assess as High, assign treatment, mark treated, re-score as Low",
+            "E2E-04: Full audit lifecycle from planning to closed with 3 findings remediated",
+            "E2E-05: ISO 27001 gap assessment report generation",
+            "E2E-06: External auditor login \u2014 verify read-only access enforced"
+          ],
+          "performance": "k6 load test \u2014 50 VUs, 10min, p95 response < 2s for dashboard",
+          "data_integrity": "Cross-check DB state after each E2E scenario"
+        },
+        "acceptance_criteria": [
+          "All 6 E2E scenarios pass without manual intervention",
+          "k6 load test: p95 < 2s, p99 < 5s, zero 5xx errors under 50 VU load",
+          "After E2E-04, audit DB record shows status=closed with all findings linked",
+          "E2E-06 confirms external auditor cannot POST/PATCH/DELETE any resource",
+          "Test report artifacts (HTML + JUnit XML) generated for CI consumption",
+          "Load test simulates expected concurrent users",
+          "Failover scenario tested"
+        ],
+        "depends_on": [
+          10,
+          12,
+          13
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 15,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline, containerization, and monitoring for compliance_platform: Dockerfile for backend + frontend, docker-compose for local dev, GitHub Actions pipeline (lint \u2192 test \u2192 build \u2192 security scan \u2192 deploy to staging), Prometheus + Grafana dashboards for API latency and evidence upload throughput, and PagerDuty alerting rules.",
+        "payload": {
+          "containerization": "Docker multi-stage builds \u2014 backend (Python 3.12 slim) + frontend (Node 20 builder \u2192 nginx)",
+          "orchestration": "docker-compose.yml (local) + Kubernetes Helm chart (production)",
+          "ci_cd": {
+            "tool": "GitHub Actions",
+            "stages": [
+              "lint (ruff, eslint)",
+              "test (pytest + vitest)",
+              "security scan (trivy, bandit)",
+              "docker build",
+              "push to registry",
+              "deploy to staging",
+              "smoke test"
+            ],
+            "branch_policy": "PR required for main; staging auto-deploy on merge to main"
+          },
+          "monitoring": "Prometheus metrics on /metrics endpoint; Grafana dashboards for request rate, error rate, evidence storage size, risk count by severity",
+          "alerting": "PagerDuty \u2014 alert on p99 > 5s, error rate > 1%, disk usage > 80%",
+          "secrets": "GitHub Actions secrets + Vault or AWS Secrets Manager in production"
+        },
+        "acceptance_criteria": [
+          "GitHub Actions pipeline completes in < 10 minutes on a typical PR",
+          "Trivy scan blocks merge if CRITICAL CVEs found in Docker image",
+          "Staging environment auto-deployed and smoke-tested on every merge to main",
+          "Grafana dashboard shows API p95 latency and evidence upload throughput panels",
+          "PagerDuty alert fires in < 2 minutes when error rate threshold breached in a test"
+        ],
+        "depends_on": [
+          8,
+          10
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks for compliance_platform: SLA definitions (99.5% uptime, RTO 4h, RPO 1h), incident response playbook (P1/P2/P3 definitions, escalation paths), database backup and restore procedure, evidence storage DR procedure, and capacity planning model for evidence file growth.",
+        "payload": {
+          "sla": {
+            "availability": "99.5% monthly uptime",
+            "rto": "4 hours",
+            "rpo": "1 hour (PostgreSQL WAL archiving to S3)"
+          },
+          "runbooks": [
+            "runbook_incident_response.md",
+            "runbook_db_backup_restore.md",
+            "runbook_evidence_storage_dr.md",
+            "runbook_certificate_rotation.md",
+            "runbook_tenant_offboarding.md"
+          ],
+          "capacity_model": "Evidence storage grows ~500MB/tenant/month; scale S3 bucket, PostgreSQL read replicas at 100 tenants"
+        },
+        "acceptance_criteria": [
+          "SLA document defines availability, RTO, RPO with measurement methodology",
+          "Incident response runbook has P1/P2/P3 severity definitions and escalation contacts",
+          "DB restore runbook tested \u2014 restore from backup completes within RTO in a drill",
+          "Tenant offboarding runbook covers GDPR erasure requirements (Art. 17)",
+          "Capacity model projects infrastructure costs at 10 / 50 / 100 tenant milestones"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 17,
+        "task_type": "TRAINING",
+        "description": "Produce user training materials for compliance_platform: getting started guide (tenant setup, framework selection, user invitation), role-based quick-reference cards (CISO, Compliance Officer, Auditor), video script outlines for 3 core workflows (control assessment, evidence upload, audit lifecycle), and in-app onboarding tooltip copy.",
+        "payload": {
+          "documents": [
+            "getting_started_guide.md",
+            "role_quickref_ciso.md",
+            "role_quickref_compliance_officer.md",
+            "role_quickref_auditor.md",
+            "video_script_control_assessment.md",
+            "video_script_evidence_upload.md",
+            "video_script_audit_lifecycle.md"
+          ],
+          "in_app_onboarding": "Tooltip copy for all major UI sections (15 tooltips)",
+          "format": "Markdown source + PDF export"
+        },
+        "acceptance_criteria": [
+          "Getting started guide covers tenant setup to first completed control assessment in \u2264 10 steps",
+          "Each role quick-reference card fits on one printed page",
+          "All three video scripts have scene-by-scene breakdown with UI action callouts",
+          "15 in-app tooltip strings written and keyed to component IDs from frontend",
+          "Documents reviewed by a non-technical stakeholder for clarity",
+          "Admin guide separate from end-user guide",
+          "Role-based training paths defined"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 18,
+        "task_type": "CONFIG",
+        "description": "Configure the SAGE compliance_platform solution: create project.yaml (domain manifest with active modules), prompts.yaml (system prompts for ControlGapAnalyst, RiskScoringAgent, AuditPrepAgent, ComplianceCoordinator roles), tasks.yaml (task types: control_assessment, evidence_review, risk_treatment_proposal, audit_readiness_report, finding_remediation_plan), and environment configuration files for dev/staging/production.",
+        "payload": {
+          "project_yaml": {
+            "solution_name": "compliance_platform",
+            "domain": "governance_risk_compliance",
+            "active_modules": [
+              "dashboard",
+              "analyst",
+              "improvements",
+              "knowledge",
+              "audit",
+              "approvals"
+            ],
+            "frameworks": [
+              "SOC 2",
+              "ISO 27001",
+              "GDPR"
+            ],
+            "hitl_level": "standard"
+          },
+          "prompts_yaml_roles": [
+            "compliance_coordinator",
+            "control_gap_analyst",
+            "risk_scoring_agent",
+            "audit_prep_agent"
+          ],
+          "tasks_yaml_types": [
+            "control_assessment",
+            "evidence_review",
+            "risk_treatment_proposal",
+            "audit_readiness_report",
+            "finding_remediation_plan"
+          ],
+          "env_files": [
+            ".env.development",
+            ".env.staging",
+            ".env.production"
+          ],
+          "env_vars": [
+            "DATABASE_URL",
+            "S3_BUCKET",
+            "JWT_SECRET",
+            "ANTHROPIC_API_KEY",
+            "SLACK_BOT_TOKEN"
+          ]
+        },
+        "acceptance_criteria": [
+          "project.yaml validates with SAGE YAML validator without errors",
+          "prompts.yaml defines system prompts for all 4 agent roles with domain-specific GRC context",
+          "tasks.yaml registers all 5 task types with input/output schema",
+          "`.env.production` template has no hardcoded secrets \u2014 all values are placeholders",
+          "`make run PROJECT=compliance_platform` starts without errors after config applied"
+        ],
+        "depends_on": [
+          1,
+          9
+        ],
+        "agent_role": "developer"
+      }
+    ],
+    "task_count": 18,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 57,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 57,
+          "final_review": {
+            "score": 57,
+            "flaws": [
+              "Security threat modeling (Step 11) occurs AFTER full backend implementation (Step 8). For a platform that stores compliance evidence and risk data, threat modeling must precede API design, not follow it. STRIDE analysis will almost certainly surface design-level changes, forcing costly rework of already-implemented code.",
+              "Step 3 uses an AI agent to generate legally binding documents (ToS, DPA, Privacy Policy). The acceptance criteria has zero requirement for legal counsel review. Shipping an AI-generated DPA that claims Art. 28 GDPR compliance without lawyer sign-off is a liability landmine, especially for a platform sold to compliance teams.",
+              "Step 4 control library accuracy depends entirely on the regulatory_specialist agent output with no external validation mechanism. Incorrect SOC 2 \u2194 ISO 27001 cross-walk mappings would give customers false compliance confidence \u2014 a critical failure mode for a GRC product. 'Validated against official standard text' by the same AI that generated it is circular.",
+              "PostgreSQL RLS implementation (Step 6) has well-known production gotchas that the plan ignores: SECURITY DEFINER functions bypass RLS entirely, superuser connections bypass RLS, and PgBouncer transaction pooling breaks SET LOCAL for RLS. No connection pooling strategy is specified anywhere in the plan.",
+              "Step 9 (Agentic) creates proposals that go to 'SAGE proposal store' but the compliance platform has its own FastAPI backend and DB. The coupling between the standalone GRC application and the SAGE framework's /approvals page is never resolved. Which UI does the auditor use to approve ControlGapAnalyst proposals \u2014 the compliance platform's UI or SAGE's?",
+              "No concurrent editing conflict resolution anywhere in the plan. Step 13 identifies 'two auditors editing the same finding concurrently' as an edge case to test \u2014 but neither the DB design (Step 6) nor the API spec (Step 7) nor the backend (Step 8) specifies optimistic locking, ETags, or any conflict resolution strategy. Testing a failure mode you haven't designed for is not a strategy.",
+              "Evidence file antivirus scanning is mentioned in Steps 7 and 11 as a 'hook' but no AV service is selected, integrated, or implemented. ClamAV, cloud AV APIs, and commercial solutions have wildly different latency/reliability profiles. 'Virus scan hook' appearing in an acceptance criteria without implementation is wishful thinking.",
+              "GDPR compliance is contractual, not implemented. Articles 33/34 (breach notification within 72 hours), Art. 17 (right to erasure with cascade delete), and Data Subject Access Request (DSAR) workflows have no implementation steps. Step 16's operational runbook mentions GDPR Art. 17 for tenant offboarding, but there is no backend service implementing it. Soft deletes (Step 6) actively conflict with GDPR erasure requirements.",
+              "No notification delivery mechanism implemented. Step 8 background jobs 'create notifications in DB' but there is no email service, in-app notification system, or webhook delivery specified. PBC request due date reminders that exist only in a database table are not reminders.",
+              "Report generation for PDF/XLSX (Steps 7, 10) has no library or service specified. Generating a SOC 2 Type II readiness report or ISO 27001 Statement of Applicability with correct formatting is not trivial. WeasyPrint, ReportLab, and Puppeteer have different tradeoffs for complex tables and charts. This is a known effort black hole.",
+              "Integration implementations are completely absent. Step 2 identifies AWS Security Hub, GCP SCC, Jira, ServiceNow, and GitHub as integration targets with an 'integration requirements matrix' deliverable. But there is no implementation step for any of these integrations. The matrix documents what should happen; nothing builds it.",
+              "Step 14 acceptance criteria includes 'Failover scenario tested' with no corresponding test scenario defined in the payload. This is a dead acceptance criterion \u2014 no scenario means no pass/fail definition.",
+              "The k6 load test (Step 14, 50 VUs, p95 < 2s) does not test the actual performance bottleneck: concurrent evidence file uploads to S3-compatible storage. API response time during file upload proxying or pre-signed URL generation under load is the relevant metric, not generic dashboard p95."
+            ],
+            "suggestions": [
+              "Move threat modeling to before Step 5 (UX design), not after Step 8. At minimum, insert a lightweight STRIDE session between Steps 2 and 5 to catch design-level security issues before they are built. The full OWASP ASVS assessment can remain at Step 11.",
+              "Step 3 legal documents must have a 'reviewed by qualified legal counsel' acceptance criterion, or replace the AI-generated docs with attorney-reviewed templates that the agent only fills in. Selling a GRC platform to a CISO with an AI-hallucinated DPA is a deal-killer.",
+              "Add explicit DSAR and right-to-erasure endpoint implementations to Step 8. The DB schema needs hard-delete capability for GDPR Art. 17, not just soft-delete flags. Add a /gdpr/erasure endpoint that cascades properly and is tested.",
+              "Resolve the SAGE/standalone app coupling in Step 9 explicitly. Either: (a) the compliance platform implements its own approval queue UI and the SAGE proposal store is used only as a backend storage mechanism, or (b) specify that SAGE runs as a sidecar and the frontend routes to SAGE's /approvals page for agent proposals. Pick one and document it.",
+              "Add optimistic locking to the DB schema design (Step 6): version column on findings, pbc_requests, and risk_register_items. Add ETag/If-Match handling to the API spec (Step 7) for these resources. Test concurrent edit conflict in Step 14.",
+              "Select and implement an actual AV scanning service in Step 8, not a 'hook'. If ClamAV is the choice, specify the async scan pattern (upload to quarantine bucket \u2192 scan \u2192 move to permanent bucket on clean). If a cloud API, specify timeout/fallback behavior.",
+              "Add a Redis caching layer to Step 8 for the control coverage dashboard aggregation queries. A heat-map of 93 ISO controls \u00d7 N assessments \u00d7 M evidence items is expensive to recompute on every page load for multi-tenant deployments.",
+              "Add connection pooling specification to Step 6/8: PgBouncer in session mode (not transaction mode) is required for PostgreSQL RLS to work correctly. Document this as a hard infrastructure requirement.",
+              "Add a control library validation step with a human reviewer (regulatory specialist or external GRC consultant) before Step 8 seeds the data into production. The AI-generated cross-walk should be diff'd against at least one published SOC2\u2194ISO27001 mapping (AICPA publishes one).",
+              "Step 15 CI/CD pipeline should include the API spec contract test (Step 7 OpenAPI against Step 8 implementation) as a pipeline gate, not just lint/test/security scan."
+            ],
+            "missing": [
+              "DSAR (Data Subject Access Request) workflow \u2014 no implementation step exists for GDPR Art. 15/17/20 subject rights",
+              "Notification delivery service \u2014 email (SES/SendGrid/SMTP), in-app notification store, or webhook fan-out; none specified or implemented",
+              "Integration implementation steps \u2014 AWS Security Hub, GCP SCC, Jira, ServiceNow connectors are documented requirements (Step 2) with no corresponding build steps",
+              "SAML/OIDC SSO implementation \u2014 listed as integration target in Step 2, required by enterprise buyers, but no implementation step exists",
+              "Optimistic locking / concurrency control strategy for collaborative editing resources",
+              "Data residency enforcement at infrastructure level \u2014 GDPR requires EU data stays in EU regions; contractual clauses alone (Step 3) do not implement this",
+              "AV scanning service selection and async scan pipeline implementation",
+              "Report template system for standard GRC report formats (SOC 2 Type II narrative, ISO 27001 Statement of Applicability) \u2014 generic PDF export is not sufficient for auditor deliverables",
+              "Redis or equivalent caching layer for aggregation-heavy dashboard queries",
+              "JWT secret rotation runbook and process \u2014 secret compromise scenario has no response procedure",
+              "API rate limiting implementation in Step 8 \u2014 Step 11 flags it as a review area but it is never implemented",
+              "PgBouncer / connection pooling specification compatible with PostgreSQL RLS",
+              "Breach notification workflow implementation (GDPR Art. 33/34 \u2014 72-hour notification window)"
+            ],
+            "security_risks": [
+              "Pre-signed S3 URLs (Step 8, 1-hour expiry) do not enforce tenant isolation at the storage layer. A leaked URL is accessible by anyone regardless of JWT. The acceptance criterion 'tenant-scoped prefixes' prevents path collision but does not prevent URL sharing between tenants. Bucket policies must restrict access by tenant prefix using IAM conditions, not just prefix naming.",
+              "PostgreSQL RLS bypass via SECURITY DEFINER functions: any stored procedure or trigger defined with SECURITY DEFINER runs as the function owner (typically a superuser-equivalent), bypassing all RLS policies silently. The audit_log trigger (Step 6) is likely SECURITY DEFINER \u2014 this means the audit trail writer itself can read across tenant boundaries.",
+              "Seed data injection risk: Step 8 seeds control library JSON from Step 4 'on first boot.' If the seed file path is configurable via environment variable or the file is fetched from an external URL, this is a remote code execution or data poisoning vector. Seed data must be bundled into the container image, not fetched at runtime.",
+              "JWT secret in environment variable (Step 18 .env.production) with ANTHROPIC_API_KEY and SLACK_BOT_TOKEN \u2014 if a single env file is compromised, all secrets are exposed simultaneously. Secrets should be in separate Vault paths with least-privilege access per service component.",
+              "Evidence file MIME type validation (Step 11) against an allowlist is necessary but insufficient. MIME type sniffing from Content-Type header is trivially spoofed. Validation must use magic byte inspection of the actual file content (e.g., python-magic), not the declared MIME type.",
+              "RBAC privilege escalation via tenant admin role: the schema includes a 'roles' table with CRUD endpoints (Step 7), meaning a tenant admin can create new roles. If role creation is not strictly scoped to predefined role templates, a tenant admin can construct a role with elevated permissions beyond their own, creating a privilege escalation path.",
+              "APScheduler (Step 8) running background jobs in the same process as the FastAPI web server creates a DoS risk: a runaway background job (e.g., large cross-tenant evidence expiry scan) can starve web worker threads. Background jobs should run in a separate worker process (Celery/ARQ) isolated from the request-handling process.",
+              "Control library accuracy as a false confidence risk: if the AI-generated SOC 2 \u2194 ISO 27001 cross-walk contains errors (e.g., maps CC6.1 to a non-equivalent ISO control), a CISO using the platform may believe they are SOC 2 compliant when controls are actually unmapped. This is a liability risk unique to GRC products \u2014 incorrect mappings cause real audit failures."
+            ],
+            "summary": "This is a structurally coherent plan with good coverage of the GRC domain, a realistic DB schema, and appropriate multi-tenant architecture. The dependency graph is mostly logical, the acceptance criteria are measurable, and the HITL approval pattern is correctly applied to agent proposals. However, the plan has several production-blocking gaps that prevent a score above 60: security threat modeling occurring after full implementation is an architectural mistake for a security-focused product; GDPR compliance is contractual rather than implemented (no DSAR workflow, no functional erasure cascade); the SAGE/standalone app coupling is unresolved; concurrent editing has no conflict resolution design; and several integration stories (AV scanning, notification delivery, enterprise SSO, third-party integrations) are documented requirements with no implementation steps. The AI-generated legal documents without legal review is an unacceptable risk for a product sold to compliance teams. None of these are fatal to the architecture \u2014 all are fixable \u2014 but collectively they represent 3-4 additional sprints of work not accounted for in the current plan, and at least two (RLS+connection-pooling, concurrent editing) would cause production incidents if shipped as-is.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 57,
+              "flaws": [
+                "Security threat modeling (Step 11) occurs AFTER full backend implementation (Step 8). For a platform that stores compliance evidence and risk data, threat modeling must precede API design, not follow it. STRIDE analysis will almost certainly surface design-level changes, forcing costly rework of already-implemented code.",
+                "Step 3 uses an AI agent to generate legally binding documents (ToS, DPA, Privacy Policy). The acceptance criteria has zero requirement for legal counsel review. Shipping an AI-generated DPA that claims Art. 28 GDPR compliance without lawyer sign-off is a liability landmine, especially for a platform sold to compliance teams.",
+                "Step 4 control library accuracy depends entirely on the regulatory_specialist agent output with no external validation mechanism. Incorrect SOC 2 \u2194 ISO 27001 cross-walk mappings would give customers false compliance confidence \u2014 a critical failure mode for a GRC product. 'Validated against official standard text' by the same AI that generated it is circular.",
+                "PostgreSQL RLS implementation (Step 6) has well-known production gotchas that the plan ignores: SECURITY DEFINER functions bypass RLS entirely, superuser connections bypass RLS, and PgBouncer transaction pooling breaks SET LOCAL for RLS. No connection pooling strategy is specified anywhere in the plan.",
+                "Step 9 (Agentic) creates proposals that go to 'SAGE proposal store' but the compliance platform has its own FastAPI backend and DB. The coupling between the standalone GRC application and the SAGE framework's /approvals page is never resolved. Which UI does the auditor use to approve ControlGapAnalyst proposals \u2014 the compliance platform's UI or SAGE's?",
+                "No concurrent editing conflict resolution anywhere in the plan. Step 13 identifies 'two auditors editing the same finding concurrently' as an edge case to test \u2014 but neither the DB design (Step 6) nor the API spec (Step 7) nor the backend (Step 8) specifies optimistic locking, ETags, or any conflict resolution strategy. Testing a failure mode you haven't designed for is not a strategy.",
+                "Evidence file antivirus scanning is mentioned in Steps 7 and 11 as a 'hook' but no AV service is selected, integrated, or implemented. ClamAV, cloud AV APIs, and commercial solutions have wildly different latency/reliability profiles. 'Virus scan hook' appearing in an acceptance criteria without implementation is wishful thinking.",
+                "GDPR compliance is contractual, not implemented. Articles 33/34 (breach notification within 72 hours), Art. 17 (right to erasure with cascade delete), and Data Subject Access Request (DSAR) workflows have no implementation steps. Step 16's operational runbook mentions GDPR Art. 17 for tenant offboarding, but there is no backend service implementing it. Soft deletes (Step 6) actively conflict with GDPR erasure requirements.",
+                "No notification delivery mechanism implemented. Step 8 background jobs 'create notifications in DB' but there is no email service, in-app notification system, or webhook delivery specified. PBC request due date reminders that exist only in a database table are not reminders.",
+                "Report generation for PDF/XLSX (Steps 7, 10) has no library or service specified. Generating a SOC 2 Type II readiness report or ISO 27001 Statement of Applicability with correct formatting is not trivial. WeasyPrint, ReportLab, and Puppeteer have different tradeoffs for complex tables and charts. This is a known effort black hole.",
+                "Integration implementations are completely absent. Step 2 identifies AWS Security Hub, GCP SCC, Jira, ServiceNow, and GitHub as integration targets with an 'integration requirements matrix' deliverable. But there is no implementation step for any of these integrations. The matrix documents what should happen; nothing builds it.",
+                "Step 14 acceptance criteria includes 'Failover scenario tested' with no corresponding test scenario defined in the payload. This is a dead acceptance criterion \u2014 no scenario means no pass/fail definition.",
+                "The k6 load test (Step 14, 50 VUs, p95 < 2s) does not test the actual performance bottleneck: concurrent evidence file uploads to S3-compatible storage. API response time during file upload proxying or pre-signed URL generation under load is the relevant metric, not generic dashboard p95."
+              ],
+              "suggestions": [
+                "Move threat modeling to before Step 5 (UX design), not after Step 8. At minimum, insert a lightweight STRIDE session between Steps 2 and 5 to catch design-level security issues before they are built. The full OWASP ASVS assessment can remain at Step 11.",
+                "Step 3 legal documents must have a 'reviewed by qualified legal counsel' acceptance criterion, or replace the AI-generated docs with attorney-reviewed templates that the agent only fills in. Selling a GRC platform to a CISO with an AI-hallucinated DPA is a deal-killer.",
+                "Add explicit DSAR and right-to-erasure endpoint implementations to Step 8. The DB schema needs hard-delete capability for GDPR Art. 17, not just soft-delete flags. Add a /gdpr/erasure endpoint that cascades properly and is tested.",
+                "Resolve the SAGE/standalone app coupling in Step 9 explicitly. Either: (a) the compliance platform implements its own approval queue UI and the SAGE proposal store is used only as a backend storage mechanism, or (b) specify that SAGE runs as a sidecar and the frontend routes to SAGE's /approvals page for agent proposals. Pick one and document it.",
+                "Add optimistic locking to the DB schema design (Step 6): version column on findings, pbc_requests, and risk_register_items. Add ETag/If-Match handling to the API spec (Step 7) for these resources. Test concurrent edit conflict in Step 14.",
+                "Select and implement an actual AV scanning service in Step 8, not a 'hook'. If ClamAV is the choice, specify the async scan pattern (upload to quarantine bucket \u2192 scan \u2192 move to permanent bucket on clean). If a cloud API, specify timeout/fallback behavior.",
+                "Add a Redis caching layer to Step 8 for the control coverage dashboard aggregation queries. A heat-map of 93 ISO controls \u00d7 N assessments \u00d7 M evidence items is expensive to recompute on every page load for multi-tenant deployments.",
+                "Add connection pooling specification to Step 6/8: PgBouncer in session mode (not transaction mode) is required for PostgreSQL RLS to work correctly. Document this as a hard infrastructure requirement.",
+                "Add a control library validation step with a human reviewer (regulatory specialist or external GRC consultant) before Step 8 seeds the data into production. The AI-generated cross-walk should be diff'd against at least one published SOC2\u2194ISO27001 mapping (AICPA publishes one).",
+                "Step 15 CI/CD pipeline should include the API spec contract test (Step 7 OpenAPI against Step 8 implementation) as a pipeline gate, not just lint/test/security scan."
+              ],
+              "missing": [
+                "DSAR (Data Subject Access Request) workflow \u2014 no implementation step exists for GDPR Art. 15/17/20 subject rights",
+                "Notification delivery service \u2014 email (SES/SendGrid/SMTP), in-app notification store, or webhook fan-out; none specified or implemented",
+                "Integration implementation steps \u2014 AWS Security Hub, GCP SCC, Jira, ServiceNow connectors are documented requirements (Step 2) with no corresponding build steps",
+                "SAML/OIDC SSO implementation \u2014 listed as integration target in Step 2, required by enterprise buyers, but no implementation step exists",
+                "Optimistic locking / concurrency control strategy for collaborative editing resources",
+                "Data residency enforcement at infrastructure level \u2014 GDPR requires EU data stays in EU regions; contractual clauses alone (Step 3) do not implement this",
+                "AV scanning service selection and async scan pipeline implementation",
+                "Report template system for standard GRC report formats (SOC 2 Type II narrative, ISO 27001 Statement of Applicability) \u2014 generic PDF export is not sufficient for auditor deliverables",
+                "Redis or equivalent caching layer for aggregation-heavy dashboard queries",
+                "JWT secret rotation runbook and process \u2014 secret compromise scenario has no response procedure",
+                "API rate limiting implementation in Step 8 \u2014 Step 11 flags it as a review area but it is never implemented",
+                "PgBouncer / connection pooling specification compatible with PostgreSQL RLS",
+                "Breach notification workflow implementation (GDPR Art. 33/34 \u2014 72-hour notification window)"
+              ],
+              "security_risks": [
+                "Pre-signed S3 URLs (Step 8, 1-hour expiry) do not enforce tenant isolation at the storage layer. A leaked URL is accessible by anyone regardless of JWT. The acceptance criterion 'tenant-scoped prefixes' prevents path collision but does not prevent URL sharing between tenants. Bucket policies must restrict access by tenant prefix using IAM conditions, not just prefix naming.",
+                "PostgreSQL RLS bypass via SECURITY DEFINER functions: any stored procedure or trigger defined with SECURITY DEFINER runs as the function owner (typically a superuser-equivalent), bypassing all RLS policies silently. The audit_log trigger (Step 6) is likely SECURITY DEFINER \u2014 this means the audit trail writer itself can read across tenant boundaries.",
+                "Seed data injection risk: Step 8 seeds control library JSON from Step 4 'on first boot.' If the seed file path is configurable via environment variable or the file is fetched from an external URL, this is a remote code execution or data poisoning vector. Seed data must be bundled into the container image, not fetched at runtime.",
+                "JWT secret in environment variable (Step 18 .env.production) with ANTHROPIC_API_KEY and SLACK_BOT_TOKEN \u2014 if a single env file is compromised, all secrets are exposed simultaneously. Secrets should be in separate Vault paths with least-privilege access per service component.",
+                "Evidence file MIME type validation (Step 11) against an allowlist is necessary but insufficient. MIME type sniffing from Content-Type header is trivially spoofed. Validation must use magic byte inspection of the actual file content (e.g., python-magic), not the declared MIME type.",
+                "RBAC privilege escalation via tenant admin role: the schema includes a 'roles' table with CRUD endpoints (Step 7), meaning a tenant admin can create new roles. If role creation is not strictly scoped to predefined role templates, a tenant admin can construct a role with elevated permissions beyond their own, creating a privilege escalation path.",
+                "APScheduler (Step 8) running background jobs in the same process as the FastAPI web server creates a DoS risk: a runaway background job (e.g., large cross-tenant evidence expiry scan) can starve web worker threads. Background jobs should run in a separate worker process (Celery/ARQ) isolated from the request-handling process.",
+                "Control library accuracy as a false confidence risk: if the AI-generated SOC 2 \u2194 ISO 27001 cross-walk contains errors (e.g., maps CC6.1 to a non-equivalent ISO control), a CISO using the platform may believe they are SOC 2 compliant when controls are actually unmapped. This is a liability risk unique to GRC products \u2014 incorrect mappings cause real audit failures."
+              ],
+              "summary": "This is a structurally coherent plan with good coverage of the GRC domain, a realistic DB schema, and appropriate multi-tenant architecture. The dependency graph is mostly logical, the acceptance criteria are measurable, and the HITL approval pattern is correctly applied to agent proposals. However, the plan has several production-blocking gaps that prevent a score above 60: security threat modeling occurring after full implementation is an architectural mistake for a security-focused product; GDPR compliance is contractual rather than implemented (no DSAR workflow, no functional erasure cascade); the SAGE/standalone app coupling is unresolved; concurrent editing has no conflict resolution design; and several integration stories (AV scanning, notification delivery, enterprise SSO, third-party integrations) are documented requirements with no implementation steps. The AI-generated legal documents without legal review is an unacceptable risk for a product sold to compliance teams. None of these are fatal to the architecture \u2014 all are fixable \u2014 but collectively they represent 3-4 additional sprints of work not accounted for in the current plan, and at least two (RLS+connection-pooling, concurrent editing) would cause production incidents if shipped as-is.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T11:25:15.255397+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 143.42,
+      "critic_plan": 121.31
+    }
+  }
+}

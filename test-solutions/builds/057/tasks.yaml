@@ -1,0 +1,325 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze fitness wearable market: competitor landscape (Fitbit, Apple
+      Watch, Garmin, Whoop), pricing tiers, feature gaps, target demographics (athletes,
+      health-conscious consumers, clinical monitoring). Assess BLE sync patterns and
+      mobile app expectations.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers ≥6 products with feature/price/BLE-stack comparison
+    - Positioning statement identifies 2+ defensible differentiators
+    - TAM/SAM/SOM estimates include source citations
+    - Go-to-market channel recommendations documented
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Define product requirements document (PRD) for wearable_fitness:
+      sensor feature set (HR, SpO2, steps, sleep, workout detection), BLE sync spec,
+      mobile app MVP scope, health insights engine scope, success metrics (DAU, sync
+      reliability, sensor accuracy targets), and phased roadmap.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved by stakeholder review with sign-off recorded
+    - All sensor accuracy targets defined with measurement methodology
+    - BLE protocol version and profiles specified (BLE 5.x, GATT profiles)
+    - 3-phase roadmap with milestones and success criteria per phase
+    - RACI chart for cross-functional teams included
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for mobile app (iOS/Android):
+      onboarding flow, daily health dashboard, workout session view, sleep report,
+      SpO2 history, health insights feed, BLE pairing wizard, settings. Accessibility
+      audit for WCAG 2.1 AA compliance.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research synthesis report with ≥3 validated persona definitions
+    - Full wireframe set covers all listed screens at mid-fidelity
+    - Interactive prototype linked for usability testing
+    - Accessibility audit report with zero critical violations
+    - Design tokens exported for mobile engineering handoff
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  CONFIG:
+    description: 'Set up wearable_fitness solution scaffold: SAGE YAML files (project.yaml,
+      prompts.yaml, tasks.yaml), firmware build toolchain (Zephyr RTOS or FreeRTOS
+      + CMake + ARM cross-compiler), mobile app project skeleton (React Native or
+      Flutter), backend project skeleton (FastAPI), CI/CD pipeline stubs, monorepo
+      structure.'
+    agent_role: developer
+    acceptance_criteria:
+    - All three SAGE YAML files validate against schema without errors
+    - Firmware project compiles for target MCU with zero errors
+    - Mobile app runs on simulator with blank home screen
+    - Backend starts with `make run PROJECT=wearable_fitness` successfully
+    - CI pipeline runs green on empty commit
+    - README documents toolchain setup steps end-to-end
+    depends_on:
+    - 2
+  FIRMWARE:
+    description: 'Implement HAL drivers for sensor suite: MAX30102 (HR + SpO2 via
+      I2C), ADXL362 accelerometer (steps + motion via SPI), BMA423 or equivalent for
+      sleep posture. Implement RTOS task architecture: sensor_task, ble_task, power_mgmt_task,
+      data_store_task. Flash storage ring buffer for offline data. Low-power state
+      machine (active/idle/sleep modes).'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - MAX30102 driver reads HR within ±5 bpm of reference at rest on bench
+    - SpO2 reads within ±3% of clinical oximeter on bench
+    - Accelerometer step count within ±5% of manual count over 100 steps
+    - All RTOS tasks start without deadlock under valgrind-equivalent Zephyr sanitizer
+    - Ring buffer stores and retrieves 48h of sensor data without corruption
+    - Power consumption measured ≤8 mA in active mode, ≤15 µA in deep sleep
+    - BLE GATT services advertise and are discoverable by nRF Connect mobile tool
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 4
+  DATABASE:
+    description: 'Design and migrate time-series health data schema in TimescaleDB
+      (PostgreSQL extension): hypertables for heart_rate_readings, spo2_readings,
+      step_events, sleep_sessions, workout_sessions, health_insights. User account
+      and device registry tables. GDPR-compliant data model with soft delete and retention
+      policy hooks.'
+    agent_role: developer
+    acceptance_criteria:
+    - All hypertables created with correct chunk intervals and compression policies
+    - Migrations run idempotently via Alembic with zero data loss on re-run
+    - Query for 90-day HR history for one user executes in <200 ms with 10M rows loaded
+    - Retention policy drops chunks older than policy window in nightly job
+    - GDPR export job produces JSON export of all user data within 5 minutes
+    - Soft delete cascades to all health tables for a given user_id
+    depends_on:
+    - 4
+  BACKEND:
+    description: 'Build FastAPI backend: user auth (JWT + refresh tokens), device
+      registration and BLE sync data ingestion endpoint (bulk time-series upload),
+      health metrics retrieval APIs (paginated, date-range filtered), health insights
+      generation endpoint (calls ML service), push notification dispatch (FCM/APNs),
+      WebSocket for real-time BLE-forwarded live HR during workout.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints return correct HTTP status codes per OpenAPI spec
+    - BLE sync ingestion handles 7-day backlog (≥100K rows) in <30 seconds
+    - JWT auth rejects expired tokens with 401, invalid signatures with 403
+    - WebSocket live HR stream delivers readings with <500 ms latency
+    - 'Rate limiting enforced: ≤100 req/min per user on sync endpoint'
+    - OpenAPI spec auto-generated and matches all implemented routes
+    - Background insight generator produces daily insight record for all active users
+    depends_on:
+    - 7
+  ML_MODEL:
+    description: 'Train and package health insights ML models: (1) Sleep quality score
+      regressor from sleep stage distribution + HR variability features, (2) Readiness
+      score model from sleep + HRV + activity load (TRIMP), (3) Anomaly detector for
+      SpO2 dips and HR spikes. Package as ONNX for on-device inference option and
+      REST microservice for backend.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Sleep quality scorer MAE ≤8 points on held-out test set
+    - Readiness scorer MAE ≤10 points on held-out test set
+    - Anomaly detector precision ≥0.90, recall ≥0.80 on labeled SpO2 dip dataset
+    - ONNX models load and infer in <50 ms on mid-range mobile CPU
+    - ML microservice responds in <200 ms at p95 under 50 concurrent requests
+    - Model cards documenting training data, metrics, and limitations produced for
+      each model
+    depends_on:
+    - 6
+    - 7
+  FRONTEND:
+    description: 'Build Flutter mobile app (iOS + Android): BLE pairing wizard using
+      flutter_blue_plus, daily health dashboard with sparkline charts, heart rate
+      + SpO2 detail screens with 24h history, sleep report with stage hypnogram chart,
+      step/activity ring, workout session live view (live HR via WebSocket), health
+      insights feed cards, settings screen. Implement SAGE health insights agentic
+      coordinator pattern for personalized tip generation.'
+    agent_role: developer
+    acceptance_criteria:
+    - BLE pairing completes with wearable in <10 seconds on first connect
+    - Daily dashboard renders within 500 ms of app foreground on mid-range device
+    - All chart screens display correct data matching backend API responses
+    - Live workout HR updates within 1 second via WebSocket
+    - App runs offline with last-synced data displayed, queues writes for reconnect
+    - Health insights feed displays ≥1 personalized card per daily session
+    - iOS TestFlight and Android internal track builds pass store review guidelines
+    - No critical accessibility violations on VoiceOver/TalkBack audit
+    depends_on:
+    - 3
+    - 8
+  SECURITY:
+    description: 'Conduct threat model (STRIDE) for wearable_fitness: BLE channel
+      security, health data in transit and at rest, mobile app binary security, backend
+      API attack surface, ML model inversion risk. Produce SBOM for firmware and backend.
+      Define BLE pairing security (LE Secure Connections, passkey entry). Penetration
+      test plan for API.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all data flows with mitigations documented per threat
+    - BLE sniff test confirms all notifications are AES-CCM encrypted
+    - OWASP Mobile Top 10 checklist completed with zero high-severity open items
+    - SBOM generated for firmware (≥95% dependency coverage) and backend (100%)
+    - Penetration test plan covers ≥10 API attack scenarios with expected outcomes
+    - IEC 62443 SL-1 control mapping table produced with evidence references
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 5
+    - 8
+    - 10
+  COMPLIANCE:
+    description: 'Produce IEC 62443 compliance artifacts: security requirements specification
+      (SRS), security level assessment (SL-1/SL-2 gap analysis), security development
+      lifecycle (SDL) evidence, incident response procedure for health data breach.
+      Map BLE security controls to IEC 62443-4-2 component requirements.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - SRS covers all IEC 62443-3-3 security requirements applicable to SL-1
+    - Gap analysis identifies ≤5 SL-2 gaps with remediation timeline
+    - SDL evidence package references actual code review and test records (not placeholders)
+    - IRP defines RTO <4 hours notification to affected users on confirmed breach
+    - Traceability matrix links every SRS requirement to ≥1 test case and ≥1 code
+      artifact
+    - Document set reviewed and signed by designated security officer
+    depends_on:
+    - 11
+  EMBEDDED_TEST:
+    description: 'Write firmware unit tests (Zephyr Twister + Unity) for: MAX30102
+      driver mock, SpO2 RoR algorithm, step detection algorithm, sleep staging state
+      machine, ring buffer logic. HIL test spec for bench validation using Keysight
+      U2761A as PPG signal injector and Nordic PPK2 for power measurement.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test suite achieves ≥90% line coverage on algorithm modules
+    - All unit tests pass in Zephyr QEMU without hardware required
+    - 'HIL-001 passes: HR reading within ±2 bpm across full range on 5 test runs'
+    - 'HIL-002 passes: SpO2 within ±2% across 88–100% range'
+    - 'HIL-003 passes: all power states within 10% of firmware spec targets'
+    - 'HIL-004 passes: zero BLE disconnections over 8-hour continuous session'
+    - HIL test report template populated with pass/fail for each case
+    depends_on:
+    - 6
+  TESTS:
+    description: 'Write backend unit and integration tests (pytest): auth flows (register,
+      login, token refresh, expiry), sync ingestion (bulk upload, idempotency, out-of-order
+      packets), health metric retrieval (pagination, date filtering), insights generation
+      (mock ML service), WebSocket live HR session, anomaly alert trigger. Load test
+      sync endpoint to 500 concurrent devices.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest suite passes with ≥85% coverage on backend src/
+    - Auth expiry test confirms 401 returned for tokens expired >1 hour
+    - Idempotency test confirms duplicate sync upload does not create duplicate rows
+    - Load test report shows p95 sync latency <30s at 500 concurrent devices
+    - WebSocket test verifies live HR delivery within 1s of firmware emission (mocked
+      BLE)
+    - Zero flaky tests in 5 consecutive CI runs
+    depends_on:
+    - 8
+    - 9
+  QA:
+    description: 'Design and execute system QA test plan: end-to-end scenarios covering
+      device pairing, 24h wear simulation, BLE sync, insight generation, anomaly alert,
+      and data export. Regression suite for firmware OTA update flow. Usability testing
+      sessions (n=5) against UX wireframes. Defect triage and severity classification.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All E2E test cases executed with results documented as pass/fail
+    - Zero P0 defects open at QA sign-off
+    - Zero P1 defects open related to health data accuracy
+    - Usability test task completion rate ≥85% across all core user journeys
+    - QA sign-off report signed and linked to release candidate build
+    - Regression suite covers OTA update flow with ≥3 firmware version transitions
+    depends_on:
+    - 13
+    - 14
+    - 10
+  SYSTEM_TEST:
+    description: 'Execute system-level integration tests: BLE stack interoperability
+      on 5 device models (iPhone 13+, Samsung S22+, Pixel 7+, OnePlus 10), long-haul
+      7-day wear simulation on bench (controlled HR signal via PPG injector), cross-timezone
+      sleep detection validation, battery life measurement over 7 days, concurrent
+      user load on backend (10K active users).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - BLE pairing and sync succeed on all 5 test devices without workarounds
+    - 7-day bench test completes with data completeness ≥99.5% and battery ≥15% SOC
+    - No firmware crash or watchdog reset during 7-day test
+    - Backend sustains 10K concurrent users with p99 API latency <500 ms
+    - Sleep session date attribution correct across all 3 tested timezones
+    - System test report produced with all results, defect links, and sign-off
+    depends_on:
+    - 15
+  INFRA:
+    description: 'Provision production infrastructure: containerized backend (Docker
+      + Kubernetes), TimescaleDB managed cluster, ML microservice deployment (GPU-optional),
+      CDN for static assets, BLE data ingestion queue (Redis Streams), OTA firmware
+      update service (S3 + signed manifests), observability stack (Prometheus + Grafana
+      + Loki), auto-scaling policies.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Backend deploys to Kubernetes with rolling update zero-downtime
+    - TimescaleDB Multi-AZ failover completes in <30 seconds
+    - OTA update delivers firmware binary to device within 2 minutes via BLE
+    - Grafana dashboards display sync lag, API latency, and active device count in
+      real time
+    - PagerDuty alert fires within 2 minutes of synthetic P0 incident injection
+    - Auto-scaling adds pods within 60 seconds of CPU threshold breach under load
+      test
+    depends_on:
+    - 8
+    - 9
+  LOCALIZATION:
+    description: 'Implement i18n for mobile app and backend: extract all user-facing
+      strings to ARB files (Flutter), configure locale detection, translate to EN/ES/FR/DE/JA
+      as MVP locales. Localize health insight copy with culturally appropriate framing.
+      Backend error messages and push notification copy localized.'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All 320 strings extracted to ARB files with zero hardcoded UI text remaining
+    - App switches locale at runtime without restart
+    - All 5 locales render correctly on device with no truncated labels
+    - Health insight copy reviewed by native speaker for each locale
+    - Unit/imperial toggle persists per user profile and reflects in all metric displays
+    - Backend push notifications deliver in user's preferred locale
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 10
+  TRAINING:
+    description: 'Produce end-user and clinical user documentation: in-app onboarding
+      tutorial (6 steps), help center articles (20 topics), FDA-aligned accuracy and
+      limitations disclosure for SpO2 and HR, quick-start guide for device setup,
+      video script for 90-second product demo, internal engineering runbook for on-call.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - All 20 help center articles complete and reviewed for accuracy by QA
+    - SpO2 accuracy disclosure reviewed by legal/regulatory and approved
+    - In-app tutorial tested by 3 first-time users with zero confusion points on core
+      flows
+    - Video script approved by product manager and ready for production
+    - On-call engineering runbook covers all P0 alert scenarios with resolution steps
+    - 'Documentation accessibility: all PDFs pass WCAG 2.1 AA PDF/UA check'
+    depends_on:
+    - 15
+    - 3
+  AGENTIC:
+    description: 'Implement health insights coordinator agent using multi-agent coordinator
+      pattern: central coordinator receives daily user data snapshot, routes to specialist
+      sub-agents (SleepInsightAgent, ActivityInsightAgent, SpO2AnomalyAgent, TrendAgent),
+      aggregates outputs into ranked insight cards with personalization tokens. Integrates
+      with SAGE approval gate for anomaly escalation proposals.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator routes daily snapshot to all 4 specialist agents in parallel (wave
+      execution)
+    - Daily insight generation completes in <5 seconds end-to-end
+    - SpO2 anomaly proposal appears in SAGE approval queue before notification fires
+    - InsightCard objects contain all required fields and pass schema validation
+    - Coordinator handles sub-agent timeout gracefully (partial insights returned,
+      no crash)
+    - 'Insight relevance: A/B test shows ≥60% of users engage with ≥1 insight card
+      daily'
+    depends_on:
+    - 9
+    - 8

@@ -1,0 +1,300 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze loyalty platform market: competitor feature matrix (Smile.io,
+      LoyaltyLion, Yotpo), pricing benchmarks, POS ecosystem landscape (Square, Clover,
+      Toast, Shopify), and SMB vs enterprise segmentation.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covers at least 5 platforms with pricing tiers documented
+    - POS integration ecosystem mapped with API availability for top 5 POS systems
+    - Customer segment personas defined (SMB retailer, restaurant chain, e-commerce
+      brand)
+    - Market sizing estimate with TAM/SAM/SOM for loyalty_rewards solution
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements: point earning rules engine spec, redemption
+      mechanics, tier threshold logic, referral attribution model, birthday reward
+      triggering, and merchant admin requirements.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All 8 epics decomposed into numbered user stories with acceptance criteria
+    - Point earning rules engine spec covers multipliers, caps, expiry, and exclusion
+      categories
+    - Referral attribution model handles multi-touch, fraud prevention, and payout
+      timing
+    - Birthday reward logic specifies trigger window, eligibility, and redemption
+      constraints
+    - POS integration flow documented for at least 2 POS systems end-to-end
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: User research with 8-10 target merchants and 10-15 end consumers.
+      Produce wireframes for customer loyalty portal (balance, history, rewards catalog,
+      referral link), merchant dashboard (program config, analytics, member management),
+      and POS receipt/checkout loyalty flow.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Minimum 8 user research sessions completed and synthesized into 3 personas
+    - 'Customer portal wireframes cover: balance view, transaction history, tier progress,
+      rewards catalog, referral hub, birthday status'
+    - 'Merchant dashboard wireframes cover: program setup, member list, analytics,
+      tier config, reward management'
+    - WCAG 2.1 AA accessibility audit completed with zero critical violations in final
+      mockups
+    - Design system tokens (colors, typography, spacing) documented and ready for
+      frontend handoff
+    depends_on:
+    - 2
+  FINANCIAL:
+    description: 'Build financial model: SaaS pricing tiers for merchants (transaction
+      volume bands), unit economics (CAC, LTV, gross margin), revenue projections
+      (3-year), point liability reserve model, and referral payout cost modeling.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Three pricing tiers defined with feature gating and transaction volume caps
+    - Point liability reserve model accounts for breakage rates (typically 20-30%)
+      and redemption velocity
+    - 3-year P&L projection with monthly granularity for year 1
+    - Referral payout cost modeled against acquisition cost savings to validate positive
+      ROI
+    - Unit economics show path to positive LTV/CAC ratio > 3x by month 18
+    depends_on:
+    - 1
+    - 2
+  LEGAL:
+    description: 'Draft legal artifacts: Terms of Service, Privacy Policy (GDPR/CCPA
+      compliant), Merchant Agreement covering point liability and program rules, referral
+      program terms, and open-source license inventory (SBOM legal review).'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all PII categories collected (email, birthday, purchase
+      history, referral links) with lawful basis per GDPR Art.6
+    - Merchant Agreement specifies point liability ownership and indemnification clauses
+    - Referral program terms include fraud prevention clauses and disqualification
+      conditions
+    - Cookie policy covers analytics, POS widget third-party cookies
+    - All documents reviewed by legal_advisor and flagged items resolved
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 2
+  SECURITY:
+    description: 'Threat model the loyalty platform: STRIDE analysis for point fraud
+      vectors, PCI DSS scope assessment for POS integration, API authentication threat
+      model, referral abuse detection design, and OWASP Top 10 review plan.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model completed for all 5 in-scope components with mitigations
+      documented
+    - PCI DSS SAQ type determined and scoping boundary documented (loyalty points
+      are NOT payment data — boundary must be explicit)
+    - 'Point manipulation attack vectors identified: replay attacks, negative balance
+      exploits, referral loop fraud, birthday reward abuse'
+    - 'Pen test plan covers: auth bypass, IDOR on member records, API rate limiting,
+      webhook signature validation'
+    - SBOM generated covering all runtime dependencies with known CVE scan baseline
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'Produce PCI DSS compliance artifacts: data flow diagram showing
+      cardholder data environment (CDE) boundary, POS integration architecture review
+      to minimize CDE scope, SAQ questionnaire completion, and compensating controls
+      documentation.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Data flow diagram clearly marks CDE boundary — loyalty points flow must be architecturally
+      isolated from card data
+    - POS integration design confirmed to use tokenized transaction events (no PAN,
+      no CVV ever touches loyalty_rewards system)
+    - SAQ type confirmed (target SAQ A or SAQ D depending on integration depth) with
+      all applicable requirements listed
+    - Vendor responsibility matrix completed for each POS integration partner
+    - Compensating controls documented for any requirements not fully met at launch
+    depends_on:
+    - 6
+  DATABASE:
+    description: 'Design and implement database schema: members, merchants, programs,
+      point_transactions, tiers, rewards, referrals, birthday_rewards, pos_integrations,
+      audit_log. PostgreSQL with row-level security for multi-tenancy.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 12 tables created with foreign key constraints and NOT NULL constraints
+      enforced
+    - point_transactions table partitioned by created_at month for query performance
+      at scale
+    - Row-level security policies implemented so merchant A cannot query merchant
+      B's members
+    - 'Indexes on: member email (unique per merchant), member_id+created_at on point_transactions,
+      referrer_id on referrals'
+    - Alembic migration runs cleanly from empty DB to full schema with zero errors
+    - Schema reviewed against data model in BRD — all entities and relationships present
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 spec for all loyalty platform endpoints: member
+      enrollment, point transactions, redemptions, tier calculation, referral tracking,
+      birthday reward triggering, POS webhook receiver, merchant program config, and
+      analytics.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec passes validation with no errors (openapi-spec-validator)
+    - All endpoints include request/response schemas with examples
+    - Authentication scheme documented for each endpoint group
+    - POS webhook receiver spec includes HMAC signature validation header
+    - Rate limiting headers documented (X-RateLimit-Limit, X-RateLimit-Remaining)
+    - Error response schema consistent across all endpoints (RFC 7807 Problem Details)
+    depends_on:
+    - 2
+    - 8
+  CONFIG:
+    description: 'Set up loyalty_rewards solution configuration: SAGE project.yaml,
+      prompts.yaml, tasks.yaml, environment config, Docker Compose for local dev (Postgres,
+      Redis, backend, frontend), and CI/CD skeleton.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up --build starts all 5 services with zero errors
+    - project.yaml defines solution metadata, active_modules, and theme block
+    - 'prompts.yaml defines agent roles: loyalty_analyst, points_engineer, pos_integration_specialist'
+    - tasks.yaml registers all task types used by this solution
+    - .env.example documents all required environment variables with descriptions
+    - Health check endpoints respond 200 for all services after docker-compose up
+    depends_on:
+    - 8
+    - 9
+  BACKEND:
+    description: 'Implement core loyalty engine: member enrollment service, points
+      earning/expiry engine (rules-based with multipliers), points redemption service
+      with balance validation, and tier calculation engine with automatic promotion/demotion.'
+    agent_role: developer
+    acceptance_criteria:
+    - Member enrollment creates member record, sets initial tier, and returns welcome
+      point bonus if configured
+    - Points engine correctly applies base rate, category multipliers, and enforces
+      earn caps per transaction
+    - 'Redemption service validates: sufficient balance, reward is active, member
+      tier qualifies, and applies atomic transaction'
+    - Tier engine recalculates tier after every point transaction and emits tier_change
+      event on promotion/demotion
+    - Points expiry job correctly identifies and expires points older than program-configured
+      TTL
+    - All service functions covered by unit tests with 90%+ line coverage
+    depends_on:
+    - 9
+    - 10
+  FRONTEND:
+    description: 'Build customer loyalty portal (React 18 + TypeScript): member dashboard
+      (balance, tier progress bar, next tier requirements), transaction history, rewards
+      catalog with redemption flow, referral hub (unique link, share buttons, status
+      tracker), and birthday reward status.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'Dashboard shows: current point balance, tier badge, progress to next tier,
+      recent transactions (last 5)'
+    - Tier progress bar animates and displays exact points needed for next tier upgrade
+    - Rewards catalog supports filtering by category and point cost, with clear redemption
+      confirmation flow
+    - Referral hub generates shareable link, shows per-referral status (pending/qualified/paid),
+      and displays total referral earnings
+    - All pages pass Lighthouse accessibility score > 90
+    - Portal is fully functional on mobile (320px viewport)
+    depends_on:
+    - 3
+    - 14
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for points engine, tier
+      calculator, referral fraud detection, birthday engine; integration tests for
+      POS webhook adapters; API contract tests against OpenAPI spec; and database
+      migration regression tests.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - 'Points engine tests cover: base earn, multipliers, earn cap enforcement, expiry,
+      negative balance prevention'
+    - 'Tier engine tests cover: promotion, demotion, grace period, edge case at exact
+      threshold'
+    - 'Referral fraud tests cover: self-referral, velocity limiting, duplicate completion,
+      minimum purchase enforcement'
+    - 'POS webhook integration tests cover: valid payload, invalid HMAC, duplicate
+      idempotency key, each adapter type'
+    - API contract tests validate all endpoints against OpenAPI spec using schemathesis
+    - Overall coverage report shows >= 90% for services layer
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+  QA:
+    description: 'QA test planning and execution: test case design for all loyalty
+      flows, exploratory testing session for fraud edge cases, cross-browser/cross-device
+      testing for customer portal, and UAT plan for merchant onboarding flow.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all user stories from BRD with traceability matrix
+    - Minimum 150 test cases written and executed with pass/fail status recorded
+    - All P0/P1 defects resolved before sign-off; P2 defects have documented workarounds
+      or deferred dates
+    - Cross-browser testing completed with no critical failures on listed browsers
+    - Mobile testing confirms customer portal usable on listed devices without layout
+      breaks
+    - UAT sign-off document signed by product_manager
+    depends_on:
+    - 15
+    - 16
+    - 17
+  DEVOPS:
+    description: 'Set up production infrastructure: Kubernetes manifests (backend,
+      celery worker, frontend), PostgreSQL RDS with read replica, Redis ElastiCache,
+      GitHub Actions CI/CD pipeline, Datadog monitoring with loyalty KPI dashboards,
+      and alerting for points engine errors.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - 'CI/CD pipeline runs on every PR: lint, unit tests, build, and integration tests
+      must all pass'
+    - Staging deployment automated on merge to main; prod deployment requires manual
+      approval gate
+    - PostgreSQL RDS with automated backups, read replica for analytics queries, and
+      7-day PITR
+    - Datadog dashboard shows all 4 loyalty KPIs with historical data from first deployment
+    - All 3 alerting rules configured and tested with synthetic metric injection
+    - Zero-downtime deployment confirmed via rolling update with readiness probe
+    depends_on:
+    - 18
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response for points engine
+      outage, POS webhook backlog recovery, birthday reward batch failure, database
+      failover procedure, SLA definitions, and capacity planning model for 10x member
+      growth.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'Each runbook includes: trigger conditions, severity classification, step-by-step
+      remediation, rollback procedure, and post-incident review template'
+    - SLA document defines availability targets, exclusions, measurement method, and
+      breach notification process
+    - POS webhook recovery runbook covers dead-letter queue replay with idempotency
+      guarantee
+    - Database failover runbook tested in staging with RTO documented (target < 5
+      minutes)
+    - Capacity planning model projects infrastructure costs and scaling events for
+      10x member growth
+    - PagerDuty on-call schedule configured with escalation policy
+    depends_on:
+    - 20
+  DOCS:
+    description: 'Write technical documentation: API reference (auto-generated from
+      OpenAPI + hand-authored guides), POS integration guides per provider, merchant
+      onboarding guide, developer SDK quickstart, and architecture decision records
+      (ADRs) for key design choices.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference auto-generated from OpenAPI spec and published to docs site
+    - 'Each POS integration guide includes: setup steps, webhook configuration, test
+      transaction walkthrough, and troubleshooting section'
+    - 'Merchant onboarding guide covers: account setup, program configuration, first
+      POS integration, and inviting staff'
+    - Developer SDK quickstart shows earning first points in < 10 minutes from zero
+    - All 3 ADRs written with context, decision, consequences, and alternatives considered
+    - Docs site deployed and accessible without authentication
+    depends_on:
+    - 19
+    - 20

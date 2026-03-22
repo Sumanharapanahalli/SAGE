@@ -1,0 +1,1142 @@
+{
+  "run_id": "18068a2f-5523-4531-abf5-702ba27137e5",
+  "status": {
+    "run_id": "18068a2f-5523-4531-abf5-702ba27137e5",
+    "solution_name": "grocery_delivery",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T05:56:41.266069+00:00",
+    "updated_at": "2026-03-22T06:00:56.368268+00:00",
+    "product_description": "Grocery delivery platform with real-time inventory, route optimization, shopper app, customer app, substitution logic, and slot-based delivery scheduling.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze grocery delivery market: competitor landscape (Instacart, DoorDash, Gopuff), pricing models, slot-based vs on-demand positioning, and regional demand signals.",
+        "payload": {
+          "competitors": [
+            "Instacart",
+            "DoorDash Dash Mart",
+            "Gopuff",
+            "Amazon Fresh"
+          ],
+          "research_areas": [
+            "pricing_models",
+            "slot_scheduling_trends",
+            "shopper_incentive_structures",
+            "inventory_accuracy_benchmarks"
+          ],
+          "deliverables": [
+            "competitor_matrix.md",
+            "market_sizing.md",
+            "positioning_brief.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitor matrix covers at least 5 platforms with feature, pricing, and GTM comparison",
+          "Market sizing includes TAM/SAM/SOM with cited sources",
+          "Positioning brief recommends a differentiated angle for grocery_delivery"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define end-to-end business requirements: customer ordering flow, shopper pick-and-pack flow, substitution rules, slot-based scheduling windows, and inventory sync processes. Produce user stories and process flow diagrams.",
+        "payload": {
+          "actors": [
+            "customer",
+            "shopper",
+            "store_manager",
+            "dispatcher",
+            "admin"
+          ],
+          "core_flows": [
+            "browse_and_order",
+            "slot_selection",
+            "shopper_assignment",
+            "pick_pack_scan",
+            "substitution_approval",
+            "delivery_and_rating"
+          ],
+          "deliverables": [
+            "user_stories.md",
+            "process_flows.pdf",
+            "roi_analysis.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "User stories cover all 5 actor types with acceptance criteria per story",
+          "Process flows include happy path and at least 3 exception paths (OOS, late shopper, failed delivery)",
+          "ROI analysis includes unit economics per order at target volume",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce the Product Requirements Document (PRD), feature roadmap (MVP vs v2), and success metrics (fill rate, on-time delivery %, substitution acceptance rate, DAU).",
+        "payload": {
+          "mvp_scope": [
+            "customer_app",
+            "shopper_app",
+            "inventory_management",
+            "slot_scheduling",
+            "basic_route_optimization",
+            "substitution_logic"
+          ],
+          "v2_scope": [
+            "ai_substitution_recommendations",
+            "demand_forecasting",
+            "dynamic_slot_pricing"
+          ],
+          "kpis": [
+            "order_fill_rate",
+            "on_time_delivery_pct",
+            "substitution_acceptance_rate",
+            "shopper_utilization",
+            "customer_nps"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all MVP features with priority (P0/P1/P2), owner, and success metric",
+          "Roadmap has at least 3 milestones with dates and go/no-go criteria",
+          "All KPIs have baseline target values and measurement methodology defined"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 4,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes for customer app (browse, cart, slot picker, substitution approval, order tracking) and shopper app (task list, scan-to-pick, substitution workflow, proof-of-delivery). Include accessibility audit (WCAG 2.1 AA).",
+        "payload": {
+          "customer_screens": [
+            "home_feed",
+            "product_search",
+            "cart",
+            "slot_picker",
+            "checkout",
+            "substitution_approval",
+            "live_tracking",
+            "order_history"
+          ],
+          "shopper_screens": [
+            "available_orders",
+            "active_pick_list",
+            "scan_barcode",
+            "substitution_suggest",
+            "delivery_map",
+            "pod_capture"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA",
+          "deliverables": [
+            "wireframes.figma",
+            "interaction_spec.md",
+            "accessibility_audit.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all listed screens for both apps at medium-fidelity",
+          "Interaction spec defines all state transitions including error and empty states",
+          "Accessibility audit covers color contrast, touch target sizes, and screen reader labels"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 5,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model: unit economics per order, shopper pay model (hourly vs per-order), delivery fee structure, slot-based surge pricing logic, and 18-month P&L projection.",
+        "payload": {
+          "cost_drivers": [
+            "shopper_labor",
+            "routing_fuel",
+            "platform_infrastructure",
+            "payment_processing"
+          ],
+          "revenue_streams": [
+            "delivery_fee",
+            "service_fee",
+            "retailer_commission",
+            "surge_pricing"
+          ],
+          "scenarios": [
+            "conservative",
+            "base",
+            "optimistic"
+          ],
+          "deliverables": [
+            "unit_economics_model.xlsx",
+            "pricing_strategy.md",
+            "18mo_pl_projection.xlsx"
+          ]
+        },
+        "acceptance_criteria": [
+          "Unit economics model shows contribution margin per order across 3 scenarios",
+          "Pricing strategy defines slot window pricing tiers with rationale",
+          "P&L projection includes sensitivity analysis on order volume and basket size",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 6,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (CCPA/GDPR compliant), Shopper Independent Contractor Agreement, and IP ownership review for route optimization and substitution logic.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "shopper_contractor_agreement.md",
+            "ip_review.md"
+          ],
+          "compliance_frameworks": [
+            "CCPA",
+            "GDPR",
+            "gig_worker_regulations"
+          ],
+          "data_types_covered": [
+            "location_data",
+            "purchase_history",
+            "biometric_pod_signature",
+            "payment_data"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy policy explicitly covers location tracking, purchase history, and payment data retention",
+          "Shopper agreement clearly defines contractor vs employee classification risk mitigations",
+          "IP review confirms no open-source license conflicts in route optimization dependencies",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted",
+          "Return/refund policy drafted",
+          "Consumer protection compliance checked"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 7,
+        "task_type": "SECURITY",
+        "description": "Produce threat model (STRIDE), PCI DSS scope diagram, SOC 2 control mapping, and penetration test plan covering customer app, shopper app, API gateway, and payment flows.",
+        "payload": {
+          "standards": [
+            "PCI_DSS_v4",
+            "SOC2_Type2"
+          ],
+          "threat_model_scope": [
+            "customer_auth",
+            "payment_tokenization",
+            "shopper_location_stream",
+            "inventory_write_api",
+            "admin_portal"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "pci_scope_diagram.pdf",
+            "soc2_control_matrix.xlsx",
+            "pentest_plan.md",
+            "sbom.json"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all 5 scope areas with mitigations mapped",
+          "PCI DSS scope diagram identifies CDE boundary and all in-scope systems",
+          "SOC 2 control matrix maps all Trust Service Criteria to planned controls",
+          "SBOM lists all third-party dependencies with known CVE status",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 8,
+        "task_type": "COMPLIANCE",
+        "description": "Produce PCI DSS evidence artifacts (encryption at rest/transit policy, tokenization design, access control matrix) and SOC 2 readiness checklist for audit preparation.",
+        "payload": {
+          "pci_artifacts": [
+            "encryption_policy.md",
+            "tokenization_architecture.md",
+            "access_control_matrix.xlsx",
+            "vulnerability_scan_plan.md"
+          ],
+          "soc2_artifacts": [
+            "security_policies.md",
+            "availability_sla.md",
+            "change_management_process.md",
+            "vendor_review_checklist.md"
+          ],
+          "standards": [
+            "PCI_DSS_v4",
+            "SOC2_Type2"
+          ]
+        },
+        "acceptance_criteria": [
+          "Encryption policy covers AES-256 at rest and TLS 1.3 in transit for all cardholder data",
+          "Tokenization architecture document describes payment vault integration and token lifecycle",
+          "SOC 2 readiness checklist has no open P0 gaps before go-live"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Initialize grocery_delivery solution scaffold: directory structure, project.yaml (active modules, theme), prompts.yaml (analyst, developer, monitor, planner roles), tasks.yaml (32 task types). Set up monorepo with packages for backend, customer-app, shopper-app, admin-web.",
+        "payload": {
+          "solution_name": "grocery_delivery",
+          "directory_structure": [
+            "solutions/grocery_delivery/",
+            "backend/",
+            "apps/customer/",
+            "apps/shopper/",
+            "apps/admin/",
+            "infra/"
+          ],
+          "active_modules": [
+            "dashboard",
+            "analyst",
+            "developer",
+            "monitor",
+            "approvals",
+            "queue",
+            "knowledge",
+            "audit",
+            "improvements"
+          ],
+          "agentic_pattern": "coordinator",
+          "package_manager": "pnpm",
+          "python_version": "3.12"
+        },
+        "acceptance_criteria": [
+          "solutions/grocery_delivery/ contains valid project.yaml, prompts.yaml, and tasks.yaml",
+          "make run PROJECT=grocery_delivery starts without errors",
+          "Monorepo root package.json defines all workspace packages",
+          "Python venv activates and all base deps install cleanly"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "DATABASE",
+        "description": "Design and implement PostgreSQL schema for: users (customers, shoppers), stores, inventory (products, stock levels, zones), orders, order_items, substitutions, delivery_slots, routes, and audit_events. Include Redis schema for real-time inventory locks and slot availability.",
+        "payload": {
+          "primary_db": "PostgreSQL 16",
+          "cache_db": "Redis 7",
+          "core_tables": [
+            "users",
+            "shopper_profiles",
+            "stores",
+            "products",
+            "inventory",
+            "orders",
+            "order_items",
+            "substitutions",
+            "delivery_slots",
+            "route_assignments",
+            "audit_events"
+          ],
+          "redis_keys": [
+            "slot:availability:{store_id}:{date}",
+            "inventory:lock:{product_id}",
+            "order:state:{order_id}"
+          ],
+          "migrations_tool": "Alembic",
+          "deliverables": [
+            "schema.sql",
+            "erd.pdf",
+            "migrations/001_initial.py",
+            "seed_data.sql"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD covers all core tables with FK relationships and cardinality labels",
+          "All tables have created_at/updated_at and soft-delete support",
+          "Redis schema doc defines TTL and eviction policy per key pattern",
+          "Migration runs cleanly on a fresh PostgreSQL 16 instance",
+          "Seed data populates at least 1 test store with 100 products and 2 delivery slots"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 spec for all backend endpoints: auth (JWT + refresh), catalog (search, product detail), cart, order lifecycle, inventory (read/write/lock), substitution proposals, delivery slots, shopper task management, route assignments, and admin operations.",
+        "payload": {
+          "auth_strategy": "JWT with refresh tokens, OAuth2 for social login",
+          "endpoint_groups": [
+            "auth",
+            "catalog",
+            "cart",
+            "orders",
+            "inventory",
+            "substitutions",
+            "slots",
+            "shopper_tasks",
+            "routes",
+            "webhooks",
+            "admin"
+          ],
+          "versioning": "URL path versioning /api/v1/",
+          "realtime_protocol": "WebSocket for order state + SSE for inventory updates",
+          "deliverables": [
+            "openapi.yaml",
+            "websocket_events.md",
+            "sse_events.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates without errors against OpenAPI 3.1 schema",
+          "All endpoints have request/response schemas, error codes, and auth requirements",
+          "WebSocket event catalog covers order_state_changed, shopper_location_updated, slot_taken",
+          "SSE event catalog covers inventory_updated, product_oos events"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Build core FastAPI backend: auth service (JWT, OAuth2, shopper/customer role separation), catalog service (full-text search via pgvector/pg_trgm), cart service with Redis session, and order lifecycle state machine (pending\u2192confirmed\u2192picking\u2192in_transit\u2192delivered).",
+        "payload": {
+          "framework": "FastAPI 0.115",
+          "services": [
+            "auth_service",
+            "catalog_service",
+            "cart_service",
+            "order_service"
+          ],
+          "auth_features": [
+            "jwt_access_refresh",
+            "oauth2_social",
+            "role_rbac"
+          ],
+          "search_backend": "pg_trgm + pgvector for semantic product search",
+          "order_states": [
+            "pending",
+            "confirmed",
+            "payment_authorized",
+            "shopper_assigned",
+            "picking",
+            "in_transit",
+            "delivered",
+            "cancelled",
+            "partially_fulfilled"
+          ],
+          "pattern": "coordinator multi-agent routes requests to specialist domain services"
+        },
+        "acceptance_criteria": [
+          "Auth endpoints issue valid JWTs with role claims and refresh flow works end-to-end",
+          "Catalog search returns results in <200ms for 100k product catalog",
+          "Cart persists across sessions via Redis with TTL of 7 days",
+          "Order state machine rejects invalid transitions and emits audit events on every transition",
+          "All endpoints return structured error responses matching OpenAPI spec"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build real-time inventory service: stock level tracking per store/zone, reservation locking (Redis), out-of-stock detection, WebSocket/SSE broadcast on inventory changes, and bulk inventory import from store systems via webhook.",
+        "payload": {
+          "concurrency_model": "Optimistic locking with Redis SETNX for reservation",
+          "update_channels": [
+            "manual_admin_update",
+            "shopper_scan_confirm",
+            "pos_webhook_sync"
+          ],
+          "broadcast": "SSE /inventory/stream/{store_id} for dashboard, WebSocket for shopper app",
+          "oos_trigger": "stock_level <= safety_stock_threshold",
+          "deliverables": [
+            "inventory_service.py",
+            "inventory_router.py",
+            "inventory_tests.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Concurrent reservation attempts for the same product are serialized correctly (no double-sell)",
+          "SSE stream emits inventory_updated event within 500ms of stock change",
+          "Bulk import webhook processes 10k product updates within 30 seconds",
+          "OOS detection triggers substitution proposal creation automatically"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Build substitution logic engine: rule-based substitution candidates (same brand > same category > different brand), LLM-assisted ranking using product embeddings, customer preference history, and approval workflow (auto-approve below threshold, require customer confirmation above).",
+        "payload": {
+          "substitution_rules": [
+            "exact_match",
+            "same_brand_different_size",
+            "same_category_different_brand",
+            "dietary_compatible"
+          ],
+          "ranking_model": "cosine similarity on pgvector product embeddings + customer preference weight",
+          "approval_thresholds": {
+            "auto_approve_price_diff_pct": 10,
+            "require_approval_price_diff_pct": 25
+          },
+          "notification_channel": "push + in-app for customer substitution approval",
+          "agentic_pattern": "review_and_critique \u2014 substitution generator + critic scores dietary/allergy compatibility",
+          "deliverables": [
+            "substitution_engine.py",
+            "substitution_router.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Substitution engine returns ranked candidates within 300ms for any OOS product",
+          "Auto-approve threshold correctly bypasses customer notification for minor substitutions",
+          "Allergy filter never suggests a substitute containing a customer's declared allergen",
+          "Customer push notification sent within 60 seconds of substitution proposal creation"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Build slot-based delivery scheduling service: slot template management (windows, capacity per store), real-time slot availability via Redis, slot reservation with payment hold, slot-to-order assignment, and slot release on cancellation.",
+        "payload": {
+          "slot_granularity": "2-hour windows",
+          "capacity_model": "max_concurrent_deliveries per store per slot",
+          "reservation_ttl_minutes": 15,
+          "surge_pricing": "dynamic fee multiplier based on slot fill rate",
+          "deliverables": [
+            "slot_service.py",
+            "slot_router.py",
+            "slot_availability_cache.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Slot availability reflects real-time capacity with no race conditions under 100 concurrent users",
+          "Slot reservation holds payment and releases automatically after TTL if not confirmed",
+          "Surge pricing multiplier applied correctly when slot fill rate exceeds 80%",
+          "Slot cancellation releases capacity within 1 second and re-broadcasts availability"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Build route optimization service: TSP-based multi-stop route calculation using OR-Tools, shopper-to-order assignment (zone-based matching), ETA computation, real-time re-routing on traffic events, and route broadcast to shopper app.",
+        "payload": {
+          "algorithm": "Google OR-Tools VRP solver",
+          "inputs": [
+            "delivery_addresses",
+            "shopper_current_location",
+            "time_windows",
+            "vehicle_capacity"
+          ],
+          "optimization_objectives": [
+            "minimize_total_distance",
+            "respect_slot_time_windows"
+          ],
+          "traffic_integration": "Google Maps Distance Matrix API or OSRM self-hosted",
+          "reoptimize_trigger": "new_order_added OR traffic_delay_exceeds_10min",
+          "deliverables": [
+            "route_optimizer.py",
+            "route_router.py",
+            "shopper_location_tracker.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Route optimization for 10-stop route completes within 2 seconds",
+          "ETA accuracy within \u00b15 minutes for 90% of deliveries in test dataset",
+          "Re-routing triggered automatically when traffic delay exceeds threshold",
+          "Shopper location broadcasted to customer app via WebSocket every 10 seconds during active delivery"
+        ],
+        "depends_on": [
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "BACKEND",
+        "description": "Build payment service integration: Stripe tokenization, authorization hold on slot reservation, capture on shopper departure, partial capture for substitutions, refund flows, and PCI DSS compliant card data handling (no card data touches backend).",
+        "payload": {
+          "payment_provider": "Stripe",
+          "flows": [
+            "setup_intent",
+            "authorization_hold",
+            "capture",
+            "partial_capture",
+            "refund",
+            "dispute_webhook"
+          ],
+          "pci_approach": "Stripe.js + Payment Element (SAQ-A scope reduction)",
+          "deliverables": [
+            "payment_service.py",
+            "stripe_webhook_handler.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Card data never touches application server (Stripe.js handles tokenization)",
+          "Authorization hold created on slot booking and captured correctly on delivery confirmation",
+          "Partial capture correctly adjusts amount for substituted items at different price",
+          "Stripe webhook handler verifies signature and is idempotent for retry events"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build customer React Native app: home feed (store selection, featured products), product search and browse, cart management, slot picker UI, checkout with Stripe Payment Element, substitution approval modal, live order tracking map, and order history.",
+        "payload": {
+          "framework": "React Native 0.76 + Expo",
+          "state_management": "Zustand",
+          "maps": "react-native-maps + Google Maps SDK",
+          "push_notifications": "Expo Notifications + Firebase FCM",
+          "screens": [
+            "HomeScreen",
+            "SearchScreen",
+            "ProductDetailScreen",
+            "CartScreen",
+            "SlotPickerScreen",
+            "CheckoutScreen",
+            "SubstitutionApprovalScreen",
+            "TrackingScreen",
+            "OrderHistoryScreen",
+            "ProfileScreen"
+          ]
+        },
+        "acceptance_criteria": [
+          "All screens render correctly on iOS 17+ and Android 14+",
+          "Slot picker shows real-time availability updates without manual refresh",
+          "Substitution approval modal shows side-by-side product comparison with price diff",
+          "Live tracking map updates shopper position every 10 seconds",
+          "Stripe Payment Element renders and processes test payments successfully"
+        ],
+        "depends_on": [
+          11,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build shopper React Native app: available orders list, active pick list with aisle location, barcode scanner for item confirmation, substitution suggestion screen, delivery map with turn-by-turn, and proof-of-delivery photo capture.",
+        "payload": {
+          "framework": "React Native 0.76 + Expo",
+          "barcode_scanner": "expo-barcode-scanner",
+          "camera": "expo-camera for POD photo",
+          "offline_support": "WatermelonDB for offline pick list sync",
+          "screens": [
+            "AvailableOrdersScreen",
+            "ActivePickListScreen",
+            "ScanItemScreen",
+            "SubstitutionSuggestScreen",
+            "DeliveryMapScreen",
+            "ProofOfDeliveryScreen",
+            "EarningsScreen"
+          ]
+        },
+        "acceptance_criteria": [
+          "Pick list loads and remains usable offline (no network) with sync on reconnect",
+          "Barcode scanner confirms item in <1 second and updates pick list state",
+          "Substitution suggest screen shows top 3 ranked alternatives with compatibility badges",
+          "POD photo captured, compressed, and uploaded within 5 seconds",
+          "Earnings screen shows real-time earnings for active shift"
+        ],
+        "depends_on": [
+          11,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build admin web dashboard (React + TypeScript): store management, inventory bulk upload, slot template configuration, live order board with shopper assignment, route visualization map, substitution approval queue, and analytics (fill rate, OTD, revenue).",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "ui_library": "shadcn/ui + Tailwind CSS",
+          "charts": "Recharts",
+          "maps": "Mapbox GL JS for route visualization",
+          "pages": [
+            "StoreDashboard",
+            "InventoryManager",
+            "SlotTemplateEditor",
+            "LiveOrderBoard",
+            "RouteMapView",
+            "SubstitutionQueue",
+            "AnalyticsDashboard",
+            "UserManagement"
+          ]
+        },
+        "acceptance_criteria": [
+          "Live order board refreshes order state in real-time via WebSocket",
+          "Inventory bulk upload handles 10k row CSV and reports errors per row",
+          "Route visualization map shows all active shopper routes simultaneously",
+          "Analytics dashboard loads within 3 seconds for last-30-days data",
+          "Role-based access control hides admin-only pages from store managers"
+        ],
+        "depends_on": [
+          11,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "INFRA",
+        "description": "Set up cloud infrastructure on AWS: EKS cluster for backend services, RDS PostgreSQL 16 with read replica, ElastiCache Redis cluster, S3 for product images and POD photos, CloudFront CDN, ALB with WAF, VPC with private subnets, and Terraform IaC.",
+        "payload": {
+          "cloud": "AWS",
+          "compute": "EKS (Fargate) for backend, EC2 for OR-Tools route optimizer",
+          "database": "RDS PostgreSQL 16 Multi-AZ + ElastiCache Redis 7 cluster mode",
+          "storage": "S3 + CloudFront (product images, POD photos)",
+          "networking": "VPC with public/private subnets, NAT Gateway, ALB + WAF",
+          "iac_tool": "Terraform 1.9",
+          "deliverables": [
+            "terraform/main.tf",
+            "terraform/variables.tf",
+            "terraform/modules/"
+          ]
+        },
+        "acceptance_criteria": [
+          "terraform plan runs without errors and terraform apply completes in a clean environment",
+          "EKS cluster auto-scales between 2 and 20 nodes based on CPU/memory",
+          "RDS Multi-AZ failover completes within 60 seconds",
+          "WAF blocks OWASP Top 10 attack patterns in test",
+          "All resources tagged with environment, service, and cost-center tags"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipelines: GitHub Actions for backend (lint, test, build Docker image, push to ECR, deploy to EKS), React Native build pipeline (EAS Build for iOS/Android), admin web pipeline (Vite build + S3 deploy), and automated rollback on health check failure.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "backend_pipeline": [
+            "ruff lint",
+            "pytest",
+            "docker build + ECR push",
+            "helm upgrade EKS",
+            "smoke test"
+          ],
+          "mobile_pipeline": [
+            "expo lint",
+            "jest tests",
+            "eas build iOS/Android",
+            "eas submit"
+          ],
+          "web_pipeline": [
+            "eslint",
+            "vitest",
+            "vite build",
+            "aws s3 sync + cloudfront invalidate"
+          ],
+          "rollback_trigger": "health check fail rate > 5% for 2 minutes",
+          "monitoring": "Datadog APM + custom grocery_delivery dashboards",
+          "alerting": "PagerDuty integration for P1 incidents"
+        },
+        "acceptance_criteria": [
+          "Backend pipeline completes in under 8 minutes from push to deployed",
+          "Mobile pipeline produces signed iOS and Android builds without manual intervention",
+          "Automated rollback triggers and completes within 3 minutes of health check failure",
+          "Datadog dashboard shows p50/p95/p99 latency per endpoint",
+          "PagerDuty alert fires within 2 minutes of error rate exceeding threshold"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "OPERATIONS",
+        "description": "Produce operational runbooks: on-call escalation paths, incident severity matrix (P1-P4), slot capacity emergency expansion procedure, inventory sync failure recovery, route optimizer failover to basic greedy algorithm, and SLA definitions.",
+        "payload": {
+          "sla_targets": {
+            "p1_response_minutes": 15,
+            "p2_response_minutes": 60,
+            "availability_pct": 99.9
+          },
+          "runbooks": [
+            "on_call_escalation.md",
+            "slot_capacity_emergency.md",
+            "inventory_sync_failure.md",
+            "route_optimizer_failover.md",
+            "payment_outage.md",
+            "database_failover.md"
+          ],
+          "incident_channels": "PagerDuty + Slack #incidents",
+          "capacity_planning": "monthly review of slot capacity vs demand signals"
+        },
+        "acceptance_criteria": [
+          "Each runbook has a decision tree, step-by-step remediation, and rollback path",
+          "SLA definitions cover availability, order fulfillment rate, and ETA accuracy",
+          "Capacity planning process document defines triggers for adding slot windows",
+          "Route optimizer failover runbook verified by dry-run test"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 24,
+        "task_type": "QA",
+        "description": "Produce QA test plan, test case catalog, and execute test cycles for: checkout flow, substitution approval, slot booking under concurrency, inventory real-time sync, route assignment, and payment capture/refund.",
+        "payload": {
+          "test_types": [
+            "functional",
+            "regression",
+            "exploratory",
+            "load",
+            "security_scan"
+          ],
+          "priority_flows": [
+            "checkout_e2e",
+            "substitution_approval",
+            "slot_concurrency",
+            "inventory_sync",
+            "route_assignment",
+            "payment_flows"
+          ],
+          "tools": [
+            "Playwright for web E2E",
+            "Detox for React Native",
+            "k6 for load testing",
+            "OWASP ZAP for security scan"
+          ],
+          "deliverables": [
+            "test_plan.md",
+            "test_cases.xlsx",
+            "load_test_results.md",
+            "zap_scan_report.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test case catalog covers 100% of P0 user stories with at least one test per AC",
+          "Load test simulates 500 concurrent users placing orders without degradation beyond p95 <2s",
+          "Substitution approval tested under concurrent OOS for same product (no duplicate proposals)",
+          "OWASP ZAP scan shows no High or Critical findings",
+          "Test execution report shows pass rate >95% before launch sign-off"
+        ],
+        "depends_on": [
+          18,
+          19,
+          20
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "TESTS",
+        "description": "Write unit and integration test suites for all backend services: inventory locking, substitution engine ranking, slot availability under concurrency, route optimizer output validation, payment service Stripe mock, and order state machine transitions.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio",
+          "coverage_target": 85,
+          "mocking": "pytest-mock for Stripe, pytest-httpx for external HTTP",
+          "test_categories": {
+            "unit": [
+              "substitution_engine",
+              "slot_availability",
+              "route_optimizer",
+              "order_state_machine"
+            ],
+            "integration": [
+              "inventory_lock_concurrent",
+              "payment_stripe_webhook",
+              "slot_reservation_e2e"
+            ]
+          },
+          "fixtures": [
+            "test_store_with_products",
+            "test_shopper_with_route",
+            "test_customer_with_cart"
+          ]
+        },
+        "acceptance_criteria": [
+          "pytest runs cleanly with no failures on a fresh checkout",
+          "Coverage report shows \u226585% line coverage for src/ excluding migrations",
+          "Concurrent inventory lock test verifies exactly N reservations succeed for stock of N",
+          "Order state machine test verifies all invalid transitions raise InvalidStateTransition",
+          "Stripe webhook test verifies signature validation rejects tampered payloads"
+        ],
+        "depends_on": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "AGENTIC",
+        "description": "Implement the coordinator multi-agent pattern for the substitution and demand intelligence layer: central coordinator decomposes incoming OOS events, routes to specialist agents (substitution ranker, customer preference analyst, allergy checker), aggregates results, and proposes final substitution with confidence score.",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator_role": "planner",
+          "specialist_agents": [
+            {
+              "role": "analyst",
+              "task": "rank_substitution_candidates"
+            },
+            {
+              "role": "analyst",
+              "task": "check_dietary_compatibility"
+            },
+            {
+              "role": "analyst",
+              "task": "score_customer_preference_match"
+            }
+          ],
+          "output": "SubstitutionProposal with ranked_candidates, confidence_score, requires_approval flag",
+          "hitl_gate": "requires_approval=True routes to customer notification queue",
+          "integration_point": "substitution_engine.py calls coordinator via internal API"
+        },
+        "acceptance_criteria": [
+          "Coordinator correctly routes OOS event to all 3 specialist agents in parallel",
+          "Final proposal aggregates all agent outputs within 500ms",
+          "Confidence score correctly flags proposals requiring customer approval",
+          "HITL gate creates notification event for customer approval when triggered",
+          "Coordinator traced in audit log with all agent contributions visible"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 27,
+        "task_type": "DOCS",
+        "description": "Produce developer documentation: API reference (auto-generated from OpenAPI), architecture decision records (ADRs) for key choices (OR-Tools vs custom, Redis locking strategy, Stripe SAQ-A scope), local development setup guide, and solution YAML configuration guide.",
+        "payload": {
+          "docs_platform": "Mintlify or Docusaurus",
+          "sections": [
+            "getting_started",
+            "api_reference",
+            "architecture_overview",
+            "adrs",
+            "solution_yaml_guide",
+            "deployment_guide",
+            "runbook_index"
+          ],
+          "adrs": [
+            "adr_001_route_optimizer.md",
+            "adr_002_inventory_locking.md",
+            "adr_003_pci_scope_reduction.md",
+            "adr_004_substitution_coordinator_pattern.md"
+          ],
+          "deliverables": [
+            "docs/",
+            "README.md",
+            "CONTRIBUTING.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "API reference auto-generated from openapi.yaml with no missing endpoint documentation",
+          "Local dev setup guide tested on a clean machine with documented prerequisites only",
+          "Each ADR includes context, decision, consequences, and alternatives considered",
+          "README covers project purpose, quick start, and links to all major docs sections"
+        ],
+        "depends_on": [
+          25,
+          24
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 27,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 61,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 61,
+          "final_review": {
+            "score": 61,
+            "flaws": [
+              "Step 13 specifies Redis SETNX for inventory reservation locking \u2014 SETNX alone is not safe for this pattern. SET with NX+EX flags or a Lua script is required for atomic lock-with-TTL. As written, a network partition between SETNX and EXPIRE can leave a lock with no expiry, deadlocking inventory.",
+              "No product catalog ingestion pipeline exists anywhere in the plan. Products, prices, images, allergens, and nutritional data must come from somewhere (store POS, manual upload, third-party data feed). This is a fundamental prerequisite for steps 10, 13, 14, and 18 \u2014 and it is completely missing.",
+              "Step 26 (agentic coordinator) depends only on step 14, but the substitution engine in step 14 'calls coordinator via internal API' \u2014 this is a circular dependency. The coordinator is meant to wrap the substitution engine, but the engine is built first and then the coordinator wraps it in a later step. The architecture description is self-contradictory.",
+              "Step 16 ETA accuracy target (\u00b15 minutes for 90% of deliveries) is stated as an acceptance criterion but has no validation dataset or methodology defined. Real-world grocery delivery platforms (Instacart, DoorDash) do not publish achieving this. Traffic unpredictability, parking, customer-not-answering-door, and multi-stop variance make this target near-impossible to verify without years of operational data.",
+              "Step 22 claims mobile pipeline produces signed iOS and Android builds 'without manual intervention' \u2014 this ignores Apple developer certificate provisioning, APNs push certificates, Google Play signing key management, and App Store review queue time (2-7 days). None of these are addressed. EAS Submit does not bypass App Store review.",
+              "Step 6 lists 'biometric_pod_signature' as a data type in the privacy policy, but step 19 only captures a POD photo, not biometric data. If the privacy policy covers biometrics that the app does not collect, this creates a CCPA/GDPR compliance artifact mismatch. If it does collect biometrics, BIPA (Illinois) and similar state laws apply with no mention anywhere.",
+              "Step 10 database schema includes soft-delete but no PII purge mechanism. GDPR Article 17 'right to erasure' and CCPA deletion rights require hard deletion or cryptographic erasure of personal data \u2014 soft-delete is insufficient and will fail a compliance audit.",
+              "Fraud detection is listed as an acceptance criterion in step 7 but has no implementation step. Stripe Radar is the obvious choice but requires configuration of custom rules, radar rules tuning, and integration with the dispute webhook handler (step 17). This is non-trivial and missing.",
+              "Step 19 uses WatermelonDB for offline pick list sync but the backend sync protocol, conflict resolution strategy, and schema migration path for offline databases are undefined. WatermelonDB sync requires a custom backend sync endpoint that is not in the API spec (step 11).",
+              "Step 24 load test targets 500 concurrent users as the ceiling. For a grocery delivery platform with regional launch, Sunday-evening peaks, and holiday surges, this is likely 5-10x under the required load envelope. No peak traffic modeling or burst capacity planning exists anywhere in the plan.",
+              "Steps 18, 19, 20 (all frontend) depend on step 11 (API design) but not steps 12-17 (actual backend implementation). Frontends will be built against a spec, not a working API. No contract testing step exists to catch spec-vs-implementation divergence before QA.",
+              "Step 21 uses EC2 for OR-Tools route optimizer but specifies no instance type, auto-scaling policy, or warm-up time. OR-Tools VRP startup time on a cold instance can exceed the 2-second SLA. No mention of pre-warming, instance reservation, or what happens if the EC2 instance is unhealthy.",
+              "No SMS/email notification service step exists. Grocery delivery is heavily dependent on SMS updates ('your shopper has started picking', 'your order is 5 minutes away'). Twilio or SNS integration is entirely missing from the plan."
+            ],
+            "suggestions": [
+              "Add a dedicated step (between 9 and 10) for product catalog ingestion pipeline: define the ETL process, data sources (store POS export, Open Food Facts, manual upload), allergen data provenance, image storage pipeline, and embedding generation for pgvector. This is a hard prerequisite for inventory, substitution, and search.",
+              "Replace SETNX in step 13 with Redlock (multi-node) or SET key value NX EX ttl with a Lua script for atomic check-and-set. Document the lock acquisition retry strategy and max retry count to prevent shopper app lockout under contention.",
+              "Add a dedicated notification service step covering FCM/APNs token management, notification template registry, SMS via Twilio/SNS, delivery receipts, and notification preference management. Reference this from steps 14, 15, 18, and 19.",
+              "Add a WatermelonDB sync endpoint to the OpenAPI spec in step 11 and a sync protocol design document (conflict resolution: last-write-wins vs server-authoritative) before step 19 is implemented.",
+              "Add GDPR/CCPA hard-delete to the database schema step: a scheduled purge job, cryptographic erasure for payment tokens, and a deletion audit event. Soft-delete is not erasure.",
+              "Add Stripe Radar configuration and custom fraud rules to step 17. Define rule sets for: new account + high-value order, velocity checks per card fingerprint, and address mismatch thresholds.",
+              "Qualify the ETA accuracy acceptance criterion in step 16: define the test dataset (simulated routes, specific city, traffic profile), exclude edge cases (failed delivery attempts, customer unavailable), and set the target against a realistic baseline from competitor benchmarks.",
+              "Add JWT forced-invalidation on security events (password change, account lockout, suspicious login) to step 12 auth service. Redis token denylist or short-lived access tokens (15 min) with server-side session tracking are standard mitigations.",
+              "Add rate limiting specification to step 11 (API design): per-user limits on order creation, cart updates, and slot reservation; per-IP limits on auth endpoints. Without this, the platform is trivially abusable and will fail a security audit.",
+              "Resolve the biometric data discrepancy: either remove 'biometric_pod_signature' from the privacy policy data types in step 6, or explicitly add a biometric consent flow and BIPA compliance check to step 19 and the legal step."
+            ],
+            "missing": [
+              "Product catalog ingestion pipeline (ETL from store systems, allergen data sourcing, image pipeline, embedding generation) \u2014 this is a blocker for at least 5 downstream steps",
+              "WatermelonDB backend sync endpoint and conflict resolution protocol",
+              "JWT token revocation / forced-invalidation mechanism on security events",
+              "API rate limiting specification and implementation",
+              "Notification service (SMS, email, push token lifecycle management, preference center)",
+              "App Store / Google Play submission and review process planning \u2014 EAS Submit does not bypass review queues",
+              "GDPR/CCPA hard-delete / PII purge implementation beyond soft-delete",
+              "Disaster recovery plan: RPO/RTO targets, cross-region backup strategy, recovery test schedule",
+              "Contract testing layer between frontend (steps 18-20) and backend implementation (steps 12-17) to catch OpenAPI spec divergence before QA",
+              "Allergen data source specification and SLA \u2014 wrong allergen data is a liability, not just a bug",
+              "Database table partitioning and archiving strategy for orders and audit_events tables at scale",
+              "Google Maps Distance Matrix API cost model \u2014 at delivery-platform query volumes this can be a significant OpEx line item",
+              "Store manager mobile or simplified interface \u2014 store_manager is listed as an actor but has no purpose-built UI"
+            ],
+            "security_risks": [
+              "Inventory write API (step 13) via POS webhook: if the webhook source URL or authentication token is configurable by store admins, this is an SSRF / spoofed-webhook vector. Webhook signature verification (HMAC) must be specified and enforced.",
+              "S3 POD photos are accessible to any party with the URL unless bucket policy + pre-signed URL pattern is explicitly enforced. Photos contain delivery address, customer face, and property images \u2014 a public or guessable URL is a privacy violation.",
+              "Admin portal (step 20) RBAC is specified at the frontend level, but if backend admin endpoints (step 12) share the same JWT auth infrastructure without separate admin token claims or a separate auth flow, a privilege escalation in JWT claims grants full admin access. The backend must enforce RBAC on every admin endpoint, not just the UI.",
+              "No mention of rate limiting on auth endpoints \u2014 without it, credential stuffing against the customer and shopper login endpoints is trivial. This is a PCI DSS requirement (Req 6.2.4) and SOC 2 CC6.1 control gap.",
+              "Shopper real-time location stream (WebSocket/SSE) has no authorization check specified beyond 'authenticated'. A customer should only receive location updates for their own active order's shopper. Horizontal authorization (IDOR) on the location stream is not addressed.",
+              "pgvector product embeddings for substitution ranking (step 14) \u2014 if an adversary can influence product descriptions or inject malformed embeddings via the catalog import pipeline, they can manipulate substitution ranking to surface preferred products. No input sanitization or embedding validation is specified.",
+              "Partial capture flow in step 17 \u2014 if the price difference calculation for substituted items is done client-side or via an unvalidated API parameter, a shopper or compromised client could trigger under-capture. The capture amount must be computed server-side from confirmed order items only."
+            ],
+            "summary": "This is a well-structured, comprehensive plan that covers the right problem space \u2014 it includes compliance artifacts, HITL gates, real-time architecture, and sensible technology choices. However, it has a critical missing piece that alone would block the build: there is no product catalog ingestion pipeline. Every feature from inventory to substitution to search depends on products existing in the system, and the plan has no step for getting them there. Beyond that blocker, three categories of issues compound: implementation details that are technically incorrect (SETNX locking, circular coordinator dependency), acceptance criteria that are aspirational without methodology (ETA accuracy, load targets), and security gaps that would fail a PCI or SOC 2 audit (no rate limiting, no JWT revocation, IDOR on location streams, S3 photo access control). The plan is a credible 70-point skeleton that needs 4-6 additional steps and a thorough pass on the security and data compliance layers before it is production-ready. Score of 61 reflects an MVP that would ship a working but insecure and incompletely provisioned system.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 61,
+              "flaws": [
+                "Step 13 specifies Redis SETNX for inventory reservation locking \u2014 SETNX alone is not safe for this pattern. SET with NX+EX flags or a Lua script is required for atomic lock-with-TTL. As written, a network partition between SETNX and EXPIRE can leave a lock with no expiry, deadlocking inventory.",
+                "No product catalog ingestion pipeline exists anywhere in the plan. Products, prices, images, allergens, and nutritional data must come from somewhere (store POS, manual upload, third-party data feed). This is a fundamental prerequisite for steps 10, 13, 14, and 18 \u2014 and it is completely missing.",
+                "Step 26 (agentic coordinator) depends only on step 14, but the substitution engine in step 14 'calls coordinator via internal API' \u2014 this is a circular dependency. The coordinator is meant to wrap the substitution engine, but the engine is built first and then the coordinator wraps it in a later step. The architecture description is self-contradictory.",
+                "Step 16 ETA accuracy target (\u00b15 minutes for 90% of deliveries) is stated as an acceptance criterion but has no validation dataset or methodology defined. Real-world grocery delivery platforms (Instacart, DoorDash) do not publish achieving this. Traffic unpredictability, parking, customer-not-answering-door, and multi-stop variance make this target near-impossible to verify without years of operational data.",
+                "Step 22 claims mobile pipeline produces signed iOS and Android builds 'without manual intervention' \u2014 this ignores Apple developer certificate provisioning, APNs push certificates, Google Play signing key management, and App Store review queue time (2-7 days). None of these are addressed. EAS Submit does not bypass App Store review.",
+                "Step 6 lists 'biometric_pod_signature' as a data type in the privacy policy, but step 19 only captures a POD photo, not biometric data. If the privacy policy covers biometrics that the app does not collect, this creates a CCPA/GDPR compliance artifact mismatch. If it does collect biometrics, BIPA (Illinois) and similar state laws apply with no mention anywhere.",
+                "Step 10 database schema includes soft-delete but no PII purge mechanism. GDPR Article 17 'right to erasure' and CCPA deletion rights require hard deletion or cryptographic erasure of personal data \u2014 soft-delete is insufficient and will fail a compliance audit.",
+                "Fraud detection is listed as an acceptance criterion in step 7 but has no implementation step. Stripe Radar is the obvious choice but requires configuration of custom rules, radar rules tuning, and integration with the dispute webhook handler (step 17). This is non-trivial and missing.",
+                "Step 19 uses WatermelonDB for offline pick list sync but the backend sync protocol, conflict resolution strategy, and schema migration path for offline databases are undefined. WatermelonDB sync requires a custom backend sync endpoint that is not in the API spec (step 11).",
+                "Step 24 load test targets 500 concurrent users as the ceiling. For a grocery delivery platform with regional launch, Sunday-evening peaks, and holiday surges, this is likely 5-10x under the required load envelope. No peak traffic modeling or burst capacity planning exists anywhere in the plan.",
+                "Steps 18, 19, 20 (all frontend) depend on step 11 (API design) but not steps 12-17 (actual backend implementation). Frontends will be built against a spec, not a working API. No contract testing step exists to catch spec-vs-implementation divergence before QA.",
+                "Step 21 uses EC2 for OR-Tools route optimizer but specifies no instance type, auto-scaling policy, or warm-up time. OR-Tools VRP startup time on a cold instance can exceed the 2-second SLA. No mention of pre-warming, instance reservation, or what happens if the EC2 instance is unhealthy.",
+                "No SMS/email notification service step exists. Grocery delivery is heavily dependent on SMS updates ('your shopper has started picking', 'your order is 5 minutes away'). Twilio or SNS integration is entirely missing from the plan."
+              ],
+              "suggestions": [
+                "Add a dedicated step (between 9 and 10) for product catalog ingestion pipeline: define the ETL process, data sources (store POS export, Open Food Facts, manual upload), allergen data provenance, image storage pipeline, and embedding generation for pgvector. This is a hard prerequisite for inventory, substitution, and search.",
+                "Replace SETNX in step 13 with Redlock (multi-node) or SET key value NX EX ttl with a Lua script for atomic check-and-set. Document the lock acquisition retry strategy and max retry count to prevent shopper app lockout under contention.",
+                "Add a dedicated notification service step covering FCM/APNs token management, notification template registry, SMS via Twilio/SNS, delivery receipts, and notification preference management. Reference this from steps 14, 15, 18, and 19.",
+                "Add a WatermelonDB sync endpoint to the OpenAPI spec in step 11 and a sync protocol design document (conflict resolution: last-write-wins vs server-authoritative) before step 19 is implemented.",
+                "Add GDPR/CCPA hard-delete to the database schema step: a scheduled purge job, cryptographic erasure for payment tokens, and a deletion audit event. Soft-delete is not erasure.",
+                "Add Stripe Radar configuration and custom fraud rules to step 17. Define rule sets for: new account + high-value order, velocity checks per card fingerprint, and address mismatch thresholds.",
+                "Qualify the ETA accuracy acceptance criterion in step 16: define the test dataset (simulated routes, specific city, traffic profile), exclude edge cases (failed delivery attempts, customer unavailable), and set the target against a realistic baseline from competitor benchmarks.",
+                "Add JWT forced-invalidation on security events (password change, account lockout, suspicious login) to step 12 auth service. Redis token denylist or short-lived access tokens (15 min) with server-side session tracking are standard mitigations.",
+                "Add rate limiting specification to step 11 (API design): per-user limits on order creation, cart updates, and slot reservation; per-IP limits on auth endpoints. Without this, the platform is trivially abusable and will fail a security audit.",
+                "Resolve the biometric data discrepancy: either remove 'biometric_pod_signature' from the privacy policy data types in step 6, or explicitly add a biometric consent flow and BIPA compliance check to step 19 and the legal step."
+              ],
+              "missing": [
+                "Product catalog ingestion pipeline (ETL from store systems, allergen data sourcing, image pipeline, embedding generation) \u2014 this is a blocker for at least 5 downstream steps",
+                "WatermelonDB backend sync endpoint and conflict resolution protocol",
+                "JWT token revocation / forced-invalidation mechanism on security events",
+                "API rate limiting specification and implementation",
+                "Notification service (SMS, email, push token lifecycle management, preference center)",
+                "App Store / Google Play submission and review process planning \u2014 EAS Submit does not bypass review queues",
+                "GDPR/CCPA hard-delete / PII purge implementation beyond soft-delete",
+                "Disaster recovery plan: RPO/RTO targets, cross-region backup strategy, recovery test schedule",
+                "Contract testing layer between frontend (steps 18-20) and backend implementation (steps 12-17) to catch OpenAPI spec divergence before QA",
+                "Allergen data source specification and SLA \u2014 wrong allergen data is a liability, not just a bug",
+                "Database table partitioning and archiving strategy for orders and audit_events tables at scale",
+                "Google Maps Distance Matrix API cost model \u2014 at delivery-platform query volumes this can be a significant OpEx line item",
+                "Store manager mobile or simplified interface \u2014 store_manager is listed as an actor but has no purpose-built UI"
+              ],
+              "security_risks": [
+                "Inventory write API (step 13) via POS webhook: if the webhook source URL or authentication token is configurable by store admins, this is an SSRF / spoofed-webhook vector. Webhook signature verification (HMAC) must be specified and enforced.",
+                "S3 POD photos are accessible to any party with the URL unless bucket policy + pre-signed URL pattern is explicitly enforced. Photos contain delivery address, customer face, and property images \u2014 a public or guessable URL is a privacy violation.",
+                "Admin portal (step 20) RBAC is specified at the frontend level, but if backend admin endpoints (step 12) share the same JWT auth infrastructure without separate admin token claims or a separate auth flow, a privilege escalation in JWT claims grants full admin access. The backend must enforce RBAC on every admin endpoint, not just the UI.",
+                "No mention of rate limiting on auth endpoints \u2014 without it, credential stuffing against the customer and shopper login endpoints is trivial. This is a PCI DSS requirement (Req 6.2.4) and SOC 2 CC6.1 control gap.",
+                "Shopper real-time location stream (WebSocket/SSE) has no authorization check specified beyond 'authenticated'. A customer should only receive location updates for their own active order's shopper. Horizontal authorization (IDOR) on the location stream is not addressed.",
+                "pgvector product embeddings for substitution ranking (step 14) \u2014 if an adversary can influence product descriptions or inject malformed embeddings via the catalog import pipeline, they can manipulate substitution ranking to surface preferred products. No input sanitization or embedding validation is specified.",
+                "Partial capture flow in step 17 \u2014 if the price difference calculation for substituted items is done client-side or via an unvalidated API parameter, a shopper or compromised client could trigger under-capture. The capture amount must be computed server-side from confirmed order items only."
+              ],
+              "summary": "This is a well-structured, comprehensive plan that covers the right problem space \u2014 it includes compliance artifacts, HITL gates, real-time architecture, and sensible technology choices. However, it has a critical missing piece that alone would block the build: there is no product catalog ingestion pipeline. Every feature from inventory to substitution to search depends on products existing in the system, and the plan has no step for getting them there. Beyond that blocker, three categories of issues compound: implementation details that are technically incorrect (SETNX locking, circular coordinator dependency), acceptance criteria that are aspirational without methodology (ETA accuracy, load targets), and security gaps that would fail a PCI or SOC 2 audit (no rate limiting, no JWT revocation, IDOR on location streams, S3 photo access control). The plan is a credible 70-point skeleton that needs 4-6 additional steps and a thorough pass on the security and data compliance layers before it is production-ready. Score of 61 reflects an MVP that would ship a working but insecure and incompletely provisioned system.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T06:00:56.368243+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 146.08,
+      "critic_plan": 109.02
+    }
+  }
+}

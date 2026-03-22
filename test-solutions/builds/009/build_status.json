@@ -1,0 +1,1119 @@
+{
+  "run_id": "597e3b2b-f435-4b6c-9635-0900a918ea30",
+  "solution_name": "ehr_interop_gateway",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-21T23:07:11.347114+00:00",
+  "updated_at": "2026-03-21T23:12:56.794598+00:00",
+  "product_description": "Healthcare interoperability gateway for converting between HL7 v2, FHIR R4, and CDA formats. Supports Epic, Cerner, and Allscripts EHR systems. ONC certification required.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define interoperability requirements: message flows between HL7 v2, FHIR R4, and CDA; Epic/Cerner/Allscripts integration contracts; ONC 2015 Edition Cures Update certification scope; HIPAA transaction set coverage.",
+      "payload": {
+        "deliverables": [
+          "requirements_doc.md",
+          "message_flow_diagrams.md",
+          "ehr_integration_matrix.md",
+          "onc_certification_checklist.md"
+        ],
+        "standards": [
+          "HL7 v2.5.1",
+          "FHIR R4",
+          "C-CDA 2.1",
+          "ONC 2015 Cures Update",
+          "HIPAA 5010"
+        ]
+      },
+      "acceptance_criteria": [
+        "All HL7 v2 message types in scope (ADT, ORU, ORM, MDM, SIU) are enumerated with field mappings",
+        "FHIR R4 resource set is defined (Patient, Observation, Encounter, Condition, MedicationRequest, DiagnosticReport, DocumentReference)",
+        "Epic, Cerner, Allscripts endpoint types and auth models documented",
+        "ONC certification criterion list (\u00a7170.315) is mapped to product features",
+        "HIPAA covered transaction types identified with business associate obligations noted"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "REGULATORY",
+      "description": "Map product to ONC Health IT Certification Program requirements (21st Century Cures Act, \u00a7170.315 criteria). Produce standards mapping document covering USCDI v3, SMART on FHIR, bulk data access, and patient access API requirements.",
+      "payload": {
+        "standards": [
+          "ONC 2015 Edition Cures Update",
+          "21st Century Cures Act",
+          "USCDI v3",
+          "SMART on FHIR 2.0",
+          "HL7 FHIR Bulk Data 2.0"
+        ],
+        "certification_body": "ONC-Authorized Certification Body (ONC-ACB)",
+        "deliverables": [
+          "regulatory_standards_map.md",
+          "uscdi_field_coverage.md",
+          "smart_fhir_compliance_checklist.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Every required \u00a7170.315 criterion (a-h) is mapped to a product feature or marked as out-of-scope with justification",
+        "USCDI v3 data class coverage matrix is complete",
+        "SMART on FHIR scopes and authorization flows are documented",
+        "Bulk data export (Group/$export, Patient/$export) requirements are captured",
+        "Gaps requiring third-party testing lab engagement are identified",
+        "HIPAA risk assessment complete",
+        "BAA template prepared"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 3,
+      "task_type": "COMPLIANCE",
+      "description": "Draft HIPAA/HITECH compliance framework: PHI data flow inventory, Business Associate Agreement (BAA) template, minimum necessary standard implementation, breach notification SOP, and audit control requirements (\u00a7164.312(b)).",
+      "payload": {
+        "standards": [
+          "HIPAA Security Rule 45 CFR Part 164",
+          "HITECH Act",
+          "NIST SP 800-66 Rev 2"
+        ],
+        "deliverables": [
+          "phi_data_flow_inventory.md",
+          "baa_template.docx",
+          "breach_notification_sop.md",
+          "hipaa_risk_assessment.md",
+          "audit_control_requirements.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "PHI data flow diagram identifies every system where ePHI is created, received, maintained, or transmitted",
+        "HIPAA Risk Assessment covers all 18 PHI identifiers with risk ratings",
+        "BAA template reviewed for completeness against \u00a7164.504(e)",
+        "Breach notification procedures meet 60-day reporting window requirement",
+        "Audit log retention policy (minimum 6 years) is documented"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 4,
+      "task_type": "SECURITY",
+      "description": "Produce threat model (STRIDE), PHI threat landscape analysis, penetration test plan, SBOM, and TLS/mTLS policy for EHR connections. Define encryption-at-rest and in-transit requirements for all ePHI.",
+      "payload": {
+        "methodology": "STRIDE + OWASP API Security Top 10",
+        "deliverables": [
+          "threat_model.md",
+          "pentest_plan.md",
+          "sbom.json",
+          "tls_policy.md",
+          "encryption_policy.md"
+        ],
+        "scope": [
+          "API gateway",
+          "message transformation engine",
+          "EHR connectors",
+          "audit log store",
+          "key management"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis covers all six threat categories for each system component",
+        "All PHI transmission paths require TLS 1.3 minimum with certificate pinning for EHR connectors",
+        "AES-256-GCM encryption at rest is mandated for all PHI storage",
+        "SBOM lists all direct and transitive dependencies with CVE scan baseline",
+        "Penetration test scope covers OWASP API Top 10, injection attacks, and authentication bypass",
+        "PHI encryption at rest and in transit",
+        "Access audit logging enabled"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Data Processing Agreement (DPA), Privacy Policy, open-source license inventory, and IP review for HL7 standards usage (HL7 International licensing requirements).",
+      "payload": {
+        "deliverables": [
+          "terms_of_service.md",
+          "data_processing_agreement.md",
+          "privacy_policy.md",
+          "oss_license_inventory.md",
+          "hl7_license_review.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "ToS explicitly defines permitted use, prohibited PHI handling, and liability limitations",
+        "DPA includes Standard Contractual Clauses for cross-border data transfers",
+        "Privacy Policy satisfies HIPAA Notice of Privacy Practices requirements",
+        "OSS license inventory flags any GPL/AGPL components incompatible with commercial use",
+        "HL7 International membership or per-standard licensing requirements are resolved"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 6,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 specification for the gateway REST API: message translation endpoints, FHIR R4 RESTful API (SMART on FHIR), bulk export, webhook callbacks, and admin/status endpoints. Define versioning strategy.",
+      "payload": {
+        "spec_format": "OpenAPI 3.1",
+        "endpoints": [
+          "POST /translate/{from_format}/{to_format}",
+          "GET/POST /fhir/r4/{resource}",
+          "POST /fhir/r4/$convert",
+          "GET /fhir/r4/Patient/$export",
+          "POST /webhooks/ehr/{ehr_name}",
+          "GET /health",
+          "GET /metrics"
+        ],
+        "auth": [
+          "SMART on FHIR OAuth2",
+          "mTLS for EHR system accounts",
+          "API key for admin ops"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec passes validation with no errors (openapi-generator validate)",
+        "All FHIR R4 RESTful interactions (read, vread, update, create, search, history) are specified",
+        "SMART on FHIR authorization flows (standalone launch, EHR launch) are fully documented",
+        "Bulk export endpoints conform to HL7 FHIR Bulk Data Access IG",
+        "Error responses use FHIR OperationOutcome format for FHIR endpoints, HL7 ACK/NACK for v2"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design schema for: message audit log (immutable append-only), terminology mapping tables (LOINC, SNOMED, ICD-10, RxNorm), EHR connection configurations, translation cache, and FHIR resource store. Define retention and archival policies.",
+      "payload": {
+        "databases": [
+          "PostgreSQL 16 (primary store)",
+          "Redis 7 (translation cache)",
+          "TimescaleDB (audit/metrics)"
+        ],
+        "schemas": [
+          "audit_log",
+          "terminology_maps",
+          "ehr_connections",
+          "fhir_resources",
+          "translation_cache"
+        ],
+        "compliance_req": "Audit log immutable \u2014 no UPDATE/DELETE, append-only with cryptographic hash chaining"
+      },
+      "acceptance_criteria": [
+        "Audit log table has hash-chained rows (each row SHA-256 of previous row + payload) to detect tampering",
+        "Terminology mapping tables cover LOINC 2.76+, SNOMED CT US Edition, ICD-10-CM/PCS, RxNorm",
+        "EHR connection config table stores credentials encrypted (AES-256) with KMS key reference, never plaintext",
+        "FHIR resource store supports versioned resources (vread) with full history chain",
+        "Database migrations use forward-only numbered scripts (Flyway/Alembic)"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "CONFIG",
+      "description": "Set up project scaffold: monorepo structure, Python/FastAPI backend, containerization (Docker + docker-compose), environment config management (Vault/AWS Secrets Manager integration), and configure the review_and_critique agentic pattern for transformation quality gates.",
+      "payload": {
+        "stack": [
+          "Python 3.12",
+          "FastAPI",
+          "Pydantic v2",
+          "SQLAlchemy 2.0",
+          "Docker",
+          "docker-compose"
+        ],
+        "agentic_pattern": "review_and_critique",
+        "pattern_components": {
+          "generator_agent": "TranslationAgent \u2014 converts message between formats",
+          "critic_agent": "ComplianceReviewAgent \u2014 validates FHIR conformance, HL7 segment integrity, terminology bindings",
+          "acceptance_criteria": "FHIR validation score >= 0.95, zero critical segment errors",
+          "iteration_loop": "max 3 refinement cycles before escalating to human review"
+        },
+        "secrets_management": "HashiCorp Vault with dynamic secrets for DB credentials",
+        "structure": [
+          "gateway/",
+          "gateway/translators/",
+          "gateway/connectors/",
+          "gateway/api/",
+          "gateway/agents/",
+          "gateway/audit/",
+          "tests/",
+          "infra/"
+        ]
+      },
+      "acceptance_criteria": [
+        "docker-compose up starts all services (gateway, postgres, redis, vault) with health checks passing",
+        "Environment variables never hardcoded \u2014 all loaded from Vault or env file",
+        "review_and_critique loop wired: TranslationAgent output \u2192 ComplianceReviewAgent \u2192 iterate or approve",
+        "Project linting (ruff, mypy --strict) passes with zero errors on empty scaffold",
+        "Pre-commit hooks enforce formatting, secret scanning (detect-secrets), and type checking"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Implement HL7 v2 parser and serializer supporting v2.3\u2013v2.8. Handle MSH/PID/PV1/OBR/OBX/NTE/EVN/MRG segments. Support MLLP framing for TCP transport and HTTP wrapping. Implement ACK/NACK generation with HL7 error codes.",
+      "payload": {
+        "library": "hl7apy or custom parser",
+        "message_types": [
+          "ADT (A01-A40)",
+          "ORU R01",
+          "ORM O01",
+          "MDM T02",
+          "SIU S12-S15",
+          "MFN M02"
+        ],
+        "transport": [
+          "MLLP/TCP port 2575",
+          "HTTP POST with HL7 content-type"
+        ],
+        "encoding": [
+          "ER7 pipe-and-hat",
+          "XML encoding"
+        ]
+      },
+      "acceptance_criteria": [
+        "Parser handles all 40+ ADT event types without exception on well-formed messages",
+        "MLLP framing (0x0B header, 0x1C 0x0D trailer) correctly wraps/unwraps messages",
+        "ACK/NACK generated with correct MSA-1 (AA/AE/AR) and ERR segment on validation failure",
+        "Segment repetition, component, and sub-component separators parsed from MSH-1/MSH-2",
+        "Malformed messages return structured error with segment location, never crash the process"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement FHIR R4 resource validator and RESTful server. Support all mandatory US Core 6.1.0 profiles. Implement $validate operation, CapabilityStatement, and TerminologyService ($lookup, $expand, $validate-code) backed by local VSAC snapshot.",
+      "payload": {
+        "profiles": [
+          "US Core Patient",
+          "US Core Condition",
+          "US Core MedicationRequest",
+          "US Core Observation Lab",
+          "US Core DiagnosticReport",
+          "US Core DocumentReference"
+        ],
+        "terminology": [
+          "LOINC",
+          "SNOMED CT",
+          "ICD-10",
+          "RxNorm",
+          "UCUM"
+        ],
+        "library": "fhir.resources (Python) + custom validation layer",
+        "capability_statement": "server mode with all supported resource types and search parameters"
+      },
+      "acceptance_criteria": [
+        "All US Core 6.1.0 profile mandatory elements validated \u2014 missing required fields return OperationOutcome with 422",
+        "CapabilityStatement accurately reflects supported resources, interactions, and search parameters",
+        "$validate returns conformant OperationOutcome for invalid resources",
+        "Terminology $lookup resolves LOINC codes against local VSAC snapshot without external calls",
+        "FHIR version negotiation via Accept header (application/fhir+json; fhirVersion=4.0) works correctly"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement CDA (C-CDA 2.1) parser and generator. Support CCD, Discharge Summary, Progress Note, and Referral Note document types. Map CDA sections (Medications, Problems, Allergies, Results, Vital Signs) to structured data model.",
+      "payload": {
+        "library": "lxml + custom XPath extractors",
+        "document_types": [
+          "CCD (2.16.840.1.113883.10.20.22.1.2)",
+          "Discharge Summary",
+          "Progress Note",
+          "Referral Note"
+        ],
+        "sections": [
+          "Medications",
+          "Problems",
+          "Allergies/Intolerances",
+          "Results",
+          "Vital Signs",
+          "Procedures",
+          "Encounters"
+        ],
+        "schema_validation": "CDA R2 schema + Schematron rules"
+      },
+      "acceptance_criteria": [
+        "CDA XML parsed against CDA R2 schema with Schematron validation before extraction",
+        "All six required C-CDA 2.1 sections extracted with coded entries (SNOMED/LOINC/RxNorm codes)",
+        "Generated CDA passes C-CDA Scorecard (HL7 online validator) with score >= 90",
+        "Round-trip test: CDA \u2192 internal model \u2192 CDA produces semantically equivalent document",
+        "nullFlavor handling: UNK, NI, NA, ASKU processed without data loss"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement bidirectional translation engine: HL7 v2 \u2194 FHIR R4, CDA \u2194 FHIR R4, HL7 v2 \u2194 CDA. Build terminology translation layer using ConceptMap resources for LOINC/SNOMED/ICD cross-mapping. Wire review_and_critique loop around each translation.",
+      "payload": {
+        "translation_pairs": [
+          "HL7v2 ADT \u2192 FHIR Patient/Encounter/Location",
+          "HL7v2 ORU \u2192 FHIR Observation/DiagnosticReport",
+          "HL7v2 ORM \u2192 FHIR ServiceRequest",
+          "CDA CCD \u2192 FHIR Bundle (transaction)",
+          "FHIR Patient \u2192 HL7v2 ADT A08",
+          "FHIR Bundle \u2192 CDA CCD"
+        ],
+        "agentic_pattern": "review_and_critique",
+        "concept_maps": "HL7 ConceptMap resources for cross-system code translation"
+      },
+      "acceptance_criteria": [
+        "HL7 v2 ADT A01 \u2192 FHIR Encounter mapping covers all required fields per HL7 v2-to-FHIR mapping guide",
+        "CDA CCD \u2192 FHIR Bundle produces valid US Core resources for all six document sections",
+        "Terminology gaps (unmapped codes) produce logged warnings with original code preserved in extension",
+        "review_and_critique critic rejects output with FHIR validation score < 0.95 and triggers refinement",
+        "Translation throughput >= 500 messages/second for HL7 v2 \u2194 FHIR R4 on reference hardware"
+      ],
+      "depends_on": [
+        9,
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement Epic FHIR R4 connector: SMART on FHIR EHR launch, patient context binding, Epic-specific extensions (NPI, OID identifiers), and Interconnect API fallback for legacy v2 feeds. Handle Epic FHIR sandbox and production environments.",
+      "payload": {
+        "auth": "SMART on FHIR 2.0 (EHR launch + standalone launch)",
+        "epic_specific": [
+          "Epic.Extensions.Patient",
+          "Epic NPI system",
+          "organizationId context"
+        ],
+        "endpoints": [
+          "Epic FHIR R4 base URL",
+          "Epic Interconnect HL7 v2 listener"
+        ],
+        "environments": [
+          "Epic FHIR Sandbox (open.epic.com)",
+          "Production"
+        ]
+      },
+      "acceptance_criteria": [
+        "SMART on FHIR EHR launch flow completes authorization with Epic sandbox without errors",
+        "Patient demographic fetch (Patient read) returns Epic-specific identifier systems correctly mapped",
+        "Interconnect HL7 v2 TCP listener receives ADT messages and routes to translation engine",
+        "Token refresh handled automatically before expiry (5-minute buffer)",
+        "Epic-specific FHIR extensions preserved in translation output as FHIR extensions"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement Cerner Millennium FHIR R4 connector: Cerner SMART authorization, CernerCode terminology mappings, MillenniumObjects API for CDA document retrieval, and real-time HL7 v2 feed integration via Cerner Inbound Processor.",
+      "payload": {
+        "auth": "Cerner SMART on FHIR (system accounts + user launch)",
+        "cerner_specific": [
+          "Cerner FIN system",
+          "Cerner encounter alias",
+          "MRN cross-reference"
+        ],
+        "cda_retrieval": "MillenniumObjects ClinicalDocument service",
+        "hl7_feed": "Cerner Inbound Processor MLLP listener"
+      },
+      "acceptance_criteria": [
+        "Cerner system account (backend) authorization flow completes with fhirUser scope",
+        "CDA document retrieval via MillenniumObjects API returns valid C-CDA 2.1 XML",
+        "Cerner-specific encounter identifiers mapped to FHIR Encounter.identifier with correct system URI",
+        "MLLP connection to Cerner Inbound Processor maintains persistent TCP with heartbeat",
+        "Cerner FHIR sandbox test suite passes >= 95% of test cases"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement Allscripts (Veradigm) TouchWorks/Professional EHR connector: Allscripts Unity API (SOAP/REST), HL7 v2 interface engine integration, and CDA document exchange via IHE XDS.b.",
+      "payload": {
+        "auth": "Allscripts OAuth2 + application registration",
+        "apis": [
+          "Allscripts Unity API v7.5",
+          "HL7 v2 via MedBridge interface engine"
+        ],
+        "document_exchange": "IHE XDS.b (XDSDocumentEntry metadata)",
+        "allscripts_specific": [
+          "Enterprise ID",
+          "AppUserID mapping",
+          "SiteID context"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unity API authentication returns valid token for registered application",
+        "Patient search (GetPatient) returns demographics mapped to FHIR Patient resource",
+        "IHE XDS.b document submission (ProvideAndRegisterDocumentSet-b) succeeds for CDA documents",
+        "HL7 v2 interface engine MLLP connection established and messages parsed without errors",
+        "Allscripts-specific provider NPI and site identifiers preserved in FHIR resources"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement PHI audit logging service: append-only audit trail for every message touch (ingest, translate, deliver), cryptographic hash chaining, access log with user/system identity, and HIPAA minimum necessary enforcement middleware.",
+      "payload": {
+        "log_events": [
+          "message_received",
+          "translation_started",
+          "translation_completed",
+          "message_delivered",
+          "access_denied",
+          "phi_access"
+        ],
+        "hash_algorithm": "SHA-256 chained",
+        "storage": "TimescaleDB hypertable with 7-year retention",
+        "export": "NDJSON export for compliance audits"
+      },
+      "acceptance_criteria": [
+        "Every message processed generates audit events with trace_id, timestamp (nanosecond), source system, destination, and PHI field list accessed",
+        "Hash chain broken detection: integrity check endpoint returns pass/fail with first broken link",
+        "Audit log query API supports filtering by patient MRN, date range, system, and event type",
+        "HIPAA minimum necessary middleware blocks fields not requested in scope claim",
+        "Audit log retention policy enforces 7-year minimum with automated archival to cold storage"
+      ],
+      "depends_on": [
+        7,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "BACKEND",
+      "description": "Implement SMART on FHIR authorization server: authorization code flow, client credentials flow, token introspection, JWKS endpoint, dynamic client registration (RFC 7591), and scope enforcement for all FHIR resource access.",
+      "payload": {
+        "flows": [
+          "authorization_code + PKCE",
+          "client_credentials (system accounts)",
+          "EHR launch"
+        ],
+        "scopes": [
+          "patient/*.read",
+          "user/*.read",
+          "system/*.read",
+          "launch",
+          "openid",
+          "fhirUser"
+        ],
+        "standards": [
+          "SMART App Launch 2.0",
+          "RFC 6749",
+          "RFC 7591",
+          "RFC 7662"
+        ],
+        "library": "Authlib or custom JOSE implementation"
+      },
+      "acceptance_criteria": [
+        "Authorization code flow with PKCE completes end-to-end in < 2 seconds",
+        "Client credentials flow issues system-scoped token without user interaction",
+        "Token introspection endpoint returns active/inactive with scope, expiry, and client_id",
+        "JWKS endpoint serves RS256 public keys for token verification by relying parties",
+        "Scope enforcement: accessing Patient resource without patient/*.read returns 403 OperationOutcome"
+      ],
+      "depends_on": [
+        10,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "BACKEND",
+      "description": "Implement FHIR Bulk Data Export (Group/$export, Patient/$export, System/$export): async job management, NDJSON output generation, $export-poll-status, and authenticated file download. Support _type, _since, and _typeFilter parameters.",
+      "payload": {
+        "endpoints": [
+          "GET /fhir/r4/Patient/$export",
+          "GET /fhir/r4/Group/{id}/$export",
+          "GET /fhir/r4/$export"
+        ],
+        "output_format": "NDJSON (application/fhir+ndjson)",
+        "storage": "S3-compatible object store with presigned URLs",
+        "job_backend": "Celery + Redis"
+      },
+      "acceptance_criteria": [
+        "Bulk export job accepted with 202 and Content-Location pointing to poll URL",
+        "Poll URL returns 202 while in progress, 200 with manifest JSON when complete",
+        "NDJSON files contain valid FHIR R4 resources, one per line, with no trailing commas",
+        "_since parameter correctly filters resources by lastUpdated timestamp",
+        "Presigned download URLs expire after 1 hour and require bearer token validation"
+      ],
+      "depends_on": [
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build admin dashboard: EHR connection status monitoring, message throughput charts, translation error rates, audit log viewer, and manual message replay UI. Implement real-time updates via SSE for live message flow.",
+      "payload": {
+        "stack": [
+          "React 18",
+          "TypeScript",
+          "Recharts",
+          "TanStack Query"
+        ],
+        "pages": [
+          "Connection Dashboard",
+          "Message Explorer",
+          "Audit Log Viewer",
+          "Terminology Manager",
+          "System Health"
+        ],
+        "realtime": "Server-Sent Events for live message feed"
+      },
+      "acceptance_criteria": [
+        "Connection Dashboard shows live status (green/amber/red) for all three EHR connections with last-ping timestamp",
+        "Message Explorer supports filter by format type, EHR source, date range, and patient MRN (redacted display)",
+        "Audit Log Viewer renders hash-chain integrity indicator and supports CSV export",
+        "Translation error rate chart shows rolling 24h with drill-down to individual failed messages",
+        "WCAG 2.1 AA accessibility compliance verified with axe-core"
+      ],
+      "depends_on": [
+        16,
+        17
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 20,
+      "task_type": "UX_DESIGN",
+      "description": "Design and usability-test the message translation UI: manual message submission, format detection, side-by-side diff view of source/translated output, validation issue overlay, and terminology gap flagging. Produce annotated wireframes and interaction spec.",
+      "payload": {
+        "deliverables": [
+          "wireframes.figma",
+          "interaction_spec.md",
+          "usability_test_report.md"
+        ],
+        "user_personas": [
+          "Integration Engineer",
+          "Clinical Informaticist",
+          "Compliance Officer"
+        ],
+        "accessibility": "WCAG 2.1 AA"
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all five primary user flows with error states documented",
+        "Usability test conducted with >= 5 participants from target personas",
+        "Side-by-side diff view clearly highlights field-level mapping changes",
+        "Terminology gap flags display original code, system, and suggested mapping",
+        "All interactive elements meet 4.5:1 contrast ratio minimum"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 21,
+      "task_type": "INFRA",
+      "description": "Build production infrastructure: Kubernetes manifests (Deployment, Service, HPA, PodDisruptionBudget), Helm chart, Terraform for AWS/GCP, network policies enforcing zero-trust between pods, and HashiCorp Vault for secrets. Configure HIPAA-eligible cloud regions only.",
+      "payload": {
+        "kubernetes": [
+          "Deployment",
+          "HPA (cpu 70%)",
+          "PodDisruptionBudget (minAvailable: 2)",
+          "NetworkPolicy",
+          "PodSecurityStandards restricted"
+        ],
+        "cloud": "AWS us-east-1 (HIPAA eligible) + us-west-2 (DR)",
+        "vault": "HashiCorp Vault with Kubernetes auth method",
+        "terraform_modules": [
+          "vpc",
+          "eks",
+          "rds-postgres",
+          "elasticache-redis",
+          "s3-fhir-export",
+          "vault",
+          "waf"
+        ]
+      },
+      "acceptance_criteria": [
+        "Helm chart deploys to Kubernetes with all pods reaching Ready state in < 3 minutes",
+        "NetworkPolicy blocks all inter-pod traffic except explicitly allowed routes",
+        "HPA scales from 2 to 10 replicas when CPU > 70% sustained for 2 minutes",
+        "Terraform plan produces zero diff against deployed state (drift detection)",
+        "All compute resources run in HIPAA-eligible AWS regions with BAA-covered services only"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 22,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions): lint \u2192 unit test \u2192 integration test \u2192 SAST (Semgrep) \u2192 container scan (Trivy) \u2192 FHIR conformance test \u2192 staging deploy \u2192 smoke test \u2192 production deploy with canary rollout. Enforce signed commits and image signing (Cosign).",
+      "payload": {
+        "stages": [
+          "lint",
+          "unit-test",
+          "integration-test",
+          "sast",
+          "container-scan",
+          "fhir-conformance",
+          "deploy-staging",
+          "smoke-test",
+          "deploy-prod-canary"
+        ],
+        "tools": [
+          "GitHub Actions",
+          "Semgrep",
+          "Trivy",
+          "Cosign",
+          "Inferno (ONC test tool)"
+        ],
+        "branch_policy": "Protected main \u2014 require 2 approvals + passing CI",
+        "rollout": "Canary 5% \u2192 25% \u2192 100% with automated rollback on error rate > 1%"
+      },
+      "acceptance_criteria": [
+        "CI pipeline completes in < 15 minutes for a typical commit",
+        "SAST step blocks merge on any HIGH or CRITICAL severity finding",
+        "Container image scanned for CVEs \u2014 CRITICAL CVEs block release",
+        "ONC Inferno test suite runs against staging and must pass 100% of required test steps",
+        "Canary automatically rolls back if 5xx error rate exceeds 1% over 5-minute window"
+      ],
+      "depends_on": [
+        21
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write unit tests for all translation functions, FHIR validators, HL7 parsers, CDA extractors, terminology mappers, and audit log integrity. Target >= 90% line coverage. Use property-based testing (Hypothesis) for parser edge cases.",
+      "payload": {
+        "framework": "pytest + Hypothesis",
+        "coverage_target": "90% line coverage",
+        "test_data": "Synthea-generated synthetic PHI-free HL7/FHIR/CDA messages",
+        "modules": [
+          "translators/",
+          "validators/",
+          "parsers/",
+          "audit/",
+          "connectors/auth/"
+        ]
+      },
+      "acceptance_criteria": [
+        "Coverage report shows >= 90% line coverage across all gateway modules",
+        "Hypothesis property tests cover HL7 v2 segment parsing with 1000+ generated inputs",
+        "Every translation function has happy path + at least 3 error/edge case tests",
+        "Audit hash chain integrity test verifies tampered row is detected",
+        "All tests pass in < 5 minutes in CI with no external network calls (fully mocked)"
+      ],
+      "depends_on": [
+        9,
+        10,
+        11,
+        12,
+        16
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "QA",
+      "description": "Produce QA test plan: test case design for all translation scenarios, EHR connector integration tests, boundary condition catalogue, negative test library (malformed inputs, invalid codes, missing required fields), and regression suite definition.",
+      "payload": {
+        "deliverables": [
+          "qa_test_plan.md",
+          "test_case_catalogue.xlsx",
+          "negative_test_library.md",
+          "regression_suite_definition.md"
+        ],
+        "test_categories": [
+          "Translation accuracy",
+          "Terminology mapping",
+          "EHR connector",
+          "Auth flows",
+          "Bulk export",
+          "Error handling",
+          "Performance boundaries"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan covers >= 200 distinct test cases across all translation pairs",
+        "Negative test library includes >= 50 malformed message scenarios with expected error responses",
+        "Each test case has: ID, preconditions, steps, expected result, pass/fail criteria",
+        "Regression suite identified with automated/manual split and execution time estimate",
+        "Test coverage matrix maps each ONC certification criterion to >= 1 test case"
+      ],
+      "depends_on": [
+        23
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end integration test suite against all three EHR sandboxes: Epic Open Sandbox, Cerner Ignite Sandbox, and Allscripts Developer Portal. Run ONC Inferno Community Edition test suite for all applicable \u00a7170.315 criteria. Load test with Locust at 500 concurrent users.",
+      "payload": {
+        "test_environments": [
+          "Epic FHIR Sandbox (open.epic.com)",
+          "Cerner Ignite Sandbox",
+          "Allscripts Developer Portal"
+        ],
+        "onc_testing": "ONC Inferno Community Edition (g(10) standardized API)",
+        "load_testing": "Locust \u2014 500 concurrent users, 10-minute sustained ramp",
+        "performance_targets": {
+          "p99_latency_ms": 500,
+          "throughput_mps": 500,
+          "availability": "99.9%"
+        }
+      },
+      "acceptance_criteria": [
+        "ONC Inferno test suite passes 100% of required test steps for \u00a7170.315(g)(10)",
+        "End-to-end round-trip (EHR \u2192 gateway \u2192 translate \u2192 deliver) completes in < 2 seconds p95",
+        "Load test sustains 500 messages/second with p99 latency < 500ms and zero data corruption",
+        "All three EHR sandbox integration tests pass with >= 95% test case success rate",
+        "System remains available (no 5xx > 0.1%) during rolling deployment of a new version"
+      ],
+      "depends_on": [
+        13,
+        14,
+        15,
+        18,
+        22,
+        24
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 26,
+      "task_type": "SECURITY",
+      "description": "Execute security assessment: penetration test (OWASP API Top 10), PHI exfiltration attempt scenarios, SMART on FHIR authorization bypass tests, audit log tampering tests, and supply chain scan. Produce remediation-prioritized finding report.",
+      "payload": {
+        "scope": [
+          "REST API",
+          "SMART auth server",
+          "EHR connectors",
+          "Bulk export",
+          "Admin dashboard"
+        ],
+        "test_categories": [
+          "Injection (SQL, HL7 injection)",
+          "Broken auth",
+          "PHI exfiltration",
+          "SSRF via EHR connector",
+          "Mass assignment",
+          "Audit log bypass"
+        ],
+        "tools": [
+          "Burp Suite Pro",
+          "OWASP ZAP",
+          "Semgrep",
+          "Trivy",
+          "custom HL7 fuzzer"
+        ]
+      },
+      "acceptance_criteria": [
+        "Zero CRITICAL or HIGH findings unmitigated before ONC certification submission",
+        "HL7 injection test: malicious segment injection does not escape to audit log or downstream system",
+        "PHI exfiltration: no PHI returned in error messages, logs, or unauthenticated endpoints",
+        "SMART auth bypass: all 10 OWASP authorization test cases blocked with correct HTTP 401/403",
+        "Audit log tampering: hash chain detects single-byte modification within 1 second of integrity check",
+        "PHI encryption at rest and in transit",
+        "Access audit logging enabled"
+      ],
+      "depends_on": [
+        25
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 27,
+      "task_type": "COMPLIANCE",
+      "description": "Produce ONC certification evidence package: Inferno test results, USCDI conformance attestation, API documentation (per \u00a7170.315(g)(10) disclosure requirements), and HIPAA Security Rule compliance evidence (\u00a7164.312 technical safeguards).",
+      "payload": {
+        "deliverables": [
+          "inferno_test_results.json",
+          "uscdi_conformance_attestation.pdf",
+          "api_documentation_disclosure.pdf",
+          "hipaa_technical_safeguards_evidence.md",
+          "service_base_url_publication.json"
+        ],
+        "onc_disclosure": "Public posting of API documentation per \u00a7170.315(g)(10)(viii)"
+      },
+      "acceptance_criteria": [
+        "Inferno test results show 100% pass for all g(10) test steps with exported JSON evidence",
+        "USCDI v3 conformance attestation signed by compliance officer listing all supported data elements",
+        "Service Base URL published in JSON format per ONC requirements for EHR discoverability",
+        "HIPAA \u00a7164.312 evidence covers all five technical safeguard categories with control mapping",
+        "API documentation disclosure includes all required endpoints, auth methods, and usage terms"
+      ],
+      "depends_on": [
+        25,
+        26
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 28,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: deployment runbook, incident response playbook (PHI breach, service degradation, EHR connector failure), SLA definitions (99.9% availability, RPO 1h, RTO 4h), on-call escalation matrix, and capacity planning model.",
+      "payload": {
+        "deliverables": [
+          "deployment_runbook.md",
+          "incident_response_playbook.md",
+          "sla_definitions.md",
+          "oncall_escalation_matrix.md",
+          "capacity_plan.md"
+        ],
+        "monitoring": "Prometheus + Grafana dashboards for all SLA metrics",
+        "alerting": "PagerDuty integration with severity-tiered routing"
+      },
+      "acceptance_criteria": [
+        "Deployment runbook covers blue/green and canary rollout procedures with rollback steps",
+        "PHI breach playbook follows HIPAA 60-day notification timeline with contact list",
+        "SLA definitions specify measurement methodology, exclusions, and customer credit schedule",
+        "On-call escalation matrix defines P1/P2/P3 response times and escalation path to compliance officer for PHI incidents",
+        "Capacity plan projects resource requirements for 1x, 5x, and 10x message volume"
+      ],
+      "depends_on": [
+        22,
+        25
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 29,
+      "task_type": "TRAINING",
+      "description": "Produce user documentation and training materials: integration engineer onboarding guide, EHR administrator setup guide (Epic/Cerner/Allscripts), compliance officer audit log guide, API quick-start with Postman collection, and SMART on FHIR app developer guide.",
+      "payload": {
+        "deliverables": [
+          "integration_engineer_guide.md",
+          "ehr_admin_setup_guide.md",
+          "compliance_audit_log_guide.md",
+          "api_quickstart.md",
+          "postman_collection.json",
+          "smart_fhir_developer_guide.md"
+        ],
+        "formats": [
+          "Markdown (docs site)",
+          "PDF (compliance officer offline use)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Integration engineer guide enables a new engineer to complete first message translation within 30 minutes",
+        "EHR setup guides cover Epic/Cerner/Allscripts sandbox registration and credential configuration step-by-step",
+        "Postman collection includes all API endpoints with pre-request auth scripts and example PHI-free payloads",
+        "SMART developer guide covers both EHR launch and standalone launch flows with code samples",
+        "All guides reviewed by a non-author engineer for clarity before publication"
+      ],
+      "depends_on": [
+        27,
+        28
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 30,
+      "task_type": "REGULATORY",
+      "description": "Prepare and submit ONC certification application to ONC-ACB (e.g., Drummond Group, ICSA Labs, SLI Compliance). Coordinate testing sessions, respond to findings, and manage certification status tracking through issuance of CHP (Certificate of Health IT Product).",
+      "payload": {
+        "certification_body": "ONC-ACB (target: Drummond Group)",
+        "certification_criteria": [
+          "\u00a7170.315(g)(10) Standardized API",
+          "\u00a7170.315(d)(1) Authentication",
+          "\u00a7170.315(d)(2) Auditable Events"
+        ],
+        "deliverables": [
+          "onc_application_package.zip",
+          "certification_correspondence_log.md",
+          "chp_certificate.pdf"
+        ]
+      },
+      "acceptance_criteria": [
+        "ONC certification application submitted with all required evidence artifacts from step 27",
+        "ONC-ACB testing session scheduled with all \u00a7170.315(g)(10) test scenarios passing",
+        "All ONC-ACB findings (if any) remediated and evidence resubmitted within agreed timeline",
+        "Certificate of Health IT Product (CHP) issued and posted to ONC CHPL",
+        "Certified Health IT Product List (CHPL) listing verified live and accurate",
+        "HIPAA risk assessment complete",
+        "BAA template prepared"
+      ],
+      "depends_on": [
+        27
+      ],
+      "agent_role": "regulatory_specialist"
+    }
+  ],
+  "task_count": 30,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 58,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 58,
+        "final_review": {
+          "score": 58,
+          "flaws": [
+            "FUNDAMENTAL CONTRADICTION \u2014 review_and_critique LLM loop (step 12) on every translation is irreconcilable with the 500 msg/sec throughput target (step 25). A single LLM inference call takes 1-10 seconds minimum. Three refinement cycles per message means the agent loop alone consumes 3-30 seconds per message. You cannot do 500/sec with this architecture. One of these requirements must be dropped or the critic agent must be a deterministic rule engine, not an LLM.",
+            "CUSTOM SMART AUTH SERVER IS A CRITICAL SECURITY RISK \u2014 step 17 says 'Authlib or custom JOSE implementation' for a PHI-bearing OAuth2+SMART server. Custom JOSE in healthcare is how PHI breaches happen. Authlib is a library, not a hardened OAuth server. You need Keycloak + SMART on FHIR plugin, or Auth0, or Okta, with FHIR-specific scopes pre-validated. Rolling your own JOSE for ePHI is malpractice.",
+            "MLLP TRANSPORT SECURITY GAP \u2014 step 9 defines MLLP on port 2575 and step 4 mandates TLS 1.3 minimum for all PHI transmission paths, but MLLP over plain TCP is the default in every real-world HL7 v2 deployment. Getting Epic, Cerner, and Allscripts hospital IT to configure MLLP/TLS (not standard) adds months of negotiation. The plan has no fallback and no mention of VPN tunnels as an alternative. This will block production go-live.",
+            "VSAC/TERMINOLOGY LICENSING NOT HANDLED \u2014 step 10 references a 'local VSAC snapshot' for LOINC, SNOMED CT, RxNorm, UCUM, ICD-10 lookups. SNOMED CT US Edition requires an NLM UMLS license (annual renewal, usage restrictions). VSAC access requires NLM credentials. Step 5 (Legal) mentions HL7 licensing but omits NLM/UMLS licensing entirely. Using SNOMED CT commercially without resolving this is an IP violation.",
+            "ONC CERTIFICATION SCOPE UNDERSTATED \u2014 step 30 lists only 3 criteria: \u00a7170.315(g)(10), (d)(1), (d)(2). A standalone interoperability gateway seeking ONC certification as a 'Health IT Module' under the 21st Century Cures Act must also address: (b)(1) transitions of care, (e)(1) view/download/transmit, (g)(6) consolidated CDA creation, and potentially (b)(2)/(b)(3) clinical information reconciliation depending on how the product is positioned. Three criteria will not get you a CHP.",
+            "ONC-ACB QUEUE TIME NOT ACCOUNTED FOR \u2014 step 30 is sequential and positioned as the final step. Drummond Group and ICSA Labs have 6-12 month backlogs for testing slots. Pre-submission engagement with the ONC-ACB should start at step 2, not step 30. Projects that treat ONC submission as a late-stage event routinely miss product launch deadlines by 12+ months.",
+            "Z-SEGMENT CUSTOMIZATION COMPLETELY IGNORED \u2014 step 9 handles HL7 v2 segments (MSH, PID, PV1, OBX, etc.) but Epic, Cerner, and Allscripts all use proprietary Z-segments (ZEP, ZPI, ZCE, etc.) that carry clinically critical data not in standard segments. Ignoring Z-segments means data loss on every Epic/Cerner/Allscripts message. This is a known failure mode for HL7 v2 gateway projects.",
+            "MLLP PERSISTENT CONNECTION MANAGEMENT ABSENT \u2014 the plan has no specification for MLLP connection pooling, reconnection backoff, message queuing on disconnect, or duplicate detection (MLLP has no built-in idempotency). In production, EHR MLLP endpoints drop connections during maintenance windows. Without reconnection logic and sequence number tracking, messages are silently lost.",
+            "ALLSCRIPTS/VERADIGM FRAGMENTATION UNDERESTIMATED \u2014 step 15 treats Allscripts as a monolithic integration target. Allscripts (now Veradigm) has Professional EHR, TouchWorks, Enterprise EHR, and Sunrise \u2014 each with different API surface areas, different versions of Unity API, and different MedBridge configurations. Unity v7.5 EOL timeline is unclear post-rebranding. 'Allscripts' is not one integration; it's 4+ distinct integrations.",
+            "AUDIT LOG WRITE THROUGHPUT NOT VALIDATED \u2014 step 16 requires 4+ TimescaleDB writes per message (received, translation_started, translation_completed, delivered) with nanosecond timestamps and hash chain computation. At 500 msg/sec that is 2,000+ sequential writes/sec to TimescaleDB with cryptographic dependency chaining (each row must complete before the next can start). The hash chain requirement makes parallelization impossible. This will be the bottleneck, not CPU."
+          ],
+          "suggestions": [
+            "Replace the LLM review_and_critique loop on the hot path with a deterministic FHIR validator (HAPI FHIR validator is the gold standard, runs in-process in milliseconds). Reserve the LLM critic for async quality sampling \u2014 run it on 1-5% of messages post-delivery, not inline. This resolves the performance/accuracy contradiction without sacrificing quality.",
+            "Use Keycloak 23+ with the keycloak-fhir-mapper extension instead of building a SMART auth server. It has SMART App Launch 2.0 support, PKCE, JWKS, and token introspection out of the box. Add this to the infrastructure stack in step 21 and reference it in step 17.",
+            "Add a dedicated 'EHR Integration Profiling' step before step 13 that documents vendor-specific Z-segment catalogs, version matrices, and non-standard extension inventories for each target EHR. This should be negotiated with integration engineers at each vendor's partner portal.",
+            "Engage ONC-ACB (Drummond Group) for a pre-submission consultation immediately after step 2. Add a step 2.1 'ONC-ACB Pre-Submission Engagement' that documents the product's certification path, criteria scope, and testing schedule. This is the single highest-impact scheduling change.",
+            "For MLLP resilience, add a step specifying message queueing middleware (RabbitMQ or Kafka) between the MLLP listener and the translation engine. MLLP receives and ACKs; the queue handles retry, deduplication (MSH-10 control ID as idempotency key), and backpressure. This is industry-standard architecture for HL7 v2 at scale.",
+            "Resolve NLM UMLS licensing in step 5 (Legal). The UMLS Metathesaurus license is free but requires annual attestation and restricts redistribution. If the product ships with embedded SNOMED CT or RxNorm data, the deployment model (SaaS vs. on-prem) affects license compliance. This needs explicit legal review.",
+            "Add mTLS certificate lifecycle management to step 4 and step 21: automated certificate rotation (cert-manager in Kubernetes), OCSP stapling, and a certificate revocation procedure for compromised EHR connection credentials. Without this, you will have production outages when certificates expire.",
+            "Add explicit MLLP/TLS requirement negotiation to each EHR connector step (13, 14, 15). Include a fallback path: IPSec VPN tunnel from EHR to gateway DMZ when the EHR cannot support MLLP/TLS natively. Document the network topology requirement in the integration guide (step 29).",
+            "The CDA 'semantic equivalence' acceptance criterion in step 11 is too strong for a first build. C-CDA round-trips lose information at the nullFlavor/originalText/reference boundaries. Replace 'semantically equivalent' with a concrete scoring rubric: specific section-level comparison with defined tolerance for nullFlavor expansion.",
+            "Add terminology version management as a separate operational concern: LOINC releases twice yearly, SNOMED CT quarterly, RxNorm monthly. The capacity plan (step 28) must include automated terminology update pipelines with regression testing against the translation test suite."
+          ],
+          "missing": [
+            "No message deduplication / idempotency design. HL7 MSH-10 (Message Control ID) must be used to detect and suppress duplicate messages at every ingestion point. Retried messages from EHR systems are common and will cause duplicate audit entries and double-processing without this.",
+            "No key management lifecycle specification. Step 4 mandates AES-256-GCM and KMS key references but never defines: key rotation schedule, key compromise response procedure, key escrow for regulatory access, or what happens to encrypted audit logs after key rotation.",
+            "No FHIR Subscription / notification architecture. Reactive interoperability (push-based) is increasingly required by ONC and payers. The plan is entirely request-response. At minimum, document FHIR R4 topic-based subscriptions as out-of-scope with a roadmap note.",
+            "No rate limiting or backpressure specification. The API has no documented rate limits per client, per EHR system, or per patient. FHIR Bulk Export jobs can consume all available I/O. Without rate limiting, a runaway export job will degrade real-time translation SLAs.",
+            "No DR drill requirement. The SLA specifies RPO 1h / RTO 4h but there is no acceptance criterion requiring a validated DR test. For HIPAA-regulated systems this is required by \u00a7164.308(a)(7)(ii)(D) \u2014 the plan documents the SLA but never tests it.",
+            "No patient identity matching (MPI) strategy. Cross-EHR patient matching (same patient in Epic, Cerner, and Allscripts) requires probabilistic or deterministic MPI logic. Without it, the gateway will create duplicate patient records or misroute data. EMPI is table-stakes for a multi-EHR gateway.",
+            "No versioning strategy for EHR API changes. Epic, Cerner, and Allscripts ship API updates multiple times per year. There is no connector version pinning, change monitoring, or compatibility test automation when vendors update their FHIR implementations.",
+            "No consent management layer. HIPAA minimum necessary is mentioned in step 16 but there is no consent enforcement model \u2014 specifically, 42 CFR Part 2 (substance use disorder data), HIV-specific state laws, and mental health data all require stricter consent than standard HIPAA. These are legally distinct from HIPAA and affect what can be translated and delivered.",
+            "Missing third-party penetration test requirement. Step 26 describes internal security testing. ONC certification and most enterprise healthcare customers require an independent third-party penetration test report from a qualified firm (CREST, GIAC, or equivalent credentialed). Self-assessment does not satisfy this.",
+            "No HL7 v2 message validation before translation. Step 9 parses HL7 v2 but there is no pre-translation conformance validation step. Invalid HL7 messages (wrong segment order, missing required fields per HL7 conformance profile) should be rejected with structured ACK/NACK before entering the translation pipeline, not after."
+          ],
+          "security_risks": [
+            "CUSTOM JOSE/SMART AUTH SERVER \u2014 building token signing, PKCE verification, and scope enforcement from scratch for a PHI system is the highest-risk security decision in this plan. One implementation error in PKCE verification or scope enforcement exposes all patient data to unauthorized access. Use a certified OAuth2 server.",
+            "TRANSLATION ENGINE AS PHI INJECTION SURFACE \u2014 HL7 v2 fields are free-text and can contain metacharacters that, if not sanitized before SQL persistence or audit logging, create injection vectors. Step 26 mentions HL7 injection testing but the parser (step 9) has no explicit sanitization acceptance criteria. The test plan tests for the vulnerability after it exists instead of preventing it.",
+            "AUDIT LOG HASH CHAIN TIMING ATTACK \u2014 sequential SHA-256 chaining with nanosecond timestamps at 500 msg/sec means the chain computation is on the critical path. If an attacker can predict or delay log writes, they may be able to insert fabricated entries in the ordering gaps. Consider append-only Merkle tree structure instead of linear chaining.",
+            "PRESIGNED S3 URLS FOR BULK EXPORT PHI \u2014 step 18 uses presigned S3 URLs for FHIR Bulk Export file download. Presigned URLs are not revocable once issued. If a token is revoked mid-download, the presigned URL remains valid for the expiry window (1 hour). For PHI bulk files this is a data exposure risk. Add S3 Object Lambda or a signed proxy download endpoint instead.",
+            "VAULT DYNAMIC SECRETS COLD START RACE \u2014 step 8 configures Vault for dynamic DB credentials but does not specify behavior during Vault unavailability. If Vault is unreachable at startup, does the gateway fail closed (correct for PHI) or fall back to static credentials (catastrophic)? Fail-closed behavior must be an explicit acceptance criterion.",
+            "SSRF VIA EHR CONNECTOR \u2014 step 26 includes 'SSRF via EHR connector' in the test scope but the connector design in steps 13-15 configures EHR endpoint URLs from a database table (ehr_connections). If that table can be modified by an authenticated admin user, an attacker with admin access can redirect connector calls to internal metadata services (AWS IMDS, Vault API). Require URL allowlisting with schema validation on the connection config table.",
+            "MLLP PORT EXPOSURE \u2014 MLLP on port 2575 must not be exposed to the public internet. The Kubernetes NetworkPolicy in step 21 must explicitly restrict MLLP listener pods to inbound connections from known EHR IP ranges only. The plan does not specify this constraint in the NetworkPolicy acceptance criteria."
+          ],
+          "summary": "This is one of the more thorough build plans I've seen for a healthcare interoperability product \u2014 the regulatory sequencing is thoughtful, the standards coverage is accurate, and the acceptance criteria are specific enough to be testable. However, it contains a load-bearing architectural contradiction that invalidates the performance requirements: you cannot run an LLM review_and_critique loop on every message translation and achieve 500 messages/second throughput. These two commitments are physically incompatible and one must go. Beyond this, the plan carries three serious risks that would likely block ONC certification or cause a PHI breach in production: a custom-built SMART authorization server (replace with Keycloak), absence of MLLP/TLS negotiation strategy with real hospital IT departments (this alone kills production timelines), and Z-segment ignorance across all three EHR connectors (data loss in every real-world message). For a regulated system requiring ONC certification, I score this 58 \u2014 impressive in scope, but the performance/agent contradiction and the custom auth server decision need to be resolved before any development work begins, and the ONC-ACB engagement must start now, not at step 30.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 58,
+            "flaws": [
+              "FUNDAMENTAL CONTRADICTION \u2014 review_and_critique LLM loop (step 12) on every translation is irreconcilable with the 500 msg/sec throughput target (step 25). A single LLM inference call takes 1-10 seconds minimum. Three refinement cycles per message means the agent loop alone consumes 3-30 seconds per message. You cannot do 500/sec with this architecture. One of these requirements must be dropped or the critic agent must be a deterministic rule engine, not an LLM.",
+              "CUSTOM SMART AUTH SERVER IS A CRITICAL SECURITY RISK \u2014 step 17 says 'Authlib or custom JOSE implementation' for a PHI-bearing OAuth2+SMART server. Custom JOSE in healthcare is how PHI breaches happen. Authlib is a library, not a hardened OAuth server. You need Keycloak + SMART on FHIR plugin, or Auth0, or Okta, with FHIR-specific scopes pre-validated. Rolling your own JOSE for ePHI is malpractice.",
+              "MLLP TRANSPORT SECURITY GAP \u2014 step 9 defines MLLP on port 2575 and step 4 mandates TLS 1.3 minimum for all PHI transmission paths, but MLLP over plain TCP is the default in every real-world HL7 v2 deployment. Getting Epic, Cerner, and Allscripts hospital IT to configure MLLP/TLS (not standard) adds months of negotiation. The plan has no fallback and no mention of VPN tunnels as an alternative. This will block production go-live.",
+              "VSAC/TERMINOLOGY LICENSING NOT HANDLED \u2014 step 10 references a 'local VSAC snapshot' for LOINC, SNOMED CT, RxNorm, UCUM, ICD-10 lookups. SNOMED CT US Edition requires an NLM UMLS license (annual renewal, usage restrictions). VSAC access requires NLM credentials. Step 5 (Legal) mentions HL7 licensing but omits NLM/UMLS licensing entirely. Using SNOMED CT commercially without resolving this is an IP violation.",
+              "ONC CERTIFICATION SCOPE UNDERSTATED \u2014 step 30 lists only 3 criteria: \u00a7170.315(g)(10), (d)(1), (d)(2). A standalone interoperability gateway seeking ONC certification as a 'Health IT Module' under the 21st Century Cures Act must also address: (b)(1) transitions of care, (e)(1) view/download/transmit, (g)(6) consolidated CDA creation, and potentially (b)(2)/(b)(3) clinical information reconciliation depending on how the product is positioned. Three criteria will not get you a CHP.",
+              "ONC-ACB QUEUE TIME NOT ACCOUNTED FOR \u2014 step 30 is sequential and positioned as the final step. Drummond Group and ICSA Labs have 6-12 month backlogs for testing slots. Pre-submission engagement with the ONC-ACB should start at step 2, not step 30. Projects that treat ONC submission as a late-stage event routinely miss product launch deadlines by 12+ months.",
+              "Z-SEGMENT CUSTOMIZATION COMPLETELY IGNORED \u2014 step 9 handles HL7 v2 segments (MSH, PID, PV1, OBX, etc.) but Epic, Cerner, and Allscripts all use proprietary Z-segments (ZEP, ZPI, ZCE, etc.) that carry clinically critical data not in standard segments. Ignoring Z-segments means data loss on every Epic/Cerner/Allscripts message. This is a known failure mode for HL7 v2 gateway projects.",
+              "MLLP PERSISTENT CONNECTION MANAGEMENT ABSENT \u2014 the plan has no specification for MLLP connection pooling, reconnection backoff, message queuing on disconnect, or duplicate detection (MLLP has no built-in idempotency). In production, EHR MLLP endpoints drop connections during maintenance windows. Without reconnection logic and sequence number tracking, messages are silently lost.",
+              "ALLSCRIPTS/VERADIGM FRAGMENTATION UNDERESTIMATED \u2014 step 15 treats Allscripts as a monolithic integration target. Allscripts (now Veradigm) has Professional EHR, TouchWorks, Enterprise EHR, and Sunrise \u2014 each with different API surface areas, different versions of Unity API, and different MedBridge configurations. Unity v7.5 EOL timeline is unclear post-rebranding. 'Allscripts' is not one integration; it's 4+ distinct integrations.",
+              "AUDIT LOG WRITE THROUGHPUT NOT VALIDATED \u2014 step 16 requires 4+ TimescaleDB writes per message (received, translation_started, translation_completed, delivered) with nanosecond timestamps and hash chain computation. At 500 msg/sec that is 2,000+ sequential writes/sec to TimescaleDB with cryptographic dependency chaining (each row must complete before the next can start). The hash chain requirement makes parallelization impossible. This will be the bottleneck, not CPU."
+            ],
+            "suggestions": [
+              "Replace the LLM review_and_critique loop on the hot path with a deterministic FHIR validator (HAPI FHIR validator is the gold standard, runs in-process in milliseconds). Reserve the LLM critic for async quality sampling \u2014 run it on 1-5% of messages post-delivery, not inline. This resolves the performance/accuracy contradiction without sacrificing quality.",
+              "Use Keycloak 23+ with the keycloak-fhir-mapper extension instead of building a SMART auth server. It has SMART App Launch 2.0 support, PKCE, JWKS, and token introspection out of the box. Add this to the infrastructure stack in step 21 and reference it in step 17.",
+              "Add a dedicated 'EHR Integration Profiling' step before step 13 that documents vendor-specific Z-segment catalogs, version matrices, and non-standard extension inventories for each target EHR. This should be negotiated with integration engineers at each vendor's partner portal.",
+              "Engage ONC-ACB (Drummond Group) for a pre-submission consultation immediately after step 2. Add a step 2.1 'ONC-ACB Pre-Submission Engagement' that documents the product's certification path, criteria scope, and testing schedule. This is the single highest-impact scheduling change.",
+              "For MLLP resilience, add a step specifying message queueing middleware (RabbitMQ or Kafka) between the MLLP listener and the translation engine. MLLP receives and ACKs; the queue handles retry, deduplication (MSH-10 control ID as idempotency key), and backpressure. This is industry-standard architecture for HL7 v2 at scale.",
+              "Resolve NLM UMLS licensing in step 5 (Legal). The UMLS Metathesaurus license is free but requires annual attestation and restricts redistribution. If the product ships with embedded SNOMED CT or RxNorm data, the deployment model (SaaS vs. on-prem) affects license compliance. This needs explicit legal review.",
+              "Add mTLS certificate lifecycle management to step 4 and step 21: automated certificate rotation (cert-manager in Kubernetes), OCSP stapling, and a certificate revocation procedure for compromised EHR connection credentials. Without this, you will have production outages when certificates expire.",
+              "Add explicit MLLP/TLS requirement negotiation to each EHR connector step (13, 14, 15). Include a fallback path: IPSec VPN tunnel from EHR to gateway DMZ when the EHR cannot support MLLP/TLS natively. Document the network topology requirement in the integration guide (step 29).",
+              "The CDA 'semantic equivalence' acceptance criterion in step 11 is too strong for a first build. C-CDA round-trips lose information at the nullFlavor/originalText/reference boundaries. Replace 'semantically equivalent' with a concrete scoring rubric: specific section-level comparison with defined tolerance for nullFlavor expansion.",
+              "Add terminology version management as a separate operational concern: LOINC releases twice yearly, SNOMED CT quarterly, RxNorm monthly. The capacity plan (step 28) must include automated terminology update pipelines with regression testing against the translation test suite."
+            ],
+            "missing": [
+              "No message deduplication / idempotency design. HL7 MSH-10 (Message Control ID) must be used to detect and suppress duplicate messages at every ingestion point. Retried messages from EHR systems are common and will cause duplicate audit entries and double-processing without this.",
+              "No key management lifecycle specification. Step 4 mandates AES-256-GCM and KMS key references but never defines: key rotation schedule, key compromise response procedure, key escrow for regulatory access, or what happens to encrypted audit logs after key rotation.",
+              "No FHIR Subscription / notification architecture. Reactive interoperability (push-based) is increasingly required by ONC and payers. The plan is entirely request-response. At minimum, document FHIR R4 topic-based subscriptions as out-of-scope with a roadmap note.",
+              "No rate limiting or backpressure specification. The API has no documented rate limits per client, per EHR system, or per patient. FHIR Bulk Export jobs can consume all available I/O. Without rate limiting, a runaway export job will degrade real-time translation SLAs.",
+              "No DR drill requirement. The SLA specifies RPO 1h / RTO 4h but there is no acceptance criterion requiring a validated DR test. For HIPAA-regulated systems this is required by \u00a7164.308(a)(7)(ii)(D) \u2014 the plan documents the SLA but never tests it.",
+              "No patient identity matching (MPI) strategy. Cross-EHR patient matching (same patient in Epic, Cerner, and Allscripts) requires probabilistic or deterministic MPI logic. Without it, the gateway will create duplicate patient records or misroute data. EMPI is table-stakes for a multi-EHR gateway.",
+              "No versioning strategy for EHR API changes. Epic, Cerner, and Allscripts ship API updates multiple times per year. There is no connector version pinning, change monitoring, or compatibility test automation when vendors update their FHIR implementations.",
+              "No consent management layer. HIPAA minimum necessary is mentioned in step 16 but there is no consent enforcement model \u2014 specifically, 42 CFR Part 2 (substance use disorder data), HIV-specific state laws, and mental health data all require stricter consent than standard HIPAA. These are legally distinct from HIPAA and affect what can be translated and delivered.",
+              "Missing third-party penetration test requirement. Step 26 describes internal security testing. ONC certification and most enterprise healthcare customers require an independent third-party penetration test report from a qualified firm (CREST, GIAC, or equivalent credentialed). Self-assessment does not satisfy this.",
+              "No HL7 v2 message validation before translation. Step 9 parses HL7 v2 but there is no pre-translation conformance validation step. Invalid HL7 messages (wrong segment order, missing required fields per HL7 conformance profile) should be rejected with structured ACK/NACK before entering the translation pipeline, not after."
+            ],
+            "security_risks": [
+              "CUSTOM JOSE/SMART AUTH SERVER \u2014 building token signing, PKCE verification, and scope enforcement from scratch for a PHI system is the highest-risk security decision in this plan. One implementation error in PKCE verification or scope enforcement exposes all patient data to unauthorized access. Use a certified OAuth2 server.",
+              "TRANSLATION ENGINE AS PHI INJECTION SURFACE \u2014 HL7 v2 fields are free-text and can contain metacharacters that, if not sanitized before SQL persistence or audit logging, create injection vectors. Step 26 mentions HL7 injection testing but the parser (step 9) has no explicit sanitization acceptance criteria. The test plan tests for the vulnerability after it exists instead of preventing it.",
+              "AUDIT LOG HASH CHAIN TIMING ATTACK \u2014 sequential SHA-256 chaining with nanosecond timestamps at 500 msg/sec means the chain computation is on the critical path. If an attacker can predict or delay log writes, they may be able to insert fabricated entries in the ordering gaps. Consider append-only Merkle tree structure instead of linear chaining.",
+              "PRESIGNED S3 URLS FOR BULK EXPORT PHI \u2014 step 18 uses presigned S3 URLs for FHIR Bulk Export file download. Presigned URLs are not revocable once issued. If a token is revoked mid-download, the presigned URL remains valid for the expiry window (1 hour). For PHI bulk files this is a data exposure risk. Add S3 Object Lambda or a signed proxy download endpoint instead.",
+              "VAULT DYNAMIC SECRETS COLD START RACE \u2014 step 8 configures Vault for dynamic DB credentials but does not specify behavior during Vault unavailability. If Vault is unreachable at startup, does the gateway fail closed (correct for PHI) or fall back to static credentials (catastrophic)? Fail-closed behavior must be an explicit acceptance criterion.",
+              "SSRF VIA EHR CONNECTOR \u2014 step 26 includes 'SSRF via EHR connector' in the test scope but the connector design in steps 13-15 configures EHR endpoint URLs from a database table (ehr_connections). If that table can be modified by an authenticated admin user, an attacker with admin access can redirect connector calls to internal metadata services (AWS IMDS, Vault API). Require URL allowlisting with schema validation on the connection config table.",
+              "MLLP PORT EXPOSURE \u2014 MLLP on port 2575 must not be exposed to the public internet. The Kubernetes NetworkPolicy in step 21 must explicitly restrict MLLP listener pods to inbound connections from known EHR IP ranges only. The plan does not specify this constraint in the NetworkPolicy acceptance criteria."
+            ],
+            "summary": "This is one of the more thorough build plans I've seen for a healthcare interoperability product \u2014 the regulatory sequencing is thoughtful, the standards coverage is accurate, and the acceptance criteria are specific enough to be testable. However, it contains a load-bearing architectural contradiction that invalidates the performance requirements: you cannot run an LLM review_and_critique loop on every message translation and achieve 500 messages/second throughput. These two commitments are physically incompatible and one must go. Beyond this, the plan carries three serious risks that would likely block ONC certification or cause a PHI breach in production: a custom-built SMART authorization server (replace with Keycloak), absence of MLLP/TLS negotiation strategy with real hospital IT departments (this alone kills production timelines), and Z-segment ignorance across all three EHR connectors (data loss in every real-world message). For a regulated system requiring ONC certification, I score this 58 \u2014 impressive in scope, but the performance/agent contradiction and the custom auth server decision need to be resolved before any development work begins, and the ONC-ACB engagement must start now, not at step 30.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-21T23:12:56.794582+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 201.38,
+    "critic_plan": 144.06
+  }
+}

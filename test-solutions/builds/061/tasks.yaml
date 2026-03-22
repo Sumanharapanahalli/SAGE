@@ -1,0 +1,197 @@
+task_types:
+  CONFIG:
+    description: Initialize project structure and dependency manifest for the document_extraction
+      solution. Set up Python virtual environment with OCR (Tesseract/EasyOCR), NER
+      (spaCy/transformers), table extraction (camelot/pdfplumber), and FastAPI dependencies.
+      Configure solution YAML files (project.yaml, prompts.yaml, tasks.yaml).
+    agent_role: developer
+    acceptance_criteria:
+    - All dependencies install cleanly with no version conflicts
+    - project.yaml declares solution name, active_modules, and agent roles
+    - prompts.yaml defines analyst, developer, and data_scientist roles with domain-specific
+      system prompts
+    - tasks.yaml enumerates all task types used by this solution
+    - .env.example documents all required environment variables
+    depends_on: []
+  API:
+    description: Design the OpenAPI specification for the document extraction REST
+      API. Define endpoints for single document upload, batch submission, job status
+      polling, and result retrieval. Specify request/response schemas for all three
+      document types (invoice, receipt, contract).
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec (openapi.yaml) is complete and valid (passes swagger-cli validate)
+    - All request bodies define required fields, optional fields, and file MIME type
+      constraints
+    - All response schemas include a top-level 'status' field (queued | processing
+      | completed | failed)
+    - Error responses follow RFC 7807 Problem Details format
+    - Batch endpoint spec supports 1–100 documents per request
+    depends_on:
+    - 1
+  DATABASE:
+    description: 'Design and implement the database schema for job tracking, extraction
+      results, and audit history. Use SQLAlchemy ORM with Alembic migrations. Tables:
+      jobs, batch_jobs, extraction_results, entity_records, table_records.'
+    agent_role: developer
+    acceptance_criteria:
+    - Alembic migration runs cleanly on a fresh PostgreSQL 15 instance
+    - All foreign key constraints are enforced
+    - Indexes exist on jobs.status, jobs.batch_id, entity_records.job_id, and entity_records.entity_type
+    - JSONB columns for table rows are validated by a CHECK constraint against a JSON
+      schema
+    - Rollback migration returns schema to prior state without data loss
+    depends_on:
+    - 1
+  DATA:
+    description: 'Build the document ingestion and preprocessing pipeline. Handles
+      PDF-to-image conversion, image normalization (deskew, denoise, contrast enhancement),
+      file format validation, and document-type classification. Implements the multi_agent_sequential
+      pattern: classifier → OCR → NER → table extractor → JSON assembler.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Pipeline processes a 10-page PDF invoice end-to-end in under 30 seconds on a
+      2-vCPU machine
+    - DocumentState is serializable to JSON at every stage boundary for debugging
+    - Classification accuracy ≥ 90% on a 100-document labeled test set
+    - Pipeline emits structured logs (JSON) for every stage transition
+    - SHA-256 deduplication prevents reprocessing identical files within the same
+      batch
+    depends_on:
+    - 1
+    - 3
+  ML_MODEL:
+    description: 'Integrate and configure the OCR engine layer. Support dual-engine
+      strategy: Tesseract 5 (fast, offline) for clean scans and EasyOCR (deep-learning,
+      GPU-optional) for degraded or handwritten documents. Implement quality-score-based
+      routing. Output: raw text with bounding-box coordinates and per-word confidence
+      scores.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Tesseract achieves ≥ 95% character accuracy on a clean-scan benchmark set
+    - EasyOCR achieves ≥ 85% character accuracy on a degraded-scan benchmark set
+    - Quality-score router correctly selects the appropriate engine for 90% of test
+      cases
+    - OCR layer is encapsulated behind an OCREngine abstract base class — engines
+      are swappable
+    - Bounding box coordinates are normalized to [0,1] relative to page dimensions
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 4
+  BACKEND:
+    description: 'Implement the FastAPI backend service. Wire all pipeline stages
+      (OCR → NER → table extraction → JSON assembly) into the job execution flow.
+      Implement async job submission with Celery + Redis as the task broker. Persist
+      results to PostgreSQL via SQLAlchemy. Implement the review_and_critique agentic
+      pattern: extraction output is scored by a critic agent before finalizing.'
+    agent_role: developer
+    acceptance_criteria:
+    - POST /extract returns job_id within 200ms (async submission)
+    - GET /jobs/{job_id}/result returns completed JSON within SLA after worker finishes
+    - Critic agent re-routes to alternate OCR engine when initial confidence score
+      < 0.7
+    - All database writes use SQLAlchemy async session with proper transaction boundaries
+    - API returns 422 with field-level detail for invalid input (wrong MIME type,
+      file too large)
+    - Concurrent extraction of 10 jobs does not cause race conditions in job status
+      updates
+    depends_on:
+    - 3
+    - 4
+    - 6
+    - 7
+  INFRA:
+    description: 'Create Docker Compose stack for local development and a production-ready
+      Dockerfile. Services: api (FastAPI), worker (Celery), redis (broker + result
+      backend), postgres (job store), flower (Celery monitoring UI). Add GitHub Actions
+      CI pipeline for lint, test, and Docker build on PR.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up --build starts all services and passes health checks within
+      60 seconds
+    - API is reachable at http://localhost:8000 and returns 200 on GET /health
+    - Flower UI is reachable at http://localhost:5555 and shows active workers
+    - CI pipeline runs in < 5 minutes on a standard GitHub-hosted runner
+    - docker compose down -v cleanly removes all containers and volumes
+    - Production Dockerfile image size < 2 GB (multi-stage build)
+    depends_on:
+    - 9
+  TESTS:
+    description: Write unit tests for all pipeline stages, NER models, table extraction
+      logic, and API endpoint handlers. Use pytest with pytest-asyncio for async handlers.
+      Mock external I/O (file storage, database). Target ≥ 85% line coverage.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest --cov reports ≥ 85% line coverage across src/
+    - All tests pass in CI (no flaky tests — each test is deterministic)
+    - Each OCR engine is tested with both a clean and degraded sample document
+    - NER tests assert specific entity types and values against labeled fixtures
+    - API tests cover happy path, 422 validation errors, 404 not found, and 429 rate
+      limit
+    depends_on:
+    - 8
+    - 9
+  SECURITY:
+    description: 'Perform security review of the document extraction API. Threat model:
+      malicious file uploads, path traversal, SSRF via webhook callbacks, PII data
+      leakage in logs, and unauthenticated batch job enumeration. Implement mitigations.'
+    agent_role: developer
+    acceptance_criteria:
+    - bandit scan reports zero HIGH severity findings in src/
+    - safety check reports zero CRITICAL CVEs in requirements.txt
+    - Uploading a file with .pdf extension but EXE magic bytes returns 422
+    - Extracted entity values do not appear in INFO-level application logs
+    - Unauthenticated request to any endpoint returns 401 when API key auth is enabled
+    - OWASP ZAP baseline scan passes with no FAIL-level alerts
+    depends_on:
+    - 9
+  DEVOPS:
+    description: 'Set up production monitoring and alerting. Instrument FastAPI with
+      Prometheus metrics (request count, latency histograms, job queue depth, extraction
+      success rate). Configure Grafana dashboard. Define SLO: 99% of single-document
+      jobs complete within 60 seconds.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - GET /metrics endpoint returns valid Prometheus text format
+    - All six metric families appear in Prometheus scrape output
+    - Grafana dashboard JSON (exported) is committed to infra/grafana/
+    - Alert rules are defined in infra/prometheus/alerts.yaml and load without syntax
+      errors
+    - Celery queue depth metric updates within 15 seconds of task enqueue
+    depends_on:
+    - 10
+  QA:
+    description: Define and execute a QA test plan covering extraction accuracy benchmarks,
+      edge cases, and regression suite. Produce a formal test report with pass/fail
+      status per document type and entity class.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - QA report documents F1 ≥ 0.85 for all REQUIRED entity types across all document
+      types
+    - All negative test cases return HTTP 422 or 500 with structured error body (no
+      unhandled exceptions)
+    - 'Regression suite: 100% pass rate on previously known failure cases'
+    - 'Edge case results are categorized: handled gracefully | known limitation |
+      bug (filed as GitHub issue)'
+    - QA report is reviewed and signed off by data_scientist and qa_engineer agent
+      roles
+    depends_on:
+    - 12
+  DOCS:
+    description: Write API documentation, developer quickstart guide, and model card
+      for the extraction models. Document the agentic pipeline architecture (multi_agent_sequential
+      + review_and_critique patterns) and how to extend it for new document types.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - README quickstart works on a clean machine following only the documented steps
+    - Every API endpoint has a working curl example in api_reference.md
+    - Architecture Mermaid diagram renders correctly on GitHub
+    - Model card documents training dataset size, evaluation metrics, and known failure
+      modes
+    - docs/extending.md includes a worked example adding a 'purchase_order' document
+      type
+    depends_on:
+    - 13
+    - 14
+    - 15

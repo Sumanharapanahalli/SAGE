@@ -1,0 +1,1193 @@
+{
+  "run_id": "c09930bd-810b-48fd-aab0-4b7e0181d4a0",
+  "status": {
+    "run_id": "c09930bd-810b-48fd-aab0-4b7e0181d4a0",
+    "solution_name": "data_warehouse",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T11:05:32.850189+00:00",
+    "updated_at": "2026-03-22T11:10:44.090843+00:00",
+    "product_description": "Cloud data warehouse with ETL pipeline builder, SQL query engine, data catalog, lineage tracking, access control, and BI tool integration.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document, roadmap, and success metrics for the cloud data warehouse platform covering ETL, SQL engine, catalog, lineage, RBAC, and BI integration.",
+        "payload": {
+          "solution_name": "data_warehouse",
+          "deliverables": [
+            "PRD",
+            "roadmap",
+            "KPIs",
+            "prioritization matrix"
+          ],
+          "key_features": [
+            "ETL pipeline builder",
+            "SQL query engine",
+            "data catalog",
+            "lineage tracking",
+            "access control",
+            "BI tool integration"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD documents all six core feature areas with scope boundaries",
+          "Roadmap has at least three release milestones with defined scope per milestone",
+          "Success metrics defined: query latency p95, pipeline success rate, catalog coverage percentage",
+          "Prioritization matrix ranks features by user value and implementation complexity"
+        ],
+        "depends_on": [],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Capture business requirements, user stories, and process flows for all personas: data engineers (ETL), data analysts (SQL/BI), data stewards (catalog/lineage), and admins (RBAC).",
+        "payload": {
+          "personas": [
+            "data_engineer",
+            "data_analyst",
+            "data_steward",
+            "admin"
+          ],
+          "deliverables": [
+            "user story map",
+            "process flow diagrams",
+            "ROI analysis"
+          ],
+          "compliance_context": [
+            "ISO 27001",
+            "SOC 2"
+          ]
+        },
+        "acceptance_criteria": [
+          "Minimum 30 user stories covering all six feature areas",
+          "Process flow diagrams for ETL authoring, query execution, catalog search, and access request workflows",
+          "ROI analysis quantifies cost savings vs Snowflake/BigQuery for target customer segment",
+          "Acceptance criteria defined per user story",
+          "Integration points with existing systems mapped",
+          "Migration plan drafted"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "LEGAL",
+        "description": "Draft terms of service, privacy policy, data processing agreements (DPA), and open-source license inventory for all third-party dependencies.",
+        "payload": {
+          "deliverables": [
+            "ToS",
+            "privacy policy",
+            "DPA template",
+            "OSS license audit"
+          ],
+          "standards_context": [
+            "GDPR",
+            "CCPA",
+            "SOC 2"
+          ],
+          "data_residency_regions": [
+            "US",
+            "EU"
+          ]
+        },
+        "acceptance_criteria": [
+          "ToS covers data ownership, SLA commitments, and acceptable use",
+          "Privacy policy addresses data retention, deletion rights, and cross-border transfers",
+          "DPA template is GDPR Article 28 compliant",
+          "OSS license audit flags any GPL/AGPL conflicts with commercial distribution"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 4,
+        "task_type": "COMPLIANCE",
+        "description": "Map ISO 27001 and SOC 2 Type II controls to product architecture. Produce a control inventory, risk register, and traceability matrix linking each control to implementation evidence.",
+        "payload": {
+          "standards": [
+            "ISO 27001:2022",
+            "SOC 2 Type II"
+          ],
+          "trust_service_criteria": [
+            "Security",
+            "Availability",
+            "Confidentiality",
+            "Processing Integrity"
+          ],
+          "deliverables": [
+            "control inventory",
+            "risk register",
+            "traceability matrix",
+            "evidence collection plan"
+          ]
+        },
+        "acceptance_criteria": [
+          "All Annex A ISO 27001 controls assessed as in-scope, out-of-scope, or N/A with justification",
+          "SOC 2 TSC criteria mapped to specific implementation tasks",
+          "Risk register has likelihood/impact ratings and mitigation owners for top 20 risks",
+          "Evidence collection plan specifies artifact type, owner, and collection cadence per control"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "SECURITY",
+        "description": "Produce threat model (STRIDE), security architecture document, encryption-at-rest and in-transit design, and penetration test plan covering multi-tenant data isolation.",
+        "payload": {
+          "threat_model_method": "STRIDE",
+          "scope": [
+            "ETL executor",
+            "query engine",
+            "metadata store",
+            "auth service",
+            "BI connectors"
+          ],
+          "key_concerns": [
+            "multi-tenant isolation",
+            "SQL injection in query engine",
+            "credential storage for connectors",
+            "data exfiltration via BI tools"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model identifies threats for all six trust boundaries",
+          "Security architecture specifies AES-256 at-rest, TLS 1.3 in-transit, and key rotation strategy",
+          "Multi-tenant isolation design prevents cross-tenant data access at storage and query layers",
+          "Pen test plan covers OWASP Top 10 plus data warehouse-specific attack vectors (SQL injection, metadata poisoning)"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes for: ETL pipeline canvas, SQL query editor, data catalog browser, lineage graph viewer, RBAC admin panel, and BI connector setup.",
+        "payload": {
+          "research_methods": [
+            "user interviews",
+            "competitive analysis"
+          ],
+          "wireframe_scope": [
+            "pipeline canvas",
+            "query editor",
+            "catalog browser",
+            "lineage graph",
+            "RBAC panel",
+            "BI connector wizard"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all six feature areas at medium fidelity",
+          "Pipeline canvas supports drag-and-drop node placement with connector arrows",
+          "Lineage graph is interactive (zoom, pan, click-to-expand)",
+          "Accessibility audit confirms WCAG 2.1 AA compliance on all key flows",
+          "User research findings documented with at least 5 participant interviews"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 spec for all platform APIs: warehouse management, ETL pipeline CRUD and execution, SQL query submission and results, catalog search and metadata, lineage graph queries, RBAC policies, and BI connector registration.",
+        "payload": {
+          "api_style": "REST + WebSocket for streaming query results",
+          "auth_mechanism": "OAuth 2.0 + JWT",
+          "versioning": "URI versioning /v1/",
+          "endpoints_by_domain": {
+            "warehouse": [
+              "CREATE",
+              "LIST",
+              "DELETE warehouse"
+            ],
+            "etl": [
+              "pipeline CRUD",
+              "run",
+              "pause",
+              "status",
+              "logs"
+            ],
+            "query": [
+              "submit",
+              "status",
+              "results/stream",
+              "history",
+              "explain"
+            ],
+            "catalog": [
+              "search",
+              "asset CRUD",
+              "tag management",
+              "schema inference"
+            ],
+            "lineage": [
+              "upstream",
+              "downstream",
+              "full graph",
+              "impact analysis"
+            ],
+            "rbac": [
+              "roles CRUD",
+              "policy assignment",
+              "audit log"
+            ],
+            "bi": [
+              "connector CRUD",
+              "test connection",
+              "publish dataset"
+            ]
+          }
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 spec validates without errors using spectral lint",
+          "All endpoints have request/response schemas with examples",
+          "Pagination defined for all list endpoints (cursor-based)",
+          "Error response schema is consistent across all endpoints (RFC 7807 Problem Details)",
+          "WebSocket protocol for streaming query results is documented"
+        ],
+        "depends_on": [
+          2,
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schemas for: warehouse metadata store, ETL pipeline definitions and run history, data catalog assets and tags, lineage graph (adjacency), RBAC policies, and query history.",
+        "payload": {
+          "metadata_db": "PostgreSQL 16",
+          "lineage_store": "Apache Atlas or property graph (Amazon Neptune / Neo4j)",
+          "catalog_search": "Elasticsearch for full-text asset search",
+          "query_history": "time-series optimized (TimescaleDB extension)",
+          "migrations_tool": "Alembic",
+          "deliverables": [
+            "ERD",
+            "migration scripts",
+            "seed data",
+            "index strategy"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD covers all six domains with foreign key relationships documented",
+          "Migration scripts run idempotently on fresh and existing databases",
+          "Lineage graph schema supports upstream/downstream traversal queries in under 100ms for 10k nodes",
+          "Catalog full-text search returns results in under 200ms for 1M assets",
+          "Row-level security policies enforce tenant isolation at database layer",
+          "All tables have created_at, updated_at, and deleted_at for soft-delete audit"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up project configuration: monorepo structure, environment management, secrets vault integration (HashiCorp Vault or AWS Secrets Manager), feature flags, and local development environment with Docker Compose.",
+        "payload": {
+          "repo_structure": "monorepo (turborepo or nx)",
+          "services": [
+            "api-gateway",
+            "etl-engine",
+            "query-engine",
+            "catalog-service",
+            "lineage-service",
+            "auth-service",
+            "bi-connector-service",
+            "web-ui"
+          ],
+          "secrets_backend": "HashiCorp Vault",
+          "feature_flags": "OpenFeature with Flagd",
+          "local_dev": "Docker Compose with hot-reload"
+        },
+        "acceptance_criteria": [
+          "docker compose up starts all services and passes health checks within 60 seconds",
+          "Secrets are never hardcoded; all pulled from Vault at startup",
+          "Environment variables documented in .env.example for each service",
+          "Feature flag system allows enabling/disabling any feature without code deploy",
+          "Monorepo build caches correctly \u2014 unchanged packages not rebuilt"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 10,
+        "task_type": "INFRA",
+        "description": "Provision cloud infrastructure via Terraform: Kubernetes cluster (EKS/GKE), object storage for warehouse data (S3/GCS), managed PostgreSQL, Elasticsearch cluster, VPC with private subnets, load balancers, and WAF.",
+        "payload": {
+          "iac_tool": "Terraform",
+          "cloud": "AWS (primary) with GCP module parity",
+          "kubernetes": "EKS 1.29 with Karpenter autoscaling",
+          "storage": "S3 with Iceberg table format",
+          "networking": "VPC with private subnets, NAT gateway, PrivateLink for managed services",
+          "security": "WAF, Security Groups, KMS encryption, VPC flow logs"
+        },
+        "acceptance_criteria": [
+          "Terraform plan has zero errors and applies idempotently",
+          "All data stored in private subnets with no public S3 bucket access",
+          "KMS encryption enabled for S3, RDS, and EBS volumes",
+          "Kubernetes cluster passes CIS benchmark level 1",
+          "VPC flow logs enabled and routed to SIEM for SOC 2 compliance",
+          "Terraform state stored remotely with locking (S3 + DynamoDB)"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build the authentication and authorization service: OAuth 2.0 / OIDC provider integration, JWT issuance, RBAC policy engine (OPA/Casbin), service-to-service mTLS, and audit log for all auth events.",
+        "payload": {
+          "auth_protocol": "OAuth 2.0 + OIDC",
+          "identity_providers": [
+            "Google Workspace",
+            "Okta",
+            "Azure AD",
+            "username/password"
+          ],
+          "authz_engine": "Open Policy Agent (OPA)",
+          "service_auth": "mTLS with SPIFFE/SPIRE",
+          "audit": "structured JSON logs \u2192 SIEM"
+        },
+        "acceptance_criteria": [
+          "All four identity providers authenticate successfully in integration tests",
+          "OPA policy evaluation adds under 5ms latency to request path",
+          "RBAC supports workspace/schema/table-level permission granularity",
+          "All authentication events logged with user ID, IP, timestamp, and outcome",
+          "JWT expiry and refresh token rotation implemented per OAuth 2.0 best practices",
+          "mTLS enforced between all internal services"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Build the ETL pipeline engine: visual DAG executor supporting sources (S3, Postgres, MySQL, Kafka, REST API), transformations (filter, map, join, aggregate, custom Python/SQL), and sinks (warehouse tables, S3, webhooks). Include scheduling (cron + event-driven) and retry/backoff logic.",
+        "payload": {
+          "execution_model": "Apache Airflow-compatible DAG or custom async Python executor",
+          "sources": [
+            "S3/GCS",
+            "PostgreSQL",
+            "MySQL",
+            "Kafka",
+            "REST API",
+            "Snowflake",
+            "Redshift"
+          ],
+          "transformations": [
+            "filter",
+            "map",
+            "join",
+            "aggregate",
+            "SQL transform",
+            "Python UDF"
+          ],
+          "sinks": [
+            "warehouse tables (Iceberg on S3)",
+            "S3 raw",
+            "PostgreSQL",
+            "webhooks"
+          ],
+          "scheduling": [
+            "cron",
+            "event-trigger",
+            "manual"
+          ],
+          "reliability": "at-least-once delivery with idempotency keys"
+        },
+        "acceptance_criteria": [
+          "Pipeline with 5 nodes (source \u2192 filter \u2192 transform \u2192 join \u2192 sink) executes end-to-end",
+          "Failed pipeline steps retry with exponential backoff up to configurable max attempts",
+          "Pipeline run history stored with step-level status, duration, and row counts",
+          "Cron-scheduled pipeline fires within 60 seconds of scheduled time",
+          "Python UDF sandbox prevents filesystem and network access",
+          "Pipeline definitions are serializable to/from JSON for versioning"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build the SQL query engine: distributed query planner and executor on top of Apache Iceberg tables (using Trino or DuckDB for query processing), with query result caching, execution plan explain, and resource governance (per-user query quotas).",
+        "payload": {
+          "query_engine": "Trino (distributed) + DuckDB (single-node dev mode)",
+          "table_format": "Apache Iceberg on S3",
+          "caching": "query result cache with TTL (Redis)",
+          "streaming": "WebSocket streaming for large result sets",
+          "resource_governance": "per-user memory/CPU quotas, query timeout",
+          "explain": "EXPLAIN ANALYZE output with cost estimates"
+        },
+        "acceptance_criteria": [
+          "SELECT query on 1B row Iceberg table returns first page of results within 5 seconds",
+          "Query result cache achieves cache-hit within 100ms for repeated identical queries",
+          "EXPLAIN ANALYZE returns execution plan with per-stage row counts and timing",
+          "Query timeout enforcement kills long-running queries and frees resources",
+          "Concurrent queries from different tenants do not share result cache entries",
+          "WebSocket streaming delivers rows incrementally without buffering full result set"
+        ],
+        "depends_on": [
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "DATA",
+        "description": "Build the data catalog service: automated schema inference from Iceberg tables, asset registration (tables, views, pipelines, dashboards), full-text search, tagging system, and business glossary with term-to-asset linking.",
+        "payload": {
+          "search_backend": "Elasticsearch 8.x",
+          "schema_inference": "Iceberg metadata + Glue Catalog sync",
+          "asset_types": [
+            "table",
+            "view",
+            "ETL pipeline",
+            "BI dashboard",
+            "column",
+            "schema"
+          ],
+          "tagging": "user-defined + auto-generated (PII detection, sensitivity classification)",
+          "pii_detection": "presidio or AWS Comprehend",
+          "glossary": "hierarchical business terms with steward ownership"
+        },
+        "acceptance_criteria": [
+          "New Iceberg table appears in catalog within 60 seconds of creation via schema inference",
+          "Full-text search returns relevant assets for natural language queries across name, description, and tags",
+          "PII auto-detection tags columns containing email, SSN, phone patterns",
+          "Business glossary terms linkable to tables and columns via steward workflow",
+          "Catalog search API returns results in under 200ms at 1M assets",
+          "Asset descriptions editable by stewards with edit history preserved"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "data_engineer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Build the data lineage tracking service: capture column-level lineage from ETL pipeline execution, SQL query parsing (ANTLR-based), and manual lineage annotations. Expose upstream/downstream graph API and impact analysis.",
+        "payload": {
+          "lineage_capture": [
+            "ETL execution hooks",
+            "SQL query parser (ANTLR4)",
+            "manual API"
+          ],
+          "granularity": "column-level lineage",
+          "graph_store": "Neo4j or Amazon Neptune",
+          "api": [
+            "upstream traversal",
+            "downstream traversal",
+            "full lineage graph",
+            "impact analysis (what breaks if X changes)"
+          ],
+          "visualization": "graph export format for frontend (D3-compatible JSON)"
+        },
+        "acceptance_criteria": [
+          "ETL pipeline execution automatically records source-to-sink lineage without manual annotation",
+          "SQL parser correctly extracts column lineage from JOINs, CTEs, and subqueries",
+          "Upstream/downstream traversal API responds in under 500ms for 5-hop graph",
+          "Impact analysis identifies all downstream assets affected by a schema change",
+          "Lineage graph export renders correctly in D3 force-directed layout",
+          "Manual lineage annotations persist and are queryable via graph API"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Build BI tool integration connectors: JDBC/ODBC drivers, semantic layer publishing (exposing curated datasets), and native connectors for Tableau, Power BI, Looker, Metabase, and Superset. Include connection pooling and query translation layer.",
+        "payload": {
+          "protocols": [
+            "JDBC",
+            "ODBC",
+            "Arrow Flight SQL"
+          ],
+          "native_connectors": [
+            "Tableau Hyper API",
+            "Power BI DirectQuery",
+            "Looker LookML export",
+            "Metabase driver",
+            "Superset SQLAlchemy dialect"
+          ],
+          "semantic_layer": "curated dataset publishing with column descriptions and metrics",
+          "connection_pooling": "PgBouncer-style pooling for JDBC connections",
+          "credentials": "per-BI-tool service accounts with least-privilege RBAC"
+        },
+        "acceptance_criteria": [
+          "Tableau connects via JDBC and renders a live chart from a warehouse table",
+          "Power BI DirectQuery mode executes pass-through SQL and returns results",
+          "Looker LookML export generates valid LookML for all published datasets",
+          "Arrow Flight SQL client connects and executes queries with zero configuration beyond endpoint URL",
+          "Connection pool limits concurrent JDBC connections per tenant to configured max",
+          "BI connector credentials rotated without downtime via Vault dynamic secrets"
+        ],
+        "depends_on": [
+          13,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "AGENTIC",
+        "description": "Implement AI-powered catalog enrichment and query assistance using the Multi-Agent Coordinator pattern: a coordinator agent routes to specialist sub-agents for (a) auto-generating asset descriptions from schema+sample data, (b) suggesting SQL query completions, and (c) recommending relevant catalog assets for a given query context.",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator_agent": "catalog_ai_coordinator",
+          "specialist_agents": [
+            {
+              "name": "description_writer",
+              "task": "generate asset descriptions from schema and sample data"
+            },
+            {
+              "name": "query_assistant",
+              "task": "SQL autocomplete and natural language to SQL"
+            },
+            {
+              "name": "asset_recommender",
+              "task": "recommend related assets given query context"
+            }
+          ],
+          "llm_integration": "SAGE LLM gateway",
+          "hitl_level": "standard \u2014 AI-generated descriptions queued for steward review before publishing"
+        },
+        "acceptance_criteria": [
+          "Coordinator correctly routes description generation, query assist, and recommendation tasks to specialist agents",
+          "AI-generated asset descriptions are queued for steward approval before appearing in catalog",
+          "Natural language to SQL converts at least 80% of test queries to valid SQL",
+          "Asset recommendations return \u22653 relevant assets for a given query in under 1 second",
+          "All AI outputs include confidence score and source attribution",
+          "Rejected AI suggestions are fed back into vector memory for future improvement"
+        ],
+        "depends_on": [
+          15,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build the ETL pipeline canvas: drag-and-drop DAG editor with node palette (sources, transforms, sinks), connection validation, live execution status overlay, and run history panel.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "canvas_library": "React Flow (or XYFlow)",
+          "state_management": "Zustand",
+          "real_time": "WebSocket for live execution status updates",
+          "features": [
+            "node drag-and-drop",
+            "connection validation",
+            "node config panels",
+            "execution progress overlay",
+            "run history with step-level drill-down"
+          ]
+        },
+        "acceptance_criteria": [
+          "User can drag source, transform, and sink nodes onto canvas and connect them",
+          "Invalid connections (e.g. sink \u2192 source) rejected with visual error indicator",
+          "Live execution overlay shows per-node status (pending/running/success/failed) in real time via WebSocket",
+          "Run history panel lists last 50 runs with status, duration, and row count",
+          "Pipeline JSON exported from canvas matches API schema exactly",
+          "Canvas renders correctly on 1920\u00d71080 and 1366\u00d7768 viewports"
+        ],
+        "depends_on": [
+          12,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build the SQL query editor: Monaco-based editor with schema-aware autocomplete, multi-tab sessions, query execution with results table, export to CSV/Parquet, and saved query library.",
+        "payload": {
+          "editor": "Monaco Editor (VS Code engine)",
+          "autocomplete": "schema-aware (tables, columns, functions) from catalog API",
+          "results": "virtual-scroll table for large result sets",
+          "export": [
+            "CSV",
+            "Parquet",
+            "clipboard"
+          ],
+          "sessions": "multi-tab with independent query history",
+          "saved_queries": "folder-based library with search and sharing"
+        },
+        "acceptance_criteria": [
+          "Autocomplete suggests table and column names within 300ms of typing",
+          "Query results table renders 100k rows without browser freeze (virtual scroll)",
+          "Export to CSV completes for 1M row result set without timeout",
+          "Multiple tabs maintain independent query state and execution history",
+          "Saved query library is searchable by name and content",
+          "Keyboard shortcut Ctrl+Enter executes query"
+        ],
+        "depends_on": [
+          13,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build the data catalog browser: asset search with filters (type, tag, owner, freshness), asset detail page (schema, sample data, stats, lineage preview, steward info), and business glossary viewer.",
+        "payload": {
+          "search": "faceted search with Elasticsearch backing",
+          "asset_detail": [
+            "schema table",
+            "sample data preview",
+            "column statistics",
+            "lineage mini-graph",
+            "tags",
+            "owner",
+            "last updated"
+          ],
+          "glossary": "hierarchical term browser with asset links",
+          "steward_actions": [
+            "edit description",
+            "add tag",
+            "link glossary term",
+            "flag for review"
+          ]
+        },
+        "acceptance_criteria": [
+          "Search returns results within 200ms with facet counts for type, tag, and owner",
+          "Asset detail page loads within 1 second including sample data preview",
+          "Lineage mini-graph on asset detail page shows 2-hop upstream/downstream",
+          "Steward can edit asset description inline with optimistic UI update",
+          "Glossary browser navigable by category hierarchy with term-to-asset links",
+          "PII-tagged columns display sensitivity warning banner"
+        ],
+        "depends_on": [
+          14,
+          15,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "FRONTEND",
+        "description": "Build the RBAC admin panel: role and policy management UI, access request workflow, permission audit log viewer, and user/group management with identity provider sync status.",
+        "payload": {
+          "features": [
+            "role CRUD",
+            "policy assignment matrix",
+            "access request queue",
+            "audit log table with filters",
+            "user/group browser",
+            "IdP sync status"
+          ],
+          "permission_levels": [
+            "workspace",
+            "schema",
+            "table",
+            "column"
+          ]
+        },
+        "acceptance_criteria": [
+          "Admin can create a role, assign permissions at table granularity, and assign role to a user group",
+          "Access request queue shows pending requests with approve/deny actions",
+          "Audit log filterable by user, action type, resource, and time range",
+          "Permission matrix visualizes effective permissions per role across all schemas",
+          "IdP sync status shows last sync time and any sync errors per provider",
+          "Column-level permission restriction prevents masked columns from appearing in query results"
+        ],
+        "depends_on": [
+          11,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend services: auth service, ETL engine, query engine, catalog service, lineage service, and BI connectors. Target 80% line coverage per service.",
+        "payload": {
+          "test_framework": "pytest (Python services) / Jest (Node.js if applicable)",
+          "coverage_target": "80% line coverage per service",
+          "test_types": [
+            "unit tests for business logic",
+            "integration tests against test containers (PostgreSQL, Elasticsearch, Neo4j)",
+            "contract tests for API schemas"
+          ],
+          "mocking": "only at service boundaries; real databases via testcontainers"
+        },
+        "acceptance_criteria": [
+          "All six services achieve \u226580% line coverage",
+          "Integration tests run against real testcontainer instances (no mocked databases)",
+          "Contract tests validate all API responses against OpenAPI schema",
+          "ETL engine unit tests cover all source/transform/sink combinations",
+          "SQL parser lineage extraction tested against 50 representative SQL patterns including JOINs, CTEs, and window functions",
+          "Test suite completes within 10 minutes in CI"
+        ],
+        "depends_on": [
+          12,
+          13,
+          14,
+          15,
+          16,
+          11
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "QA",
+        "description": "Produce a quality assurance test plan: test strategy, test case inventory, data quality validation test cases (for ETL output), performance test cases for query engine, and exploratory testing charters for all six feature areas.",
+        "payload": {
+          "deliverables": [
+            "test strategy document",
+            "test case inventory (JIRA/TestRail)",
+            "data quality test cases",
+            "performance test cases",
+            "exploratory test charters"
+          ],
+          "data_quality_checks": [
+            "row count reconciliation",
+            "null rate",
+            "schema drift",
+            "referential integrity"
+          ],
+          "performance_targets": {
+            "query_p95_ms": 5000,
+            "etl_throughput_rows_per_sec": 100000,
+            "catalog_search_ms": 200
+          }
+        },
+        "acceptance_criteria": [
+          "Test strategy document covers scope, entry/exit criteria, risk-based prioritization, and defect management",
+          "Test case inventory has at least 150 cases covering all six feature areas",
+          "Data quality test cases include row count reconciliation, null rate checks, and schema drift detection",
+          "Performance test cases target query p95 \u22645s, ETL \u2265100k rows/sec, catalog search \u2264200ms",
+          "Exploratory charters include session goals, areas to explore, and oracle heuristics",
+          "Test cases tagged with ISO 27001 and SOC 2 control IDs where applicable"
+        ],
+        "depends_on": [
+          2,
+          7
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines: GitHub Actions workflows for lint, test, build, container push, and deploy. Implement GitOps with ArgoCD for Kubernetes deployments, blue/green deploy strategy, automated rollback on health check failure, and secrets rotation pipeline.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "cd_platform": "ArgoCD (GitOps)",
+          "deploy_strategy": "blue/green with automated rollback",
+          "container_registry": "ECR",
+          "pipeline_stages": [
+            "lint",
+            "unit test",
+            "integration test",
+            "security scan (Trivy + SAST)",
+            "build & push",
+            "deploy staging",
+            "smoke test",
+            "promote production"
+          ],
+          "secrets_rotation": "Vault + External Secrets Operator"
+        },
+        "acceptance_criteria": [
+          "PR CI pipeline completes in under 15 minutes",
+          "Failed integration tests block merge to main automatically",
+          "ArgoCD syncs staging deployment within 5 minutes of main branch push",
+          "Blue/green deployment has zero downtime during promotion",
+          "Automated rollback triggers within 2 minutes of health check failure post-deploy",
+          "Trivy container scan fails pipeline on CRITICAL CVEs",
+          "SAST scan (Semgrep) runs on every PR with results posted as PR comments"
+        ],
+        "depends_on": [
+          22,
+          10
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "DEVOPS",
+        "description": "Set up observability stack: distributed tracing (OpenTelemetry + Jaeger), metrics (Prometheus + Grafana), log aggregation (Loki), and alerting (PagerDuty integration) with SLO-based alerting for query latency, ETL success rate, and catalog availability.",
+        "payload": {
+          "tracing": "OpenTelemetry SDK \u2192 Jaeger",
+          "metrics": "Prometheus + Grafana dashboards",
+          "logs": "Loki + Grafana",
+          "alerting": "Alertmanager \u2192 PagerDuty",
+          "slos": [
+            {
+              "name": "query_latency",
+              "target": "p95 < 5s",
+              "window": "30d"
+            },
+            {
+              "name": "etl_success_rate",
+              "target": "> 99.5%",
+              "window": "7d"
+            },
+            {
+              "name": "catalog_availability",
+              "target": "> 99.9%",
+              "window": "30d"
+            }
+          ]
+        },
+        "acceptance_criteria": [
+          "End-to-end trace visible in Jaeger for a query execution spanning API \u2192 query engine \u2192 storage",
+          "Grafana dashboards exist for each service (latency, error rate, saturation, traffic \u2014 RED method)",
+          "SLO burn rate alerts fire when error budget burns 5x faster than target",
+          "PagerDuty receives alert within 1 minute of SLO breach",
+          "All logs include trace_id for correlation across services",
+          "Dashboard for ETL pipeline health shows per-pipeline success rate and last run duration"
+        ],
+        "depends_on": [
+          24
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute system-level end-to-end test suites: full ETL-to-query flow (ingest CSV \u2192 transform \u2192 query results match source), multi-tenant isolation tests, BI connector integration tests, lineage accuracy tests, and performance load tests.",
+        "payload": {
+          "e2e_scenarios": [
+            "CSV on S3 \u2192 ETL pipeline \u2192 Iceberg table \u2192 SQL query \u2192 BI dashboard (Tableau)",
+            "Multi-tenant: tenant A data not accessible to tenant B at query and catalog layer",
+            "Column-level RBAC: masked column hidden from unprivileged user in query results",
+            "Schema change propagation: table schema change reflected in catalog and lineage within 60s",
+            "Lineage accuracy: SQL with 3-way JOIN produces correct column-level lineage"
+          ],
+          "load_test_tool": "k6",
+          "load_profile": "100 concurrent query users, 10 concurrent ETL pipelines, 30 min sustained"
+        },
+        "acceptance_criteria": [
+          "All 5 E2E scenarios pass in staging environment",
+          "Multi-tenant isolation test confirms zero cross-tenant data leakage at all layers",
+          "Load test sustains 100 concurrent queries with p95 latency under 5 seconds",
+          "ETL pipeline throughput sustains 100k rows/sec for 30 minutes without error accumulation",
+          "Lineage accuracy validated: 95% of SQL-derived lineage edges match manually annotated ground truth",
+          "All E2E tests automated and runnable via single make test-e2e command",
+          "Load test simulates expected concurrent users",
+          "Failover scenario tested"
+        ],
+        "depends_on": [
+          18,
+          19,
+          20,
+          21,
+          25
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 27,
+        "task_type": "COMPLIANCE",
+        "description": "Collect and package ISO 27001 and SOC 2 evidence artifacts: access control review evidence, encryption configuration screenshots, audit log exports, vulnerability scan reports, penetration test results, and incident response drill documentation.",
+        "payload": {
+          "evidence_artifacts": [
+            "RBAC policy export with all user/role assignments",
+            "Encryption-at-rest config: S3 KMS policy, RDS encryption status",
+            "TLS configuration: nginx/ALB TLS 1.3 enforcement",
+            "Audit log export: 90-day access and admin event log",
+            "Trivy scan report: zero CRITICAL CVEs",
+            "Pen test report summary with remediation status",
+            "Incident response tabletop exercise record",
+            "Vendor security assessments for third-party services"
+          ],
+          "standards": [
+            "ISO 27001:2022",
+            "SOC 2 Type II"
+          ],
+          "evidence_storage": "immutable S3 bucket with versioning and MFA delete"
+        },
+        "acceptance_criteria": [
+          "All SOC 2 TSC criteria have at least one evidence artifact mapped",
+          "All Annex A ISO 27001 in-scope controls have documented evidence",
+          "Evidence artifacts stored in immutable S3 bucket with retention policy \u22653 years",
+          "Pen test report shows no unresolved HIGH or CRITICAL findings",
+          "Audit log completeness verified: 100% of privileged actions logged with no gaps",
+          "Evidence package reviewable by external auditor without additional context"
+        ],
+        "depends_on": [
+          26,
+          5
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 28,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: incident response playbooks for query engine outage, ETL pipeline mass failure, data breach, and catalog unavailability. Define SLAs, on-call rotation, capacity planning model, and disaster recovery procedure.",
+        "payload": {
+          "runbooks": [
+            "Query engine degraded performance",
+            "ETL pipeline mass failure (>10% failure rate)",
+            "Suspected data breach (unauthorized catalog access)",
+            "Catalog search unavailable",
+            "Warehouse storage quota alert"
+          ],
+          "sla_definitions": {
+            "availability": "99.9%",
+            "query_p95": "5s",
+            "etl_success_rate": "99.5%"
+          },
+          "dr": {
+            "rto": "4 hours",
+            "rpo": "1 hour"
+          },
+          "capacity_model": "storage growth projection, query concurrency headroom"
+        },
+        "acceptance_criteria": [
+          "Each runbook has: detection criteria, triage steps, escalation path, resolution steps, and post-mortem template",
+          "SLA definitions signed off by product manager and legal",
+          "DR procedure tested in staging: RTO \u22644h and RPO \u22641h verified",
+          "Capacity model projects storage and compute costs at 3x current load",
+          "On-call rotation defined with primary and secondary for each service area",
+          "All runbooks stored in version-controlled wiki and linked from PagerDuty alerts"
+        ],
+        "depends_on": [
+          25,
+          26
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 29,
+        "task_type": "TRAINING",
+        "description": "Produce user guides, onboarding documentation, and training materials for all four personas: data engineers (ETL pipeline authoring), data analysts (SQL editor and BI integration), data stewards (catalog curation), and admins (RBAC and monitoring).",
+        "payload": {
+          "deliverables": [
+            "Getting Started guide (30-minute first pipeline walkthrough)",
+            "Data Engineer guide: pipeline authoring, scheduling, monitoring",
+            "Data Analyst guide: SQL editor, saved queries, BI connector setup",
+            "Data Steward guide: catalog curation, tagging, glossary management",
+            "Admin guide: RBAC setup, IdP integration, monitoring dashboard",
+            "API reference (auto-generated from OpenAPI spec)",
+            "Video scripts for 5-minute feature demo videos per persona"
+          ],
+          "format": "Markdown in docs/ directory + hosted on Mintlify/Docusaurus",
+          "versioning": "docs versioned alongside product releases"
+        },
+        "acceptance_criteria": [
+          "Getting Started guide tested by a new user with zero prior context who completes first pipeline within 30 minutes",
+          "All four persona guides cover their primary workflows end-to-end with screenshots",
+          "API reference auto-generated from OpenAPI spec and deployed alongside product",
+          "Video scripts reviewed and approved by product manager",
+          "Documentation site searchable and mobile-readable",
+          "Docs version selector allows reading docs for prior releases",
+          "Admin guide separate from end-user guide",
+          "Role-based training paths defined"
+        ],
+        "depends_on": [
+          26,
+          2
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 30,
+        "task_type": "DOCS",
+        "description": "Write architecture documentation: system design document, data flow diagrams, ADRs (Architecture Decision Records) for key choices (Iceberg over Delta Lake, Trino over Spark, OPA for authz), deployment topology diagram, and developer onboarding guide.",
+        "payload": {
+          "deliverables": [
+            "System design document with component diagram",
+            "Data flow diagrams for ETL, query, catalog, and lineage flows",
+            "ADRs: table format selection, query engine selection, auth engine selection, graph store selection",
+            "Deployment topology diagram (Kubernetes, managed services, CDN)",
+            "Developer onboarding guide (local setup in under 30 minutes)"
+          ],
+          "format": "Markdown + Mermaid diagrams committed to repo",
+          "adr_format": "MADR (Markdown Architectural Decision Records)"
+        },
+        "acceptance_criteria": [
+          "System design document reviewed and approved by tech lead",
+          "All ADRs include context, decision, consequences, and alternatives considered",
+          "Developer onboarding guide tested by a new engineer who achieves local setup within 30 minutes",
+          "Mermaid diagrams render correctly in GitHub and documentation site",
+          "Data flow diagrams cover happy path and error/retry flows",
+          "Documentation kept in sync with code via CI check on API schema changes"
+        ],
+        "depends_on": [
+          26
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 30,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "Step 12 specifies 'Python UDF sandbox prevents filesystem and network access' with zero implementation detail. No sandboxing technology is named (gVisor, Firecracker, seccomp profiles, nsjail). This is the highest-severity RCE vector in the entire plan and is treated as a one-line acceptance criterion. Production UDF sandboxing is a multi-sprint effort in itself.",
+              "Step 15 column-level lineage from ANTLR SQL parsing is massively underscoped. The acceptance criterion of '50 representative SQL patterns including JOINs, CTEs, and window functions' is a toy benchmark. Commercial lineage tools (Alation, Atlan, OpenMetadata) with years of engineering still fail on dynamic SQL, stored procedures, MERGE statements, lateral joins, and dialect variations. This will be the #1 source of post-launch bugs.",
+              "Step 16 builds JDBC/ODBC drivers and native connectors for Tableau, Power BI, Looker, Metabase, and Superset as a single plan step. Each of these is a substantial engineering project: Tableau has its own connector SDK and certification process, Power BI DirectQuery requires specific query folding semantics, Looker LookML export requires understanding the LookML schema model. This is 6-12 months of work presented as one step.",
+              "Step 13 performance SLA ('SELECT query on 1B row Iceberg table returns first page within 5 seconds') is an unqualified promise. It doesn't specify cluster size, query shape, partition pruning, whether data is cached, cold vs warm path, or network topology. This will be used in sales materials and will fail for non-trivial queries.",
+              "Multi-tenant isolation is mentioned throughout but never architecturally resolved. How does Trino enforce tenant isolation at query runtime? Separate catalogs per tenant? Shared catalog with row-filter policies? What happens to the query result cache in Redis \u2014 are keys namespaced per tenant? Elasticsearch: index-per-tenant or document-level security? These gaps are where cross-tenant leakage actually happens.",
+              "Step 8 specifies 7+ data stores: PostgreSQL, Elasticsearch, Neo4j/Neptune, TimescaleDB, Redis, S3, and the query engine's own storage. No single step addresses the operational burden of running all of these. The Docker Compose in Step 9 will be enormous and slow. The on-call burden is proportional to the number of distinct stores.",
+              "The Iceberg catalog backend is never decided. The plan uses Iceberg throughout (Steps 10, 13, 14) but never selects a metastore: AWS Glue, Hive Metastore, Iceberg REST Catalog, or Project Nessie. This choice affects the query engine, ETL engine, and catalog service at their foundation. It's a day-one architectural decision that's missing.",
+              "Step 9 specifies HashiCorp Vault as a hard startup dependency for all services with no Vault HA topology, no agent sidecar pattern, and no documented fallback. If Vault is unavailable at startup, every service fails to boot. This creates a single point of failure that invalidates the 99.9% availability SLO from Step 25.",
+              "Step 26 load test profile (100 concurrent query users, 10 ETL pipelines, 30 minutes) is inadequate for a product positioning against Snowflake and BigQuery. It proves nothing about production headroom. No mention of data volume at test time, no ramp-up simulation, no spike scenarios, and no test of cache cold-start behavior.",
+              "Step 3 and Step 4 establish GDPR/CCPA data residency requirements for US and EU regions, but zero steps in the plan implement data residency enforcement at the query or storage layer. No geo-fencing of Iceberg table locations, no query routing by tenant region, no enforcement mechanism. This is a GDPR hard requirement that will block EU customers.",
+              "Step 17 AI feature acceptance criterion ('Natural language to SQL converts at least 80% of test queries') is unverifiable without a defined, adversarial test set. 80% on a hand-picked test set routinely drops to 40-50% on real user queries. No benchmark dataset (Spider, BIRD, WikiSQL) is referenced, and no evaluation methodology is defined.",
+              "Step 22 targets 80% line coverage but for a distributed data system with complex failure modes, line coverage is a poor proxy. No property-based testing, no chaos/fault injection tests, no data correctness tests that verify ETL output against source checksums. A passing test suite here would give false confidence.",
+              "Dependency order error: Step 15 (lineage) depends on Step 14 (catalog), but ETL execution lineage capture is part of Step 12 (ETL engine). Lineage events emitted by ETL need a store to write to before the catalog exists. The dependency graph forces lineage to be bolted on after ETL is built, guaranteeing a refactor of the ETL engine.",
+              "No API rate limiting or query resource governance at the API gateway layer. Step 13 specifies per-user memory/CPU quotas inside Trino, but nothing prevents a tenant from submitting 10,000 concurrent query submissions to the API layer, exhausting the query queue and starving other tenants before Trino-level governance activates.",
+              "No backup and restore implementation step exists. Step 28 defines DR procedures with RTO 4h / RPO 1h, but no step actually implements automated backups of PostgreSQL metadata, Elasticsearch indices, Neo4j graph data, or Iceberg table snapshots. DR procedures without tested restore tooling are documentation theater."
+            ],
+            "suggestions": [
+              "Add an explicit architectural decision step (before Step 8) that resolves: Iceberg catalog backend, multi-tenant isolation model at each layer (Trino, Elasticsearch, Redis, PostgreSQL RLS), and data residency enforcement mechanism. These decisions block multiple downstream steps and their absence will cause rework.",
+              "Decompose Step 16 (BI connectors) into at minimum three steps: (1) Arrow Flight SQL server + SQLAlchemy dialect, (2) JDBC/ODBC via existing wire protocol compatibility, (3) native connectors for Tableau/Power BI. Descope Looker LookML export from MVP \u2014 it requires deep semantic layer integration that is disproportionately complex.",
+              "Replace Step 12's UDF sandbox acceptance criterion with a concrete design decision: select gVisor or Firecracker as the execution environment, define the resource limits (memory, CPU, wall-clock timeout), specify the syscall allowlist, and add a security review gate before merging UDF execution code.",
+              "For Step 15 column-level lineage, consider adopting OpenLineage as the event standard rather than building a custom ANTLR parser. This gives you integrations with dbt, Spark, Airflow out of the box and reduces the scope of the custom parser to SQL typed directly in the query editor only.",
+              "Add a cost metering and billing step. The ROI analysis in Step 2 positions this against Snowflake/BigQuery, both of which have consumption-based pricing. Without a metering system, you cannot bill customers or surface cost attribution per team/pipeline \u2014 a must-have for enterprise buyers.",
+              "Separate the load test in Step 26 into two distinct scenarios: (1) sustained load at expected p50 concurrency, (2) burst load at 10x p50. Also add a cold-start query scenario (no cached Iceberg metadata, no result cache) to validate the worst-case p95 the SLA must cover.",
+              "Step 9's Docker Compose will become unmaintainable with 8 services plus PostgreSQL, Elasticsearch, Neo4j, Redis, Vault, and Kafka. Consider splitting the local dev environment into a 'core' profile (API, auth, catalog) and a 'full' profile, with documented expectations for RAM requirements per profile.",
+              "Add tenant provisioning and offboarding to the RBAC step (Step 11). Offboarding requires cascading deletion of: Elasticsearch index, Neo4j subgraph, Iceberg namespace, PostgreSQL RLS policies, and audit log archival. Missing this creates GDPR right-to-erasure compliance gaps.",
+              "The observability stack (Step 25) should be deployed before system tests (Step 26), which it is \u2014 but it should also be instrumented before any backend service is considered 'done'. Add observability instrumentation as an acceptance criterion on Steps 11-16 rather than treating it as a post-integration concern."
+            ],
+            "missing": [
+              "Iceberg catalog backend selection and justification (AWS Glue vs. Iceberg REST Catalog vs. Nessie) \u2014 affects Steps 8, 10, 12, 13, 14",
+              "Data residency enforcement mechanism for EU/US tenant separation at storage and query layers (required for GDPR Article 46)",
+              "Backup and restore implementation for all persistent stores (PostgreSQL, Elasticsearch, Neo4j, Iceberg snapshots) \u2014 the DR procedure in Step 28 has nothing to restore from",
+              "Cost metering and usage attribution system \u2014 without this, enterprise billing is impossible and the Snowflake/BigQuery comparison in the ROI analysis is not actionable",
+              "Schema registry for Kafka sources (Step 12 lists Kafka as a source but does not address schema evolution, Avro/Protobuf deserialization, or consumer group management)",
+              "Change data capture (CDC) connector design \u2014 ETL sources include PostgreSQL and MySQL but CDC (Debezium-style) is not addressed; polling-based ETL for OLTP sources at scale creates unacceptable source load",
+              "Tenant provisioning and offboarding workflow with cascading data deletion (GDPR right-to-erasure compliance)",
+              "API rate limiting and abuse prevention layer at the gateway (separate from Trino-level resource governance)",
+              "Per-tenant encryption key management (envelope encryption with tenant-specific KMS keys) \u2014 mentioned as a risk in Step 5 but never implemented",
+              "Data migration and import tooling for customers moving from Snowflake, BigQuery, or Redshift \u2014 this is a sales-cycle blocker and not in scope anywhere",
+              "Chaos engineering / fault injection test plan for distributed failure modes (Trino coordinator failure, Elasticsearch shard unavailability, Vault unreachability)"
+            ],
+            "security_risks": [
+              "Python UDF execution without a named, audited sandbox technology is a remote code execution vulnerability. If the sandbox is implemented incorrectly, a malicious UDF can read other tenants' Iceberg data, exfiltrate credentials from the Vault agent sidecar, or pivot to the Kubernetes control plane. This is the highest severity risk in the plan.",
+              "Shared Redis query result cache with tenant-namespaced keys relies on correct key construction in application code. A single bug in cache key generation leaks one tenant's query results to another. The acceptance criterion ('concurrent queries from different tenants do not share result cache entries') needs adversarial testing, not just a happy-path check.",
+              "ANTLR SQL parser (Step 15) can be DoS'd with adversarial SQL inputs \u2014 deeply nested CTEs, recursive queries, or pathologically complex join trees that trigger exponential parse time. No input validation or parse timeout is specified.",
+              "BI connector credentials (per-tool service accounts) are long-lived secrets that have read access to warehouse data. If a Tableau or Power BI service account credential is leaked, it can exfiltrate bulk data without triggering per-user quotas. Vault dynamic secrets rotation is listed but credential scope (read-all vs. read-specific-schema) is not defined.",
+              "Elasticsearch cluster is frequently misconfigured to be reachable from unintended networks. The plan puts it in private subnets but Step 14's schema inference from Glue Catalog sync could expose metadata to the Elasticsearch cluster from a broader network boundary. No Elasticsearch authentication model (API key vs. SAML) is specified.",
+              "OAuth 2.0 client credentials for service-to-service calls (in addition to mTLS) creates dual authentication paths. If the OAuth path is not disabled in production and mTLS is the intended enforcement mechanism, an attacker who compromises a client_secret bypasses mTLS entirely. The plan does not specify whether mTLS replaces or supplements OAuth for internal traffic.",
+              "Iceberg REST Catalog (if selected) exposes a metadata API that reveals table schemas and partition statistics to anyone with catalog-level access. Column-level RBAC at the query layer does not prevent schema enumeration at the catalog layer \u2014 a low-privilege user can infer sensitive data existence from column names and statistics without querying the data."
+            ],
+            "summary": "This is an architecturally ambitious and well-structured plan that correctly identifies the six core domains of a cloud data warehouse and sequences most dependencies logically. The compliance coverage (ISO 27001, SOC 2, GDPR) is thorough, the API design is sound, and the observability/CI-CD choices are production-grade. However, the plan contains several critically underscoped components that will cause significant rework: the Python UDF sandbox is a named RCE risk with no implementation, column-level SQL lineage is treated as a straightforward parsing problem when it is a known hard problem in the industry, and the BI connector step conflates five distinct certification-level integrations into a single sprint-sized task. More structurally, three foundational architectural decisions are missing entirely \u2014 the Iceberg catalog backend, the multi-tenant isolation model per data store, and the data residency enforcement mechanism \u2014 and these decisions unblock or invalidate work in at least 10 downstream steps. The plan is not ready to execute as written; it needs the missing architectural decisions resolved and the three high-risk components (UDF sandbox, lineage parser, BI drivers) broken out into their own scoped sub-plans before any code is committed. Score reflects a well-intentioned comprehensive plan with fundamental execution risks that make the 54 generous \u2014 the UDF sandboxing and lineage gaps alone could each derail the product.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "Step 12 specifies 'Python UDF sandbox prevents filesystem and network access' with zero implementation detail. No sandboxing technology is named (gVisor, Firecracker, seccomp profiles, nsjail). This is the highest-severity RCE vector in the entire plan and is treated as a one-line acceptance criterion. Production UDF sandboxing is a multi-sprint effort in itself.",
+                "Step 15 column-level lineage from ANTLR SQL parsing is massively underscoped. The acceptance criterion of '50 representative SQL patterns including JOINs, CTEs, and window functions' is a toy benchmark. Commercial lineage tools (Alation, Atlan, OpenMetadata) with years of engineering still fail on dynamic SQL, stored procedures, MERGE statements, lateral joins, and dialect variations. This will be the #1 source of post-launch bugs.",
+                "Step 16 builds JDBC/ODBC drivers and native connectors for Tableau, Power BI, Looker, Metabase, and Superset as a single plan step. Each of these is a substantial engineering project: Tableau has its own connector SDK and certification process, Power BI DirectQuery requires specific query folding semantics, Looker LookML export requires understanding the LookML schema model. This is 6-12 months of work presented as one step.",
+                "Step 13 performance SLA ('SELECT query on 1B row Iceberg table returns first page within 5 seconds') is an unqualified promise. It doesn't specify cluster size, query shape, partition pruning, whether data is cached, cold vs warm path, or network topology. This will be used in sales materials and will fail for non-trivial queries.",
+                "Multi-tenant isolation is mentioned throughout but never architecturally resolved. How does Trino enforce tenant isolation at query runtime? Separate catalogs per tenant? Shared catalog with row-filter policies? What happens to the query result cache in Redis \u2014 are keys namespaced per tenant? Elasticsearch: index-per-tenant or document-level security? These gaps are where cross-tenant leakage actually happens.",
+                "Step 8 specifies 7+ data stores: PostgreSQL, Elasticsearch, Neo4j/Neptune, TimescaleDB, Redis, S3, and the query engine's own storage. No single step addresses the operational burden of running all of these. The Docker Compose in Step 9 will be enormous and slow. The on-call burden is proportional to the number of distinct stores.",
+                "The Iceberg catalog backend is never decided. The plan uses Iceberg throughout (Steps 10, 13, 14) but never selects a metastore: AWS Glue, Hive Metastore, Iceberg REST Catalog, or Project Nessie. This choice affects the query engine, ETL engine, and catalog service at their foundation. It's a day-one architectural decision that's missing.",
+                "Step 9 specifies HashiCorp Vault as a hard startup dependency for all services with no Vault HA topology, no agent sidecar pattern, and no documented fallback. If Vault is unavailable at startup, every service fails to boot. This creates a single point of failure that invalidates the 99.9% availability SLO from Step 25.",
+                "Step 26 load test profile (100 concurrent query users, 10 ETL pipelines, 30 minutes) is inadequate for a product positioning against Snowflake and BigQuery. It proves nothing about production headroom. No mention of data volume at test time, no ramp-up simulation, no spike scenarios, and no test of cache cold-start behavior.",
+                "Step 3 and Step 4 establish GDPR/CCPA data residency requirements for US and EU regions, but zero steps in the plan implement data residency enforcement at the query or storage layer. No geo-fencing of Iceberg table locations, no query routing by tenant region, no enforcement mechanism. This is a GDPR hard requirement that will block EU customers.",
+                "Step 17 AI feature acceptance criterion ('Natural language to SQL converts at least 80% of test queries') is unverifiable without a defined, adversarial test set. 80% on a hand-picked test set routinely drops to 40-50% on real user queries. No benchmark dataset (Spider, BIRD, WikiSQL) is referenced, and no evaluation methodology is defined.",
+                "Step 22 targets 80% line coverage but for a distributed data system with complex failure modes, line coverage is a poor proxy. No property-based testing, no chaos/fault injection tests, no data correctness tests that verify ETL output against source checksums. A passing test suite here would give false confidence.",
+                "Dependency order error: Step 15 (lineage) depends on Step 14 (catalog), but ETL execution lineage capture is part of Step 12 (ETL engine). Lineage events emitted by ETL need a store to write to before the catalog exists. The dependency graph forces lineage to be bolted on after ETL is built, guaranteeing a refactor of the ETL engine.",
+                "No API rate limiting or query resource governance at the API gateway layer. Step 13 specifies per-user memory/CPU quotas inside Trino, but nothing prevents a tenant from submitting 10,000 concurrent query submissions to the API layer, exhausting the query queue and starving other tenants before Trino-level governance activates.",
+                "No backup and restore implementation step exists. Step 28 defines DR procedures with RTO 4h / RPO 1h, but no step actually implements automated backups of PostgreSQL metadata, Elasticsearch indices, Neo4j graph data, or Iceberg table snapshots. DR procedures without tested restore tooling are documentation theater."
+              ],
+              "suggestions": [
+                "Add an explicit architectural decision step (before Step 8) that resolves: Iceberg catalog backend, multi-tenant isolation model at each layer (Trino, Elasticsearch, Redis, PostgreSQL RLS), and data residency enforcement mechanism. These decisions block multiple downstream steps and their absence will cause rework.",
+                "Decompose Step 16 (BI connectors) into at minimum three steps: (1) Arrow Flight SQL server + SQLAlchemy dialect, (2) JDBC/ODBC via existing wire protocol compatibility, (3) native connectors for Tableau/Power BI. Descope Looker LookML export from MVP \u2014 it requires deep semantic layer integration that is disproportionately complex.",
+                "Replace Step 12's UDF sandbox acceptance criterion with a concrete design decision: select gVisor or Firecracker as the execution environment, define the resource limits (memory, CPU, wall-clock timeout), specify the syscall allowlist, and add a security review gate before merging UDF execution code.",
+                "For Step 15 column-level lineage, consider adopting OpenLineage as the event standard rather than building a custom ANTLR parser. This gives you integrations with dbt, Spark, Airflow out of the box and reduces the scope of the custom parser to SQL typed directly in the query editor only.",
+                "Add a cost metering and billing step. The ROI analysis in Step 2 positions this against Snowflake/BigQuery, both of which have consumption-based pricing. Without a metering system, you cannot bill customers or surface cost attribution per team/pipeline \u2014 a must-have for enterprise buyers.",
+                "Separate the load test in Step 26 into two distinct scenarios: (1) sustained load at expected p50 concurrency, (2) burst load at 10x p50. Also add a cold-start query scenario (no cached Iceberg metadata, no result cache) to validate the worst-case p95 the SLA must cover.",
+                "Step 9's Docker Compose will become unmaintainable with 8 services plus PostgreSQL, Elasticsearch, Neo4j, Redis, Vault, and Kafka. Consider splitting the local dev environment into a 'core' profile (API, auth, catalog) and a 'full' profile, with documented expectations for RAM requirements per profile.",
+                "Add tenant provisioning and offboarding to the RBAC step (Step 11). Offboarding requires cascading deletion of: Elasticsearch index, Neo4j subgraph, Iceberg namespace, PostgreSQL RLS policies, and audit log archival. Missing this creates GDPR right-to-erasure compliance gaps.",
+                "The observability stack (Step 25) should be deployed before system tests (Step 26), which it is \u2014 but it should also be instrumented before any backend service is considered 'done'. Add observability instrumentation as an acceptance criterion on Steps 11-16 rather than treating it as a post-integration concern."
+              ],
+              "missing": [
+                "Iceberg catalog backend selection and justification (AWS Glue vs. Iceberg REST Catalog vs. Nessie) \u2014 affects Steps 8, 10, 12, 13, 14",
+                "Data residency enforcement mechanism for EU/US tenant separation at storage and query layers (required for GDPR Article 46)",
+                "Backup and restore implementation for all persistent stores (PostgreSQL, Elasticsearch, Neo4j, Iceberg snapshots) \u2014 the DR procedure in Step 28 has nothing to restore from",
+                "Cost metering and usage attribution system \u2014 without this, enterprise billing is impossible and the Snowflake/BigQuery comparison in the ROI analysis is not actionable",
+                "Schema registry for Kafka sources (Step 12 lists Kafka as a source but does not address schema evolution, Avro/Protobuf deserialization, or consumer group management)",
+                "Change data capture (CDC) connector design \u2014 ETL sources include PostgreSQL and MySQL but CDC (Debezium-style) is not addressed; polling-based ETL for OLTP sources at scale creates unacceptable source load",
+                "Tenant provisioning and offboarding workflow with cascading data deletion (GDPR right-to-erasure compliance)",
+                "API rate limiting and abuse prevention layer at the gateway (separate from Trino-level resource governance)",
+                "Per-tenant encryption key management (envelope encryption with tenant-specific KMS keys) \u2014 mentioned as a risk in Step 5 but never implemented",
+                "Data migration and import tooling for customers moving from Snowflake, BigQuery, or Redshift \u2014 this is a sales-cycle blocker and not in scope anywhere",
+                "Chaos engineering / fault injection test plan for distributed failure modes (Trino coordinator failure, Elasticsearch shard unavailability, Vault unreachability)"
+              ],
+              "security_risks": [
+                "Python UDF execution without a named, audited sandbox technology is a remote code execution vulnerability. If the sandbox is implemented incorrectly, a malicious UDF can read other tenants' Iceberg data, exfiltrate credentials from the Vault agent sidecar, or pivot to the Kubernetes control plane. This is the highest severity risk in the plan.",
+                "Shared Redis query result cache with tenant-namespaced keys relies on correct key construction in application code. A single bug in cache key generation leaks one tenant's query results to another. The acceptance criterion ('concurrent queries from different tenants do not share result cache entries') needs adversarial testing, not just a happy-path check.",
+                "ANTLR SQL parser (Step 15) can be DoS'd with adversarial SQL inputs \u2014 deeply nested CTEs, recursive queries, or pathologically complex join trees that trigger exponential parse time. No input validation or parse timeout is specified.",
+                "BI connector credentials (per-tool service accounts) are long-lived secrets that have read access to warehouse data. If a Tableau or Power BI service account credential is leaked, it can exfiltrate bulk data without triggering per-user quotas. Vault dynamic secrets rotation is listed but credential scope (read-all vs. read-specific-schema) is not defined.",
+                "Elasticsearch cluster is frequently misconfigured to be reachable from unintended networks. The plan puts it in private subnets but Step 14's schema inference from Glue Catalog sync could expose metadata to the Elasticsearch cluster from a broader network boundary. No Elasticsearch authentication model (API key vs. SAML) is specified.",
+                "OAuth 2.0 client credentials for service-to-service calls (in addition to mTLS) creates dual authentication paths. If the OAuth path is not disabled in production and mTLS is the intended enforcement mechanism, an attacker who compromises a client_secret bypasses mTLS entirely. The plan does not specify whether mTLS replaces or supplements OAuth for internal traffic.",
+                "Iceberg REST Catalog (if selected) exposes a metadata API that reveals table schemas and partition statistics to anyone with catalog-level access. Column-level RBAC at the query layer does not prevent schema enumeration at the catalog layer \u2014 a low-privilege user can infer sensitive data existence from column names and statistics without querying the data."
+              ],
+              "summary": "This is an architecturally ambitious and well-structured plan that correctly identifies the six core domains of a cloud data warehouse and sequences most dependencies logically. The compliance coverage (ISO 27001, SOC 2, GDPR) is thorough, the API design is sound, and the observability/CI-CD choices are production-grade. However, the plan contains several critically underscoped components that will cause significant rework: the Python UDF sandbox is a named RCE risk with no implementation, column-level SQL lineage is treated as a straightforward parsing problem when it is a known hard problem in the industry, and the BI connector step conflates five distinct certification-level integrations into a single sprint-sized task. More structurally, three foundational architectural decisions are missing entirely \u2014 the Iceberg catalog backend, the multi-tenant isolation model per data store, and the data residency enforcement mechanism \u2014 and these decisions unblock or invalidate work in at least 10 downstream steps. The plan is not ready to execute as written; it needs the missing architectural decisions resolved and the three high-risk components (UDF sandbox, lineage parser, BI drivers) broken out into their own scoped sub-plans before any code is committed. Score reflects a well-intentioned comprehensive plan with fundamental execution risks that make the 54 generous \u2014 the UDF sandboxing and lineage gaps alone could each derail the product.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T11:10:44.090804+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 194.53,
+      "critic_plan": 116.71
+    }
+  }
+}

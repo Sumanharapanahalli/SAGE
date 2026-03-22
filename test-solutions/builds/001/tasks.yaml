@@ -1,0 +1,346 @@
+task_types:
+  SAFETY:
+    description: 'Conduct ISO 14971 risk management: identify hazards (missed fall,
+      false alarm, GPS failure, alert delay), estimate severity/probability for each,
+      define risk controls, and produce Risk Management File (RMF) and Hazard Analysis
+      Report.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All identified hazards have severity and probability ratings (S1–S5, P1–P5)
+    - Residual risk for every hazard is ALARP and within FDA/ISO 14971 acceptability
+      thresholds
+    - Risk Management Plan is signed and version-controlled
+    - Hazard-to-requirement traceability is established for each risk control
+    - ISO 14971 risk management file complete
+    - Residual risk acceptable
+    depends_on: []
+  COMPLIANCE:
+    description: Establish the Design History File (DHF) skeleton per FDA 21 CFR Part
+      820.30 and ISO 13485. Define IEC 62304 software lifecycle documentation structure
+      (Software Development Plan, Software Requirements Spec, Software Architecture
+      Doc, V&V protocols). Map all applicable standards and create traceability matrix
+      shell.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF structure covers all 21 CFR 820.30 required sections
+    - IEC 62304 Software Development Plan is drafted with lifecycle phases, roles,
+      and deliverables
+    - Traceability matrix links user needs → design inputs → design outputs → V&V
+    - Document control numbering scheme is defined and applied to all artifacts
+    - Software safety class justification (Class B) is documented with rationale
+    - DHF (Design History File) structure created
+    - V&V protocol drafted
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Define system architecture and product requirements: wearable hardware
+      specs (MCU, IMU, GPS, cellular/BLE), cloud backend topology, caregiver mobile
+      app scope, fall detection algorithm approach, emergency dispatch integration
+      (911 API or PSAP gateway), and user personas (elderly wearer, caregiver, emergency
+      responder).'
+    agent_role: product_manager
+    acceptance_criteria:
+    - System architecture diagram approved showing all components and data flows
+    - Numbered design input requirements (≥50) traceable to user needs
+    - Performance requirements have measurable acceptance criteria
+    - Use cases for fall detection, caregiver alert, and emergency dispatch are documented
+    - Out-of-scope items explicitly listed
+    depends_on: []
+  SECURITY:
+    description: 'Produce threat model (STRIDE) for device-to-cloud and cloud-to-caregiver
+      communication paths. Define security architecture: TLS 1.3 for all transport,
+      AES-256 for data at rest, device attestation, OTA firmware signing, HIPAA-aligned
+      PHI handling. Generate SBOM for all software components.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - STRIDE analysis completed for all 5 system interfaces
+    - Every HIGH and CRITICAL threat has a documented mitigation control
+    - SBOM lists all third-party libraries with CVE scan results (zero known critical
+      CVEs)
+    - Penetration test plan is drafted for pre-market validation phase
+    - HIPAA PHI data flows are identified and encryption controls documented
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 3
+  UX_DESIGN:
+    description: Design caregiver mobile app UX and wearable device interaction model.
+      Wireframe alert notification flow, location map view, device status dashboard,
+      emergency dispatch confirmation screen, and onboarding flow. Conduct accessibility
+      audit for elderly user interaction with device (single-button SOS, haptic feedback,
+      LED indicators).
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All screens wireframed and reviewed by representative caregivers
+    - Alert-to-acknowledge flow completes in ≤3 taps
+    - Device interaction spec defines SOS button hold duration, LED patterns, and
+      haptic sequences
+    - Accessibility audit report shows WCAG 2.1 AA compliance
+    - Usability test with 5 participants shows task success rate ≥90% for critical
+      flows
+    depends_on:
+    - 3
+  PCB_DESIGN:
+    description: 'Capture hardware schematic: MCU (Nordic nRF9161 with LTE-M/NB-IoT
+      + DECT NR+), 6-axis IMU (LSM6DSO32X), GPS module (u-blox M10), BLE 5.3, Li-Po
+      battery with fuel gauge (MAX17048), USB-C charging, secure element (ATECC608B).
+      Generate BOM and apply DRC rules for medical-grade PCB (IPC Class 3).'
+    agent_role: developer
+    acceptance_criteria:
+    - Schematic passes ERC with zero errors
+    - BOM includes manufacturer part numbers and approved alternates for all components
+    - DRC passes for IPC Class 3 spacing rules
+    - Power budget analysis shows ≥72h battery life at nominal operation
+    - IMU interrupt line routed to MCU wake pin for low-power fall detection
+    depends_on:
+    - 3
+  DATABASE:
+    description: 'Design cloud data model: time-series sensor data (accelerometer
+      events, GPS positions), fall events, alert records, device registry, caregiver-wearer
+      relationships, and audit trail. Define retention policies, HIPAA-compliant de-identification
+      strategy, and backup/recovery RPO/RTO targets.'
+    agent_role: developer
+    acceptance_criteria:
+    - ER diagram reviewed and approved by engineering lead
+    - All migrations run cleanly on PostgreSQL 15+ with TimescaleDB extension
+    - PHI columns encrypted and decryption requires authenticated service identity
+    - Audit log table has insert-only policy (no UPDATE/DELETE permissions on app
+      role)
+    - RTO ≤ 4h, RPO ≤ 1h documented and tested with restore drill
+    depends_on:
+    - 3
+  API:
+    description: 'Design OpenAPI 3.1 specification for all system interfaces: device-to-cloud
+      MQTT/HTTPS protocol (telemetry ingestion, OTA commands), cloud REST API (caregiver
+      app, device management), and webhook contract for emergency dispatch integration.
+      Define versioning strategy and error codes.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates against OpenAPI 3.1 schema with zero errors
+    - All endpoints have request/response schemas, error responses (400/401/403/404/500),
+      and examples
+    - MQTT topic hierarchy documented with QoS levels and retention flags
+    - Emergency dispatch webhook contract tested against RapidSOS sandbox
+    - API versioning strategy documented (URI versioning v1/v2)
+    depends_on:
+    - 3
+    - 7
+  FIRMWARE:
+    description: Implement fall detection firmware on nRF9161 using Zephyr RTOS. IMU
+      HAL driver (LSM6DSO32X SPI), fall detection algorithm (threshold-based + ML
+      Core pattern recognition), RTOS tasks for sensor polling, fall event state machine
+      (free-fall → impact → post-fall posture), and SOS button ISR handler. Implements
+      IEC 62304 Class B software unit requirements.
+    agent_role: developer
+    acceptance_criteria:
+    - IMU driver passes loopback self-test on boot with zero SPI errors
+    - Fall state machine correctly classifies ≥95% of simulated fall sequences in
+      bench test
+    - False positive rate < 2% on 60-minute ADL simulation (walking, sitting, arm
+      raises)
+    - Fall-to-MQTT-publish latency < 2 seconds measured on logic analyzer
+    - SOS button ISR triggers within 50ms of press (measured)
+    - Firmware image signed with ECDSA P-256 private key and signature verified on
+      boot
+    - All firmware modules have IEC 62304 software unit documentation (inputs, outputs,
+      rationale)
+    - IEC 62304 software class documented
+    - SOUP components listed
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 6
+    - 8
+  BACKEND:
+    description: 'Build cloud alert engine and emergency dispatch service: MQTT ingestion
+      from AWS IoT Core, fall event processor (deduplication, confidence filtering),
+      caregiver notification fan-out (push notification + SMS + in-app), 30-second
+      no-response escalation timer, and RapidSOS API integration for automatic 911
+      dispatch with GPS location payload.'
+    agent_role: developer
+    acceptance_criteria:
+    - Fall event to caregiver push notification delivered in < 5 seconds (measured
+      end-to-end)
+    - Deduplication correctly suppresses duplicate events within 60s window (unit
+      tested)
+    - 30-second escalation timer fires within ±1 second of deadline
+    - RapidSOS API call succeeds with correct GPS payload in integration test against
+      sandbox
+    - Dead-letter queue captures and retries failed notifications with exponential
+      backoff
+    - Alert engine handles 1000 concurrent fall events without degradation (load test)
+    depends_on:
+    - 7
+    - 8
+    - 4
+  FRONTEND:
+    description: 'Build caregiver mobile app (React Native + Expo) implementing all
+      UX wireframes: real-time fall alert with vibration + sound, GPS map view (MapLibre),
+      device health dashboard, alert history, emergency dispatch confirmation, and
+      wearer profile management. Implement push notifications (FCM/APNs) and background
+      location refresh.'
+    agent_role: developer
+    acceptance_criteria:
+    - Fall alert push notification received and AlertScreen opens within 3 seconds
+      on both iOS 17 and Android 14
+    - Map renders wearer GPS location with ≤2s delay from WebSocket update
+    - Emergency dispatch confirmation dialog requires explicit 2-tap confirmation
+      to prevent accidental 911 calls
+    - App passes Accessibility audit (WCAG 2.1 AA) on both platforms
+    - Background GPS refresh works on iOS with Always location permission (verified
+      in Airplane-mode-then-reconnect test)
+    - All API calls use mTLS certificate pinning (verified with Charles Proxy — certificate
+      substitution rejected)
+    depends_on:
+    - 5
+    - 12
+  CONFIG:
+    description: 'Configure SAGE solution for elder_fall_detection: create project.yaml
+      (domain, active modules, theme), prompts.yaml (analyst, developer, safety, regulatory
+      roles with domain context), and tasks.yaml (fall detection firmware review,
+      alert engine analysis, regulatory compliance check task types). Configure agentic
+      pattern: Human-in-the-Loop (HITL) for all OTA deployment and emergency dispatch
+      configuration changes.'
+    agent_role: developer
+    acceptance_criteria:
+    - make run PROJECT=elder_fall_detection starts without errors
+    - All active_modules appear in sidebar with correct routing
+    - HITL approval queue intercepts OTA deployment proposals (verified via POST /analyze
+      test)
+    - SAGE theme renders correctly in browser
+    - All 3 custom task types appear in POST /analyze task_type dropdown
+    depends_on:
+    - 3
+  EMBEDDED_TEST:
+    description: 'Develop hardware-in-the-loop (HIL) test suite for fall detection
+      firmware: automated fall simulation rig (IMU signal injection via JTAG/SWD),
+      test cases for all fall scenarios, firmware unit tests (Zephyr Test Framework),
+      and integration test harness validating end-to-end flow from IMU trigger to
+      MQTT publish.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥ 80% of firmware source lines (measured with gcov)
+    - Fall detection sensitivity ≥ 95% on 200-event simfall dataset
+    - ADL false positive rate < 2% on 500-event ADL dataset
+    - All 7 unit test suites pass with zero failures on clean build
+    - HIL integration test for fall-to-MQTT passes 50 consecutive runs without failure
+    - IEC 62304 software unit test records generated and signed for each test suite
+    depends_on:
+    - 9
+    - 10
+  QA:
+    description: 'Develop and execute QA test plan for cloud backend and mobile app:
+      functional test cases for all API endpoints (positive and negative paths), alert
+      delivery reliability test (1000 simulated fall events), caregiver app UI regression
+      suite (Detox), and performance test (Locust: 10,000 concurrent devices).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All functional test cases pass with ≥99% pass rate
+    - Alert delivery reliability ≥ 99.9% over 1000-event test (≤1 undelivered alert)
+    - Alert P99 latency < 8 seconds under 10,000 device load
+    - Backend maintains < 2% error rate under full load test
+    - 'Mobile Detox regression suite: 100% pass rate on both iOS and Android simulators'
+    - QA test report with defect log generated and stored in DHF
+    depends_on:
+    - 11
+    - 12
+    - 13
+  REGULATORY:
+    description: 'Prepare 510(k) premarket notification submission package: cover
+      letter, device description, substantial equivalence comparison, performance
+      testing summary, software documentation summary (IEC 62304 Level of Concern:
+      Moderate), cybersecurity documentation per FDA Cybersecurity Guidance (2023),
+      and labeling (UDI, Rx Only, contraindications).'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All 510(k) sections complete per FDA guidance document on 510(k) submissions
+    - Software documentation includes SOUP list, anomaly list, and level of concern
+      justification
+    - Cybersecurity section addresses all FDA 2023 guidance requirements (SBOM, vulnerability
+      disclosure policy, update mechanism)
+    - Labeling reviewed by legal_advisor for FDA Part 801 compliance
+    - UDI registered in FDA GUDID database
+    - Submission package reviewed by regulatory_specialist and ready for FDA eCopy
+      submission
+    depends_on:
+    - 18
+    - 4
+  DEVOPS:
+    description: 'Build CI/CD pipelines: firmware build pipeline (GitHub Actions +
+      nRF Connect SDK Docker container, automated HIL test trigger on PR), cloud backend
+      pipeline (Python lint + pytest + Docker build + ECS deploy with blue-green),
+      mobile app pipeline (Expo EAS Build + Detox tests + TestFlight/Play Console
+      deploy). Add infrastructure-as-code (Terraform) for all AWS resources.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Firmware pipeline builds and runs HIL tests automatically on every PR (< 15min
+      pipeline)
+    - Backend pipeline deploys to staging on PR merge and production on release tag
+      (blue-green, zero downtime)
+    - Mobile pipeline produces signed builds for both platforms on every main merge
+    - Terraform plan applies cleanly to fresh AWS account with zero manual steps
+    - CloudWatch dashboards show all critical metrics with correct alarm thresholds
+    - PagerDuty alert fires within 2 minutes of simulated alert delivery failure
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 10
+  SYSTEM_TEST:
+    description: 'Execute design validation in representative use environment: clinical
+      simulation with elderly volunteer participants wearing device during ADL (30
+      participants), caregiver alert workflow user acceptance test (20 caregiver participants),
+      emergency dispatch integration test with RapidSOS production sandbox, and 30-day
+      field reliability trial.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 'Clinical simulation: sensitivity ≥ 95%, false positive rate ≤ 2% per 4h (primary
+      validation endpoints)'
+    - 'Caregiver UAT: SUS score ≥ 80, task completion ≥ 95%'
+    - 'RapidSOS sandbox: 10/10 test incidents created with correct GPS and wearer
+      data'
+    - '30-day field trial: device uptime ≥ 99%, battery life ≥ 72h, zero data loss
+      events'
+    - Design Validation Report signed by clinical lead and regulatory_specialist
+    - All validation deviations documented with impact assessment in DHF
+    depends_on:
+    - 16
+    - 17
+    - 13
+  DOCS:
+    description: 'Produce all documentation: developer README (local setup, build,
+      test), API reference (auto-generated from OpenAPI spec with Redoc), firmware
+      architecture document (IEC 62304 §5.3), user manual for caregivers, quick-start
+      guide for wearers, and maintenance/service manual for clinical staff.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - README allows a new engineer to set up dev environment and run tests in < 30
+      minutes
+    - API reference covers all endpoints with request/response examples and error
+      codes
+    - IEC 62304 Software Architecture Document reviewed and approved by technical
+      lead
+    - Caregiver user manual tested with 5 participants unfamiliar with the app (all
+      complete onboarding unaided)
+    - Wearer quick start card reviewed by occupational therapist for clarity with
+      elderly users
+    - All documents version-controlled and referenced in DHF index
+    depends_on:
+    - 18
+    - 19
+  TRAINING:
+    description: 'Develop training materials: clinical staff onboarding (device setup,
+      caregiver app admin, alert response protocol), caregiver app onboarding video
+      series (5 x 3-minute videos), and regulatory training record for IEC 62304 compliance
+      (all engineering staff trained on software lifecycle procedures).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Clinical training materials reviewed and approved by clinical operations manager
+    - Caregiver video series tested with 5 representative caregivers (all complete
+      setup unaided after viewing)
+    - 'IEC 62304 training: 100% of engineering staff complete training with ≥80% quiz
+      score'
+    - Training records stored in QMS with employee signatures and completion dates
+    - Training materials version-controlled and updated with each major software release
+    depends_on:
+    - 23
+    - 22

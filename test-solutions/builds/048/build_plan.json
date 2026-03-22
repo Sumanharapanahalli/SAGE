@@ -1,0 +1,949 @@
+{
+  "run_id": "180be6ef-55c3-417b-a352-b0f747b59b4b",
+  "status": {
+    "run_id": "180be6ef-55c3-417b-a352-b0f747b59b4b",
+    "solution_name": "loyalty_rewards",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T06:10:39.653240+00:00",
+    "updated_at": "2026-03-22T06:15:17.020431+00:00",
+    "product_description": "Customer loyalty and rewards platform with point earning/redemption, tier levels, referral tracking, birthday rewards, and POS integration.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze loyalty platform market: competitor feature matrix (Smile.io, LoyaltyLion, Yotpo), pricing benchmarks, POS ecosystem landscape (Square, Clover, Toast, Shopify), and SMB vs enterprise segmentation.",
+        "payload": {
+          "competitors": [
+            "Smile.io",
+            "LoyaltyLion",
+            "Yotpo",
+            "Stamp Me",
+            "Loyalty Gator"
+          ],
+          "focus_areas": [
+            "pricing_models",
+            "pos_integrations",
+            "tier_structures",
+            "referral_mechanics",
+            "churn_rates"
+          ],
+          "deliverable": "market_research_report.md"
+        },
+        "acceptance_criteria": [
+          "Competitor feature matrix covers at least 5 platforms with pricing tiers documented",
+          "POS integration ecosystem mapped with API availability for top 5 POS systems",
+          "Customer segment personas defined (SMB retailer, restaurant chain, e-commerce brand)",
+          "Market sizing estimate with TAM/SAM/SOM for loyalty_rewards solution"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements: point earning rules engine spec, redemption mechanics, tier threshold logic, referral attribution model, birthday reward triggering, and merchant admin requirements.",
+        "payload": {
+          "deliverables": [
+            "BRD.md",
+            "user_stories.md",
+            "process_flow_diagrams"
+          ],
+          "epics": [
+            "point_earning",
+            "redemption",
+            "tier_management",
+            "referral_tracking",
+            "birthday_rewards",
+            "pos_integration",
+            "merchant_admin",
+            "customer_portal"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 8 epics decomposed into numbered user stories with acceptance criteria",
+          "Point earning rules engine spec covers multipliers, caps, expiry, and exclusion categories",
+          "Referral attribution model handles multi-touch, fraud prevention, and payout timing",
+          "Birthday reward logic specifies trigger window, eligibility, and redemption constraints",
+          "POS integration flow documented for at least 2 POS systems end-to-end"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "User research with 8-10 target merchants and 10-15 end consumers. Produce wireframes for customer loyalty portal (balance, history, rewards catalog, referral link), merchant dashboard (program config, analytics, member management), and POS receipt/checkout loyalty flow.",
+        "payload": {
+          "research_methods": [
+            "user_interviews",
+            "competitor_usability_audit",
+            "card_sorting"
+          ],
+          "deliverables": [
+            "persona_docs",
+            "journey_maps",
+            "lo-fi_wireframes",
+            "hi-fi_mockups",
+            "accessibility_audit_WCAG_2.1_AA"
+          ],
+          "screens": [
+            "customer_portal",
+            "merchant_dashboard",
+            "pos_checkout_widget",
+            "onboarding_flow",
+            "rewards_catalog",
+            "referral_hub"
+          ]
+        },
+        "acceptance_criteria": [
+          "Minimum 8 user research sessions completed and synthesized into 3 personas",
+          "Customer portal wireframes cover: balance view, transaction history, tier progress, rewards catalog, referral hub, birthday status",
+          "Merchant dashboard wireframes cover: program setup, member list, analytics, tier config, reward management",
+          "WCAG 2.1 AA accessibility audit completed with zero critical violations in final mockups",
+          "Design system tokens (colors, typography, spacing) documented and ready for frontend handoff"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model: SaaS pricing tiers for merchants (transaction volume bands), unit economics (CAC, LTV, gross margin), revenue projections (3-year), point liability reserve model, and referral payout cost modeling.",
+        "payload": {
+          "pricing_tiers": [
+            "starter",
+            "growth",
+            "enterprise"
+          ],
+          "model_outputs": [
+            "P&L_projection",
+            "point_liability_reserve",
+            "referral_payout_schedule",
+            "break_even_analysis",
+            "unit_economics_dashboard"
+          ],
+          "deliverable": "financial_model.xlsx"
+        },
+        "acceptance_criteria": [
+          "Three pricing tiers defined with feature gating and transaction volume caps",
+          "Point liability reserve model accounts for breakage rates (typically 20-30%) and redemption velocity",
+          "3-year P&L projection with monthly granularity for year 1",
+          "Referral payout cost modeled against acquisition cost savings to validate positive ROI",
+          "Unit economics show path to positive LTV/CAC ratio > 3x by month 18"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 5,
+        "task_type": "LEGAL",
+        "description": "Draft legal artifacts: Terms of Service, Privacy Policy (GDPR/CCPA compliant), Merchant Agreement covering point liability and program rules, referral program terms, and open-source license inventory (SBOM legal review).",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "merchant_agreement.md",
+            "referral_program_terms.md",
+            "cookie_policy.md"
+          ],
+          "compliance_frameworks": [
+            "GDPR",
+            "CCPA",
+            "CAN-SPAM"
+          ],
+          "review_areas": [
+            "data_retention",
+            "point_expiry_enforceability",
+            "referral_fraud_liability",
+            "PII_handling"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy covers all PII categories collected (email, birthday, purchase history, referral links) with lawful basis per GDPR Art.6",
+          "Merchant Agreement specifies point liability ownership and indemnification clauses",
+          "Referral program terms include fraud prevention clauses and disqualification conditions",
+          "Cookie policy covers analytics, POS widget third-party cookies",
+          "All documents reviewed by legal_advisor and flagged items resolved",
+          "Return/refund policy drafted",
+          "Consumer protection compliance checked"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 6,
+        "task_type": "SECURITY",
+        "description": "Threat model the loyalty platform: STRIDE analysis for point fraud vectors, PCI DSS scope assessment for POS integration, API authentication threat model, referral abuse detection design, and OWASP Top 10 review plan.",
+        "payload": {
+          "methodology": "STRIDE",
+          "scope": [
+            "points_engine_api",
+            "pos_webhook_receiver",
+            "customer_portal",
+            "merchant_dashboard",
+            "referral_attribution"
+          ],
+          "pci_scope": "POS integration touches payment adjacency \u2014 assess SAQ type",
+          "deliverables": [
+            "threat_model.md",
+            "pci_scope_assessment.md",
+            "pen_test_plan.md",
+            "SBOM.json"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model completed for all 5 in-scope components with mitigations documented",
+          "PCI DSS SAQ type determined and scoping boundary documented (loyalty points are NOT payment data \u2014 boundary must be explicit)",
+          "Point manipulation attack vectors identified: replay attacks, negative balance exploits, referral loop fraud, birthday reward abuse",
+          "Pen test plan covers: auth bypass, IDOR on member records, API rate limiting, webhook signature validation",
+          "SBOM generated covering all runtime dependencies with known CVE scan baseline",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 7,
+        "task_type": "COMPLIANCE",
+        "description": "Produce PCI DSS compliance artifacts: data flow diagram showing cardholder data environment (CDE) boundary, POS integration architecture review to minimize CDE scope, SAQ questionnaire completion, and compensating controls documentation.",
+        "payload": {
+          "standard": "PCI DSS v4.0",
+          "artifacts": [
+            "data_flow_diagram.md",
+            "CDE_boundary_definition.md",
+            "SAQ_completion.md",
+            "compensating_controls.md",
+            "vendor_responsibility_matrix.md"
+          ],
+          "pos_systems_in_scope": [
+            "Square",
+            "Clover",
+            "Toast",
+            "Shopify_POS"
+          ],
+          "scope_reduction_strategy": "use_tokenized_webhooks_not_card_data"
+        },
+        "acceptance_criteria": [
+          "Data flow diagram clearly marks CDE boundary \u2014 loyalty points flow must be architecturally isolated from card data",
+          "POS integration design confirmed to use tokenized transaction events (no PAN, no CVV ever touches loyalty_rewards system)",
+          "SAQ type confirmed (target SAQ A or SAQ D depending on integration depth) with all applicable requirements listed",
+          "Vendor responsibility matrix completed for each POS integration partner",
+          "Compensating controls documented for any requirements not fully met at launch"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema: members, merchants, programs, point_transactions, tiers, rewards, referrals, birthday_rewards, pos_integrations, audit_log. PostgreSQL with row-level security for multi-tenancy.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "orm": "SQLAlchemy 2.x with Alembic migrations",
+          "tables": [
+            "merchants",
+            "merchant_programs",
+            "members",
+            "member_tiers",
+            "point_transactions",
+            "redemptions",
+            "rewards_catalog",
+            "referrals",
+            "birthday_rewards",
+            "pos_integrations",
+            "pos_webhooks",
+            "audit_events"
+          ],
+          "features": [
+            "row_level_security",
+            "partitioning_on_point_transactions",
+            "indexes_for_member_lookup",
+            "soft_deletes"
+          ],
+          "deliverable": "migrations/001_initial_schema.py"
+        },
+        "acceptance_criteria": [
+          "All 12 tables created with foreign key constraints and NOT NULL constraints enforced",
+          "point_transactions table partitioned by created_at month for query performance at scale",
+          "Row-level security policies implemented so merchant A cannot query merchant B's members",
+          "Indexes on: member email (unique per merchant), member_id+created_at on point_transactions, referrer_id on referrals",
+          "Alembic migration runs cleanly from empty DB to full schema with zero errors",
+          "Schema reviewed against data model in BRD \u2014 all entities and relationships present"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 spec for all loyalty platform endpoints: member enrollment, point transactions, redemptions, tier calculation, referral tracking, birthday reward triggering, POS webhook receiver, merchant program config, and analytics.",
+        "payload": {
+          "spec_file": "openapi.yaml",
+          "auth": "JWT (member-facing) + API Key (POS webhooks) + OAuth2 (merchant dashboard)",
+          "endpoint_groups": [
+            "POST /members/enroll, GET /members/{id}, PATCH /members/{id}",
+            "POST /points/earn, POST /points/redeem, GET /points/balance/{member_id}, GET /points/history/{member_id}",
+            "GET /tiers, GET /tiers/progress/{member_id}",
+            "POST /referrals/create, GET /referrals/{code}, POST /referrals/complete",
+            "POST /rewards/birthday/trigger, GET /rewards/catalog",
+            "POST /webhooks/pos/{integration_type}, GET /webhooks/pos/status",
+            "GET/POST /programs, GET /analytics/dashboard"
+          ],
+          "versioning": "URL versioning /api/v1/"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec passes validation with no errors (openapi-spec-validator)",
+          "All endpoints include request/response schemas with examples",
+          "Authentication scheme documented for each endpoint group",
+          "POS webhook receiver spec includes HMAC signature validation header",
+          "Rate limiting headers documented (X-RateLimit-Limit, X-RateLimit-Remaining)",
+          "Error response schema consistent across all endpoints (RFC 7807 Problem Details)"
+        ],
+        "depends_on": [
+          2,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "CONFIG",
+        "description": "Set up loyalty_rewards solution configuration: SAGE project.yaml, prompts.yaml, tasks.yaml, environment config, Docker Compose for local dev (Postgres, Redis, backend, frontend), and CI/CD skeleton.",
+        "payload": {
+          "solution_name": "loyalty_rewards",
+          "agentic_pattern": "coordinator",
+          "services": [
+            "postgres:16",
+            "redis:7",
+            "fastapi_backend",
+            "react_frontend",
+            "celery_worker"
+          ],
+          "env_vars": [
+            "DATABASE_URL",
+            "REDIS_URL",
+            "JWT_SECRET",
+            "POS_WEBHOOK_SECRET",
+            "STRIPE_KEY"
+          ],
+          "files": [
+            "docker-compose.yml",
+            ".env.example",
+            "solutions/loyalty_rewards/project.yaml",
+            "solutions/loyalty_rewards/prompts.yaml",
+            "solutions/loyalty_rewards/tasks.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker-compose up --build starts all 5 services with zero errors",
+          "project.yaml defines solution metadata, active_modules, and theme block",
+          "prompts.yaml defines agent roles: loyalty_analyst, points_engineer, pos_integration_specialist",
+          "tasks.yaml registers all task types used by this solution",
+          ".env.example documents all required environment variables with descriptions",
+          "Health check endpoints respond 200 for all services after docker-compose up"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement core loyalty engine: member enrollment service, points earning/expiry engine (rules-based with multipliers), points redemption service with balance validation, and tier calculation engine with automatic promotion/demotion.",
+        "payload": {
+          "framework": "FastAPI",
+          "modules": [
+            "src/services/member_service.py",
+            "src/services/points_engine.py",
+            "src/services/redemption_service.py",
+            "src/services/tier_engine.py"
+          ],
+          "points_rules": [
+            "base_earn_rate",
+            "category_multipliers",
+            "bonus_events",
+            "point_expiry",
+            "earn_caps"
+          ],
+          "tier_logic": [
+            "threshold_calculation",
+            "rolling_12month_window",
+            "tier_benefits_mapping",
+            "grace_period_on_demotion"
+          ]
+        },
+        "acceptance_criteria": [
+          "Member enrollment creates member record, sets initial tier, and returns welcome point bonus if configured",
+          "Points engine correctly applies base rate, category multipliers, and enforces earn caps per transaction",
+          "Redemption service validates: sufficient balance, reward is active, member tier qualifies, and applies atomic transaction",
+          "Tier engine recalculates tier after every point transaction and emits tier_change event on promotion/demotion",
+          "Points expiry job correctly identifies and expires points older than program-configured TTL",
+          "All service functions covered by unit tests with 90%+ line coverage"
+        ],
+        "depends_on": [
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement referral tracking service and birthday rewards engine: referral link generation, attribution tracking (multi-touch with fraud detection), referral completion webhook, birthday reward scheduling (cron), and reward delivery service.",
+        "payload": {
+          "modules": [
+            "src/services/referral_service.py",
+            "src/services/birthday_engine.py",
+            "src/services/reward_delivery.py",
+            "src/jobs/birthday_cron.py",
+            "src/jobs/referral_payout_job.py"
+          ],
+          "referral_fraud_checks": [
+            "self_referral_prevention",
+            "same_device_detection",
+            "velocity_limiting",
+            "minimum_purchase_threshold"
+          ],
+          "birthday_config": [
+            "trigger_window_days",
+            "reward_type",
+            "validity_period",
+            "one_per_year_enforcement"
+          ]
+        },
+        "acceptance_criteria": [
+          "Referral links are unique per member, trackable, and expire after program-configured days",
+          "Self-referral attempts blocked at service layer with audit event logged",
+          "Birthday cron job runs daily, identifies members with birthday in trigger window, and issues reward without duplicates",
+          "One-per-year enforcement prevents duplicate birthday rewards across calendar years",
+          "Referral payout holds until referred member completes qualifying purchase (configurable threshold)",
+          "Referral fraud velocity check blocks > 5 referral completions from same IP in 24h"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement POS integration layer: webhook receiver with HMAC validation, adapters for Square, Clover, Toast, and Shopify POS, transaction normalization pipeline, idempotency handling, and retry queue with dead-letter.",
+        "payload": {
+          "modules": [
+            "src/integrations/pos/webhook_receiver.py",
+            "src/integrations/pos/adapters/square_adapter.py",
+            "src/integrations/pos/adapters/clover_adapter.py",
+            "src/integrations/pos/adapters/toast_adapter.py",
+            "src/integrations/pos/adapters/shopify_pos_adapter.py",
+            "src/integrations/pos/transaction_normalizer.py"
+          ],
+          "idempotency": "transaction_id deduplication via Redis with 24h TTL",
+          "retry_strategy": "exponential backoff, 3 attempts, dead-letter queue to postgres"
+        },
+        "acceptance_criteria": [
+          "HMAC signature validation rejects webhooks with invalid signatures (tested with tampered payloads)",
+          "Each POS adapter normalizes to canonical TransactionEvent schema (member_id, amount, merchant_id, timestamp, transaction_id)",
+          "Duplicate webhook delivery handled idempotently \u2014 second delivery of same transaction_id is a no-op",
+          "Failed webhook processing retried 3 times with exponential backoff before dead-letter",
+          "Dead-letter queue entries visible in merchant admin for manual review",
+          "POS integration supports member identification by: email, phone, loyalty card number (adapter-specific)"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement merchant program management API: program configuration (earn rates, tiers, rewards catalog), member management endpoints, analytics aggregation (active members, points issued/redeemed, referral conversion, tier distribution), and multi-tenant isolation.",
+        "payload": {
+          "modules": [
+            "src/services/program_service.py",
+            "src/services/analytics_service.py",
+            "src/api/merchant_router.py"
+          ],
+          "analytics_metrics": [
+            "active_members_30d",
+            "points_issued_vs_redeemed",
+            "tier_distribution",
+            "referral_conversion_rate",
+            "birthday_redemption_rate",
+            "pos_transaction_volume"
+          ],
+          "caching": "Redis cache for analytics aggregates, 5-minute TTL"
+        },
+        "acceptance_criteria": [
+          "Merchant can configure: earn rate (points per $1), tier thresholds, reward catalog items, referral bonus amounts, birthday reward type",
+          "Program config changes are versioned and audit-logged",
+          "Analytics dashboard aggregates respond in < 500ms via Redis cache",
+          "Multi-tenant isolation enforced \u2014 merchant API key scopes all queries to that merchant's data only",
+          "Member management supports: search by email/phone, view history, manual point adjustment with reason, tier override"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build customer loyalty portal (React 18 + TypeScript): member dashboard (balance, tier progress bar, next tier requirements), transaction history, rewards catalog with redemption flow, referral hub (unique link, share buttons, status tracker), and birthday reward status.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "ui_library": "Tailwind CSS + shadcn/ui",
+          "pages": [
+            "pages/portal/Dashboard.tsx",
+            "pages/portal/History.tsx",
+            "pages/portal/Rewards.tsx",
+            "pages/portal/Referrals.tsx",
+            "pages/portal/Profile.tsx"
+          ],
+          "state_management": "React Query for server state, Zustand for local state",
+          "responsive": "mobile-first, PWA-capable"
+        },
+        "acceptance_criteria": [
+          "Dashboard shows: current point balance, tier badge, progress to next tier, recent transactions (last 5)",
+          "Tier progress bar animates and displays exact points needed for next tier upgrade",
+          "Rewards catalog supports filtering by category and point cost, with clear redemption confirmation flow",
+          "Referral hub generates shareable link, shows per-referral status (pending/qualified/paid), and displays total referral earnings",
+          "All pages pass Lighthouse accessibility score > 90",
+          "Portal is fully functional on mobile (320px viewport)"
+        ],
+        "depends_on": [
+          3,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build merchant admin dashboard (React 18 + TypeScript): program setup wizard, member management table with search/filter, analytics dashboard with charts, tier and rewards catalog configuration, POS integration setup, and referral program settings.",
+        "payload": {
+          "pages": [
+            "pages/merchant/ProgramSetup.tsx",
+            "pages/merchant/Members.tsx",
+            "pages/merchant/Analytics.tsx",
+            "pages/merchant/Rewards.tsx",
+            "pages/merchant/Integrations.tsx",
+            "pages/merchant/Settings.tsx"
+          ],
+          "charts": "Recharts \u2014 line charts for point volume over time, pie for tier distribution, bar for redemption by category",
+          "data_table": "TanStack Table with server-side pagination for member list"
+        },
+        "acceptance_criteria": [
+          "Program setup wizard covers all 6 config areas in a stepped flow with validation",
+          "Member table supports search by name/email/phone, filter by tier, sort by join date and balance, paginated at 50/page",
+          "Analytics charts load with data for last 30/90/365 day windows via date range picker",
+          "POS integration setup page shows API keys, webhook URL, and integration test button per POS type",
+          "Tier configuration UI allows drag-reorder of tiers, threshold editing, and benefit assignment",
+          "All admin actions (manual point adjustment, tier override) require confirmation dialog before submission"
+        ],
+        "depends_on": [
+          3,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "TESTS",
+        "description": "Write comprehensive test suite: unit tests for points engine, tier calculator, referral fraud detection, birthday engine; integration tests for POS webhook adapters; API contract tests against OpenAPI spec; and database migration regression tests.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio + httpx",
+          "test_files": [
+            "tests/unit/test_points_engine.py",
+            "tests/unit/test_tier_engine.py",
+            "tests/unit/test_referral_service.py",
+            "tests/unit/test_birthday_engine.py",
+            "tests/integration/test_pos_webhooks.py",
+            "tests/integration/test_member_lifecycle.py",
+            "tests/contract/test_api_contract.py",
+            "tests/db/test_migrations.py"
+          ],
+          "coverage_target": "90% line coverage on src/services/"
+        },
+        "acceptance_criteria": [
+          "Points engine tests cover: base earn, multipliers, earn cap enforcement, expiry, negative balance prevention",
+          "Tier engine tests cover: promotion, demotion, grace period, edge case at exact threshold",
+          "Referral fraud tests cover: self-referral, velocity limiting, duplicate completion, minimum purchase enforcement",
+          "POS webhook integration tests cover: valid payload, invalid HMAC, duplicate idempotency key, each adapter type",
+          "API contract tests validate all endpoints against OpenAPI spec using schemathesis",
+          "Overall coverage report shows >= 90% for services layer"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "QA",
+        "description": "QA test planning and execution: test case design for all loyalty flows, exploratory testing session for fraud edge cases, cross-browser/cross-device testing for customer portal, and UAT plan for merchant onboarding flow.",
+        "payload": {
+          "test_plan": "qa/test_plan.md",
+          "test_cases": "qa/test_cases/",
+          "browsers": [
+            "Chrome 120+",
+            "Safari 17+",
+            "Firefox 121+"
+          ],
+          "devices": [
+            "iPhone 14",
+            "Samsung Galaxy S23",
+            "iPad Pro"
+          ],
+          "exploratory_charters": [
+            "point_manipulation",
+            "referral_loop_abuse",
+            "birthday_repeat_claim",
+            "concurrent_redemptions"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test plan covers all user stories from BRD with traceability matrix",
+          "Minimum 150 test cases written and executed with pass/fail status recorded",
+          "All P0/P1 defects resolved before sign-off; P2 defects have documented workarounds or deferred dates",
+          "Cross-browser testing completed with no critical failures on listed browsers",
+          "Mobile testing confirms customer portal usable on listed devices without layout breaks",
+          "UAT sign-off document signed by product_manager"
+        ],
+        "depends_on": [
+          15,
+          16,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "SECURITY",
+        "description": "Execute security review: OWASP Top 10 assessment against deployed staging environment, API authentication penetration test (JWT manipulation, API key brute force), point fraud simulation (race conditions on redemption, replay attacks), and dependency vulnerability scan.",
+        "payload": {
+          "tools": [
+            "OWASP ZAP",
+            "Bandit (Python SAST)",
+            "npm audit",
+            "Trivy (container scan)"
+          ],
+          "test_scenarios": [
+            "concurrent_redemption_race_condition",
+            "negative_balance_exploit",
+            "JWT_algorithm_confusion",
+            "IDOR_on_member_records",
+            "webhook_replay_attack",
+            "birthday_reward_date_manipulation"
+          ],
+          "deliverable": "security_assessment_report.md"
+        },
+        "acceptance_criteria": [
+          "OWASP ZAP scan completed against staging with zero High severity findings unmitigated",
+          "Race condition test on concurrent redemptions confirms atomic transaction prevents double-spend",
+          "JWT algorithm confusion attack rejected by backend (RS256 enforced, algorithm not accepted from token header)",
+          "IDOR test confirms member A cannot access member B's points history via modified member_id",
+          "Dependency scan shows zero Critical CVEs in production dependencies",
+          "Security assessment report delivered with CVSS scores, mitigations, and retest confirmation",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          17,
+          18
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 20,
+        "task_type": "DEVOPS",
+        "description": "Set up production infrastructure: Kubernetes manifests (backend, celery worker, frontend), PostgreSQL RDS with read replica, Redis ElastiCache, GitHub Actions CI/CD pipeline, Datadog monitoring with loyalty KPI dashboards, and alerting for points engine errors.",
+        "payload": {
+          "cloud": "AWS",
+          "services": [
+            "EKS",
+            "RDS PostgreSQL",
+            "ElastiCache Redis",
+            "ALB",
+            "ACM",
+            "Route53",
+            "CloudWatch",
+            "Datadog"
+          ],
+          "ci_cd": "GitHub Actions \u2014 lint \u2192 test \u2192 build \u2192 deploy to staging \u2192 smoke test \u2192 promote to prod",
+          "monitoring_dashboards": [
+            "points_transactions_per_minute",
+            "redemption_error_rate",
+            "pos_webhook_latency",
+            "tier_recalculation_lag"
+          ],
+          "alerts": [
+            "points_engine_error_rate > 1%",
+            "pos_webhook_dead_letter_queue_depth > 10",
+            "redemption_latency_p99 > 2s"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI/CD pipeline runs on every PR: lint, unit tests, build, and integration tests must all pass",
+          "Staging deployment automated on merge to main; prod deployment requires manual approval gate",
+          "PostgreSQL RDS with automated backups, read replica for analytics queries, and 7-day PITR",
+          "Datadog dashboard shows all 4 loyalty KPIs with historical data from first deployment",
+          "All 3 alerting rules configured and tested with synthetic metric injection",
+          "Zero-downtime deployment confirmed via rolling update with readiness probe"
+        ],
+        "depends_on": [
+          18
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: incident response for points engine outage, POS webhook backlog recovery, birthday reward batch failure, database failover procedure, SLA definitions, and capacity planning model for 10x member growth.",
+        "payload": {
+          "runbooks": [
+            "ops/runbooks/points_engine_outage.md",
+            "ops/runbooks/pos_webhook_recovery.md",
+            "ops/runbooks/birthday_batch_failure.md",
+            "ops/runbooks/database_failover.md",
+            "ops/runbooks/referral_fraud_incident.md"
+          ],
+          "sla": {
+            "api_availability": "99.9%",
+            "points_transaction_latency_p99": "500ms",
+            "webhook_processing_latency": "5s"
+          },
+          "on_call": "PagerDuty rotation configured"
+        },
+        "acceptance_criteria": [
+          "Each runbook includes: trigger conditions, severity classification, step-by-step remediation, rollback procedure, and post-incident review template",
+          "SLA document defines availability targets, exclusions, measurement method, and breach notification process",
+          "POS webhook recovery runbook covers dead-letter queue replay with idempotency guarantee",
+          "Database failover runbook tested in staging with RTO documented (target < 5 minutes)",
+          "Capacity planning model projects infrastructure costs and scaling events for 10x member growth",
+          "PagerDuty on-call schedule configured with escalation policy"
+        ],
+        "depends_on": [
+          20
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 22,
+        "task_type": "DOCS",
+        "description": "Write technical documentation: API reference (auto-generated from OpenAPI + hand-authored guides), POS integration guides per provider, merchant onboarding guide, developer SDK quickstart, and architecture decision records (ADRs) for key design choices.",
+        "payload": {
+          "docs_platform": "Docusaurus",
+          "sections": [
+            "docs/api-reference/",
+            "docs/pos-integrations/square.md",
+            "docs/pos-integrations/clover.md",
+            "docs/pos-integrations/toast.md",
+            "docs/pos-integrations/shopify-pos.md",
+            "docs/merchant-guide/",
+            "docs/developer-sdk/",
+            "docs/adr/"
+          ],
+          "adrs": [
+            "ADR-001: PostgreSQL over MongoDB for ACID compliance",
+            "ADR-002: Redis idempotency over DB-level dedup",
+            "ADR-003: Webhook-first POS integration over polling"
+          ]
+        },
+        "acceptance_criteria": [
+          "API reference auto-generated from OpenAPI spec and published to docs site",
+          "Each POS integration guide includes: setup steps, webhook configuration, test transaction walkthrough, and troubleshooting section",
+          "Merchant onboarding guide covers: account setup, program configuration, first POS integration, and inviting staff",
+          "Developer SDK quickstart shows earning first points in < 10 minutes from zero",
+          "All 3 ADRs written with context, decision, consequences, and alternatives considered",
+          "Docs site deployed and accessible without authentication"
+        ],
+        "depends_on": [
+          19,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 22,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 58,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 58,
+          "final_review": {
+            "score": 58,
+            "flaws": [
+              "No authentication implementation step exists. JWT is declared in the OpenAPI spec (step 9) and referenced in frontend (steps 15-16), but no step builds auth: member registration/login, merchant login, password reset, token refresh, or MFA. This is not a minor gap \u2014 it blocks every protected endpoint from being testable.",
+              "Stripe integration is orphaned. STRIPE_KEY appears in .env.example (step 10) but zero steps implement merchant billing, subscription management, plan upgrades, or invoice generation. The financial model exists (step 4) but the system that collects revenue does not.",
+              "Transactional email and SMS infrastructure is completely absent. No step creates a SendGrid/SES/Postmark integration. Birthday reward notifications, tier upgrade emails, referral completion alerts, and point expiry warnings are core to the product's value proposition and retention loop \u2014 none are built.",
+              "Concurrent redemption race condition is unresolved. Step 11 says 'atomic transaction' but does not specify SELECT FOR UPDATE, optimistic locking, or a distributed lock strategy. On any moderately trafficked deployment, two concurrent redemption requests for the same member balance will both pass the balance check before either commits. This is the most common production failure mode for loyalty platforms.",
+              "PostgreSQL RLS + SQLAlchemy + connection pooling is a known failure combination. PgBouncer in transaction pooling mode (the standard deployment) strips session-level SET LOCAL statements, which is how RLS tenant context is typically injected. The plan assumes RLS works; in practice it silently fails under pooled connections, leaking cross-tenant data. No mitigation is specified.",
+              "POS member identification is architecturally naive. The plan assumes POS webhooks deliver email/phone/card number. Square, Clover, and Toast webhooks deliver order events \u2014 customer PII is not included in webhook payloads by default and requires separate customer lookup API calls with merchant-level OAuth scope. This changes the integration architecture substantially.",
+              "Toast requires partner program approval and has a 4-8 week onboarding process before API access is granted. It cannot be treated as a same-sprint deliverable alongside Square.",
+              "Multi-touch referral attribution is declared in step 2 but never resolved in step 12. The implementation only describes last-event mechanics. Multi-touch requires a resolution model (first-touch, linear, time-decay) and the plan never defines it \u2014 this will generate merchant disputes at launch.",
+              "GDPR Right to Erasure (Art. 17) and Data Portability (Art. 20) have no technical implementation. Step 5 drafts the Privacy Policy but no backend step implements the deletion pipeline. Soft deletes do not satisfy Art. 17 \u2014 all downstream data (vector store, analytics aggregates, audit logs, Redis cache) must also purge the member. This is a regulatory liability, not a documentation gap.",
+              "Birthday reward timezone handling is absent. The daily cron job runs in server timezone (UTC assumed). A member in UTC+9 whose birthday starts at midnight local time will either miss or double-receive rewards depending on when the job fires. No timezone-aware trigger logic is specified.",
+              "DevOps (step 20) is sequenced after QA (step 18), meaning there is no staging environment during integration testing. Steps 17-18 test against... what? Local Docker Compose cannot replicate RDS failover, ElastiCache behavior, or EKS network policies. The pipeline puts infrastructure last but testing needs it earlier.",
+              "No load testing step exists. The SLA targets p99 500ms for points transactions and 5s webhook processing but no step validates these under realistic concurrency. Points engine under Black Friday load (thousands of concurrent POS webhook deliveries) is entirely untested.",
+              "Point expiry legal requirements are unaddressed. Twelve US states have unclaimed property (escheatment) laws that may apply to unredeemed loyalty points above a threshold. Neither the legal step (5) nor the financial model (step 4) addresses escheatment liability or compliance reporting.",
+              "Analytics cold-start is unmitigated. Redis cache (5-min TTL) is populated on first query. For a merchant with 500K transactions, the first post-cache-miss analytics query will hit PostgreSQL cold with no materialized views or background aggregation jobs. The 500ms SLA will be violated on every cache miss.",
+              "Celery Beat scheduler configuration is never built. Step 12 defines birthday_cron.py and referral_payout_job.py but no step configures the Celery Beat schedule, task routing, worker concurrency, or task failure alerting. The jobs exist as files but will never execute."
+            ],
+            "suggestions": [
+              "Insert a dedicated AUTH step (between steps 10 and 11) implementing: member JWT issuance with RS256, merchant OAuth2 with PKCE, refresh token rotation, rate-limited login, and a password reset flow. This unblocks every subsequent frontend and backend step.",
+              "Insert a BILLING step implementing Stripe Billing: merchant subscription creation on signup, plan tier enforcement via feature flags, webhook handler for payment failures (suspend program on non-payment), and invoice PDF generation. Without this the platform has no revenue.",
+              "Insert a NOTIFICATIONS step implementing transactional email (SES or SendGrid) and optional SMS (Twilio): welcome email on enrollment, tier upgrade/downgrade notifications, point expiry warnings (7-day and 1-day), birthday reward delivery, referral completion confirmation. Wire these as async Celery tasks triggered by domain events.",
+              "Replace the vague 'atomic transaction' in step 11 with an explicit concurrency contract: SELECT FOR UPDATE on the member balance row for redemptions, plus a distributed Redis lock keyed by member_id with a 5-second TTL for point earn operations that touch balance. Document the lock acquisition timeout and retry behavior.",
+              "Replace PostgreSQL RLS as the multi-tenancy mechanism with application-layer tenant scoping. Inject merchant_id as a mandatory WHERE clause in all ORM queries via a SQLAlchemy event listener or base query class. This is less elegant but reliable under connection pooling. If RLS is retained, mandate PgBouncer in session pooling mode and document the performance trade-off.",
+              "Redesign the POS integration architecture: each adapter must make a synchronous customer lookup API call (using POS-specific customer API, not just the webhook payload) to resolve the loyalty member before processing the transaction. Document per-POS API rate limits and the fallback when customer lookup fails.",
+              "Add explicit GDPR technical implementation tasks to step 8 or as a new step: soft-delete cascade that zeroes PII fields, a member_deletion_requests queue processed by a nightly job, and a data export endpoint returning JSON of all member data. These must be tested before launch.",
+              "Resequence DevOps (step 20) to run in parallel with step 10 (config) or immediately after. Staging environment must exist before integration tests (step 17) are written. Add a STAGING_DEPLOY gate that steps 17-19 depend on.",
+              "Add a LOAD_TEST step (between steps 17 and 18): k6 or Locust scenarios for concurrent point earning (500 RPS), concurrent redemption (simulate 50 concurrent redemptions per member), and POS webhook burst (1000 webhooks in 10 seconds). Gate deployment on p99 latency SLA being met under these loads.",
+              "Resolve multi-touch referral in step 2 acceptance criteria: mandate the BRD explicitly choose a single attribution model (recommend last-touch for simplicity), document it in the referral program terms (step 5), and implement exactly that model in step 12. Remove 'multi-touch' ambiguity or it will ship as last-touch with incorrect documentation.",
+              "Add birthday timezone logic to step 12: store member timezone (or derive from merchant timezone as fallback), and trigger the birthday reward when the member's local date matches their birth month/day, not UTC date.",
+              "Add Celery Beat configuration to step 10 or 12: CELERY_BEAT_SCHEDULE dict with cron expressions for birthday_daily_job (02:00 UTC), referral_payout_weekly_job, and point_expiry_nightly_job. Include task failure alerting via Datadog custom metric."
+            ],
+            "missing": [
+              "Authentication system (member auth, merchant auth, token refresh, MFA) \u2014 foundational, blocks all protected endpoints",
+              "Merchant billing and subscription management (Stripe integration) \u2014 the platform has no way to collect revenue",
+              "Transactional email and SMS notification service \u2014 removes the core retention mechanics from the product",
+              "Member data import/migration tooling \u2014 merchants migrating from existing programs have no path to bring their member base",
+              "Merchant self-service signup flow \u2014 how does a new merchant create an account, verify their email, select a plan, and connect their first POS?",
+              "Feature flag / plan enforcement system \u2014 the financial model defines feature gating by tier but no code enforces which features a starter vs. enterprise merchant can access",
+              "Materialized views or background aggregation jobs for analytics \u2014 cold-cache query performance will violate the 500ms SLA",
+              "Escheatment compliance review and reporting \u2014 required for US deployment if the platform operates in states with unclaimed property laws",
+              "POS OAuth flow for customer data access \u2014 needed for customer PII lookup in Square/Clover/Toast before point processing can occur",
+              "Webhook registration UI and API \u2014 merchants need a self-service way to retrieve their webhook URL, rotate signing secrets, and view delivery logs",
+              "GDPR technical controls (erasure pipeline, data export endpoint, consent management for marketing emails)",
+              "Load and performance testing step",
+              "Toast partner onboarding process \u2014 this has a multi-week external dependency that must be started before step 13 is attempted"
+            ],
+            "security_risks": [
+              "Concurrent redemption double-spend: without explicit SELECT FOR UPDATE, two simultaneous redemptions will both pass the balance validation check. The acceptance criteria in step 19 say 'test confirms atomic transaction prevents double-spend' but the implementation in step 11 never specifies the locking mechanism \u2014 the test will be written against code that does not actually prevent it.",
+              "JWT algorithm confusion: step 19 tests for this but the actual enforcement (RS256 hardcoded, alg header ignored in validation) must be implemented in step 11 auth middleware. If the test is written before the fix is in place, it will fail and be treated as a test bug rather than a vulnerability.",
+              "Birthday date manipulation: members can update their profile birthday to claim rewards repeatedly. No step implements birthday field immutability after first verification, birthday change audit logging, or a cooldown period after birthday modification.",
+              "Redis idempotency key expiry creates a replay window: 24h TTL means a webhook replayed after 24h1m will be processed as a new transaction. For high-value transactions, this is an exploitable fraud vector. Idempotency should be persisted to PostgreSQL with longer retention, using Redis only as a fast-path cache.",
+              "RLS tenant isolation silent failure under pooled connections (detailed in flaws above) \u2014 the most severe data breach risk in the architecture. Merchant A reading Merchant B's member PII is a GDPR breach, not a bug.",
+              "Referral device fingerprinting bypass: same-device detection (step 12) is trivially bypassed with incognito mode or a different browser. Stronger signals (email domain analysis, shipping address similarity, behavioral velocity) are not specified.",
+              "HMAC webhook validation without timestamp: the acceptance criteria in step 13 validate the HMAC signature but do not require a timestamp header (e.g., X-Timestamp within \u00b15 minutes). Without timestamp validation, a captured valid webhook can be replayed indefinitely \u2014 the HMAC alone does not prevent replay.",
+              "Merchant API key stored and transmitted insecurely: no step specifies API key hashing at rest (keys should be stored as bcrypt/PBKDF2 hashes with only a prefix shown in UI), key rotation mechanism, or scoped permissions per key. A leaked key with full access is a complete merchant account takeover."
+            ],
+            "summary": "This is a well-structured, comprehensive plan that covers the right problem surface \u2014 most loyalty platform failures come from skipping the compliance, fraud, and financial modeling steps that this plan includes. However, it has a critical architectural gap cluster that will cause a costly mid-build reroute: there is no authentication system, no billing system, and no notification system \u2014 three of the most foundational infrastructure components for any SaaS product. The POS integration architecture is optimistic about member identification (assuming PII arrives in webhooks when it typically does not), and the concurrency handling for the points engine declares correctness without specifying the mechanism that achieves it. PostgreSQL RLS under connection pooling is a known production footgun that has caused cross-tenant data leaks in multiple loyalty platform deployments. The sequencing puts DevOps after QA, leaving the testing phase with no staging environment. Fixing the auth/billing/notifications gap requires inserting 3 substantial steps, and the POS architecture may require redesigning step 13 after a discovery spike on each provider's customer data API. This plan is a solid 70-point foundation that needs roughly 20 points of gap-filling before it's production-credible.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 58,
+              "flaws": [
+                "No authentication implementation step exists. JWT is declared in the OpenAPI spec (step 9) and referenced in frontend (steps 15-16), but no step builds auth: member registration/login, merchant login, password reset, token refresh, or MFA. This is not a minor gap \u2014 it blocks every protected endpoint from being testable.",
+                "Stripe integration is orphaned. STRIPE_KEY appears in .env.example (step 10) but zero steps implement merchant billing, subscription management, plan upgrades, or invoice generation. The financial model exists (step 4) but the system that collects revenue does not.",
+                "Transactional email and SMS infrastructure is completely absent. No step creates a SendGrid/SES/Postmark integration. Birthday reward notifications, tier upgrade emails, referral completion alerts, and point expiry warnings are core to the product's value proposition and retention loop \u2014 none are built.",
+                "Concurrent redemption race condition is unresolved. Step 11 says 'atomic transaction' but does not specify SELECT FOR UPDATE, optimistic locking, or a distributed lock strategy. On any moderately trafficked deployment, two concurrent redemption requests for the same member balance will both pass the balance check before either commits. This is the most common production failure mode for loyalty platforms.",
+                "PostgreSQL RLS + SQLAlchemy + connection pooling is a known failure combination. PgBouncer in transaction pooling mode (the standard deployment) strips session-level SET LOCAL statements, which is how RLS tenant context is typically injected. The plan assumes RLS works; in practice it silently fails under pooled connections, leaking cross-tenant data. No mitigation is specified.",
+                "POS member identification is architecturally naive. The plan assumes POS webhooks deliver email/phone/card number. Square, Clover, and Toast webhooks deliver order events \u2014 customer PII is not included in webhook payloads by default and requires separate customer lookup API calls with merchant-level OAuth scope. This changes the integration architecture substantially.",
+                "Toast requires partner program approval and has a 4-8 week onboarding process before API access is granted. It cannot be treated as a same-sprint deliverable alongside Square.",
+                "Multi-touch referral attribution is declared in step 2 but never resolved in step 12. The implementation only describes last-event mechanics. Multi-touch requires a resolution model (first-touch, linear, time-decay) and the plan never defines it \u2014 this will generate merchant disputes at launch.",
+                "GDPR Right to Erasure (Art. 17) and Data Portability (Art. 20) have no technical implementation. Step 5 drafts the Privacy Policy but no backend step implements the deletion pipeline. Soft deletes do not satisfy Art. 17 \u2014 all downstream data (vector store, analytics aggregates, audit logs, Redis cache) must also purge the member. This is a regulatory liability, not a documentation gap.",
+                "Birthday reward timezone handling is absent. The daily cron job runs in server timezone (UTC assumed). A member in UTC+9 whose birthday starts at midnight local time will either miss or double-receive rewards depending on when the job fires. No timezone-aware trigger logic is specified.",
+                "DevOps (step 20) is sequenced after QA (step 18), meaning there is no staging environment during integration testing. Steps 17-18 test against... what? Local Docker Compose cannot replicate RDS failover, ElastiCache behavior, or EKS network policies. The pipeline puts infrastructure last but testing needs it earlier.",
+                "No load testing step exists. The SLA targets p99 500ms for points transactions and 5s webhook processing but no step validates these under realistic concurrency. Points engine under Black Friday load (thousands of concurrent POS webhook deliveries) is entirely untested.",
+                "Point expiry legal requirements are unaddressed. Twelve US states have unclaimed property (escheatment) laws that may apply to unredeemed loyalty points above a threshold. Neither the legal step (5) nor the financial model (step 4) addresses escheatment liability or compliance reporting.",
+                "Analytics cold-start is unmitigated. Redis cache (5-min TTL) is populated on first query. For a merchant with 500K transactions, the first post-cache-miss analytics query will hit PostgreSQL cold with no materialized views or background aggregation jobs. The 500ms SLA will be violated on every cache miss.",
+                "Celery Beat scheduler configuration is never built. Step 12 defines birthday_cron.py and referral_payout_job.py but no step configures the Celery Beat schedule, task routing, worker concurrency, or task failure alerting. The jobs exist as files but will never execute."
+              ],
+              "suggestions": [
+                "Insert a dedicated AUTH step (between steps 10 and 11) implementing: member JWT issuance with RS256, merchant OAuth2 with PKCE, refresh token rotation, rate-limited login, and a password reset flow. This unblocks every subsequent frontend and backend step.",
+                "Insert a BILLING step implementing Stripe Billing: merchant subscription creation on signup, plan tier enforcement via feature flags, webhook handler for payment failures (suspend program on non-payment), and invoice PDF generation. Without this the platform has no revenue.",
+                "Insert a NOTIFICATIONS step implementing transactional email (SES or SendGrid) and optional SMS (Twilio): welcome email on enrollment, tier upgrade/downgrade notifications, point expiry warnings (7-day and 1-day), birthday reward delivery, referral completion confirmation. Wire these as async Celery tasks triggered by domain events.",
+                "Replace the vague 'atomic transaction' in step 11 with an explicit concurrency contract: SELECT FOR UPDATE on the member balance row for redemptions, plus a distributed Redis lock keyed by member_id with a 5-second TTL for point earn operations that touch balance. Document the lock acquisition timeout and retry behavior.",
+                "Replace PostgreSQL RLS as the multi-tenancy mechanism with application-layer tenant scoping. Inject merchant_id as a mandatory WHERE clause in all ORM queries via a SQLAlchemy event listener or base query class. This is less elegant but reliable under connection pooling. If RLS is retained, mandate PgBouncer in session pooling mode and document the performance trade-off.",
+                "Redesign the POS integration architecture: each adapter must make a synchronous customer lookup API call (using POS-specific customer API, not just the webhook payload) to resolve the loyalty member before processing the transaction. Document per-POS API rate limits and the fallback when customer lookup fails.",
+                "Add explicit GDPR technical implementation tasks to step 8 or as a new step: soft-delete cascade that zeroes PII fields, a member_deletion_requests queue processed by a nightly job, and a data export endpoint returning JSON of all member data. These must be tested before launch.",
+                "Resequence DevOps (step 20) to run in parallel with step 10 (config) or immediately after. Staging environment must exist before integration tests (step 17) are written. Add a STAGING_DEPLOY gate that steps 17-19 depend on.",
+                "Add a LOAD_TEST step (between steps 17 and 18): k6 or Locust scenarios for concurrent point earning (500 RPS), concurrent redemption (simulate 50 concurrent redemptions per member), and POS webhook burst (1000 webhooks in 10 seconds). Gate deployment on p99 latency SLA being met under these loads.",
+                "Resolve multi-touch referral in step 2 acceptance criteria: mandate the BRD explicitly choose a single attribution model (recommend last-touch for simplicity), document it in the referral program terms (step 5), and implement exactly that model in step 12. Remove 'multi-touch' ambiguity or it will ship as last-touch with incorrect documentation.",
+                "Add birthday timezone logic to step 12: store member timezone (or derive from merchant timezone as fallback), and trigger the birthday reward when the member's local date matches their birth month/day, not UTC date.",
+                "Add Celery Beat configuration to step 10 or 12: CELERY_BEAT_SCHEDULE dict with cron expressions for birthday_daily_job (02:00 UTC), referral_payout_weekly_job, and point_expiry_nightly_job. Include task failure alerting via Datadog custom metric."
+              ],
+              "missing": [
+                "Authentication system (member auth, merchant auth, token refresh, MFA) \u2014 foundational, blocks all protected endpoints",
+                "Merchant billing and subscription management (Stripe integration) \u2014 the platform has no way to collect revenue",
+                "Transactional email and SMS notification service \u2014 removes the core retention mechanics from the product",
+                "Member data import/migration tooling \u2014 merchants migrating from existing programs have no path to bring their member base",
+                "Merchant self-service signup flow \u2014 how does a new merchant create an account, verify their email, select a plan, and connect their first POS?",
+                "Feature flag / plan enforcement system \u2014 the financial model defines feature gating by tier but no code enforces which features a starter vs. enterprise merchant can access",
+                "Materialized views or background aggregation jobs for analytics \u2014 cold-cache query performance will violate the 500ms SLA",
+                "Escheatment compliance review and reporting \u2014 required for US deployment if the platform operates in states with unclaimed property laws",
+                "POS OAuth flow for customer data access \u2014 needed for customer PII lookup in Square/Clover/Toast before point processing can occur",
+                "Webhook registration UI and API \u2014 merchants need a self-service way to retrieve their webhook URL, rotate signing secrets, and view delivery logs",
+                "GDPR technical controls (erasure pipeline, data export endpoint, consent management for marketing emails)",
+                "Load and performance testing step",
+                "Toast partner onboarding process \u2014 this has a multi-week external dependency that must be started before step 13 is attempted"
+              ],
+              "security_risks": [
+                "Concurrent redemption double-spend: without explicit SELECT FOR UPDATE, two simultaneous redemptions will both pass the balance validation check. The acceptance criteria in step 19 say 'test confirms atomic transaction prevents double-spend' but the implementation in step 11 never specifies the locking mechanism \u2014 the test will be written against code that does not actually prevent it.",
+                "JWT algorithm confusion: step 19 tests for this but the actual enforcement (RS256 hardcoded, alg header ignored in validation) must be implemented in step 11 auth middleware. If the test is written before the fix is in place, it will fail and be treated as a test bug rather than a vulnerability.",
+                "Birthday date manipulation: members can update their profile birthday to claim rewards repeatedly. No step implements birthday field immutability after first verification, birthday change audit logging, or a cooldown period after birthday modification.",
+                "Redis idempotency key expiry creates a replay window: 24h TTL means a webhook replayed after 24h1m will be processed as a new transaction. For high-value transactions, this is an exploitable fraud vector. Idempotency should be persisted to PostgreSQL with longer retention, using Redis only as a fast-path cache.",
+                "RLS tenant isolation silent failure under pooled connections (detailed in flaws above) \u2014 the most severe data breach risk in the architecture. Merchant A reading Merchant B's member PII is a GDPR breach, not a bug.",
+                "Referral device fingerprinting bypass: same-device detection (step 12) is trivially bypassed with incognito mode or a different browser. Stronger signals (email domain analysis, shipping address similarity, behavioral velocity) are not specified.",
+                "HMAC webhook validation without timestamp: the acceptance criteria in step 13 validate the HMAC signature but do not require a timestamp header (e.g., X-Timestamp within \u00b15 minutes). Without timestamp validation, a captured valid webhook can be replayed indefinitely \u2014 the HMAC alone does not prevent replay.",
+                "Merchant API key stored and transmitted insecurely: no step specifies API key hashing at rest (keys should be stored as bcrypt/PBKDF2 hashes with only a prefix shown in UI), key rotation mechanism, or scoped permissions per key. A leaked key with full access is a complete merchant account takeover."
+              ],
+              "summary": "This is a well-structured, comprehensive plan that covers the right problem surface \u2014 most loyalty platform failures come from skipping the compliance, fraud, and financial modeling steps that this plan includes. However, it has a critical architectural gap cluster that will cause a costly mid-build reroute: there is no authentication system, no billing system, and no notification system \u2014 three of the most foundational infrastructure components for any SaaS product. The POS integration architecture is optimistic about member identification (assuming PII arrives in webhooks when it typically does not), and the concurrency handling for the points engine declares correctness without specifying the mechanism that achieves it. PostgreSQL RLS under connection pooling is a known production footgun that has caused cross-tenant data leaks in multiple loyalty platform deployments. The sequencing puts DevOps after QA, leaving the testing phase with no staging environment. Fixing the auth/billing/notifications gap requires inserting 3 substantial steps, and the POS architecture may require redesigning step 13 after a discovery spike on each provider's customer data API. This plan is a solid 70-point foundation that needs roughly 20 points of gap-filling before it's production-credible.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T06:15:17.020424+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 156.89,
+      "critic_plan": 120.48
+    }
+  }
+}

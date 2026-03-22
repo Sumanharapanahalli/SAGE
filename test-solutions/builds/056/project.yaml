@@ -1,0 +1,69 @@
+project_name: water_quality_monitor
+display_name: Water Quality Monitor
+version: 1.0.0
+domain: iot
+description: Water quality monitoring IoT system with pH, turbidity, dissolved oxygen,
+  and conductivity sensors. Real-time alerting, trend analysis, and EPA compliance
+  reporting.
+detected_domains: []
+compliance_standards:
+- EPA Standards
+- IEC 62443
+- ISO 17025
+task_types:
+- AGENTIC
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- INFRA
+- LEGAL
+- MARKET_RESEARCH
+- OPERATIONS
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- developer
+- devops_engineer
+- legal_advisor
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

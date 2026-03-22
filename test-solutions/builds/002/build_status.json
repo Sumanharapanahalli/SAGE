@@ -1,0 +1,1625 @@
+{
+  "run_id": "2d27e5fe-48a7-4d06-aa3e-286cd4ea4a83",
+  "solution_name": "insulin_pump_controller",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-21T22:25:40.647444+00:00",
+  "updated_at": "2026-03-21T22:35:10.839982+00:00",
+  "product_description": "Closed-loop insulin pump controller with continuous glucose monitoring integration, predictive dosing algorithm, and mobile app for patient monitoring. FDA Class III, ISO 13485, IEC 62304.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define product requirements and user needs for closed-loop insulin pump controller",
+      "payload": {
+        "solution_name": "insulin_pump_controller",
+        "deliverables": [
+          "User Needs Document",
+          "Product Requirements Specification",
+          "Intended Use Statement",
+          "Indications for Use"
+        ],
+        "stakeholders": [
+          "endocrinologists",
+          "patients",
+          "caregivers",
+          "regulatory_affairs"
+        ],
+        "regulatory_context": [
+          "FDA_Class_III",
+          "ISO_13485",
+          "IEC_62304",
+          "ISO_14971",
+          "FDA_21_CFR_Part_820"
+        ]
+      },
+      "acceptance_criteria": [
+        "User Needs Document covers at least 30 distinct user needs",
+        "Product Requirements Specification contains fully traceable, verifiable requirements",
+        "Intended Use Statement reviewed and signed off by clinical stakeholder",
+        "All requirements tagged with regulatory source (FDA/ISO)",
+        "Document version-controlled in DHF"
+      ],
+      "depends_on": [],
+      "agent_role": "planner"
+    },
+    {
+      "step": 2,
+      "task_type": "REGULATORY",
+      "description": "Develop regulatory strategy and submission pathway for FDA Class III PMA",
+      "payload": {
+        "submission_type": "PMA",
+        "standards": [
+          "FDA_21_CFR_Part_820",
+          "ISO_13485",
+          "IEC_62304",
+          "ISO_14971",
+          "FDA_21_CFR_Part_11"
+        ],
+        "deliverables": [
+          "Regulatory Strategy Document",
+          "Pre-submission meeting request draft",
+          "Standards compliance matrix",
+          "Q-submission plan"
+        ],
+        "special_controls": [
+          "Cybersecurity_guidance",
+          "Software_as_Medical_Device_guidance",
+          "Predetermined_Change_Control_Plan"
+        ]
+      },
+      "acceptance_criteria": [
+        "Regulatory strategy document identifies all applicable FDA guidance documents",
+        "Standards compliance matrix maps each standard to product design requirements",
+        "Pre-submission meeting agenda drafted with at least 10 key questions for FDA",
+        "Predetermined Change Control Plan framework established for ML algorithm updates",
+        "Regulatory timeline milestones defined with go/no-go gates"
+      ],
+      "depends_on": [],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "LEGAL",
+      "description": "Establish IP landscape review, patent clearance, and regulatory compliance legal framework",
+      "payload": {
+        "deliverables": [
+          "Freedom-to-operate analysis",
+          "IP filing strategy",
+          "Data privacy compliance assessment (HIPAA, GDPR)",
+          "Clinical trial regulatory compliance framework"
+        ],
+        "focus_areas": [
+          "closed_loop_insulin_delivery_patents",
+          "CGM_integration_IP",
+          "ML_dosing_algorithm_IP",
+          "patient_data_handling"
+        ]
+      },
+      "acceptance_criteria": [
+        "Freedom-to-operate analysis covers at least 50 relevant patents",
+        "HIPAA compliance checklist completed for mobile app and backend",
+        "GDPR assessment completed for EU market consideration",
+        "IP filing strategy identifies at least 3 patentable innovations",
+        "Data use agreements templates drafted for clinical sites"
+      ],
+      "depends_on": [],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 4,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Conduct competitive analysis and market assessment for closed-loop insulin delivery market",
+      "payload": {
+        "deliverables": [
+          "Competitive landscape report",
+          "Market sizing analysis",
+          "Key opinion leader survey plan",
+          "Reimbursement landscape assessment"
+        ],
+        "competitors": [
+          "Medtronic_MiniMed",
+          "Tandem_tSlim",
+          "Insulet_Omnipod",
+          "Beta_Bionics"
+        ],
+        "market_segments": [
+          "Type_1_diabetes",
+          "Type_2_insulin_dependent",
+          "pediatric",
+          "adult"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive analysis covers at least 6 commercially available closed-loop systems",
+        "Market sizing estimate includes TAM, SAM, SOM with cited sources",
+        "Reimbursement codes (CPT, HCPCS) identified for device and CGM components",
+        "Feature gap analysis identifies at least 5 differentiating product opportunities",
+        "Key opinion leader list contains at least 10 endocrinologists"
+      ],
+      "depends_on": [],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 5,
+      "task_type": "SAFETY",
+      "description": "Perform preliminary hazard analysis and establish risk management plan per ISO 14971",
+      "payload": {
+        "standard": "ISO_14971:2019",
+        "deliverables": [
+          "Risk Management Plan",
+          "Preliminary Hazard Analysis",
+          "Risk Acceptability Criteria",
+          "Risk Management File structure"
+        ],
+        "hazard_categories": [
+          "over_delivery",
+          "under_delivery",
+          "occlusion",
+          "CGM_signal_loss",
+          "software_failure",
+          "cybersecurity",
+          "battery_failure",
+          "infusion_set_failure",
+          "algorithm_error"
+        ],
+        "risk_policy": "ALARP"
+      },
+      "acceptance_criteria": [
+        "Risk Management Plan approved per ISO 14971:2019 Section 4",
+        "At least 40 preliminary hazards identified across all categories",
+        "Risk acceptability criteria defined with quantitative thresholds",
+        "Severity levels defined with clinical justification (1-5 scale)",
+        "Risk Management File structure established and version-controlled in DHF",
+        "Residual risk policy documented and justified",
+        "ISO 14971 risk management file complete",
+        "Residual risk acceptable"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 6,
+      "task_type": "COMPLIANCE",
+      "description": "Establish Design History File structure and IEC 62304 software development lifecycle plan",
+      "payload": {
+        "standards": [
+          "IEC_62304:2006_AMD1:2015",
+          "ISO_13485:2016",
+          "FDA_21_CFR_Part_820"
+        ],
+        "deliverables": [
+          "Design History File index",
+          "Software Development Plan",
+          "Software Safety Classification",
+          "Configuration Management Plan",
+          "Problem Resolution Process"
+        ],
+        "software_safety_class": "Class_C",
+        "version_control": "git",
+        "change_control": "Jira"
+      },
+      "acceptance_criteria": [
+        "DHF index covers all 21 CFR Part 820.30 design control elements",
+        "Software classified as IEC 62304 Class C with documented justification",
+        "Software Development Plan approved and references all applicable IEC 62304 clauses",
+        "Configuration management plan defines branching strategy, release tagging, and traceability",
+        "Problem resolution process defines severity levels and resolution timelines",
+        "All document templates created and stored in version-controlled DHF",
+        "DHF (Design History File) structure created",
+        "V&V protocol drafted"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 7,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define system architecture, interface specifications, and design inputs for all subsystems",
+      "payload": {
+        "subsystems": [
+          "CGM_sensor_interface",
+          "insulin_pump_actuator",
+          "closed_loop_controller",
+          "mobile_app",
+          "cloud_backend",
+          "alert_service"
+        ],
+        "deliverables": [
+          "System Architecture Document",
+          "Interface Control Document",
+          "Software Architecture Specification",
+          "Hardware Architecture Specification",
+          "Design Input Specification"
+        ],
+        "architecture_pattern": "microservices_backend_RTOS_firmware",
+        "communication_protocols": [
+          "Bluetooth_LE_5.2",
+          "HTTPS_TLS_1.3",
+          "MQTT"
+        ]
+      },
+      "acceptance_criteria": [
+        "System Architecture Document includes block diagram with all subsystem interfaces",
+        "Interface Control Document specifies all data formats, protocols, and timing requirements",
+        "Software Architecture Specification addresses IEC 62304 Section 5.3 requirements",
+        "Latency budget defined: CGM reading to pump actuation within 30 seconds",
+        "Fault tolerance architecture defined for all single points of failure",
+        "Architecture reviewed and approved by systems, firmware, and software leads"
+      ],
+      "depends_on": [
+        1,
+        5,
+        6
+      ],
+      "agent_role": "planner"
+    },
+    {
+      "step": 8,
+      "task_type": "UX_DESIGN",
+      "description": "Design patient-facing mobile app UX with usability engineering per IEC 62366",
+      "payload": {
+        "standard": "IEC_62366-1:2015",
+        "deliverables": [
+          "Intended User Profile",
+          "Use Specification",
+          "Usability Evaluation Plan",
+          "UI wireframes and prototypes",
+          "Formative evaluation protocol"
+        ],
+        "platforms": [
+          "iOS_16+",
+          "Android_12+"
+        ],
+        "user_groups": [
+          "adult_patients",
+          "pediatric_patients_age_12+",
+          "caregivers"
+        ],
+        "critical_tasks": [
+          "bolus_confirmation",
+          "alarm_acknowledgment",
+          "alert_dismissal",
+          "manual_override"
+        ]
+      },
+      "acceptance_criteria": [
+        "Intended User Profile documents at least 3 distinct user groups with characteristics",
+        "Use specification identifies all critical tasks with use error consequences",
+        "At least 20 screen wireframes covering primary user flows",
+        "Formative usability evaluation protocol approved for at least 2 evaluation rounds",
+        "Critical task scenarios defined for summative evaluation",
+        "Alarm hierarchy defined per IEC 60601-1-8 requirements"
+      ],
+      "depends_on": [
+        1,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "PCB_DESIGN",
+      "description": "Design PCB schematic for pump controller board: microcontroller, power management, BLE, motor driver",
+      "payload": {
+        "components": {
+          "microcontroller": "STM32H7_series",
+          "BLE": "Nordic_nRF5340",
+          "motor_driver": "DRV8835",
+          "power_management": "MAX77650",
+          "CGM_interface": "BLE_receiver",
+          "battery": "Li-Ion_3.7V_2000mAh"
+        },
+        "deliverables": [
+          "Schematic capture",
+          "BOM with approved suppliers",
+          "Design rule check report",
+          "EMC pre-compliance plan",
+          "IPC-2221 design review checklist"
+        ],
+        "tools": [
+          "KiCad_7",
+          "Altium_export"
+        ],
+        "standards": [
+          "IEC_60601-1",
+          "IPC-2221",
+          "FCC_Part_15"
+        ]
+      },
+      "acceptance_criteria": [
+        "Schematic passes DRC with zero errors",
+        "BOM includes primary and secondary approved suppliers for all components",
+        "Power budget analysis shows 72-hour battery life at typical usage",
+        "EMC design guidelines (ground planes, decoupling, trace routing) documented",
+        "IEC 60601-1 essential performance requirements addressed in schematic",
+        "Schematic reviewed and approved by hardware lead and safety engineer"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "HARDWARE_SIM",
+      "description": "Develop high-fidelity pump actuator simulation model for HIL testing",
+      "payload": {
+        "simulation_type": "physics_based",
+        "deliverables": [
+          "Pump actuator MATLAB/Simulink model",
+          "Occlusion fault injection model",
+          "Motor response characterization dataset",
+          "Simulink test harness",
+          "Hardware-in-loop interface specification"
+        ],
+        "parameters": {
+          "flow_rate_range": "0.1_to_35_U/hr",
+          "bolus_delivery_accuracy": "within_5%",
+          "occlusion_pressure_threshold": "10_psi",
+          "motor_type": "stepper_motor"
+        },
+        "tools": [
+          "MATLAB_Simulink",
+          "Python_control_library"
+        ]
+      },
+      "acceptance_criteria": [
+        "Simulation model validated against real pump datasheet specifications",
+        "Occlusion fault injection triggers within 500ms of blockage simulation",
+        "Flow rate accuracy within 2% across full operating range in simulation",
+        "Model runs in real-time at 100Hz update rate",
+        "Simulation interface documented for HIL test harness integration",
+        "At least 5 fault scenarios implemented and validated"
+      ],
+      "depends_on": [
+        7,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "HARDWARE_SIM",
+      "description": "Develop CGM sensor simulator with glucose dynamics and sensor noise model",
+      "payload": {
+        "simulation_type": "physiological_model",
+        "deliverables": [
+          "Glucose dynamics model (Bergman minimal model variant)",
+          "CGM sensor noise and lag model",
+          "BLE data stream simulator",
+          "Hypoglycemia/hyperglycemia scenario library",
+          "Sensor calibration drift model"
+        ],
+        "parameters": {
+          "glucose_range": "40_to_400_mg/dL",
+          "sensor_lag": "5_to_15_minutes",
+          "MARD_target": "<9%",
+          "update_interval": "5_minutes",
+          "BLE_profile": "CGMS_GATT_profile"
+        },
+        "clinical_scenarios": [
+          "euglycemia",
+          "hypoglycemia",
+          "hyperglycemia",
+          "rapid_drop",
+          "post_meal_spike",
+          "sensor_dropout"
+        ]
+      },
+      "acceptance_criteria": [
+        "Glucose dynamics model reproduces published clinical meal response curves within 15%",
+        "Sensor noise model achieves MARD of less than 10% against reference",
+        "BLE GATT CGMS profile implemented and verified with standard BLE sniffer",
+        "At least 10 distinct clinical scenario profiles implemented",
+        "Sensor dropout simulation triggers appropriate firmware alert within 2 minutes",
+        "Model validated against at least one published CGM accuracy dataset"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "FIRMWARE",
+      "description": "Implement RTOS kernel, HAL layer, and bootloader for STM32H7 pump controller",
+      "payload": {
+        "rtos": "FreeRTOS_10.5",
+        "hal": "STM32_HAL",
+        "deliverables": [
+          "FreeRTOS task architecture",
+          "HAL drivers (SPI, I2C, UART, BLE, motor_PWM)",
+          "Secure bootloader with signature verification",
+          "Watchdog and fault handler implementation",
+          "Memory protection unit configuration"
+        ],
+        "safety_requirements": [
+          "stack_overflow_detection",
+          "heap_corruption_detection",
+          "task_deadline_monitoring",
+          "safe_state_on_fault"
+        ],
+        "standards": [
+          "IEC_62304_Class_C",
+          "MISRA_C_2012"
+        ]
+      },
+      "acceptance_criteria": [
+        "FreeRTOS task architecture documented with priority assignments and stack sizes",
+        "All HAL drivers pass loopback self-test on target hardware or simulation",
+        "Bootloader verifies firmware signature before execution and rejects tampered images",
+        "Watchdog timer configured for maximum 100ms timeout with safe-state handler",
+        "MISRA C 2012 mandatory rules compliance verified by static analysis tool",
+        "Memory protection unit configured to isolate safety-critical tasks",
+        "All critical tasks meet deadline monitoring requirements with logged violations",
+        "IEC 62304 software class documented",
+        "SOUP components listed"
+      ],
+      "depends_on": [
+        9,
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "FIRMWARE",
+      "description": "Implement CGM BLE driver, glucose data pipeline, and sensor validation logic",
+      "payload": {
+        "protocol": "BLE_5.2_CGMS_GATT",
+        "deliverables": [
+          "BLE CGMS profile client implementation",
+          "Glucose data validation and filtering",
+          "Sensor status monitoring and alert generation",
+          "Data buffering for connectivity loss (72hr storage)",
+          "Calibration interface"
+        ],
+        "validation_rules": [
+          "rate_of_change_limits",
+          "absolute_range_check",
+          "consecutive_reading_consistency",
+          "sensor_age_tracking"
+        ],
+        "alert_thresholds": {
+          "hypoglycemia": "<70_mg/dL",
+          "severe_hypoglycemia": "<54_mg/dL",
+          "hyperglycemia": ">180_mg/dL",
+          "urgent_high": ">250_mg/dL"
+        }
+      },
+      "acceptance_criteria": [
+        "BLE CGMS GATT profile connects and reads from CGM simulator within 30 seconds",
+        "Glucose data validation rejects readings outside physiologically plausible range",
+        "Alert generation latency from threshold crossing to alarm is under 15 seconds",
+        "72 hours of glucose data buffered correctly with timestamp integrity",
+        "Sensor dropout detected and alerted within 2 minutes of signal loss",
+        "Data pipeline tested against all 10 CGM simulator clinical scenarios",
+        "IEC 62304 software class documented",
+        "SOUP components listed"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FIRMWARE",
+      "description": "Implement peristaltic pump motor control with flow rate accuracy and occlusion detection",
+      "payload": {
+        "control_type": "closed_loop_stepper_with_encoder_feedback",
+        "deliverables": [
+          "Motor control PID implementation",
+          "Flow rate calibration and accuracy verification",
+          "Occlusion detection algorithm",
+          "Priming sequence",
+          "Air-in-line detection interface",
+          "Back-flow prevention logic"
+        ],
+        "safety_features": [
+          "max_delivery_rate_limiter",
+          "cumulative_dose_watchdog",
+          "reverse_flow_detection",
+          "motor_stall_detection"
+        ],
+        "accuracy_spec": "within_5%_of_programmed_rate"
+      },
+      "acceptance_criteria": [
+        "Flow rate PID controller achieves steady-state error under 3% across full delivery range",
+        "Occlusion detection triggers within 5 minutes of simulated blockage at all flow rates",
+        "Motor stall detection triggers safe state within 100ms",
+        "Cumulative dose watchdog prevents delivery exceeding programmed daily maximum",
+        "Priming sequence delivers accurate bolus within 5% tolerance",
+        "All safety limiters verified through fault injection testing on simulator",
+        "IEC 62304 software class documented",
+        "SOUP components listed"
+      ],
+      "depends_on": [
+        12,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FIRMWARE",
+      "description": "Implement closed-loop insulin delivery controller integrating CGM readings with pump actuation",
+      "payload": {
+        "algorithm": "model_predictive_control_with_ML_advisory",
+        "deliverables": [
+          "Closed-loop controller state machine",
+          "Basal rate modulation logic",
+          "Correction bolus calculator",
+          "Meal announcement interface",
+          "Controller parameter management",
+          "Safe state and fallback to open-loop logic"
+        ],
+        "control_parameters": {
+          "target_glucose": "100_mg/dL",
+          "hypo_suspend_threshold": "70_mg/dL",
+          "prediction_horizon": "30_minutes",
+          "control_interval": "5_minutes"
+        },
+        "safety_interlocks": [
+          "auto_suspend_on_hypoglycemia",
+          "max_basal_rate_cap",
+          "max_bolus_dose_cap",
+          "IOB_tracking"
+        ]
+      },
+      "acceptance_criteria": [
+        "State machine covers all operating modes: initialization, closed-loop, suspended, manual, fault",
+        "Auto-suspend triggers within 15 seconds of glucose reading below 70 mg/dL",
+        "IOB tracking prevents insulin stacking with accuracy within 0.1 units",
+        "Closed-loop controller tested against all CGM simulator clinical scenarios",
+        "Fallback to open-loop mode triggered and alerted within 30 seconds of controller fault",
+        "Controller parameters stored in non-volatile memory with CRC integrity check",
+        "Maximum delivery rate caps enforced across all operating modes",
+        "IEC 62304 software class documented",
+        "SOUP components listed"
+      ],
+      "depends_on": [
+        13,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "ML_MODEL",
+      "description": "Develop and validate predictive glucose dosing ML model for advisory insulin recommendations",
+      "payload": {
+        "model_type": "LSTM_with_attention_plus_physics_informed_constraints",
+        "deliverables": [
+          "Model architecture specification",
+          "Training dataset preprocessing pipeline",
+          "Model training and validation scripts",
+          "PREDETERMINED_CHANGE_CONTROL_PLAN",
+          "Model card per FDA AI/ML guidance",
+          "Model quantization for embedded deployment",
+          "Inference engine for STM32H7"
+        ],
+        "training_data": {
+          "sources": [
+            "OpenAPS_dataset",
+            "OhioT1DM_dataset",
+            "synthetic_augmentation"
+          ],
+          "features": [
+            "CGM_history_24hr",
+            "carbohydrate_intake",
+            "IOB",
+            "basal_rate_history",
+            "time_of_day",
+            "activity_proxy"
+          ],
+          "target": "glucose_60min_prediction"
+        },
+        "performance_metrics": {
+          "RMSE_target": "<15_mg/dL",
+          "time_in_range_improvement": ">10%_vs_open_loop",
+          "hypoglycemia_prediction_sensitivity": ">90%"
+        }
+      },
+      "acceptance_criteria": [
+        "Model achieves RMSE under 15 mg/dL on held-out test set",
+        "Hypoglycemia prediction sensitivity above 90% at 30-minute horizon on test set",
+        "Model card completed per FDA AI/ML Software as Medical Device guidance",
+        "Predetermined Change Control Plan defines retraining triggers and validation requirements",
+        "Quantized model fits within STM32H7 RAM and flash constraints",
+        "Inference latency under 100ms on target microcontroller",
+        "Training pipeline is reproducible with fixed random seeds and documented environment"
+      ],
+      "depends_on": [
+        11,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "BACKEND",
+      "description": "Implement cloud backend API for device data ingestion, patient management, and clinical dashboard",
+      "payload": {
+        "framework": "FastAPI",
+        "database": "PostgreSQL_15",
+        "deliverables": [
+          "Device data ingestion API",
+          "Patient management API",
+          "Clinical dashboard API",
+          "Authentication and authorization service",
+          "Audit logging service",
+          "FHIR R4 integration endpoints"
+        ],
+        "security": [
+          "OAuth2_PKCE",
+          "role_based_access_control",
+          "end_to_end_encryption",
+          "HIPAA_audit_log"
+        ],
+        "data_types": [
+          "glucose_readings",
+          "insulin_delivery_events",
+          "device_status",
+          "alarms",
+          "patient_demographics"
+        ]
+      },
+      "acceptance_criteria": [
+        "Device data ingestion endpoint handles 1000 concurrent device connections",
+        "All endpoints return responses within 200ms at 95th percentile under load",
+        "RBAC enforces patient, caregiver, clinician, and admin role separation",
+        "HIPAA audit log captures all PHI access events with user, timestamp, and action",
+        "FHIR R4 Observation resources generated correctly for glucose and insulin events",
+        "API documentation complete with OpenAPI 3.0 spec",
+        "Authentication tokens expire after 8 hours with secure refresh mechanism"
+      ],
+      "depends_on": [
+        7,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "DATA",
+      "description": "Design and implement glucose data pipeline, time-series storage, and analytics processing",
+      "payload": {
+        "technologies": {
+          "streaming": "Apache_Kafka",
+          "time_series_db": "TimescaleDB",
+          "batch": "Apache_Spark",
+          "ml_serving": "TorchServe"
+        },
+        "deliverables": [
+          "Real-time glucose ingestion pipeline",
+          "Time-series data model",
+          "Retrospective analysis batch jobs",
+          "Data retention and archival policy",
+          "De-identification pipeline for ML training data"
+        ],
+        "sla": {
+          "data_latency": "<5_seconds_device_to_cloud",
+          "retention": "7_years_per_FDA_requirements",
+          "availability": "99.9%"
+        }
+      },
+      "acceptance_criteria": [
+        "Kafka pipeline ingests glucose readings with end-to-end latency under 5 seconds",
+        "TimescaleDB queries for 90-day patient history return within 2 seconds",
+        "Data retention policy enforces 7-year minimum per 21 CFR Part 820",
+        "De-identification pipeline validated per HIPAA Safe Harbor method",
+        "Batch analytics jobs complete nightly processing within 4-hour window",
+        "Data pipeline disaster recovery tested with RTO under 4 hours"
+      ],
+      "depends_on": [
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "BACKEND",
+      "description": "Implement real-time alert service with multi-channel notifications and alarm escalation logic",
+      "payload": {
+        "channels": [
+          "push_notification",
+          "SMS",
+          "caregiver_alert",
+          "clinical_alert"
+        ],
+        "deliverables": [
+          "Alert rule engine",
+          "Notification delivery service",
+          "Alert escalation workflow",
+          "Alarm suppression and snooze logic",
+          "Alert history and acknowledgment tracking"
+        ],
+        "alert_types": [
+          "hypoglycemia",
+          "hyperglycemia",
+          "device_fault",
+          "missed_reading",
+          "low_battery",
+          "occlusion"
+        ],
+        "sla": {
+          "critical_alert_delivery": "<30_seconds",
+          "notification_delivery_confirmation": "required"
+        }
+      },
+      "acceptance_criteria": [
+        "Critical hypoglycemia alerts delivered within 30 seconds of threshold crossing",
+        "Caregiver follow-on alert triggered if patient does not acknowledge within 5 minutes",
+        "Alert delivery confirmation tracked with retry logic for failed deliveries",
+        "Alarm suppression prevents duplicate alerts within configurable snooze window",
+        "Alert history queryable for minimum 90 days",
+        "All alert types tested end-to-end from device trigger to patient notification"
+      ],
+      "depends_on": [
+        17,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Develop iOS and Android patient mobile app with glucose monitoring, insulin management, and alert handling",
+      "payload": {
+        "framework": "React_Native_0.73",
+        "deliverables": [
+          "Glucose trend dashboard",
+          "Bolus calculator interface",
+          "Alert and alarm screens",
+          "Device status and connectivity panel",
+          "Settings and profile management",
+          "Caregiver sharing interface",
+          "Onboarding flow"
+        ],
+        "design_system": "follows_UX_wireframes_from_step_8",
+        "accessibility": [
+          "WCAG_2.1_AA",
+          "dynamic_type",
+          "voice_over",
+          "TalkBack"
+        ],
+        "offline_capability": "72hr_local_data_cache"
+      },
+      "acceptance_criteria": [
+        "Glucose trend graph renders 24-hour history within 2 seconds of app launch",
+        "Bolus calculator requires two-tap confirmation before sending dose command",
+        "Critical alarm screen wakes device from lock screen and plays audible alert",
+        "Offline mode displays cached data with clear staleness indicator after 5 minutes",
+        "App achieves WCAG 2.1 AA accessibility score in automated audit",
+        "All primary user flows completed in usability walkthrough without critical errors",
+        "App bundle size under 50MB for initial install"
+      ],
+      "depends_on": [
+        8,
+        17,
+        19
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "INFRA",
+      "description": "Design and provision cloud infrastructure with medical-grade availability and disaster recovery",
+      "payload": {
+        "cloud_provider": "AWS",
+        "architecture": "multi_AZ_active_active",
+        "deliverables": [
+          "Terraform IaC modules",
+          "VPC and network security design",
+          "Kubernetes EKS cluster configuration",
+          "RDS PostgreSQL multi-AZ setup",
+          "Backup and disaster recovery runbooks",
+          "HIPAA Business Associate Agreement checklist"
+        ],
+        "compliance": [
+          "HIPAA",
+          "SOC2_Type2",
+          "FDA_21_CFR_Part_11_electronic_records"
+        ],
+        "availability_target": "99.9%_uptime"
+      },
+      "acceptance_criteria": [
+        "All infrastructure defined as Terraform code with no manual console provisioning",
+        "Multi-AZ deployment verified with AZ failure simulation test",
+        "RDS automated backups configured with 35-day retention and tested restore",
+        "VPC security groups allow only required ports with deny-all default",
+        "HIPAA BAA checklist completed for all AWS services storing PHI",
+        "Disaster recovery RTO under 4 hours validated in tabletop exercise",
+        "Infrastructure deployment pipeline runs in under 30 minutes"
+      ],
+      "depends_on": [
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "DEVOPS",
+      "description": "Implement CI/CD pipeline with separate firmware, backend, and mobile app build and release workflows",
+      "payload": {
+        "tools": {
+          "ci": "GitHub_Actions",
+          "firmware_build": "CMake_arm-none-eabi-gcc",
+          "firmware_signing": "HSM_code_signing",
+          "mobile": "Fastlane",
+          "container": "Docker",
+          "registry": "ECR"
+        },
+        "deliverables": [
+          "Firmware build and signing pipeline",
+          "Backend containerization and deployment pipeline",
+          "Mobile app build and distribution pipeline",
+          "Static analysis integration (MISRA, Sonar)",
+          "Automated test execution gates",
+          "Release versioning and change log generation"
+        ]
+      },
+      "acceptance_criteria": [
+        "Firmware build pipeline produces signed binary with HSM-managed key in under 10 minutes",
+        "Static analysis (MISRA C 2012 mandatory rules) gates block merge on new violations",
+        "Backend deployment pipeline achieves zero-downtime rolling update",
+        "Mobile app pipeline produces TestFlight and internal track builds on each main branch commit",
+        "All pipelines enforce branch protection requiring passing tests before merge",
+        "Release tags automatically generate changelog from conventional commit messages",
+        "Pipeline artifacts stored with immutable versioning for audit trail"
+      ],
+      "depends_on": [
+        12,
+        17,
+        20,
+        21
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 23,
+      "task_type": "SECURITY",
+      "description": "Conduct comprehensive threat model and cybersecurity risk assessment per FDA cybersecurity guidance",
+      "payload": {
+        "methodology": "STRIDE_plus_MITRE_ATT&CK_for_ICS",
+        "deliverables": [
+          "Threat model document",
+          "Cybersecurity risk assessment",
+          "SBOM (Software Bill of Materials)",
+          "Cryptographic design review",
+          "Penetration test plan",
+          "Cybersecurity controls specification",
+          "Postmarket cybersecurity monitoring plan"
+        ],
+        "attack_surfaces": [
+          "BLE_device_communication",
+          "mobile_app",
+          "backend_API",
+          "firmware_update_mechanism",
+          "cloud_infrastructure",
+          "CGM_data_integrity"
+        ],
+        "standards": [
+          "FDA_2023_Cybersecurity_Guidance",
+          "NIST_SP_800-53",
+          "IEC_62443"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis completed for all 6 attack surfaces with at least 30 threat scenarios",
+        "All Critical and High severity threats have defined mitigations",
+        "SBOM generated in SPDX format covering all firmware and software dependencies",
+        "Cryptographic design review confirms AES-256 for data at rest, TLS 1.3 for data in transit",
+        "Penetration test plan covers OWASP Top 10 API risks and BLE-specific attacks",
+        "Postmarket monitoring plan defines vulnerability disclosure and patching SLA",
+        "Cybersecurity risk assessment integrated into ISO 14971 risk management file"
+      ],
+      "depends_on": [
+        15,
+        17,
+        20
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 24,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Develop HIL test specification, firmware unit test suite, and software integration test harness",
+      "payload": {
+        "frameworks": {
+          "unit_test": "Unity_CMock",
+          "hil_platform": "dSPACE_or_custom_Python_HIL",
+          "integration": "pytest_with_serial_interface"
+        },
+        "deliverables": [
+          "HIL test specification document",
+          "Firmware unit test suite (target coverage >90%)",
+          "Software integration test harness",
+          "Fault injection test suite",
+          "Performance and timing test suite",
+          "Test traceability matrix to requirements"
+        ],
+        "coverage_targets": {
+          "line_coverage": "90%",
+          "branch_coverage": "85%",
+          "requirement_coverage": "100%"
+        },
+        "fault_scenarios": [
+          "CGM_dropout",
+          "occlusion",
+          "low_battery",
+          "BLE_link_loss",
+          "motor_stall",
+          "MCU_reset"
+        ]
+      },
+      "acceptance_criteria": [
+        "HIL test specification traces every firmware requirement to at least one test case",
+        "Firmware unit test suite achieves 90% line coverage and 85% branch coverage",
+        "All 6 fault injection scenarios execute and verify correct safe-state response",
+        "Integration test harness runs full glucose-to-insulin delivery cycle end-to-end",
+        "Performance tests verify all task deadlines met under maximum load",
+        "Test results report generated automatically in JUnit XML format for CI integration",
+        "100% of safety requirements covered by at least one verified test case"
+      ],
+      "depends_on": [
+        15,
+        16,
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 25,
+      "task_type": "QA",
+      "description": "Execute firmware unit tests, integration tests, and HIL test campaigns against build",
+      "payload": {
+        "test_phases": [
+          "unit_test_execution",
+          "software_integration_test",
+          "HIL_campaign"
+        ],
+        "deliverables": [
+          "Test execution report",
+          "Defect report and triage log",
+          "Code coverage report",
+          "HIL test results with data logs",
+          "Regression test baseline"
+        ],
+        "entry_criteria": [
+          "firmware_build_passing_CI",
+          "HIL_test_spec_approved",
+          "simulators_validated"
+        ],
+        "exit_criteria": [
+          "zero_open_critical_defects",
+          "90%_line_coverage_achieved",
+          "all_safety_tests_passing"
+        ]
+      },
+      "acceptance_criteria": [
+        "All unit tests pass with zero failures before HIL campaign begins",
+        "Code coverage report confirms 90% line and 85% branch coverage",
+        "HIL campaign executes all specified test cases with less than 2% blocked",
+        "Zero open Critical or High severity defects at test phase completion",
+        "All 6 fault injection scenarios produce correct safe-state outcomes",
+        "Test execution report approved by quality engineer and stored in DHF",
+        "Regression baseline established for future build comparisons"
+      ],
+      "depends_on": [
+        24,
+        22
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 26,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Execute automated firmware regression suite and performance benchmarks on target hardware",
+      "payload": {
+        "test_types": [
+          "regression",
+          "timing_analysis",
+          "memory_analysis",
+          "stress_test"
+        ],
+        "deliverables": [
+          "Regression test execution report",
+          "Task timing analysis report",
+          "Stack and heap usage analysis",
+          "72-hour continuous operation stress test results",
+          "Anomaly detection log review"
+        ],
+        "tools": [
+          "FreeRTOS_trace",
+          "Segger_SystemView",
+          "Valgrind_for_host_builds",
+          "custom_timing_hooks"
+        ]
+      },
+      "acceptance_criteria": [
+        "All regression tests pass with zero new failures introduced",
+        "No task deadline misses detected in 72-hour continuous operation test",
+        "Stack usage below 75% for all tasks under worst-case load",
+        "Heap fragmentation under 10% after 72-hour stress test",
+        "All anomalies from continuous operation test investigated and resolved or documented",
+        "Timing analysis confirms closed-loop cycle completes within 5-minute CGM interval"
+      ],
+      "depends_on": [
+        25
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 27,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system integration test campaign across firmware, backend, and mobile app",
+      "payload": {
+        "test_scope": "full_system_closed_loop",
+        "deliverables": [
+          "System test plan",
+          "System test execution report",
+          "End-to-end traceability evidence",
+          "Performance test results",
+          "User acceptance test protocol"
+        ],
+        "test_scenarios": [
+          "nominal_closed_loop_operation",
+          "hypoglycemia_auto_suspend",
+          "hyperglycemia_correction",
+          "meal_bolus_confirmation",
+          "caregiver_alert_escalation",
+          "device_connectivity_loss_recovery",
+          "firmware_OTA_update",
+          "app_alert_acknowledge_flow"
+        ],
+        "environment": "integrated_CGM_sim_plus_pump_sim_plus_backend_plus_mobile_app"
+      },
+      "acceptance_criteria": [
+        "All 8 system test scenarios execute successfully end-to-end",
+        "Hypoglycemia auto-suspend scenario completes: CGM reading to pump suspend within 15 seconds",
+        "Caregiver escalation alert delivered within 30 seconds of missed patient acknowledgment",
+        "OTA firmware update completes successfully with signature verification and rollback tested",
+        "System test report traces all executed tests to requirements in traceability matrix",
+        "Zero open Critical defects and fewer than 5 open High defects at completion",
+        "User acceptance test protocol signed off by clinical advisor"
+      ],
+      "depends_on": [
+        25,
+        26,
+        19,
+        20
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 28,
+      "task_type": "COMPLIANCE",
+      "description": "Compile Design History File with complete design controls evidence and IEC 62304 software lifecycle records",
+      "payload": {
+        "standard_references": [
+          "FDA_21_CFR_Part_820.30",
+          "IEC_62304",
+          "ISO_13485_Section_7"
+        ],
+        "deliverables": [
+          "Complete DHF index with all document references",
+          "Design input and output traceability",
+          "Design verification and validation summary",
+          "Design review meeting minutes",
+          "Design transfer documentation",
+          "Software lifecycle records per IEC 62304 Section 5"
+        ],
+        "dhf_sections": [
+          "user_needs",
+          "design_inputs",
+          "design_outputs",
+          "design_reviews",
+          "design_verification",
+          "design_validation",
+          "design_transfer",
+          "design_changes"
+        ]
+      },
+      "acceptance_criteria": [
+        "DHF index references all 8 required sections with no gaps",
+        "Every design requirement traced to at least one verification or validation record",
+        "All design review meeting minutes signed by required reviewers",
+        "IEC 62304 software lifecycle records complete for all software items",
+        "Design transfer documentation signed by manufacturing and quality",
+        "DHF audit by quality assurance identifies zero critical gaps",
+        "All documents in DHF are revision-controlled with change history",
+        "DHF (Design History File) structure created",
+        "V&V protocol drafted"
+      ],
+      "depends_on": [
+        27,
+        6
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 29,
+      "task_type": "COMPLIANCE",
+      "description": "Build requirements traceability matrix linking user needs through design to verification and validation evidence",
+      "payload": {
+        "traceability_scope": "bidirectional",
+        "deliverables": [
+          "Requirements Traceability Matrix (RTM)",
+          "Coverage gap analysis report",
+          "Orphan test identification report",
+          "V&V summary report"
+        ],
+        "traceability_levels": [
+          "user_need_to_design_input",
+          "design_input_to_design_output",
+          "design_output_to_verification_test",
+          "design_input_to_validation_evidence"
+        ],
+        "tool": "Jama_Connect_or_spreadsheet_with_audit_trail"
+      },
+      "acceptance_criteria": [
+        "RTM covers 100% of design inputs with forward and backward traceability",
+        "Zero untraced design inputs at RTM completion",
+        "Zero test cases without linked requirements (no orphan tests)",
+        "V&V summary report confirms all requirements verified or validated",
+        "Coverage gap analysis reviewed and all gaps resolved or formally accepted with justification",
+        "RTM exported in both machine-readable (CSV) and human-readable (PDF) formats",
+        "RTM stored in DHF with version history",
+        "DHF (Design History File) structure created",
+        "V&V protocol drafted"
+      ],
+      "depends_on": [
+        28,
+        27
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 30,
+      "task_type": "SAFETY",
+      "description": "Complete ISO 14971 risk management activities: risk evaluation, risk controls verification, and residual risk assessment",
+      "payload": {
+        "deliverables": [
+          "Risk Management Report",
+          "Residual Risk Assessment",
+          "Benefit-risk analysis",
+          "Risk control verification evidence",
+          "Post-production surveillance plan",
+          "Overall residual risk acceptability statement"
+        ],
+        "risk_management_activities": [
+          "risk_control_implementation_verification",
+          "residual_risk_evaluation",
+          "risk_control_introduction_of_new_hazards_check",
+          "benefit_risk_determination",
+          "completeness_review"
+        ]
+      },
+      "acceptance_criteria": [
+        "Risk Management Report references all identified hazards with final residual risk levels",
+        "All risk controls verified as implemented through test evidence or design review",
+        "No risk control introduced new hazards that are unmitigated",
+        "Benefit-risk analysis documents clinical justification for overall residual risk acceptability",
+        "All residual risks classified as broadly acceptable or ALARP with justification",
+        "Post-production surveillance plan defines collection methods and review frequency",
+        "Risk Management Report signed by qualified risk management team members",
+        "ISO 14971 risk management file complete",
+        "Residual risk acceptable"
+      ],
+      "depends_on": [
+        28,
+        29,
+        5
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 31,
+      "task_type": "DOCS",
+      "description": "Author clinical evaluation report, instructions for use, and labeling per FDA and ISO requirements",
+      "payload": {
+        "deliverables": [
+          "Instructions for Use (IFU)",
+          "Quick Start Guide",
+          "Clinician Guide",
+          "Labeling artwork and specifications",
+          "Clinical Evaluation Report framework",
+          "Training materials for clinical staff",
+          "Patient training curriculum"
+        ],
+        "regulatory_requirements": [
+          "FDA_21_CFR_Part_801",
+          "ISO_15223-1_symbols",
+          "IEC_62366_validated_content"
+        ],
+        "reading_level": "8th_grade_for_patient_materials",
+        "languages": [
+          "English",
+          "Spanish"
+        ]
+      },
+      "acceptance_criteria": [
+        "IFU reviewed by usability engineering to confirm alignment with use specification",
+        "IFU reading level verified at or below 8th grade using Flesch-Kincaid tool",
+        "All ISO 15223-1 symbols used correctly with reference to published standard",
+        "Labeling artwork reviewed against 21 CFR Part 801 requirements with no gaps",
+        "Spanish translation reviewed by qualified medical translator",
+        "Clinical evaluation report framework aligned with MEDDEV 2.7/1 Rev 4 structure",
+        "Patient training curriculum covers all critical tasks from usability specification"
+      ],
+      "depends_on": [
+        27,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 32,
+      "task_type": "REGULATORY",
+      "description": "Prepare and compile FDA PMA submission package with all required modules",
+      "payload": {
+        "submission_format": "eCTD_structured_PMA",
+        "modules": {
+          "administrative": [
+            "cover_letter",
+            "truthful_accuracy_statement",
+            "proposed_labeling"
+          ],
+          "summary": [
+            "summary_of_safety_and_effectiveness",
+            "device_description",
+            "substantial_equivalence_if_applicable"
+          ],
+          "technical": [
+            "non_clinical_studies",
+            "clinical_studies_protocol",
+            "software_documentation",
+            "electromagnetic_compatibility",
+            "biocompatibility",
+            "sterilization_if_applicable",
+            "risk_management"
+          ],
+          "manufacturing": [
+            "quality_system_information",
+            "manufacturing_process_description"
+          ]
+        },
+        "deliverables": [
+          "Complete PMA application",
+          "eSTAR checklist completion",
+          "Pre-submission (Q-sub) response incorporation",
+          "Submission gap analysis"
+        ],
+        "fda_guidance_documents": [
+          "FDA_2019_Software_Guidance",
+          "FDA_2023_Cybersecurity_Guidance",
+          "FDA_AI_ML_SaMD_Action_Plan"
+        ]
+      },
+      "acceptance_criteria": [
+        "PMA submission package covers all required sections per 21 CFR Part 814",
+        "eSTAR checklist completed with zero mandatory items flagged as missing",
+        "Software documentation section addresses all IEC 62304 lifecycle evidence",
+        "Cybersecurity documentation addresses FDA 2023 guidance requirements including SBOM",
+        "AI/ML section addresses Predetermined Change Control Plan per FDA AI/ML Action Plan",
+        "Pre-submission meeting feedback incorporated with documented resolution for each item",
+        "Regulatory affairs director review and sign-off obtained before submission"
+      ],
+      "depends_on": [
+        29,
+        30,
+        31,
+        23
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 33,
+      "task_type": "TESTS",
+      "description": "Execute final validation test suite including software V&V, usability validation, and interoperability testing",
+      "payload": {
+        "test_types": [
+          "software_validation",
+          "summative_usability_evaluation",
+          "interoperability_testing",
+          "electromagnetic_compatibility_pre_test",
+          "cybersecurity_penetration_test"
+        ],
+        "deliverables": [
+          "Software Validation Report",
+          "Summative Usability Evaluation Report",
+          "Interoperability Test Report",
+          "EMC pre-compliance test report",
+          "Penetration Test Report",
+          "Validation Summary Report"
+        ],
+        "summative_usability": {
+          "participant_count": 15,
+          "user_groups": [
+            "patients",
+            "caregivers"
+          ],
+          "critical_tasks": [
+            "bolus_confirmation",
+            "alarm_acknowledgment",
+            "manual_override",
+            "emergency_suspend"
+          ]
+        }
+      },
+      "acceptance_criteria": [
+        "Software Validation Report covers all validation requirements per IEC 62304 Section 5.8",
+        "Summative usability evaluation completes with zero critical use errors across all 15 participants",
+        "All critical tasks completed successfully by at least 95% of participants",
+        "Penetration test report shows zero exploitable Critical vulnerabilities",
+        "EMC pre-compliance test passes Class B emissions limits",
+        "Interoperability confirmed with at least 2 commercially available CGM systems",
+        "Validation Summary Report signed by quality director and stored in DHF"
+      ],
+      "depends_on": [
+        27,
+        31,
+        23
+      ],
+      "agent_role": "analyst"
+    },
+    {
+      "step": 34,
+      "task_type": "TRAINING",
+      "description": "Develop and deliver training materials for manufacturing, clinical staff, and patient support teams",
+      "payload": {
+        "training_audiences": [
+          "manufacturing_operators",
+          "clinical_sales_specialists",
+          "patient_support_helpdesk",
+          "clinical_trainers"
+        ],
+        "deliverables": [
+          "Manufacturing operator training curriculum",
+          "Clinical specialist certification program",
+          "Patient support helpdesk training guide",
+          "Training effectiveness assessment tools",
+          "Training records system integration"
+        ],
+        "format": [
+          "eLearning_SCORM",
+          "instructor_led",
+          "competency_assessment"
+        ],
+        "regulatory_requirement": "21_CFR_Part_820.25_personnel_records"
+      },
+      "acceptance_criteria": [
+        "Manufacturing training curriculum covers all critical assembly and inspection steps",
+        "Clinical specialist certification program includes competency assessment with passing threshold of 85%",
+        "All training materials reviewed and approved by subject matter experts",
+        "Training records system captures completion and assessment scores per 21 CFR Part 820.25",
+        "Helpdesk training guide covers top 20 anticipated patient support scenarios",
+        "Training effectiveness measured via knowledge check with minimum 80% pass rate across all audiences",
+        "eLearning modules SCORM compliant and tested in at least 2 LMS platforms"
+      ],
+      "depends_on": [
+        31,
+        33
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 35,
+      "task_type": "OPERATIONS",
+      "description": "Author production operations runbooks, postmarket surveillance plan, and incident response procedures",
+      "payload": {
+        "deliverables": [
+          "Cloud operations runbook",
+          "On-call escalation procedures",
+          "Postmarket surveillance plan",
+          "Medical Device Reporting (MDR) procedure per 21 CFR Part 803",
+          "Field safety corrective action procedure",
+          "Software update deployment runbook",
+          "Customer complaint handling procedure"
+        ],
+        "operations_scope": [
+          "cloud_infrastructure",
+          "firmware_OTA_updates",
+          "patient_data_management",
+          "security_incident_response",
+          "regulatory_reporting"
+        ],
+        "monitoring": {
+          "metrics": [
+            "system_uptime",
+            "alert_delivery_latency",
+            "API_error_rate",
+            "device_connectivity_rate"
+          ],
+          "alerting_tool": "PagerDuty",
+          "sla": "99.9%_uptime"
+        }
+      },
+      "acceptance_criteria": [
+        "Cloud operations runbook covers all services with escalation paths for each failure mode",
+        "MDR procedure defines reportability decision tree per 21 CFR Part 803 requirements",
+        "Postmarket surveillance plan defines data collection methods, frequency, and review triggers",
+        "Field safety corrective action procedure aligns with ISO 13485 Section 8.3 requirements",
+        "OTA firmware update runbook includes rollback procedure tested in staging environment",
+        "Security incident response runbook defines 24-hour containment SLA for Critical vulnerabilities",
+        "All runbooks reviewed by operations lead and quality assurance before go-live"
+      ],
+      "depends_on": [
+        33,
+        22,
+        32
+      ],
+      "agent_role": "analyst"
+    }
+  ],
+  "task_count": 35,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 52,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 52,
+        "final_review": {
+          "score": 52,
+          "flaws": [
+            "FATAL: No clinical trial / IDE pathway. FDA Class III PMA for a novel automated insulin delivery (AID) system requires Investigational Device Exemption (IDE) application, IRB approval, and actual pivotal clinical trial execution with enrolled human subjects. The plan has 'clinical studies protocol' as a PMA module deliverable (step 32) but zero steps for IDE submission, trial execution, patient enrollment, data collection, or clinical study report authoring. FDA will not approve a Class III AID device without this evidence \u2014 full stop.",
+            "No hardware prototype build/bring-up cycle. The plan jumps from PCB schematic (step 9) directly to firmware development (step 12) and then to system test (step 27) with no explicit EVT/DVT/PVT (Engineering Verification Test / Design Verification Test / Production Verification Test) stages. Real hardware has bring-up issues, power sequencing failures, silicon errata, and component incompatibilities. Simulation-only validation of firmware is insufficient for FDA Class III V&V evidence.",
+            "ML model integration back into firmware is a missing step. Step 16 (ML model development) depends on step 15 (firmware) and produces a quantized model for STM32H7. But there is no subsequent step to integrate that model into the firmware build, re-test the integrated system, or validate the inference engine in-situ. The model is developed and then orphaned from the firmware pipeline.",
+            "Biocompatibility testing (ISO 10993) is mentioned in the PMA module (step 32) but has no execution step. For a Class III device with a transcutaneous infusion catheter and reservoir in contact with body tissue and fluids, a full ISO 10993 biocompatibility evaluation (cytotoxicity, sensitization, genotoxicity, implantation as applicable) is required. This is a multi-month testing program requiring external lab engagement.",
+            "Actual IEC 60601-1-2 EMC testing is absent. Step 9 has an 'EMC pre-compliance plan' and step 33 has 'EMC pre-compliance test.' Pre-compliance testing at an in-house bench is not acceptable for FDA submission. Accredited third-party lab testing per IEC 60601-1-2 (radiated/conducted emissions, immunity) is mandatory. No step allocates for this.",
+            "Threat modeling (step 23) comes after the system is fully built (depends on steps 15, 17, 20). Security-by-design requires STRIDE analysis during architecture definition (step 7), not post-implementation. Finding BLE spoofing or replay attack vulnerabilities after the protocol stack is finalized and firmware is written means expensive redesign. This ordering error is a textbook mistake in medical device security programs.",
+            "STM32H7 and Nordic nRF5340 are specified as separate chips with no inter-chip security specification. CGM glucose data arriving over BLE on the nRF5340 must transit to the STM32H7 via SPI or UART. This internal bus is never described, secured, or included in the threat model. An attacker with physical access who spoofs CGM readings on this internal bus can cause fatal insulin over-delivery \u2014 the most critical attack vector in the system.",
+            "Manufacturing process validation (IQ/OQ/PQ) is entirely absent. 21 CFR Part 820.75 requires process validation for processes whose results cannot be fully verified by subsequent inspection. Pump assembly, sterilization of infusion components, and calibration of insulin delivery are all such processes. Step 34 covers operator training but not process validation protocols or execution.",
+            "Acceptance criteria in step 5 list 'ISO 14971 risk management file complete' and 'Residual risk acceptable' as exit criteria for the PRELIMINARY hazard analysis step. These are final risk management outcomes that belong in step 30, not step 5. This creates false closure \u2014 a QA reviewer could sign off on step 5 believing the risk file is complete when it is not.",
+            "Steps 28 and 29 both repeat 'DHF structure created' and 'V&V protocol drafted' as acceptance criteria. These artifacts are supposed to be created in step 6. Repeating them in steps 28-29 (post-system test) either means they were never actually created in step 6 or these criteria are copy-paste errors that will confuse DHF auditors and obscure traceability.",
+            "No design freeze gate defined. There is no explicit step that triggers design freeze and initiates formal change control before V&V begins. Changes made during steps 24-27 (testing) without a documented design freeze create 21 CFR Part 820.30 compliance risk: what version was validated?",
+            "Summative usability evaluation (step 33, 15 participants) has no prerequisite step for participant recruitment, IRB/ethics approval for human subjects testing, or scheduling. IRB approval alone can take 4-12 weeks. This step will block the validation timeline with no allocated time.",
+            "React Native's ability to wake device from lock screen for critical alarms is not guaranteed. iOS limits background execution and Do Not Disturb overrides non-system apps. Android OEM battery optimizations kill background processes. Step 20's acceptance criterion 'critical alarm screen wakes device from lock screen' is stated as if it is trivially achievable \u2014 it is one of the hardest UX requirements in medical mobile app development and requires platform-specific native code, often requiring Apple's Critical Alerts entitlement and equivalent Android workarounds. None of this complexity is reflected in the step.",
+            "STM32H7 LSTM inference at 100ms with full 24-hour CGM history as input features is not validated for feasibility. STM32H7 has ~1MB RAM and 2MB Flash in common variants. An LSTM with attention operating on 288 timesteps (24hr at 5-min intervals) x multiple features will require careful quantization. Step 16's acceptance criterion of 'quantized model fits within STM32H7 RAM and flash constraints' is listed as a check, not a design constraint \u2014 there is no analysis confirming it is achievable before 5 preceding firmware steps are built assuming it works.",
+            "No CGM manufacturer interoperability agreement pathway. Integrating with a commercially available CGM (Dexcom, Abbott) for a PMA submission requires either the CGM being listed as an accessory/component with appropriate predicate, or demonstrated interoperability under FDA's iCGM special controls (21 CFR 862.3570). The plan treats this as a technical protocol implementation when it is also a regulatory and commercial licensing challenge."
+          ],
+          "suggestions": [
+            "Insert an IDE Application step between steps 2 and 5. Draft IDE sections (risk analysis, clinical protocol, device description, informed consent templates) in parallel with regulatory strategy. Clinical enrollment cannot begin until FDA grants IDE \u2014 model this as a critical path gate.",
+            "Add an explicit Hardware Prototype Bring-Up step after step 9 and before step 12. Scope it: board assembly, power rail verification, JTAG debug bring-up, peripheral loopback tests, thermal characterization. This is where 30-40% of hardware issues surface.",
+            "Add a step for ML model firmware integration and regression test after step 16. This step takes the quantized model artifact, integrates it into the IEC 62304-compliant firmware build, and re-executes the full test suite from steps 24-25 against the integrated system.",
+            "Move threat modeling (step 23) to depend on step 7 (architecture), not steps 15/17/20. Security controls must inform design, not audit it. The architectural security review should produce threat mitigations that are baked into steps 12-17.",
+            "Add a step for ISO 10993 biocompatibility testing program. Scope: identify all patient-contacting materials, classify tests required, contract with accredited biocompatibility lab, execute testing. This runs in parallel with firmware development and typically takes 3-6 months.",
+            "Add a step for IEC 60601-1-2 EMC testing at an accredited laboratory. Schedule this after prototype hardware is stable (post-DVT). Budget 6-10 weeks for lab scheduling, testing, and report generation.",
+            "Add a Manufacturing Process Validation step. Define IQ/OQ/PQ protocols for pump assembly, calibration, and any sterilization processes. This is a 21 CFR Part 820.75 requirement and a common PMA deficiency.",
+            "Add a Design Freeze milestone step between steps 27 and 28. Explicitly lock the configuration baseline, enumerate all open defects with disposition, and require formal approval before DHF compilation begins.",
+            "Define the STM32H7\u2194nRF5340 internal protocol in step 7 (Interface Control Document) and add it to the threat model. Consider authenticated message authentication codes (HMAC) on all internal insulin delivery commands.",
+            "For the mobile app alarm wakeup requirement, add a spike investigation task before step 20. Verify iOS Critical Alerts entitlement availability, Android foreground service behavior across target OEM skins (Samsung OneUI, Xiaomi MIUI), and document the implementation approach and its limitations in the use specification.",
+            "Add an EU MDR pathway track if international commercialization is in scope. EU Class III equivalent (Annex IX) requires Notified Body engagement and a Clinical Evaluation per MEDDEV 2.7/1 Rev 4 \u2014 not the same as FDA PMA and cannot be retrofitted easily.",
+            "Validate STM32H7 ML feasibility before committing to the architecture. Run a benchmark of the quantized LSTM on the actual target MCU variant selected (specific part number matters) as a step 7 output. If it fails, the architecture choice needs to change before 8 firmware steps are built around it."
+          ],
+          "missing": [
+            "IDE (Investigational Device Exemption) application and FDA approval step \u2014 prerequisite for any human clinical testing",
+            "Clinical trial execution step (enrollment, data collection, monitoring, statistical analysis, clinical study report)",
+            "ISO 10993 biocompatibility testing program with accredited lab",
+            "IEC 60601-1-2 EMC/electrical safety testing at accredited third-party lab",
+            "IEC 60601-1-8 alarm testing (auditory alarm loudness, alarm signal characteristics) \u2014 not just hierarchy definition",
+            "Hardware prototype bring-up and hardware verification test (EVT/DVT cycle)",
+            "Manufacturing process validation (IQ/OQ/PQ per 21 CFR 820.75)",
+            "ML model \u2192 firmware integration step post-step 16",
+            "Design freeze gate with formal configuration baseline",
+            "IRB/ethics approval for summative usability study (human subjects research requirement)",
+            "CGM manufacturer interoperability agreement or iCGM predicate analysis",
+            "EU MDR pathway (Notified Body engagement, EU Clinical Evaluation) if non-US markets targeted",
+            "Software of Unknown Provenance (SOUP) validation plan \u2014 step 12 lists 'SOUP components listed' as criteria but no step plans the SOUP validation activities required by IEC 62304 Section 8",
+            "Post-production surveillance data collection system setup (not just the plan \u2014 the actual technical implementation of adverse event data collection)"
+          ],
+          "security_risks": [
+            "CRITICAL: STM32H7\u2194nRF5340 internal SPI/UART bus carries glucose readings that directly drive insulin delivery. If unprotected, physical access allows glucose value injection causing potentially fatal overdose. No HMAC or message authentication is specified for this bus.",
+            "CRITICAL: BLE insulin delivery command injection. Step 20 allows the mobile app to send bolus commands to the pump over BLE. If the BLE pairing/bonding security is misconfigured or the command channel lacks replay protection, an attacker in BLE range could trigger unauthorized bolus delivery. The threat model (step 23) occurs too late to prevent this being designed-in wrong.",
+            "HIGH: ML model update pathway not cryptographically bound. Step 16 produces a model for embedded deployment, and step 35 mentions OTA firmware updates with signature verification. But there is no specification of how ML model updates (distinct from firmware updates under PCCP) are authenticated and verified before deployment to the device.",
+            "HIGH: CGM data integrity \u2014 no specification of whether CGM readings received over BLE are authenticated. A spoofed CGM broadcasting falsely low glucose values would cause the closed-loop controller to suspend insulin delivery, potentially triggering hyperglycemic crisis. Conversely, falsely high readings cause overdose. The CGMS GATT profile does not natively include authentication.",
+            "HIGH: React Native JavaScript bundle is not a trusted execution environment for security-critical operations. The bolus confirmation logic running in JavaScript is susceptible to prototype pollution, dependency confusion attacks in the npm supply chain, and dynamic patching. For a device delivering life-critical doses, the confirmation logic should run in native code with attestation.",
+            "MEDIUM: No specification of secure element or HSM on the device for private key storage. Step 22 uses an HSM for firmware signing in CI, but the device itself needs a secure element (e.g., ATECC608) to store the public key used to verify firmware signatures and to authenticate BLE connections. Without this, key material is stored in STM32H7 flash and extractable via JTAG.",
+            "MEDIUM: No firmware downgrade attack prevention specified. The bootloader verifies signature (step 12) but does not specify anti-rollback counters. An attacker who extracts an older signed firmware can downgrade the device to a version with known vulnerabilities.",
+            "MEDIUM: Kafka and TimescaleDB in the data pipeline (step 18) are complex OSS components with their own vulnerability surface. No step specifies patching SLA or vulnerability scanning for the data infrastructure layer, only for the application layer (SBOM in step 23 covers application software, not infrastructure)."
+          ],
+          "summary": "This plan is architecturally coherent and demonstrates genuine expertise in medical device development \u2014 the coverage of IEC 62304 lifecycle, ISO 14971 risk management structure, DHF organization, and regulatory documentation is above average for an AI-generated build plan. However, it cannot ship as a PMA-approved FDA Class III device because it is missing the single most important element: a clinical trial. No pivotal clinical data means no Class III PMA approval, regardless of how complete the technical documentation is. This is not a minor gap \u2014 it is a multi-year, multi-million-dollar program element that requires IDE approval before it can begin, and that entire pathway is absent from all 35 steps. Secondary critical gaps include missing hardware prototype testing cycles (the plan goes from schematic to system test through simulation only), absent biocompatibility and accredited EMC testing, no manufacturing process validation, an ML integration step that is developed but never reintegrated into the validated firmware, and a security threat modeling step positioned at the end of the build rather than at the architecture stage. Scoring at 52: the regulatory and software lifecycle scaffolding is solid enough to build from, but the clinical evidence pathway gap alone makes this plan unbuildable to FDA approval without fundamental restructuring.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 52,
+            "flaws": [
+              "FATAL: No clinical trial / IDE pathway. FDA Class III PMA for a novel automated insulin delivery (AID) system requires Investigational Device Exemption (IDE) application, IRB approval, and actual pivotal clinical trial execution with enrolled human subjects. The plan has 'clinical studies protocol' as a PMA module deliverable (step 32) but zero steps for IDE submission, trial execution, patient enrollment, data collection, or clinical study report authoring. FDA will not approve a Class III AID device without this evidence \u2014 full stop.",
+              "No hardware prototype build/bring-up cycle. The plan jumps from PCB schematic (step 9) directly to firmware development (step 12) and then to system test (step 27) with no explicit EVT/DVT/PVT (Engineering Verification Test / Design Verification Test / Production Verification Test) stages. Real hardware has bring-up issues, power sequencing failures, silicon errata, and component incompatibilities. Simulation-only validation of firmware is insufficient for FDA Class III V&V evidence.",
+              "ML model integration back into firmware is a missing step. Step 16 (ML model development) depends on step 15 (firmware) and produces a quantized model for STM32H7. But there is no subsequent step to integrate that model into the firmware build, re-test the integrated system, or validate the inference engine in-situ. The model is developed and then orphaned from the firmware pipeline.",
+              "Biocompatibility testing (ISO 10993) is mentioned in the PMA module (step 32) but has no execution step. For a Class III device with a transcutaneous infusion catheter and reservoir in contact with body tissue and fluids, a full ISO 10993 biocompatibility evaluation (cytotoxicity, sensitization, genotoxicity, implantation as applicable) is required. This is a multi-month testing program requiring external lab engagement.",
+              "Actual IEC 60601-1-2 EMC testing is absent. Step 9 has an 'EMC pre-compliance plan' and step 33 has 'EMC pre-compliance test.' Pre-compliance testing at an in-house bench is not acceptable for FDA submission. Accredited third-party lab testing per IEC 60601-1-2 (radiated/conducted emissions, immunity) is mandatory. No step allocates for this.",
+              "Threat modeling (step 23) comes after the system is fully built (depends on steps 15, 17, 20). Security-by-design requires STRIDE analysis during architecture definition (step 7), not post-implementation. Finding BLE spoofing or replay attack vulnerabilities after the protocol stack is finalized and firmware is written means expensive redesign. This ordering error is a textbook mistake in medical device security programs.",
+              "STM32H7 and Nordic nRF5340 are specified as separate chips with no inter-chip security specification. CGM glucose data arriving over BLE on the nRF5340 must transit to the STM32H7 via SPI or UART. This internal bus is never described, secured, or included in the threat model. An attacker with physical access who spoofs CGM readings on this internal bus can cause fatal insulin over-delivery \u2014 the most critical attack vector in the system.",
+              "Manufacturing process validation (IQ/OQ/PQ) is entirely absent. 21 CFR Part 820.75 requires process validation for processes whose results cannot be fully verified by subsequent inspection. Pump assembly, sterilization of infusion components, and calibration of insulin delivery are all such processes. Step 34 covers operator training but not process validation protocols or execution.",
+              "Acceptance criteria in step 5 list 'ISO 14971 risk management file complete' and 'Residual risk acceptable' as exit criteria for the PRELIMINARY hazard analysis step. These are final risk management outcomes that belong in step 30, not step 5. This creates false closure \u2014 a QA reviewer could sign off on step 5 believing the risk file is complete when it is not.",
+              "Steps 28 and 29 both repeat 'DHF structure created' and 'V&V protocol drafted' as acceptance criteria. These artifacts are supposed to be created in step 6. Repeating them in steps 28-29 (post-system test) either means they were never actually created in step 6 or these criteria are copy-paste errors that will confuse DHF auditors and obscure traceability.",
+              "No design freeze gate defined. There is no explicit step that triggers design freeze and initiates formal change control before V&V begins. Changes made during steps 24-27 (testing) without a documented design freeze create 21 CFR Part 820.30 compliance risk: what version was validated?",
+              "Summative usability evaluation (step 33, 15 participants) has no prerequisite step for participant recruitment, IRB/ethics approval for human subjects testing, or scheduling. IRB approval alone can take 4-12 weeks. This step will block the validation timeline with no allocated time.",
+              "React Native's ability to wake device from lock screen for critical alarms is not guaranteed. iOS limits background execution and Do Not Disturb overrides non-system apps. Android OEM battery optimizations kill background processes. Step 20's acceptance criterion 'critical alarm screen wakes device from lock screen' is stated as if it is trivially achievable \u2014 it is one of the hardest UX requirements in medical mobile app development and requires platform-specific native code, often requiring Apple's Critical Alerts entitlement and equivalent Android workarounds. None of this complexity is reflected in the step.",
+              "STM32H7 LSTM inference at 100ms with full 24-hour CGM history as input features is not validated for feasibility. STM32H7 has ~1MB RAM and 2MB Flash in common variants. An LSTM with attention operating on 288 timesteps (24hr at 5-min intervals) x multiple features will require careful quantization. Step 16's acceptance criterion of 'quantized model fits within STM32H7 RAM and flash constraints' is listed as a check, not a design constraint \u2014 there is no analysis confirming it is achievable before 5 preceding firmware steps are built assuming it works.",
+              "No CGM manufacturer interoperability agreement pathway. Integrating with a commercially available CGM (Dexcom, Abbott) for a PMA submission requires either the CGM being listed as an accessory/component with appropriate predicate, or demonstrated interoperability under FDA's iCGM special controls (21 CFR 862.3570). The plan treats this as a technical protocol implementation when it is also a regulatory and commercial licensing challenge."
+            ],
+            "suggestions": [
+              "Insert an IDE Application step between steps 2 and 5. Draft IDE sections (risk analysis, clinical protocol, device description, informed consent templates) in parallel with regulatory strategy. Clinical enrollment cannot begin until FDA grants IDE \u2014 model this as a critical path gate.",
+              "Add an explicit Hardware Prototype Bring-Up step after step 9 and before step 12. Scope it: board assembly, power rail verification, JTAG debug bring-up, peripheral loopback tests, thermal characterization. This is where 30-40% of hardware issues surface.",
+              "Add a step for ML model firmware integration and regression test after step 16. This step takes the quantized model artifact, integrates it into the IEC 62304-compliant firmware build, and re-executes the full test suite from steps 24-25 against the integrated system.",
+              "Move threat modeling (step 23) to depend on step 7 (architecture), not steps 15/17/20. Security controls must inform design, not audit it. The architectural security review should produce threat mitigations that are baked into steps 12-17.",
+              "Add a step for ISO 10993 biocompatibility testing program. Scope: identify all patient-contacting materials, classify tests required, contract with accredited biocompatibility lab, execute testing. This runs in parallel with firmware development and typically takes 3-6 months.",
+              "Add a step for IEC 60601-1-2 EMC testing at an accredited laboratory. Schedule this after prototype hardware is stable (post-DVT). Budget 6-10 weeks for lab scheduling, testing, and report generation.",
+              "Add a Manufacturing Process Validation step. Define IQ/OQ/PQ protocols for pump assembly, calibration, and any sterilization processes. This is a 21 CFR Part 820.75 requirement and a common PMA deficiency.",
+              "Add a Design Freeze milestone step between steps 27 and 28. Explicitly lock the configuration baseline, enumerate all open defects with disposition, and require formal approval before DHF compilation begins.",
+              "Define the STM32H7\u2194nRF5340 internal protocol in step 7 (Interface Control Document) and add it to the threat model. Consider authenticated message authentication codes (HMAC) on all internal insulin delivery commands.",
+              "For the mobile app alarm wakeup requirement, add a spike investigation task before step 20. Verify iOS Critical Alerts entitlement availability, Android foreground service behavior across target OEM skins (Samsung OneUI, Xiaomi MIUI), and document the implementation approach and its limitations in the use specification.",
+              "Add an EU MDR pathway track if international commercialization is in scope. EU Class III equivalent (Annex IX) requires Notified Body engagement and a Clinical Evaluation per MEDDEV 2.7/1 Rev 4 \u2014 not the same as FDA PMA and cannot be retrofitted easily.",
+              "Validate STM32H7 ML feasibility before committing to the architecture. Run a benchmark of the quantized LSTM on the actual target MCU variant selected (specific part number matters) as a step 7 output. If it fails, the architecture choice needs to change before 8 firmware steps are built around it."
+            ],
+            "missing": [
+              "IDE (Investigational Device Exemption) application and FDA approval step \u2014 prerequisite for any human clinical testing",
+              "Clinical trial execution step (enrollment, data collection, monitoring, statistical analysis, clinical study report)",
+              "ISO 10993 biocompatibility testing program with accredited lab",
+              "IEC 60601-1-2 EMC/electrical safety testing at accredited third-party lab",
+              "IEC 60601-1-8 alarm testing (auditory alarm loudness, alarm signal characteristics) \u2014 not just hierarchy definition",
+              "Hardware prototype bring-up and hardware verification test (EVT/DVT cycle)",
+              "Manufacturing process validation (IQ/OQ/PQ per 21 CFR 820.75)",
+              "ML model \u2192 firmware integration step post-step 16",
+              "Design freeze gate with formal configuration baseline",
+              "IRB/ethics approval for summative usability study (human subjects research requirement)",
+              "CGM manufacturer interoperability agreement or iCGM predicate analysis",
+              "EU MDR pathway (Notified Body engagement, EU Clinical Evaluation) if non-US markets targeted",
+              "Software of Unknown Provenance (SOUP) validation plan \u2014 step 12 lists 'SOUP components listed' as criteria but no step plans the SOUP validation activities required by IEC 62304 Section 8",
+              "Post-production surveillance data collection system setup (not just the plan \u2014 the actual technical implementation of adverse event data collection)"
+            ],
+            "security_risks": [
+              "CRITICAL: STM32H7\u2194nRF5340 internal SPI/UART bus carries glucose readings that directly drive insulin delivery. If unprotected, physical access allows glucose value injection causing potentially fatal overdose. No HMAC or message authentication is specified for this bus.",
+              "CRITICAL: BLE insulin delivery command injection. Step 20 allows the mobile app to send bolus commands to the pump over BLE. If the BLE pairing/bonding security is misconfigured or the command channel lacks replay protection, an attacker in BLE range could trigger unauthorized bolus delivery. The threat model (step 23) occurs too late to prevent this being designed-in wrong.",
+              "HIGH: ML model update pathway not cryptographically bound. Step 16 produces a model for embedded deployment, and step 35 mentions OTA firmware updates with signature verification. But there is no specification of how ML model updates (distinct from firmware updates under PCCP) are authenticated and verified before deployment to the device.",
+              "HIGH: CGM data integrity \u2014 no specification of whether CGM readings received over BLE are authenticated. A spoofed CGM broadcasting falsely low glucose values would cause the closed-loop controller to suspend insulin delivery, potentially triggering hyperglycemic crisis. Conversely, falsely high readings cause overdose. The CGMS GATT profile does not natively include authentication.",
+              "HIGH: React Native JavaScript bundle is not a trusted execution environment for security-critical operations. The bolus confirmation logic running in JavaScript is susceptible to prototype pollution, dependency confusion attacks in the npm supply chain, and dynamic patching. For a device delivering life-critical doses, the confirmation logic should run in native code with attestation.",
+              "MEDIUM: No specification of secure element or HSM on the device for private key storage. Step 22 uses an HSM for firmware signing in CI, but the device itself needs a secure element (e.g., ATECC608) to store the public key used to verify firmware signatures and to authenticate BLE connections. Without this, key material is stored in STM32H7 flash and extractable via JTAG.",
+              "MEDIUM: No firmware downgrade attack prevention specified. The bootloader verifies signature (step 12) but does not specify anti-rollback counters. An attacker who extracts an older signed firmware can downgrade the device to a version with known vulnerabilities.",
+              "MEDIUM: Kafka and TimescaleDB in the data pipeline (step 18) are complex OSS components with their own vulnerability surface. No step specifies patching SLA or vulnerability scanning for the data infrastructure layer, only for the application layer (SBOM in step 23 covers application software, not infrastructure)."
+            ],
+            "summary": "This plan is architecturally coherent and demonstrates genuine expertise in medical device development \u2014 the coverage of IEC 62304 lifecycle, ISO 14971 risk management structure, DHF organization, and regulatory documentation is above average for an AI-generated build plan. However, it cannot ship as a PMA-approved FDA Class III device because it is missing the single most important element: a clinical trial. No pivotal clinical data means no Class III PMA approval, regardless of how complete the technical documentation is. This is not a minor gap \u2014 it is a multi-year, multi-million-dollar program element that requires IDE approval before it can begin, and that entire pathway is absent from all 35 steps. Secondary critical gaps include missing hardware prototype testing cycles (the plan goes from schematic to system test through simulation only), absent biocompatibility and accredited EMC testing, no manufacturing process validation, an ML integration step that is developed but never reintegrated into the validated firmware, and a security threat modeling step positioned at the end of the build rather than at the architecture stage. Scoring at 52: the regulatory and software lifecycle scaffolding is solid enough to build from, but the clinical evidence pathway gap alone makes this plan unbuildable to FDA approval without fundamental restructuring.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-21T22:35:10.839963+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 439.02,
+    "critic_plan": 131.17
+  }
+}

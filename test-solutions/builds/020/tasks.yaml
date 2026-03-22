@@ -1,0 +1,317 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define payment gateway business requirements: PSP routing logic,
+      supported payment methods (cards, Apple Pay, Google Pay, BNPL providers), subscription
+      models, merchant onboarding flow, refund and dispute policies, SLA targets,
+      and revenue model.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - BRD covers all five payment method families (card, Apple Pay, Google Pay, BNPL,
+      subscription)
+    - PSP routing rules documented with failover logic
+    - Merchant onboarding flow mapped end-to-end
+    - SLA targets defined for payment latency, uptime, and dispute resolution
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce product requirements document (PRD), prioritised roadmap
+      (MVP vs. post-launch), and success metrics (authorization rate, latency p99,
+      chargeback rate, PCI audit pass). Define merchant-facing API contract surface.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD lists all features with priority and acceptance criteria
+    - MVP scope clearly separated from phase-2 features
+    - KPIs are measurable and tied to business goals
+    - API surface lists all merchant-facing endpoints
+    depends_on:
+    - 1
+  SECURITY:
+    description: Produce threat model (STRIDE), PCI DSS Level 1 scope definition,
+      data flow diagrams showing cardholder data environment (CDE), network segmentation
+      plan, encryption key management strategy, and penetration test plan.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All 12 PCI DSS requirements mapped to controls in scope
+    - CDE boundary clearly defined with in-scope systems listed
+    - Network segmentation plan reviewed by security lead
+    - Key management spec covers HSM usage, key rotation, and ceremony procedures
+    - SBOM generated for all third-party dependencies
+    - Penetration test plan approved covering internal, external, and social engineering
+      vectors
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'Build PCI DSS Level 1 compliance artifact set: Risk Assessment,
+      Responsibility Assignment Matrix (RAM), System Inventory (asset register), Policies
+      and Procedures documentation, Traceability Matrix mapping controls to requirements,
+      and Report on Compliance (RoC) template. Include SOC 2 Trust Service Criteria
+      mapping and SOX IT general controls (ITGC) checklist.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All 12 PCI DSS requirements have at least one documented control
+    - Traceability matrix links every control to evidence artifact
+    - Policy suite covers acceptable use, incident response, change management, and
+      access control
+    - SOC 2 CC series (Security, Availability, Confidentiality) fully mapped
+    - SOX ITGC checklist covers access management, change management, and backup/recovery
+    depends_on:
+    - 3
+  UX_DESIGN:
+    description: 'Design merchant dashboard UX: payment analytics, transaction search/filter,
+      dispute management, subscription plan management, webhook configuration, and
+      developer API key management. Include checkout widget UX for card, Apple Pay,
+      and Google Pay flows.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All screens wireframed and reviewed with product manager
+    - Checkout widget flow covers card, Apple Pay, Google Pay, and BNPL selection
+    - Accessibility audit confirms WCAG 2.1 AA compliance
+    - Design tokens exported for frontend implementation
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design and implement the core database schema: merchants, payment_intents,
+      transactions, payment_methods (tokenized), subscriptions, subscription_plans,
+      invoices, disputes, refunds, webhook_endpoints, audit_log, and psp_routing_rules.
+      All cardholder data fields must use column-level encryption. Migrations via
+      Alembic (Python) or Flyway (JVM). Seed data for dev/staging.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables have primary keys, FK constraints, and indexes on query-hot columns
+    - No raw PAN or CVV stored anywhere in the schema
+    - Audit_log table is append-only (no UPDATE/DELETE permissions granted)
+    - Row-level security enforces merchant data isolation
+    - Migrations run cleanly from zero on a fresh PostgreSQL instance
+    - Seed data covers at least 3 test merchants with representative transactions
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 3
+  API:
+    description: 'Design OpenAPI 3.1 specification for all merchant-facing REST endpoints:
+      payment intents (create, confirm, cancel, capture), refunds, disputes, payment
+      methods (attach, detach, list), subscriptions (create, update, cancel, pause),
+      invoices, webhook management, and PSP health status. Include idempotency key
+      design and webhook signature schema.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors via Spectral linter
+    - All endpoints have request/response schemas, error codes, and security requirements
+      defined
+    - Idempotency design documented with collision handling behaviour
+    - Webhook payload schema and signature verification algorithm documented
+    - API spec reviewed and approved by product manager and security lead
+    depends_on:
+    - 3
+    - 5
+  CONFIG:
+    description: 'Set up project configuration: Python monorepo structure, environment
+      variable schema (PSP API keys via Vault, DB credentials, HMAC secrets), pre-commit
+      hooks (Bandit, Ruff, detect-secrets), Docker Compose for local dev (Postgres,
+      Redis, Vault dev mode), and .env.example. Configure agentic pattern: review_and_critique
+      for payment processing logic with strict HITL gates on PSP credential access.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - make dev starts all local services via Docker Compose
+    - No secrets committed — detect-secrets baseline passes on initial commit
+    - Bandit scan returns zero HIGH severity findings on project scaffold
+    - Vault dev mode serves all required secrets to local services
+    - .env.example documents every required environment variable with description
+    depends_on:
+    - 6
+    - 7
+  BACKEND:
+    description: 'Implement core payment processing engine: PaymentIntent state machine
+      (created → processing → succeeded/failed/canceled), PSP abstraction layer with
+      adapter pattern for Stripe, Adyen, and Braintree, adaptive PSP router with failover
+      and retry (exponential backoff), idempotency middleware, and cardholder data
+      tokenization service (delegating PAN storage to PSP vaults or network tokens).'
+    agent_role: developer
+    acceptance_criteria:
+    - PaymentIntent state machine enforces valid transitions only (no skip states)
+    - All three PSP adapters implement a common interface and are unit-testable with
+      mocks
+    - PSP router falls over to next PSP within 500ms on adapter timeout
+    - Idempotency middleware returns identical response for duplicate Idempotency-Key
+      within 24h
+    - No raw PAN passes through application layer — only tokens and last-4 digits
+      stored
+    - All payment events emitted to audit_log with trace_id
+    depends_on:
+    - 6
+    - 7
+    - 8
+  FRONTEND:
+    description: 'Build the embeddable payment checkout widget (React + TypeScript):
+      card form with real-time validation and bin lookup, Apple Pay button (PaymentRequest
+      API), Google Pay button (Google Pay JS SDK), BNPL option selector with instalment
+      preview, 3DS2 challenge flow integration, and PCI DSS SAQ A-EP compliant iframe
+      architecture.'
+    agent_role: developer
+    acceptance_criteria:
+    - Card form validates number (Luhn), expiry, and CVV in real-time with accessible
+      error messages
+    - Apple Pay button only renders on supported devices/browsers
+    - Google Pay button renders in PRODUCTION environment with correct merchant config
+    - BNPL selector shows instalment preview fetched from eligibility endpoint
+    - 3DS2 challenge renders in modal and communicates result back to parent frame
+    - Widget iframe served from separate subdomain (pay.payment_gateway.com) for SAQ
+      A-EP compliance
+    depends_on:
+    - 10
+    - 11
+    - 14
+  INFRA:
+    description: 'Design and implement cloud infrastructure: Kubernetes (EKS or GKE)
+      with namespace isolation for CDE vs. non-CDE workloads, network policies enforcing
+      CDE segmentation, TLS termination at ingress (cert-manager), WAF (AWS WAF or
+      Cloud Armor) in front of checkout widget, HSM integration (AWS CloudHSM) for
+      key operations, VPC with private subnets for database and PSP outbound traffic,
+      and CloudTrail/audit log forwarding.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CDE namespace network policy blocks all ingress not originating from allowed
+      sources
+    - HSM used for all key generation and signing operations — no plaintext keys in
+      env vars
+    - WAF blocks OWASP Top 10 attack patterns in staging environment
+    - All inter-service traffic uses mTLS
+    - CloudTrail logs forwarded to SIEM within 60 seconds of event
+    - Network topology diagram matches actual deployed configuration
+    depends_on:
+    - 8
+  DEVOPS:
+    description: 'Build CI/CD pipeline: GitHub Actions workflows for lint, unit tests,
+      SAST (Bandit + Semgrep), container image build and push (ECR), Trivy container
+      scan, Helm chart validation, staging deployment with smoke tests, and production
+      deployment with blue/green switch and automatic rollback on error rate spike.
+      Include change management gate (JIRA ticket required for prod deploy).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Pipeline fails on any Bandit HIGH finding or Semgrep critical rule match
+    - Trivy scan fails pipeline on CRITICAL CVEs with no accepted exception
+    - Blue/green deploy completes with zero-downtime verified by health check probes
+    - Automatic rollback triggers when error rate exceeds 1% for 2 minutes post-deploy
+    - Production deploy requires JIRA ticket ID in commit or PR — enforced by pipeline
+    - Full pipeline (lint → test → build → staging → prod) completes in under 15 minutes
+    depends_on:
+    - 17
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for PSP adapters (mocked),
+      payment state machine transitions, subscription billing calculations, dunning
+      logic, HMAC webhook signing and verification, and BNPL adapter flows. Integration
+      tests against PSP sandboxes (Stripe test mode, Adyen test), database transaction
+      integrity, and Redis idempotency store. E2E tests for full checkout flows using
+      Playwright.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥ 85% on core payment engine, subscription billing, and adapter
+      modules
+    - All PSP adapter unit tests use deterministic mocks — no live network calls
+    - Integration tests cover happy path, decline, and network timeout scenarios for
+      each PSP
+    - 'E2E tests cover: card payment, Apple Pay (simulated), Google Pay (simulated),
+      BNPL redirect, subscription creation, and failed payment dunning'
+    - All tests pass in CI pipeline on every PR
+    - Test execution time < 10 minutes for full suite in CI
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 15
+  SYSTEM_TEST:
+    description: 'Execute system-level integration and performance testing: load test
+      (10,000 TPS target using k6), latency profiling (p99 < 500ms for payment intent
+      creation), PSP failover test (kill primary PSP mid-load, measure failover time),
+      subscription billing batch performance test, webhook delivery throughput test,
+      and disaster recovery drill (RTO < 4h, RPO < 1h).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Load test achieves 10,000 TPS with p99 latency < 500ms and error rate < 0.1%
+    - PSP failover completes in < 500ms when primary PSP times out
+    - Subscription billing batch processes 100,000 renewals in < 5 minutes
+    - Webhook delivery throughput sustains 5,000 events/second without queue backlog
+    - DR drill achieves RTO < 4h and RPO < 1h verified with timestamp evidence
+    - All performance test results documented and retained as compliance evidence
+    depends_on:
+    - 19
+    - 20
+  LEGAL:
+    description: 'Produce legal documentation: Terms of Service for merchants, Privacy
+      Policy (GDPR + CCPA compliant), Data Processing Agreement (DPA) template for
+      merchants, PSP sub-processor data flow agreements, PCI DSS merchant liability
+      acknowledgement, and IP ownership review for third-party SDKs (Apple Pay, Google
+      Pay, BNPL SDKs).'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all personal data categories collected and their processing
+      basis under GDPR Art. 6
+    - DPA template includes all GDPR Art. 28 mandatory clauses
+    - Sub-processor list reviewed and approved by legal — covers Stripe, Adyen, Braintree,
+      Affirm, Klarna, Afterpay
+    - Merchant liability acknowledgement references PCI DSS Level 1 certification
+      and shared responsibility
+    - IP review confirms no GPL or AGPL licensed dependencies in production build
+    depends_on:
+    - 4
+  OPERATIONS:
+    description: 'Define operational runbooks: incident response playbook (P1/P2/P3
+      classification, escalation matrix), payment failure investigation runbook, PSP
+      outage response, subscription billing failure recovery, database failover procedure,
+      on-call rotation setup (PagerDuty), SLA definitions (99.99% uptime for payment
+      processing), and capacity planning model.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Incident response playbook covers all P1/P2/P3 scenarios with clear escalation
+      paths
+    - On-call rotation configured in PagerDuty with primary and secondary responders
+    - PSP outage runbook tested in tabletop exercise with < 15-minute MTTR for known
+      scenarios
+    - SLA definition document reviewed and signed by engineering and product leads
+    - Capacity model projects infrastructure costs and headroom for 12 months at projected
+      growth
+    depends_on:
+    - 22
+  DOCS:
+    description: 'Produce developer and operator documentation: merchant integration
+      guide (quickstart, API reference generated from OpenAPI spec, webhook integration
+      guide, testing guide with sandbox credentials), platform architecture document,
+      deployment and operations guide, PCI DSS shared responsibility model document,
+      and CHANGELOG.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Quickstart guide enables a new merchant to process a test payment in < 15 minutes
+    - API reference auto-generated from OpenAPI spec with no manual drift
+    - Webhook guide includes signature verification code samples in Python, Node.js,
+      and Go
+    - PCI shared responsibility document clearly delineates platform vs. merchant
+      obligations
+    - All docs reviewed by a developer who was not involved in building the feature
+      (dogfooding test)
+    depends_on:
+    - 15
+    - 16
+    - 21
+    - 23
+  TRAINING:
+    description: 'Produce internal training materials: PCI DSS security awareness
+      training for all staff with access to CDE (annual requirement), developer secure
+      coding guidelines specific to payment processing, incident responder training
+      on payment fraud patterns, and merchant onboarding enablement guide for sales/support
+      teams.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - PCI DSS awareness training covers social engineering, phishing, and clean desk
+      policy
+    - Training completion tracked per-employee with certificate issued — required
+      for PCI audit
+    - Secure coding guidelines cover OWASP Top 10, secrets management, and logging
+      hygiene specific to payment context
+    - Merchant enablement guide enables support team to answer top-20 integration
+      questions without escalation
+    depends_on:
+    - 21
+    - 25

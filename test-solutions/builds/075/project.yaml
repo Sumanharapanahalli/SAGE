@@ -1,0 +1,63 @@
+project_name: exam_proctoring
+display_name: Exam Proctoring
+version: 1.0.0
+domain: edtech
+description: Online exam proctoring platform with webcam monitoring, screen recording,
+  AI cheating detection, identity verification, and exam analytics.
+detected_domains: []
+compliance_standards:
+- FERPA
+- GDPR
+- Biometric Privacy Laws
+- ADA
+task_types:
+- AGENTIC
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- DATA
+- DATABASE
+- DEVOPS
+- FRONTEND
+- INFRA
+- LOCALIZATION
+- ML_MODEL
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- localization_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

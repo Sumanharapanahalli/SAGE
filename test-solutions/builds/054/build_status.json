@@ -1,0 +1,894 @@
+{
+  "run_id": "34fdb59e-eec4-4f83-8831-952043dc0106",
+  "solution_name": "asset_tracking",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T07:52:42.029288+00:00",
+  "updated_at": "2026-03-22T07:57:42.937296+00:00",
+  "product_description": "IoT asset tracking with BLE beacons, GPS trackers, geofencing, real-time location system (RTLS), and supply chain visibility dashboard.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define functional and non-functional requirements for the IoT asset tracking platform: BLE beacon scanning intervals, GPS fix frequency, geofence trigger latency SLA, RTLS accuracy targets, supply chain visibility KPIs, multi-tenant org model, and data retention policy.",
+      "payload": {
+        "deliverables": [
+          "requirements_spec.md",
+          "user_stories.md",
+          "data_flow_diagram.md"
+        ],
+        "stakeholders": [
+          "logistics_ops",
+          "warehouse_managers",
+          "IT_security"
+        ],
+        "coverage": [
+          "BLE_beacon_lifecycle",
+          "GPS_tracker_lifecycle",
+          "geofence_CRUD",
+          "RTLS_zone_mapping",
+          "supply_chain_event_stream"
+        ]
+      },
+      "acceptance_criteria": [
+        "Functional requirements cover BLE, GPS, geofencing, RTLS, and dashboard modules",
+        "Non-functional requirements include latency (<2s location update), accuracy (\u00b12m indoor RTLS), availability (99.9%), and IEC 62443 SL-2 target",
+        "Data flow diagram approved by ops and security stakeholders",
+        "User stories cover asset registration, live tracking, alert configuration, and reporting"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "CONFIG",
+      "description": "Scaffold the asset_tracking solution directory from the SAGE starter template. Initialize project.yaml (active modules, theme, compliance_standards: IEC 62443), prompts.yaml (firmware_engineer, iot_backend_engineer, rtls_specialist roles), and tasks.yaml (32 task type registry entries). Set up monorepo structure: firmware/, backend/, web/, infra/, hardware_sim/.",
+      "payload": {
+        "solution_name": "asset_tracking",
+        "template": "starter",
+        "project_yaml_fields": {
+          "compliance_standards": [
+            "IEC 62443"
+          ],
+          "active_modules": [
+            "dashboard",
+            "analyst",
+            "improvements",
+            "knowledge",
+            "audit"
+          ],
+          "hitl_level": "standard"
+        },
+        "directory_structure": [
+          "firmware/ble_beacon/",
+          "firmware/gps_tracker/",
+          "backend/",
+          "web/",
+          "infra/",
+          "hardware_sim/",
+          "solutions/asset_tracking/evals/"
+        ]
+      },
+      "acceptance_criteria": [
+        "solutions/asset_tracking/ directory created with all three YAML files",
+        "make run PROJECT=asset_tracking starts without errors",
+        "project.yaml lists IEC 62443 under compliance_standards",
+        "All three YAML files pass YAML schema validation via GET /config/yaml/project"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Design the supply chain visibility dashboard: wireframes for live asset map view, asset list with filter/sort, geofence zone editor (draw polygon/circle on map), alert inbox, asset detail drawer (location history timeline, battery level, last-seen), and executive summary report page. Include mobile-responsive breakpoints.",
+      "payload": {
+        "pages": [
+          "LiveMap",
+          "AssetList",
+          "GeofenceEditor",
+          "AlertInbox",
+          "AssetDetail",
+          "ReportsDashboard"
+        ],
+        "tools": [
+          "Figma"
+        ],
+        "design_tokens": [
+          "sidebar_bg",
+          "map_overlay_color",
+          "alert_severity_colors"
+        ],
+        "accessibility_target": "WCAG 2.1 AA"
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all 6 pages with annotated interaction states",
+        "Geofence editor supports polygon and circle drawing with coordinate display",
+        "Asset detail drawer shows location history timeline with timestamps",
+        "Color system differentiates alert severities (critical/warning/info)",
+        "Mobile layout specified for map and asset list views"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "SECURITY",
+      "description": "Produce IEC 62443 SL-2 threat model for the full asset tracking system. Cover BLE beacon spoofing, GPS jamming/spoofing, MQTT broker compromise, API unauthorized access, firmware tampering, and supply chain data exfiltration. Output STRIDE analysis, attack surface map, and recommended countermeasures. Generate SBOM seed list for firmware and backend components.",
+      "payload": {
+        "standard": "IEC 62443",
+        "security_level_target": "SL-2",
+        "threat_model_methodology": "STRIDE",
+        "scope": [
+          "BLE_beacons",
+          "GPS_trackers",
+          "MQTT_broker",
+          "backend_APIs",
+          "web_dashboard",
+          "OTA_update_path"
+        ],
+        "sbom_format": "CycloneDX"
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all 6 scope areas with threat ID, likelihood, impact, and mitigation",
+        "Attack surface map identifies all network interfaces and data flows",
+        "IEC 62443 SL-2 control mapping table produced (FR1\u2013FR7)",
+        "SBOM seed list generated with known CVE check for all listed components",
+        "Countermeasures mapped to implementation steps in this plan",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "DATABASE",
+      "description": "Design and implement the time-series and relational database schema. Tables: assets (id, type, metadata, org_id), beacons (id, asset_id, mac_addr, tx_power), location_events (asset_id, lat, lng, floor, zone_id, source, timestamp), geofences (id, org_id, name, geometry_geojson, trigger_types), alerts (id, asset_id, geofence_id, severity, triggered_at, resolved_at), supply_chain_events (id, asset_id, event_type, location, actor, timestamp). TimescaleDB hypertable for location_events. PostGIS for geofence geometry.",
+      "payload": {
+        "primary_db": "PostgreSQL + TimescaleDB + PostGIS",
+        "hypertables": [
+          "location_events"
+        ],
+        "spatial_indexes": [
+          "geofences.geometry"
+        ],
+        "migrations_tool": "Alembic",
+        "seed_data": [
+          "sample_assets",
+          "sample_geofences",
+          "sample_supply_chain_events"
+        ]
+      },
+      "acceptance_criteria": [
+        "All migrations run cleanly from empty DB to final schema",
+        "location_events hypertable partitioned by 1-day chunks",
+        "PostGIS ST_Contains query returns correct geofence membership in < 10ms for 10k assets",
+        "Foreign key constraints enforced for all relationships",
+        "Seed data loads without errors and populates all tables"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 spec for all backend endpoints: asset CRUD, beacon registration, GPS event ingest (bulk), geofence CRUD + polygon validation, RTLS zone query, alert subscription (SSE), supply chain event stream, reporting aggregations, and OTA firmware update trigger. Define authentication (JWT + API key for devices), rate limits, and error schema.",
+      "payload": {
+        "spec_format": "OpenAPI 3.1",
+        "auth_methods": [
+          "JWT_bearer",
+          "device_api_key"
+        ],
+        "endpoint_groups": [
+          "/assets",
+          "/beacons",
+          "/gps/ingest",
+          "/geofences",
+          "/rtls/query",
+          "/alerts/stream",
+          "/supply-chain/events",
+          "/reports",
+          "/ota/trigger"
+        ],
+        "rate_limits": {
+          "device_ingest": "1000 req/min",
+          "api": "100 req/min"
+        }
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates with no errors via openapi-cli",
+        "All endpoints have request/response schemas with examples",
+        "Device ingest endpoints documented with bulk payload format (max 500 events/batch)",
+        "SSE alert stream endpoint documented with event format",
+        "Auth flows documented for both JWT and device API key paths"
+      ],
+      "depends_on": [
+        1,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "FIRMWARE",
+      "description": "Implement BLE beacon firmware (Nordic nRF52840, FreeRTOS). HAL drivers for BLE advertising (iBeacon + Eddystone-UID formats), accelerometer wake-on-motion (LIS2DH12), and battery voltage ADC. Implement configurable advertising interval (100ms\u201310s), TX power control, and manufacturer data payload encoding (asset_id, battery_pct, sequence_num). OTA DFU via Nordic BLE bootloader. Secure boot with firmware signature verification (Ed25519). Flash-backed config (Nordic NVRAM).",
+      "payload": {
+        "target_mcu": "Nordic nRF52840",
+        "rtos": "FreeRTOS",
+        "ble_stack": "SoftDevice S140",
+        "formats": [
+          "iBeacon",
+          "Eddystone-UID"
+        ],
+        "peripherals": [
+          "LIS2DH12_accelerometer",
+          "ADC_battery",
+          "LED_status"
+        ],
+        "security": [
+          "Ed25519_secure_boot",
+          "AES-128_payload_encryption"
+        ],
+        "toolchain": "ARM GCC + nRF5 SDK"
+      },
+      "acceptance_criteria": [
+        "BLE advertising packet encodes asset_id, battery_pct, and sequence_num correctly",
+        "Wake-on-motion fires within 100ms of threshold exceedance",
+        "OTA DFU completes successfully with signature validation; rejects unsigned image",
+        "Battery ADC reads accurate to \u00b12% across 2.0V\u20133.3V supply range",
+        "Flash config survives power cycle with all settings intact",
+        "Code compiles with zero warnings using ARM GCC -Wall -Wextra",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        2,
+        4
+      ],
+      "agent_role": "firmware_engineer"
+    },
+    {
+      "step": 8,
+      "task_type": "FIRMWARE",
+      "description": "Implement GPS tracker firmware (STM32L4 + u-blox M8N, FreeRTOS). HAL drivers for UART GPS NMEA parsing, LTE-M modem (Sequans Monarch GM01Q) for MQTT over TLS 1.3, and SPI flash for offline buffering. RTOS tasks: GpsTask (1Hz fix, HDOP filter), ModemTask (MQTT publish with retry), StorageTask (circular buffer for 72h offline). Power manager: hibernate between fixes (duty-cycle configurable). Implement FOTA via MQTT OTA topic. Device provisioning via X.509 certificates (AWS IoT or custom broker).",
+      "payload": {
+        "target_mcu": "STM32L4",
+        "gnss_module": "u-blox NEO-M8N",
+        "modem": "Sequans Monarch GM01Q (LTE-M/NB-IoT)",
+        "rtos": "FreeRTOS",
+        "connectivity": "MQTT over TLS 1.3",
+        "auth": "X.509_mutual_TLS",
+        "offline_buffer": "72h circular buffer on SPI flash",
+        "toolchain": "STM32CubeIDE + CMake"
+      },
+      "acceptance_criteria": [
+        "GPS fix acquired within 60s cold start; HDOP < 2.0 filter rejects noisy fixes",
+        "MQTT publish succeeds with TLS 1.3 mutual auth using X.509 cert",
+        "Offline buffer stores and replays 72h of 1Hz location events on reconnection",
+        "Power consumption < 15mA active, < 50\u00b5A hibernate",
+        "FOTA update applies correctly and validates firmware signature before boot",
+        "Device rejects connection to broker without valid server certificate",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        2,
+        4
+      ],
+      "agent_role": "firmware_engineer"
+    },
+    {
+      "step": 9,
+      "task_type": "HARDWARE_SIM",
+      "description": "Build hardware simulation models for CI testing. Python-based BLE scanner emulator that generates synthetic iBeacon/Eddystone packets with configurable RSSI, asset_id, and battery. GPS tracker emulator that replays NMEA sentences from a route file over a mock serial port. Network topology simulator for multi-floor indoor environment (zone_id assignment based on beacon RSSI trilateration). Used by HIL tests and backend integration tests without physical hardware.",
+      "payload": {
+        "simulators": [
+          "BleBeaconEmulator",
+          "GpsTrackerEmulator",
+          "IndoorTopologySimulator"
+        ],
+        "input_formats": [
+          "iBeacon_packet_struct",
+          "NMEA_GGA_RMC",
+          "floor_plan_json"
+        ],
+        "output": "MQTT messages to test broker",
+        "route_files": [
+          "warehouse_route.gpx",
+          "multi_floor_grid.json"
+        ]
+      },
+      "acceptance_criteria": [
+        "BLE emulator generates valid iBeacon packets parseable by beacon receiver service",
+        "GPS emulator replays route at configurable speed (1x, 10x, 100x) with realistic NMEA output",
+        "Indoor topology simulator assigns zone_id based on closest beacon RSSI within \u00b11 zone accuracy",
+        "All simulators connect to test MQTT broker and publish at specified rates",
+        "Simulator fixtures usable from pytest via conftest.py without hardware"
+      ],
+      "depends_on": [
+        2,
+        7,
+        8
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement the BLE beacon receiver service. Raspberry Pi / Linux gateway process that scans BLE advertisements (bluepy/bleak), decodes iBeacon and Eddystone-UID payloads, applies RSSI smoothing (Kalman filter), and publishes scan results to MQTT broker. Handles multi-scanner deduplication via sequence number. Configurable scan interval and RSSI threshold. Runs as systemd service with watchdog.",
+      "payload": {
+        "language": "Python",
+        "ble_library": "bleak",
+        "rssi_filter": "Kalman",
+        "output": "MQTT topic: beacons/scan/{gateway_id}",
+        "dedup_window_ms": 500,
+        "deployment": "systemd service"
+      },
+      "acceptance_criteria": [
+        "Decodes iBeacon and Eddystone-UID payloads with asset_id, battery_pct, sequence_num",
+        "Kalman-filtered RSSI deviates < 3dB from 10-sample moving average",
+        "Deduplication window eliminates duplicate packets within 500ms window",
+        "Publishes scan results to MQTT within 100ms of BLE advertisement receipt",
+        "Systemd unit restarts automatically on crash with < 5s recovery"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement the location ingestion service. FastAPI service consuming MQTT topics (beacons/scan/+ and gps/location/+). Validates device auth (X.509 thumbprint for GPS, gateway HMAC for BLE). Normalizes events to LocationEvent schema. Bulk-inserts to TimescaleDB location_events hypertable. Emits real-time events via Redis Pub/Sub for downstream RTLS and geofence engines. Handles backpressure with async queue and circuit breaker.",
+      "payload": {
+        "framework": "FastAPI",
+        "mqtt_client": "aiomqtt",
+        "queue": "Redis Streams",
+        "db": "TimescaleDB (asyncpg)",
+        "auth": "X.509_thumbprint + HMAC",
+        "bulk_insert_batch": 500,
+        "circuit_breaker": "tenacity"
+      },
+      "acceptance_criteria": [
+        "Ingests 1000 location events/sec sustained with < 100ms p99 latency",
+        "Rejects events with invalid device credentials (401 logged to audit)",
+        "Bulk insert batches up to 500 events before flush or 100ms timeout",
+        "Redis Pub/Sub publishes normalized events within 50ms of receipt",
+        "Circuit breaker opens after 5 consecutive DB failures; recovers on success"
+      ],
+      "depends_on": [
+        5,
+        6,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement the RTLS (Real-Time Location System) engine. Subscribes to Redis location events from BLE scanner gateways. Applies weighted centroid trilateration using RSSI-to-distance model (log-distance path loss). Assigns floor/zone based on beacon topology map. Fuses BLE RTLS with GPS when outdoor or signal weak. Stores resolved RTLS position back to location_events with source=rtls. Exposes WebSocket endpoint for live position streaming to dashboard.",
+      "payload": {
+        "algorithm": "weighted_centroid_trilateration",
+        "path_loss_model": "log_distance (n=2.5, A=-60dBm)",
+        "fusion_strategy": "GPS_priority_outdoor_BLE_priority_indoor",
+        "min_beacons_for_fix": 3,
+        "output": [
+          "TimescaleDB location_events",
+          "WebSocket /ws/rtls/live"
+        ],
+        "floor_map_format": "GeoJSON"
+      },
+      "acceptance_criteria": [
+        "Trilateration with 3+ beacons achieves \u00b12m accuracy on simulation data",
+        "Zone assignment matches ground truth in \u2265 95% of test cases from hardware_sim",
+        "GPS/BLE fusion switches correctly at indoor/outdoor boundary (signal strength threshold)",
+        "WebSocket streams position updates within 200ms of new scan data",
+        "Handles < 3 beacons gracefully (degrades to last-known zone)"
+      ],
+      "depends_on": [
+        9,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement the geofencing engine. Subscribes to Redis location events. For each asset position update, evaluates all active geofences for the org using PostGIS ST_Contains/ST_Distance. Detects ENTER, EXIT, and DWELL events (configurable dwell threshold). Publishes geofence alerts to Redis alerts channel and inserts to alerts table. Implements cooldown period per asset-geofence pair to prevent alert storms. Exposes SSE endpoint /alerts/stream for real-time alert delivery to dashboard.",
+      "payload": {
+        "geometry_engine": "PostGIS",
+        "event_types": [
+          "ENTER",
+          "EXIT",
+          "DWELL"
+        ],
+        "dwell_threshold_default_sec": 300,
+        "cooldown_sec": 60,
+        "alert_output": [
+          "alerts table",
+          "Redis alerts channel",
+          "SSE /alerts/stream"
+        ],
+        "max_geofences_per_org": 1000
+      },
+      "acceptance_criteria": [
+        "ENTER/EXIT events triggered within 2s of asset crossing geofence boundary",
+        "DWELL alert fires after configurable threshold (default 300s) with \u00b15s accuracy",
+        "Cooldown period prevents duplicate alerts within cooldown window",
+        "ST_Contains query evaluates 1000 geofences in < 50ms per position update",
+        "SSE stream delivers alerts to connected dashboard clients within 500ms"
+      ],
+      "depends_on": [
+        5,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement the supply chain visibility service. Consumes location events and geofence alerts to derive higher-level supply chain events: RECEIVED_AT_WAREHOUSE, IN_TRANSIT, DEPARTED_FACILITY, DELAYED (dwell > SLA threshold), OUT_OF_AUTHORIZED_ZONE. Maintains asset journey state machine. Exposes REST API for supply chain event history, current asset status, SLA breach report, and CSV/JSON export. Integrates with ERP webhook (configurable) for event forwarding.",
+      "payload": {
+        "state_machine": "asset journey FSM",
+        "derived_events": [
+          "RECEIVED",
+          "IN_TRANSIT",
+          "DEPARTED",
+          "DELAYED",
+          "UNAUTHORIZED_ZONE"
+        ],
+        "sla_config": "per_org YAML",
+        "erp_webhook": "configurable POST endpoint",
+        "export_formats": [
+          "JSON",
+          "CSV"
+        ],
+        "api_prefix": "/supply-chain"
+      },
+      "acceptance_criteria": [
+        "State machine correctly transitions through RECEIVED\u2192IN_TRANSIT\u2192DEPARTED flow for test route",
+        "DELAYED event fires when dwell exceeds org-configured SLA threshold",
+        "SLA breach report aggregates all delayed assets with time-over-SLA",
+        "ERP webhook posts event within 5s of supply chain event creation",
+        "CSV export includes all events for date range with correct column headers"
+      ],
+      "depends_on": [
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Implement the Live Asset Map page. Leaflet.js map with tile layer, asset markers (color-coded by status), geofence polygon/circle overlays, and real-time position updates via WebSocket /ws/rtls/live. Asset marker popups show asset ID, last location, battery, speed. Geofence overlays show name and trigger type. Map controls: floor selector for multi-floor indoor maps, layer toggles (show/hide geofences, GPS-only assets, BLE-only assets). Clustering for > 500 assets.",
+      "payload": {
+        "map_library": "Leaflet.js + react-leaflet",
+        "real_time": "WebSocket",
+        "overlays": [
+          "geofence_polygons",
+          "geofence_circles",
+          "asset_markers"
+        ],
+        "clustering": "react-leaflet-cluster (threshold: 500)",
+        "floor_selector": "dropdown bound to floor_plan GeoJSON"
+      },
+      "acceptance_criteria": [
+        "Map renders all assets within 2s of page load for up to 1000 assets",
+        "Asset markers update position in real-time via WebSocket within 200ms",
+        "Geofence overlays drawn correctly from GeoJSON (polygon and circle supported)",
+        "Floor selector switches indoor map layer without full page reload",
+        "Clustering activates at 500+ assets with count badges on cluster markers"
+      ],
+      "depends_on": [
+        3,
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Implement Asset List, Asset Detail, Geofence Editor, Alert Inbox, and Reports Dashboard pages. Asset List: filterable/sortable table with status, last-seen, battery, zone columns and export to CSV. Asset Detail: location history timeline chart (Recharts), metadata editor, geofence membership, raw event log. Geofence Editor: draw polygon/circle on Leaflet map, set name/trigger types/SLA thresholds. Alert Inbox: SSE-fed alert list with severity filter, acknowledge action. Reports Dashboard: SLA compliance chart, asset utilization heatmap, supply chain event timeline.",
+      "payload": {
+        "charting": "Recharts",
+        "map_editor": "Leaflet.draw",
+        "real_time_alerts": "SSE /alerts/stream",
+        "export": "CSV download via Blob URL",
+        "pagination": "virtual scroll (react-window) for large asset lists"
+      },
+      "acceptance_criteria": [
+        "Asset list renders 10,000 rows with virtual scroll at 60fps",
+        "Geofence editor saves polygon/circle geometry as valid GeoJSON via POST /geofences",
+        "Alert inbox receives and displays new alerts via SSE within 1s of trigger",
+        "Location history chart renders 30-day timeline with zoom/pan",
+        "Reports dashboard SLA compliance chart matches backend aggregation values"
+      ],
+      "depends_on": [
+        3,
+        13,
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "DATA",
+      "description": "Implement analytics data pipeline for supply chain insights. TimescaleDB continuous aggregates for hourly/daily asset activity summaries. Materialized views for SLA compliance rates, geofence dwell statistics, and asset utilization. Scheduled jobs (pg_cron) for stale asset detection (no location update > configurable threshold) and daily report generation. Expose aggregated metrics via /reports/aggregations API.",
+      "payload": {
+        "aggregations": [
+          "hourly_asset_activity",
+          "daily_sla_compliance",
+          "geofence_dwell_stats",
+          "asset_utilization"
+        ],
+        "scheduler": "pg_cron",
+        "stale_threshold_default_hours": 24,
+        "export": "JSON + CSV via API"
+      },
+      "acceptance_criteria": [
+        "Continuous aggregates refresh within 5 minutes of new data",
+        "SLA compliance rate calculation matches manual verification on test dataset",
+        "Stale asset detection job runs hourly and inserts STALE events correctly",
+        "Daily report aggregation completes in < 30s for 1M location events",
+        "/reports/aggregations returns correct values matching materialized views"
+      ],
+      "depends_on": [
+        5,
+        14
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 18,
+      "task_type": "SECURITY",
+      "description": "Implement IEC 62443 SL-2 security controls across all system layers: (1) Device identity \u2014 X.509 certificate provisioning pipeline for GPS trackers, HMAC-SHA256 for BLE gateways. (2) Transport \u2014 TLS 1.3 enforced on all MQTT and REST connections, certificate pinning on firmware. (3) API \u2014 JWT auth with 15-min expiry, refresh token rotation, rate limiting, input validation. (4) Network segmentation \u2014 IoT device network VLAN isolated from backend. (5) Secrets management \u2014 Vault for DB credentials and MQTT certs. (6) Audit logging \u2014 all auth events, config changes, OTA triggers logged to immutable audit log.",
+      "payload": {
+        "standard": "IEC 62443 SL-2",
+        "controls": [
+          "FR1_identification_auth",
+          "FR2_use_control",
+          "FR3_system_integrity",
+          "FR4_data_confidentiality",
+          "FR5_restricted_data_flow",
+          "FR6_timely_response",
+          "FR7_resource_availability"
+        ],
+        "cert_provisioning": "custom CA + CFSSL",
+        "secrets_manager": "HashiCorp Vault",
+        "tls_min_version": "1.3"
+      },
+      "acceptance_criteria": [
+        "All MQTT connections reject TLS < 1.3 and self-signed certificates not from org CA",
+        "GPS tracker rejected by broker when certificate is revoked (CRL check passes)",
+        "JWT tokens expire in 15 minutes; refresh token rotation invalidates old tokens",
+        "Rate limiting returns 429 after threshold with Retry-After header",
+        "All auth failures logged with device_id, timestamp, reason to audit log",
+        "Vault unseals correctly and backend retrieves DB credentials without hardcoded secrets",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        4,
+        10,
+        11
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 19,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Write HIL (Hardware-in-the-Loop) test suite for BLE beacon and GPS tracker firmware using hardware simulators from step 9. BLE beacon tests: advertising packet format validation, OTA DFU flow, wake-on-motion sensitivity, battery drain profile. GPS tracker tests: cold/hot start fix acquisition, NMEA parsing accuracy, MQTT TLS handshake, offline buffer replay, FOTA update, power cycling resilience. All tests runnable in CI via hardware simulator without physical hardware.",
+      "payload": {
+        "framework": "pytest + hardware_sim fixtures",
+        "coverage_target": "90% firmware code paths",
+        "test_categories": [
+          "unit",
+          "integration",
+          "hil_simulated"
+        ],
+        "ci_compatible": true,
+        "report_format": "JUnit XML"
+      },
+      "acceptance_criteria": [
+        "BLE advertising packet tests cover all payload field combinations",
+        "OTA DFU test verifies both valid and tampered image scenarios",
+        "GPS cold start test verifies fix within 60s using simulated NMEA replay",
+        "Offline buffer test verifies all events replayed correctly on reconnection",
+        "All tests pass in CI using hardware simulators (no physical hardware required)",
+        "Test coverage report shows \u2265 90% line coverage on firmware logic modules"
+      ],
+      "depends_on": [
+        7,
+        8,
+        9
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "TESTS",
+      "description": "Write unit and integration test suite for all backend services: location ingestion (mock MQTT, verify DB writes), RTLS trilateration (known-position test vectors), geofencing engine (polygon/circle containment, ENTER/EXIT/DWELL detection), supply chain state machine (all FSM transitions), API authentication (JWT, API key, invalid credentials), and analytics aggregations (known dataset, verify computed values).",
+      "payload": {
+        "framework": "pytest + httpx + asyncio",
+        "db_strategy": "real TimescaleDB in Docker (no mocks)",
+        "mqtt_strategy": "embedded Mosquitto broker in test fixtures",
+        "coverage_target": "85%",
+        "test_types": [
+          "unit",
+          "integration"
+        ]
+      },
+      "acceptance_criteria": [
+        "RTLS trilateration unit tests include \u2265 20 known-position test vectors",
+        "Geofence tests cover polygon, circle, multi-floor, and edge cases (asset on boundary)",
+        "Auth tests verify JWT expiry, revocation, and API key rotation",
+        "Integration tests hit real TimescaleDB (not mocked) per SAGE feedback guidelines",
+        "Coverage report shows \u2265 85% line coverage across all backend services"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 21,
+      "task_type": "SYSTEM_TEST",
+      "description": "End-to-end system test using hardware simulators. Scenario 1: full supply chain journey \u2014 asset simulated through warehouse-in-transit-warehouse route, verify all events (RECEIVED, IN_TRANSIT, DELAYED, ARRIVED). Scenario 2: geofence breach \u2014 asset exits authorized zone, verify ENTER/EXIT alert on dashboard SSE within 2s. Scenario 3: BLE indoor tracking \u2014 multi-floor route with 8 beacons, verify RTLS position accuracy \u00b12m. Scenario 4: offline GPS replay \u2014 simulate LTE drop, 4h offline, reconnect, verify all buffered events replayed. Scenario 5: 1000-asset load test \u2014 verify ingestion latency and dashboard rendering.",
+      "payload": {
+        "scenarios": [
+          "supply_chain_journey",
+          "geofence_breach",
+          "ble_indoor_tracking",
+          "offline_replay",
+          "load_1000_assets"
+        ],
+        "simulators": [
+          "BleBeaconEmulator",
+          "GpsTrackerEmulator"
+        ],
+        "dashboard_validation": "Playwright E2E",
+        "load_tool": "Locust"
+      },
+      "acceptance_criteria": [
+        "Supply chain journey produces all expected FSM events in correct order",
+        "Geofence breach alert appears on dashboard SSE within 2s of boundary crossing",
+        "RTLS accuracy \u00b12m on multi-floor scenario with 8 simulated beacons",
+        "All 4h of offline buffered events replayed after reconnection with no duplicates",
+        "1000-asset load test: p99 ingest latency < 500ms, dashboard map renders in < 3s"
+      ],
+      "depends_on": [
+        15,
+        16,
+        19,
+        20
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 22,
+      "task_type": "COMPLIANCE",
+      "description": "Produce IEC 62443 compliance artifacts for the asset tracking system. Deliverables: (1) Security Requirements Specification (SRS) mapping each FR1\u2013FR7 requirement to implementation. (2) Risk assessment matrix with threat likelihood \u00d7 impact scoring. (3) Security test plan with test cases per control. (4) Network architecture diagram with zone/conduit model. (5) Change management procedure for firmware OTA and config changes. (6) Vulnerability management procedure (SBOM + CVE monitoring cadence).",
+      "payload": {
+        "standard": "IEC 62443-3-3 (SL-2)",
+        "deliverables": [
+          "SRS.docx",
+          "risk_matrix.xlsx",
+          "security_test_plan.xlsx",
+          "network_architecture.drawio",
+          "change_mgmt_procedure.md",
+          "vuln_management_procedure.md"
+        ],
+        "zone_conduit_model": true,
+        "sbom_included": true
+      },
+      "acceptance_criteria": [
+        "SRS maps every FR1\u2013FR7 requirement to a specific code component or configuration",
+        "Risk matrix covers all threats from step 4 threat model with residual risk scores",
+        "Security test plan has executable test cases for each implemented control",
+        "Network diagram shows IoT device zone, backend zone, and conduits with security properties",
+        "Change management procedure specifies approval workflow for OTA firmware updates",
+        "SBOM included with CVE check date and open vulnerabilities list"
+      ],
+      "depends_on": [
+        4,
+        18
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline, containerization, and monitoring. Docker Compose for local dev (backend, TimescaleDB, Redis, Mosquitto, Vault). GitHub Actions: build \u2192 lint \u2192 unit tests \u2192 integration tests \u2192 HIL sim tests \u2192 Docker image push. Kubernetes manifests for production (deployments, services, HPA for ingestion service). Prometheus metrics on all services. Grafana dashboards: ingestion throughput, RTLS accuracy, geofence trigger latency, alert delivery latency. PagerDuty alert rules for SLA breaches.",
+      "payload": {
+        "containerization": "Docker + Docker Compose",
+        "ci_cd": "GitHub Actions",
+        "orchestration": "Kubernetes + Helm",
+        "monitoring": "Prometheus + Grafana",
+        "alerting": "PagerDuty",
+        "image_registry": "GHCR"
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs all test stages and fails fast on first failure",
+        "Docker Compose starts full stack with make dev in < 60s",
+        "Kubernetes HPA scales ingestion service from 1\u21925 replicas under 1000 RPS load",
+        "Grafana dashboards show ingestion throughput, RTLS p99 latency, and geofence trigger latency",
+        "PagerDuty alert fires within 2 minutes of simulated ingestion service outage"
+      ],
+      "depends_on": [
+        20,
+        21
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "DOCS",
+      "description": "Produce operator and developer documentation: (1) Architecture overview \u2014 system diagram, data flows, component responsibilities. (2) Device onboarding guide \u2014 BLE beacon provisioning, GPS tracker certificate installation, gateway setup. (3) API reference \u2014 generated from OpenAPI spec via Redoc. (4) Geofence configuration guide \u2014 polygon/circle creation, SLA threshold setup, ERP webhook configuration. (5) Operations runbook \u2014 alerting, scaling, incident response, log locations. (6) IEC 62443 implementation notes \u2014 how each control is implemented.",
+      "payload": {
+        "formats": [
+          "Markdown",
+          "Redoc HTML"
+        ],
+        "auto_generated": [
+          "API reference from OpenAPI spec"
+        ],
+        "audience": [
+          "device_operators",
+          "backend_developers",
+          "security_auditors"
+        ]
+      },
+      "acceptance_criteria": [
+        "Architecture diagram shows all components with data flow directions",
+        "Device onboarding guide covers BLE beacon and GPS tracker provisioning end-to-end",
+        "API reference generated from OpenAPI spec with examples for all endpoints",
+        "Operations runbook includes step-by-step incident response for top 5 failure scenarios",
+        "IEC 62443 implementation notes map each FR control to specific code file and line range"
+      ],
+      "depends_on": [
+        22,
+        23
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 24,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 62,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 62,
+        "final_review": {
+          "score": 62,
+          "flaws": [
+            "RTLS \u00b12m accuracy with BLE RSSI trilateration is physically unrealistic. Log-distance path loss (n=2.5) in a warehouse environment with metal shelving, forklift interference, and human bodies will produce \u00b14\u20138m at best. Achieving \u00b12m requires UWB (Decawave/Qorvo) or RF fingerprinting with a calibration phase \u2014 neither is in this plan. The acceptance criteria in steps 12 and 21 will fail against real hardware.",
+            "GPS tracker power target is wrong. Step 8 specifies < 15mA active, < 50\u00b5A hibernate. The Sequans Monarch GM01Q LTE-M modem alone draws 200\u2013350mA during transmission bursts. Even with duty cycling, sustained active power will be 50\u2013100mA minimum. The 15mA figure is either a hibernate-mode target or a spec error that will invalidate battery life calculations.",
+            "Redis Pub/Sub vs Redis Streams inconsistency. Step 11 payload says 'Redis Streams' but the description says 'Redis Pub/Sub.' These are fundamentally different: Pub/Sub is fire-and-forget with no persistence; Streams have consumer groups and replay. Using Pub/Sub means any service restart loses in-flight events. For a 1000 events/sec ingestion pipeline this is a data loss vector that must be resolved architecturally before any code is written.",
+            "AES-128 payload encryption in firmware (step 7) has no corresponding decryption in the BLE receiver (step 10). The firmware encrypts beacon payloads but step 10's acceptance criteria only validates that asset_id, battery_pct, and sequence_num are decoded. If firmware encryption is active, the receiver will read garbage. Either the encryption is dead code or there is a missing decryption key management step.",
+            "Hardware simulator dependencies are inverted. Step 9 (hardware_sim) depends on steps 7 and 8 (firmware implementation). Simulators should be built from packet format specs, not from completed firmware. This creates a blocking dependency that slows CI setup: the test infrastructure cannot exist until firmware is done, which means backend integration tests (step 20) cannot run until step 7 and 8 are complete.",
+            "CRL checking for certificate revocation on offline devices is architecturally broken. Step 18 requires 'GPS tracker rejected by broker when certificate is revoked (CRL check passes).' Devices that are offline for up to 72h (per step 8 offline buffer requirement) cannot reach a CRL distribution point at connection time. OCSP Stapling or short-lived certificates with automated rotation are required for embedded devices. CRL-based revocation will either block legitimate reconnections or be silently bypassed.",
+            "MQTT broker is never specified. Steps 8, 10, 11 all depend critically on MQTT broker capabilities \u2014 X.509 mutual TLS, topic ACLs, CRL checking, QoS guarantees, and horizontal scaling. AWS IoT Core, HiveMQ, EMQ X, and self-hosted Mosquitto have radically different implementations and operational costs for these features. Leaving this unspecified until step 23 (DevOps) means security design (step 18) is being done against an undefined target.",
+            "MQTT QoS levels are never specified anywhere in the 24-step plan. QoS 0 means the 1000 events/sec pipeline accepts message loss. QoS 1 means the 72h offline buffer replay (step 8) will produce duplicates at the broker unless deduplication is explicitly handled. QoS 2 at 1000 events/sec has significant throughput penalties. This omission means the reliability guarantees claimed in steps 11 and 21 cannot be verified.",
+            "Geofencing scalability math does not hold at load. Step 13 requires ST_Contains evaluation of 1000 geofences in < 50ms per position update. At 1000 assets pushing events at 1Hz (step 21 load scenario), this is 1000 simultaneous ST_Contains evaluations each against 1000 geofences. PostGIS with spatial index handles this per-query, but 1000 concurrent queries against the same geofence table will saturate a single PostgreSQL instance. No read replica or caching strategy is specified.",
+            "Supply chain FSM (step 14) transition triggers are undefined. The derived events RECEIVED/IN_TRANSIT/DEPARTED are listed but no trigger rules are specified. What distinguishes RECEIVED_AT_WAREHOUSE from an asset merely entering a warehouse geofence mid-transit? Without explicit FSM transition conditions (e.g., 'RECEIVED requires dwell > 5 min in WAREHOUSE-type geofence after IN_TRANSIT state'), the state machine will generate false events that corrupt supply chain records."
+          ],
+          "suggestions": [
+            "Replace BLE trilateration accuracy target with a realistic \u00b14m indoor / \u00b12m with calibration target. Add a beacon calibration step where each deployment site runs a calibration pass to fit the path loss model to the actual environment. If \u00b12m is a hard business requirement, scope UWB hardware as an alternative and add it to the threat model.",
+            "Fix the Redis architecture decision explicitly in step 11: choose Redis Streams with consumer groups for the ingestion pipeline. This gives persistence, consumer group replay on restart, and backpressure. Remove all Pub/Sub references and replace with explicit stream names and consumer group names.",
+            "Add a device provisioning pipeline step between steps 4 and 7. This is a manufacturing-time concern: how are X.509 certs burned into GPS trackers on the production line? How are BLE gateway HMAC keys provisioned? Without this, the security model exists on paper but cannot be operationalized. CFSSL is listed in step 18 but the enrollment workflow is missing.",
+            "Invert the hardware_sim dependency. Step 9 should depend only on step 6 (API/packet format spec) and step 2 (scaffold). The simulators model the wire format, not the firmware implementation. This unblocks backend testing (steps 11\u201314) from firmware completion.",
+            "Replace CRL with OCSP Stapling or short-lived certificate strategy for GPS trackers. The broker should staple OCSP responses; devices validate the stapled response. For the offline scenario, define a grace period policy (e.g., accept certificates with OCSP response < 24h old).",
+            "Specify MQTT broker in step 2 (scaffold/config), not step 23 (DevOps). The security model and firmware implementation both depend on this. Recommend AWS IoT Core for the default path (handles X.509 provisioning, topic ACLs, and CRL/revocation natively) with Mosquitto for local dev only.",
+            "Add explicit MQTT topic ACL design to step 6 (API spec). Each device should only be authorized to publish to its own topic (e.g., gps/location/{device_id}). A compromised tracker should not be able to inject data for other devices. This is an FR2 (use control) requirement under IEC 62443 that is currently missing from the security controls.",
+            "Add a beacon topology calibration sub-step to step 12 (RTLS engine). The path loss parameters (n, A) must be measured per deployment environment, not hardcoded. The calibration procedure should be part of the site commissioning process with an API endpoint to store per-site parameters."
+          ],
+          "missing": [
+            "Floor plan ingestion and beacon placement management. The RTLS engine consumes floor plan GeoJSON and beacon topology but there is no step for how operators upload floor plans, place virtual beacon markers, and keep this map synchronized with physical beacon installations. Without this, the RTLS engine cannot be configured for a real site.",
+            "Time synchronization strategy for BLE beacons. GPS trackers get time from GNSS. BLE beacons have no NTP source. Gateway-stamped timestamps introduce drift equal to gateway clock error. For supply chain forensics and SLA breach attribution, sub-second timestamp accuracy matters. No NTP or PTP strategy is specified for gateways.",
+            "API versioning strategy. IoT firmware is long-lived and cannot be updated atomically across a fleet. The API spec (step 6) must define versioning from day one. A GPS tracker firmware from 2025 may still be calling /v1/gps/ingest in 2028. No versioning approach is specified.",
+            "Beacon battery management workflow. BLE beacons are battery-powered. The system collects battery_pct telemetry but there is no step for battery threshold alerts, bulk battery status reporting for fleet managers, or maintenance workflow triggering. This is a core operational requirement for a deployed asset tracking system.",
+            "Data retention implementation. Step 1 lists 'data retention policy' as a requirement but no implementation step exists for TimescaleDB data retention policies, automated chunk dropping, or GDPR-compliant per-asset data deletion. For a system ingesting 1Hz location events per asset, unmanaged retention will exhaust storage within months.",
+            "WebSocket horizontal scaling strategy. Step 12 exposes a WebSocket endpoint for live RTLS streaming. WebSockets are stateful and do not scale horizontally behind a standard load balancer without sticky sessions or a relay layer. With 1000 assets and multiple concurrent dashboard users, this is a scalability ceiling that must be addressed before production.",
+            "OTA rollout control and rollback. Steps 7 and 8 implement OTA firmware update mechanisms but there is no OTA management plane: no staged rollout (canary to 1% of fleet first), no rollback trigger on error rate spike, no version inventory dashboard. Pushing a bad firmware to 10,000 GPS trackers simultaneously is an unrecoverable failure mode."
+          ],
+          "security_risks": [
+            "BLE beacon payloads are readable by any BLE scanner in range. AES-128 encryption is specified in step 7 firmware but the key distribution mechanism is never defined. How does each beacon get its encryption key? How does the gateway decrypt it? If the key is hardcoded in firmware, a single beacon compromise exposes the entire fleet. This is an FR4 (data confidentiality) gap under IEC 62443.",
+            "HMAC-SHA256 for BLE gateway authentication (step 11) introduces a shared-secret key management problem. HMAC requires a pre-shared key per gateway. The plan does not specify how these keys are provisioned, rotated, or revoked. A stolen or decommissioned gateway with a valid HMAC key can inject arbitrary location events indefinitely.",
+            "ERP webhook in step 14 is an uncontrolled data exfiltration path. The configurable POST endpoint sends supply chain events to an external system with no specification of authentication, payload filtering, or data minimization. A misconfigured webhook URL could send asset location data to an unauthorized third party. This violates FR4 and FR5 under IEC 62443 SL-2.",
+            "Redis is used as the internal message bus between services (steps 11, 12, 13) but Redis security configuration is never addressed. No authentication (requirepass/ACLs), no TLS between services, and no network isolation beyond implicit container networking. A single compromised internal service can inject arbitrary messages to any Redis channel, bypassing all device-level authentication.",
+            "JWT signing key management is incomplete. Step 18 specifies 15-minute JWT expiry and refresh token rotation but does not address signing key rotation, JWKS endpoint, or key ID (kid) header. A compromised signing key can forge valid tokens for any user indefinitely until the key is manually rotated \u2014 which requires a service restart in most naive implementations.",
+            "GPS spoofing countermeasures are identified in the threat model (step 4) but no implementation step addresses them. The firmware (step 8) has no consistency checks between GPS position, accelerometer data, and expected velocity profiles. A spoofed GPS signal that moves an asset 50km in 1 second should be detectable but will currently be accepted and stored as a valid location event."
+          ],
+          "summary": "This is a technically detailed and well-structured plan that covers the right domains \u2014 firmware, backend services, RTLS, geofencing, supply chain FSM, security, and compliance \u2014 with appropriate sequencing for most dependencies. The database schema, ingestion pipeline design, and testing strategy (real DB, HIL simulators, E2E with Playwright/Locust) reflect solid engineering discipline. However, there are several concrete failure modes that will prevent this from shipping as specified. The \u00b12m BLE RTLS accuracy target is physically unachievable with RSSI trilateration in real environments and will cause acceptance test failures at system test. The Redis Pub/Sub/Streams inconsistency is a silent data loss bug in the highest-throughput path. The AES-128 beacon encryption has no corresponding decryption implementation. The hardware_sim dependency inversion will block CI setup for weeks. CRL-based revocation is operationally incompatible with offline IoT devices. These are not polish issues \u2014 they are architectural decisions that affect every downstream step. Address the RTLS accuracy target, Redis architecture, encryption key management, MQTT broker selection, and device provisioning pipeline before implementation begins, and this plan becomes a solid foundation for an MVP.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 62,
+            "flaws": [
+              "RTLS \u00b12m accuracy with BLE RSSI trilateration is physically unrealistic. Log-distance path loss (n=2.5) in a warehouse environment with metal shelving, forklift interference, and human bodies will produce \u00b14\u20138m at best. Achieving \u00b12m requires UWB (Decawave/Qorvo) or RF fingerprinting with a calibration phase \u2014 neither is in this plan. The acceptance criteria in steps 12 and 21 will fail against real hardware.",
+              "GPS tracker power target is wrong. Step 8 specifies < 15mA active, < 50\u00b5A hibernate. The Sequans Monarch GM01Q LTE-M modem alone draws 200\u2013350mA during transmission bursts. Even with duty cycling, sustained active power will be 50\u2013100mA minimum. The 15mA figure is either a hibernate-mode target or a spec error that will invalidate battery life calculations.",
+              "Redis Pub/Sub vs Redis Streams inconsistency. Step 11 payload says 'Redis Streams' but the description says 'Redis Pub/Sub.' These are fundamentally different: Pub/Sub is fire-and-forget with no persistence; Streams have consumer groups and replay. Using Pub/Sub means any service restart loses in-flight events. For a 1000 events/sec ingestion pipeline this is a data loss vector that must be resolved architecturally before any code is written.",
+              "AES-128 payload encryption in firmware (step 7) has no corresponding decryption in the BLE receiver (step 10). The firmware encrypts beacon payloads but step 10's acceptance criteria only validates that asset_id, battery_pct, and sequence_num are decoded. If firmware encryption is active, the receiver will read garbage. Either the encryption is dead code or there is a missing decryption key management step.",
+              "Hardware simulator dependencies are inverted. Step 9 (hardware_sim) depends on steps 7 and 8 (firmware implementation). Simulators should be built from packet format specs, not from completed firmware. This creates a blocking dependency that slows CI setup: the test infrastructure cannot exist until firmware is done, which means backend integration tests (step 20) cannot run until step 7 and 8 are complete.",
+              "CRL checking for certificate revocation on offline devices is architecturally broken. Step 18 requires 'GPS tracker rejected by broker when certificate is revoked (CRL check passes).' Devices that are offline for up to 72h (per step 8 offline buffer requirement) cannot reach a CRL distribution point at connection time. OCSP Stapling or short-lived certificates with automated rotation are required for embedded devices. CRL-based revocation will either block legitimate reconnections or be silently bypassed.",
+              "MQTT broker is never specified. Steps 8, 10, 11 all depend critically on MQTT broker capabilities \u2014 X.509 mutual TLS, topic ACLs, CRL checking, QoS guarantees, and horizontal scaling. AWS IoT Core, HiveMQ, EMQ X, and self-hosted Mosquitto have radically different implementations and operational costs for these features. Leaving this unspecified until step 23 (DevOps) means security design (step 18) is being done against an undefined target.",
+              "MQTT QoS levels are never specified anywhere in the 24-step plan. QoS 0 means the 1000 events/sec pipeline accepts message loss. QoS 1 means the 72h offline buffer replay (step 8) will produce duplicates at the broker unless deduplication is explicitly handled. QoS 2 at 1000 events/sec has significant throughput penalties. This omission means the reliability guarantees claimed in steps 11 and 21 cannot be verified.",
+              "Geofencing scalability math does not hold at load. Step 13 requires ST_Contains evaluation of 1000 geofences in < 50ms per position update. At 1000 assets pushing events at 1Hz (step 21 load scenario), this is 1000 simultaneous ST_Contains evaluations each against 1000 geofences. PostGIS with spatial index handles this per-query, but 1000 concurrent queries against the same geofence table will saturate a single PostgreSQL instance. No read replica or caching strategy is specified.",
+              "Supply chain FSM (step 14) transition triggers are undefined. The derived events RECEIVED/IN_TRANSIT/DEPARTED are listed but no trigger rules are specified. What distinguishes RECEIVED_AT_WAREHOUSE from an asset merely entering a warehouse geofence mid-transit? Without explicit FSM transition conditions (e.g., 'RECEIVED requires dwell > 5 min in WAREHOUSE-type geofence after IN_TRANSIT state'), the state machine will generate false events that corrupt supply chain records."
+            ],
+            "suggestions": [
+              "Replace BLE trilateration accuracy target with a realistic \u00b14m indoor / \u00b12m with calibration target. Add a beacon calibration step where each deployment site runs a calibration pass to fit the path loss model to the actual environment. If \u00b12m is a hard business requirement, scope UWB hardware as an alternative and add it to the threat model.",
+              "Fix the Redis architecture decision explicitly in step 11: choose Redis Streams with consumer groups for the ingestion pipeline. This gives persistence, consumer group replay on restart, and backpressure. Remove all Pub/Sub references and replace with explicit stream names and consumer group names.",
+              "Add a device provisioning pipeline step between steps 4 and 7. This is a manufacturing-time concern: how are X.509 certs burned into GPS trackers on the production line? How are BLE gateway HMAC keys provisioned? Without this, the security model exists on paper but cannot be operationalized. CFSSL is listed in step 18 but the enrollment workflow is missing.",
+              "Invert the hardware_sim dependency. Step 9 should depend only on step 6 (API/packet format spec) and step 2 (scaffold). The simulators model the wire format, not the firmware implementation. This unblocks backend testing (steps 11\u201314) from firmware completion.",
+              "Replace CRL with OCSP Stapling or short-lived certificate strategy for GPS trackers. The broker should staple OCSP responses; devices validate the stapled response. For the offline scenario, define a grace period policy (e.g., accept certificates with OCSP response < 24h old).",
+              "Specify MQTT broker in step 2 (scaffold/config), not step 23 (DevOps). The security model and firmware implementation both depend on this. Recommend AWS IoT Core for the default path (handles X.509 provisioning, topic ACLs, and CRL/revocation natively) with Mosquitto for local dev only.",
+              "Add explicit MQTT topic ACL design to step 6 (API spec). Each device should only be authorized to publish to its own topic (e.g., gps/location/{device_id}). A compromised tracker should not be able to inject data for other devices. This is an FR2 (use control) requirement under IEC 62443 that is currently missing from the security controls.",
+              "Add a beacon topology calibration sub-step to step 12 (RTLS engine). The path loss parameters (n, A) must be measured per deployment environment, not hardcoded. The calibration procedure should be part of the site commissioning process with an API endpoint to store per-site parameters."
+            ],
+            "missing": [
+              "Floor plan ingestion and beacon placement management. The RTLS engine consumes floor plan GeoJSON and beacon topology but there is no step for how operators upload floor plans, place virtual beacon markers, and keep this map synchronized with physical beacon installations. Without this, the RTLS engine cannot be configured for a real site.",
+              "Time synchronization strategy for BLE beacons. GPS trackers get time from GNSS. BLE beacons have no NTP source. Gateway-stamped timestamps introduce drift equal to gateway clock error. For supply chain forensics and SLA breach attribution, sub-second timestamp accuracy matters. No NTP or PTP strategy is specified for gateways.",
+              "API versioning strategy. IoT firmware is long-lived and cannot be updated atomically across a fleet. The API spec (step 6) must define versioning from day one. A GPS tracker firmware from 2025 may still be calling /v1/gps/ingest in 2028. No versioning approach is specified.",
+              "Beacon battery management workflow. BLE beacons are battery-powered. The system collects battery_pct telemetry but there is no step for battery threshold alerts, bulk battery status reporting for fleet managers, or maintenance workflow triggering. This is a core operational requirement for a deployed asset tracking system.",
+              "Data retention implementation. Step 1 lists 'data retention policy' as a requirement but no implementation step exists for TimescaleDB data retention policies, automated chunk dropping, or GDPR-compliant per-asset data deletion. For a system ingesting 1Hz location events per asset, unmanaged retention will exhaust storage within months.",
+              "WebSocket horizontal scaling strategy. Step 12 exposes a WebSocket endpoint for live RTLS streaming. WebSockets are stateful and do not scale horizontally behind a standard load balancer without sticky sessions or a relay layer. With 1000 assets and multiple concurrent dashboard users, this is a scalability ceiling that must be addressed before production.",
+              "OTA rollout control and rollback. Steps 7 and 8 implement OTA firmware update mechanisms but there is no OTA management plane: no staged rollout (canary to 1% of fleet first), no rollback trigger on error rate spike, no version inventory dashboard. Pushing a bad firmware to 10,000 GPS trackers simultaneously is an unrecoverable failure mode."
+            ],
+            "security_risks": [
+              "BLE beacon payloads are readable by any BLE scanner in range. AES-128 encryption is specified in step 7 firmware but the key distribution mechanism is never defined. How does each beacon get its encryption key? How does the gateway decrypt it? If the key is hardcoded in firmware, a single beacon compromise exposes the entire fleet. This is an FR4 (data confidentiality) gap under IEC 62443.",
+              "HMAC-SHA256 for BLE gateway authentication (step 11) introduces a shared-secret key management problem. HMAC requires a pre-shared key per gateway. The plan does not specify how these keys are provisioned, rotated, or revoked. A stolen or decommissioned gateway with a valid HMAC key can inject arbitrary location events indefinitely.",
+              "ERP webhook in step 14 is an uncontrolled data exfiltration path. The configurable POST endpoint sends supply chain events to an external system with no specification of authentication, payload filtering, or data minimization. A misconfigured webhook URL could send asset location data to an unauthorized third party. This violates FR4 and FR5 under IEC 62443 SL-2.",
+              "Redis is used as the internal message bus between services (steps 11, 12, 13) but Redis security configuration is never addressed. No authentication (requirepass/ACLs), no TLS between services, and no network isolation beyond implicit container networking. A single compromised internal service can inject arbitrary messages to any Redis channel, bypassing all device-level authentication.",
+              "JWT signing key management is incomplete. Step 18 specifies 15-minute JWT expiry and refresh token rotation but does not address signing key rotation, JWKS endpoint, or key ID (kid) header. A compromised signing key can forge valid tokens for any user indefinitely until the key is manually rotated \u2014 which requires a service restart in most naive implementations.",
+              "GPS spoofing countermeasures are identified in the threat model (step 4) but no implementation step addresses them. The firmware (step 8) has no consistency checks between GPS position, accelerometer data, and expected velocity profiles. A spoofed GPS signal that moves an asset 50km in 1 second should be detectable but will currently be accepted and stored as a valid location event."
+            ],
+            "summary": "This is a technically detailed and well-structured plan that covers the right domains \u2014 firmware, backend services, RTLS, geofencing, supply chain FSM, security, and compliance \u2014 with appropriate sequencing for most dependencies. The database schema, ingestion pipeline design, and testing strategy (real DB, HIL simulators, E2E with Playwright/Locust) reflect solid engineering discipline. However, there are several concrete failure modes that will prevent this from shipping as specified. The \u00b12m BLE RTLS accuracy target is physically unachievable with RSSI trilateration in real environments and will cause acceptance test failures at system test. The Redis Pub/Sub/Streams inconsistency is a silent data loss bug in the highest-throughput path. The AES-128 beacon encryption has no corresponding decryption implementation. The hardware_sim dependency inversion will block CI setup for weeks. CRL-based revocation is operationally incompatible with offline IoT devices. These are not polish issues \u2014 they are architectural decisions that affect every downstream step. Address the RTLS accuracy target, Redis architecture, encryption key management, MQTT broker selection, and device provisioning pipeline before implementation begins, and this plan becomes a solid foundation for an MVP.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T07:57:42.937286+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 166.54,
+    "critic_plan": 134.36
+  }
+}

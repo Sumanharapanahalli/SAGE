@@ -1,0 +1,315 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze AI travel planner market: competitors (Google Travel, TripIt,
+      Wanderlog, Hopper), pricing models, user pain points, TAM/SAM/SOM, and go-to-market
+      positioning for travel_planner.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers at least 6 competitors across 5 dimensions
+    - Unique differentiators for travel_planner clearly stated
+    - TAM/SAM/SOM estimates with sources
+    - Go-to-market strategy with 3 target personas defined
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Write Product Requirements Document for travel_planner: user stories
+      for itinerary generation, flight/hotel booking, budget tracking, group trip
+      planning, and offline maps. Define success metrics, MVP scope, and phased roadmap.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - User stories written for all 5 core feature areas with acceptance criteria
+    - MVP feature set explicitly scoped (Phase 1 vs Phase 2)
+    - 'Success metrics defined: DAU, itinerary completion rate, booking conversion,
+      group trip retention'
+    - Roadmap covers 3 phases with time estimates
+    - 'Non-functional requirements documented: offline sync, latency targets, supported
+      locales'
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all travel_planner
+      flows: onboarding, AI itinerary chat, booking search/compare, budget dashboard,
+      group invite/vote, and offline map download.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User journey maps for all 3 personas from PRD
+    - Low-fidelity wireframes for all 7 screen areas
+    - Interaction design spec for AI chat interface (streaming responses, suggestion
+      chips)
+    - 'Group planning flow covers: invite, vote on destinations, split costs'
+    - Accessibility audit checklist completed for each wireframe
+    - Wireframes reviewed and approved by product_manager
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  CONFIG:
+    description: 'Set up travel_planner solution scaffold: copy starter template,
+      configure project.yaml/prompts.yaml/tasks.yaml for the travel domain, set up
+      agentic pattern config (coordinator pattern for multi-domain agent routing across
+      itinerary, booking, budget, maps subsystems).'
+    agent_role: developer
+    acceptance_criteria:
+    - solutions/travel_planner/ directory created from starter template
+    - project.yaml has correct solution name, domain, active_modules, and theme block
+    - prompts.yaml defines roles for itinerary, booking, budget, maps, and group coordinator
+      agents
+    - 'tasks.yaml defines task types: itinerary_generate, flight_search, hotel_search,
+      budget_update, group_invite, map_download'
+    - make run PROJECT=travel_planner starts without errors
+    - 'Coordinator pattern wired: central agent routes sub-tasks to specialist agents'
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design and implement the travel_planner database schema: users,
+      trips, itineraries, bookings (flights + hotels), budget_items, group_members,
+      offline_map_cache metadata.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram produced covering all 10 tables with relationships
+    - All tables have UUID primary keys and created_at/updated_at timestamps
+    - trips table links to users (owner) and group_members (shared access)
+    - budget_items table supports currency field and category enum
+    - offline_map_tiles table stores bounding_box, zoom_levels, download_status, size_bytes
+    - Initial Alembic migration runs cleanly on a fresh PostgreSQL instance
+    - Seed data script populates 2 sample trips for testing
+    depends_on:
+    - 4
+  API:
+    description: 'Design OpenAPI spec for all travel_planner REST and streaming endpoints:
+      itinerary generation (SSE stream), flight/hotel search, booking confirmation,
+      budget CRUD, group management, and offline map tile download.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors using swagger-parser
+    - All endpoints have request/response schemas, status codes, and error shapes
+    - SSE streaming endpoints documented with event schema
+    - Auth scheme defined (JWT Bearer) on all protected endpoints
+    - Booking endpoints include idempotency key pattern
+    - Map download endpoint returns async job_id with polling status endpoint
+    depends_on:
+    - 4
+  BACKEND:
+    description: Implement the AI itinerary generation service using the coordinator
+      agentic pattern. Central coordinator receives trip parameters, fans out to specialist
+      agents (destination researcher, activity planner, logistics optimizer), collects
+      outputs, and streams a cohesive day-by-day itinerary via SSE.
+    agent_role: developer
+    acceptance_criteria:
+    - 'POST /itinerary/generate accepts: destination, dates, travelers, interests,
+      budget_range'
+    - Coordinator decomposes request and dispatches to 3 specialist agents in parallel
+      (wave execution)
+    - SSE stream emits partial itinerary chunks as agents complete
+    - Final itinerary persisted to itinerary_days + itinerary_items tables
+    - All LLM calls logged to audit_log.db with trace_id
+    - Itinerary generation completes in under 15 seconds for a 7-day trip
+    - Handles LLM timeout/retry with graceful SSE error event
+    depends_on:
+    - 5
+    - 6
+  LOCALIZATION:
+    description: 'Set up i18n infrastructure for travel_planner: extraction pipeline,
+      translation config, and initial locale files for English, Spanish, French, Japanese,
+      and Portuguese (top travel app locales).'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - i18next configured with locale files at web/src/locales/{locale}/translation.json
+    - i18next-parser script extracts all t() calls to en/translation.json baseline
+    - Translation files created for all 5 locales (stub translations acceptable for
+      non-English at this stage)
+    - Date/time formatting uses locale-aware Intl.DateTimeFormat throughout
+    - Currency display uses Intl.NumberFormat with correct locale
+    - Language switcher component added to settings page
+    - RTL layout tested with a placeholder RTL locale config
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 4
+  FRONTEND:
+    description: 'Build the travel_planner React frontend: app shell, routing, auth
+      flow, and all core pages — Home/Trip List, AI Itinerary Chat, Booking Search,
+      Budget Dashboard, Group Planning, and Offline Maps.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 9 pages render without errors with React Router routes configured
+    - AI itinerary chat page streams SSE responses and renders markdown itinerary
+      incrementally
+    - Flight and hotel search pages show sortable, filterable result lists
+    - Budget dashboard shows category breakdown chart (Recharts) + group split table
+    - Group planning page shows member list, invite modal, and destination voting
+      UI
+    - Offline maps page shows region selector on Mapbox GL JS map + download progress
+      bar
+    - All pages are responsive (mobile 375px, tablet 768px, desktop 1280px)
+    - i18n hook (useTranslation) used for all user-visible strings
+    - Lighthouse accessibility score ≥ 90 on itinerary_chat and budget_dashboard pages
+    depends_on:
+    - 3
+    - 6
+    - 12
+  AGENTIC:
+    description: 'Implement the iterative refinement agentic pattern for itinerary
+      personalization: after initial itinerary generation, a refinement agent evaluates
+      user feedback signals (thumbs up/down on activities, manual edits), scores the
+      itinerary against preferences, and regenerates improved versions until quality
+      threshold is met.'
+    agent_role: developer
+    acceptance_criteria:
+    - Refinement agent reads user feedback signals from itinerary_items ratings
+    - Quality scorer returns a 0-1 score across all 4 dimensions
+    - Refinement loop terminates when overall score ≥ 0.85 or max_iterations reached
+    - Each refinement iteration stored in history with score delta
+    - User can trigger manual refinement via POST /itinerary/{id}/refine
+    - Group consensus dimension aggregates all members' ratings before scoring
+    - Refinement history visible in audit_log.db with trace_ids
+    depends_on:
+    - 7
+  SECURITY:
+    description: 'Perform security review of travel_planner: threat model for booking
+      data (PII, payment), JWT auth hardening, API rate limiting, input validation
+      on all endpoints, and OWASP Top 10 checklist.'
+    agent_role: developer
+    acceptance_criteria:
+    - Threat model document covers all 5 scoped areas with mitigations
+    - JWT tokens use RS256, 1h expiry, refresh token rotation implemented
+    - 'Rate limiting applied: 10 req/min on /itinerary/generate, 30 req/min on /flights/search'
+    - All user inputs validated with Pydantic schemas; no raw SQL string interpolation
+    - Invite tokens are single-use and invalidated after acceptance
+    - npm audit + pip-audit report produced with no critical/high unresolved vulnerabilities
+    - Offline tile endpoints require authenticated session (no public tile serving)
+    depends_on:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, and cookie consent banner
+      for travel_planner. Address GDPR/CCPA compliance for location data, travel PII,
+      and third-party booking integrations.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all 4 data types with retention periods and deletion rights
+    - Third-party data sharing clearly disclosed for Amadeus, Booking.com, Mapbox
+    - GDPR Article 13/14 notice requirements met
+    - CCPA 'Do Not Sell My Personal Information' opt-out path described
+    - Cookie consent banner text drafted with category breakdown (essential, analytics,
+      marketing)
+    - Terms of Service covers booking liability limitations and group trip shared
+      responsibility
+    depends_on:
+    - 2
+  DEVOPS:
+    description: 'Set up CI/CD pipeline, Docker Compose for local dev, and production
+      deployment config for travel_planner: backend (FastAPI), frontend (Vite), PostgreSQL,
+      Redis (Celery), and Celery worker services.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose.yml starts all 5 services with a single docker-compose up
+    - GitHub Actions workflow runs lint + test on every PR
+    - Build stage produces Docker images tagged with git SHA
+    - Deploy stage pushes to staging on merge to main; production requires manual
+      approval
+    - Health check endpoints wired to Docker HEALTHCHECK instructions
+    - Environment-specific .env files documented with required variables list
+    - Celery worker auto-scales to 4 concurrent workers in production config
+    depends_on:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 13
+  TESTS:
+    description: 'Write comprehensive unit and integration tests for all travel_planner
+      backend services: itinerary coordinator, booking adapters, budget split algorithms,
+      group invite flow, and offline map job queue.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test suite achieves ≥ 80% line coverage across src/
+    - All 3 budget split algorithms (equal, proportional, custom) have edge-case tests
+    - Booking adapter tests use MockBookingAdapter; integration test verifies real
+      Amadeus sandbox
+    - 'Group invite flow tested: generate → accept → role check → expiry → duplicate
+      reject'
+    - 'Map download job tested: enqueue → worker pickup → progress update → completion'
+    - Itinerary coordinator tested with mocked LLM responses for deterministic assertions
+    - CI pipeline runs full test suite in under 5 minutes
+    depends_on:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+  QA:
+    description: 'Develop QA test plan and execute manual test cases for travel_planner:
+      exploratory testing of AI itinerary chat UX, booking end-to-end flow, group
+      planning edge cases, budget tracking accuracy, and offline map download on slow
+      connections.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - QA test plan document covers all 5 feature areas with 5+ test cases each
+    - All P0 test cases executed with pass/fail recorded
+    - Zero P0 bugs open at release gate
+    - Itinerary streaming tested on slow 3G (Chrome DevTools throttle) — no broken
+      UI
+    - Group planning tested with 8 simultaneous members editing — no data conflict
+    - Offline map tested by toggling to airplane mode after download — tiles serve
+      correctly
+    - Bug report template created with severity/priority/reproduce-steps fields
+    depends_on:
+    - 13
+    - 14
+    - 18
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests for travel_planner''s critical user
+      journeys using Playwright: full itinerary generation → booking → budget tracking
+      flow, and group trip invite → vote → finalize flow.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 3 Playwright journeys pass on staging environment
+    - Solo trip E2E completes in under 60 seconds (excluding LLM generation time)
+    - Group trip flow handles concurrent member actions without race conditions
+    - 'Offline map journey verified: tile serve returns 200 from local cache after
+      network disabled'
+    - E2E tests run in GitHub Actions on every deploy to staging
+    - Test report with screenshots on failure stored as CI artifact
+    depends_on:
+    - 17
+    - 19
+  TRAINING:
+    description: 'Create user onboarding guide, in-app tooltip copy, and help center
+      articles for travel_planner: getting started, creating your first AI itinerary,
+      inviting a group, tracking budget, and downloading offline maps.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Getting started guide covers all 5 topics with screenshots placeholders
+    - In-app tooltip copy provided for every major UI action (JSON keyed to component
+      IDs)
+    - 'Onboarding checklist drives new user through: create trip → generate itinerary
+      → invite friend → add expense → download map'
+    - Help center articles are under 500 words each with a 'Did this help?' feedback
+      widget spec
+    - Content reviewed for all 5 locales (en complete; others marked for translation)
+    - Technical writer sign-off from product_manager
+    depends_on:
+    - 13
+    - 19
+  DOCS:
+    description: 'Write developer documentation for travel_planner: architecture overview,
+      local setup guide, API reference (generated from OpenAPI spec), agentic pattern
+      documentation, and solution YAML reference.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - README.md has quickstart that gets a developer running locally in under 10 commands
+    - Architecture diagram (Mermaid) covers all services and data flows
+    - API reference auto-generated from OpenAPI spec and published at /docs
+    - Agentic pattern doc explains coordinator + iterative_refinement patterns with
+      sequence diagrams
+    - YAML reference documents every field in project.yaml, prompts.yaml, tasks.yaml
+      with examples
+    - Local setup guide tested by a second developer who had not previously set up
+      the project
+    depends_on:
+    - 17
+    - 20

@@ -1,0 +1,1084 @@
+{
+  "run_id": "05efa623-4060-436a-ae21-fb551b10fee3",
+  "solution_name": "meditation_app",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T10:24:58.904642+00:00",
+  "updated_at": "2026-03-22T10:28:53.901121+00:00",
+  "product_description": "Meditation and mindfulness app with guided sessions, sleep stories, breathing exercises, mood tracking, streak system, and Apple Watch companion.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze meditation app market: competitor landscape (Calm, Headspace, Insight Timer), pricing models, user acquisition channels, and positioning for meditation_app",
+      "payload": {
+        "competitors": [
+          "Calm",
+          "Headspace",
+          "Insight Timer",
+          "Ten Percent Happier"
+        ],
+        "focus_areas": [
+          "pricing",
+          "content_library",
+          "Apple Watch support",
+          "mood tracking",
+          "freemium vs subscription"
+        ],
+        "output": "market_research_report.md"
+      },
+      "acceptance_criteria": [
+        "Competitor feature matrix covers all 6 app features (guided sessions, sleep stories, breathing, mood, streaks, Watch)",
+        "Pricing benchmarks for 3+ competitors documented",
+        "Unique differentiation opportunities identified",
+        "Target user personas (2\u20133) defined with demographics and pain points"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Author Product Requirements Document (PRD) for meditation_app covering all 6 feature pillars, success metrics, release milestones, and Apple Watch companion scope",
+      "payload": {
+        "features": [
+          "guided_sessions",
+          "sleep_stories",
+          "breathing_exercises",
+          "mood_tracking",
+          "streak_system",
+          "apple_watch_companion"
+        ],
+        "platforms": [
+          "iOS",
+          "watchOS"
+        ],
+        "output": "PRD.md"
+      },
+      "acceptance_criteria": [
+        "PRD contains user stories for all 6 feature pillars",
+        "MoSCoW prioritization applied to all features",
+        "Measurable KPIs defined (DAU, streak retention %, session completion rate)",
+        "v1.0 scope explicitly bounded \u2014 Apple Watch is companion (not standalone)",
+        "Roadmap covers 3 milestones (MVP, v1.1, v1.2)"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes + interaction design for iOS app and Apple Watch companion: onboarding, session player, mood check-in, breathing guide, sleep stories, streak dashboard",
+      "payload": {
+        "deliverables": [
+          "user_research_summary",
+          "information_architecture",
+          "wireframes_ios",
+          "wireframes_watchos",
+          "accessibility_audit"
+        ],
+        "screens": [
+          "onboarding",
+          "home_dashboard",
+          "session_player",
+          "breathing_exercise",
+          "sleep_story_player",
+          "mood_checkin",
+          "streak_view",
+          "watch_quick_session"
+        ]
+      },
+      "acceptance_criteria": [
+        "User research summary with 5+ interview insights",
+        "Information architecture diagram covering all navigation flows",
+        "Lo-fi wireframes for all 8 screens on iOS",
+        "Apple Watch wireframes for quick session and mood check-in",
+        "Accessibility audit checklist completed (WCAG 2.1 AA baseline)",
+        "Design reviewed against PRD \u2014 no unaddressed requirement",
+        "App store screenshot mockups prepared",
+        "Onboarding flow under 3 steps"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy (GDPR + CCPA compliant), and HealthKit data usage disclosure for mood tracking and biometric data",
+      "payload": {
+        "jurisdictions": [
+          "US",
+          "EU"
+        ],
+        "data_types": [
+          "mood_logs",
+          "session_history",
+          "health_metrics",
+          "apple_watch_heart_rate"
+        ],
+        "frameworks": [
+          "GDPR",
+          "CCPA",
+          "Apple HealthKit guidelines"
+        ],
+        "output": "legal/terms_of_service.md legal/privacy_policy.md legal/healthkit_disclosure.md"
+      },
+      "acceptance_criteria": [
+        "Privacy Policy covers all 4 data types with retention periods",
+        "GDPR data subject rights section present (access, deletion, portability)",
+        "CCPA opt-out mechanism documented",
+        "HealthKit data usage disclosure matches Apple App Store review requirements",
+        "Terms of Service covers subscription auto-renewal disclosures"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 5,
+      "task_type": "CONFIG",
+      "description": "Scaffold meditation_app solution directory: Flutter iOS project, WatchKit extension, FastAPI backend, configure agentic pattern (coordinator) for personalized session recommendation engine",
+      "payload": {
+        "solution_name": "meditation_app",
+        "flutter_project": "mobile/",
+        "watchkit_extension": "mobile/MeditationWatch/",
+        "backend": "backend/",
+        "agentic_pattern": "coordinator",
+        "coordinator_agents": [
+          "content_recommender",
+          "mood_analyzer",
+          "streak_coach"
+        ],
+        "config_files": [
+          "project.yaml",
+          "prompts.yaml",
+          "tasks.yaml",
+          ".env.example"
+        ]
+      },
+      "acceptance_criteria": [
+        "Flutter project runs on iOS simulator with empty home screen",
+        "WatchKit extension target added and builds without errors",
+        "FastAPI backend starts with `uvicorn main:app` on port 8000",
+        "project.yaml, prompts.yaml, tasks.yaml committed with meditation_app domain config",
+        "Coordinator agent pattern configured with 3 specialist sub-agents defined in prompts.yaml",
+        ".env.example documents all required env vars"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Design and implement database schema for users, sessions, sleep stories, mood logs, streaks, and subscription state. Include migrations.",
+      "payload": {
+        "db": "PostgreSQL",
+        "tables": [
+          "users",
+          "sessions",
+          "sleep_stories",
+          "breathing_templates",
+          "mood_logs",
+          "streaks",
+          "subscriptions",
+          "content_library"
+        ],
+        "orm": "SQLAlchemy",
+        "migrations": "Alembic",
+        "output": "backend/models/ backend/migrations/"
+      },
+      "acceptance_criteria": [
+        "All 8 tables created with correct foreign keys and indexes",
+        "Alembic migration runs cleanly on fresh database",
+        "mood_logs table stores valence (1\u201310), notes, and timestamp with user_id FK",
+        "streaks table tracks current_streak, longest_streak, last_active_date",
+        "content_library supports tagging by category (sleep, breathing, guided, ambient)",
+        "All timestamps stored in UTC"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "BACKEND",
+      "description": "Implement FastAPI authentication service: user registration, JWT login, Apple Sign In, subscription tier enforcement (free vs premium)",
+      "payload": {
+        "auth_providers": [
+          "email/password",
+          "Apple Sign In"
+        ],
+        "jwt_library": "python-jose",
+        "subscription_tiers": [
+          "free",
+          "premium"
+        ],
+        "endpoints": [
+          "POST /auth/register",
+          "POST /auth/login",
+          "POST /auth/apple",
+          "GET /auth/me",
+          "POST /auth/refresh"
+        ]
+      },
+      "acceptance_criteria": [
+        "JWT access token (15min) + refresh token (30d) issued on login",
+        "Apple Sign In verifies identity token against Apple's public keys",
+        "Premium-gated endpoints return 403 for free-tier users",
+        "Password stored as bcrypt hash \u2014 never plaintext",
+        "Rate limiting applied to /auth/login (5 req/min per IP)"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Implement content API: guided sessions, sleep stories, breathing exercise templates \u2014 CRUD, streaming audio URL signing (S3 presigned), and category filtering",
+      "payload": {
+        "endpoints": [
+          "GET /sessions",
+          "GET /sessions/{id}",
+          "GET /sessions/recommended",
+          "GET /sleep-stories",
+          "GET /sleep-stories/{id}",
+          "GET /breathing-templates",
+          "GET /breathing-templates/{id}"
+        ],
+        "storage": "AWS S3",
+        "url_signing": "presigned URLs (15min expiry)",
+        "filtering": [
+          "category",
+          "duration",
+          "difficulty",
+          "language"
+        ]
+      },
+      "acceptance_criteria": [
+        "All content endpoints return paginated responses (cursor-based)",
+        "S3 presigned URLs generated server-side \u2014 audio assets never publicly exposed",
+        "Recommended endpoint uses coordinator agent to personalize based on user history",
+        "Free tier limited to 10 sessions; premium unlocks full library",
+        "Filtering by category, duration (5/10/20min buckets), and language works"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Implement mood tracking API: log mood entries, retrieve history, weekly/monthly aggregates, and trend analysis endpoint",
+      "payload": {
+        "endpoints": [
+          "POST /mood",
+          "GET /mood/history",
+          "GET /mood/summary",
+          "GET /mood/trends"
+        ],
+        "mood_scale": "1\u201310 valence with optional text note",
+        "aggregates": [
+          "7_day_average",
+          "30_day_average",
+          "mood_by_time_of_day"
+        ]
+      },
+      "acceptance_criteria": [
+        "POST /mood validates valence 1\u201310 and stores with UTC timestamp",
+        "GET /mood/history supports date range filtering",
+        "GET /mood/trends returns 7-day rolling average as array",
+        "Mood data linked to session completions (optional session_id FK)",
+        "HealthKit mood data can be written back via iOS app (documented in API spec)"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement streak tracking service: daily activity detection, streak calculation engine, milestone rewards, and streak freeze (premium feature)",
+      "payload": {
+        "endpoints": [
+          "GET /streaks/current",
+          "POST /streaks/record-activity",
+          "GET /streaks/milestones",
+          "POST /streaks/freeze"
+        ],
+        "activity_sources": [
+          "session_completion",
+          "mood_checkin",
+          "breathing_exercise"
+        ],
+        "milestones": [
+          3,
+          7,
+          14,
+          30,
+          60,
+          100,
+          365
+        ],
+        "freeze_limit": "2 per month (premium)"
+      },
+      "acceptance_criteria": [
+        "Streak increments correctly when any qualifying activity is recorded in a day",
+        "Streak resets to 0 if no activity for 48 hours (grace period)",
+        "Milestone badge awarded exactly once per milestone level",
+        "Streak freeze deducts from monthly allowance and logs usage",
+        "GET /streaks/current returns {current, longest, last_active, frozen_until}"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "AGENTIC",
+      "description": "Implement coordinator agentic pattern for personalized session recommendation: mood_analyzer reads last 7 mood entries, content_recommender selects matching sessions, streak_coach nudges based on streak status",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_agent": "recommendation_coordinator",
+        "specialist_agents": [
+          {
+            "name": "mood_analyzer",
+            "input": "mood_history[7d]",
+            "output": "emotional_context"
+          },
+          {
+            "name": "content_recommender",
+            "input": "emotional_context + session_history",
+            "output": "ranked_session_ids"
+          },
+          {
+            "name": "streak_coach",
+            "input": "streak_status",
+            "output": "motivational_nudge"
+          }
+        ],
+        "integration": "GET /sessions/recommended",
+        "prompts_yaml_section": "recommendation_coordinator"
+      },
+      "acceptance_criteria": [
+        "Coordinator decomposes recommendation request into 3 parallel specialist calls",
+        "mood_analyzer correctly maps low valence (1\u20134) to calming/sleep content",
+        "content_recommender excludes already-completed sessions from top recommendations",
+        "streak_coach nudge changes tone based on streak (new user vs 30+ day veteran)",
+        "Full recommendation cycle completes in < 3 seconds",
+        "Agent reasoning trace logged to audit_log.db"
+      ],
+      "depends_on": [
+        8,
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "FRONTEND",
+      "description": "Build Flutter iOS app: onboarding flow (goal selection, notification preferences, trial start), bottom nav shell, and theming system",
+      "payload": {
+        "framework": "Flutter",
+        "platform": "iOS",
+        "screens": [
+          "splash",
+          "onboarding_goals",
+          "onboarding_notifications",
+          "onboarding_trial",
+          "main_shell"
+        ],
+        "nav_tabs": [
+          "Home",
+          "Sessions",
+          "Sleep",
+          "Breathe",
+          "Profile"
+        ],
+        "theme": "dark-first, calm blues/purples, system font"
+      },
+      "acceptance_criteria": [
+        "Onboarding completes in 3 steps and stores user goals locally",
+        "Bottom navigation persists state across tab switches",
+        "Theme colors match UX wireframes from step 3",
+        "Onboarding skippable for returning users (persisted flag)",
+        "App builds and runs on iOS 16+ simulator without warnings"
+      ],
+      "depends_on": [
+        5,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "FRONTEND",
+      "description": "Build guided session player screen: audio streaming, progress bar, background playback, session completion recording, and post-session mood check-in prompt",
+      "payload": {
+        "audio_library": "just_audio",
+        "features": [
+          "background_playback",
+          "lock_screen_controls",
+          "progress_seek",
+          "speed_control (0.75x\u20131.5x)",
+          "offline_download (premium)"
+        ],
+        "post_session_flow": "mood_checkin \u2192 streak_update \u2192 recommendation_card"
+      },
+      "acceptance_criteria": [
+        "Audio plays from S3 presigned URL with < 2s buffering on WiFi",
+        "Background playback continues when app is backgrounded",
+        "Lock screen shows title, teacher name, play/pause/seek controls",
+        "Session completion POSTs to /streaks/record-activity automatically",
+        "Post-session mood check-in modal appears within 500ms of session end",
+        "Download for offline works for premium users; shows locked UI for free"
+      ],
+      "depends_on": [
+        12,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FRONTEND",
+      "description": "Build sleep stories player: bedtime-optimized UI (dark mode forced, auto-brightness dim), sleep timer, and continuous playlist mode",
+      "payload": {
+        "features": [
+          "sleep_timer (15/30/45/60min)",
+          "auto_stop_on_sleep_timer",
+          "continuous_playlist",
+          "forced_dark_ui",
+          "auto_screen_dim_after_60s"
+        ],
+        "categories": [
+          "nature",
+          "fiction",
+          "ASMR",
+          "guided_imagery"
+        ]
+      },
+      "acceptance_criteria": [
+        "Screen auto-dims to minimum brightness after 60 seconds in sleep mode",
+        "Sleep timer stops audio at selected time without waking screen",
+        "Continuous playlist queues next story automatically",
+        "Player UI passes accessibility audit (contrast ratios in dim mode)",
+        "Stories filterable by category and duration"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Build animated breathing exercise screen: visual breath guide (expand/hold/release cycle), configurable patterns (4-7-8, box breathing, 2-1-4-1), haptic feedback",
+      "payload": {
+        "animation_library": "flutter_animate",
+        "patterns": [
+          "4-7-8",
+          "box_breathing_4-4-4-4",
+          "2-1-4-1",
+          "custom"
+        ],
+        "haptics": "light pulse on each phase transition",
+        "duration_options": [
+          5,
+          10,
+          15,
+          20
+        ]
+      },
+      "acceptance_criteria": [
+        "Breathing circle animates smoothly at 60fps with no jank",
+        "Phase label (Inhale / Hold / Exhale) updates in sync with animation",
+        "Haptic pulse fires exactly at phase transition (not before/after)",
+        "Custom pattern allows user to set 4 phase durations (1\u201310s each)",
+        "Session records to streak activity on completion"
+      ],
+      "depends_on": [
+        12,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build mood tracking screen: emoji/slider mood input, daily check-in reminder, 7-day and 30-day trend chart, and mood-session correlation view",
+      "payload": {
+        "input_method": "10-point emoji slider",
+        "chart_library": "fl_chart",
+        "views": [
+          "daily_checkin",
+          "weekly_trend_line",
+          "monthly_heatmap",
+          "mood_session_correlation"
+        ],
+        "reminders": "local notifications at user-selected time"
+      },
+      "acceptance_criteria": [
+        "Mood slider renders 10 distinct emoji states mapped to values 1\u201310",
+        "Weekly trend line chart updates immediately after new mood log",
+        "Monthly heatmap colors correctly map valence to color gradient",
+        "Mood\u2013session correlation shows sessions completed on high vs low mood days",
+        "Local notification fires at user-configured time with dismissible UX"
+      ],
+      "depends_on": [
+        12,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build streak and progress screen: current streak flame display, milestone badge gallery, calendar heatmap of activity, and streak freeze UI",
+      "payload": {
+        "components": [
+          "streak_flame_counter",
+          "milestone_badge_grid",
+          "activity_calendar_heatmap",
+          "streak_freeze_button"
+        ],
+        "milestone_levels": [
+          3,
+          7,
+          14,
+          30,
+          60,
+          100,
+          365
+        ],
+        "animation": "confetti burst on milestone unlock"
+      },
+      "acceptance_criteria": [
+        "Flame icon animates (pulsing) when streak is active",
+        "Milestone badges show locked/unlocked states correctly",
+        "Calendar heatmap correctly marks days with completed activity",
+        "Streak freeze button disabled when allowance exhausted or streak is 0",
+        "Confetti animation triggers exactly once per new milestone"
+      ],
+      "depends_on": [
+        12,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build Apple Watch WatchKit extension: quick 5-min session launcher, breathing guide complication, mood check-in glance, and streak status watch face complication",
+      "payload": {
+        "watchos_target": "watchOS 9+",
+        "complications": [
+          "streak_count",
+          "next_session_reminder"
+        ],
+        "screens": [
+          "watch_home",
+          "quick_session_picker",
+          "breathing_guide_watch",
+          "mood_checkin_watch"
+        ],
+        "comms": "WatchConnectivity framework for iPhone\u2194Watch sync"
+      },
+      "acceptance_criteria": [
+        "Watch app launches and shows streak count within 1 second",
+        "Quick session picker shows 3 recommended sessions synced from phone",
+        "Breathing guide uses Digital Crown for manual phase control",
+        "Mood check-in on Watch syncs to iPhone and API within 30 seconds",
+        "Streak complication updates after each session completion",
+        "Watch app works when iPhone is not nearby (cached data)"
+      ],
+      "depends_on": [
+        13,
+        15,
+        16,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "BACKEND",
+      "description": "Implement subscription and payment backend: Stripe integration, App Store subscription receipt validation, premium feature gating, and webhook handler for subscription lifecycle events",
+      "payload": {
+        "payment_providers": [
+          "Stripe (web)",
+          "Apple In-App Purchase (iOS)"
+        ],
+        "endpoints": [
+          "POST /subscriptions/validate-receipt",
+          "GET /subscriptions/status",
+          "POST /webhook/stripe",
+          "POST /webhook/apple-iap"
+        ],
+        "subscription_events": [
+          "purchased",
+          "renewed",
+          "expired",
+          "refunded",
+          "grace_period"
+        ]
+      },
+      "acceptance_criteria": [
+        "Apple IAP receipt validated against Apple's production verification endpoint",
+        "Subscription status cached in DB and refreshed on each app launch",
+        "Stripe webhook correctly handles all 5 lifecycle events",
+        "Premium access revoked within 60 seconds of expiry/refund event",
+        "Grace period of 7 days applied before full revocation on payment failure"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure for Flutter app (flutter_localizations + ARB files) and FastAPI backend (locale-aware content fields). Seed English, Spanish, and French translations.",
+      "payload": {
+        "framework": "flutter_localizations + intl package",
+        "locales": [
+          "en",
+          "es",
+          "fr"
+        ],
+        "backend_i18n": "content_library title/description fields per locale",
+        "arb_files": [
+          "app_en.arb",
+          "app_es.arb",
+          "app_fr.arb"
+        ],
+        "strings_to_translate": [
+          "UI labels",
+          "breathing phase prompts",
+          "streak milestone messages",
+          "onboarding copy"
+        ]
+      },
+      "acceptance_criteria": [
+        "App language switches correctly when device locale changes to es or fr",
+        "All UI strings sourced from ARB files \u2014 no hardcoded English strings in Dart",
+        "Backend content API returns title/description in requested Accept-Language locale",
+        "Fallback to English when translation missing for a locale",
+        "RTL layout tested and documented (not required for v1, but noted)",
+        "Top 5 target locales identified",
+        "Store listing translated"
+      ],
+      "depends_on": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 21,
+      "task_type": "SECURITY",
+      "description": "Security review: threat model for user health data, API authentication hardening, HealthKit data encryption at rest, and OWASP Mobile Top 10 assessment",
+      "payload": {
+        "threat_model_scope": [
+          "mood_data",
+          "session_history",
+          "subscription_state",
+          "Apple Watch sync channel"
+        ],
+        "checks": [
+          "OWASP_Mobile_Top_10",
+          "certificate_pinning",
+          "jailbreak_detection",
+          "data_encryption_at_rest"
+        ],
+        "tools": [
+          "SAST on Flutter Dart code",
+          "dependency vulnerability scan"
+        ]
+      },
+      "acceptance_criteria": [
+        "Threat model document covers all 4 data scope areas with mitigations",
+        "Certificate pinning implemented for all API calls",
+        "Mood and health data encrypted at rest using iOS Keychain / Data Protection API",
+        "OWASP Mobile Top 10 checklist completed \u2014 all Critical items addressed",
+        "No high-severity CVEs in dependency scan at time of release"
+      ],
+      "depends_on": [
+        18,
+        19
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline: GitHub Actions for Flutter iOS build + test, FastAPI backend test + Docker build, TestFlight distribution, and environment promotion (staging \u2192 production)",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "workflows": [
+          "flutter_test.yml",
+          "backend_test.yml",
+          "ios_build_testflight.yml",
+          "backend_deploy.yml"
+        ],
+        "environments": [
+          "staging",
+          "production"
+        ],
+        "ios_signing": "Fastlane match",
+        "backend_hosting": "AWS ECS Fargate"
+      },
+      "acceptance_criteria": [
+        "PR to main triggers Flutter tests + backend tests in parallel",
+        "iOS build signs with correct provisioning profile via Fastlane match",
+        "Successful main merge auto-deploys backend to staging within 5 minutes",
+        "TestFlight upload triggered on version tag (e.g. v1.0.0)",
+        "Staging and production use separate AWS accounts and databases"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "QA",
+      "description": "Design comprehensive QA test plan: test cases for all 6 feature pillars, device matrix (iPhone 14/15/16, Apple Watch Series 8/9/Ultra), regression suite, and exploratory testing charter",
+      "payload": {
+        "test_types": [
+          "functional",
+          "regression",
+          "exploratory",
+          "accessibility",
+          "localization_smoke"
+        ],
+        "device_matrix": [
+          "iPhone 14 Pro",
+          "iPhone 15",
+          "iPhone 16 Pro Max",
+          "Apple Watch Series 8",
+          "Apple Watch Ultra 2"
+        ],
+        "test_cases_per_feature": {
+          "guided_sessions": 15,
+          "sleep_stories": 10,
+          "breathing_exercises": 12,
+          "mood_tracking": 10,
+          "streak_system": 14,
+          "apple_watch": 12
+        },
+        "output": "qa/test_plan.md qa/test_cases/ qa/exploratory_charters.md"
+      },
+      "acceptance_criteria": [
+        "Test plan covers all 6 feature pillars with \u2265 10 test cases each",
+        "Device matrix tests executed on at least 3 real devices before release",
+        "Regression suite covers all P0 user flows (login \u2192 session \u2192 mood \u2192 streak)",
+        "Accessibility test cases include VoiceOver navigation for all main screens",
+        "Localization smoke test validates Spanish and French on 1 device each"
+      ],
+      "depends_on": [
+        18,
+        20
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for backend: auth service, content API, mood endpoints, streak engine, subscription validation, and coordinator recommendation agent",
+      "payload": {
+        "framework": "pytest",
+        "coverage_target": "85%",
+        "test_files": [
+          "tests/test_auth.py",
+          "tests/test_content.py",
+          "tests/test_mood.py",
+          "tests/test_streaks.py",
+          "tests/test_subscriptions.py",
+          "tests/test_recommendation_coordinator.py"
+        ],
+        "fixtures": "pytest-asyncio + testcontainers (PostgreSQL)"
+      },
+      "acceptance_criteria": [
+        "All tests pass in CI with testcontainers PostgreSQL (no mocked DB)",
+        "Backend coverage \u2265 85% across all modules",
+        "Streak engine tests cover: increment, reset, freeze, grace period, milestones",
+        "Subscription tests cover all 5 lifecycle events",
+        "Coordinator agent tests mock LLM calls and verify routing logic"
+      ],
+      "depends_on": [
+        11,
+        19
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "TESTS",
+      "description": "Write Flutter widget tests and integration tests: session player controls, mood slider input, breathing animation timing, streak display, and Watch sync flow",
+      "payload": {
+        "framework": "flutter_test + integration_test package",
+        "widget_tests": [
+          "session_player_widget_test.dart",
+          "mood_slider_test.dart",
+          "breathing_animation_test.dart",
+          "streak_display_test.dart"
+        ],
+        "integration_tests": [
+          "onboarding_flow_test.dart",
+          "session_to_streak_e2e_test.dart"
+        ],
+        "golden_tests": "snapshot tests for streak and mood chart widgets"
+      },
+      "acceptance_criteria": [
+        "All widget tests pass on Flutter stable channel",
+        "Breathing animation timing verified to within \u00b1100ms of configured phase duration",
+        "Mood slider correctly maps 10 positions to values 1\u201310",
+        "E2E: onboarding \u2192 first session \u2192 mood check-in \u2192 streak increment completes without error",
+        "Golden tests committed and diff checked in CI"
+      ],
+      "depends_on": [
+        18
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "TRAINING",
+      "description": "Produce user-facing help content, onboarding tooltips, App Store listing copy, and a video script for the 60-second promotional video",
+      "payload": {
+        "deliverables": [
+          "in_app_tooltips.json",
+          "faq.md",
+          "app_store_description.md",
+          "onboarding_guide_screens.md",
+          "promo_video_script_60s.md"
+        ],
+        "tone": "calm, encouraging, science-backed but accessible",
+        "locales_covered": [
+          "en",
+          "es",
+          "fr"
+        ]
+      },
+      "acceptance_criteria": [
+        "In-app tooltips cover all 6 feature areas (\u2265 2 tips per feature)",
+        "FAQ answers top 10 anticipated user questions (subscription, data privacy, Watch sync)",
+        "App Store description \u2264 4000 characters with keyword-optimized headline",
+        "Promo video script is exactly 60 seconds at normal reading pace",
+        "All content reviewed against Privacy Policy \u2014 no contradictory claims"
+      ],
+      "depends_on": [
+        4,
+        20
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 27,
+      "task_type": "DOCS",
+      "description": "Write API documentation (OpenAPI spec), developer README, architecture decision records (ADRs) for key decisions (auth flow, streaming, agentic recommendation), and solution YAML comments",
+      "payload": {
+        "openapi_spec": "backend/openapi.yaml",
+        "readme": "README.md",
+        "adrs": [
+          "adr/001-jwt-auth.md",
+          "adr/002-s3-presigned-audio.md",
+          "adr/003-coordinator-recommendation-pattern.md"
+        ],
+        "solution_yaml_docs": "inline comments in project.yaml prompts.yaml tasks.yaml"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates against OpenAPI 3.1 schema with 0 errors",
+        "README covers: setup, running locally, environment variables, testing, deployment",
+        "3 ADRs written with context, decision, and consequences sections",
+        "All solution YAML files have inline comments explaining each section"
+      ],
+      "depends_on": [
+        24,
+        25
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 28,
+      "task_type": "QA",
+      "description": "Execute final QA pass: full regression suite on real devices, App Store submission checklist, performance profiling (app launch < 2s, audio buffer < 2s), and crash-free rate baseline",
+      "payload": {
+        "execution_mode": "manual + automated",
+        "performance_targets": {
+          "app_cold_launch": "< 2000ms",
+          "audio_buffer": "< 2000ms",
+          "recommendation_api": "< 3000ms"
+        },
+        "app_store_checklist": "Apple App Store Review Guidelines 2024",
+        "crash_monitoring": "Firebase Crashlytics",
+        "output": "qa/final_test_report.md"
+      },
+      "acceptance_criteria": [
+        "All P0 and P1 test cases pass with 0 blockers",
+        "App cold launch < 2 seconds on iPhone 14",
+        "Audio buffering < 2 seconds on 4G connection",
+        "No crash in 30-minute exploratory session on each device in matrix",
+        "App Store submission checklist 100% complete",
+        "Firebase Crashlytics integrated and receiving test events"
+      ],
+      "depends_on": [
+        21,
+        23,
+        24,
+        25,
+        26
+      ],
+      "agent_role": "system_tester"
+    }
+  ],
+  "task_count": 28,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "Flutter cannot compile WatchKit/watchOS extensions. Step 5 says 'WatchKit extension target added' inside a Flutter project \u2014 this is architecturally impossible. watchOS targets must be native Swift/SwiftUI. The Watch app requires a parallel native Xcode project with Flutter acting only as the iPhone side, communicating via WatchConnectivity through platform channels. This is never addressed and will block the entire Watch feature.",
+            "Step 19 mixes Stripe and Apple IAP for an iOS app without clear scope separation. Apple's App Store Review Guidelines (3.1.1) prohibit using any payment mechanism other than IAP for in-app digital purchases. If Stripe is web-only for non-iOS purchases, this must be explicitly stated and enforced \u2014 the app cannot link to or reference web purchase options from within the iOS app or it gets rejected.",
+            "WatchKit is deprecated as of watchOS 7. Step 18 targets watchOS 9+ but specifies WatchKit, which contradicts Apple's current platform direction. For watchOS 9+, the correct stack is SwiftUI + App extensions, not WatchKit InterfaceController. Implementing WatchKit on a new app in 2024 is technical debt on day one.",
+            "Step 13 specifies just_audio for background playback, but background audio in Flutter on iOS requires the audio_service package for proper AVAudioSession management, background task registration, and lock screen Now Playing integration. just_audio alone will not maintain playback when the app is backgrounded on iOS \u2014 the OS will kill the audio within seconds.",
+            "The coordinator agent 3-second SLA (step 11) is unrealistic. Three LLM inference calls \u2014 even parallelized \u2014 on a cold inference path typically take 2-8 seconds each depending on provider and load. The plan gives no budget per agent call and no fallback for timeout. The recommendation endpoint will routinely exceed 3 seconds, breaking the acceptance criterion.",
+            "Localization setup (step 20) depends on all 6 frontend steps being complete. Retrofitting i18n after all UI is built is expensive \u2014 hardcoded strings embedded in widget trees, interpolation issues, and layout overflow from longer translations are all harder to fix post-hoc. i18n infrastructure must be scaffolded at step 12 (first Flutter screen), not after step 17.",
+            "HealthKit integration has no dedicated step. The plan mentions HealthKit in legal (step 4) and security (step 21), but there is no implementation step covering: HealthKit entitlements in Xcode, NSHealthShareUsageDescription / NSHealthUpdateUsageDescription privacy strings, HKHealthStore authorization request flow, or writing mood data as HKCategoryType. Apple's App Review will reject the app if HealthKit entitlements are declared but not fully justified.",
+            "No CDN for audio delivery. S3 presigned URLs served directly to global users will have high latency (300-800ms additional TTFB for non-US users). For a content app with an audio buffer < 2s acceptance criterion, this is a design failure. CloudFront or equivalent is mandatory for the perf targets to hold at scale.",
+            "The offline download architecture is a single bullet point in step 13 with no design. Offline for premium audio requires: local SQLite tracking of downloaded content, file management (storage limits, cache eviction), sync state between downloaded-on-device vs available-on-server, and DRM/license management so downloaded files can't be extracted. None of this is designed anywhere.",
+            "Step 19 implements a 7-day grace period for payment failures that conflicts with Apple's own grace period (up to 16 days). Double-implementing grace period logic will cause premium state to get out of sync between the app's DB and Apple's subscription status. The correct approach is to trust Apple's subscription status endpoint and implement grace_period_expires_date from the receipt rather than a custom 7-day counter.",
+            "No App Store Connect configuration step. Before any of this ships, someone must: create the app record, configure IAP product identifiers, set up App Store Connect API keys for Fastlane, add HealthKit and background audio capabilities, and complete the app privacy nutrition label. This is a multi-hour blocking task that blocks step 22 and is not represented in the plan."
+          ],
+          "suggestions": [
+            "Add a dedicated step (between 5 and 12) for the native watchOS Xcode target: create a Swift package for WatchConnectivity bridge, define the platform channel interface, and stub the SwiftUI Watch app shell. This unblocks step 18 which currently has no valid implementation path.",
+            "Split step 19 into two separate tasks: (a) Apple IAP receipt validation + subscription lifecycle for iOS, and (b) Stripe integration for web/desktop. Add explicit enforcement that the iOS app never references Stripe or any external payment URL \u2014 this is an App Store rejection risk.",
+            "Move localization infrastructure to step 12 or add it as a parallel dependency with step 5. Scaffold ARB files and flutter_localizations before writing a single UI widget. Add a lint rule (intl_translation analyzer) to fail CI on hardcoded strings.",
+            "Replace the 3-second hard SLA for the coordinator agent with a progressive loading contract: return cached/last-known recommendations immediately (< 200ms), then update in the background and push via websocket or polling. LLM-backed personalization cannot reliably meet a 3-second synchronous SLA.",
+            "Add audio_service package to step 13 alongside just_audio, and add a platform-specific step for configuring AVAudioSession category (playback), background modes entitlement, and Remote Command Center registration in AppDelegate.swift. Without these, background audio will not work on iOS.",
+            "Add a content seeding / CMS step. The plan designs APIs to serve guided sessions and sleep stories but never addresses where this content comes from. 10+ sessions, sleep stories by category, and breathing templates need to exist at launch. Either a seed script with placeholder content or an admin panel is required.",
+            "Add an analytics events specification step before frontend development begins. Define the event taxonomy (session_started, session_completed, mood_logged, streak_milestone, subscription_converted) so all frontend steps can instrument as they build rather than retrofitting analytics at the end.",
+            "For S3 audio protection, replace 15-minute presigned URLs with CloudFront signed cookies scoped to the authenticated user's session. Presigned URLs can be extracted from memory/logs and shared; signed cookies tie the authorization to the browser/client session and integrate with CloudFront's edge caching."
+          ],
+          "missing": [
+            "Native watchOS Swift/SwiftUI target architecture and platform channel bridge design \u2014 the single largest missing piece given Flutter's inability to compile watchOS targets.",
+            "HealthKit implementation step: entitlements, authorization flow, data type mapping, and App Review compliance for health data usage.",
+            "App Store Connect setup and configuration: app record, IAP product IDs, privacy nutrition label, capabilities declarations, App Review information.",
+            "CDN configuration (CloudFront or equivalent) for audio asset delivery with edge caching and geo-distribution.",
+            "Offline download architecture: local storage schema, cache eviction policy, DRM/license binding, and sync state management.",
+            "Push notification infrastructure (APNs integration, backend notification service) for re-engagement \u2014 local notifications alone (step 16) are insufficient for streak reminders when app is uninstalled from recent apps.",
+            "Error monitoring setup (Sentry or equivalent for both Flutter and FastAPI) \u2014 Crashlytics in step 28 is too late and covers crashes only, not handled errors, API failures, or agent timeouts.",
+            "Content seeding / admin panel for creating and managing guided sessions, sleep stories, and breathing templates.",
+            "Analytics event taxonomy and instrumentation plan before frontend development begins.",
+            "HIPAA assessment \u2014 mood + heart rate + health data combination may constitute PHI depending on jurisdiction and user base. Legal step 4 covers GDPR/CCPA but omits HIPAA entirely."
+          ],
+          "security_risks": [
+            "JWT token storage in Flutter is unspecified. If tokens land in SharedPreferences (the default), they are unencrypted and readable on rooted devices. flutter_secure_storage backed by iOS Keychain is required \u2014 this must be explicitly specified, not left to the developer's discretion.",
+            "Certificate pinning in Flutter requires a custom HttpClient or a native platform channel to OkHttp/URLSession. Step 21 lists it as a check but provides no implementation path. Incorrect pinning implementations (pinning to leaf cert rather than public key hash) will cause production outages on certificate rotation.",
+            "S3 presigned URLs for premium audio can be extracted from network traffic (MITM on rooted device), logged in proxy tools, or leaked via app memory. A determined user can share premium content without authorization. CloudFront signed cookies with IP binding and short-lived tokens mitigate this.",
+            "Apple Watch sync via WatchConnectivity transmits mood and health data over a local BLE/WiFi link. While Apple encrypts this transport, the data is cached on the Watch in a readable format. The plan does not address Watch-side data encryption or what happens to cached health data if the Watch is unpaired.",
+            "Jailbreak detection (step 21) provides false security. All known Flutter jailbreak detection libraries can be bypassed in under 10 minutes with Frida. It should be treated as a speed bump, not a security control. The actual protection must be server-side subscription validation \u2014 do not gate features client-side based on jailbreak status alone.",
+            "Apple IAP receipt validation in step 19 should use the App Store Server API (server-to-server notifications) rather than the deprecated verifyReceipt endpoint, which Apple is sunsetting. Building against the deprecated endpoint means a forced migration within 12-18 months of launch."
+          ],
+          "summary": "This plan is thorough and well-structured for a team that has done this before \u2014 28 steps with clear dependencies, acceptance criteria, and coverage of legal, security, QA, and DevOps. However, it contains one fundamental architectural flaw that alone justifies the low score: Flutter cannot build watchOS targets. The Apple Watch feature \u2014 a named product pillar \u2014 has no valid implementation path in this plan. The entire Watch story (steps 5, 18, and Watch acceptance criteria scattered across 13+ steps) is built on a false premise. Fixing this requires adding a native Swift/SwiftUI watchOS project alongside Flutter, designing the WatchConnectivity platform channel interface, and accepting that Watch development requires native iOS/watchOS expertise the plan never accounts for. Secondary issues include: the coordinator agent's 3-second SLA being unachievable with LLM inference, the Stripe/Apple IAP boundary being undefined (App Store rejection risk), background audio requiring audio_service (not just just_audio), localization being retrofitted instead of scaffolded first, and the complete absence of a CDN for audio delivery. The plan scores 54 \u2014 core app functionality (auth, content, mood, streaks) is credibly designed, but the Watch feature is blocked and several platform-specific iOS requirements are either missing or incorrectly specified. Do not start Watch development until the native target architecture is designed. Everything else can be fixed in parallel.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "Flutter cannot compile WatchKit/watchOS extensions. Step 5 says 'WatchKit extension target added' inside a Flutter project \u2014 this is architecturally impossible. watchOS targets must be native Swift/SwiftUI. The Watch app requires a parallel native Xcode project with Flutter acting only as the iPhone side, communicating via WatchConnectivity through platform channels. This is never addressed and will block the entire Watch feature.",
+              "Step 19 mixes Stripe and Apple IAP for an iOS app without clear scope separation. Apple's App Store Review Guidelines (3.1.1) prohibit using any payment mechanism other than IAP for in-app digital purchases. If Stripe is web-only for non-iOS purchases, this must be explicitly stated and enforced \u2014 the app cannot link to or reference web purchase options from within the iOS app or it gets rejected.",
+              "WatchKit is deprecated as of watchOS 7. Step 18 targets watchOS 9+ but specifies WatchKit, which contradicts Apple's current platform direction. For watchOS 9+, the correct stack is SwiftUI + App extensions, not WatchKit InterfaceController. Implementing WatchKit on a new app in 2024 is technical debt on day one.",
+              "Step 13 specifies just_audio for background playback, but background audio in Flutter on iOS requires the audio_service package for proper AVAudioSession management, background task registration, and lock screen Now Playing integration. just_audio alone will not maintain playback when the app is backgrounded on iOS \u2014 the OS will kill the audio within seconds.",
+              "The coordinator agent 3-second SLA (step 11) is unrealistic. Three LLM inference calls \u2014 even parallelized \u2014 on a cold inference path typically take 2-8 seconds each depending on provider and load. The plan gives no budget per agent call and no fallback for timeout. The recommendation endpoint will routinely exceed 3 seconds, breaking the acceptance criterion.",
+              "Localization setup (step 20) depends on all 6 frontend steps being complete. Retrofitting i18n after all UI is built is expensive \u2014 hardcoded strings embedded in widget trees, interpolation issues, and layout overflow from longer translations are all harder to fix post-hoc. i18n infrastructure must be scaffolded at step 12 (first Flutter screen), not after step 17.",
+              "HealthKit integration has no dedicated step. The plan mentions HealthKit in legal (step 4) and security (step 21), but there is no implementation step covering: HealthKit entitlements in Xcode, NSHealthShareUsageDescription / NSHealthUpdateUsageDescription privacy strings, HKHealthStore authorization request flow, or writing mood data as HKCategoryType. Apple's App Review will reject the app if HealthKit entitlements are declared but not fully justified.",
+              "No CDN for audio delivery. S3 presigned URLs served directly to global users will have high latency (300-800ms additional TTFB for non-US users). For a content app with an audio buffer < 2s acceptance criterion, this is a design failure. CloudFront or equivalent is mandatory for the perf targets to hold at scale.",
+              "The offline download architecture is a single bullet point in step 13 with no design. Offline for premium audio requires: local SQLite tracking of downloaded content, file management (storage limits, cache eviction), sync state between downloaded-on-device vs available-on-server, and DRM/license management so downloaded files can't be extracted. None of this is designed anywhere.",
+              "Step 19 implements a 7-day grace period for payment failures that conflicts with Apple's own grace period (up to 16 days). Double-implementing grace period logic will cause premium state to get out of sync between the app's DB and Apple's subscription status. The correct approach is to trust Apple's subscription status endpoint and implement grace_period_expires_date from the receipt rather than a custom 7-day counter.",
+              "No App Store Connect configuration step. Before any of this ships, someone must: create the app record, configure IAP product identifiers, set up App Store Connect API keys for Fastlane, add HealthKit and background audio capabilities, and complete the app privacy nutrition label. This is a multi-hour blocking task that blocks step 22 and is not represented in the plan."
+            ],
+            "suggestions": [
+              "Add a dedicated step (between 5 and 12) for the native watchOS Xcode target: create a Swift package for WatchConnectivity bridge, define the platform channel interface, and stub the SwiftUI Watch app shell. This unblocks step 18 which currently has no valid implementation path.",
+              "Split step 19 into two separate tasks: (a) Apple IAP receipt validation + subscription lifecycle for iOS, and (b) Stripe integration for web/desktop. Add explicit enforcement that the iOS app never references Stripe or any external payment URL \u2014 this is an App Store rejection risk.",
+              "Move localization infrastructure to step 12 or add it as a parallel dependency with step 5. Scaffold ARB files and flutter_localizations before writing a single UI widget. Add a lint rule (intl_translation analyzer) to fail CI on hardcoded strings.",
+              "Replace the 3-second hard SLA for the coordinator agent with a progressive loading contract: return cached/last-known recommendations immediately (< 200ms), then update in the background and push via websocket or polling. LLM-backed personalization cannot reliably meet a 3-second synchronous SLA.",
+              "Add audio_service package to step 13 alongside just_audio, and add a platform-specific step for configuring AVAudioSession category (playback), background modes entitlement, and Remote Command Center registration in AppDelegate.swift. Without these, background audio will not work on iOS.",
+              "Add a content seeding / CMS step. The plan designs APIs to serve guided sessions and sleep stories but never addresses where this content comes from. 10+ sessions, sleep stories by category, and breathing templates need to exist at launch. Either a seed script with placeholder content or an admin panel is required.",
+              "Add an analytics events specification step before frontend development begins. Define the event taxonomy (session_started, session_completed, mood_logged, streak_milestone, subscription_converted) so all frontend steps can instrument as they build rather than retrofitting analytics at the end.",
+              "For S3 audio protection, replace 15-minute presigned URLs with CloudFront signed cookies scoped to the authenticated user's session. Presigned URLs can be extracted from memory/logs and shared; signed cookies tie the authorization to the browser/client session and integrate with CloudFront's edge caching."
+            ],
+            "missing": [
+              "Native watchOS Swift/SwiftUI target architecture and platform channel bridge design \u2014 the single largest missing piece given Flutter's inability to compile watchOS targets.",
+              "HealthKit implementation step: entitlements, authorization flow, data type mapping, and App Review compliance for health data usage.",
+              "App Store Connect setup and configuration: app record, IAP product IDs, privacy nutrition label, capabilities declarations, App Review information.",
+              "CDN configuration (CloudFront or equivalent) for audio asset delivery with edge caching and geo-distribution.",
+              "Offline download architecture: local storage schema, cache eviction policy, DRM/license binding, and sync state management.",
+              "Push notification infrastructure (APNs integration, backend notification service) for re-engagement \u2014 local notifications alone (step 16) are insufficient for streak reminders when app is uninstalled from recent apps.",
+              "Error monitoring setup (Sentry or equivalent for both Flutter and FastAPI) \u2014 Crashlytics in step 28 is too late and covers crashes only, not handled errors, API failures, or agent timeouts.",
+              "Content seeding / admin panel for creating and managing guided sessions, sleep stories, and breathing templates.",
+              "Analytics event taxonomy and instrumentation plan before frontend development begins.",
+              "HIPAA assessment \u2014 mood + heart rate + health data combination may constitute PHI depending on jurisdiction and user base. Legal step 4 covers GDPR/CCPA but omits HIPAA entirely."
+            ],
+            "security_risks": [
+              "JWT token storage in Flutter is unspecified. If tokens land in SharedPreferences (the default), they are unencrypted and readable on rooted devices. flutter_secure_storage backed by iOS Keychain is required \u2014 this must be explicitly specified, not left to the developer's discretion.",
+              "Certificate pinning in Flutter requires a custom HttpClient or a native platform channel to OkHttp/URLSession. Step 21 lists it as a check but provides no implementation path. Incorrect pinning implementations (pinning to leaf cert rather than public key hash) will cause production outages on certificate rotation.",
+              "S3 presigned URLs for premium audio can be extracted from network traffic (MITM on rooted device), logged in proxy tools, or leaked via app memory. A determined user can share premium content without authorization. CloudFront signed cookies with IP binding and short-lived tokens mitigate this.",
+              "Apple Watch sync via WatchConnectivity transmits mood and health data over a local BLE/WiFi link. While Apple encrypts this transport, the data is cached on the Watch in a readable format. The plan does not address Watch-side data encryption or what happens to cached health data if the Watch is unpaired.",
+              "Jailbreak detection (step 21) provides false security. All known Flutter jailbreak detection libraries can be bypassed in under 10 minutes with Frida. It should be treated as a speed bump, not a security control. The actual protection must be server-side subscription validation \u2014 do not gate features client-side based on jailbreak status alone.",
+              "Apple IAP receipt validation in step 19 should use the App Store Server API (server-to-server notifications) rather than the deprecated verifyReceipt endpoint, which Apple is sunsetting. Building against the deprecated endpoint means a forced migration within 12-18 months of launch."
+            ],
+            "summary": "This plan is thorough and well-structured for a team that has done this before \u2014 28 steps with clear dependencies, acceptance criteria, and coverage of legal, security, QA, and DevOps. However, it contains one fundamental architectural flaw that alone justifies the low score: Flutter cannot build watchOS targets. The Apple Watch feature \u2014 a named product pillar \u2014 has no valid implementation path in this plan. The entire Watch story (steps 5, 18, and Watch acceptance criteria scattered across 13+ steps) is built on a false premise. Fixing this requires adding a native Swift/SwiftUI watchOS project alongside Flutter, designing the WatchConnectivity platform channel interface, and accepting that Watch development requires native iOS/watchOS expertise the plan never accounts for. Secondary issues include: the coordinator agent's 3-second SLA being unachievable with LLM inference, the Stripe/Apple IAP boundary being undefined (App Store rejection risk), background audio requiring audio_service (not just just_audio), localization being retrofitted instead of scaffolded first, and the complete absence of a CDN for audio delivery. The plan scores 54 \u2014 core app functionality (auth, content, mood, streaks) is credibly designed, but the Watch feature is blocked and several platform-specific iOS requirements are either missing or incorrectly specified. Do not start Watch development until the native target architecture is designed. Everything else can be fixed in parallel.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T10:28:53.901092+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 134.73,
+    "critic_plan": 100.26
+  }
+}

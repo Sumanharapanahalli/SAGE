@@ -1,0 +1,879 @@
+{
+  "run_id": "d409b13f-2a33-48b8-9a6f-7e53561108d3",
+  "status": {
+    "run_id": "d409b13f-2a33-48b8-9a6f-7e53561108d3",
+    "solution_name": "hmi_design_system",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T04:46:32.010203+00:00",
+    "updated_at": "2026-03-22T04:49:56.585880+00:00",
+    "product_description": "Automotive HMI design system with instrument cluster renderer, head-up display overlay, multi-modal input (touch, voice, gesture), and distraction-minimizing UX. ISO 15005.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document for the HMI design system covering instrument cluster, HUD overlay, multi-modal input, and ISO 15005 distraction limits",
+        "payload": {
+          "solution_name": "hmi_design_system",
+          "outputs": [
+            "PRD",
+            "feature_list",
+            "success_metrics",
+            "stakeholder_map"
+          ],
+          "standards": [
+            "ISO 15005",
+            "ISO 26262",
+            "AUTOSAR"
+          ],
+          "scope": [
+            "instrument_cluster",
+            "HUD_overlay",
+            "touch_input",
+            "voice_input",
+            "gesture_input",
+            "distraction_UX"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD lists all functional and non-functional requirements with unique IDs",
+          "ISO 15005 distraction limits explicitly mapped to UX requirements",
+          "Success metrics defined for each major feature area",
+          "Stakeholder sign-off obtained"
+        ],
+        "depends_on": [],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 2,
+        "task_type": "SAFETY",
+        "description": "Perform system-level hazard analysis and risk assessment (HARA) per ISO 26262 for all HMI interaction modes; derive ASIL ratings for instrument cluster, HUD, and input subsystems",
+        "payload": {
+          "standard": "ISO 26262 Part 3",
+          "method": "HARA",
+          "subsystems": [
+            "instrument_cluster",
+            "HUD_overlay",
+            "touch_input",
+            "voice_input",
+            "gesture_input"
+          ],
+          "outputs": [
+            "hazard_list",
+            "ASIL_assignments",
+            "safety_goals",
+            "HARA_report"
+          ]
+        },
+        "acceptance_criteria": [
+          "All hazards enumerated with severity, exposure, and controllability ratings",
+          "ASIL levels assigned to each safety goal per ISO 26262-3",
+          "Safety goals are complete, unambiguous, and traceable to hazards",
+          "HARA document reviewed and approved by safety_engineer",
+          "ASIL level determined for each function",
+          "Fault tree analysis complete"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 3,
+        "task_type": "SAFETY",
+        "description": "Conduct FMEA and fault tree analysis (FTA) for HMI rendering pipeline, input processing, and HUD projection subsystems",
+        "payload": {
+          "method": [
+            "FMEA",
+            "FTA"
+          ],
+          "scope": [
+            "renderer_pipeline",
+            "HUD_projection",
+            "input_fusion_layer"
+          ],
+          "outputs": [
+            "FMEA_spreadsheet",
+            "fault_trees",
+            "single_point_faults",
+            "diagnostic_coverage_targets"
+          ]
+        },
+        "acceptance_criteria": [
+          "FMEA covers all failure modes with severity, occurrence, and detection ratings",
+          "Fault trees built for top-level safety goals identified in step 2",
+          "Single-point faults identified and mitigated or justified",
+          "Diagnostic coverage targets derived and documented",
+          "ASIL level determined for each function",
+          "Fault tree analysis complete"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 4,
+        "task_type": "UX_DESIGN",
+        "description": "Design distraction-minimizing HMI interaction model per ISO 15005: glance time analysis, task interruption design, visual hierarchy for instrument cluster and HUD",
+        "payload": {
+          "standard": "ISO 15005",
+          "outputs": [
+            "interaction_model",
+            "glance_time_specs",
+            "visual_hierarchy_guide",
+            "HUD_layout_specs",
+            "cluster_layout_specs"
+          ],
+          "constraints": {
+            "max_glance_time_ms": 2000,
+            "max_task_time_ms": 12000,
+            "min_font_size_pt": 14
+          }
+        },
+        "acceptance_criteria": [
+          "All primary displays comply with ISO 15005 glance time \u2264 2 s per single glance",
+          "Total task time for any secondary task \u2264 12 s per ISO 15005",
+          "Visual hierarchy wireframes reviewed and approved by UX lead",
+          "HUD and cluster layouts avoid safety-critical occlusion zones"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 5,
+        "task_type": "COMPLIANCE",
+        "description": "Establish Design History File (DHF) skeleton, traceability matrix (requirements \u2192 design \u2192 verification), and V&V protocol templates for ISO 26262 and ISO 15005 compliance",
+        "payload": {
+          "standards": [
+            "ISO 26262",
+            "ISO 15005",
+            "AUTOSAR",
+            "UNECE R155"
+          ],
+          "outputs": [
+            "DHF_skeleton",
+            "traceability_matrix",
+            "VV_protocol_template",
+            "audit_checklist"
+          ],
+          "tool": "compliance_tracker"
+        },
+        "acceptance_criteria": [
+          "DHF structure matches ISO 26262 Part 2 work product list",
+          "Traceability matrix links every requirement ID to at least one design item and one test case",
+          "V&V protocol templates cover unit, integration, HIL, and system test levels",
+          "UNECE R155 cybersecurity work products included in DHF structure"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "CONFIG",
+        "description": "Set up hmi_design_system SAGE solution scaffold: project.yaml, prompts.yaml, tasks.yaml; configure AUTOSAR-aware build toolchain (CMake, cross-compiler arm-none-eabi), React workspace for UI components",
+        "payload": {
+          "solution_name": "hmi_design_system",
+          "agentic_pattern": "coordinator",
+          "toolchain": {
+            "embedded": "arm-none-eabi-gcc",
+            "build": "CMake 3.26",
+            "rtos": "FreeRTOS",
+            "ui_framework": "React 18 + TypeScript",
+            "rendering": "OpenGL ES 3.0 / Vulkan"
+          },
+          "ci": "GitHub Actions",
+          "files": [
+            "project.yaml",
+            "prompts.yaml",
+            "tasks.yaml",
+            "CMakeLists.txt",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        "acceptance_criteria": [
+          "SAGE solution loads without errors via make run PROJECT=hmi_design_system",
+          "CMake configures successfully for ARM cross-compilation target",
+          "React workspace builds with zero TypeScript errors",
+          "CI pipeline runs on push and reports pass/fail"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 7,
+        "task_type": "HARDWARE_SIM",
+        "description": "Build SystemC simulation model for instrument cluster display controller (resolution 1920\u00d7720, 60 Hz refresh), HUD projector timing model, and CAN/SOME-IP message bus stimulus generator",
+        "payload": {
+          "simulation_framework": "SystemC 2.3.4",
+          "models": [
+            "cluster_display_controller",
+            "HUD_projector",
+            "CAN_SOMEIP_stimulus"
+          ],
+          "interfaces": [
+            "SPI_display",
+            "HDMI_HUD",
+            "CAN_FD_500kbps",
+            "SOME_IP_ethernet"
+          ],
+          "outputs": [
+            "SystemC_models",
+            "waveform_testbenches",
+            "timing_reports"
+          ]
+        },
+        "acceptance_criteria": [
+          "Display controller model simulates 60 Hz frame delivery with < 1 % timing error",
+          "CAN/SOME-IP stimulus generates all vehicle signal types used by cluster and HUD",
+          "Simulation runs end-to-end without segfaults for 60-second vehicle drive scenario",
+          "Timing reports confirm HUD latency model within 5 ms of hardware spec"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "FIRMWARE",
+        "description": "Implement HAL drivers for display controller (SPI/MIPI-DSI), CAN-FD vehicle bus receiver, and HUD projector interface; implement FreeRTOS task architecture with priority assignments per ASIL requirements",
+        "payload": {
+          "rtos": "FreeRTOS",
+          "hal_drivers": [
+            "display_spi_mipi",
+            "can_fd_receiver",
+            "hud_hdmi_projector",
+            "touch_i2c",
+            "microphone_pdm"
+          ],
+          "task_priorities": {
+            "safety_monitor": "highest",
+            "display_renderer": "high",
+            "input_fusion": "medium",
+            "voice_processor": "medium",
+            "gesture_engine": "low"
+          },
+          "language": "C",
+          "standards": [
+            "MISRA-C:2012",
+            "AUTOSAR"
+          ]
+        },
+        "acceptance_criteria": [
+          "All HAL drivers compile with zero MISRA-C:2012 violations at required severity",
+          "FreeRTOS task priorities match ASIL assignments from HARA",
+          "Display driver achieves 60 Hz with < 2 ms jitter on target hardware or simulator",
+          "CAN-FD receiver processes all defined vehicle signals within 10 ms latency budget",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          7,
+          3
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 9,
+        "task_type": "FIRMWARE",
+        "description": "Implement instrument cluster rendering engine: OpenGL ES 3.0 gauge renderer, speed/RPM/fuel/temp widgets, warning indicator pipeline, and frame-double-buffering with vsync",
+        "payload": {
+          "renderer": "OpenGL ES 3.0",
+          "widgets": [
+            "speedometer",
+            "tachometer",
+            "fuel_gauge",
+            "temp_gauge",
+            "odometer",
+            "warning_icons",
+            "turn_indicators"
+          ],
+          "features": [
+            "double_buffering",
+            "vsync_60Hz",
+            "adaptive_brightness",
+            "night_mode"
+          ],
+          "language": "C++17"
+        },
+        "acceptance_criteria": [
+          "All gauge widgets render at 60 fps with CPU utilization \u2264 40 % on target SoC",
+          "Warning indicators display within 100 ms of CAN signal reception",
+          "Double-buffering eliminates visible tearing in stress test",
+          "Night mode reduces luminance per ECE R46 without loss of readability",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "FIRMWARE",
+        "description": "Implement HUD overlay compositor: AR waypoint overlay, speed projection, ADAS alert projection, brightness auto-calibration using ambient light sensor, and windshield geometry correction",
+        "payload": {
+          "renderer": "Vulkan 1.1",
+          "features": [
+            "AR_waypoint_overlay",
+            "speed_projection",
+            "ADAS_alerts",
+            "ambient_brightness_calibration",
+            "geometric_correction_matrix"
+          ],
+          "safety_constraint": "ADAS_alert_latency_max_ms: 150"
+        },
+        "acceptance_criteria": [
+          "ADAS alerts appear on HUD within 150 ms of trigger signal",
+          "Geometric correction reduces perceived misalignment to < 1 arcminute",
+          "Brightness auto-calibration covers 1\u201310,000 lux range",
+          "Overlay compositor maintains 60 fps under worst-case ADAS + navigation load",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "FIRMWARE",
+        "description": "Implement multi-modal input fusion layer: capacitive touch event normalization, wake-word voice command pipeline (offline DSP), and hand-gesture recognition using ToF/IR sensor data",
+        "payload": {
+          "input_modalities": {
+            "touch": "capacitive_I2C_normalized",
+            "voice": "offline_DSP_wake_word",
+            "gesture": "ToF_IR_CNN_inference"
+          },
+          "fusion_strategy": "priority_arbitration",
+          "distraction_guard": "ISO_15005_interlock",
+          "language": "C++17"
+        },
+        "acceptance_criteria": [
+          "Touch events processed within 20 ms end-to-end latency",
+          "Wake-word detection achieves > 95 % accuracy in cabin noise up to 75 dB",
+          "Gesture recognition achieves > 90 % accuracy for 6 defined gestures",
+          "ISO 15005 interlock blocks secondary task input when vehicle speed > 10 km/h without voice confirmation",
+          "AUTOSAR compliance checked",
+          "MISRA C violations zero"
+        ],
+        "depends_on": [
+          8,
+          4
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 12,
+        "task_type": "FRONTEND",
+        "description": "Build React 18 + TypeScript HMI design-system component library: design tokens, gauge components, HUD overlay preview, modal input visualizer, and Storybook documentation",
+        "payload": {
+          "framework": "React 18",
+          "language": "TypeScript 5",
+          "components": [
+            "GaugeWidget",
+            "SpeedDisplay",
+            "HUDOverlayPreview",
+            "WarningBanner",
+            "VoiceCommandIndicator",
+            "GestureZoneMap",
+            "ModalInputVisualizer"
+          ],
+          "tooling": [
+            "Storybook 8",
+            "Tailwind CSS",
+            "Framer Motion"
+          ],
+          "design_tokens": "ISO_15005_contrast_ratios"
+        },
+        "acceptance_criteria": [
+          "All components pass WCAG 2.1 AA contrast checks",
+          "Storybook renders every component variant without console errors",
+          "GaugeWidget animates at \u2265 60 fps in Chromium browser benchmark",
+          "Design token set enforces ISO 15005 minimum font and contrast requirements at compile time"
+        ],
+        "depends_on": [
+          4,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement SAGE solution backend: FastAPI service for vehicle telemetry ingestion (SOME/IP \u2192 REST bridge), HMI configuration API, and real-time CAN signal relay via WebSocket",
+        "payload": {
+          "framework": "FastAPI",
+          "endpoints": [
+            "POST /telemetry/ingest",
+            "GET /hmi/config",
+            "PATCH /hmi/config",
+            "WS /signals/live",
+            "GET /hmi/health"
+          ],
+          "protocols": [
+            "SOME/IP",
+            "CAN-FD",
+            "WebSocket"
+          ],
+          "auth": "JWT"
+        },
+        "acceptance_criteria": [
+          "All endpoints return correct HTTP status codes and schema-validated responses",
+          "WebSocket relay delivers CAN signals with \u2264 50 ms end-to-end latency under 100 concurrent clients",
+          "SOME/IP bridge decodes all defined service IDs without data corruption",
+          "JWT auth rejects unauthenticated requests on all protected endpoints"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "AGENTIC",
+        "description": "Implement coordinator agentic pattern for HMI validation pipeline: central coordinator routes distraction analysis tasks to specialist agents (UX scorer, safety checker, rendering QA), aggregates results, and gates build on ISO 15005 pass",
+        "payload": {
+          "pattern": "coordinator",
+          "coordinator_role": "hmi_validation_coordinator",
+          "specialist_agents": [
+            "ux_distraction_scorer",
+            "safety_signal_checker",
+            "rendering_qa_agent"
+          ],
+          "gate": "ISO_15005_all_pass_required",
+          "integration": "SAGE_approval_queue"
+        },
+        "acceptance_criteria": [
+          "Coordinator decomposes validation request into parallel specialist subtasks",
+          "All three specialist agents return structured results with pass/fail and evidence",
+          "Build is blocked if any specialist returns FAIL without human override in SAGE approval queue",
+          "Coordinator audit trail written to .sage/audit_log.db for every validation run"
+        ],
+        "depends_on": [
+          13,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "SECURITY",
+        "description": "Threat model and UNECE R155 cybersecurity analysis for HMI system: OBD-II/CAN attack vectors, voice command injection, gesture spoofing, and over-the-air update integrity",
+        "payload": {
+          "standard": "UNECE R155 / ISO 21434",
+          "methodology": "TARA",
+          "attack_surfaces": [
+            "CAN_FD_bus",
+            "voice_microphone",
+            "ToF_sensor",
+            "OTA_update",
+            "USB_debug_port"
+          ],
+          "outputs": [
+            "threat_model",
+            "TARA_report",
+            "cybersecurity_goals",
+            "SBOM"
+          ]
+        },
+        "acceptance_criteria": [
+          "TARA covers all identified attack surfaces with asset, threat, and risk rating",
+          "Cybersecurity goals derived for all HIGH and CRITICAL risks",
+          "SBOM generated listing all open-source components with CVE scan results",
+          "OTA update integrity verified via cryptographic signing requirements documented"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "DATABASE",
+        "description": "Design SQLite schema for HMI audit log, distraction event history, ISO 15005 glance-time telemetry, and HMI configuration versioning",
+        "payload": {
+          "engine": "SQLite",
+          "tables": [
+            "hmi_config_versions",
+            "distraction_events",
+            "glance_time_log",
+            "input_event_log",
+            "validation_runs"
+          ],
+          "migrations": "Alembic",
+          "retention_policy": "90_days_telemetry_forever_compliance"
+        },
+        "acceptance_criteria": [
+          "Schema migrations run without errors on clean and existing databases",
+          "glance_time_log records per-session glance count and duration with vehicle speed context",
+          "All tables have created_at, updated_at audit columns",
+          "Retention policy deletes telemetry rows older than 90 days on scheduled vacuum"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write HIL test specifications and harness for instrument cluster renderer, HUD overlay, and multi-modal input fusion using SystemC simulation models as the hardware stand-in",
+        "payload": {
+          "test_framework": "CppUTest",
+          "HIL_platform": "SystemC_simulation",
+          "test_suites": [
+            "cluster_renderer_timing",
+            "HUD_latency_under_load",
+            "touch_event_end_to_end",
+            "voice_wake_word_accuracy",
+            "gesture_classification_accuracy",
+            "CAN_signal_processing_latency",
+            "ISO_15005_interlock_validation"
+          ]
+        },
+        "acceptance_criteria": [
+          "HIL harness connects to SystemC models and injects all CAN/SOME-IP stimuli programmatically",
+          "cluster_renderer_timing suite verifies 60 fps \u00b1 1 ms across 1000 frames",
+          "ISO_15005_interlock_validation suite asserts secondary task blocking at correct speed threshold",
+          "All test suites execute in CI pipeline and produce JUnit XML reports"
+        ],
+        "depends_on": [
+          7,
+          9,
+          10,
+          11
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for firmware HAL drivers, rendering pipeline, input fusion layer, and FastAPI backend using CppUTest (embedded) and pytest (backend)",
+        "payload": {
+          "embedded_framework": "CppUTest",
+          "backend_framework": "pytest",
+          "coverage_target_pct": 90,
+          "test_types": [
+            "unit",
+            "integration",
+            "mock_CAN_bus",
+            "mock_vehicle_signals"
+          ]
+        },
+        "acceptance_criteria": [
+          "Embedded unit tests achieve \u2265 90 % line coverage on HAL driver and renderer modules",
+          "Backend pytest suite achieves \u2265 90 % line coverage on all API endpoints",
+          "Mock CAN bus tests replay 10-minute drive scenario and assert zero signal drops",
+          "All tests pass in CI with zero flaky failures across 5 consecutive runs"
+        ],
+        "depends_on": [
+          8,
+          9,
+          10,
+          11,
+          13
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test suite: full vehicle signal playback through cluster + HUD + input fusion, ISO 15005 glance-time compliance validation, and ADAS alert latency verification",
+        "payload": {
+          "test_data": "recorded_drive_scenario_60min",
+          "test_cases": [
+            "full_pipeline_signal_to_display",
+            "ISO_15005_glance_time_compliance",
+            "ADAS_alert_end_to_end_latency",
+            "multi_modal_input_simultaneous",
+            "HUD_cluster_consistency",
+            "graceful_degradation_CAN_loss"
+          ]
+        },
+        "acceptance_criteria": [
+          "60-minute drive replay completes with zero rendering crashes or dropped warnings",
+          "ISO 15005 glance-time telemetry shows 100 % of test sessions below 2 s limit",
+          "ADAS alert latency measured < 150 ms in 99th percentile across 1000 trigger events",
+          "Graceful degradation test: cluster remains operational when CAN bus disconnected"
+        ],
+        "depends_on": [
+          17,
+          18,
+          14
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 20,
+        "task_type": "QA",
+        "description": "ISO 15005 usability evaluation: observer-rated distraction test protocol, secondary task performance metrics, and test report for regulatory evidence package",
+        "payload": {
+          "standard": "ISO 15005",
+          "protocol": "secondary_task_occlusion_method",
+          "metrics": [
+            "glance_frequency",
+            "mean_glance_duration",
+            "total_task_time",
+            "error_rate"
+          ],
+          "outputs": [
+            "usability_test_report",
+            "ISO_15005_compliance_statement"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test protocol covers all primary HMI interaction flows (cluster read, HUD interaction, voice, gesture)",
+          "Mean glance duration \u2264 1.6 s for all instrument cluster tasks",
+          "Total secondary task time \u2264 12 s for any single interaction sequence",
+          "ISO 15005 compliance statement signed by qualified usability specialist"
+        ],
+        "depends_on": [
+          19
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 21,
+        "task_type": "COMPLIANCE",
+        "description": "Populate DHF and finalize traceability matrix: link HARA safety goals \u2192 design decisions \u2192 test evidence; compile ISO 26262 work products; prepare AUTOSAR configuration package",
+        "payload": {
+          "work_products": [
+            "HARA_report",
+            "FMEA_FTA_reports",
+            "software_architecture_description",
+            "unit_test_reports",
+            "HIL_test_reports",
+            "system_test_reports",
+            "ISO_15005_compliance_statement",
+            "TARA_cybersecurity_report"
+          ],
+          "traceability_tool": "traceability_matrix",
+          "AUTOSAR_package": "ARXML_configuration"
+        },
+        "acceptance_criteria": [
+          "Every ASIL-rated safety goal has at least one associated test evidence artifact in DHF",
+          "Traceability matrix has zero orphaned requirements (no requirement without design + test link)",
+          "AUTOSAR ARXML package validates against AUTOSAR schema without errors",
+          "DHF review checklist complete with no open critical findings"
+        ],
+        "depends_on": [
+          20,
+          15,
+          19
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline: cross-compile firmware, run CppUTest + pytest, run HIL simulation tests, build React component library, enforce MISRA-C linting, and generate compliance artifact bundles on release",
+        "payload": {
+          "platform": "GitHub Actions",
+          "stages": [
+            "lint_misra",
+            "cross_compile_arm",
+            "unit_tests",
+            "HIL_simulation",
+            "backend_tests",
+            "frontend_build",
+            "storybook_publish",
+            "compliance_bundle"
+          ],
+          "gates": {
+            "MISRA_violations": 0,
+            "test_coverage_min_pct": 90,
+            "HIL_pass_rate_min_pct": 100
+          }
+        },
+        "acceptance_criteria": [
+          "Pipeline completes successfully on main branch push in < 20 minutes",
+          "MISRA-C lint gate blocks merge on any new violation",
+          "Coverage gate blocks merge if any module drops below 90 %",
+          "Release tag triggers compliance artifact bundle generation and uploads to artifact store"
+        ],
+        "depends_on": [
+          18,
+          17,
+          12,
+          13
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "DOCS",
+        "description": "Write technical documentation: system architecture guide, HAL driver API reference, HMI component library usage guide, ISO 15005 integration guide, and developer onboarding README",
+        "payload": {
+          "formats": [
+            "Markdown",
+            "OpenAPI 3.1"
+          ],
+          "documents": [
+            "system_architecture.md",
+            "HAL_driver_API_reference.md",
+            "component_library_usage.md",
+            "ISO_15005_integration_guide.md",
+            "README.md",
+            "openapi_spec.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "README enables a new developer to build and run the full stack in < 30 minutes",
+          "Every public API endpoint documented in OpenAPI spec with request/response examples",
+          "HAL driver reference documents all public functions with parameters and return values",
+          "ISO 15005 integration guide maps each standard requirement to the implementing code module"
+        ],
+        "depends_on": [
+          21,
+          22
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 23,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 52,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 52,
+          "final_review": {
+            "score": 52,
+            "flaws": [
+              "Steps 9, 10, 11 mandate 'MISRA C violations zero' but are written in C++17. MISRA-C:2012 applies to C only. The applicable standard is MISRA C++:2008 or AUTOSAR C++14. This is a fundamental standards mis-citation that will fail any ISO 26262 software audit.",
+              "FreeRTOS is used for safety-critical task scheduling but is not ASIL-certified out of the box. For any ASIL C or ASIL D safety goals derived from the HARA, SafeRTOS (certified) or an AUTOSAR OS on a qualified platform is required. Using vanilla FreeRTOS and asserting ASIL compliance is a certification blocker.",
+              "Step 11 uses a CNN for gesture recognition and sets 90% accuracy as the acceptance criterion. CNNs are non-deterministic, not formally verifiable, and currently cannot be certified under ISO 26262 without a qualified safety cage and a documented argumentation strategy (e.g., ISO/PAS 8800 if available). 90% accuracy is also insufficient for any safety-relevant input \u2014 no ASIL level is defined for the gesture subsystem.",
+              "Step 17 labels SystemC simulation as the 'HIL platform'. Simulation is not HIL testing. For ISO 26262 evidence, HIL must use representative hardware (actual SoC, actual interfaces) or a formally validated surrogate. A SystemC model at unknown fidelity does not satisfy Part 4 integration test requirements.",
+              "MC/DC coverage is required for ASIL C/D modules under ISO 26262-6 Table 10. The plan specifies 90% line coverage throughout (steps 18, 22). Line coverage is only sufficient for ASIL A/B. If HARA produces any ASIL C/D safety goals (likely for warning indicator pipeline), this coverage metric is non-compliant.",
+              "No software architecture document is produced before implementation begins. Steps 8\u201313 implement code against a HARA and toolchain, but no software architectural design document (SAD) \u2014 a required ISO 26262 Part 6 work product \u2014 is ever authored. It appears at step 21 as 'software_architecture_description' listed as input to the DHF, but it was never created.",
+              "Step 13 implements a SOME/IP bridge in Python/FastAPI. SOME/IP is a service-oriented middleware protocol native to AUTOSAR Adaptive/Classic ECU layers. A Python bridge introduces non-deterministic latency, GIL contention, and is architecturally disconnected from the AUTOSAR stack specified elsewhere. This will not meet the 50ms WebSocket relay budget under load.",
+              "The HUD geometric correction acceptance criterion of '< 1 arcminute' is implausible. Production-grade automotive HUD systems (Visteon, Continental, Yazaki) achieve 2\u20135 arcminutes with dedicated optical calibration rigs. Sub-1-arcminute correction requires hardware-level optical alignment, not a software matrix. This criterion will never pass and blocks step 19.",
+              "Step 14 uses an AI agentic coordinator as a build gate for ISO 15005 compliance. If the LLM provider is unavailable, rate-limited, or returns a hallucinated pass, the gate is meaningless. Regulatory gates cannot be dependent on non-deterministic AI inference without a certified fallback and a documented human override audit trail.",
+              "No software tool qualification plan exists. ISO 26262 Part 8 clause 11 requires tool qualification (TCL1\u20133) for every development tool used \u2014 CMake, CppUTest, arm-none-eabi-gcc, OpenGL ES driver. The plan never addresses this. Unqualified tools mean all test evidence produced by those tools is inadmissible for functional safety claims.",
+              "ASIL decomposition strategy is absent. The HARA (step 2) will produce mixed-ASIL safety goals. The plan never specifies how ASIL decomposition is applied across redundant channels, which functions are ASIL D vs QM, or how freedom from interference between ASIL and non-ASIL software partitions is guaranteed. Without this, the ASIL assignments are decorative."
+            ],
+            "suggestions": [
+              "Add a dedicated 'SOFTWARE_ARCHITECTURE' step between steps 5 and 6 to produce the SAD before any implementation. This is a required ISO 26262-6 work product and enables all downstream implementation steps to reference it.",
+              "Replace vanilla FreeRTOS with SafeRTOS or AUTOSAR OS on a qualified BSP, OR explicitly scope all safety-critical tasks to a separate ASIL partition with a qualified RTOS and relegate FreeRTOS to QM tasks only with a documented freedom-from-interference argument.",
+              "Replace MISRA-C:2012 citations in C++ steps with MISRA C++:2008 or AUTOSAR C++14 (preferred for new projects). Add a dedicated static analysis tool step (Polyspace, Helix QAC, or Coverity with AUTOSAR ruleset) as a separate CI gate.",
+              "Add a tool qualification plan as a deliverable in step 5 or 6, listing all development tools, their TCL ratings, and qualification method (validation, use of established tools, or diverse verification).",
+              "Replace the 90% line coverage gate with tiered coverage: MC/DC for ASIL C/D modules, branch coverage for ASIL B, line coverage for ASIL A/QM. Map coverage requirements directly to ASIL assignments from step 2.",
+              "Replace the SystemC-as-HIL fiction with an explicit HIL strategy: either specify a real hardware target (e.g., NXP i.MX8, Renesas R-Car) for HIL, or formally document the simulation fidelity argument and its acceptance by the safety authority.",
+              "The CNN gesture recognizer needs either: (a) a safety cage \u2014 a certified rule-based watchdog that monitors CNN outputs and vetoes physically impossible or unsafe gestures \u2014 plus a formal argument that the combination is ASIL-compliant, or (b) replacement with a classical ML model that can be formally verified. Document this in the HARA.",
+              "The SOME/IP bridge should be implemented using vsomeip (C++ library) or AUTOSAR Adaptive ServiceD, not a Python FastAPI wrapper. Keep the FastAPI layer as a REST fa\u00e7ade that calls into a proper SOME/IP middleware.",
+              "Add ISO/SAE 21434 TARA alignment: step 15 covers UNECE R155 but cybersecurity and functional safety interaction points (e.g., a cyber-attack causing a safety violation) must be explicitly mapped between the TARA and HARA. This gap is a common OEM audit finding.",
+              "Split step 22 CI time estimate: MISRA lint + cross-compile is feasible in 20 min, but SystemC HIL simulation of a full drive scenario is not. Separate fast (pre-merge) and slow (nightly) CI tiers with explicit gate definitions for each."
+            ],
+            "missing": [
+              "Software Architecture Document (SAD) as an explicit work product \u2014 never created, only referenced as input to DHF at step 21",
+              "ASIL decomposition strategy and freedom-from-interference analysis between software partitions",
+              "Software tool qualification plan (ISO 26262-8:11) covering CMake, CppUTest, static analysis tools, and OpenGL ES driver",
+              "SIL (Software Integration Level) testing step between unit tests (step 18) and system tests (step 19)",
+              "Automotive-grade OS specification \u2014 the plan specifies FreeRTOS but never addresses whether the display SoC runs QNX, Green Hills INTEGRITY, or Linux, each of which has radically different ASIL argumentation paths",
+              "Formal definition of the React design system's role versus the embedded OpenGL ES renderer \u2014 are these two separate executables on different hardware? The plan conflates them.",
+              "ASIL-rated watchdog / safety monitor implementation for rendering pipeline \u2014 if the OpenGL ES renderer hangs, what detects it and what is the safe state?",
+              "Hardware specification for the target SoC \u2014 Renesas R-Car H3, NXP i.MX8, TI Jacinto, or other \u2014 which determines ASIL BSP availability, GPU driver safety certification, and HIL platform choice",
+              "Offline map / ADAS data pipeline for HUD AR waypoints \u2014 step 10 references AR waypoints but no data source, update mechanism, or staleness policy is defined",
+              "Driver monitoring integration \u2014 ISO 15005 distraction assessment in real deployment requires driver state awareness; the plan has no sensor or signal path for this"
+            ],
+            "security_risks": [
+              "CAN-FD bus has no authentication by design. Step 13's SOME/IP bridge ingesting CAN signals into a JWT-protected REST API creates a confused deputy: the bridge process is authenticated to the API but any node on the CAN bus can inject arbitrary vehicle signals. The TARA in step 15 identifies this surface but the firmware implementation in step 8 has no input validation or message authentication.",
+              "Voice command pipeline (step 11) with offline DSP and wake-word detection is vulnerable to acoustic injection (ultrasonic or adversarial audio). The plan does not specify rejection of commands above a confidence threshold or liveness detection. A spoofed 'navigate home' command while driving is a safety-relevant attack.",
+              "OTA update integrity is documented as a requirement in step 15 but no implementation step exists for the secure bootloader, key management infrastructure, or rollback protection. Requirements without implementation are not mitigations.",
+              "USB debug port is listed as an attack surface in step 15 but no step disables or gates it in production firmware. Debug interfaces left enabled in production are a consistent automotive vulnerability (see Jeep Cherokee CAN injection, BMW ConnectedDrive).",
+              "JWT secret management for the FastAPI backend (step 13) is unspecified \u2014 no mention of rotation policy, storage (HSM vs env var), or token expiry. In a vehicle context, a compromised JWT allows arbitrary HMI config modification."
+            ],
+            "summary": "This plan demonstrates strong breadth and correct high-level sequencing: HARA before design, FMEA before implementation, DHF populated from real evidence. For a regulated automotive domain, however, several errors are disqualifying rather than merely advisory. The MISRA-C vs MISRA C++ confusion is a standards audit failure. FreeRTOS without ASIL certification invalidates all ASIL claims on safety-critical tasks. The absence of a Software Architecture Document before implementation begins means the DHF will be assembled retroactively from code rather than traced forward from design \u2014 which is the opposite of what ISO 26262 Part 6 requires. The CNN gesture recognizer has no viable certification path as specified. SystemC simulation labeled as HIL will not satisfy a Tier 1 safety assessment. These are not polish issues \u2014 they are fundamental rework items that would cause rejection at a first-party OEM safety audit. Recommend halting implementation (steps 7\u201313) until the SAD, ASIL decomposition, tool qualification plan, and RTOS selection are resolved, then re-scoring.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 52,
+              "flaws": [
+                "Steps 9, 10, 11 mandate 'MISRA C violations zero' but are written in C++17. MISRA-C:2012 applies to C only. The applicable standard is MISRA C++:2008 or AUTOSAR C++14. This is a fundamental standards mis-citation that will fail any ISO 26262 software audit.",
+                "FreeRTOS is used for safety-critical task scheduling but is not ASIL-certified out of the box. For any ASIL C or ASIL D safety goals derived from the HARA, SafeRTOS (certified) or an AUTOSAR OS on a qualified platform is required. Using vanilla FreeRTOS and asserting ASIL compliance is a certification blocker.",
+                "Step 11 uses a CNN for gesture recognition and sets 90% accuracy as the acceptance criterion. CNNs are non-deterministic, not formally verifiable, and currently cannot be certified under ISO 26262 without a qualified safety cage and a documented argumentation strategy (e.g., ISO/PAS 8800 if available). 90% accuracy is also insufficient for any safety-relevant input \u2014 no ASIL level is defined for the gesture subsystem.",
+                "Step 17 labels SystemC simulation as the 'HIL platform'. Simulation is not HIL testing. For ISO 26262 evidence, HIL must use representative hardware (actual SoC, actual interfaces) or a formally validated surrogate. A SystemC model at unknown fidelity does not satisfy Part 4 integration test requirements.",
+                "MC/DC coverage is required for ASIL C/D modules under ISO 26262-6 Table 10. The plan specifies 90% line coverage throughout (steps 18, 22). Line coverage is only sufficient for ASIL A/B. If HARA produces any ASIL C/D safety goals (likely for warning indicator pipeline), this coverage metric is non-compliant.",
+                "No software architecture document is produced before implementation begins. Steps 8\u201313 implement code against a HARA and toolchain, but no software architectural design document (SAD) \u2014 a required ISO 26262 Part 6 work product \u2014 is ever authored. It appears at step 21 as 'software_architecture_description' listed as input to the DHF, but it was never created.",
+                "Step 13 implements a SOME/IP bridge in Python/FastAPI. SOME/IP is a service-oriented middleware protocol native to AUTOSAR Adaptive/Classic ECU layers. A Python bridge introduces non-deterministic latency, GIL contention, and is architecturally disconnected from the AUTOSAR stack specified elsewhere. This will not meet the 50ms WebSocket relay budget under load.",
+                "The HUD geometric correction acceptance criterion of '< 1 arcminute' is implausible. Production-grade automotive HUD systems (Visteon, Continental, Yazaki) achieve 2\u20135 arcminutes with dedicated optical calibration rigs. Sub-1-arcminute correction requires hardware-level optical alignment, not a software matrix. This criterion will never pass and blocks step 19.",
+                "Step 14 uses an AI agentic coordinator as a build gate for ISO 15005 compliance. If the LLM provider is unavailable, rate-limited, or returns a hallucinated pass, the gate is meaningless. Regulatory gates cannot be dependent on non-deterministic AI inference without a certified fallback and a documented human override audit trail.",
+                "No software tool qualification plan exists. ISO 26262 Part 8 clause 11 requires tool qualification (TCL1\u20133) for every development tool used \u2014 CMake, CppUTest, arm-none-eabi-gcc, OpenGL ES driver. The plan never addresses this. Unqualified tools mean all test evidence produced by those tools is inadmissible for functional safety claims.",
+                "ASIL decomposition strategy is absent. The HARA (step 2) will produce mixed-ASIL safety goals. The plan never specifies how ASIL decomposition is applied across redundant channels, which functions are ASIL D vs QM, or how freedom from interference between ASIL and non-ASIL software partitions is guaranteed. Without this, the ASIL assignments are decorative."
+              ],
+              "suggestions": [
+                "Add a dedicated 'SOFTWARE_ARCHITECTURE' step between steps 5 and 6 to produce the SAD before any implementation. This is a required ISO 26262-6 work product and enables all downstream implementation steps to reference it.",
+                "Replace vanilla FreeRTOS with SafeRTOS or AUTOSAR OS on a qualified BSP, OR explicitly scope all safety-critical tasks to a separate ASIL partition with a qualified RTOS and relegate FreeRTOS to QM tasks only with a documented freedom-from-interference argument.",
+                "Replace MISRA-C:2012 citations in C++ steps with MISRA C++:2008 or AUTOSAR C++14 (preferred for new projects). Add a dedicated static analysis tool step (Polyspace, Helix QAC, or Coverity with AUTOSAR ruleset) as a separate CI gate.",
+                "Add a tool qualification plan as a deliverable in step 5 or 6, listing all development tools, their TCL ratings, and qualification method (validation, use of established tools, or diverse verification).",
+                "Replace the 90% line coverage gate with tiered coverage: MC/DC for ASIL C/D modules, branch coverage for ASIL B, line coverage for ASIL A/QM. Map coverage requirements directly to ASIL assignments from step 2.",
+                "Replace the SystemC-as-HIL fiction with an explicit HIL strategy: either specify a real hardware target (e.g., NXP i.MX8, Renesas R-Car) for HIL, or formally document the simulation fidelity argument and its acceptance by the safety authority.",
+                "The CNN gesture recognizer needs either: (a) a safety cage \u2014 a certified rule-based watchdog that monitors CNN outputs and vetoes physically impossible or unsafe gestures \u2014 plus a formal argument that the combination is ASIL-compliant, or (b) replacement with a classical ML model that can be formally verified. Document this in the HARA.",
+                "The SOME/IP bridge should be implemented using vsomeip (C++ library) or AUTOSAR Adaptive ServiceD, not a Python FastAPI wrapper. Keep the FastAPI layer as a REST fa\u00e7ade that calls into a proper SOME/IP middleware.",
+                "Add ISO/SAE 21434 TARA alignment: step 15 covers UNECE R155 but cybersecurity and functional safety interaction points (e.g., a cyber-attack causing a safety violation) must be explicitly mapped between the TARA and HARA. This gap is a common OEM audit finding.",
+                "Split step 22 CI time estimate: MISRA lint + cross-compile is feasible in 20 min, but SystemC HIL simulation of a full drive scenario is not. Separate fast (pre-merge) and slow (nightly) CI tiers with explicit gate definitions for each."
+              ],
+              "missing": [
+                "Software Architecture Document (SAD) as an explicit work product \u2014 never created, only referenced as input to DHF at step 21",
+                "ASIL decomposition strategy and freedom-from-interference analysis between software partitions",
+                "Software tool qualification plan (ISO 26262-8:11) covering CMake, CppUTest, static analysis tools, and OpenGL ES driver",
+                "SIL (Software Integration Level) testing step between unit tests (step 18) and system tests (step 19)",
+                "Automotive-grade OS specification \u2014 the plan specifies FreeRTOS but never addresses whether the display SoC runs QNX, Green Hills INTEGRITY, or Linux, each of which has radically different ASIL argumentation paths",
+                "Formal definition of the React design system's role versus the embedded OpenGL ES renderer \u2014 are these two separate executables on different hardware? The plan conflates them.",
+                "ASIL-rated watchdog / safety monitor implementation for rendering pipeline \u2014 if the OpenGL ES renderer hangs, what detects it and what is the safe state?",
+                "Hardware specification for the target SoC \u2014 Renesas R-Car H3, NXP i.MX8, TI Jacinto, or other \u2014 which determines ASIL BSP availability, GPU driver safety certification, and HIL platform choice",
+                "Offline map / ADAS data pipeline for HUD AR waypoints \u2014 step 10 references AR waypoints but no data source, update mechanism, or staleness policy is defined",
+                "Driver monitoring integration \u2014 ISO 15005 distraction assessment in real deployment requires driver state awareness; the plan has no sensor or signal path for this"
+              ],
+              "security_risks": [
+                "CAN-FD bus has no authentication by design. Step 13's SOME/IP bridge ingesting CAN signals into a JWT-protected REST API creates a confused deputy: the bridge process is authenticated to the API but any node on the CAN bus can inject arbitrary vehicle signals. The TARA in step 15 identifies this surface but the firmware implementation in step 8 has no input validation or message authentication.",
+                "Voice command pipeline (step 11) with offline DSP and wake-word detection is vulnerable to acoustic injection (ultrasonic or adversarial audio). The plan does not specify rejection of commands above a confidence threshold or liveness detection. A spoofed 'navigate home' command while driving is a safety-relevant attack.",
+                "OTA update integrity is documented as a requirement in step 15 but no implementation step exists for the secure bootloader, key management infrastructure, or rollback protection. Requirements without implementation are not mitigations.",
+                "USB debug port is listed as an attack surface in step 15 but no step disables or gates it in production firmware. Debug interfaces left enabled in production are a consistent automotive vulnerability (see Jeep Cherokee CAN injection, BMW ConnectedDrive).",
+                "JWT secret management for the FastAPI backend (step 13) is unspecified \u2014 no mention of rotation policy, storage (HSM vs env var), or token expiry. In a vehicle context, a compromised JWT allows arbitrary HMI config modification."
+              ],
+              "summary": "This plan demonstrates strong breadth and correct high-level sequencing: HARA before design, FMEA before implementation, DHF populated from real evidence. For a regulated automotive domain, however, several errors are disqualifying rather than merely advisory. The MISRA-C vs MISRA C++ confusion is a standards audit failure. FreeRTOS without ASIL certification invalidates all ASIL claims on safety-critical tasks. The absence of a Software Architecture Document before implementation begins means the DHF will be assembled retroactively from code rather than traced forward from design \u2014 which is the opposite of what ISO 26262 Part 6 requires. The CNN gesture recognizer has no viable certification path as specified. SystemC simulation labeled as HIL will not satisfy a Tier 1 safety assessment. These are not polish issues \u2014 they are fundamental rework items that would cause rejection at a first-party OEM safety audit. Recommend halting implementation (steps 7\u201313) until the SAD, ASIL decomposition, tool qualification plan, and RTOS selection are resolved, then re-scoring.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T04:49:56.585832+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 107.2,
+      "critic_plan": 97.37
+    }
+  }
+}

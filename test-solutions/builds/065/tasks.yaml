@@ -1,0 +1,173 @@
+task_types:
+  DATA:
+    description: 'Design the transaction data model and feature schema: raw transaction
+      fields (amount, merchant, timestamp, location, device), engineered features
+      (velocity, aggregates, behavioral patterns), and label schema for fraud/non-fraud.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Schema YAML defines all raw and engineered feature columns with types
+    - Temporal velocity features cover 1m, 5m, 15m, 1h, 24h windows
+    - Merchant and device risk features are documented
+    - Label schema covers binary fraud flag and confidence score
+    depends_on: []
+  DATABASE:
+    description: 'Set up the database layer: PostgreSQL for case management and audit
+      trail, Redis for real-time feature store (sliding window aggregates), and ClickHouse
+      (or TimescaleDB) for time-series transaction analytics.'
+    agent_role: developer
+    acceptance_criteria:
+    - PostgreSQL migrations run cleanly from scratch
+    - Redis key schema documented with TTL strategy per counter type
+    - TimescaleDB hypertable created for transactions with 30-day retention
+    - All FK constraints and indexes defined for query patterns
+    depends_on:
+    - 1
+  ML_MODEL:
+    description: 'Train and tune the XGBoost model: hyperparameter search (Optuna),
+      class-weight balancing, threshold calibration, and evaluation on temporal holdout
+      with precision/recall/F1/AUC-PR metrics.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - AUC-PR > 0.85 on temporal holdout test set
+    - Precision >= 0.60 at 90% recall threshold
+    - Optuna study logged with all trial results
+    - Model artifact serialized with versioned metadata (feature list, threshold,
+      training date)
+    - Feature importances exported as JSON
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 4
+  BACKEND:
+    description: 'Build the real-time scoring service: FastAPI endpoint that receives
+      a transaction, assembles features from Redis, runs the ensemble, computes SHAP
+      contributions for high-score transactions, persists prediction to DB, and returns
+      decision + explanation.'
+    agent_role: developer
+    acceptance_criteria:
+    - p99 latency <100ms under 500 concurrent requests (load tested)
+    - Returns {transaction_id, fraud_score, decision, top_features, trace_id} in response
+    - SHAP explanations only computed for score > 0.7 to control latency
+    - All predictions persisted to PostgreSQL with model version and feature snapshot
+    - Health check endpoint returns model version and feature store connectivity
+    depends_on:
+    - 3
+    - 7
+    - 8
+  FRONTEND:
+    description: 'Build the case management dashboard: case queue with real-time updates
+      (WebSocket or SSE), sortable/filterable case list, case detail view with transaction
+      timeline, fraud score gauge, and SHAP explanation bar chart.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Case queue shows live count, color-coded by risk score (red >0.85, orange >0.7)
+    - New high-score cases appear in queue within 2 seconds via SSE
+    - 'Case detail shows: transaction details, fraud score, top-5 SHAP features with
+      direction arrows, and prior decisions on same customer/device'
+    - Analyst can confirm/dismiss fraud in ≤3 clicks from case detail view
+    - All views are responsive down to 1024px width
+    depends_on:
+    - 10
+  SECURITY:
+    description: 'Security review for the fraud detection system: authentication/authorization
+      on all API endpoints (JWT + RBAC for analyst/admin roles), PII data masking
+      in logs, model prediction audit trail integrity, and threat model for model
+      poisoning attacks.'
+    agent_role: developer
+    acceptance_criteria:
+    - All API endpoints return 401 without valid JWT
+    - Analyst role cannot access model retraining or admin endpoints
+    - PII fields masked in all log output (verified by log scan test)
+    - Audit trail records are append-only — no UPDATE/DELETE on decisions table
+    - Threat model documents model poisoning, adversarial input, and data exfiltration
+      risks with mitigations
+    depends_on:
+    - 9
+    - 10
+  INFRA:
+    description: 'Containerize and orchestrate all services: Docker Compose for local
+      development (Kafka, Redis, PostgreSQL, scoring service, case API, frontend),
+      Kubernetes manifests for production deployment with HPA for the scoring service.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up brings up all services with a single command
+    - All services pass health checks within 60 seconds of startup
+    - Kubernetes HPA scales scoring service from 2 to 20 replicas under load
+    - Persistent volumes defined for Kafka, Redis (AOF), and PostgreSQL
+    - Resource requests/limits set for all containers
+    depends_on:
+    - 9
+    - 10
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: GitHub Actions workflows for test→build→push→deploy,
+      MLflow model registry integration for model versioning and promotion, and automated
+      model evaluation gate that blocks deployment if AUC-PR regresses.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Full pipeline runs on every PR to main/develop branches
+    - Model eval gate blocks deployment and posts AUC-PR comparison as PR comment
+    - Docker images tagged with git SHA and pushed to registry on merge to main
+    - Staging deploy runs smoke test suite automatically after deployment
+    - Pipeline run time under 15 minutes for full CI cycle
+    depends_on:
+    - 15
+  CONFIG:
+    description: 'Configure SAGE solution YAML files for fraud_detection: project.yaml
+      with domain metadata and active modules, prompts.yaml with analyst/data scientist
+      agent roles and domain-specific system prompts, tasks.yaml with fraud-domain
+      task types.'
+    agent_role: developer
+    acceptance_criteria:
+    - make run PROJECT=fraud_detection starts backend without errors
+    - All three YAML files pass SAGE YAML validation endpoint
+    - Active modules appear in sidebar on solution load
+    - Agent roles reference correct system prompts in prompts.yaml
+    - Task types in tasks.yaml map to all pipeline operations
+    depends_on:
+    - 1
+  TESTS:
+    description: 'Write unit tests for the feature engineering pipeline: velocity
+      counter correctness, edge cases (first transaction, midnight rollover, missing
+      device), feature vector shape validation, and Redis TTL expiry behavior.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All test cases pass with fakeredis (no real Redis dependency)
+    - Feature engineering module reaches >90% line coverage
+    - Midnight rollover test confirms counters reset correctly
+    - Missing-value fallback paths all tested explicitly
+    - Tests run in under 30 seconds
+    depends_on:
+    - 3
+  SYSTEM_TEST:
+    description: 'End-to-end system test: simulate 10k transactions through Kafka
+      → feature engineering → scoring → case creation → analyst review → feedback
+      loop, validating the full pipeline latency budget, case queue accuracy, and
+      feedback propagation.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - p99 end-to-end latency (Kafka ingest → score persisted) < 200ms
+    - All 200 injected fraud transactions (2%) appear as cases in management queue
+    - SHAP explanations present on 100% of cases with score >= 0.7
+    - Confirmed fraud updates merchant risk score in Redis within 1 second
+    - 'Zero transactions lost: input count = scored count = persisted count'
+    depends_on:
+    - 18
+    - 19
+    - 20
+  DOCS:
+    description: 'Write solution documentation: architecture diagram, feature engineering
+      reference, model card (training data, evaluation metrics, known limitations,
+      intended use, SHAP interpretation guide), API reference, and analyst user guide
+      for the case management dashboard.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Architecture diagram shows all components and data flows with latency annotations
+    - 'Model card documents: training period, class imbalance ratio, AUC-PR, precision@90%recall,
+      and known failure modes'
+    - SHAP interpretation guide explains what each feature direction means for an
+      analyst
+    - API reference generated from OpenAPI spec (no manual duplication)
+    - 'Analyst guide covers: case workflow, how to read the SHAP chart, escalation
+      criteria'
+    depends_on:
+    - 21

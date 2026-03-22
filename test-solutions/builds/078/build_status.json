@@ -1,0 +1,1266 @@
+{
+  "run_id": "ff544774-f1da-4909-8487-85bb4f2fff64",
+  "solution_name": "virtual_lab",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T09:50:10.416065+00:00",
+  "updated_at": "2026-03-22T09:55:47.324296+00:00",
+  "product_description": "Virtual science laboratory with 3D simulations for physics, chemistry, and biology experiments. Student collaboration, lab reports, and curriculum alignment.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user personas (students, teachers, admins), and process flows for the virtual science laboratory platform covering physics, chemistry, and biology experiment domains.",
+      "payload": {
+        "deliverables": [
+          "stakeholder_map.md",
+          "user_personas.md",
+          "process_flows.md",
+          "roi_analysis.md"
+        ],
+        "personas": [
+          "K-12 student",
+          "college student",
+          "science teacher",
+          "curriculum administrator",
+          "district IT admin"
+        ],
+        "key_flows": [
+          "experiment session flow",
+          "lab report submission flow",
+          "teacher assignment flow",
+          "curriculum alignment flow",
+          "student collaboration flow"
+        ]
+      },
+      "acceptance_criteria": [
+        "At least 5 distinct user personas documented with goals and pain points",
+        "Process flows cover all 3 science domains (physics, chemistry, biology)",
+        "ROI analysis includes cost comparison vs physical lab infrastructure",
+        "Business requirements traceable to product features"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Research competitor virtual lab platforms (Labster, PhET, Visible Body), curriculum standards (NGSS, AP, IB), and go-to-market positioning for K-12 and higher education segments.",
+      "payload": {
+        "competitors": [
+          "Labster",
+          "PhET Interactive Simulations",
+          "Visible Body",
+          "ChemCollective",
+          "HHMI BioInteractive"
+        ],
+        "standards_to_map": [
+          "NGSS",
+          "AP Physics/Chemistry/Biology",
+          "IB DP",
+          "Common Core"
+        ],
+        "segments": [
+          "K-12 public schools",
+          "community colleges",
+          "universities",
+          "homeschool networks"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive matrix covering at least 5 competitors with feature comparison",
+        "Curriculum standards mapping for NGSS, AP, and IB documented",
+        "Positioning statement and differentiation rationale written",
+        "Go-to-market strategy with primary and secondary segments defined"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research with students and educators, produce wireframes for the experiment canvas, lab report editor, collaboration workspace, and curriculum browser. Include WCAG 2.1 AA accessibility audit requirements.",
+      "payload": {
+        "research_methods": [
+          "user interviews",
+          "card sorting",
+          "usability heuristics"
+        ],
+        "key_screens": [
+          "experiment lobby",
+          "3D simulation canvas",
+          "lab report editor",
+          "peer collaboration panel",
+          "curriculum alignment browser",
+          "teacher dashboard",
+          "student progress view"
+        ],
+        "accessibility_standard": "WCAG 2.1 AA",
+        "tools": [
+          "Figma",
+          "accessibility checker"
+        ]
+      },
+      "acceptance_criteria": [
+        "User research completed with at least 6 participants (mix of students and teachers)",
+        "Wireframes produced for all key screens listed in payload",
+        "Color contrast ratios meet WCAG 2.1 AA (4.5:1 normal text, 3:1 large text)",
+        "Keyboard navigation flow documented for all interactive simulation controls",
+        "Accessibility audit checklist completed and attached",
+        "Accessibility for learners with disabilities",
+        "Mobile-responsive for student devices"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the product requirements document (PRD), prioritized feature roadmap across 3 releases, and success metrics (DAU, experiment completion rate, lab report submission rate, curriculum coverage %).",
+      "payload": {
+        "releases": {
+          "v1": [
+            "physics simulations (mechanics, optics, electricity)",
+            "student accounts",
+            "basic lab reports",
+            "teacher dashboard"
+          ],
+          "v2": [
+            "chemistry simulations (reactions, titration, molecular)",
+            "biology simulations (cell, genetics, dissection)",
+            "student collaboration",
+            "curriculum alignment engine"
+          ],
+          "v3": [
+            "AI lab assistant",
+            "adaptive difficulty",
+            "district admin panel",
+            "LMS integrations (Canvas, Schoology, Google Classroom)"
+          ]
+        },
+        "success_metrics": [
+          "DAU/MAU ratio",
+          "experiment completion rate",
+          "lab report submission rate",
+          "curriculum standard coverage %",
+          "teacher NPS"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD approved covering all 3 science domains with feature specifications",
+        "Roadmap with v1/v2/v3 scope defined and rationale documented",
+        "Success metrics with baseline targets and measurement methods specified",
+        "Prioritization framework (MoSCoW or RICE) applied to v1 feature set"
+      ],
+      "depends_on": [
+        1,
+        2,
+        3
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 5,
+      "task_type": "COMPLIANCE",
+      "description": "Produce COPPA and FERPA compliance evidence artifacts: data inventory, parental consent flow design, PII handling policy, student record protection controls, and data retention/deletion procedures.",
+      "payload": {
+        "standards": [
+          "COPPA",
+          "FERPA"
+        ],
+        "artifacts": [
+          "data_inventory.md",
+          "pii_classification_matrix.md",
+          "parental_consent_flow.md",
+          "ferpa_disclosure_policy.md",
+          "data_retention_deletion_policy.md",
+          "coppa_safe_harbor_checklist.md"
+        ],
+        "key_controls": [
+          "no behavioral advertising on under-13 accounts",
+          "school official consent model for FERPA",
+          "data minimization",
+          "right to access and deletion",
+          "breach notification procedure"
+        ]
+      },
+      "acceptance_criteria": [
+        "Data inventory identifies all PII fields collected and their legal basis",
+        "Parental consent flow compliant with COPPA for users under 13",
+        "FERPA school official consent model documented with legitimate educational interest criteria",
+        "Data retention policy specifies maximum retention periods per data category",
+        "COPPA safe harbor checklist completed with no outstanding gaps"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy (COPPA/FERPA compliant), educator license agreement, and student data processing addendum (DPA) for school district contracts.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "educator_license_agreement.md",
+          "student_data_processing_addendum.md"
+        ],
+        "required_clauses": [
+          "COPPA verifiable parental consent",
+          "FERPA annual notification rights",
+          "data breach notification (72h)",
+          "data portability",
+          "no third-party sale of student data"
+        ]
+      },
+      "acceptance_criteria": [
+        "Privacy Policy explicitly addresses COPPA under-13 consent requirements",
+        "DPA includes all FERPA-required provisions for school official relationship",
+        "Terms of Service distinguishes educator and student account types",
+        "All documents reviewed for compliance with US state student privacy laws (NY, CA minimum)",
+        "FERPA/COPPA compliance if minors involved"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design the database schema for users (students, teachers, admins), experiments, simulation sessions, lab reports, curriculum mappings, collaboration sessions, and audit logs.",
+      "payload": {
+        "tables": [
+          "users",
+          "organizations (schools/districts)",
+          "experiments",
+          "simulation_sessions",
+          "lab_reports",
+          "lab_report_submissions",
+          "curriculum_standards",
+          "experiment_curriculum_mappings",
+          "collaboration_sessions",
+          "collaboration_participants",
+          "audit_logs"
+        ],
+        "key_constraints": [
+          "student PII isolated in separate schema",
+          "soft-delete for FERPA data retention",
+          "tenant isolation per school district",
+          "GDPR/COPPA deletion cascade"
+        ],
+        "db_engine": "PostgreSQL 16",
+        "orm": "SQLAlchemy / Alembic migrations"
+      },
+      "acceptance_criteria": [
+        "ERD diagram produced covering all entities and relationships",
+        "All Alembic migration files run cleanly from zero to current schema",
+        "Student PII fields encrypted at rest (AES-256)",
+        "Soft-delete implemented on users and lab_reports tables",
+        "Indexes defined for common query patterns (user experiments, class assignments, curriculum search)"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 specification for all backend endpoints: auth, user management, experiment catalog, simulation sessions, lab reports, collaboration, curriculum alignment, and admin APIs.",
+      "payload": {
+        "endpoint_groups": [
+          "POST /auth/register, POST /auth/login, POST /auth/refresh, DELETE /auth/logout",
+          "GET/POST /experiments, GET /experiments/{id}/launch",
+          "POST /sessions, GET /sessions/{id}, PATCH /sessions/{id}/progress",
+          "GET/POST/PUT /lab-reports, POST /lab-reports/{id}/submit, GET /lab-reports/{id}/feedback",
+          "POST /collaboration/rooms, GET /collaboration/rooms/{id}, WS /collaboration/rooms/{id}/stream",
+          "GET /curriculum/standards, GET /curriculum/search, GET /experiments/{id}/standards",
+          "GET /teacher/classes, POST /teacher/assignments, GET /teacher/progress",
+          "GET /admin/usage, GET /admin/audit-logs"
+        ],
+        "auth_scheme": "JWT + refresh tokens, role-based (student/teacher/admin/district_admin)"
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 spec file validates without errors",
+        "All endpoints have request/response schemas with example payloads",
+        "Authentication and authorization requirements documented per endpoint",
+        "WebSocket protocol for real-time collaboration documented",
+        "Error response shapes standardized (RFC 7807 Problem Details)"
+      ],
+      "depends_on": [
+        4,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "SECURITY",
+      "description": "Perform threat model (STRIDE) for the virtual lab platform, covering student data exposure, simulation session hijacking, unauthorized lab report access, and multi-tenant data leakage. Define security controls and penetration test scope.",
+      "payload": {
+        "threat_model_method": "STRIDE",
+        "assets": [
+          "student PII",
+          "lab reports",
+          "authentication tokens",
+          "simulation session state",
+          "teacher grade data"
+        ],
+        "key_threats": [
+          "session hijacking",
+          "IDOR on lab reports",
+          "cross-tenant data access",
+          "COPPA age verification bypass",
+          "WebSocket message injection"
+        ],
+        "controls": [
+          "JWT short expiry (15m) + refresh rotation",
+          "RBAC on all endpoints",
+          "tenant isolation at DB layer",
+          "CSP headers",
+          "rate limiting",
+          "input sanitization on lab report content"
+        ],
+        "pen_test_scope": "API endpoints, WebSocket protocol, authentication flows"
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model document produced covering all 5 asset categories",
+        "Risk matrix with likelihood and impact ratings for each identified threat",
+        "Security controls mapped to each threat",
+        "Penetration test scope document signed off",
+        "OWASP Top 10 checklist completed with mitigations documented"
+      ],
+      "depends_on": [
+        5,
+        8
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 10,
+      "task_type": "CONFIG",
+      "description": "Set up the SAGE solution configuration for virtual_lab: project.yaml (domain manifest, active modules, theme), prompts.yaml (agent roles: lab_tutor, curriculum_mapper, collaboration_monitor), tasks.yaml (experiment task types). Configure multi-agent coordinator pattern for adaptive lab assistance.",
+      "payload": {
+        "solution_name": "virtual_lab",
+        "agentic_pattern": "coordinator",
+        "pattern_rationale": "Central coordinator decomposes experiment session requests to specialist agents: physics_sim_agent, chemistry_sim_agent, biology_sim_agent, lab_report_reviewer, curriculum_aligner",
+        "agent_roles": [
+          "lab_tutor",
+          "curriculum_mapper",
+          "collaboration_monitor",
+          "lab_report_reviewer"
+        ],
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "knowledge",
+          "improvements",
+          "audit"
+        ],
+        "theme": {
+          "sidebar_bg": "#0f172a",
+          "sidebar_text": "#94a3b8",
+          "badge_bg": "#1e3a5f",
+          "badge_text": "#38bdf8"
+        }
+      },
+      "acceptance_criteria": [
+        "project.yaml validates and loads without errors via GET /config/yaml/project",
+        "prompts.yaml defines system prompts for all 4 agent roles",
+        "tasks.yaml registers experiment_guidance, lab_report_review, curriculum_alignment task types",
+        "Multi-agent coordinator pattern components (coordinator, specialist agents, task router) documented in CONFIG",
+        "make run PROJECT=virtual_lab starts backend cleanly"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement core FastAPI backend: auth service (JWT + refresh), user and organization management (school districts, classes), role-based access control middleware, and COPPA-compliant age verification with parental consent workflow.",
+      "payload": {
+        "framework": "FastAPI",
+        "auth": "JWT (python-jose) + bcrypt password hashing",
+        "key_modules": [
+          "auth_router.py",
+          "users_router.py",
+          "organizations_router.py",
+          "rbac_middleware.py",
+          "coppa_consent.py"
+        ],
+        "roles": [
+          "student",
+          "teacher",
+          "school_admin",
+          "district_admin"
+        ],
+        "coppa_flow": "age gate \u2192 parent email collection \u2192 consent token \u2192 account activation"
+      },
+      "acceptance_criteria": [
+        "POST /auth/register creates accounts with proper role assignment",
+        "JWT access tokens expire in 15 minutes; refresh tokens rotate on use",
+        "RBAC middleware rejects unauthorized role access with 403",
+        "COPPA consent flow blocks under-13 account activation without parent approval",
+        "All password fields hashed with bcrypt (cost factor \u2265 12)",
+        "Unit tests cover auth, RBAC, and COPPA consent paths"
+      ],
+      "depends_on": [
+        7,
+        8,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement experiment catalog service, simulation session management (launch, progress tracking, state persistence), and the multi-agent coordinator that routes experiment guidance requests to domain specialist agents (physics, chemistry, biology).",
+      "payload": {
+        "services": [
+          "experiment_catalog.py",
+          "simulation_sessions.py",
+          "agent_coordinator.py"
+        ],
+        "simulation_state_backend": "Redis (session state) + PostgreSQL (persistent progress)",
+        "coordinator_pattern": "routes incoming student help requests \u2192 detects domain (physics/chemistry/biology) \u2192 dispatches to specialist agent \u2192 streams guidance back via SSE",
+        "experiment_domains": {
+          "physics": [
+            "kinematics",
+            "optics",
+            "electromagnetism",
+            "thermodynamics",
+            "waves"
+          ],
+          "chemistry": [
+            "acid_base_titration",
+            "molecular_visualization",
+            "chemical_reactions",
+            "electrochemistry"
+          ],
+          "biology": [
+            "cell_division",
+            "dna_replication",
+            "genetics_punnett",
+            "virtual_dissection",
+            "photosynthesis"
+          ]
+        }
+      },
+      "acceptance_criteria": [
+        "GET /experiments returns paginated catalog with domain filtering",
+        "POST /sessions launches a session and returns simulation config payload",
+        "Session state persists to Redis within 500ms of each student interaction",
+        "Agent coordinator correctly routes to domain specialist based on experiment type",
+        "SSE stream delivers guidance tokens within 2s of student query submission",
+        "Completed session progress written to PostgreSQL for lab report pre-population"
+      ],
+      "depends_on": [
+        11,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement lab report service (CRUD, submission, teacher feedback), curriculum alignment engine (maps experiments to NGSS/AP/IB standards), and teacher assignment/progress tracking dashboard API.",
+      "payload": {
+        "services": [
+          "lab_reports.py",
+          "curriculum_engine.py",
+          "teacher_dashboard.py"
+        ],
+        "lab_report_fields": [
+          "hypothesis",
+          "materials",
+          "procedure",
+          "observations",
+          "data_tables",
+          "analysis",
+          "conclusion",
+          "citations"
+        ],
+        "curriculum_alignment": "keyword + embedding similarity match between experiment metadata and standard descriptors",
+        "teacher_features": [
+          "assign experiment to class",
+          "set due date",
+          "view submission status",
+          "annotate and grade lab reports"
+        ]
+      },
+      "acceptance_criteria": [
+        "POST /lab-reports auto-pre-populates from simulation session data",
+        "Lab report rich text (TipTap JSON) saved and retrieved without data loss",
+        "GET /curriculum/standards returns NGSS, AP, and IB standards searchable by keyword",
+        "Curriculum alignment returns top-3 matching standards per experiment with confidence score",
+        "Teacher can assign experiments to a class with due date via POST /teacher/assignments",
+        "GET /teacher/progress returns per-student completion and submission status"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement real-time student collaboration service using WebSockets (FastAPI WebSocket + Redis Pub/Sub): shared experiment state sync, collaborative lab report co-editing (CRDT-based), and presence/cursor tracking.",
+      "payload": {
+        "protocol": "WebSocket over wss://",
+        "state_sync": "Redis Pub/Sub for experiment parameter changes broadcast to room participants",
+        "co_editing": "Yjs CRDT for lab report collaborative editing (server-side Y.js via websocket relay)",
+        "presence": "cursor position, active section, online status per participant",
+        "room_management": [
+          "create room",
+          "join via share link",
+          "teacher-initiated forced join",
+          "max participants: 6"
+        ]
+      },
+      "acceptance_criteria": [
+        "Two students in same collaboration room see experiment parameter changes within 200ms",
+        "Lab report co-editing resolves concurrent edits without data loss (CRDT merge)",
+        "Participant presence (online/offline/cursor) updates within 500ms",
+        "Room disconnection gracefully handled \u2014 student rejoins and receives current state",
+        "Teacher can broadcast a message to all students in a room",
+        "WebSocket connections authenticated via JWT token in handshake"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Bootstrap the React 18 + TypeScript frontend with Vite, set up routing (React Router v6), global state (Zustand), API client layer, and core layout (authenticated shell, navigation, role-aware sidebar).",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "bundler": "Vite",
+        "state": "Zustand",
+        "routing": "React Router v6",
+        "ui_library": "shadcn/ui + Tailwind CSS",
+        "key_routes": [
+          "/login",
+          "/register",
+          "/dashboard",
+          "/experiments",
+          "/experiments/:id",
+          "/lab-reports",
+          "/lab-reports/:id",
+          "/collaborate/:roomId",
+          "/curriculum",
+          "/teacher/*",
+          "/admin/*"
+        ],
+        "api_client": "typed fetch wrapper matching OpenAPI spec"
+      },
+      "acceptance_criteria": [
+        "Vite dev server starts with zero TypeScript errors",
+        "All routes render correct page components without console errors",
+        "Role-aware sidebar shows only routes accessible to the authenticated user's role",
+        "API client types generated from OpenAPI spec (openapi-typescript)",
+        "Authentication guard redirects unauthenticated users to /login",
+        "Responsive layout works at 1280px, 768px, and 390px viewport widths"
+      ],
+      "depends_on": [
+        3,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build the 3D simulation canvas using Three.js / React Three Fiber for physics experiments: mechanics (projectile motion, pendulum, collision), optics (ray tracing, lens simulation), and electromagnetism (field visualizations, circuit builder).",
+      "payload": {
+        "renderer": "React Three Fiber (Three.js)",
+        "physics_engine": "Rapier.js (WASM) for rigid body physics",
+        "experiments": {
+          "mechanics": [
+            "projectile_motion",
+            "pendulum",
+            "elastic_collision",
+            "inclined_plane"
+          ],
+          "optics": [
+            "ray_diagram",
+            "converging_lens",
+            "reflection_refraction",
+            "double_slit"
+          ],
+          "electromagnetism": [
+            "electric_field_lines",
+            "simple_circuit_builder",
+            "magnetic_force_demo"
+          ]
+        },
+        "controls": "OrbitControls + custom experiment parameter sliders",
+        "data_capture": "real-time measurement overlay (position, velocity, force, angle) exported to lab report"
+      },
+      "acceptance_criteria": [
+        "All 11 physics experiments render at \u2265 60fps on a mid-range laptop (Chrome)",
+        "Experiment parameter controls update simulation in real time without full re-render",
+        "Measurement overlay displays 3 significant figures for all physics quantities",
+        "Simulation data (time-series measurements) exportable as CSV for lab report insertion",
+        "OrbitControls disabled during guided tutorial steps to prevent disorientation",
+        "Physics simulations numerically consistent with known analytical results (\u00b12%)"
+      ],
+      "depends_on": [
+        15,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build 3D chemistry simulations using React Three Fiber + custom shaders: molecular visualizer (PubChem data), acid-base titration with pH curve, chemical reaction animator with state changes, and electrochemistry cell.",
+      "payload": {
+        "data_source": "PubChem REST API for molecular structure data (SDF/JSON)",
+        "molecule_renderer": "3Dmol.js embedded in React, or custom Three.js sphere-stick model",
+        "experiments": {
+          "molecular": [
+            "molecule_viewer_3d",
+            "intermolecular_forces_demo",
+            "vsepr_geometry"
+          ],
+          "reactions": [
+            "combustion_animation",
+            "acid_base_neutralization",
+            "precipitation_reaction"
+          ],
+          "titration": [
+            "ph_curve_titration",
+            "buffer_solution_demo"
+          ],
+          "electrochemistry": [
+            "galvanic_cell",
+            "electrolysis_demo"
+          ]
+        },
+        "safety_note": "All reactions virtual \u2014 no hazardous material handling warnings needed"
+      },
+      "acceptance_criteria": [
+        "Molecular viewer loads and rotates any common molecule from PubChem within 3s",
+        "Titration simulation produces correct pH curve shape matching Henderson-Hasselbalch equation (\u00b10.1 pH unit)",
+        "Chemical reaction animations show correct product states (precipitate, gas bubbles, color change)",
+        "All 10 chemistry experiments load without WebGL errors",
+        "Electrochemistry cell shows correct ion migration direction and electrode reactions",
+        "Experiment data (pH readings, measurements) captured for lab report insertion"
+      ],
+      "depends_on": [
+        15,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build 3D biology simulations: interactive cell anatomy (organelle zoom + labels), DNA replication animation, Mendelian genetics Punnett square, virtual frog dissection (layered mesh reveal), and photosynthesis/cellular respiration cycle.",
+      "payload": {
+        "cell_model": "detailed 3D mesh with 15 labeled organelles, click-to-zoom",
+        "dna_animation": "double helix unwinding + nucleotide base pairing animation (Three.js)",
+        "genetics": "interactive Punnett square generator with phenotype probability display",
+        "dissection": "layered GLTF mesh with scalpel tool interaction \u2014 reveals organs progressively",
+        "photosynthesis": "animated molecule flow diagram (CO2/H2O in, O2/glucose out) with light intensity slider"
+      },
+      "acceptance_criteria": [
+        "Cell anatomy model renders all 15 organelles with correct spatial relationships",
+        "Clicking an organelle triggers info panel with function description",
+        "DNA replication animation completes a full cycle in 30-60 seconds at normal speed",
+        "Punnett square correctly computes phenotype ratios for monohybrid and dihybrid crosses",
+        "Virtual dissection reveals 8 distinct organ layers in anatomically correct order",
+        "Photosynthesis cycle responds to light intensity slider with proportional output rates"
+      ],
+      "depends_on": [
+        15,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build the lab report editor (rich text + data tables + chart insertion), collaboration workspace (shared simulation + co-editing panel + presence indicators), and curriculum alignment browser (standards search + experiment tagging).",
+      "payload": {
+        "editor": "TipTap 2 (ProseMirror-based) with extensions: table, image, math (KaTeX), code block",
+        "chart_insertion": "Chart.js charts generated from simulation data, embedded as images in report",
+        "collaboration_ui": "split pane: 3D simulation left, co-edit lab report right, participant presence top bar",
+        "curriculum_browser": "faceted search by grade level, domain, standard code; experiment cards with standards tags",
+        "submission_flow": "draft \u2192 submit \u2192 teacher-reviewed \u2192 graded state machine with visual status indicator"
+      },
+      "acceptance_criteria": [
+        "Lab report editor supports headings, bullet lists, tables, images, and KaTeX math rendering",
+        "Chart from simulation data inserts into report within 2 clicks",
+        "Collaborative editing shows co-author cursors with name labels in real time",
+        "Curriculum search returns results in under 500ms for any keyword",
+        "Lab report submission state transitions are irreversible (student cannot unsubmit)",
+        "Teacher annotation panel overlays comments on specific report sections"
+      ],
+      "depends_on": [
+        15,
+        13,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build teacher dashboard (class management, assignment creation, progress monitoring, lab report grading with rubric), student dashboard (experiment history, upcoming assignments, lab report status), and school admin panel (user management, usage analytics).",
+      "payload": {
+        "teacher_views": [
+          "class_roster",
+          "assignment_creator",
+          "student_progress_grid",
+          "lab_report_grading_queue",
+          "curriculum_report"
+        ],
+        "student_views": [
+          "experiment_lobby",
+          "my_assignments",
+          "lab_report_history",
+          "achievement_badges"
+        ],
+        "admin_views": [
+          "user_management",
+          "license_usage",
+          "audit_log_viewer",
+          "data_export (FERPA compliant)"
+        ],
+        "charts": "Recharts for progress analytics"
+      },
+      "acceptance_criteria": [
+        "Teacher can create an assignment (experiment + due date + class) in under 60 seconds",
+        "Progress grid shows per-student completion status updated in real time",
+        "Grading queue allows teacher to annotate and score a lab report without leaving the page",
+        "Student dashboard shows assignments sorted by due date with overdue highlighting",
+        "Admin can export all student data for a class in CSV (FERPA-compliant format)",
+        "All dashboard charts load within 1s for classes up to 35 students"
+      ],
+      "depends_on": [
+        19
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "AGENTIC",
+      "description": "Implement the multi-agent coordinator AI lab assistant using the coordinator pattern: central coordinator decomposes student questions during experiments, routes to domain specialist agents (physics, chemistry, biology), generates Socratic hints, and logs interactions to SAGE audit trail.",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_agent": "receives student question + current experiment context \u2192 classifies domain \u2192 routes to specialist",
+        "specialist_agents": {
+          "physics_agent": "system prompt tuned for physics concepts, unit analysis, formula derivation hints",
+          "chemistry_agent": "system prompt tuned for stoichiometry, reaction mechanisms, periodic trends",
+          "biology_agent": "system prompt tuned for life sciences, anatomy, genetics, ecology"
+        },
+        "guidance_style": "Socratic \u2014 asks guiding questions rather than giving direct answers",
+        "audit_trail": "every hint request/response logged to SAGE audit log with trace_id",
+        "hitl": "flagged responses (low confidence, sensitive topics) queued for teacher review before delivery"
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly classifies experiment domain with \u2265 95% accuracy on test set of 50 questions",
+        "Specialist agent responses delivered via SSE within 3s of student query",
+        "Socratic hint style verified \u2014 responses contain guiding question in \u2265 80% of cases",
+        "All interactions logged to audit log with student_id, experiment_id, trace_id, timestamp",
+        "Low-confidence responses (score < 0.6) routed to teacher review queue before delivery",
+        "Coordinator handles all 3 domains without cross-domain confusion"
+      ],
+      "depends_on": [
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure (react-i18next + i18next-http-backend) and produce translation configs for English (base), Spanish, French, and Mandarin. Localize all UI strings, experiment labels, curriculum standard names, and lab report templates.",
+      "payload": {
+        "i18n_library": "react-i18next",
+        "backend_i18n": "FastAPI locale middleware + translations in /locales/{lang}/",
+        "initial_locales": [
+          "en",
+          "es",
+          "fr",
+          "zh-CN"
+        ],
+        "translation_scope": [
+          "navigation",
+          "experiment_ui",
+          "lab_report_templates",
+          "error_messages",
+          "curriculum_standards_labels",
+          "email_notifications"
+        ],
+        "rtl_support": false,
+        "locale_detection": "browser Accept-Language header \u2192 fallback to 'en'"
+      },
+      "acceptance_criteria": [
+        "i18next configured and all hardcoded UI strings replaced with translation keys",
+        "Translation files for en/es/fr/zh-CN cover 100% of translation keys",
+        "Language switcher in UI settings changes locale without page reload",
+        "Date, number, and unit formats localized per locale (e.g., comma vs period decimal)",
+        "Email notification templates exist in all 4 locales",
+        "Missing translation key fallback to 'en' works without console errors"
+      ],
+      "depends_on": [
+        15,
+        20
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions), containerize backend and frontend (Docker + docker-compose), configure staging and production environments, set up monitoring (Sentry for errors, Prometheus + Grafana for API latency), and define deployment runbook.",
+      "payload": {
+        "ci_pipeline": [
+          "lint (ruff, eslint)",
+          "type-check (mypy, tsc)",
+          "unit tests",
+          "integration tests",
+          "build Docker images",
+          "push to registry"
+        ],
+        "cd_pipeline": [
+          "staging auto-deploy on merge to main",
+          "production deploy on tag v*.*.*"
+        ],
+        "infrastructure": "Docker Compose (dev) + Kubernetes (prod) or Railway/Render for MVP",
+        "monitoring": [
+          "Sentry (frontend + backend errors)",
+          "Prometheus metrics",
+          "Grafana dashboard",
+          "uptime check"
+        ],
+        "environment_vars": [
+          "DATABASE_URL",
+          "REDIS_URL",
+          "JWT_SECRET",
+          "ANTHROPIC_API_KEY",
+          "PUBCHEM_API_BASE"
+        ]
+      },
+      "acceptance_criteria": [
+        "GitHub Actions CI pipeline completes in under 8 minutes on PR",
+        "docker-compose up starts all services (backend, frontend, postgres, redis) without errors",
+        "Staging environment auto-deploys within 5 minutes of merge to main",
+        "Sentry captures backend and frontend errors with user context (anonymized for FERPA)",
+        "Grafana dashboard shows API p50/p95 latency and error rate",
+        "Deployment runbook documents rollback procedure with step-by-step commands"
+      ],
+      "depends_on": [
+        11,
+        15
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "QA",
+      "description": "Produce the QA test plan covering all experiment domains, collaboration workflows, COPPA consent flows, FERPA data access controls, WCAG 2.1 accessibility, and cross-browser compatibility. Define test cases, priority matrix, and defect triage criteria.",
+      "payload": {
+        "test_areas": [
+          "auth + COPPA consent",
+          "physics simulations (accuracy + rendering)",
+          "chemistry simulations",
+          "biology simulations",
+          "lab report CRUD + submission",
+          "collaboration (WebSocket sync)",
+          "curriculum alignment accuracy",
+          "teacher dashboard",
+          "admin panel",
+          "FERPA data access controls",
+          "WCAG 2.1 AA accessibility",
+          "i18n / localization",
+          "cross-browser (Chrome, Firefox, Safari, Edge)"
+        ],
+        "test_case_count_target": 200,
+        "priority_levels": [
+          "P0 (blocker)",
+          "P1 (critical)",
+          "P2 (major)",
+          "P3 (minor)"
+        ],
+        "defect_triage": "P0 blocks release; P1 must be fixed before release; P2 needs mitigation plan"
+      },
+      "acceptance_criteria": [
+        "QA test plan document covers all 13 test areas listed",
+        "At least 200 test cases written with steps, expected results, and priority",
+        "COPPA and FERPA compliance test cases explicitly cover legal requirements",
+        "WCAG 2.1 AA test cases cover keyboard navigation, screen reader compatibility, color contrast",
+        "Cross-browser matrix defined for Chrome, Firefox, Safari, and Edge (latest 2 versions)",
+        "Defect severity and priority classification guide documented and agreed with product"
+      ],
+      "depends_on": [
+        4,
+        5,
+        3
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for backend services: auth (JWT, RBAC, COPPA consent), experiment catalog, simulation session state management, lab report CRUD, curriculum alignment engine, and collaboration WebSocket relay.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio",
+        "coverage_target": "\u2265 80% line coverage on src/",
+        "test_suites": [
+          "test_auth.py",
+          "test_coppa_consent.py",
+          "test_rbac.py",
+          "test_experiments.py",
+          "test_sessions.py",
+          "test_lab_reports.py",
+          "test_curriculum_engine.py",
+          "test_collaboration_ws.py"
+        ],
+        "mocking": "pytest-mock for LLM calls; TestClient for FastAPI; in-memory SQLite for DB tests",
+        "ci_integration": "runs in GitHub Actions on every PR"
+      },
+      "acceptance_criteria": [
+        "All test suites listed pass with zero failures",
+        "Coverage report shows \u2265 80% line coverage on backend src/",
+        "COPPA consent flow tests verify under-13 accounts are blocked without parent approval",
+        "RBAC tests verify 403 response for all unauthorized role/endpoint combinations",
+        "WebSocket collaboration tests verify message ordering and presence updates",
+        "Curriculum alignment tests verify correct NGSS/AP standard matches for 20 experiment fixtures"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "TESTS",
+      "description": "Write frontend unit tests (Vitest + Testing Library) for simulation controls, lab report editor, collaboration UI, and role-based rendering; and end-to-end tests (Playwright) for critical user journeys.",
+      "payload": {
+        "unit_test_framework": "Vitest + @testing-library/react",
+        "e2e_framework": "Playwright",
+        "unit_test_scope": [
+          "auth forms",
+          "experiment parameter controls",
+          "lab report editor",
+          "collaboration presence indicator",
+          "role-based nav rendering"
+        ],
+        "e2e_journeys": [
+          "student registers (COPPA under-13 path) \u2192 parent approves \u2192 logs in \u2192 runs experiment \u2192 submits lab report",
+          "teacher creates class \u2192 assigns experiment \u2192 reviews submitted lab reports \u2192 grades with rubric",
+          "two students collaborate on shared experiment \u2192 co-edit lab report \u2192 submit",
+          "admin exports class data (FERPA CSV)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Vitest unit tests pass with \u2265 75% coverage on frontend components",
+        "All 4 Playwright E2E journeys pass on Chrome and Firefox",
+        "COPPA under-13 E2E test verifies parent email is sent and consent blocks account",
+        "Collaboration E2E test verifies both students see edits within 1s of each other",
+        "E2E tests run headless in CI and produce video artifacts on failure"
+      ],
+      "depends_on": [
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute system-level integration and performance tests: simulation rendering under load, WebSocket collaboration with 6 concurrent participants, curriculum alignment query throughput, and end-to-end latency benchmarks.",
+      "payload": {
+        "performance_targets": {
+          "api_p95_latency": "< 500ms for all REST endpoints under 100 concurrent users",
+          "simulation_fps": "\u2265 60fps for all 3D experiments on mid-range hardware",
+          "websocket_message_delay": "< 200ms for collaboration state sync",
+          "lab_report_save": "< 300ms auto-save round-trip",
+          "curriculum_search": "< 500ms for full-text search across all standards"
+        },
+        "load_test_tool": "Locust (API) + k6 (WebSocket)",
+        "test_environments": [
+          "staging with production-like data volume"
+        ]
+      },
+      "acceptance_criteria": [
+        "Locust load test at 100 concurrent users shows all API endpoints p95 < 500ms",
+        "k6 WebSocket test with 6 participants in one room shows sync delay < 200ms",
+        "All 3D simulations maintain \u2265 60fps for 5 minutes of continuous interaction",
+        "Database query explain plans show no sequential scans on tables > 10k rows",
+        "System test report produced with pass/fail against all performance targets",
+        "Any P0/P1 defects found are logged and triaged before production release"
+      ],
+      "depends_on": [
+        25,
+        26,
+        23
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 28,
+      "task_type": "COMPLIANCE",
+      "description": "Produce WCAG 2.1 AA compliance evidence: automated accessibility audit report (axe-core), manual screen reader test results (NVDA + VoiceOver), keyboard navigation verification for all simulation controls, and remediation log.",
+      "payload": {
+        "automated_tool": "axe-core integrated into Playwright E2E runs",
+        "manual_testing": [
+          "NVDA + Chrome (Windows)",
+          "VoiceOver + Safari (macOS/iOS)"
+        ],
+        "focus_areas": [
+          "3D simulation controls keyboard alternatives",
+          "lab report editor screen reader compatibility",
+          "color contrast on all UI states (default, hover, focus, error, disabled)",
+          "ARIA labels on dynamic content updates"
+        ],
+        "remediation_log": "tracks each WCAG failure, severity, responsible developer, fix date"
+      },
+      "acceptance_criteria": [
+        "axe-core reports zero critical or serious violations across all app routes",
+        "NVDA + JAWS can navigate experiment lobby and submit lab report without mouse",
+        "All 3D simulation parameters have keyboard-accessible controls with visible focus indicators",
+        "Color contrast ratios \u2265 4.5:1 for all normal text, \u2265 3:1 for large text and UI components",
+        "Remediation log shows all WCAG AA violations resolved or risk-accepted with justification",
+        "WCAG 2.1 AA conformance statement document produced"
+      ],
+      "depends_on": [
+        26,
+        24
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 29,
+      "task_type": "TRAINING",
+      "description": "Produce teacher onboarding guide, student quick-start guide, admin setup guide, in-app tooltip walkthroughs for all simulation types, and video scripts for 3 onboarding videos (student, teacher, admin roles).",
+      "payload": {
+        "documents": [
+          "teacher_onboarding_guide.md",
+          "student_quick_start.md",
+          "admin_setup_guide.md",
+          "troubleshooting_faq.md"
+        ],
+        "in_app_walkthroughs": "React Joyride step-by-step tooltips for first experiment session, lab report creation, collaboration room",
+        "video_scripts": [
+          "student_first_experiment (3 min)",
+          "teacher_class_setup (5 min)",
+          "admin_school_configuration (4 min)"
+        ],
+        "locales": [
+          "en",
+          "es",
+          "fr",
+          "zh-CN"
+        ]
+      },
+      "acceptance_criteria": [
+        "Teacher guide covers class creation, experiment assignment, grading, and FERPA data export",
+        "Student quick-start guide covers account creation (COPPA path), running first experiment, and submitting lab report",
+        "All 3 video scripts reviewed for accuracy against final product UI",
+        "In-app Joyride walkthrough triggers on first login and can be re-triggered from Help menu",
+        "All documentation available in all 4 locales",
+        "Troubleshooting FAQ covers top 10 anticipated support issues"
+      ],
+      "depends_on": [
+        20,
+        22
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 30,
+      "task_type": "DOCS",
+      "description": "Write developer documentation: API reference (auto-generated from OpenAPI spec), architecture overview, solution configuration guide for virtual_lab, local dev setup guide, and contribution guide.",
+      "payload": {
+        "docs_site": "Docusaurus or MkDocs",
+        "content": [
+          "architecture_overview.md",
+          "api_reference (generated from OpenAPI)",
+          "local_dev_setup.md",
+          "virtual_lab_solution_config.md",
+          "simulation_engine_integration_guide.md",
+          "contributing.md"
+        ],
+        "api_doc_tool": "Redoc or Swagger UI embedded in docs site"
+      },
+      "acceptance_criteria": [
+        "API reference generated from OpenAPI spec covers all endpoints with example requests and responses",
+        "Architecture overview includes sequence diagram for student experiment session with AI assistant",
+        "Local dev setup guide enables a new developer to run the full stack in under 30 minutes",
+        "virtual_lab solution config guide explains all project.yaml, prompts.yaml, tasks.yaml fields",
+        "Docs site builds without broken links or missing assets"
+      ],
+      "depends_on": [
+        8,
+        10,
+        21
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 30,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 47,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 47,
+        "final_review": {
+          "score": 47,
+          "flaws": [
+            "Steps 16-18 assume 26+ production-quality 3D simulations can be built as frontend tasks with no asset creation strategy. A single high-fidelity virtual frog dissection with 8 anatomically correct organ layers requires either months of 3D modeling work or expensive licensed GLTF assets. This is not a frontend coding task \u2014 it is a 3D content production problem, and the plan has no budget, vendor, or timeline for it.",
+            "COPPA 'verifiable parental consent' is a legal standard with specific FTC requirements (direct notice, explicit consent mechanisms). The plan's 'age gate \u2192 parent email \u2192 consent token' flow does not meet the 'verifiable' standard unless the verification method is one of: credit card verification, toll-free phone number, digital certificate, or video conference. A parent email alone does not satisfy this. Step 11 will fail a legal review.",
+            "Step 21 HITL model is operationally unworkable: low-confidence AI responses are 'routed to teacher review before delivery' during live experiment sessions. This means a teacher must be monitoring a review queue in real time while simultaneously teaching a class. In practice, responses will be blocked indefinitely, destroying the student experience. This design has never been used successfully in any real-time classroom AI product.",
+            "Step 13 uses 'keyword + embedding similarity match' for curriculum alignment but Step 7 (database) specifies only PostgreSQL with no vector database or pgvector extension. Embedding similarity requires a vector store. This is a missing infrastructure dependency between two steps.",
+            "Step 17 lists PubChem REST API as a runtime dependency for loading molecular structures during active student sessions. PubChem has rate limits, occasional downtime, and no SLA. A chemistry class of 30 students simultaneously loading molecules will hit rate limits. No caching layer, CDN, or local molecular data fallback is specified.",
+            "Steps 16-18 have a '\u226560fps on a mid-range laptop' acceptance criterion with no definition of 'mid-range' and no WebGL fallback strategy. School-issued Chromebooks with ARM chips, older iPads, and Windows devices with Intel HD 4000 graphics routinely fail complex Three.js scenes. No mention of LOD switching, quality tiers, or a 2D fallback for low-end hardware.",
+            "Rapier.js WASM physics engine (Step 16) adds significant bundle weight and has a cold-start WASM compilation delay. On first load, 3D physics experiments will have a noticeable freeze. No preloading, service worker caching, or streaming compilation strategy is mentioned.",
+            "Step 14 describes Yjs CRDT collaboration with 'server-side Y.js via websocket relay' but does not specify CRDT state persistence. If a student disconnects and reconnects, where does the current Y.Doc state come from? Redis holds transient pub/sub but not CRDT document state. This is a data loss failure mode that will occur daily.",
+            "The AI domain classifier (Step 21) requires '\u226595% accuracy on a test set of 50 questions' \u2014 50 questions is statistically insufficient to validate 95% accuracy. Cross-domain questions (e.g., biophysics, biochemistry, molecular biology) are common in high school and will fail silently with no routing fallback.",
+            "Step 22 requires '100% translation key coverage for en/es/fr/zh-CN' with no mention of how translations are produced. Scientific terminology in Mandarin and French (e.g., 'Henderson-Hasselbalch equation,' 'Punnett square genetics') translated by machine will be inaccurate or nonsensical. No professional translator budget or review process is specified.",
+            "Step 26 requires 'COPPA under-13 E2E test verifies parent email is sent' but no email service (SES, SendGrid, Postmark) is provisioned anywhere in the infrastructure plan (Step 23). The COPPA consent flow, onboarding, teacher assignment notifications, and breach notification (72h legal requirement) all depend on email, but no email provider appears in environment variables, docker-compose, or devops setup.",
+            "Step 9 threat model covers IDOR on lab reports as a key threat but maps the mitigation to 'RBAC on all endpoints.' RBAC is role-level, not object-level authorization. A student could access another student's lab report if they know the report ID. Object-level authorization (verify report.owner_id == current_user.id) is a separate control not explicitly specified in Step 11.",
+            "Steps 16, 17, and 18 run in parallel (all depend on 15 and 12) and together represent 26+ distinct 3D simulations across three scientific domains. Running these in parallel requires at minimum 3 separate teams with 3D expertise. A single developer or agent cannot build the physics, chemistry, and biology simulation sets concurrently. No resource allocation or parallelization staffing model is acknowledged."
+          ],
+          "suggestions": [
+            "Add a Step 0 or sub-task to Steps 16-18 specifically for 3D asset sourcing: evaluate Sketchfab licensing, BioDigital Human API for biology, commercial GLTF asset packs for molecular models, and contract a 3D artist for custom biology meshes. This must be resolved before any frontend 3D coding begins.",
+            "Replace the parent email consent flow with COPPA-compliant options: (1) credit card microcharge ($0.50 refunded) as verifiable method, (2) integration with a COPPA safe harbor certified service like Veritas or PRIVO. Document the chosen method explicitly in the compliance artifacts.",
+            "Redesign the AI assistant HITL model: instead of blocking delivery pending teacher review, use async review \u2014 deliver the response with a 'pending teacher verification' watermark, log it, and allow teacher correction post-delivery. This matches how Google Classroom and Khan Academy handle this problem.",
+            "Add pgvector to the PostgreSQL schema in Step 7, or add ChromaDB as a service in Step 23's docker-compose. Without this, the curriculum alignment engine in Step 13 has no vector similarity backend.",
+            "Add a PubChem data import pipeline that pre-loads the top 1,000 common curriculum molecules into your own storage at deploy time. Runtime PubChem calls should be a cache miss path only, not the primary load path.",
+            "Define three hardware tiers (high/mid/low) with explicit GPU specs. For low-end, implement 2D canvas fallbacks for all simulations \u2014 this is essential for equitable access in under-resourced schools, which are your primary K-12 market.",
+            "Add Yjs document state persistence: store the serialized Y.Doc binary in PostgreSQL (BYTEA column) on each collaboration session, updated every 10 seconds and on room close. Restore from this on reconnect. Without this, disconnection = data loss.",
+            "Add email service (SES or SendGrid) to Step 23 infrastructure as a required service. Add EMAIL_FROM and SMTP_URL to environment variables. This unblocks COPPA consent, teacher notifications, and breach notification legal obligations.",
+            "Expand the AI classifier test set to at minimum 200 questions covering cross-domain edge cases. Define the ground truth labeling methodology before writing the acceptance criterion. 50 questions cannot statistically demonstrate 95% accuracy.",
+            "Add a Parental Portal page (not just a consent email) \u2014 parents under COPPA have the right to review their child's data, request deletion, and withdraw consent at any time. This requires a dedicated authenticated portal, not just email links."
+          ],
+          "missing": [
+            "3D asset sourcing and licensing strategy \u2014 the plan assumes 3D models exist but provides no source for biology anatomy meshes, molecular structures (beyond runtime PubChem), or physics simulation visual assets",
+            "Email service infrastructure \u2014 required for COPPA consent, teacher notifications, breach notification, and password reset, but absent from all devops and infrastructure steps",
+            "Parental portal / parent account type \u2014 COPPA grants parents ongoing access rights (review, delete, withdraw consent); no parent-facing UI is designed or built",
+            "Content moderation for student-generated content \u2014 lab reports and collaboration chat among minors require profanity/harmful content filtering, especially for the under-13 user segment",
+            "CDN strategy for 3D assets, WASM binaries, and textures \u2014 these assets will be 10-100MB per simulation domain; no asset delivery or lazy-loading strategy is defined",
+            "pgvector extension or vector database \u2014 required by Step 13's curriculum alignment engine but absent from Step 7 database schema and Step 23 infrastructure",
+            "Disaster recovery and backup \u2014 no database backup schedule, point-in-time recovery, or RTO/RPO targets defined for a product holding student educational records",
+            "LTI 1.3 certification process for LMS integrations \u2014 Canvas, Schoology, and Google Classroom each require separate OAuth app approval and LTI certification; these are multi-month vendor processes, not engineering tasks",
+            "Redis HA configuration \u2014 Redis is used for session state and collaboration pub/sub but is specified as a single instance with no sentinel, cluster, or persistence config; a Redis restart loses all active sessions",
+            "Hardware tier definitions and 2D fallback strategy for low-end school hardware",
+            "Breach incident response runbook \u2014 Step 6 includes '72h breach notification' in legal docs but no operational IR procedure exists to actually detect, contain, and notify within 72 hours",
+            "API rate limiting configuration per user tier \u2014 student accounts hitting AI assistant endpoints during a class could exhaust LLM API budget; no per-user or per-class rate limiting is specified"
+          ],
+          "security_risks": [
+            "IDOR on lab reports: RBAC controls role-level access but does not prevent student A from reading student B's report by guessing the report UUID. Object-level ownership checks must be explicitly implemented and tested in Step 11 \u2014 the threat model names this but the mitigation is incomplete.",
+            "WebSocket JWT exposure: WebSocket upgrade requests commonly pass tokens as URL query parameters (wss://host/room/123?token=...), which are logged by load balancers, proxy servers, and browser history. Step 14 specifies 'JWT token in handshake' without requiring header-based authentication, leaving this open.",
+            "Redis session state contains student PII without an explicit encryption-at-rest requirement. Step 7 requires AES-256 for PostgreSQL PII fields but places no equivalent requirement on Redis, which holds active session state including user identity.",
+            "TipTap rich text editor (Step 19) processes student-submitted HTML/JSON that will be stored and rendered for other users (teacher grading view). Without explicit server-side sanitization of TipTap JSON before storage, stored XSS is possible through malformed extension payloads.",
+            "ANTHROPIC_API_KEY is listed as an environment variable in Step 23 with no mention of secrets rotation, vault integration (HashiCorp Vault, AWS Secrets Manager), or access auditing. A compromised deployment environment exposes this key.",
+            "Age verification bypass: the age gate relies on self-reported date of birth. A minor can enter a false birthdate to bypass COPPA controls. No behavioral or verification signal supplements the self-report. This is a known, documented attack vector against COPPA implementations.",
+            "Multi-tenant Redis key collisions: collaboration rooms and session state stored in Redis must be namespaced by tenant (school district). Without explicit key prefixing strategy (e.g., {tenant_id}:{room_id}), a key collision between two districts would expose cross-tenant session state.",
+            "PubChem API response injection: molecular data loaded from PubChem at runtime and rendered via 3Dmol.js or Three.js is not mentioned as being sanitized. A compromised or spoofed PubChem response could inject malicious data into the 3D renderer."
+          ],
+          "summary": "This plan is thorough in its compliance, legal, and testing coverage \u2014 the COPPA/FERPA artifacts, STRIDE threat model, WCAG accessibility audit, and multi-level test strategy are well-specified. However, it fails on two fundamental dimensions that prevent it from shipping as written. First, the 3D simulation scope (26+ experiments across Steps 16-18) is treated as a software engineering problem when it is primarily a 3D content production problem: the plan has no asset sourcing strategy, no 3D artist budget, and no fallback for the low-end school hardware that represents the majority of the K-12 addressable market. Second, the COPPA 'verifiable parental consent' implementation does not meet the FTC's legal standard, which exposes the company to regulatory action at launch. Beyond these blockers, three missing infrastructure elements (email service, vector database, Redis HA) would cause production failures within the first week of operation. The plan should be revised with a dedicated pre-build step for 3D asset strategy, a corrected COPPA consent mechanism, and explicit infrastructure additions before any implementation work begins.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 47,
+            "flaws": [
+              "Steps 16-18 assume 26+ production-quality 3D simulations can be built as frontend tasks with no asset creation strategy. A single high-fidelity virtual frog dissection with 8 anatomically correct organ layers requires either months of 3D modeling work or expensive licensed GLTF assets. This is not a frontend coding task \u2014 it is a 3D content production problem, and the plan has no budget, vendor, or timeline for it.",
+              "COPPA 'verifiable parental consent' is a legal standard with specific FTC requirements (direct notice, explicit consent mechanisms). The plan's 'age gate \u2192 parent email \u2192 consent token' flow does not meet the 'verifiable' standard unless the verification method is one of: credit card verification, toll-free phone number, digital certificate, or video conference. A parent email alone does not satisfy this. Step 11 will fail a legal review.",
+              "Step 21 HITL model is operationally unworkable: low-confidence AI responses are 'routed to teacher review before delivery' during live experiment sessions. This means a teacher must be monitoring a review queue in real time while simultaneously teaching a class. In practice, responses will be blocked indefinitely, destroying the student experience. This design has never been used successfully in any real-time classroom AI product.",
+              "Step 13 uses 'keyword + embedding similarity match' for curriculum alignment but Step 7 (database) specifies only PostgreSQL with no vector database or pgvector extension. Embedding similarity requires a vector store. This is a missing infrastructure dependency between two steps.",
+              "Step 17 lists PubChem REST API as a runtime dependency for loading molecular structures during active student sessions. PubChem has rate limits, occasional downtime, and no SLA. A chemistry class of 30 students simultaneously loading molecules will hit rate limits. No caching layer, CDN, or local molecular data fallback is specified.",
+              "Steps 16-18 have a '\u226560fps on a mid-range laptop' acceptance criterion with no definition of 'mid-range' and no WebGL fallback strategy. School-issued Chromebooks with ARM chips, older iPads, and Windows devices with Intel HD 4000 graphics routinely fail complex Three.js scenes. No mention of LOD switching, quality tiers, or a 2D fallback for low-end hardware.",
+              "Rapier.js WASM physics engine (Step 16) adds significant bundle weight and has a cold-start WASM compilation delay. On first load, 3D physics experiments will have a noticeable freeze. No preloading, service worker caching, or streaming compilation strategy is mentioned.",
+              "Step 14 describes Yjs CRDT collaboration with 'server-side Y.js via websocket relay' but does not specify CRDT state persistence. If a student disconnects and reconnects, where does the current Y.Doc state come from? Redis holds transient pub/sub but not CRDT document state. This is a data loss failure mode that will occur daily.",
+              "The AI domain classifier (Step 21) requires '\u226595% accuracy on a test set of 50 questions' \u2014 50 questions is statistically insufficient to validate 95% accuracy. Cross-domain questions (e.g., biophysics, biochemistry, molecular biology) are common in high school and will fail silently with no routing fallback.",
+              "Step 22 requires '100% translation key coverage for en/es/fr/zh-CN' with no mention of how translations are produced. Scientific terminology in Mandarin and French (e.g., 'Henderson-Hasselbalch equation,' 'Punnett square genetics') translated by machine will be inaccurate or nonsensical. No professional translator budget or review process is specified.",
+              "Step 26 requires 'COPPA under-13 E2E test verifies parent email is sent' but no email service (SES, SendGrid, Postmark) is provisioned anywhere in the infrastructure plan (Step 23). The COPPA consent flow, onboarding, teacher assignment notifications, and breach notification (72h legal requirement) all depend on email, but no email provider appears in environment variables, docker-compose, or devops setup.",
+              "Step 9 threat model covers IDOR on lab reports as a key threat but maps the mitigation to 'RBAC on all endpoints.' RBAC is role-level, not object-level authorization. A student could access another student's lab report if they know the report ID. Object-level authorization (verify report.owner_id == current_user.id) is a separate control not explicitly specified in Step 11.",
+              "Steps 16, 17, and 18 run in parallel (all depend on 15 and 12) and together represent 26+ distinct 3D simulations across three scientific domains. Running these in parallel requires at minimum 3 separate teams with 3D expertise. A single developer or agent cannot build the physics, chemistry, and biology simulation sets concurrently. No resource allocation or parallelization staffing model is acknowledged."
+            ],
+            "suggestions": [
+              "Add a Step 0 or sub-task to Steps 16-18 specifically for 3D asset sourcing: evaluate Sketchfab licensing, BioDigital Human API for biology, commercial GLTF asset packs for molecular models, and contract a 3D artist for custom biology meshes. This must be resolved before any frontend 3D coding begins.",
+              "Replace the parent email consent flow with COPPA-compliant options: (1) credit card microcharge ($0.50 refunded) as verifiable method, (2) integration with a COPPA safe harbor certified service like Veritas or PRIVO. Document the chosen method explicitly in the compliance artifacts.",
+              "Redesign the AI assistant HITL model: instead of blocking delivery pending teacher review, use async review \u2014 deliver the response with a 'pending teacher verification' watermark, log it, and allow teacher correction post-delivery. This matches how Google Classroom and Khan Academy handle this problem.",
+              "Add pgvector to the PostgreSQL schema in Step 7, or add ChromaDB as a service in Step 23's docker-compose. Without this, the curriculum alignment engine in Step 13 has no vector similarity backend.",
+              "Add a PubChem data import pipeline that pre-loads the top 1,000 common curriculum molecules into your own storage at deploy time. Runtime PubChem calls should be a cache miss path only, not the primary load path.",
+              "Define three hardware tiers (high/mid/low) with explicit GPU specs. For low-end, implement 2D canvas fallbacks for all simulations \u2014 this is essential for equitable access in under-resourced schools, which are your primary K-12 market.",
+              "Add Yjs document state persistence: store the serialized Y.Doc binary in PostgreSQL (BYTEA column) on each collaboration session, updated every 10 seconds and on room close. Restore from this on reconnect. Without this, disconnection = data loss.",
+              "Add email service (SES or SendGrid) to Step 23 infrastructure as a required service. Add EMAIL_FROM and SMTP_URL to environment variables. This unblocks COPPA consent, teacher notifications, and breach notification legal obligations.",
+              "Expand the AI classifier test set to at minimum 200 questions covering cross-domain edge cases. Define the ground truth labeling methodology before writing the acceptance criterion. 50 questions cannot statistically demonstrate 95% accuracy.",
+              "Add a Parental Portal page (not just a consent email) \u2014 parents under COPPA have the right to review their child's data, request deletion, and withdraw consent at any time. This requires a dedicated authenticated portal, not just email links."
+            ],
+            "missing": [
+              "3D asset sourcing and licensing strategy \u2014 the plan assumes 3D models exist but provides no source for biology anatomy meshes, molecular structures (beyond runtime PubChem), or physics simulation visual assets",
+              "Email service infrastructure \u2014 required for COPPA consent, teacher notifications, breach notification, and password reset, but absent from all devops and infrastructure steps",
+              "Parental portal / parent account type \u2014 COPPA grants parents ongoing access rights (review, delete, withdraw consent); no parent-facing UI is designed or built",
+              "Content moderation for student-generated content \u2014 lab reports and collaboration chat among minors require profanity/harmful content filtering, especially for the under-13 user segment",
+              "CDN strategy for 3D assets, WASM binaries, and textures \u2014 these assets will be 10-100MB per simulation domain; no asset delivery or lazy-loading strategy is defined",
+              "pgvector extension or vector database \u2014 required by Step 13's curriculum alignment engine but absent from Step 7 database schema and Step 23 infrastructure",
+              "Disaster recovery and backup \u2014 no database backup schedule, point-in-time recovery, or RTO/RPO targets defined for a product holding student educational records",
+              "LTI 1.3 certification process for LMS integrations \u2014 Canvas, Schoology, and Google Classroom each require separate OAuth app approval and LTI certification; these are multi-month vendor processes, not engineering tasks",
+              "Redis HA configuration \u2014 Redis is used for session state and collaboration pub/sub but is specified as a single instance with no sentinel, cluster, or persistence config; a Redis restart loses all active sessions",
+              "Hardware tier definitions and 2D fallback strategy for low-end school hardware",
+              "Breach incident response runbook \u2014 Step 6 includes '72h breach notification' in legal docs but no operational IR procedure exists to actually detect, contain, and notify within 72 hours",
+              "API rate limiting configuration per user tier \u2014 student accounts hitting AI assistant endpoints during a class could exhaust LLM API budget; no per-user or per-class rate limiting is specified"
+            ],
+            "security_risks": [
+              "IDOR on lab reports: RBAC controls role-level access but does not prevent student A from reading student B's report by guessing the report UUID. Object-level ownership checks must be explicitly implemented and tested in Step 11 \u2014 the threat model names this but the mitigation is incomplete.",
+              "WebSocket JWT exposure: WebSocket upgrade requests commonly pass tokens as URL query parameters (wss://host/room/123?token=...), which are logged by load balancers, proxy servers, and browser history. Step 14 specifies 'JWT token in handshake' without requiring header-based authentication, leaving this open.",
+              "Redis session state contains student PII without an explicit encryption-at-rest requirement. Step 7 requires AES-256 for PostgreSQL PII fields but places no equivalent requirement on Redis, which holds active session state including user identity.",
+              "TipTap rich text editor (Step 19) processes student-submitted HTML/JSON that will be stored and rendered for other users (teacher grading view). Without explicit server-side sanitization of TipTap JSON before storage, stored XSS is possible through malformed extension payloads.",
+              "ANTHROPIC_API_KEY is listed as an environment variable in Step 23 with no mention of secrets rotation, vault integration (HashiCorp Vault, AWS Secrets Manager), or access auditing. A compromised deployment environment exposes this key.",
+              "Age verification bypass: the age gate relies on self-reported date of birth. A minor can enter a false birthdate to bypass COPPA controls. No behavioral or verification signal supplements the self-report. This is a known, documented attack vector against COPPA implementations.",
+              "Multi-tenant Redis key collisions: collaboration rooms and session state stored in Redis must be namespaced by tenant (school district). Without explicit key prefixing strategy (e.g., {tenant_id}:{room_id}), a key collision between two districts would expose cross-tenant session state.",
+              "PubChem API response injection: molecular data loaded from PubChem at runtime and rendered via 3Dmol.js or Three.js is not mentioned as being sanitized. A compromised or spoofed PubChem response could inject malicious data into the 3D renderer."
+            ],
+            "summary": "This plan is thorough in its compliance, legal, and testing coverage \u2014 the COPPA/FERPA artifacts, STRIDE threat model, WCAG accessibility audit, and multi-level test strategy are well-specified. However, it fails on two fundamental dimensions that prevent it from shipping as written. First, the 3D simulation scope (26+ experiments across Steps 16-18) is treated as a software engineering problem when it is primarily a 3D content production problem: the plan has no asset sourcing strategy, no 3D artist budget, and no fallback for the low-end school hardware that represents the majority of the K-12 addressable market. Second, the COPPA 'verifiable parental consent' implementation does not meet the FTC's legal standard, which exposes the company to regulatory action at launch. Beyond these blockers, three missing infrastructure elements (email service, vector database, Redis HA) would cause production failures within the first week of operation. The plan should be revised with a dedicated pre-build step for 3D asset strategy, a corrected COPPA consent mechanism, and explicit infrastructure additions before any implementation work begins.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T09:55:47.324264+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 213.16,
+    "critic_plan": 123.74
+  }
+}

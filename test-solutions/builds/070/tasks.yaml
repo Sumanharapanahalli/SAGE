@@ -1,0 +1,214 @@
+task_types:
+  CONFIG:
+    description: 'Initialize translation_service project structure: Python monorepo
+      layout, dependency management (uv/poetry), pre-commit hooks, linting (ruff),
+      type-checking (mypy), and base configuration files for all sub-services.'
+    agent_role: developer
+    acceptance_criteria:
+    - Project installs cleanly in a fresh virtualenv
+    - ruff and mypy pass on empty stubs
+    - Directory structure matches spec
+    - settings.yaml loads without errors with sensible defaults
+    depends_on: []
+  DATABASE:
+    description: Design and implement PostgreSQL schema for translation memory (TM),
+      terminology databases, quality estimation history, language pair registry, domain
+      registry, and user/project metadata. Write Alembic migrations.
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations apply cleanly on a fresh PostgreSQL instance
+    - Schema passes normalization review (3NF)
+    - Indexes verified via EXPLAIN ANALYZE on sample queries
+    - Alembic downgrade migration works without data loss on empty tables
+    depends_on:
+    - 1
+  DATA:
+    description: 'Build parallel corpus ingestion pipeline supporting 50+ language
+      pairs. Sources: OPUS (CCAligned, MultiUN, WikiMatrix, TED2020, EuroParl), FLORES-200,
+      WMT datasets. Implement deduplication, language ID filtering (fastText), length-ratio
+      filtering, and bicleaner-AI scoring. Output: sharded JSONL per language pair.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - All 50+ language pairs have at least 100K clean sentence pairs
+    - Language identification accuracy >= 99% on held-out sample
+    - Deduplication reduces corpus size by at least 5%
+    - Pipeline is idempotent and resumable from last checkpoint
+    - Data manifest JSON produced listing pair counts and filter statistics
+    depends_on:
+    - 1
+  ML_MODEL:
+    description: Train multilingual base NMT model using NLLB-200 (No Language Left
+      Behind) architecture as starting point. Fine-tune on the cleaned 50+ language
+      pair corpora using fairseq or HuggingFace Transformers. Implement SentencePiece
+      tokenization with shared vocabulary of 256K tokens. Evaluate with BLEU, chrF++,
+      and COMET.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model trains to convergence without NaN loss
+    - BLEU >= 28 on WMT newstest for high-resource pairs (en-de, en-fr, en-zh)
+    - COMET score >= 0.82 on flores-200 devtest for top-10 language pairs
+    - Model inference latency < 200ms per sentence on GPU
+    - Model checkpoints versioned and stored in model registry
+    - sacreBLEU evaluation script automated and reproducible
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 3
+    - 4
+  BACKEND:
+    description: 'Implement core NMT translation service in Python (FastAPI). Features:
+      translate endpoint (single + batch), automatic language detection (langdetect
+      + fastText), source/target lang validation, tokenization pipeline, model inference
+      with beam search (beam=5), detokenization, and post-processing (truecaser, punctuation
+      normalization).'
+    agent_role: developer
+    acceptance_criteria:
+    - Single segment translation returns in < 300ms at p95 on GPU
+    - Batch of 100 segments completes in < 5 seconds
+    - Language detection accuracy >= 98% on 50-char+ inputs
+    - API returns 400 with clear error for unsupported language pairs
+    - All responses include detected_lang, model_version, latency_ms fields
+    depends_on:
+    - 6
+    - 7
+  API:
+    description: 'Design and document the unified Translation Service API: OpenAPI
+      3.1 spec, versioning strategy (v1 prefix), authentication (API key + JWT), rate
+      limiting headers, error schema, webhook support for async batch jobs, and SDK
+      generation for Python and JavaScript clients.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates without errors via swagger-parser
+    - All endpoints documented with request/response examples
+    - Python SDK generated and importable with type hints
+    - JS/TS SDK generated and compilable
+    - Authentication flow documented with curl examples
+    - Rate limiting headers present in all responses
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+  AGENTIC:
+    description: 'Implement an agentic translation orchestrator using the Multi-Agent
+      Coordinator pattern. Coordinator receives translation requests, routes to specialist
+      sub-agents: TM Lookup Agent (checks translation memory first), Terminology Agent
+      (injects/validates terms), NMT Agent (runs inference), QE Agent (scores output),
+      and Review Agent (flags low-quality). Implements ReAct reasoning for ambiguous
+      domain detection.'
+    agent_role: developer
+    acceptance_criteria:
+    - Orchestrator correctly routes TM hits without calling NMT agent
+    - Terminology constraints applied before NMT inference in 100% of cases
+    - HITL gate creates review proposal for all low-QE translations
+    - End-to-end orchestration latency < 400ms at p95 (GPU, no TM hit)
+    - Agent execution trace stored in audit log with trace_id
+    - ReAct loop resolves domain ambiguity correctly on 10-case benchmark
+    depends_on:
+    - 10
+    - 11
+    - 12
+  FRONTEND:
+    description: 'Build React 18 + TypeScript translation workbench UI. Pages: (1)
+      Translation Editor — source/target panels, TM match panel, terminology highlights,
+      QE score badge, word-level error highlights; (2) Glossary Manager — term CRUD,
+      domain filter, TBX import/export; (3) Translation Memory — TU browser, TMX import,
+      leverage stats; (4) Quality Dashboard — QE score distributions, review queue.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Translation editor renders source and target in < 100ms
+    - TM matches display within 200ms of source input change (debounced)
+    - QE score badge updates after translation completes
+    - Word-level BAD tokens highlighted in yellow on translation output
+    - Glossary table supports import of 10K term TBX in < 5s
+    - All pages pass WCAG 2.1 AA accessibility audit
+    - Lighthouse performance score >= 85
+    depends_on:
+    - 13
+  SECURITY:
+    description: 'Conduct security review of the translation service: API authentication
+      hardening (JWT expiry, key rotation), input sanitization (prevent prompt injection
+      via source text), rate limiting implementation, model API access controls, PII
+      detection in translation logs, and OWASP Top 10 review of the FastAPI backend.'
+    agent_role: developer
+    acceptance_criteria:
+    - Zero high/critical OWASP Top 10 findings unresolved
+    - JWT tokens expire in <= 1 hour, refresh token rotation implemented
+    - File upload restricted to .tmx/.tbx/.csv with MIME validation
+    - PII scrubbed from all audit logs before persistence
+    - Rate limiting tested and verified via load test
+    - CORS restricted to allowlisted origins
+    depends_on:
+    - 13
+  INFRA:
+    description: 'Build Docker Compose development stack and Kubernetes production
+      manifests. Services: FastAPI backend, PostgreSQL 16, Redis 7, Elasticsearch
+      8 (TM fuzzy search), Celery workers (QE async), Flower (Celery monitor), model
+      server (TorchServe or Triton Inference Server). Include resource limits, health
+      checks, and secrets management via environment variables.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up starts all services in < 2 minutes
+    - All service health checks pass within 60s of startup
+    - Kubernetes manifests validate via kubeval/kubeconform
+    - HPA scales worker pods on queue depth trigger
+    - GPU node selector correctly targets GPU nodes for model-server
+    - Secrets not hardcoded in any manifest (env var references only)
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): lint + type-check on PR,
+      unit tests, integration tests against Docker Compose stack, model smoke test
+      (translate 10 sentences, assert BLEU > threshold), Docker image build and push
+      to registry, and staged rollout (dev → staging → prod) with manual approval
+      gate for production.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline completes in < 25 minutes for a passing build
+    - Failed unit tests block merge to main
+    - Model smoke test asserts BLEU >= 25 on fixed 10-sentence benchmark
+    - Docker images tagged with git SHA and semantic version
+    - Production deploy requires manual approval in GitHub Actions
+    - Helm chart rolls back automatically on failed readiness probe
+    depends_on:
+    - 17
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for all service modules
+      (NMT pipeline, TM lookup, terminology enforcement, QE integration), integration
+      tests for API endpoints using pytest + httpx, property-based tests for tokenization/detokenization
+      round-trip (Hypothesis), and contract tests for the OpenAPI spec (schemathesis).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test suite achieves >= 85% line coverage across src/
+    - All integration tests pass against docker-compose stack
+    - Schemathesis finds zero 500-level errors on any endpoint
+    - Property tests run 1000 examples without failures
+    - Test run completes in < 10 minutes in CI
+    - Flaky tests flagged and quarantined (< 1% flake rate)
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 14
+  DOCS:
+    description: 'Write comprehensive documentation: API reference (auto-generated
+      from OpenAPI + narrative), Getting Started guide (Docker Compose quickstart,
+      first translation in 5 minutes), Architecture Decision Records (ADRs) for NLLB
+      model choice, adapter strategy, TM backend), integration guide (Python SDK,
+      REST), and operator runbook (scaling, model updates, TM backup).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Docs site builds without errors via mkdocs build
+    - 'Getting Started guide tested: new user reaches first translation in < 5 minutes'
+    - All 50+ language pairs listed with FLORES-200 BLEU scores
+    - API reference matches deployed OpenAPI spec
+    - 'ADRs written for: model choice, adapter strategy, TM backend, QE model'
+    - Operator runbook covers model rollback procedure step-by-step
+    depends_on:
+    - 13
+    - 15
+    - 20

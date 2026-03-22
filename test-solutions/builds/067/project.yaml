@@ -1,0 +1,54 @@
+project_name: image_generation
+display_name: Image Generation
+version: 1.0.0
+domain: ml_ai
+description: AI image generation service with Stable Diffusion backend, prompt engineering
+  UI, style transfer, inpainting, upscaling, and asset library management.
+detected_domains: []
+compliance_standards:
+- Copyright Law
+- GDPR
+- Content Safety Guidelines
+task_types:
+- API
+- BACKEND
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- ML_MODEL
+- SECURITY
+- TESTS
+- UX_DESIGN
+agent_roles:
+- analyst
+- data_scientist
+- developer
+- devops_engineer
+- qa_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

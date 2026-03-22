@@ -1,0 +1,332 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze multi-vendor marketplace landscape: competitor analysis
+      (Amazon, Etsy, eBay, Shopify Markets), pricing models, seller acquisition costs,
+      GMV benchmarks, and differentiation opportunities.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers at least 5 platforms with fee structures, features,
+      and seller NPS data
+    - Positioning document identifies at least 3 defensible differentiators
+    - GTM strategy defines target seller verticals, buyer acquisition channels, and
+      launch geography
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements, user stories, and process flows for
+      all marketplace actors: buyers, sellers, admins. Cover seller onboarding, product
+      listing lifecycle, order flow, payment splitting, review submission, and dispute
+      escalation.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - BRD covers all actor roles with explicit permissions matrix
+    - Each core flow has a swim-lane diagram with happy path and at least 2 edge cases
+    - User stories follow INVEST criteria and are mapped to acceptance tests
+    - ROI model includes seller lifetime value, take rate sensitivity analysis, and
+      break-even GMV
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  FINANCIAL:
+    description: 'Build financial model: take rate structure, payment processing cost
+      pass-through, seller subscription tiers, dispute chargeback reserve, revenue
+      projections, and unit economics per seller cohort.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Financial model projects 3-year P&L with GMV scenarios (base, bull, bear)
+    - Pricing strategy document defines take rate by seller tier with competitive
+      justification
+    - Chargeback reserve policy specifies reserve percentage and replenishment rules
+    - Unit economics show CAC, LTV, and payback period per seller segment
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 2
+  LEGAL:
+    description: 'Draft legal framework: marketplace Terms of Service, Seller Agreement,
+      Buyer Protection Policy, Privacy Policy (GDPR/CCPA compliant), dispute resolution
+      terms, and IP/DMCA takedown policy.'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Seller Agreement covers commission structure, payout schedule, account suspension
+      terms, and IP warranties
+    - Privacy Policy satisfies GDPR Article 13/14 disclosure requirements and CCPA
+      opt-out rights
+    - Dispute resolution terms define SLA timelines, evidence submission rules, and
+      binding arbitration clause
+    - DMCA policy includes counter-notification procedure and repeat-infringer termination
+      policy
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 2
+  PRODUCT_MGMT:
+    description: Produce Product Requirements Document, phased roadmap (MVP → v1 →
+      v2), prioritized backlog, and success metrics framework (GMV, seller activation
+      rate, dispute rate, NPS).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all MVP features with user stories, wireframe references, and acceptance
+      criteria
+    - Roadmap has clear phase gates with measurable exit criteria
+    - Backlog is MoSCoW-prioritized with effort estimates
+    - Success metrics have baseline targets and measurement methodology defined
+    depends_on:
+    - 2
+    - 3
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes and interaction designs
+      for all core flows: seller onboarding wizard, product listing editor, buyer
+      checkout, order tracking, review submission, and dispute portal.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Information architecture covers all page types with navigation hierarchy
+    - Hi-fi mockups exist for all key screens in mobile and desktop viewports
+    - Design system defines color tokens, typography scale, spacing system, and component
+      library
+    - Accessibility audit confirms WCAG 2.1 AA compliance for all interactive elements
+    - Seller onboarding wizard passes usability test with 5 representative users achieving
+      >80% task completion
+    depends_on:
+    - 5
+  SECURITY:
+    description: Produce threat model, PCI DSS scoping document, SOC 2 control mapping,
+      penetration test plan, and SBOM. Cover payment data flows, seller identity verification,
+      and dispute evidence storage.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model identifies threats for all data flows with CVSS risk ratings
+    - PCI DSS SAQ-D scoping document identifies all CDE components and out-of-scope
+      boundaries
+    - SOC 2 control matrix maps all Trust Service Criteria (Security, Availability,
+      Confidentiality) to implemented controls
+    - Penetration test plan covers OWASP Top 10, authentication bypass, IDOR, and
+      payment flow tampering
+    - SBOM lists all third-party dependencies with CVE scan results
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 4
+    - 5
+  COMPLIANCE:
+    description: 'Produce PCI DSS and SOC 2 compliance evidence artifacts: data flow
+      diagrams, encryption-at-rest/transit policy, access control matrix, incident
+      response plan, and audit log specification.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Cardholder data flow diagram traces all PAN touchpoints and confirms no storage
+      of raw card data
+    - Encryption policy mandates TLS 1.2+ in transit and AES-256 at rest for all PII
+      and payment data
+    - Access control matrix documents RBAC roles (buyer, seller, admin, finance_ops)
+      with least-privilege justification
+    - Incident response plan defines severity classification, notification SLAs (72h
+      GDPR breach notice), and runbook steps
+    - Audit log spec covers all CRUD events on orders, payments, disputes, and user
+      accounts with 12-month retention
+    depends_on:
+    - 7
+  DATABASE:
+    description: 'Design normalized database schema for marketplace: users, seller_profiles,
+      products, product_variants, orders, order_items, payments, payment_splits, reviews,
+      disputes, and audit_events tables.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all tables with foreign key relationships, nullability, and enum
+      constraints documented
+    - Migrations are idempotent and reversible (up/down)
+    - Payment and order tables enforce referential integrity preventing orphaned payment_splits
+    - Index strategy document covers all high-cardinality query patterns (seller product
+      lookup, order history, dispute search)
+    - Seed data provides realistic test fixtures for all roles and flow states
+    depends_on:
+    - 5
+    - 8
+  API:
+    description: 'Design OpenAPI 3.1 specification for all marketplace endpoints:
+      auth, seller onboarding, product CRUD, cart/checkout, order management, payment
+      webhooks, reviews, and dispute endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against OAS 3.1 schema
+    - All endpoints document request/response schemas, error codes, and authentication
+      requirements
+    - Webhook endpoints document signature verification (Stripe-style HMAC)
+    - Error code registry maps all 4xx/5xx codes to user-facing messages and resolution
+      steps
+    - Postman collection includes example requests for all happy-path and error flows
+    depends_on:
+    - 9
+  CONFIG:
+    description: Set up monorepo structure, toolchain, environment configuration,
+      and agentic AI pattern configuration. Configure coordinator pattern for marketplace
+      AI features (fraud detection routing, dispute triage).
+    agent_role: developer
+    acceptance_criteria:
+    - Monorepo boots with single `docker-compose up` command
+    - All environment variables documented in .env.example with descriptions and example
+      values
+    - Coordinator agent pattern scaffolded with router, specialist stubs, and result
+      merger
+    - Pre-commit hooks enforce linting (ruff, eslint), type checking (mypy, tsc),
+      and secret scanning
+    - README documents local setup in under 10 steps
+    depends_on:
+    - 9
+    - 10
+  BACKEND:
+    description: 'Implement authentication and seller onboarding service: JWT auth,
+      OAuth2, seller registration, KYC document upload, identity verification webhook
+      integration (Stripe Identity or Persona), and seller profile management.'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT access tokens expire in 15 minutes; refresh tokens rotate on use with 30-day
+      expiry
+    - Password hashing uses bcrypt with cost factor ≥12
+    - KYC webhook idempotently updates seller verification status and triggers payout
+      enablement
+    - Seller profile CRUD enforces ownership (seller can only edit own profile)
+    - 'All auth endpoints rate-limited (login: 5/min, registration: 3/min per IP)'
+    depends_on:
+    - 11
+  AGENTIC:
+    description: 'Implement coordinator agentic pattern for dispute triage and fraud
+      detection: coordinator routes incoming disputes and suspicious transactions
+      to specialist agents (dispute_triage_specialist, fraud_detection_specialist)
+      and merges recommendations for human review.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes dispute events to dispute_triage_specialist and
+      fraud signals to fraud_detection_specialist
+    - Each specialist agent uses ReAct reasoning loop with at least 3 Thought→Action→Observation
+      cycles
+    - Coordinator merges specialist outputs into a structured recommendation with
+      confidence score
+    - HITL approval gate holds recommendation in queue until mediator approves or
+      overrides
+    - All agent reasoning traces logged to audit_events with trace_id linking to originating
+      dispute or order
+    depends_on:
+    - 17
+    - 18
+  FRONTEND:
+    description: 'Build buyer-facing storefront: homepage with featured products,
+      category browsing, product detail page, search results, cart, multi-step checkout
+      (address, shipping, payment), and order confirmation.'
+    agent_role: developer
+    acceptance_criteria:
+    - Product detail page renders above-the-fold content in <1.5s LCP on 4G throttle
+    - Variant selector dynamically updates price, image, and stock status without
+      page reload
+    - Cart drawer persists state across page navigations using localStorage + server
+      sync
+    - Checkout stepper validates each step before advancing and supports back-navigation
+      without data loss
+    - Stripe Elements renders in checkout with 3DS redirect handling and error display
+    - All buyer pages pass Lighthouse accessibility score ≥90
+    depends_on:
+    - 6
+    - 14
+    - 15
+  DEVOPS:
+    description: Set up CI/CD pipeline, container orchestration, monitoring, alerting,
+      and SRE runbooks for the marketplace platform.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and blocks merge on test failure, lint error, or
+      SAST critical finding
+    - Production deploy uses canary strategy with 5% traffic shift and automatic rollback
+      on error rate >1%
+    - 'Prometheus alerts configured for: p99 API latency >500ms, error rate >0.1%,
+      payment webhook queue depth >100'
+    - 'PagerDuty routing configured for severity: P1 (payment outage) → on-call engineer
+      <5min, P2 → 15min'
+    - All runbooks tested in staging with documented recovery time objective (RTO)
+      per scenario
+    depends_on:
+    - 11
+  INFRA:
+    description: 'Provision cloud infrastructure: VPC with public/private subnets,
+      RDS PostgreSQL Multi-AZ, ElastiCache Redis cluster, S3 buckets with lifecycle
+      policies, Stripe webhook endpoint, and network security groups.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan applies cleanly to both staging and production with no manual
+      steps
+    - RDS deployed Multi-AZ with automated backups retained 30 days and point-in-time
+      recovery enabled
+    - S3 buckets have versioning enabled, public access blocked, and server-side encryption
+      (AES-256)
+    - CDE subnet has no outbound internet route; payment service communicates to Stripe
+      via NAT gateway only
+    - WAF rules block OWASP Top 10 patterns and rate-limit at 1000 req/min per IP
+    depends_on:
+    - 24
+  QA:
+    description: Produce QA test plan, test case suite, and test execution reports
+      covering functional testing of all marketplace flows, regression suite, and
+      exploratory testing charters.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan defines scope, entry/exit criteria, risk-based prioritization, and
+      defect severity matrix
+    - Test case suite covers all happy paths and documented edge cases from BRD
+    - Negative test cases cover invalid input, unauthorized access attempts, and concurrent
+      operation conflicts
+    - QA exit criteria require zero open P1/P2 defects and <5 open P3 defects before
+      release
+    - 'Defect triage process defines SLA: P1 fix in 4h, P2 in 24h, P3 in sprint'
+    depends_on:
+    - 5
+    - 10
+  TESTS:
+    description: 'Write comprehensive unit and integration tests for all backend services:
+      auth, catalog, orders, payments, reviews, disputes, and agentic coordinator.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit tests cover all service layer functions including error branches
+    - Order state machine tests cover all valid transitions and assert rejection of
+      all invalid transitions
+    - Payment split tests verify platform fee calculation for multiple seller scenarios
+      with rounding edge cases
+    - Integration tests use test database transactions that roll back after each test
+    - CI enforces ≥85% line coverage and fails build on regression below threshold
+    depends_on:
+    - 17
+    - 18
+  OPERATIONS:
+    description: Produce operational runbooks, SLA definitions, incident response
+      procedures, and capacity planning model for the marketplace platform.
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Each runbook has prerequisite checklist, step-by-step instructions, and rollback
+      procedure
+    - SLA definitions specify measurement methodology, exclusion windows, and breach
+      notification process
+    - Incident response procedure defines severity classification matrix and escalation
+      chain
+    - Capacity model specifies auto-scaling thresholds backed by load test data
+    - All runbooks reviewed and signed off by at least one on-call engineer
+    depends_on:
+    - 25
+  DOCS:
+    description: 'Produce developer documentation: API reference (auto-generated from
+      OpenAPI), seller integration guide, webhook integration guide, local development
+      setup guide, and architecture decision records.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference site generated from OpenAPI spec with working try-it-now for all
+      endpoints
+    - Seller integration guide covers onboarding, first product listing, and first
+      payout end-to-end
+    - Webhook guide documents all event types, payload schemas, retry behavior, and
+      signature verification code samples in Python, Node, and PHP
+    - Local dev setup guide gets a new developer running the full stack in <30 minutes
+      (validated with new hire test)
+    - 'ADRs documented for: database engine choice, payment provider selection, dispute
+      workflow design, agentic coordinator pattern'
+    depends_on:
+    - 28
+    - 29

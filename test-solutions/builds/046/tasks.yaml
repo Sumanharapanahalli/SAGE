@@ -1,0 +1,301 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the product recommendation engine market: competitors (Nosto,
+      Dynamic Yield, Barilliance), pricing models, Shopify/WooCommerce plugin ecosystems,
+      and buyer personas.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers at least 5 tools with pricing, features, and weaknesses
+    - Market sizing estimate with TAM/SAM/SOM figures
+    - Positioning statement differentiating on real-time personalization and open
+      plugin model
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements: user stories for merchants and shoppers,
+      KPIs (CTR lift, AOV increase, conversion rate), integration requirements for
+      Shopify and WooCommerce, and data ownership model.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories written for merchant onboarding, recommendation widget display,
+      A/B test creation, and analytics dashboard
+    - KPI baseline targets defined for each story
+    - Data ownership and GDPR/CCPA consent flows documented
+    depends_on:
+    - 1
+  FINANCIAL:
+    description: 'Build financial model: SaaS pricing tiers (starter/growth/enterprise),
+      plugin marketplace revenue share, infrastructure cost per merchant tier, and
+      3-year P&L projection.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Unit economics (CAC, LTV, payback period) calculated per tier
+    - Infrastructure cost model validated against AWS/GCP pricing
+    - Break-even month identified under conservative and optimistic scenarios
+    depends_on:
+    - 1
+    - 2
+  UX_DESIGN:
+    description: 'Design merchant dashboard UX: onboarding wizard, recommendation
+      widget configurator, A/B test manager, and analytics reporting screens. Include
+      accessibility audit against WCAG 2.1 AA.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 5 primary screens with mobile and desktop breakpoints
+    - Onboarding wizard completes in under 5 steps for a new merchant
+    - Accessibility audit shows zero critical violations
+    - Widget configurator allows preview of recommendation layout before publish
+    depends_on:
+    - 2
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (GDPR/CCPA), and Shopify/WooCommerce marketplace compliance review. Include
+      IP ownership clause for trained models.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy specifies data collected, retention periods, and deletion rights
+    - DPA includes sub-processor list and data transfer mechanisms (SCCs)
+    - IP clause clarifies merchant data ownership vs. aggregated model improvements
+    - Shopify Partner Agreement requirements checklist fully satisfied
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 2
+  SECURITY:
+    description: Produce threat model (STRIDE), PCI DSS compliance gap analysis, SBOM
+      for all ML dependencies, and penetration test plan. Define API authentication
+      and data encryption standards.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all data flows between shopper, plugin, API, and
+      ML inference layer
+    - PCI DSS gap analysis identifies all in-scope controls with remediation owners
+    - SBOM generated for Python ML stack and Node.js plugin dependencies
+    - Pen test plan covers OWASP Top 10 for web API and stored XSS in widget embed
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'Produce PCI DSS evidence artifacts: data flow diagram with cardholder
+      data environment scoping, control evidence checklist (Req 1–12), and merchant-facing
+      compliance attestation template.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - CDE scope diagram confirms recommendation engine is out-of-scope for cardholder
+      data
+    - All 12 PCI DSS requirement areas have an evidence owner assigned
+    - Merchant attestation template ready for SAQ-A or SAQ-D as applicable
+    depends_on:
+    - 6
+  DATABASE:
+    description: 'Design data schema: product catalog, user events (views, clicks,
+      purchases), recommendation logs, A/B test assignments, and merchant configuration.
+      Define partitioning and retention strategy.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - ERD covers all 8 entity types with foreign key relationships
+    - Events table partitioned by merchant_id and date
+    - Vector store schema supports product embeddings with metadata filters
+    - 'Retention policy defined: raw events 90 days, aggregated metrics 2 years'
+    depends_on:
+    - 2
+  DATA:
+    description: 'Build data ingestion pipeline: real-time event streaming (Kafka),
+      batch product catalog sync, ETL to ClickHouse for analytics, and feature store
+      population for ML training.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Event pipeline processes at least 10,000 events/sec under load test
+    - Catalog sync supports incremental updates (delta) and full refresh modes
+    - Feature store serves features with p99 latency < 20ms
+    - Data quality checks flag null product IDs, duplicate events, and schema violations
+    depends_on:
+    - 8
+  ML_MODEL:
+    description: Train and evaluate collaborative filtering model (ALS matrix factorization
+      + neural CF) for user-item affinity scores. Include cold-start handling via
+      popularity fallback.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - NDCG@10 >= 0.35 on held-out test split
+    - Hit Rate@10 >= 0.45
+    - Cold-start users receive non-empty recommendations within 100ms
+    - Training pipeline runs end-to-end with reproducible results via seed
+    - Model versioned in MLflow with eval metrics logged
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 9
+  CONFIG:
+    description: 'Configure multi-agent coordinator pattern for the recommendation
+      engine: coordinator decomposes request into CF retrieval, CB retrieval, and
+      ranking subtasks, then merges results. Wire ReAct loops for dynamic fallback.'
+    agent_role: planner
+    acceptance_criteria:
+    - Coordinator routes requests to CF + CB agents in parallel (wave execution)
+    - Fallback agent activates automatically when CF returns < 3 results
+    - ReAct loop retries ranking with relaxed filters on timeout
+    - Agent routing config committed to project.yaml and validated by SAGE loader
+    depends_on:
+    - 12
+  BACKEND:
+    description: 'Build the core recommendation API service: REST + GraphQL endpoints
+      for recommendation retrieval, merchant configuration management, API key auth,
+      rate limiting, and multi-tenant isolation.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints return responses in < 200ms at p50 under 500 concurrent users
+    - API key authentication rejects invalid keys with 401 and logs attempt
+    - 'Rate limiter enforces per-tier limits (starter: 100 RPM, growth: 1000 RPM,
+      enterprise: unlimited)'
+    - 'Multi-tenant isolation: merchant A cannot retrieve merchant B''s recommendations
+      or config'
+    - OpenAPI spec auto-generated and validated
+    depends_on:
+    - 8
+    - 12
+    - 13
+  FRONTEND:
+    description: 'Build the merchant dashboard React app: onboarding wizard, recommendation
+      widget configurator with live preview, A/B test manager, analytics reporting,
+      and plugin connection settings.'
+    agent_role: developer
+    acceptance_criteria:
+    - Onboarding wizard guides merchant through API key generation and plugin install
+      in < 5 steps
+    - Widget configurator renders live preview matching production widget output
+    - A/B test manager displays real-time significance indicator updating every 5
+      minutes
+    - Analytics page loads with < 2s LCP on a standard merchant dataset
+    - All pages pass Lighthouse accessibility score >= 90
+    depends_on:
+    - 4
+    - 14
+    - 15
+  INFRA:
+    description: 'Set up infrastructure: Kubernetes cluster (EKS), Helm charts for
+      all services, CDN (CloudFront) for widget delivery, RDS PostgreSQL, MSK (Kafka),
+      ElastiCache Redis, and Terraform IaC for all resources.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan produces no drift against deployed state
+    - All data-tier resources (RDS, Redis, Kafka) deployed in private subnets
+    - WAF rules block OWASP Top 10 attack patterns at API Gateway
+    - Helm charts support per-environment values (dev/staging/prod)
+    - CloudFront distribution serves widget JS with cache-control max-age=86400
+    depends_on:
+    - 14
+    - 18
+    - 19
+  DEVOPS:
+    description: 'Build CI/CD pipelines: GitHub Actions for API, ML model training,
+      dashboard, and widget builds. Include automated model evaluation gate, blue/green
+      deployment for inference service, and Slack deploy notifications.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All pipelines complete in < 15 minutes for standard commits
+    - ML deploy pipeline gates on NDCG@10 >= 0.35 before promoting to production
+    - Blue/green ML deploy achieves zero-downtime cutover with automatic rollback
+      on error rate spike
+    - Slack notification sent on every production deployment with diff summary and
+      metrics link
+    depends_on:
+    - 20
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: recommendation
+      API, A/B testing engine, Shopify/WooCommerce webhook handlers, and data pipeline
+      transformations.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Line coverage >= 85% across all backend modules
+    - Shopify HMAC verification tested with valid and tampered signatures
+    - 'A/B assignment tested for determinism: same user+experiment always returns
+      same variant'
+    - Data pipeline tests validate schema enforcement and duplicate-event deduplication
+    - Integration tests run against real Postgres/Redis/Kafka via test containers
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 17
+  QA:
+    description: 'Define QA test plan: test cases for all widget placement modes,
+      A/B test lifecycle, merchant onboarding, plugin install/uninstall, and recommendation
+      accuracy on synthetic merchant catalogs.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 7 test case categories with pass/fail criteria
+    - Widget keyboard navigation test cases aligned with WCAG 2.1 AA SC 2.1.1
+    - 'A/B test lifecycle test covers: create → assign users → record conversions
+      → conclude → export results'
+    - Shopify install flow tested on Shopify Partner sandbox with OAuth and webhook
+      verification
+    depends_on:
+    - 18
+    - 19
+    - 22
+  SYSTEM_TEST:
+    description: 'End-to-end system tests: full purchase-to-recommendation cycle,
+      multi-merchant isolation test, A/B test assignment consistency under load, and
+      widget delivery via CDN with cache validation.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Purchase event reflected in recommendations within 60 seconds end-to-end
+    - Merchant A's recommendations never contain Merchant B's products under concurrent
+      load
+    - A/B variant assignment consistent across 10,000 simulated users at 5000 RPS
+    - Widget JS served from CDN with cache-hit ratio >= 95% in load test
+    - Cold-start fallback activates and returns results within 200ms for new users
+    depends_on:
+    - 20
+    - 22
+    - 23
+    - 24
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response for recommendation
+      downtime, ML model rollback procedure, Kafka lag alerting, SLA definitions per
+      merchant tier, and capacity planning model.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Each runbook has RTO and RPO targets, step-by-step recovery procedure, and escalation
+      path
+    - 'ML model rollback runbook tested in staging: rollback completes in < 10 minutes'
+    - Kafka lag alert fires when consumer lag exceeds 10,000 messages for > 5 minutes
+    - Capacity model projects infrastructure cost at 100, 500, and 1000 merchants
+    depends_on:
+    - 20
+    - 21
+  DOCS:
+    description: 'Write developer documentation: API reference (OpenAPI), plugin integration
+      guides for Shopify and WooCommerce, A/B testing cookbook, and architecture decision
+      records (ADRs) for key design choices.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Shopify integration guide covers OAuth, webhook setup, and widget placement
+      in < 15 minutes for a developer
+    - API reference auto-generated from OpenAPI spec with working curl examples for
+      every endpoint
+    - 'ADRs written for: CF vs CB model choice, Kafka vs SQS, blue-green vs canary
+      deployment'
+    - WooCommerce guide includes screenshots from sandbox store with annotated plugin
+      settings
+    depends_on:
+    - 14
+    - 16
+    - 17
+    - 25
+  PRODUCT_MGMT:
+    description: 'Define product roadmap: V1 feature set (launch), V1.1 (A/B test
+      improvements + more widget types), V2 (LLM-powered contextual recommendations),
+      success metrics dashboard, and feature prioritization framework.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD defines launch criteria for V1 with measurable success thresholds
+    - Roadmap items scored by ICE framework (Impact × Confidence ÷ Effort)
+    - Success metrics dashboard spec lists data sources and update frequency for each
+      KPI
+    - V2 LLM recommendation approach includes build-vs-buy analysis for Claude API
+      integration
+    depends_on:
+    - 2
+    - 3

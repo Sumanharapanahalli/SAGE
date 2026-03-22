@@ -1,0 +1,1284 @@
+{
+  "run_id": "f47f5428-c8d9-4732-b74e-12a62b72c977",
+  "solution_name": "knowledge_management",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T11:34:50.302284+00:00",
+  "updated_at": "2026-03-22T11:39:45.598397+00:00",
+  "product_description": "Enterprise knowledge management with wiki, FAQ, decision tree, AI-powered search, content freshness scoring, and expertise directory.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Gather and document business requirements for the enterprise knowledge management platform. Define user personas (knowledge contributors, consumers, admins), core workflows (create/review/approve/retire content), ROI model (support ticket deflection, onboarding speed), and process flows for wiki, FAQ, decision tree, and expertise directory modules.",
+      "payload": {
+        "deliverables": [
+          "business_requirements.md",
+          "user_personas.md",
+          "process_flow_diagrams",
+          "roi_model.xlsx"
+        ],
+        "modules_in_scope": [
+          "wiki",
+          "faq",
+          "decision_tree",
+          "ai_search",
+          "freshness_scoring",
+          "expertise_directory"
+        ]
+      },
+      "acceptance_criteria": [
+        "Business requirements document covers all 6 modules with user stories in Given/When/Then format",
+        "At least 4 user personas defined with goals, pain points, and usage frequency",
+        "ROI model includes baseline metrics and projected improvements with data sources",
+        "Process flows cover create, review, publish, update, retire lifecycle for each content type",
+        "Stakeholder sign-off obtained on requirements document",
+        "Integration points with existing systems mapped",
+        "Migration plan drafted"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Create the product requirements document (PRD), prioritized roadmap, and success metrics framework. Define MVP scope vs. v2 features. Establish KPIs: search relevance score, content freshness index, time-to-answer, expert utilization rate, and knowledge reuse rate.",
+      "payload": {
+        "deliverables": [
+          "PRD.md",
+          "roadmap.md",
+          "success_metrics.md",
+          "mvp_scope.md"
+        ],
+        "prioritization_method": "RICE scoring",
+        "kpis": [
+          "search_relevance_score",
+          "content_freshness_index",
+          "time_to_answer",
+          "expert_utilization_rate",
+          "knowledge_reuse_rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all functional and non-functional requirements with priority (P0/P1/P2)",
+        "MVP scope clearly separated from future phases with rationale",
+        "Each success metric has a baseline, target, and measurement method",
+        "Roadmap spans 3 phases with milestones and dependencies",
+        "PRD reviewed and approved by product stakeholders"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "LEGAL",
+      "description": "Draft terms of service, privacy policy, and data processing agreements. Review IP ownership for user-generated content in the wiki. Define content licensing model. Assess GDPR/CCPA implications for the expertise directory (personal data of employees). Review OSS license compatibility for planned dependencies.",
+      "payload": {
+        "deliverables": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "dpa_template.md",
+          "oss_license_audit.md"
+        ],
+        "jurisdictions": [
+          "US",
+          "EU"
+        ],
+        "standards_alignment": [
+          "GDPR",
+          "CCPA"
+        ]
+      },
+      "acceptance_criteria": [
+        "Privacy policy explicitly covers expertise directory personal data collection and retention",
+        "Terms of service include content ownership, acceptable use, and DMCA takedown provisions",
+        "DPA template covers all sub-processors with SCCs for EU data transfer",
+        "OSS license audit lists all planned dependencies with license type and compatibility risk",
+        "Legal review sign-off documented"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 4,
+      "task_type": "COMPLIANCE",
+      "description": "Produce ISO 27001 and SOC 2 readiness artifacts. Define the information security management scope statement, asset inventory, and risk treatment plan for the knowledge management system. Map controls to SOC 2 Trust Service Criteria (Security, Availability, Confidentiality). Create initial compliance evidence tracker.",
+      "payload": {
+        "standards": [
+          "ISO 27001",
+          "SOC 2 Type II"
+        ],
+        "deliverables": [
+          "isms_scope.md",
+          "asset_inventory.xlsx",
+          "risk_treatment_plan.xlsx",
+          "soc2_control_mapping.xlsx",
+          "evidence_tracker.xlsx"
+        ],
+        "trust_service_criteria": [
+          "CC6",
+          "CC7",
+          "CC9",
+          "A1",
+          "C1"
+        ]
+      },
+      "acceptance_criteria": [
+        "ISMS scope statement defines boundaries, assets, and exclusions",
+        "Asset inventory covers all data stores, services, and third-party integrations",
+        "Risk treatment plan assigns owner and treatment to each identified risk",
+        "SOC 2 control mapping covers all applicable CC criteria with control descriptions",
+        "Evidence tracker lists each control with collection method and frequency"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes for all major flows: wiki article create/edit, FAQ builder, decision tree editor (visual node graph), AI search interface, content freshness dashboard, and expertise directory profile pages. Define information architecture, navigation hierarchy, and accessibility requirements (WCAG 2.1 AA).",
+      "payload": {
+        "deliverables": [
+          "user_research_summary.md",
+          "information_architecture.md",
+          "wireframes/",
+          "design_system_tokens.json",
+          "accessibility_audit_checklist.md"
+        ],
+        "pages": [
+          "wiki_editor",
+          "faq_builder",
+          "decision_tree_editor",
+          "search_results",
+          "freshness_dashboard",
+          "expertise_directory",
+          "profile_page",
+          "admin_panel"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all 8 identified pages at medium-fidelity",
+        "Information architecture diagram shows all navigation paths and content hierarchy",
+        "Decision tree editor wireframe supports visual drag-and-drop node creation",
+        "Accessibility checklist maps each UI component to WCAG 2.1 AA criteria",
+        "Design system tokens defined for color, typography, spacing, and elevation",
+        "Usability test with 5 users conducted and findings documented"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Design the database schema for all knowledge management entities: articles (wiki), FAQ entries, decision tree nodes and edges, expertise profiles, tags, categories, search indices, freshness scores, and audit logs. Define indexing strategy for full-text search. Plan vector embedding storage for AI search. Write migrations.",
+      "payload": {
+        "databases": [
+          "PostgreSQL (primary)",
+          "pgvector (embeddings)",
+          "Redis (cache/sessions)",
+          "Elasticsearch (full-text search)"
+        ],
+        "deliverables": [
+          "schema.sql",
+          "migrations/",
+          "erd.png",
+          "indexing_strategy.md",
+          "vector_schema.md"
+        ],
+        "entities": [
+          "Article",
+          "FAQEntry",
+          "DecisionTreeNode",
+          "DecisionTreeEdge",
+          "ExpertProfile",
+          "Tag",
+          "Category",
+          "ContentVersion",
+          "FreshnessScore",
+          "SearchIndex",
+          "AuditLog",
+          "User",
+          "Permission"
+        ]
+      },
+      "acceptance_criteria": [
+        "ERD covers all entities with cardinality and foreign key constraints",
+        "Schema includes soft-delete, created_at/updated_at on all mutable entities",
+        "pgvector table defined with 1536-dim embedding column and HNSW index",
+        "ContentVersion table supports full version history with diff metadata",
+        "Migrations are idempotent and reversible (up/down)",
+        "All PII fields in ExpertProfile documented in data dictionary"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "API",
+      "description": "Design the OpenAPI 3.0 specification for all REST endpoints across modules: wiki CRUD, FAQ CRUD, decision tree CRUD, search (keyword + semantic), freshness score API, expertise directory CRUD, user management, permissions, webhooks, and admin endpoints. Define authentication (JWT + API key), rate limiting headers, and pagination contracts.",
+      "payload": {
+        "spec_file": "openapi.yaml",
+        "auth_schemes": [
+          "JWT Bearer",
+          "API Key"
+        ],
+        "modules": [
+          "wiki",
+          "faq",
+          "decision_tree",
+          "search",
+          "freshness",
+          "expertise",
+          "auth",
+          "admin",
+          "webhooks"
+        ],
+        "pagination": "cursor-based"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates without errors against OpenAPI 3.0 schema",
+        "Every endpoint has request/response schemas, status codes, and examples",
+        "Authentication schemes documented with token acquisition flow",
+        "Rate limiting headers (X-RateLimit-*) specified on all endpoints",
+        "Webhook payload schemas defined for content published/updated/retired events",
+        "Search endpoint supports both keyword and semantic (vector) query modes"
+      ],
+      "depends_on": [
+        2,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "SECURITY",
+      "description": "Produce a threat model (STRIDE) for the knowledge management system. Identify attack surfaces: authentication, content injection, search injection (prompt injection for AI search), access control bypass, and data exfiltration via expertise directory. Define security controls and produce a penetration test plan.",
+      "payload": {
+        "methodology": "STRIDE",
+        "deliverables": [
+          "threat_model.md",
+          "security_controls.md",
+          "pentest_plan.md",
+          "sbom.json"
+        ],
+        "attack_surfaces": [
+          "auth_endpoints",
+          "content_editor",
+          "ai_search",
+          "file_upload",
+          "admin_api",
+          "webhook_receiver"
+        ],
+        "standards_alignment": [
+          "OWASP Top 10",
+          "ISO 27001 Annex A"
+        ]
+      },
+      "acceptance_criteria": [
+        "Threat model covers all 6 attack surfaces with STRIDE categories",
+        "Each threat has likelihood, impact, and risk rating",
+        "Security controls map to ISO 27001 Annex A and SOC 2 CC6 criteria",
+        "Prompt injection mitigations specified for AI search input sanitization",
+        "SBOM generated listing all direct and transitive dependencies with CVE scan",
+        "Penetration test plan covers scope, test cases, and acceptance criteria"
+      ],
+      "depends_on": [
+        4,
+        7
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 9,
+      "task_type": "CONFIG",
+      "description": "Set up the agentic AI pattern for the platform's AI-powered features. Configure a Multi-Agent Coordinator pattern: a coordinator agent routes queries to specialist agents (wiki search agent, FAQ match agent, decision tree traversal agent, expertise recommender agent). Set up embedding pipeline config, LLM gateway config, and vector store connection. Define system prompts for each specialist agent.",
+      "payload": {
+        "pattern": "coordinator",
+        "agents": [
+          "coordinator",
+          "wiki_search_agent",
+          "faq_match_agent",
+          "decision_tree_agent",
+          "expertise_recommender_agent"
+        ],
+        "llm_provider": "configurable (openai/anthropic/ollama)",
+        "vector_store": "pgvector",
+        "embedding_model": "text-embedding-3-small",
+        "deliverables": [
+          "agent_config.yaml",
+          "system_prompts.yaml",
+          "embedding_pipeline_config.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "agent_config.yaml defines all 5 agents with roles, tools, and routing rules",
+        "system_prompts.yaml contains tested prompts for each specialist agent",
+        "Coordinator correctly routes a test query to the appropriate specialist agent",
+        "Embedding pipeline config specifies model, batch size, and retry policy",
+        "LLM provider is configurable via environment variable with no code changes",
+        "Prompt injection guard rules defined in coordinator system prompt"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Build the core backend services: authentication/authorization (JWT, RBAC with roles: viewer, contributor, editor, admin), user management, and shared middleware (rate limiting, request logging, audit trail, tenant isolation). Implement the project scaffolding: FastAPI application factory, dependency injection, database session management, and health check endpoints.",
+      "payload": {
+        "framework": "FastAPI",
+        "language": "Python 3.12",
+        "auth": "JWT + RBAC",
+        "roles": [
+          "viewer",
+          "contributor",
+          "editor",
+          "admin"
+        ],
+        "deliverables": [
+          "src/auth/",
+          "src/middleware/",
+          "src/core/",
+          "src/models/"
+        ],
+        "features": [
+          "jwt_auth",
+          "rbac",
+          "rate_limiting",
+          "audit_logging",
+          "health_checks"
+        ]
+      },
+      "acceptance_criteria": [
+        "JWT tokens issued with configurable expiry and refresh token rotation",
+        "RBAC middleware enforces role permissions on all protected endpoints",
+        "Audit log records all write operations with user_id, timestamp, entity, and action",
+        "Rate limiting returns 429 with Retry-After header when exceeded",
+        "Health check endpoint returns database, cache, and search engine status",
+        "All middleware covered by unit tests with >85% coverage"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement the Wiki module backend: article CRUD with rich text (Markdown/ProseMirror JSON), version history, draft/published/archived states, category and tag management, internal linking, media attachment handling, and collaborative editing support via operational transforms or CRDT-based conflict resolution.",
+      "payload": {
+        "deliverables": [
+          "src/modules/wiki/"
+        ],
+        "content_format": "ProseMirror JSON + Markdown export",
+        "states": [
+          "draft",
+          "review",
+          "published",
+          "archived"
+        ],
+        "features": [
+          "versioning",
+          "diff_view",
+          "categories",
+          "tags",
+          "internal_links",
+          "media_attachments",
+          "collaborative_editing"
+        ]
+      },
+      "acceptance_criteria": [
+        "Article CRUD endpoints match OpenAPI spec with correct status codes",
+        "Version history stores full diffs and allows point-in-time restore",
+        "State machine enforces valid transitions (draft\u2192review\u2192published\u2192archived)",
+        "Internal link graph maintained and broken links detected on article delete",
+        "Media attachments validated for type and size, stored in object storage",
+        "Concurrent edits handled without data loss (last-write-wins or CRDT)"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement the FAQ module backend: question-answer pair CRUD, category grouping, related FAQ suggestions, upvote/downvote feedback, auto-archival of stale FAQs, and bulk import/export (CSV/JSON). Include a FAQ clustering engine that groups semantically similar questions.",
+      "payload": {
+        "deliverables": [
+          "src/modules/faq/"
+        ],
+        "features": [
+          "qa_crud",
+          "categories",
+          "related_suggestions",
+          "voting",
+          "auto_archival",
+          "bulk_import_export",
+          "semantic_clustering"
+        ]
+      },
+      "acceptance_criteria": [
+        "FAQ CRUD endpoints match OpenAPI spec",
+        "Related FAQ suggestions return top-5 semantically similar entries using embeddings",
+        "Upvote/downvote updates helpfulness score and triggers re-ranking",
+        "Auto-archival rule fires after configurable inactivity period (default: 180 days)",
+        "Bulk import accepts CSV with header validation and row-level error reporting",
+        "Semantic clustering groups FAQs into topic clusters on demand"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement the Decision Tree module backend: node and edge CRUD, tree validation (no cycles, no orphaned nodes), traversal engine (given answers, returns next node or terminal result), version snapshots, conditional branching logic, and decision tree export to JSON/Mermaid diagram format.",
+      "payload": {
+        "deliverables": [
+          "src/modules/decision_tree/"
+        ],
+        "features": [
+          "node_edge_crud",
+          "cycle_detection",
+          "traversal_engine",
+          "versioning",
+          "conditional_branching",
+          "export_formats"
+        ],
+        "export_formats": [
+          "JSON",
+          "Mermaid",
+          "DOT"
+        ]
+      },
+      "acceptance_criteria": [
+        "Tree validation rejects cycles and detects orphaned nodes on save",
+        "Traversal engine processes a complete path from root to leaf given test inputs",
+        "Conditional branches support operators: equals, contains, greater_than, less_than, regex",
+        "Version snapshot captures full tree state and allows rollback",
+        "Export to Mermaid produces valid flowchart syntax renderable in browser",
+        "Traversal engine handles missing required answers with a clear error code"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement the Expertise Directory module backend: employee profile CRUD (skills, certifications, domain tags, availability), endorsement system, skill taxonomy management, org hierarchy integration (LDAP/SCIM sync), profile completeness scoring, and expert recommendation engine (given a topic, returns ranked experts).",
+      "payload": {
+        "deliverables": [
+          "src/modules/expertise/"
+        ],
+        "features": [
+          "profile_crud",
+          "endorsements",
+          "skill_taxonomy",
+          "ldap_scim_sync",
+          "completeness_scoring",
+          "expert_recommendation"
+        ],
+        "pii_handling": "GDPR-compliant with consent flags"
+      },
+      "acceptance_criteria": [
+        "Profile CRUD enforces consent flags before exposing PII fields",
+        "Endorsement prevents self-endorsement and duplicate endorsements per endorser",
+        "LDAP/SCIM sync processes delta updates without duplicating records",
+        "Profile completeness score computed from weighted field completion (0\u2013100)",
+        "Expert recommendation returns ranked list with skill match score for a given topic",
+        "Skill taxonomy supports hierarchical tags with parent-child relationships"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "ML_MODEL",
+      "description": "Build the AI-powered search pipeline: document ingestion and chunking, embedding generation (text-embedding-3-small), vector storage in pgvector, hybrid search (BM25 keyword + cosine similarity vector), re-ranking with a cross-encoder model, and the Multi-Agent Coordinator orchestration layer that routes queries to the appropriate specialist agent based on query intent classification.",
+      "payload": {
+        "deliverables": [
+          "src/modules/search/",
+          "src/agents/search_agents/"
+        ],
+        "pipeline_stages": [
+          "ingestion",
+          "chunking",
+          "embedding",
+          "indexing",
+          "retrieval",
+          "reranking",
+          "generation"
+        ],
+        "search_modes": [
+          "keyword",
+          "semantic",
+          "hybrid"
+        ],
+        "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "pattern": "coordinator"
+      },
+      "acceptance_criteria": [
+        "Ingestion pipeline processes wiki, FAQ, and decision tree content into chunks \u2264512 tokens",
+        "Embedding generation batches documents with retry on rate limit errors",
+        "Hybrid search combines BM25 and vector scores with configurable alpha weight",
+        "Re-ranker improves top-10 retrieval MRR by \u226515% on test query set",
+        "Coordinator correctly classifies query intent and routes to correct specialist agent in \u226590% of test cases",
+        "Search response includes source document, chunk, relevance score, and content type",
+        "End-to-end search latency P95 \u2264 2 seconds under 50 concurrent users"
+      ],
+      "depends_on": [
+        9,
+        11,
+        12,
+        13
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement the Content Freshness Scoring module: rule-based and ML-based staleness detection, configurable decay functions per content type, automated freshness score computation (0\u2013100), scheduled re-evaluation jobs, owner notification system for stale content, and freshness score API for dashboard and search ranking integration.",
+      "payload": {
+        "deliverables": [
+          "src/modules/freshness/"
+        ],
+        "scoring_signals": [
+          "last_updated",
+          "view_count_trend",
+          "link_rot",
+          "referenced_version_age",
+          "owner_confirmation",
+          "semantic_drift"
+        ],
+        "decay_functions": [
+          "linear",
+          "exponential",
+          "step"
+        ],
+        "scheduler": "APScheduler"
+      },
+      "acceptance_criteria": [
+        "Freshness score computed from \u22654 configurable signals with weight configuration",
+        "Decay function applied per content type (wiki: 90-day linear, FAQ: 60-day exponential)",
+        "Scheduled job runs daily and updates scores for all published content",
+        "Owner notification sent when score drops below configurable threshold (default: 40)",
+        "Freshness score exposed on search results and used as ranking signal boost",
+        "Score history logged for trend analysis with daily granularity"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "AGENTIC",
+      "description": "Implement the HITL (Human-in-the-Loop) agentic pattern for AI-generated content suggestions and expert recommendations. When the AI search agent proposes an answer synthesis or the expertise recommender suggests a new expert profile tag, the system creates a proposal in the approval queue. Editors/admins review and approve before the change is published. Use iterative_refinement for auto-improvement of generated content drafts.",
+      "payload": {
+        "pattern": "human_in_the_loop",
+        "secondary_pattern": "iterative_refinement",
+        "deliverables": [
+          "src/agents/hitl/",
+          "src/modules/proposals/"
+        ],
+        "proposal_types": [
+          "ai_answer_synthesis",
+          "content_suggestion",
+          "expert_tag_recommendation",
+          "auto_archive_proposal"
+        ],
+        "approval_roles": [
+          "editor",
+          "admin"
+        ]
+      },
+      "acceptance_criteria": [
+        "Every AI-generated content modification creates a proposal record before any DB write",
+        "Proposal store tracks status: pending, approved, rejected, expired",
+        "Approved proposals execute the associated action and log the approval chain",
+        "Rejected proposals feed correction back to the refinement agent for learning",
+        "Iterative refinement loops a maximum of 3 times before escalating to human",
+        "Proposal expiry auto-rejects after configurable TTL (default: 7 days)"
+      ],
+      "depends_on": [
+        15,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the React frontend scaffold: project setup (Vite + TypeScript + React 18), routing (React Router v6), state management (Zustand), API client layer (typed fetch with OpenAPI-generated types), authentication context (JWT storage, refresh, logout), global error boundary, and loading/skeleton components. Implement the design system from UX tokens.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "bundler": "Vite",
+        "state": "Zustand",
+        "routing": "React Router v6",
+        "styling": "Tailwind CSS",
+        "deliverables": [
+          "web/src/",
+          "web/src/lib/api-client.ts",
+          "web/src/context/auth.tsx",
+          "web/src/components/ui/"
+        ]
+      },
+      "acceptance_criteria": [
+        "TypeScript compiles with strict mode and zero errors",
+        "API client generated from OpenAPI spec with all endpoints typed",
+        "Auth context persists JWT across page reloads and handles token expiry with refresh",
+        "Global error boundary catches unhandled errors and shows user-friendly fallback",
+        "Design system components (Button, Input, Badge, Card, Modal) match UX wireframes",
+        "Lighthouse accessibility score \u2265 90 on the component library page"
+      ],
+      "depends_on": [
+        5,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build the Wiki editor UI: rich text editor (TipTap with ProseMirror), article tree sidebar with drag-and-drop hierarchy, version history timeline with diff viewer, collaborative editing indicator, internal link autocomplete, tag/category picker, media upload with drag-and-drop, and publish/review workflow status badge.",
+      "payload": {
+        "deliverables": [
+          "web/src/pages/wiki/",
+          "web/src/components/editor/"
+        ],
+        "editor": "TipTap v2",
+        "features": [
+          "rich_text",
+          "hierarchy_sidebar",
+          "version_history",
+          "diff_viewer",
+          "collab_indicators",
+          "internal_link_autocomplete",
+          "media_upload",
+          "workflow_status"
+        ]
+      },
+      "acceptance_criteria": [
+        "Rich text editor supports headings, lists, code blocks, tables, images, and inline links",
+        "Article hierarchy sidebar supports drag-and-drop reordering with parent assignment",
+        "Version history timeline shows all versions with author, timestamp, and change summary",
+        "Diff viewer highlights added/removed content inline with color coding",
+        "Internal link autocomplete suggests articles as user types [[",
+        "Media upload accepts images/PDFs up to 25MB with progress indicator",
+        "Workflow status badge reflects current state and shows available transitions"
+      ],
+      "depends_on": [
+        18,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the FAQ builder UI, Decision Tree visual editor, and Expertise Directory UI. FAQ builder: question/answer form with category picker, related FAQ panel, and voting controls. Decision tree editor: visual node graph (ReactFlow) with drag-and-drop node creation, edge connection, condition builder, and traversal simulator. Expertise directory: searchable profile cards, skill filter, org chart view, and endorsement flow.",
+      "payload": {
+        "deliverables": [
+          "web/src/pages/faq/",
+          "web/src/pages/decision-tree/",
+          "web/src/pages/expertise/"
+        ],
+        "node_editor": "ReactFlow v12",
+        "features": {
+          "faq": [
+            "qa_form",
+            "category_picker",
+            "related_panel",
+            "voting"
+          ],
+          "decision_tree": [
+            "node_graph",
+            "drag_drop",
+            "condition_builder",
+            "traversal_simulator"
+          ],
+          "expertise": [
+            "profile_cards",
+            "skill_filter",
+            "org_chart",
+            "endorsement_flow"
+          ]
+        }
+      },
+      "acceptance_criteria": [
+        "Decision tree editor renders nodes and edges with ReactFlow and allows drag-and-drop placement",
+        "Condition builder supports all operators defined in backend with form validation",
+        "Traversal simulator steps through tree path interactively given user inputs",
+        "Expertise profile cards display skill tags, endorsement count, and availability",
+        "Skill filter supports multi-select with hierarchical taxonomy display",
+        "Org chart view renders reporting hierarchy from LDAP/SCIM data",
+        "Endorsement flow prevents duplicate endorsements with real-time feedback"
+      ],
+      "depends_on": [
+        18,
+        12,
+        13,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build the AI Search UI: conversational search interface with streaming response display, source citation cards with relevance scores, search mode toggle (keyword/semantic/hybrid), content type filters, search history, saved searches, and feedback mechanism (thumbs up/down per result). Integrate the freshness score indicator on all content display surfaces.",
+      "payload": {
+        "deliverables": [
+          "web/src/pages/search/",
+          "web/src/components/freshness-badge/"
+        ],
+        "features": [
+          "streaming_response",
+          "source_citations",
+          "mode_toggle",
+          "content_filters",
+          "search_history",
+          "saved_searches",
+          "result_feedback",
+          "freshness_badge"
+        ]
+      },
+      "acceptance_criteria": [
+        "Streaming response renders tokens progressively without layout shift",
+        "Source citation cards show document title, content type, excerpt, and freshness score",
+        "Search mode toggle switches between keyword/semantic/hybrid without page reload",
+        "Content type filters (wiki/faq/decision_tree) update results in real time",
+        "Search history persists across sessions in localStorage with 50-entry limit",
+        "Thumbs feedback submits to backend and shows confirmation without interrupting UX",
+        "Freshness badge renders green/amber/red based on configurable score thresholds"
+      ],
+      "depends_on": [
+        18,
+        15,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "FRONTEND",
+      "description": "Build the Admin Panel UI: user management table (invite, role assignment, deactivate), module configuration (enable/disable features per role), content freshness dashboard (staleness heatmap, owner notification controls), HITL proposal review queue, audit log viewer with filters, and system health dashboard.",
+      "payload": {
+        "deliverables": [
+          "web/src/pages/admin/"
+        ],
+        "features": [
+          "user_management",
+          "module_config",
+          "freshness_dashboard",
+          "proposal_queue",
+          "audit_log",
+          "health_dashboard"
+        ]
+      },
+      "acceptance_criteria": [
+        "User management table supports invite by email with role pre-assignment",
+        "Role assignment changes take effect immediately on next user request",
+        "Freshness dashboard heatmap renders a matrix of content age vs. view frequency",
+        "Proposal review queue displays pending AI proposals with approve/reject actions",
+        "Audit log viewer filters by user, action, entity type, and date range",
+        "Health dashboard shows real-time status of database, vector store, search engine, and LLM gateway"
+      ],
+      "depends_on": [
+        18,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 23,
+      "task_type": "DATA",
+      "description": "Build the data pipeline for search index synchronization: event-driven ingestion (Postgres CDC or webhook triggers), incremental embedding updates, Elasticsearch index management (aliases, zero-downtime reindex), and analytics data warehouse (user search patterns, content usage, expert utilization). Implement the freshness signal aggregation pipeline.",
+      "payload": {
+        "deliverables": [
+          "src/pipelines/",
+          "src/pipelines/search_sync.py",
+          "src/pipelines/freshness_aggregator.py",
+          "src/pipelines/analytics_etl.py"
+        ],
+        "streaming": "Postgres logical replication / CDC",
+        "search_engine": "Elasticsearch 8",
+        "analytics": "ClickHouse or Postgres OLAP schema"
+      },
+      "acceptance_criteria": [
+        "CDC pipeline propagates content changes to search index within 30 seconds",
+        "Zero-downtime reindex uses index aliases with blue/green swap",
+        "Freshness aggregator runs on schedule and writes scores to freshness_scores table",
+        "Analytics ETL captures search query, result clicked, dwell time, and feedback per session",
+        "Pipeline failures are logged with retry policy and alerting on repeated failure",
+        "Incremental embedding updates only re-embed changed chunks to minimize cost"
+      ],
+      "depends_on": [
+        15,
+        16
+      ],
+      "agent_role": "data_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "INFRA",
+      "description": "Set up Docker Compose for local development (PostgreSQL, pgvector, Redis, Elasticsearch, backend, frontend) and Kubernetes manifests for production deployment. Define resource limits, liveness/readiness probes, horizontal pod autoscaler, persistent volume claims for vector store, and network policies for internal service communication.",
+      "payload": {
+        "deliverables": [
+          "docker-compose.yml",
+          "docker-compose.dev.yml",
+          "k8s/",
+          "k8s/namespace.yaml",
+          "k8s/deployments/",
+          "k8s/services/",
+          "k8s/hpa.yaml",
+          "k8s/network-policies.yaml"
+        ],
+        "environments": [
+          "local",
+          "staging",
+          "production"
+        ],
+        "cloud": "provider-agnostic (EKS/GKE/AKS compatible)"
+      },
+      "acceptance_criteria": [
+        "docker-compose up starts all services with a single command in < 3 minutes",
+        "All K8s manifests pass kubectl --dry-run=client validation",
+        "HPA configured for backend deployment with CPU threshold 70% and min/max replicas 2/10",
+        "Network policies restrict inter-service communication to documented paths only",
+        "PVC for pgvector and Elasticsearch configured with retain reclaim policy",
+        "Liveness probes for all services with appropriate initialDelaySeconds"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "DEVOPS",
+      "description": "Build the CI/CD pipeline: GitHub Actions workflows for PR checks (lint, type-check, unit tests, security scan), staging deployment on merge to main, and production deployment with manual approval gate. Set up monitoring (Prometheus + Grafana), structured logging (Loki), distributed tracing (OpenTelemetry \u2192 Jaeger), and alerting rules for SLA breaches.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "deliverables": [
+          ".github/workflows/",
+          "monitoring/prometheus/",
+          "monitoring/grafana/dashboards/",
+          "monitoring/alerting_rules.yaml"
+        ],
+        "observability_stack": [
+          "Prometheus",
+          "Grafana",
+          "Loki",
+          "Jaeger",
+          "OpenTelemetry"
+        ],
+        "alerts": [
+          "p99_latency > 3s",
+          "error_rate > 1%",
+          "search_index_lag > 60s",
+          "freshness_job_failure"
+        ]
+      },
+      "acceptance_criteria": [
+        "PR check workflow runs lint, mypy, pytest, and Trivy scan in parallel under 10 minutes",
+        "Staging deploy runs automatically on merge to main with smoke tests",
+        "Production deploy requires manual approval and runs canary at 10% traffic for 5 minutes",
+        "Prometheus scrapes metrics from all backend pods with 15s interval",
+        "Grafana dashboard shows: request rate, latency P50/P95/P99, error rate, search latency, freshness job status",
+        "Alert fires within 2 minutes of threshold breach in staging and production"
+      ],
+      "depends_on": [
+        24
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "TESTS",
+      "description": "Write comprehensive unit and integration tests for all backend modules: auth/RBAC, wiki CRUD, FAQ CRUD, decision tree CRUD and traversal, expertise directory, freshness scoring, AI search pipeline, and HITL proposal system. Target \u226585% coverage. Use pytest with fixtures and factory_boy for test data generation.",
+      "payload": {
+        "framework": "pytest",
+        "deliverables": [
+          "tests/unit/",
+          "tests/integration/"
+        ],
+        "coverage_target": 85,
+        "modules": [
+          "auth",
+          "wiki",
+          "faq",
+          "decision_tree",
+          "expertise",
+          "freshness",
+          "search",
+          "proposals"
+        ],
+        "test_data": "factory_boy"
+      },
+      "acceptance_criteria": [
+        "pytest runs all unit tests in < 5 minutes with no flakiness",
+        "Integration tests use real PostgreSQL (testcontainers) not mocks",
+        "Coverage report shows \u226585% line coverage across all src/ modules",
+        "Decision tree cycle detection tested with graph fixtures containing cycles",
+        "HITL proposal tests verify no DB write occurs before proposal approval",
+        "Search pipeline tests validate BM25 and vector retrieval independently",
+        "Auth tests cover all RBAC role combinations for each endpoint"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "QA",
+      "description": "Produce the QA test plan, test case library, and traceability matrix mapping requirements to test cases. Define test environments, entry/exit criteria, defect severity levels, and regression suite scope. Execute exploratory testing sessions on AI search quality, freshness scoring accuracy, and decision tree traversal edge cases.",
+      "payload": {
+        "deliverables": [
+          "qa/test_plan.md",
+          "qa/test_cases.xlsx",
+          "qa/traceability_matrix.xlsx",
+          "qa/exploratory_test_notes.md"
+        ],
+        "test_types": [
+          "functional",
+          "exploratory",
+          "regression",
+          "performance",
+          "accessibility"
+        ],
+        "tools": [
+          "Playwright (E2E)",
+          "k6 (load testing)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan covers all PRD requirements with coverage percentage",
+        "Traceability matrix maps every P0/P1 requirement to at least one test case",
+        "Exploratory testing sessions documented with session charters and findings",
+        "AI search quality evaluation uses NDCG metric on 50-query golden set",
+        "Freshness scoring accuracy validated against manually labeled staleness dataset of 100 items",
+        "Regression suite automated via Playwright covering all critical user journeys"
+      ],
+      "depends_on": [
+        2,
+        26
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system integration tests across the full stack: complete knowledge lifecycle (create wiki article \u2192 index \u2192 search \u2192 retrieve \u2192 freshen), expertise recommendation flow, decision tree publish-and-traverse flow, and HITL approval pipeline. Run load tests (k6) simulating 200 concurrent users and measure SLA compliance.",
+      "payload": {
+        "deliverables": [
+          "tests/e2e/",
+          "tests/load/",
+          "tests/system_test_report.md"
+        ],
+        "tools": [
+          "Playwright",
+          "k6"
+        ],
+        "load_profile": "200 concurrent users, 30-minute soak test",
+        "sla_targets": {
+          "search_p95_ms": 2000,
+          "wiki_load_p95_ms": 500,
+          "api_error_rate_pct": 0.1
+        }
+      },
+      "acceptance_criteria": [
+        "Full knowledge lifecycle E2E test passes: create \u2192 index \u2192 search returns the created article",
+        "HITL E2E test verifies no content change persists without an approved proposal record",
+        "Decision tree E2E test traverses a 10-node tree to correct terminal node",
+        "Load test at 200 users shows search P95 \u2264 2000ms and error rate \u2264 0.1%",
+        "All system test scenarios pass in staging environment before production deploy",
+        "System test report documents pass/fail status for all test scenarios",
+        "Load test simulates expected concurrent users",
+        "Failover scenario tested"
+      ],
+      "depends_on": [
+        22,
+        23,
+        26,
+        27
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 29,
+      "task_type": "COMPLIANCE",
+      "description": "Collect and organize ISO 27001 and SOC 2 evidence artifacts: access control logs, encryption configuration screenshots, vulnerability scan reports (Trivy + OWASP ZAP), penetration test results, incident response plan, change management records, and vendor risk assessments. Produce the SOC 2 readiness report and ISO 27001 Statement of Applicability.",
+      "payload": {
+        "deliverables": [
+          "compliance/soc2_readiness_report.md",
+          "compliance/iso27001_soa.xlsx",
+          "compliance/evidence/",
+          "compliance/incident_response_plan.md",
+          "compliance/vendor_risk_assessments/"
+        ],
+        "evidence_types": [
+          "access_logs",
+          "encryption_config",
+          "vuln_scans",
+          "pentest_report",
+          "change_records",
+          "vendor_assessments"
+        ],
+        "standards": [
+          "ISO 27001:2022",
+          "SOC 2 Type II"
+        ]
+      },
+      "acceptance_criteria": [
+        "SOC 2 readiness report covers all 5 Trust Service Criteria with control maturity ratings",
+        "ISO 27001 Statement of Applicability lists all Annex A controls with justification for exclusions",
+        "Trivy scan shows zero critical CVEs in production container images",
+        "OWASP ZAP scan report shows no high-severity findings unmitigated",
+        "Incident response plan tested with tabletop exercise and results documented",
+        "All evidence artifacts timestamped, version-controlled, and linked to control IDs"
+      ],
+      "depends_on": [
+        8,
+        25,
+        28
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 30,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: deployment runbook, rollback procedure, database backup/restore, Elasticsearch index recovery, LLM gateway failover, freshness job manual trigger, on-call escalation matrix. Define SLAs (99.5% availability, P95 search < 2s). Create incident severity classification and response time targets.",
+      "payload": {
+        "deliverables": [
+          "ops/runbooks/",
+          "ops/sla_definition.md",
+          "ops/incident_classification.md",
+          "ops/oncall_schedule.md",
+          "ops/capacity_plan.md"
+        ],
+        "runbooks": [
+          "deployment",
+          "rollback",
+          "db_backup_restore",
+          "elasticsearch_recovery",
+          "llm_failover",
+          "freshness_job_manual",
+          "oncall_escalation"
+        ]
+      },
+      "acceptance_criteria": [
+        "Deployment runbook tested end-to-end by someone other than the author",
+        "Rollback runbook restores previous version within 15 minutes",
+        "Database backup/restore runbook validated with a restore drill in staging",
+        "SLA document defines availability, latency, and recovery time objectives",
+        "Incident severity levels (P0\u2013P3) defined with response time and escalation path",
+        "Capacity plan projects resource needs for 3x current load with scaling trigger points"
+      ],
+      "depends_on": [
+        25
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 31,
+      "task_type": "TRAINING",
+      "description": "Produce user-facing documentation and training materials: end-user guide (wiki authoring, FAQ creation, decision tree building, search tips), admin guide (user management, module config, freshness tuning, compliance reports), API developer guide, and onboarding checklist for new team members. Create video script outlines for 3 key workflows.",
+      "payload": {
+        "deliverables": [
+          "docs/user_guide.md",
+          "docs/admin_guide.md",
+          "docs/api_guide.md",
+          "docs/onboarding_checklist.md",
+          "docs/video_scripts/"
+        ],
+        "formats": [
+          "Markdown",
+          "PDF export",
+          "video scripts"
+        ],
+        "audiences": [
+          "end_users",
+          "admins",
+          "developers"
+        ]
+      },
+      "acceptance_criteria": [
+        "User guide covers all 6 modules with step-by-step screenshots",
+        "Admin guide includes freshness threshold configuration with before/after examples",
+        "API developer guide includes code examples in Python and JavaScript for auth and search",
+        "Onboarding checklist validated by a new user completing it without assistance",
+        "Video scripts written for: wiki article creation, AI search, and decision tree traversal",
+        "All docs reviewed for accuracy against final implemented features",
+        "Admin guide separate from end-user guide",
+        "Role-based training paths defined"
+      ],
+      "depends_on": [
+        28
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 31,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 62,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 62,
+        "final_review": {
+          "score": 62,
+          "flaws": [
+            "Step 11 lists 'collaborative editing support via operational transforms or CRDT-based conflict resolution' as one bullet among many wiki features. Real-time collaborative editing (\u00e0 la Google Docs) is a multi-month engineering effort requiring a WebSocket server, presence protocol, and conflict resolution engine. No WebSocket infrastructure is mentioned anywhere in the plan. This will either be silently dropped or block the entire wiki module.",
+            "Step 15 acceptance criterion: 'Re-ranker improves top-10 retrieval MRR by \u226515% on test query set.' There is no golden query set established in any earlier step, and no baseline MRR measured. This criterion is unverifiable as written \u2014 you cannot guarantee a relative improvement without a measured baseline.",
+            "Step 18 acceptance criterion mentions JWT storage across page reloads. The plan never specifies where JWT tokens are stored. If implemented in localStorage (the default for most React JWT tutorials), this is a P0 XSS vulnerability \u2014 any injected script exfiltrates the token. HttpOnly cookies are required for enterprise auth.",
+            "Step 23 requires Postgres logical replication (CDC) but wal_level=logical must be set at Postgres initialization time. This is a database configuration concern that belongs in Step 6 (database schema) or Step 24 (infrastructure), not Step 23. If the DB is deployed without it, enabling CDC requires a Postgres restart \u2014 production downtime.",
+            "Elasticsearch 8.x uses SSPL licensing for production self-hosted deployments in many configurations. Enterprise production use typically requires a commercial Elastic license. The plan has no licensing cost analysis or mitigation (e.g., OpenSearch as a drop-in alternative). This is a legal and budget risk that could force a mid-project replatform.",
+            "Step 16 lists 'semantic_drift' as a freshness scoring signal with no specification of how it is computed. Detecting semantic drift requires periodically re-embedding content and comparing cosine distance to a baseline \u2014 this is a non-trivial ML pipeline not described anywhere. It will either be silently omitted or require significant unplanned work.",
+            "Step 14 (LDAP/SCIM sync) has no conflict resolution strategy defined. In large enterprises, SCIM delta syncs frequently produce duplicate identity records when external IDs change (e.g., contractor rehire, email change). No de-duplication logic or sync idempotency guarantee is specified.",
+            "Step 28 lists 'Failover scenario tested' as an acceptance criterion with zero specification of what failover means (DB primary failure? LLM provider outage? Elasticsearch node loss?), what the expected behavior is, or what the RTO target is. This criterion cannot be evaluated.",
+            "Steps 19\u201321 build the frontend but Step 28 (system tests) only depends on Step 22 (admin panel). If any of steps 19\u201321 are delayed or broken, the E2E tests in Step 28 still pass its dependency check \u2014 the dependency graph does not enforce that all frontend modules are complete before system testing."
+          ],
+          "suggestions": [
+            "Split Step 11 into two steps: (a) wiki CRUD + versioning + states, and (b) collaborative editing as a separate, explicitly-scoped step with WebSocket infrastructure (socket.io or native WebSocket), a defined CRDTlibrary (e.g., Yjs or Automerge), and its own acceptance criteria. If timeline is constrained, make collaborative editing a v2 feature with a clear deferral decision in the PRD.",
+            "Step 6 must specify wal_level=logical in the Postgres initialization config and reserve a replication slot for the CDC pipeline. Document this in the schema migration README so any fresh DB provisioning includes it.",
+            "Replace the relative MRR acceptance criterion in Step 15 with an absolute target or define a mandatory baseline measurement task before Step 15 begins. For example: 'BM25-only baseline MRR on 50-query golden set measured and recorded in eval/baseline.json before re-ranker integration.'",
+            "Step 18 must explicitly mandate httpOnly, Secure, SameSite=Strict cookies for JWT storage. Add this as a P0 acceptance criterion. Remove any guidance that implies localStorage for tokens.",
+            "Add SSO/SAML 2.0 (or OIDC) as an explicit module. Enterprise knowledge management without SSO will fail procurement reviews. This belongs in Step 7 (API design) and Step 10 (auth implementation) at minimum.",
+            "Replace Elasticsearch with OpenSearch (Apache 2.0 license) or include an Elastic commercial license line item in the project budget and legal review (Step 3). The current plan has an unacknowledged licensing risk.",
+            "Add a data export / portability endpoint (wiki articles as ZIP/Markdown, FAQ as CSV, decision trees as JSON) to the API design in Step 7. Enterprise buyers require this for vendor lock-in compliance \u2014 its absence is a common deal-breaker.",
+            "Step 15 cross-encoder re-ranking at P95 \u2264 2s under 50 concurrent users requires either a GPU-backed inference service or aggressive result caching. Add an explicit architecture decision: either deploy the cross-encoder behind a dedicated inference endpoint (TorchServe/Triton) or cache re-ranked results by query hash with a short TTL.",
+            "Add Steps 19\u201321 as explicit dependencies of Step 28 to enforce that all frontend modules are complete before system testing runs."
+          ],
+          "missing": [
+            "SSO/SAML 2.0 or OIDC integration \u2014 not mentioned anywhere. Mandatory for enterprise customer procurement.",
+            "WebSocket server design \u2014 required by Step 11 (collaborative editing) and Step 21 (streaming search responses). No WebSocket infrastructure, protocol, or connection management is defined.",
+            "Content sanitization for the rich text wiki editor \u2014 ProseMirror/TipTap output can contain arbitrary HTML if misconfigured. No mention of DOMPurify or server-side HTML sanitization before storage.",
+            "LLM API cost model \u2014 the plan uses text-embedding-3-small for ingestion, similarity clustering, freshness drift, expert recommendation, and search. At enterprise scale (thousands of documents, frequent re-indexing), this is a significant recurring cost with no budget estimate or cost cap.",
+            "Multi-tenancy model \u2014 'enterprise' typically means multiple departments or customer organizations. The plan defines RBAC roles but never defines whether this is a single-tenant or multi-tenant SaaS deployment. If multi-tenant, every data model and query must be scoped by tenant_id from day one.",
+            "Email/notification infrastructure \u2014 Step 16 sends freshness alerts to content owners; Step 17 routes HITL proposals. No email provider (SES, SendGrid), template system, or notification preferences model is defined.",
+            "File storage service \u2014 Step 11 references storing media attachments in 'object storage' but no S3/GCS bucket configuration, CDN setup, signed URL generation, or storage lifecycle policy is specified anywhere.",
+            "Malware scanning for file uploads \u2014 Step 11 validates type and size but does not scan uploaded files for malware. This is a P0 security control for any enterprise platform accepting user uploads.",
+            "pgvector backup and recovery strategy \u2014 if the embedding store is corrupted or the PVC is lost, re-embedding all content from scratch can take hours and cost hundreds of dollars. No backup schedule or point-in-time recovery for pgvector is defined.",
+            "Data migration tooling \u2014 Step 1 mentions a 'migration plan drafted' as a deliverable but no migration step exists in the build plan. Enterprises adopting this platform will have existing knowledge bases (Confluence, SharePoint, Notion) that need import tooling.",
+            "API versioning strategy \u2014 the OpenAPI spec in Step 7 has no versioning scheme (/v1/, header-based, etc.). Breaking changes in a future version will break all integrations."
+          ],
+          "security_risks": [
+            "JWT token storage location unspecified \u2014 if defaulted to localStorage, all active sessions are exfiltrable via any XSS vector in the rich text wiki editor or search results. Severity: Critical.",
+            "ProseMirror/TipTap rich text output stored and re-rendered without explicit server-side sanitization \u2014 a malicious contributor can inject stored XSS payloads that execute for all viewers of a wiki article. Severity: Critical.",
+            "Prompt injection in AI search \u2014 Step 8 identifies this risk and Step 9 says 'Prompt injection guard rules defined in coordinator system prompt.' System prompt instructions are not a reliable defense; they are bypassable. No input-layer sanitization, output validation, or sandboxed LLM execution model is specified. Severity: High.",
+            "File upload endpoint (Step 11) validates type and size but has no malware scanning. A contributor can upload a crafted PDF or SVG containing embedded JavaScript or exploit code. In an enterprise platform, this file is then served to potentially thousands of users. Severity: High.",
+            "LDAP/SCIM integration (Step 14) \u2014 no mention of LDAP injection prevention. If user-supplied input is used to construct LDAP queries without escaping (e.g., skill search queries that get forwarded to LDAP), this is exploitable. Severity: High.",
+            "Webhook receiver (Steps 7, 8) \u2014 webhook endpoints that accept external payloads require HMAC signature validation. This is called out in Step 8's attack surface list but no concrete implementation requirement is specified in Step 7's API design. Severity: Medium.",
+            "SBOM generated once (Step 8) but no continuous dependency monitoring defined. New CVEs in transitive dependencies will go undetected after the initial scan. Severity: Medium.",
+            "Search history persisted in localStorage with a 50-entry limit (Step 21) \u2014 if queries contain sensitive keywords (e.g., searching for confidential project names), this data is accessible to any script running in the browser context. Severity: Low-Medium depending on data sensitivity."
+          ],
+          "summary": "This is an ambitious, well-structured plan that covers the right phases in the right order with generally sensible acceptance criteria. The compliance, security threat modeling, and HITL pattern are notably well-considered. However, several concrete failure modes make this plan risky to execute as written. The most critical: collaborative editing is catastrophically underscoped \u2014 no WebSocket infrastructure exists anywhere in the plan, yet it appears as a checklist item in a single backend step; this will either silently die or consume 2\u20133x the estimated effort. The MRR acceptance criterion in Step 15 is unverifiable without a baseline. Elasticsearch's SSPL licensing is an unacknowledged legal and cost risk. JWT in localStorage is a likely implementation path given no explicit guidance, creating a P0 auth vulnerability. SSO/SAML absence will fail enterprise procurement. The dependency graph also has a gap: frontend modules (Steps 19\u201321) are not wired as prerequisites to system testing (Step 28), allowing tests to pass CI gates before the UI is actually built. Fix the collaborative editing scope (defer or split), mandate httpOnly cookies, add SSO, resolve the Elasticsearch licensing question, and define the WebSocket infrastructure before committing to this plan.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 62,
+            "flaws": [
+              "Step 11 lists 'collaborative editing support via operational transforms or CRDT-based conflict resolution' as one bullet among many wiki features. Real-time collaborative editing (\u00e0 la Google Docs) is a multi-month engineering effort requiring a WebSocket server, presence protocol, and conflict resolution engine. No WebSocket infrastructure is mentioned anywhere in the plan. This will either be silently dropped or block the entire wiki module.",
+              "Step 15 acceptance criterion: 'Re-ranker improves top-10 retrieval MRR by \u226515% on test query set.' There is no golden query set established in any earlier step, and no baseline MRR measured. This criterion is unverifiable as written \u2014 you cannot guarantee a relative improvement without a measured baseline.",
+              "Step 18 acceptance criterion mentions JWT storage across page reloads. The plan never specifies where JWT tokens are stored. If implemented in localStorage (the default for most React JWT tutorials), this is a P0 XSS vulnerability \u2014 any injected script exfiltrates the token. HttpOnly cookies are required for enterprise auth.",
+              "Step 23 requires Postgres logical replication (CDC) but wal_level=logical must be set at Postgres initialization time. This is a database configuration concern that belongs in Step 6 (database schema) or Step 24 (infrastructure), not Step 23. If the DB is deployed without it, enabling CDC requires a Postgres restart \u2014 production downtime.",
+              "Elasticsearch 8.x uses SSPL licensing for production self-hosted deployments in many configurations. Enterprise production use typically requires a commercial Elastic license. The plan has no licensing cost analysis or mitigation (e.g., OpenSearch as a drop-in alternative). This is a legal and budget risk that could force a mid-project replatform.",
+              "Step 16 lists 'semantic_drift' as a freshness scoring signal with no specification of how it is computed. Detecting semantic drift requires periodically re-embedding content and comparing cosine distance to a baseline \u2014 this is a non-trivial ML pipeline not described anywhere. It will either be silently omitted or require significant unplanned work.",
+              "Step 14 (LDAP/SCIM sync) has no conflict resolution strategy defined. In large enterprises, SCIM delta syncs frequently produce duplicate identity records when external IDs change (e.g., contractor rehire, email change). No de-duplication logic or sync idempotency guarantee is specified.",
+              "Step 28 lists 'Failover scenario tested' as an acceptance criterion with zero specification of what failover means (DB primary failure? LLM provider outage? Elasticsearch node loss?), what the expected behavior is, or what the RTO target is. This criterion cannot be evaluated.",
+              "Steps 19\u201321 build the frontend but Step 28 (system tests) only depends on Step 22 (admin panel). If any of steps 19\u201321 are delayed or broken, the E2E tests in Step 28 still pass its dependency check \u2014 the dependency graph does not enforce that all frontend modules are complete before system testing."
+            ],
+            "suggestions": [
+              "Split Step 11 into two steps: (a) wiki CRUD + versioning + states, and (b) collaborative editing as a separate, explicitly-scoped step with WebSocket infrastructure (socket.io or native WebSocket), a defined CRDTlibrary (e.g., Yjs or Automerge), and its own acceptance criteria. If timeline is constrained, make collaborative editing a v2 feature with a clear deferral decision in the PRD.",
+              "Step 6 must specify wal_level=logical in the Postgres initialization config and reserve a replication slot for the CDC pipeline. Document this in the schema migration README so any fresh DB provisioning includes it.",
+              "Replace the relative MRR acceptance criterion in Step 15 with an absolute target or define a mandatory baseline measurement task before Step 15 begins. For example: 'BM25-only baseline MRR on 50-query golden set measured and recorded in eval/baseline.json before re-ranker integration.'",
+              "Step 18 must explicitly mandate httpOnly, Secure, SameSite=Strict cookies for JWT storage. Add this as a P0 acceptance criterion. Remove any guidance that implies localStorage for tokens.",
+              "Add SSO/SAML 2.0 (or OIDC) as an explicit module. Enterprise knowledge management without SSO will fail procurement reviews. This belongs in Step 7 (API design) and Step 10 (auth implementation) at minimum.",
+              "Replace Elasticsearch with OpenSearch (Apache 2.0 license) or include an Elastic commercial license line item in the project budget and legal review (Step 3). The current plan has an unacknowledged licensing risk.",
+              "Add a data export / portability endpoint (wiki articles as ZIP/Markdown, FAQ as CSV, decision trees as JSON) to the API design in Step 7. Enterprise buyers require this for vendor lock-in compliance \u2014 its absence is a common deal-breaker.",
+              "Step 15 cross-encoder re-ranking at P95 \u2264 2s under 50 concurrent users requires either a GPU-backed inference service or aggressive result caching. Add an explicit architecture decision: either deploy the cross-encoder behind a dedicated inference endpoint (TorchServe/Triton) or cache re-ranked results by query hash with a short TTL.",
+              "Add Steps 19\u201321 as explicit dependencies of Step 28 to enforce that all frontend modules are complete before system testing runs."
+            ],
+            "missing": [
+              "SSO/SAML 2.0 or OIDC integration \u2014 not mentioned anywhere. Mandatory for enterprise customer procurement.",
+              "WebSocket server design \u2014 required by Step 11 (collaborative editing) and Step 21 (streaming search responses). No WebSocket infrastructure, protocol, or connection management is defined.",
+              "Content sanitization for the rich text wiki editor \u2014 ProseMirror/TipTap output can contain arbitrary HTML if misconfigured. No mention of DOMPurify or server-side HTML sanitization before storage.",
+              "LLM API cost model \u2014 the plan uses text-embedding-3-small for ingestion, similarity clustering, freshness drift, expert recommendation, and search. At enterprise scale (thousands of documents, frequent re-indexing), this is a significant recurring cost with no budget estimate or cost cap.",
+              "Multi-tenancy model \u2014 'enterprise' typically means multiple departments or customer organizations. The plan defines RBAC roles but never defines whether this is a single-tenant or multi-tenant SaaS deployment. If multi-tenant, every data model and query must be scoped by tenant_id from day one.",
+              "Email/notification infrastructure \u2014 Step 16 sends freshness alerts to content owners; Step 17 routes HITL proposals. No email provider (SES, SendGrid), template system, or notification preferences model is defined.",
+              "File storage service \u2014 Step 11 references storing media attachments in 'object storage' but no S3/GCS bucket configuration, CDN setup, signed URL generation, or storage lifecycle policy is specified anywhere.",
+              "Malware scanning for file uploads \u2014 Step 11 validates type and size but does not scan uploaded files for malware. This is a P0 security control for any enterprise platform accepting user uploads.",
+              "pgvector backup and recovery strategy \u2014 if the embedding store is corrupted or the PVC is lost, re-embedding all content from scratch can take hours and cost hundreds of dollars. No backup schedule or point-in-time recovery for pgvector is defined.",
+              "Data migration tooling \u2014 Step 1 mentions a 'migration plan drafted' as a deliverable but no migration step exists in the build plan. Enterprises adopting this platform will have existing knowledge bases (Confluence, SharePoint, Notion) that need import tooling.",
+              "API versioning strategy \u2014 the OpenAPI spec in Step 7 has no versioning scheme (/v1/, header-based, etc.). Breaking changes in a future version will break all integrations."
+            ],
+            "security_risks": [
+              "JWT token storage location unspecified \u2014 if defaulted to localStorage, all active sessions are exfiltrable via any XSS vector in the rich text wiki editor or search results. Severity: Critical.",
+              "ProseMirror/TipTap rich text output stored and re-rendered without explicit server-side sanitization \u2014 a malicious contributor can inject stored XSS payloads that execute for all viewers of a wiki article. Severity: Critical.",
+              "Prompt injection in AI search \u2014 Step 8 identifies this risk and Step 9 says 'Prompt injection guard rules defined in coordinator system prompt.' System prompt instructions are not a reliable defense; they are bypassable. No input-layer sanitization, output validation, or sandboxed LLM execution model is specified. Severity: High.",
+              "File upload endpoint (Step 11) validates type and size but has no malware scanning. A contributor can upload a crafted PDF or SVG containing embedded JavaScript or exploit code. In an enterprise platform, this file is then served to potentially thousands of users. Severity: High.",
+              "LDAP/SCIM integration (Step 14) \u2014 no mention of LDAP injection prevention. If user-supplied input is used to construct LDAP queries without escaping (e.g., skill search queries that get forwarded to LDAP), this is exploitable. Severity: High.",
+              "Webhook receiver (Steps 7, 8) \u2014 webhook endpoints that accept external payloads require HMAC signature validation. This is called out in Step 8's attack surface list but no concrete implementation requirement is specified in Step 7's API design. Severity: Medium.",
+              "SBOM generated once (Step 8) but no continuous dependency monitoring defined. New CVEs in transitive dependencies will go undetected after the initial scan. Severity: Medium.",
+              "Search history persisted in localStorage with a 50-entry limit (Step 21) \u2014 if queries contain sensitive keywords (e.g., searching for confidential project names), this data is accessible to any script running in the browser context. Severity: Low-Medium depending on data sensitivity."
+            ],
+            "summary": "This is an ambitious, well-structured plan that covers the right phases in the right order with generally sensible acceptance criteria. The compliance, security threat modeling, and HITL pattern are notably well-considered. However, several concrete failure modes make this plan risky to execute as written. The most critical: collaborative editing is catastrophically underscoped \u2014 no WebSocket infrastructure exists anywhere in the plan, yet it appears as a checklist item in a single backend step; this will either silently die or consume 2\u20133x the estimated effort. The MRR acceptance criterion in Step 15 is unverifiable without a baseline. Elasticsearch's SSPL licensing is an unacknowledged legal and cost risk. JWT in localStorage is a likely implementation path given no explicit guidance, creating a P0 auth vulnerability. SSO/SAML absence will fail enterprise procurement. The dependency graph also has a gap: frontend modules (Steps 19\u201321) are not wired as prerequisites to system testing (Step 28), allowing tests to pass CI gates before the UI is actually built. Fix the collaborative editing scope (defer or split), mandate httpOnly cookies, add SSO, resolve the Elasticsearch licensing question, and define the WebSocket infrastructure before committing to this plan.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T11:39:45.598363+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 193.12,
+    "critic_plan": 102.18
+  }
+}

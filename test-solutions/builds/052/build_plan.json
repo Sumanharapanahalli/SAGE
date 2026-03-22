@@ -1,0 +1,773 @@
+{
+  "run_id": "ad99b46c-6aa2-4bee-b776-970f0423a5fd",
+  "status": {
+    "run_id": "ad99b46c-6aa2-4bee-b776-970f0423a5fd",
+    "solution_name": "industrial_iot_platform",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T07:40:21.738562+00:00",
+    "updated_at": "2026-03-22T07:44:21.949521+00:00",
+    "product_description": "Industrial IoT platform for factory monitoring with MQTT/OPC-UA ingestion, real-time dashboards, predictive maintenance ML, alert management, and SCADA integration.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "CONFIG",
+        "description": "Initialize repository structure, dev tooling, environment configs, and Docker Compose for local dev (MQTT broker, OPC-UA server, TimescaleDB, Redis, Kafka).",
+        "payload": {
+          "solution_name": "industrial_iot_platform",
+          "services": [
+            "mosquitto",
+            "node-opcua-server",
+            "timescaledb",
+            "redis",
+            "kafka",
+            "zookeeper"
+          ],
+          "env_files": [
+            ".env.dev",
+            ".env.prod"
+          ],
+          "tooling": [
+            "pre-commit",
+            "black",
+            "eslint",
+            "pytest",
+            "mypy"
+          ]
+        },
+        "acceptance_criteria": [
+          "docker-compose up brings all services healthy",
+          ".env.example documents every required variable",
+          "pre-commit hooks run black + mypy on commit",
+          "README describes local setup in <5 steps"
+        ],
+        "depends_on": [],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 2,
+        "task_type": "SECURITY",
+        "description": "Produce IEC 62443 threat model covering MQTT broker, OPC-UA server, SCADA integration, and cloud ingestion boundary. Define security zones, conduits, and required controls.",
+        "payload": {
+          "standard": "IEC 62443",
+          "scope": [
+            "MQTT ingestion",
+            "OPC-UA ingestion",
+            "SCADA integration",
+            "cloud API",
+            "ML inference endpoint"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "security_zones_diagram.png",
+            "SBOM.json"
+          ]
+        },
+        "acceptance_criteria": [
+          "All STRIDE threats enumerated per component",
+          "Security zones and conduits mapped per IEC 62443-3-3",
+          "SBOM generated listing all third-party dependencies",
+          "Risk rating assigned (Critical/High/Medium/Low) to each threat",
+          "Mitigations mapped to each High/Critical threat",
+          "Device identity provisioned",
+          "Firmware signing enabled"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 3,
+        "task_type": "DATABASE",
+        "description": "Design and migrate TimescaleDB schema for time-series sensor data, device registry, alert history, and ML prediction results. Include hypertable partitioning and retention policies.",
+        "payload": {
+          "db": "TimescaleDB (PostgreSQL 15+)",
+          "tables": [
+            "devices",
+            "sensor_readings",
+            "alerts",
+            "alert_rules",
+            "ml_predictions",
+            "maintenance_events"
+          ],
+          "hypertables": [
+            "sensor_readings",
+            "ml_predictions"
+          ],
+          "retention_policy_days": 365
+        },
+        "acceptance_criteria": [
+          "All migrations run idempotently via Alembic",
+          "sensor_readings hypertable chunks by 1-day intervals",
+          "Indexes on device_id + timestamp for all time-series tables",
+          "Retention policy enforced automatically after 365 days",
+          "Schema ERD document committed to /docs"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 4,
+        "task_type": "FIRMWARE",
+        "description": "Implement edge gateway firmware in C (FreeRTOS) for industrial sensors: MQTT publish over TLS, OPC-UA client polling, watchdog, and OTA update stub. Targets ARM Cortex-M4.",
+        "payload": {
+          "target_mcu": "ARM Cortex-M4 (STM32F4 series)",
+          "rtos": "FreeRTOS",
+          "protocols": [
+            "MQTT over TLS 1.2",
+            "OPC-UA client (open62541)"
+          ],
+          "features": [
+            "sensor polling task",
+            "MQTT publish task",
+            "OTA stub",
+            "hardware watchdog",
+            "NTP sync"
+          ],
+          "cross_compiler": "arm-none-eabi-gcc"
+        },
+        "acceptance_criteria": [
+          "Firmware compiles without warnings under -Wall -Wextra",
+          "MQTT task publishes sensor payload to broker every 1s under load",
+          "OPC-UA client reads node values and enqueues to MQTT pipeline",
+          "Watchdog resets device if MQTT task starves for >30s",
+          "OTA stub receives firmware chunk and writes to secondary flash partition",
+          "TLS certificate validation enforced \u2014 plain-text connection refused",
+          "OTA update mechanism implemented",
+          "Watchdog timer configured"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 5,
+        "task_type": "BACKEND",
+        "description": "Build MQTT ingestion service (Python/asyncio + aiomqtt): subscribe to device topics, validate payloads against JSON Schema, enqueue validated messages to Kafka, dead-letter invalid messages.",
+        "payload": {
+          "language": "Python 3.12",
+          "broker": "Mosquitto",
+          "kafka_topic": "raw_sensor_data",
+          "validation": "JSON Schema per device type",
+          "dead_letter_topic": "sensor_data_dlq"
+        },
+        "acceptance_criteria": [
+          "Service processes 10,000 msg/s without message loss under load test",
+          "Invalid payloads routed to DLQ with error details",
+          "Reconnect logic handles broker restart within 5s",
+          "Metrics endpoint exposes messages_received, messages_invalid, lag counters",
+          "Structured logs include trace_id, device_id, topic"
+        ],
+        "depends_on": [
+          1,
+          2,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 6,
+        "task_type": "BACKEND",
+        "description": "Build OPC-UA ingestion service (Python + asyncua): discover server nodes, poll configured tags at configurable intervals, normalize to canonical sensor schema, publish to Kafka.",
+        "payload": {
+          "library": "asyncua",
+          "discovery": "LDS (Local Discovery Server)",
+          "kafka_topic": "raw_sensor_data",
+          "security_mode": "SignAndEncrypt (Basic256Sha256)",
+          "poll_interval_ms": 500
+        },
+        "acceptance_criteria": [
+          "Connects to OPC-UA server with SignAndEncrypt security",
+          "Auto-discovers configured node IDs on startup",
+          "Tag values normalized to canonical {device_id, timestamp, metric, value, unit} schema",
+          "Handles server disconnect with exponential backoff reconnect",
+          "Configurable poll interval per node group via YAML config"
+        ],
+        "depends_on": [
+          1,
+          2,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "BACKEND",
+        "description": "Build Kafka consumer service that writes normalized sensor data to TimescaleDB, maintains device registry, and computes rolling window statistics (mean, stddev, min, max) per device.",
+        "payload": {
+          "language": "Python 3.12",
+          "kafka_consumer_group": "timescale_writer",
+          "batch_size": 500,
+          "flush_interval_ms": 1000,
+          "rolling_window_minutes": [
+            5,
+            15,
+            60
+          ]
+        },
+        "acceptance_criteria": [
+          "Writes 10,000 readings/s with <2s end-to-end latency",
+          "Batch insert uses COPY protocol for throughput",
+          "Consumer offset committed only after successful DB write",
+          "Device registry auto-registers new device_id on first seen message",
+          "Rolling statistics materialized view refreshed every 60s"
+        ],
+        "depends_on": [
+          3,
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Build Alert Management Service: rule evaluation engine (threshold, rate-of-change, ML anomaly score), alert state machine (FIRING/RESOLVED/ACKNOWLEDGED), notification dispatch (email, webhook, Slack).",
+        "payload": {
+          "rule_types": [
+            "threshold",
+            "rate_of_change",
+            "ml_anomaly_score",
+            "no_data"
+          ],
+          "state_machine": [
+            "FIRING",
+            "ACKNOWLEDGED",
+            "RESOLVED",
+            "SILENCED"
+          ],
+          "notification_channels": [
+            "email (SMTP)",
+            "webhook",
+            "Slack incoming webhook"
+          ],
+          "deduplication_window_minutes": 5
+        },
+        "acceptance_criteria": [
+          "Rule engine evaluates all active rules within 5s of new data arrival",
+          "Duplicate alerts suppressed within deduplication window",
+          "Alert state transitions persisted to alerts table with timestamps",
+          "Notifications delivered within 10s of alert FIRING",
+          "REST API supports CRUD for alert rules with JSON Schema validation",
+          "Alert history queryable by device, rule, severity, and time range"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Build SCADA integration adapter: bidirectional Modbus TCP and DNP3 protocol bridge, tag mapping config, write-back command authorization (requires HITL approval for actuator commands).",
+        "payload": {
+          "protocols": [
+            "Modbus TCP",
+            "DNP3"
+          ],
+          "libraries": [
+            "pymodbus",
+            "pydnp3"
+          ],
+          "tag_mapping_config": "scada_tags.yaml",
+          "write_authorization": "HITL approval queue for actuator write commands",
+          "polling_hz": 1
+        },
+        "acceptance_criteria": [
+          "Modbus TCP reads coils, discrete inputs, holding registers, input registers",
+          "DNP3 adapter polls Class 0/1/2/3 data from RTU",
+          "Tag values normalized and published to Kafka raw_sensor_data topic",
+          "Actuator write commands create a pending approval before execution",
+          "SCADA comms failures generate no_data alert within 30s"
+        ],
+        "depends_on": [
+          2,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "ML_MODEL",
+        "description": "Build predictive maintenance ML pipeline: feature engineering from sensor time-series (FFT, rolling stats, lag features), anomaly detection (Isolation Forest baseline), RUL regression model (LSTM), training and evaluation pipeline.",
+        "payload": {
+          "models": [
+            "Isolation Forest (anomaly)",
+            "LSTM (RUL regression)"
+          ],
+          "feature_engineering": [
+            "FFT vibration features",
+            "rolling mean/std/min/max",
+            "lag-k features",
+            "rate-of-change"
+          ],
+          "training_data_source": "TimescaleDB sensor_readings",
+          "framework": "scikit-learn + PyTorch",
+          "evaluation_metrics": [
+            "precision",
+            "recall",
+            "F1 (anomaly)",
+            "MAE/RMSE (RUL)"
+          ],
+          "serving": "FastAPI inference endpoint"
+        },
+        "acceptance_criteria": [
+          "Feature pipeline reproducible with DVC or equivalent versioning",
+          "Isolation Forest F1 >= 0.80 on held-out anomaly test set",
+          "LSTM RUL MAE <= 10% of mean RUL on held-out test set",
+          "Model artifacts versioned and stored in MLflow or equivalent registry",
+          "Inference endpoint returns anomaly_score and rul_hours within 200ms",
+          "Model cards document training data, metrics, and known limitations"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 11,
+        "task_type": "API",
+        "description": "Design and document REST + WebSocket API: OpenAPI 3.1 spec for sensor data query, device management, alert CRUD, ML predictions, SCADA tag write, and SSE/WebSocket for real-time streaming.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "auth": "JWT (RS256) + API key for M2M",
+          "real_time": "WebSocket /ws/stream and SSE /stream/sensors",
+          "rate_limiting": "100 req/min per token",
+          "versioning": "/api/v1/"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors via Redocly linter",
+          "All endpoints documented with request/response examples",
+          "Auth schemes (JWT + API key) documented with acquisition flow",
+          "WebSocket protocol documented (message format, heartbeat, reconnect)",
+          "Breaking change policy documented"
+        ],
+        "depends_on": [
+          3,
+          8,
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement FastAPI backend exposing all API v1 endpoints: sensor data query (time range, aggregation), device CRUD, alert rule CRUD, alert inbox, ML prediction fetch, SCADA write approval, WebSocket/SSE streaming.",
+        "payload": {
+          "framework": "FastAPI + SQLAlchemy async",
+          "auth": "python-jose JWT + API key middleware",
+          "websocket": "FastAPI WebSocket + Redis Pub/Sub for fan-out",
+          "streaming": "SSE via fastapi-sse or async generator",
+          "pagination": "cursor-based for sensor data endpoints"
+        },
+        "acceptance_criteria": [
+          "All OpenAPI spec endpoints implemented and returning correct schemas",
+          "JWT RS256 validation enforced on all protected routes",
+          "WebSocket broadcasts new sensor readings within 1s of DB write",
+          "Sensor data endpoint returns 10k rows in <500ms with proper indexes",
+          "Rate limiting returns HTTP 429 with Retry-After header",
+          "Health endpoint /health returns DB, Kafka, Redis connectivity status"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "FRONTEND",
+        "description": "Build real-time dashboard UI (React 18 + TypeScript + Recharts/ECharts): device map overview, live sensor charts, alert inbox with acknowledge/silence actions, maintenance prediction cards.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "charting": "ECharts (time-series) + Leaflet (device map)",
+          "state": "Zustand + React Query",
+          "real_time": "WebSocket hook with auto-reconnect",
+          "pages": [
+            "Dashboard Overview",
+            "Device Detail",
+            "Alert Inbox",
+            "Predictive Maintenance",
+            "SCADA Console",
+            "Settings / Alert Rules"
+          ]
+        },
+        "acceptance_criteria": [
+          "Live sensor charts update within 2s of new data without full re-render",
+          "Alert inbox shows FIRING/ACKNOWLEDGED/RESOLVED with color coding",
+          "Device map shows online/offline/alert state per device",
+          "Predictive maintenance cards show anomaly score + RUL estimate with confidence interval",
+          "SCADA write commands surface HITL approval flow before submission",
+          "Lighthouse performance score >= 85 on Dashboard page",
+          "WCAG 2.1 AA accessibility audit passes"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 14,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write firmware unit tests (Unity framework) and HIL test specs for edge gateway: MQTT publish under connectivity loss, OPC-UA reconnect, watchdog trigger, OTA state machine, and sensor data integrity.",
+        "payload": {
+          "framework": "Unity (C unit tests)",
+          "hil_platform": "STM32F4 eval board + MQTT test broker",
+          "test_cases": [
+            "MQTT publish retry on broker unavailable",
+            "OPC-UA reconnect within 5s of server restart",
+            "Watchdog reset after task starvation",
+            "OTA partial write recovery",
+            "Sensor data CRC integrity check"
+          ]
+        },
+        "acceptance_criteria": [
+          "All Unity unit tests pass in CI (QEMU emulation)",
+          "HIL test spec covers all listed scenarios with pass/fail criteria",
+          "MQTT retry test confirms no message loss across 100 broker disconnects",
+          "Watchdog test confirms reset within 35s of deliberate task starvation",
+          "OTA partial write test confirms device boots from primary partition on failure"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 15,
+        "task_type": "TESTS",
+        "description": "Write backend unit and integration tests: ingestion services, alert rule engine, SCADA adapter, ML inference endpoint, and FastAPI endpoints. Target >=85% line coverage.",
+        "payload": {
+          "framework": "pytest + pytest-asyncio + httpx",
+          "mocks": [
+            "testcontainers (Kafka, TimescaleDB, Redis)",
+            "paho-mqtt test broker"
+          ],
+          "coverage_target": 85,
+          "test_categories": [
+            "unit",
+            "integration",
+            "contract (schemathesis from OpenAPI spec)"
+          ]
+        },
+        "acceptance_criteria": [
+          "pytest -x passes with zero failures",
+          "Line coverage >= 85% across src/",
+          "Schemathesis contract tests cover all API endpoints",
+          "Kafka consumer integration test confirms at-least-once delivery",
+          "Alert rule engine tests cover all rule types and edge cases (no_data, flapping)"
+        ],
+        "depends_on": [
+          8,
+          9,
+          10,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 16,
+        "task_type": "SECURITY",
+        "description": "Implement IEC 62443 security controls: mutual TLS for MQTT, OPC-UA certificate auth, API JWT validation, role-based access control (Operator/Engineer/Admin), secrets management (Vault or AWS Secrets Manager), and network zone enforcement.",
+        "payload": {
+          "controls": [
+            "mTLS for MQTT broker (client certificate per device)",
+            "OPC-UA SignAndEncrypt with certificate chain",
+            "JWT RS256 with short expiry + refresh tokens",
+            "RBAC: Operator (read + ack alerts), Engineer (rule CRUD), Admin (device + SCADA write)",
+            "Secrets: no plaintext credentials in config files",
+            "Network zones: DMZ for MQTT/OPC-UA, internal for DB/Kafka"
+          ],
+          "secrets_backend": "HashiCorp Vault or AWS Secrets Manager"
+        },
+        "acceptance_criteria": [
+          "MQTT broker rejects connections without valid client certificate",
+          "OPC-UA server rejects unauthenticated or unsigned sessions",
+          "JWT with expired or tampered signature returns HTTP 401",
+          "RBAC enforced: Operator cannot create/delete alert rules (HTTP 403)",
+          "No secrets present in Git history (gitleaks scan passes)",
+          "Network diagram shows zone boundaries matching IEC 62443-3-3 SR 5.1",
+          "Device identity provisioned",
+          "Firmware signing enabled"
+        ],
+        "depends_on": [
+          2,
+          12
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipeline (GitHub Actions): lint, test, Docker build, SAST scan, container vulnerability scan, staging deploy, smoke test, production deploy gate with manual approval.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "stages": [
+            "lint + typecheck",
+            "unit tests",
+            "integration tests",
+            "docker build",
+            "SAST (bandit + semgrep)",
+            "trivy container scan",
+            "staging deploy",
+            "smoke test",
+            "prod deploy (manual gate)"
+          ],
+          "registry": "GHCR or ECR",
+          "deployment": "Kubernetes (Helm chart)"
+        },
+        "acceptance_criteria": [
+          "Pipeline runs end-to-end on every PR in <15 minutes",
+          "SAST scan fails build on HIGH severity findings",
+          "Trivy fails build on CRITICAL CVEs",
+          "Staging deploy runs smoke test against /health and 3 key API endpoints",
+          "Production deploy requires manual approval in GitHub Environments",
+          "Helm chart parameterized for dev/staging/prod via values files"
+        ],
+        "depends_on": [
+          15,
+          16
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "COMPLIANCE",
+        "description": "Produce IEC 62443 compliance evidence artifacts: Security Management Plan, System Security Requirements (SSR), Security Design Specification, risk matrix, and traceability matrix linking threats to controls to tests.",
+        "payload": {
+          "standard": "IEC 62443-2-1, 3-2, 3-3",
+          "artifacts": [
+            "Security Management Plan (SMP)",
+            "System Security Requirements (SSR)",
+            "Security Design Specification (SDS)",
+            "Risk assessment matrix (CVSS-scored)",
+            "Traceability matrix: threat \u2192 control \u2192 test"
+          ]
+        },
+        "acceptance_criteria": [
+          "SMP documents roles, responsibilities, and security lifecycle",
+          "SSR maps to IEC 62443-3-3 Security Requirements (SR 1.x\u20137.x)",
+          "Risk matrix covers all threats from threat model (step 2) with CVSS scores",
+          "Traceability matrix has zero unmitigated HIGH/CRITICAL threats",
+          "All artifacts version-controlled under /docs/compliance/"
+        ],
+        "depends_on": [
+          2,
+          16
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 19,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test suite: simulate 100 edge devices sending MQTT and OPC-UA data, validate ingestion pipeline throughput, alert firing latency, ML prediction accuracy under load, SCADA write approval flow, and dashboard real-time update.",
+        "payload": {
+          "simulated_devices": 100,
+          "test_scenarios": [
+            "Nominal data flow: 100 devices \u00d7 10 sensors \u00d7 1Hz for 10 minutes",
+            "Alert firing: inject out-of-range values, measure FIRING latency",
+            "ML anomaly detection: inject known fault signatures, measure detection rate",
+            "SCADA write approval: submit write command, approve, verify actuator tag update",
+            "Ingestion failover: kill Kafka broker, restart, verify no message loss",
+            "Dashboard real-time: measure update latency from publish to chart render"
+          ]
+        },
+        "acceptance_criteria": [
+          "100% of nominal sensor readings arrive in TimescaleDB within 5s",
+          "Alert FIRING latency <= 5s from threshold breach",
+          "ML anomaly detection rate >= 80% on injected fault signatures",
+          "SCADA write approval flow completes and actuator tag updates within 10s of approval",
+          "Zero message loss during Kafka broker failover and restart",
+          "Dashboard chart updates within 2s of new data publish"
+        ],
+        "depends_on": [
+          13,
+          14,
+          15,
+          17
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 20,
+        "task_type": "DOCS",
+        "description": "Write operator and developer documentation: system architecture overview, deployment guide, MQTT/OPC-UA device onboarding guide, alert rule configuration reference, ML model retraining guide, and SCADA integration runbook.",
+        "payload": {
+          "docs_platform": "MkDocs Material",
+          "sections": [
+            "Architecture Overview",
+            "Local Development Setup",
+            "Device Onboarding (MQTT + OPC-UA)",
+            "Alert Rule Configuration Reference",
+            "Predictive Maintenance Model Guide",
+            "SCADA Integration Runbook",
+            "Security Configuration Guide",
+            "API Reference (auto-generated from OpenAPI)"
+          ]
+        },
+        "acceptance_criteria": [
+          "mkdocs build completes with zero warnings",
+          "Device onboarding guide tested end-to-end by a developer not on the team",
+          "API reference auto-generated from OpenAPI spec and linked from docs",
+          "All architecture diagrams use consistent notation (C4 or equivalent)",
+          "Security configuration guide cross-references IEC 62443 controls"
+        ],
+        "depends_on": [
+          11,
+          18,
+          19
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 20,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "API design (Step 11) comes AFTER all backend services (Steps 5-10) are built. Services built without a contract will need rework when the OpenAPI spec is formalized. This is API-last, not API-first, and will cause schema drift between services.",
+              "ML training data does not exist. Step 10 requires F1 >= 0.80 for Isolation Forest and MAE <= 10% RMSE for LSTM RUL, but TimescaleDB will only contain days-old synthetic dev data at this point. LSTM RUL requires labeled run-to-failure datasets that cannot be generated during a development sprint.",
+              "Python/asyncio MQTT ingestion at 10,000 msg/s (Step 5) with per-message JSON Schema validation and Kafka producer overhead is unrealistic for a single process. Python GIL + aiomqtt + jsonschema + aiokafka will saturate well below this target. No benchmarking strategy precedes the commitment.",
+              "Firmware (Step 4) and MQTT ingestion (Step 5) are developed in parallel with no shared payload contract. If the STM32 firmware publishes one JSON structure and the ingestion service validates a different schema, you get 100% DLQ on first integration. No protocol contract document is defined before either step starts.",
+              "DNP3 via pydnp3 (Step 9) is a critical dependency risk. pydnp3 is minimally maintained, lacks DNP3 Secure Authentication v5 (SA5), and has incomplete unsolicited reporting support. Industrial RTUs frequently require SA5. This library will likely block the SCADA adapter in production.",
+              "Step 11 (API) depends on Steps 3, 8, 9, 10. Step 12 (FastAPI impl) depends on Step 11. Step 13 (frontend) depends on Step 12. This creates a 6-step sequential critical path through the middle of the project \u2014 ML completion gates the entire UI. Any ML delay (and ML always delays) freezes frontend development.",
+              "OTA firmware update is described as a 'stub' (Step 4) but the acceptance criteria require it to handle partial writes and boot from primary partition on failure. A functional OTA state machine for STM32F4 with dual-bank flash and bootloader handoff is 2-4 weeks of work, not a stub.",
+              "Certificate lifecycle for mTLS per-device (Step 16) is completely undefined. With 100+ devices: Who is the CA? What is the certificate rotation schedule? What happens when a device cert expires mid-operation? There is no PKI infrastructure step anywhere in this plan.",
+              "SBOM generation is placed at Step 2, before 95% of the codebase exists. SBOM must be a continuous process regenerated on every dependency change, not a one-time artifact. The SBOM produced at Step 2 will be obsolete by Step 5.",
+              "Step 19 requires 'zero message loss during Kafka broker failover' but Step 1 provisions a single-node Kafka. You cannot test multi-broker failover against a single-node cluster. A multi-broker setup with replication factor >= 2 and min.insync.replicas = 2 is required for this test to be meaningful.",
+              "No observability stack is defined anywhere. Steps mention metrics endpoints, but there is no Prometheus scrape config, Grafana dashboard, or log aggregation (Loki/ELK) step. Operators cannot monitor a production industrial IoT system through raw /metrics endpoints.",
+              "WCAG 2.1 AA (Step 13 acceptance criteria) is a significant standalone effort typically requiring an accessibility specialist and multiple audit/fix cycles. Listing it as a checkbox on a frontend step with no dedicated process or resource allocation is wishful thinking.",
+              "Step 3 sets a 365-day retention policy without regulatory analysis. Industrial maintenance records for equipment covered by regulations like OSHA 29 CFR 1910.217 or EU Machinery Directive may require 3-10 years. This number was chosen arbitrarily."
+            ],
+            "suggestions": [
+              "Promote API design to Step 2 or 3 (after DB schema, before any service implementation). Define the canonical sensor payload schema, Kafka message envelope, and REST contracts before firmware or ingestion services are written. Use a shared Protobuf or JSON Schema repo as the single source of truth.",
+              "Replace the ML acceptance criteria with data-availability gates: Step 10 should first define what historical training data is required (source, volume, labeling), whether synthetic data generation is acceptable for MVP, and what the fallback is if F1 < 0.80 on real data. Do not accept metric targets against nonexistent data.",
+              "Benchmark Python MQTT ingestion throughput early. Add a Step 5a spike: build a minimal ingestion loop and load-test it against the Mosquitto broker before committing to the architecture. If Python cannot hit 10k msg/s with validation, you need a Go or Rust ingestion layer, or a simpler validation strategy (async/deferred schema check).",
+              "Replace pydnp3 with a proven DNP3 stack. Evaluate Automatak's DNP3 (C++ with Python bindings, actively maintained, SA5 support) or implement the DNP3 adapter as a sidecar using a battle-tested C library. Document the DNP3 feature matrix required and verify library support before committing.",
+              "Add a PKI/Certificate Management step between Steps 2 and 16. Define the CA hierarchy (offline root CA, intermediate CA), device certificate template, issuance workflow (CSR at provisioning time), rotation policy, and OCSP/CRL distribution. Without this, mTLS is an intent, not an implementation.",
+              "Add a multi-broker Kafka cluster to the dev Docker Compose from Step 1 (3-node cluster, replication factor 2). The failover test in Step 19 is only meaningful if the dev and staging environments match the topology being tested.",
+              "Add a Step 1b or Step 7b for observability infrastructure: Prometheus + Grafana + structured log aggregation. Define alert thresholds for ingestion lag, DB write latency, and Kafka consumer group lag. Industrial operators need dashboards, not raw metrics endpoints.",
+              "Decouple the firmware OTA from the ingestion service timeline. Create a dedicated OTA management service with a proper bootloader handoff protocol, cryptographic image verification (Ed25519 or ECDSA), and rollback mechanism. This is not a stub \u2014 scope it as a full task.",
+              "Define a data seeding and historical backfill strategy before Step 10. Either source real historical sensor datasets (NASA CMAPSS, PRONOSTIA bearings), generate synthetic run-to-failure data with a physics-based simulator, or descope LSTM RUL to anomaly detection only for MVP.",
+              "Separate the safety_engineer and security_engineer roles. IEC 62443 security engineering and functional safety engineering are distinct disciplines with different competency requirements. Assigning both to one role understates the required expertise."
+            ],
+            "missing": [
+              "PKI / Certificate Authority infrastructure for device identity provisioning \u2014 no CA, no issuance workflow, no rotation policy defined anywhere.",
+              "Canonical data contract (Protobuf schema or shared JSON Schema registry) shared between firmware, ingestion services, and Kafka consumers \u2014 currently each step invents its own schema.",
+              "Historical training dataset strategy for ML models \u2014 F1/MAE acceptance criteria are meaningless without a defined dataset source.",
+              "Multi-broker Kafka topology for failover testing \u2014 single-node Kafka cannot validate the Step 19 zero-message-loss acceptance criterion.",
+              "Observability stack \u2014 Prometheus, Grafana, and log aggregation are entirely absent from the plan.",
+              "Disaster recovery \u2014 no RPO/RTO, no TimescaleDB backup schedule, no multi-AZ strategy.",
+              "JWT key rotation procedure \u2014 RS256 keys expire; there is no defined process for rotating signing keys without downtime.",
+              "MQTT broker-level rate limiting and topic ACL policy \u2014 rate limiting is only defined at the API layer; a compromised device can flood the broker unchecked.",
+              "Device provisioning workflow \u2014 how does a new edge device receive its mTLS certificate and initial configuration at factory or field installation time?",
+              "Emergency override for SCADA HITL approval \u2014 what happens when an actuator command is safety-critical and the approver is unavailable? No degraded-mode procedure is defined.",
+              "Continuous SBOM pipeline \u2014 SBOM is a one-time artifact at Step 2 but must be regenerated on every dependency change to remain valid for IEC 62443 compliance.",
+              "DNP3 feature matrix validation against pydnp3 capabilities before committing to that library."
+            ],
+            "security_risks": [
+              "No broker-level MQTT topic ACL or rate limiting. A single compromised device with a valid client certificate can publish to any topic at any rate, enabling sensor data spoofing or DoS of the ingestion pipeline.",
+              "DNP3 Secure Authentication v5 (SA5) is not explicitly required. Without SA5, the DNP3 link is vulnerable to spoofed master station commands \u2014 a well-documented ICS attack vector (cf. NERC CIP).",
+              "JWT key rotation is undefined. If the RS256 private key is compromised, there is no documented revocation or rotation procedure. Long-lived API keys (M2M) are particularly high risk without a rotation schedule.",
+              "OTA firmware images lack a defined cryptographic signing and verification scheme. The plan mentions 'firmware signing enabled' as an acceptance criterion but provides no signing key management, verification implementation, or rollback-on-invalid-signature behavior.",
+              "No intrusion detection or anomaly monitoring at the network level. IEC 62443-3-3 SR 6.1 requires security audit logging, but there is no SIEM or network-level IDS/IPS step. A lateral movement from DMZ to internal zone would go undetected.",
+              "Redis Pub/Sub for WebSocket fan-out (Step 12) uses fire-and-forget semantics. Alert notifications delivered over WebSocket can be silently dropped if a client is transiently disconnected. For a safety-relevant alert system, this is a reliability failure.",
+              "Secrets backend is 'HashiCorp Vault or AWS Secrets Manager' \u2014 the 'or' is unresolved at the point services are built. Services written assuming Vault dynamic secrets will not work with AWS Secrets Manager without code changes, and vice versa."
+            ],
+            "summary": "This plan has solid architectural ambition and covers the right problem surface \u2014 MQTT/OPC-UA ingestion, TimescaleDB time-series, ML for predictive maintenance, IEC 62443 compliance, and SCADA integration are all present and sequenced with genuine thought. However, it contains several category-level failures that would cause production rework: the API is designed after implementation (violating API-first, guaranteeing schema drift), the ML acceptance criteria are evaluated against data that does not exist and cannot exist at sprint time, the Python ingestion throughput target is unrealistic under load with validation enabled, and the PKI infrastructure required to make mTLS actually work across 100+ devices is entirely absent. The DNP3 library choice is a known minefield that the plan treats as a solved problem. The sequential bottleneck through Steps 5-10 \u2192 11 \u2192 12 \u2192 13 means any ML delay (near-certain) freezes the entire frontend. For an MVP/prototype this would score higher, but the plan explicitly targets IEC 62443 compliance and production-grade industrial deployment \u2014 at that bar, the missing PKI lifecycle, undefined OTA signing scheme, absent observability stack, and unvalidated throughput assumptions are not polish items; they are ship-blocking gaps. Fundamental rework required on API sequencing, ML data strategy, library validation, and certificate infrastructure before this plan is production-credible.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "API design (Step 11) comes AFTER all backend services (Steps 5-10) are built. Services built without a contract will need rework when the OpenAPI spec is formalized. This is API-last, not API-first, and will cause schema drift between services.",
+                "ML training data does not exist. Step 10 requires F1 >= 0.80 for Isolation Forest and MAE <= 10% RMSE for LSTM RUL, but TimescaleDB will only contain days-old synthetic dev data at this point. LSTM RUL requires labeled run-to-failure datasets that cannot be generated during a development sprint.",
+                "Python/asyncio MQTT ingestion at 10,000 msg/s (Step 5) with per-message JSON Schema validation and Kafka producer overhead is unrealistic for a single process. Python GIL + aiomqtt + jsonschema + aiokafka will saturate well below this target. No benchmarking strategy precedes the commitment.",
+                "Firmware (Step 4) and MQTT ingestion (Step 5) are developed in parallel with no shared payload contract. If the STM32 firmware publishes one JSON structure and the ingestion service validates a different schema, you get 100% DLQ on first integration. No protocol contract document is defined before either step starts.",
+                "DNP3 via pydnp3 (Step 9) is a critical dependency risk. pydnp3 is minimally maintained, lacks DNP3 Secure Authentication v5 (SA5), and has incomplete unsolicited reporting support. Industrial RTUs frequently require SA5. This library will likely block the SCADA adapter in production.",
+                "Step 11 (API) depends on Steps 3, 8, 9, 10. Step 12 (FastAPI impl) depends on Step 11. Step 13 (frontend) depends on Step 12. This creates a 6-step sequential critical path through the middle of the project \u2014 ML completion gates the entire UI. Any ML delay (and ML always delays) freezes frontend development.",
+                "OTA firmware update is described as a 'stub' (Step 4) but the acceptance criteria require it to handle partial writes and boot from primary partition on failure. A functional OTA state machine for STM32F4 with dual-bank flash and bootloader handoff is 2-4 weeks of work, not a stub.",
+                "Certificate lifecycle for mTLS per-device (Step 16) is completely undefined. With 100+ devices: Who is the CA? What is the certificate rotation schedule? What happens when a device cert expires mid-operation? There is no PKI infrastructure step anywhere in this plan.",
+                "SBOM generation is placed at Step 2, before 95% of the codebase exists. SBOM must be a continuous process regenerated on every dependency change, not a one-time artifact. The SBOM produced at Step 2 will be obsolete by Step 5.",
+                "Step 19 requires 'zero message loss during Kafka broker failover' but Step 1 provisions a single-node Kafka. You cannot test multi-broker failover against a single-node cluster. A multi-broker setup with replication factor >= 2 and min.insync.replicas = 2 is required for this test to be meaningful.",
+                "No observability stack is defined anywhere. Steps mention metrics endpoints, but there is no Prometheus scrape config, Grafana dashboard, or log aggregation (Loki/ELK) step. Operators cannot monitor a production industrial IoT system through raw /metrics endpoints.",
+                "WCAG 2.1 AA (Step 13 acceptance criteria) is a significant standalone effort typically requiring an accessibility specialist and multiple audit/fix cycles. Listing it as a checkbox on a frontend step with no dedicated process or resource allocation is wishful thinking.",
+                "Step 3 sets a 365-day retention policy without regulatory analysis. Industrial maintenance records for equipment covered by regulations like OSHA 29 CFR 1910.217 or EU Machinery Directive may require 3-10 years. This number was chosen arbitrarily."
+              ],
+              "suggestions": [
+                "Promote API design to Step 2 or 3 (after DB schema, before any service implementation). Define the canonical sensor payload schema, Kafka message envelope, and REST contracts before firmware or ingestion services are written. Use a shared Protobuf or JSON Schema repo as the single source of truth.",
+                "Replace the ML acceptance criteria with data-availability gates: Step 10 should first define what historical training data is required (source, volume, labeling), whether synthetic data generation is acceptable for MVP, and what the fallback is if F1 < 0.80 on real data. Do not accept metric targets against nonexistent data.",
+                "Benchmark Python MQTT ingestion throughput early. Add a Step 5a spike: build a minimal ingestion loop and load-test it against the Mosquitto broker before committing to the architecture. If Python cannot hit 10k msg/s with validation, you need a Go or Rust ingestion layer, or a simpler validation strategy (async/deferred schema check).",
+                "Replace pydnp3 with a proven DNP3 stack. Evaluate Automatak's DNP3 (C++ with Python bindings, actively maintained, SA5 support) or implement the DNP3 adapter as a sidecar using a battle-tested C library. Document the DNP3 feature matrix required and verify library support before committing.",
+                "Add a PKI/Certificate Management step between Steps 2 and 16. Define the CA hierarchy (offline root CA, intermediate CA), device certificate template, issuance workflow (CSR at provisioning time), rotation policy, and OCSP/CRL distribution. Without this, mTLS is an intent, not an implementation.",
+                "Add a multi-broker Kafka cluster to the dev Docker Compose from Step 1 (3-node cluster, replication factor 2). The failover test in Step 19 is only meaningful if the dev and staging environments match the topology being tested.",
+                "Add a Step 1b or Step 7b for observability infrastructure: Prometheus + Grafana + structured log aggregation. Define alert thresholds for ingestion lag, DB write latency, and Kafka consumer group lag. Industrial operators need dashboards, not raw metrics endpoints.",
+                "Decouple the firmware OTA from the ingestion service timeline. Create a dedicated OTA management service with a proper bootloader handoff protocol, cryptographic image verification (Ed25519 or ECDSA), and rollback mechanism. This is not a stub \u2014 scope it as a full task.",
+                "Define a data seeding and historical backfill strategy before Step 10. Either source real historical sensor datasets (NASA CMAPSS, PRONOSTIA bearings), generate synthetic run-to-failure data with a physics-based simulator, or descope LSTM RUL to anomaly detection only for MVP.",
+                "Separate the safety_engineer and security_engineer roles. IEC 62443 security engineering and functional safety engineering are distinct disciplines with different competency requirements. Assigning both to one role understates the required expertise."
+              ],
+              "missing": [
+                "PKI / Certificate Authority infrastructure for device identity provisioning \u2014 no CA, no issuance workflow, no rotation policy defined anywhere.",
+                "Canonical data contract (Protobuf schema or shared JSON Schema registry) shared between firmware, ingestion services, and Kafka consumers \u2014 currently each step invents its own schema.",
+                "Historical training dataset strategy for ML models \u2014 F1/MAE acceptance criteria are meaningless without a defined dataset source.",
+                "Multi-broker Kafka topology for failover testing \u2014 single-node Kafka cannot validate the Step 19 zero-message-loss acceptance criterion.",
+                "Observability stack \u2014 Prometheus, Grafana, and log aggregation are entirely absent from the plan.",
+                "Disaster recovery \u2014 no RPO/RTO, no TimescaleDB backup schedule, no multi-AZ strategy.",
+                "JWT key rotation procedure \u2014 RS256 keys expire; there is no defined process for rotating signing keys without downtime.",
+                "MQTT broker-level rate limiting and topic ACL policy \u2014 rate limiting is only defined at the API layer; a compromised device can flood the broker unchecked.",
+                "Device provisioning workflow \u2014 how does a new edge device receive its mTLS certificate and initial configuration at factory or field installation time?",
+                "Emergency override for SCADA HITL approval \u2014 what happens when an actuator command is safety-critical and the approver is unavailable? No degraded-mode procedure is defined.",
+                "Continuous SBOM pipeline \u2014 SBOM is a one-time artifact at Step 2 but must be regenerated on every dependency change to remain valid for IEC 62443 compliance.",
+                "DNP3 feature matrix validation against pydnp3 capabilities before committing to that library."
+              ],
+              "security_risks": [
+                "No broker-level MQTT topic ACL or rate limiting. A single compromised device with a valid client certificate can publish to any topic at any rate, enabling sensor data spoofing or DoS of the ingestion pipeline.",
+                "DNP3 Secure Authentication v5 (SA5) is not explicitly required. Without SA5, the DNP3 link is vulnerable to spoofed master station commands \u2014 a well-documented ICS attack vector (cf. NERC CIP).",
+                "JWT key rotation is undefined. If the RS256 private key is compromised, there is no documented revocation or rotation procedure. Long-lived API keys (M2M) are particularly high risk without a rotation schedule.",
+                "OTA firmware images lack a defined cryptographic signing and verification scheme. The plan mentions 'firmware signing enabled' as an acceptance criterion but provides no signing key management, verification implementation, or rollback-on-invalid-signature behavior.",
+                "No intrusion detection or anomaly monitoring at the network level. IEC 62443-3-3 SR 6.1 requires security audit logging, but there is no SIEM or network-level IDS/IPS step. A lateral movement from DMZ to internal zone would go undetected.",
+                "Redis Pub/Sub for WebSocket fan-out (Step 12) uses fire-and-forget semantics. Alert notifications delivered over WebSocket can be silently dropped if a client is transiently disconnected. For a safety-relevant alert system, this is a reliability failure.",
+                "Secrets backend is 'HashiCorp Vault or AWS Secrets Manager' \u2014 the 'or' is unresolved at the point services are built. Services written assuming Vault dynamic secrets will not work with AWS Secrets Manager without code changes, and vice versa."
+              ],
+              "summary": "This plan has solid architectural ambition and covers the right problem surface \u2014 MQTT/OPC-UA ingestion, TimescaleDB time-series, ML for predictive maintenance, IEC 62443 compliance, and SCADA integration are all present and sequenced with genuine thought. However, it contains several category-level failures that would cause production rework: the API is designed after implementation (violating API-first, guaranteeing schema drift), the ML acceptance criteria are evaluated against data that does not exist and cannot exist at sprint time, the Python ingestion throughput target is unrealistic under load with validation enabled, and the PKI infrastructure required to make mTLS actually work across 100+ devices is entirely absent. The DNP3 library choice is a known minefield that the plan treats as a solved problem. The sequential bottleneck through Steps 5-10 \u2192 11 \u2192 12 \u2192 13 means any ML delay (near-certain) freezes the entire frontend. For an MVP/prototype this would score higher, but the plan explicitly targets IEC 62443 compliance and production-grade industrial deployment \u2014 at that bar, the missing PKI lifecycle, undefined OTA signing scheme, absent observability stack, and unvalidated throughput assumptions are not polish items; they are ship-blocking gaps. Fundamental rework required on API sequencing, ML data strategy, library validation, and certificate infrastructure before this plan is production-credible.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T07:44:21.949497+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 112.03,
+      "critic_plan": 128.18
+    }
+  }
+}

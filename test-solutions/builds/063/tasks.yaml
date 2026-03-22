@@ -1,0 +1,240 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements, success metrics, and moderation policy
+      framework for the UGC content moderation system. Establish toxicity thresholds,
+      NSFW classification categories, SLA targets for review queue (P0/P1/P2), and
+      appeal resolution time targets.
+    agent_role: product_manager
+    acceptance_criteria:
+    - 'PRD covers all five moderation modes: text, image, video, appeal, human review'
+    - Confidence threshold matrix defined per content type and severity category
+    - SLA targets defined and agreed upon for each queue tier
+    - Escalation policy documented for edge cases and high-severity content
+    depends_on: []
+  UX_DESIGN:
+    description: Design moderator review queue dashboard, appeal management interface,
+      and content flagging UX. Create wireframes for the human reviewer workflow,
+      decision interface (approve/reject/escalate), and reporter-facing appeal submission
+      form.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all six screens with annotated interaction flows
+    - Review queue shows content preview, metadata, AI confidence score, and prior
+      decisions
+    - Decision panel supports keyboard-only operation for high-throughput moderators
+    - Appeal form collects structured reason + optional evidence attachment
+    depends_on:
+    - 1
+  DATA:
+    description: Design the data pipeline and analytics schema for content moderation.
+      Define ingestion streams for text/image/video content, ML feature extraction
+      pipelines, moderation decision events, and reporting aggregations. Set up data
+      retention and anonymization policies.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Data flow diagram covers all five content types end-to-end
+    - Event schema versioned with Avro or Pydantic models
+    - Retention and anonymization policy documented and implemented
+    - 'Analytics schema supports funnel queries: submitted → auto-decided → queued
+      → reviewed → appealed'
+    depends_on:
+    - 1
+  DATABASE:
+    description: Design and implement the database schema for content submissions,
+      moderation decisions, human review queue, appeal records, and moderator audit
+      trail. Use PostgreSQL with row-level security for multi-tenant isolation.
+    agent_role: developer
+    acceptance_criteria:
+    - All tables created with migrations using Alembic
+    - Foreign key constraints enforce referential integrity
+    - Row-level security policies pass test with two isolated tenants
+    - Indexes confirmed via EXPLAIN ANALYZE on top-10 query patterns
+    depends_on:
+    - 3
+  ML_MODEL:
+    description: 'Build and train the text toxicity detection model pipeline. Fine-tune
+      a transformer (e.g., DistilBERT or RoBERTa) on combined toxicity datasets (Jigsaw,
+      HatEval). Implement multi-label classification for toxicity categories: hate,
+      harassment, threats, explicit, spam. Export to ONNX for low-latency inference.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model achieves ≥0.92 accuracy and ≥0.88 macro-F1 on held-out test set
+    - ONNX export verified with identical outputs vs PyTorch model (max delta 1e-5)
+    - Inference latency P99 ≤50ms on single CPU core
+    - 'Model card documented: training data, intended use, known limitations, bias
+      evaluation'
+    - Confusion matrix and per-class metrics logged to MLflow
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 3
+  API:
+    description: 'Design the OpenAPI specification for all moderation service endpoints:
+      content submission, async status polling, decision retrieval, human review queue
+      management, appeal CRUD, moderator action recording, and model performance metrics.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec passes spectral lint with zero errors
+    - 'All async endpoints follow job_id polling pattern with status enum: queued/processing/complete/failed'
+    - Error responses use RFC 7807 Problem Details format
+    - Rate limit headers (X-RateLimit-*) documented on all endpoints
+    - Auth schemes documented with example tokens for testing
+    depends_on:
+    - 1
+  CONFIG:
+    description: Set up the multi-agent coordinator pattern for the moderation pipeline.
+      Configure the coordinator agent that routes content to specialist sub-agents
+      (TextModerationAgent, ImageModerationAgent, VideoModerationAgent, AppealAgent),
+      manages confidence-based escalation to human review, and aggregates decisions.
+      Wire the human_in_the_loop pattern for low-confidence and appeal cases.
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator routes text/image/video to correct specialist agent based on content_type
+    - Escalation to human review queue triggered when confidence < 0.75
+    - CSAM and self-harm categories always route to human review regardless of confidence
+    - AppealAgent retrieves original decision context before re-evaluation
+    - HITL checkpoints create proposals in the approval store, not auto-execute
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Implement the core moderation service: async job queue (Celery +
+      Redis), content ingestion and storage (S3-compatible), ML model inference workers
+      (text + image), decision engine with threshold application, and audit event
+      emission to the data pipeline.'
+    agent_role: developer
+    acceptance_criteria:
+    - POST /v1/moderate/text returns job_id within 200ms; result ready within 500ms
+      P99
+    - POST /v1/moderate/image returns job_id within 200ms; result ready within 1s
+      P99
+    - POST /v1/moderate/video returns job_id within 200ms; result ready within 5min
+      P99 for 10min video
+    - All moderation decisions written to audit log with trace_id, model_version,
+      confidence, label
+    - Worker failures trigger automatic retry with exponential backoff (max 3 attempts)
+    depends_on:
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+  SECURITY:
+    description: 'Perform security review and threat modeling for the content moderation
+      system. Address: content injection via malicious payloads, model evasion attacks
+      (adversarial text/images), CSAM handling compliance (mandatory reporting, encrypted
+      storage, access logs), moderator credential security, and multi-tenant data
+      isolation.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model documented with mitigations for all HIGH/CRITICAL threats
+    - CSAM storage uses separate encryption key with access audit log
+    - File upload endpoint rejects non-image/video MIME types and validates magic
+      bytes
+    - SQL injection and XSS tests pass on all API endpoints
+    - 'Multi-tenant isolation verified: tenant A cannot retrieve tenant B content
+      via any endpoint'
+    depends_on:
+    - 10
+    - 11
+    - 12
+  FRONTEND:
+    description: 'Build the moderator review queue dashboard: prioritized content
+      list with filters (content type, priority, SLA status), content preview panel
+      (text render / image display / video player with flagged timestamps), AI decision
+      metadata (label, confidence, model version), and one-click approve/reject/escalate
+      decision panel.'
+    agent_role: developer
+    acceptance_criteria:
+    - Queue renders 1000+ items without jank using virtual scrolling
+    - NSFW images blurred by default; video flagged frames highlighted in timeline
+    - Keyboard shortcut A/R/E submits decision without mouse interaction
+    - SLA countdown updates every 30 seconds and turns red below 2 hours
+    - Decision submission optimistically updates UI and confirms via API response
+    depends_on:
+    - 2
+    - 11
+  INFRA:
+    description: 'Containerize all services and set up CI/CD pipeline. Docker Compose
+      for local development. Kubernetes manifests for production with HPA for moderation
+      workers. GitHub Actions pipeline: lint → test → build → security scan → push
+      → deploy. Set up MinIO (local) / S3 (prod) for content storage.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up brings all services healthy within 60 seconds
+    - CI pipeline completes in under 10 minutes on standard GitHub runner
+    - Trivy scan blocks deployment on CRITICAL CVEs
+    - HPA scales text_worker from 2→8 replicas under 10x load within 90 seconds
+    - Zero-downtime rolling deployment verified with load test during deploy
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 14
+    - 15
+  DEVOPS:
+    description: 'Set up observability stack: Prometheus metrics collection from all
+      services, Grafana dashboards (moderation throughput, model latency, queue depth,
+      SLA breach rate), structured JSON logging to ELK stack, distributed tracing
+      with OpenTelemetry, and PagerDuty alerting for P0 SLA breach and model error
+      spikes.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All six Grafana dashboards populated with real data from staging environment
+    - P0 SLA breach alert fires within 1 minute of breach in test scenario
+    - Distributed trace links API request → worker task → DB write end-to-end
+    - Log query retrieves all events for a given content_id within 5 seconds
+    - Alert runbooks linked in each alert annotation
+    depends_on:
+    - 16
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for decision engine,
+      queue priority logic, and appeal state machine; integration tests for full moderation
+      pipeline (text/image/video submission → decision); contract tests for OpenAPI
+      spec compliance; load tests simulating peak UGC traffic; and adversarial tests
+      for model evasion attempts.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥90% for decision engine, queue, and appeal state machine
+      modules
+    - All integration tests pass against a live test environment with real ONNX models
+    - 'Load test: 500 text RPS sustained for 5 minutes with P99 <500ms and zero 5xx
+      errors'
+    - Adversarial test suite documents model robustness score per evasion category
+    - Contract tests validate every endpoint against OpenAPI spec with zero schema
+      violations
+    depends_on:
+    - 10
+    - 11
+    - 12
+  LEGAL:
+    description: 'Review legal obligations for UGC content moderation: CSAM mandatory
+      reporting to NCMEC, GDPR/CCPA data subject rights (erasure, portability), DSA
+      transparency reporting requirements for EU platforms, and moderator wellbeing
+      obligations (content exposure limits, psychological support access).'
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - NCMEC reporting flow documented and wired into P0 queue for CSAM items
+    - GDPR erasure request removes content and pseudonymizes moderation decisions
+    - DSA transparency report template covers all required Art.15 disclosures
+    - Moderator wellbeing policy includes daily exposure limits and mandatory break
+      scheduling
+    depends_on:
+    - 1
+    - 13
+  TRAINING:
+    description: 'Create moderator onboarding materials: policy guide for each content
+      category, decision framework reference card, UI walkthrough video, calibration
+      quiz with annotated examples, and wellness resources. Create platform integration
+      guide for API customers.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Policy guide covers all six content categories with examples of clear, borderline,
+      and edge cases
+    - New moderator achieves ≥85% agreement with expert labels on calibration quiz
+    - API quickstart gets a working text moderation call in under 5 minutes
+    - SDK examples tested and verified against live sandbox environment
+    depends_on:
+    - 14
+    - 15
+    - 20

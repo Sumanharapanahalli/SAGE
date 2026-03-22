@@ -1,0 +1,63 @@
+project_name: clinical_trial_manager
+display_name: Clinical Trial Manager
+version: 1.0.0
+domain: medtech
+description: Clinical trial management system for tracking patient enrollment, randomization,
+  adverse events, and regulatory submissions. 21 CFR Part 11 compliant electronic
+  signatures.
+detected_domains: []
+compliance_standards:
+- 21 CFR Part 11
+- ICH GCP
+- HIPAA
+- GDPR
+task_types:
+- AGENTIC
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- FRONTEND
+- LEGAL
+- OPERATIONS
+- QA
+- REGULATORY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- developer
+- devops_engineer
+- legal_advisor
+- operations_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

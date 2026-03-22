@@ -1,0 +1,1129 @@
+{
+  "run_id": "85a95559-559c-4cd7-b222-01dd55a7c900",
+  "status": {
+    "run_id": "85a95559-559c-4cd7-b222-01dd55a7c900",
+    "solution_name": "crm_platform",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T04:54:42.728671+00:00",
+    "updated_at": "2026-03-22T04:59:06.059371+00:00",
+    "product_description": "CRM platform with contact management, sales pipeline, email automation, lead scoring, reporting dashboards, and Salesforce migration tools.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze CRM market landscape: Salesforce, HubSpot, Pipedrive positioning. Identify addressable segments, pricing benchmarks, migration pain points, and differentiation opportunities for crm_platform.",
+        "payload": {
+          "competitors": [
+            "Salesforce",
+            "HubSpot",
+            "Pipedrive",
+            "Zoho CRM",
+            "Monday CRM"
+          ],
+          "focus_areas": [
+            "pricing_tiers",
+            "migration_friction",
+            "lead_scoring_maturity",
+            "email_automation_gaps"
+          ],
+          "deliverable": "market_research_report.md"
+        },
+        "acceptance_criteria": [
+          "Competitor feature matrix covering all 6 product areas is complete",
+          "Pricing benchmarks documented for at least 5 competitors",
+          "Top 3 migration pain points from Salesforce identified with evidence",
+          "TAM/SAM/SOM estimates included with sources"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user personas (sales rep, sales manager, RevOps, admin), core user stories for all 6 feature areas, and process flows for lead-to-close lifecycle.",
+        "payload": {
+          "personas": [
+            "sales_rep",
+            "sales_manager",
+            "revops_analyst",
+            "crm_admin"
+          ],
+          "feature_areas": [
+            "contact_management",
+            "sales_pipeline",
+            "email_automation",
+            "lead_scoring",
+            "reporting_dashboards",
+            "salesforce_migration"
+          ],
+          "deliverable": "business_requirements.md"
+        },
+        "acceptance_criteria": [
+          "At least 5 user stories per persona with acceptance criteria",
+          "Lead-to-close process flow diagram covers all pipeline stages",
+          "Salesforce migration user journey documented end-to-end",
+          "ROI analysis quantifies time-savings vs. Salesforce per persona",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce product requirements document (PRD), phased roadmap (MVP \u2192 v1 \u2192 v2), feature prioritization matrix (RICE scoring), and success metrics (activation rate, pipeline velocity, churn).",
+        "payload": {
+          "methodology": "RICE_scoring",
+          "phases": [
+            "MVP",
+            "v1_general_availability",
+            "v2_enterprise"
+          ],
+          "deliverable": "PRD.md"
+        },
+        "acceptance_criteria": [
+          "PRD covers all 6 feature areas with scope boundaries per phase",
+          "RICE scores assigned to every feature in backlog",
+          "MVP scope is achievable in \u226412 weeks by a 3-person team",
+          "Success metrics defined with baseline, target, and measurement method"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 4,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model: infrastructure cost projections, SaaS pricing tiers (Starter/Growth/Enterprise), unit economics (CAC, LTV, payback period), and 3-year P&L forecast.",
+        "payload": {
+          "pricing_model": "per_seat_tiered",
+          "tiers": [
+            "starter",
+            "growth",
+            "enterprise"
+          ],
+          "cost_drivers": [
+            "cloud_infra",
+            "email_sends",
+            "ai_lead_scoring"
+          ],
+          "deliverable": "financial_model.xlsx"
+        },
+        "acceptance_criteria": [
+          "Unit economics model includes CAC, LTV, LTV:CAC ratio, payback period",
+          "Infrastructure cost modeled at 100, 1K, 10K seat cohorts",
+          "Three pricing tiers defined with feature gates and per-seat prices",
+          "Break-even analysis shows month of profitability under conservative assumptions",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 5,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), Data Processing Agreement (DPA) template for enterprise customers, and email automation CAN-SPAM/CASL compliance review.",
+        "payload": {
+          "regulations": [
+            "GDPR",
+            "CCPA",
+            "CAN-SPAM",
+            "CASL"
+          ],
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "dpa_template.md",
+            "email_compliance_checklist.md"
+          ],
+          "data_residency_regions": [
+            "US",
+            "EU"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy covers all GDPR Articles 13/14 disclosure requirements",
+          "DPA template includes SCCs for EU data transfers",
+          "Email automation compliance checklist covers unsubscribe, sender ID, and consent requirements",
+          "ToS includes data ownership, SLA definitions, and termination clauses",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 6,
+        "task_type": "SECURITY",
+        "description": "Produce threat model (STRIDE) for CRM platform covering contact data, email credentials, pipeline data, and Salesforce OAuth tokens. Define security architecture: encryption at rest/transit, RBAC, audit logging.",
+        "payload": {
+          "methodology": "STRIDE",
+          "sensitive_data": [
+            "contact_pii",
+            "email_credentials",
+            "oauth_tokens",
+            "pipeline_financials"
+          ],
+          "controls": [
+            "AES-256_at_rest",
+            "TLS_1.3_transit",
+            "RBAC",
+            "audit_log",
+            "MFA"
+          ],
+          "deliverable": "threat_model.md"
+        },
+        "acceptance_criteria": [
+          "STRIDE analysis covers all 6 major components with mitigations",
+          "RBAC matrix defined for all 4 personas with least-privilege principle",
+          "Salesforce OAuth token storage design reviewed and approved",
+          "Audit log schema captures actor, action, resource, timestamp for all mutations"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 7,
+        "task_type": "UX_DESIGN",
+        "description": "User research synthesis (jobs-to-be-done), information architecture, wireframes for all major flows: contact list, pipeline kanban, email campaign builder, lead score card, dashboard, and Salesforce import wizard.",
+        "payload": {
+          "research_method": "jobs_to_be_done",
+          "wireframe_fidelity": "mid_fidelity",
+          "flows": [
+            "contact_management",
+            "pipeline_kanban",
+            "email_builder",
+            "lead_score_card",
+            "reporting_dashboard",
+            "salesforce_import_wizard"
+          ],
+          "accessibility_standard": "WCAG_2.1_AA",
+          "deliverable": "wireframes/"
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all 6 product areas with annotated interaction notes",
+          "Pipeline kanban supports drag-and-drop stage transitions",
+          "Email builder wireframe shows visual block editor (not raw HTML)",
+          "Salesforce import wizard wireframe covers field-mapping and conflict resolution steps",
+          "Accessibility audit checklist passed (color contrast, keyboard nav, ARIA roles)"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 8,
+        "task_type": "COMPLIANCE",
+        "description": "Define SOC 2 Type II control framework for crm_platform: map product features to Trust Service Criteria (Security, Availability, Confidentiality), produce evidence collection plan and control matrix.",
+        "payload": {
+          "standard": "SOC_2_Type_II",
+          "trust_service_criteria": [
+            "security",
+            "availability",
+            "confidentiality"
+          ],
+          "evidence_artifacts": [
+            "access_control_policy",
+            "encryption_policy",
+            "incident_response_plan",
+            "vendor_risk_assessment",
+            "change_management_log"
+          ],
+          "deliverable": "soc2_control_matrix.md"
+        },
+        "acceptance_criteria": [
+          "All CC, A, and C criteria mapped to at least one technical or operational control",
+          "Evidence collection plan lists owner, frequency, and artifact format per control",
+          "Gap analysis identifies controls not yet implemented",
+          "Audit readiness checklist produced for each Trust Service Criterion"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 9,
+        "task_type": "DATABASE",
+        "description": "Design relational schema for CRM core: contacts, accounts, deals, activities, pipeline_stages, email_campaigns, email_sends, lead_scores, users, roles, audit_events. Include indexes, foreign keys, and soft-delete patterns.",
+        "payload": {
+          "engine": "PostgreSQL_16",
+          "orm": "SQLAlchemy",
+          "tables": [
+            "contacts",
+            "accounts",
+            "deals",
+            "pipeline_stages",
+            "activities",
+            "email_campaigns",
+            "email_sends",
+            "lead_scores",
+            "lead_score_rules",
+            "users",
+            "roles",
+            "permissions",
+            "audit_events",
+            "salesforce_sync_log"
+          ],
+          "patterns": [
+            "soft_delete",
+            "optimistic_locking",
+            "row_level_security"
+          ],
+          "deliverable": "schema.sql"
+        },
+        "acceptance_criteria": [
+          "ERD covers all 14 tables with relationships and cardinalities",
+          "Row-level security policies enforce tenant isolation",
+          "All foreign keys have cascading delete or restrict rules defined",
+          "Indexes defined for all query patterns identified in user stories",
+          "Migration files runnable via Alembic from empty schema to full schema"
+        ],
+        "depends_on": [
+          3,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 spec for all CRM REST endpoints: contacts CRUD, pipeline stages, deals, activities, email campaigns, lead scoring rules, reports, Salesforce OAuth + sync, and webhook delivery.",
+        "payload": {
+          "spec_format": "OpenAPI_3.1",
+          "auth": "JWT_Bearer + OAuth2_Salesforce",
+          "endpoint_groups": [
+            "contacts",
+            "accounts",
+            "deals",
+            "pipeline",
+            "activities",
+            "email_campaigns",
+            "email_sends",
+            "lead_scoring",
+            "reports",
+            "salesforce_integration",
+            "webhooks",
+            "users",
+            "admin"
+          ],
+          "deliverable": "openapi.yaml"
+        },
+        "acceptance_criteria": [
+          "All endpoints documented with request/response schemas and error codes",
+          "Pagination (cursor-based) defined for all list endpoints",
+          "Salesforce OAuth flow (authorize \u2192 callback \u2192 token refresh) fully specified",
+          "Webhook delivery spec includes retry policy and signature verification",
+          "OpenAPI spec validates without errors against openapi-validator"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "CONFIG",
+        "description": "Set up monorepo project structure, Python backend (FastAPI + SQLAlchemy + Alembic), React frontend (Vite + TypeScript), Docker Compose for local dev (Postgres, Redis, Mailhog), pre-commit hooks, and environment config.",
+        "payload": {
+          "structure": "monorepo",
+          "backend_stack": [
+            "FastAPI",
+            "SQLAlchemy",
+            "Alembic",
+            "Pydantic_v2",
+            "Celery",
+            "Redis"
+          ],
+          "frontend_stack": [
+            "React_18",
+            "TypeScript",
+            "Vite",
+            "Tailwind_CSS",
+            "React_Query"
+          ],
+          "local_services": [
+            "PostgreSQL_16",
+            "Redis_7",
+            "Mailhog"
+          ],
+          "tooling": [
+            "pre-commit",
+            "ruff",
+            "mypy",
+            "eslint",
+            "prettier"
+          ]
+        },
+        "acceptance_criteria": [
+          "`docker compose up` starts all services with no errors",
+          "Backend server starts on :8000 with `/health` returning 200",
+          "Frontend dev server starts on :3000 with no TypeScript errors",
+          "pre-commit hooks run ruff + mypy on Python, eslint + prettier on TS",
+          ".env.example documents all required environment variables"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement contact management API: CRUD for contacts and accounts, custom field definitions, activity timeline, duplicate detection (fuzzy match on email/phone), bulk import (CSV), and advanced search with filters.",
+        "payload": {
+          "endpoints": [
+            "POST /contacts",
+            "GET /contacts",
+            "GET /contacts/{id}",
+            "PATCH /contacts/{id}",
+            "DELETE /contacts/{id}",
+            "POST /contacts/bulk-import",
+            "GET /contacts/search",
+            "GET /contacts/{id}/activities"
+          ],
+          "features": [
+            "custom_fields",
+            "duplicate_detection",
+            "csv_bulk_import",
+            "elasticsearch_search"
+          ],
+          "duplicate_strategy": "fuzzy_match_email_phone_name"
+        },
+        "acceptance_criteria": [
+          "All CRUD endpoints return correct HTTP status codes and response shapes per OpenAPI spec",
+          "Duplicate detection flags contacts with >85% similarity score before save",
+          "CSV import handles 10K rows without timeout; errors reported per-row",
+          "Custom field definitions stored and returned with contact objects",
+          "Activity timeline returns events sorted desc by timestamp with pagination"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement sales pipeline API: configurable pipeline stages, deal CRUD with stage transitions, weighted forecast calculation, deal activity logging, stuck deal detection (configurable days in stage), and bulk stage move.",
+        "payload": {
+          "endpoints": [
+            "POST /pipelines",
+            "GET /pipelines/{id}/deals",
+            "POST /deals",
+            "PATCH /deals/{id}",
+            "POST /deals/{id}/move",
+            "GET /deals/forecast",
+            "GET /deals/stuck"
+          ],
+          "forecast_method": "weighted_by_stage_probability",
+          "stuck_deal_threshold_days": 14
+        },
+        "acceptance_criteria": [
+          "Stage transition enforces valid-next-stage rules defined in pipeline config",
+          "Weighted forecast aggregates by owner, team, and close date with correct math",
+          "Stuck deal API returns deals exceeding threshold with days_in_stage field",
+          "All deal mutations write to audit_events table",
+          "Bulk stage move handles 500 deals atomically (all succeed or all fail)"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement email automation engine: campaign builder (sequences, triggers, delays), per-contact send scheduling via Celery, open/click tracking (pixel + redirect), unsubscribe handling, bounce/complaint processing, and sending via SMTP/SendGrid.",
+        "payload": {
+          "sequence_triggers": [
+            "contact_created",
+            "deal_stage_changed",
+            "lead_score_threshold",
+            "date_relative",
+            "manual"
+          ],
+          "providers": [
+            "SMTP",
+            "SendGrid"
+          ],
+          "tracking": [
+            "open_pixel",
+            "click_redirect"
+          ],
+          "compliance_hooks": [
+            "unsubscribe_one_click",
+            "list_unsubscribe_header",
+            "bounce_suppression"
+          ]
+        },
+        "acceptance_criteria": [
+          "Campaign sequences support branching on open/click/no-response conditions",
+          "Celery workers schedule sends within 60s of trigger firing",
+          "Open tracking pixel fires and increments open_count atomically",
+          "Unsubscribe link processing suppresses contact within 10s and never sends again",
+          "Bounce/complaint webhooks from SendGrid processed and contact suppressed",
+          "CAN-SPAM required headers (From, Subject, physical address) enforced before send"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement AI-powered lead scoring engine using Multi-Agent Coordinator pattern: coordinator decomposes scoring into specialist agents (demographic fit, behavioral signals, engagement score), aggregates into 0-100 composite score, and supports custom rule overrides.",
+        "payload": {
+          "agentic_pattern": "coordinator",
+          "scoring_dimensions": [
+            "demographic_fit",
+            "behavioral_signals",
+            "email_engagement",
+            "deal_activity",
+            "recency"
+          ],
+          "score_range": "0_to_100",
+          "custom_rules": "weight_overrides_per_dimension",
+          "recompute_trigger": [
+            "contact_updated",
+            "email_opened",
+            "deal_activity",
+            "scheduled_nightly"
+          ]
+        },
+        "acceptance_criteria": [
+          "Coordinator agent decomposes scoring task to 5 specialist dimension agents",
+          "Composite score computed and stored within 5s of trigger event",
+          "Score history preserved per contact (not overwritten)",
+          "Custom rule overrides applied after base model without changing model weights",
+          "Score explanation (top 3 factors) returned via GET /contacts/{id}/lead-score",
+          "Nightly batch recompute completes for 100K contacts in under 30 minutes"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Implement reporting and analytics API: pre-built reports (pipeline by stage, email performance, lead source attribution, activity leaderboard), custom report builder (dimensions + metrics + filters), scheduled report delivery, and CSV/PDF export.",
+        "payload": {
+          "pre_built_reports": [
+            "pipeline_by_stage",
+            "deal_velocity",
+            "email_open_click_rates",
+            "lead_source_attribution",
+            "activity_leaderboard",
+            "revenue_forecast"
+          ],
+          "custom_builder": "dimensions_metrics_filters_groupby",
+          "delivery": [
+            "email_schedule",
+            "webhook"
+          ],
+          "export_formats": [
+            "CSV",
+            "PDF"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 6 pre-built reports return correct aggregates verified against raw DB data",
+          "Custom report builder accepts arbitrary dimension/metric/filter combinations without SQL injection risk",
+          "Reports with 1M rows export to CSV in under 60s via streaming response",
+          "PDF export renders charts (bar, line, pie) as embedded SVG",
+          "Scheduled reports delivered within 5 minutes of configured send time"
+        ],
+        "depends_on": [
+          13,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "DATA",
+        "description": "Build Salesforce migration toolchain: OAuth2 connection to Salesforce org, field mapping engine (Salesforce field \u2192 crm_platform field), delta sync (initial full + ongoing incremental via Salesforce Change Data Capture), conflict resolution, and rollback capability.",
+        "payload": {
+          "salesforce_api": "REST_v59_plus_Bulk_API_2",
+          "objects_migrated": [
+            "Contact",
+            "Account",
+            "Opportunity",
+            "Activity",
+            "Task",
+            "Lead",
+            "Campaign",
+            "CampaignMember"
+          ],
+          "sync_modes": [
+            "full_initial",
+            "incremental_CDC"
+          ],
+          "conflict_strategy": "salesforce_wins_with_audit_log",
+          "rollback": "snapshot_before_import"
+        },
+        "acceptance_criteria": [
+          "OAuth2 flow connects to Salesforce sandbox and production orgs without exposing tokens in logs",
+          "Field mapping UI allows drag-and-drop mapping with type coercion warnings",
+          "Full import of 100K contacts completes using Bulk API 2 in under 15 minutes",
+          "Incremental CDC processes events within 5 minutes of Salesforce change",
+          "Rollback restores pre-import snapshot atomically with no partial state",
+          "All 8 Salesforce object types successfully imported with relationship integrity"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build contact management UI: contact list with virtual scrolling, detail view with activity timeline and custom fields, quick-edit inline, bulk actions (tag, assign, export), duplicate merge UI, and CSV import wizard.",
+        "payload": {
+          "framework": "React_18_TypeScript",
+          "ui_library": "Tailwind_CSS",
+          "components": [
+            "ContactList",
+            "ContactDetail",
+            "ActivityTimeline",
+            "CustomFieldRenderer",
+            "DuplicateMergeModal",
+            "BulkActionBar",
+            "CsvImportWizard"
+          ]
+        },
+        "acceptance_criteria": [
+          "Contact list virtualises rows and renders 10K contacts with no visible lag",
+          "Activity timeline shows all event types with correct icons and relative timestamps",
+          "Inline edit commits on blur with optimistic UI update and error rollback",
+          "Duplicate merge UI shows field-by-field comparison with winner selection",
+          "CSV import wizard shows column preview, field mapping, and per-row error report"
+        ],
+        "depends_on": [
+          7,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build pipeline kanban UI: drag-and-drop deal cards between stages (react-dnd), deal detail panel, stage summary (count + value), forecast sidebar, stuck deal highlighting, and bulk stage move.",
+        "payload": {
+          "components": [
+            "PipelineBoard",
+            "DealCard",
+            "DealDetailPanel",
+            "StageColumn",
+            "ForecastSidebar",
+            "StuckDealBadge",
+            "BulkMoveModal"
+          ],
+          "drag_library": "react-dnd",
+          "real_time": "WebSocket_stage_change_events"
+        },
+        "acceptance_criteria": [
+          "Drag-and-drop stage move fires PATCH /deals/{id}/move and updates UI optimistically",
+          "Stage columns show deal count and total value in header",
+          "Forecast sidebar updates in real-time when deals are moved",
+          "Stuck deals highlighted with amber border after configurable days threshold",
+          "Board renders 200 deal cards across 8 stages with no jank on drag"
+        ],
+        "depends_on": [
+          7,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build email campaign builder UI: visual block editor (drag-and-drop text, image, button blocks), sequence flow canvas (trigger \u2192 steps \u2192 branches), preview (desktop/mobile), A/B test setup, and send scheduler.",
+        "payload": {
+          "components": [
+            "BlockEditor",
+            "SequenceCanvas",
+            "EmailPreview",
+            "TriggerConfig",
+            "DelayStep",
+            "BranchCondition",
+            "AbTestConfig",
+            "SendScheduler"
+          ],
+          "block_types": [
+            "text",
+            "image",
+            "button",
+            "divider",
+            "social_links"
+          ],
+          "canvas_library": "react-flow"
+        },
+        "acceptance_criteria": [
+          "Block editor produces valid HTML email output renderable in Mailhog preview",
+          "Sequence canvas renders trigger \u2192 step \u2192 branch flows with connecting edges",
+          "Desktop/mobile preview toggle shows responsive layout differences",
+          "A/B test config allows up to 4 variants with percentage split",
+          "Scheduled send shows user's local timezone and converts to UTC for API"
+        ],
+        "depends_on": [
+          7,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "FRONTEND",
+        "description": "Build lead scoring UI: score card per contact (gauge, top factors, history chart), scoring rule configuration panel (dimension weights, custom rules), and bulk score view with filter/sort.",
+        "payload": {
+          "components": [
+            "ScoreGauge",
+            "ScoreFactorList",
+            "ScoreHistoryChart",
+            "ScoringRuleEditor",
+            "BulkScoreTable"
+          ]
+        },
+        "acceptance_criteria": [
+          "Score gauge renders 0-100 with colour zones (cold/warm/hot) per configured thresholds",
+          "Top 3 score factors displayed with delta vs. previous score",
+          "Score history chart shows 90-day trend line",
+          "Rule editor validates weight totals sum to 100% before save",
+          "Bulk score table sorts and filters 10K contacts without server round-trip"
+        ],
+        "depends_on": [
+          7,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 22,
+        "task_type": "FRONTEND",
+        "description": "Build reporting dashboards UI: pre-built dashboard with drag-and-drop widget layout, custom report builder (dimension/metric picker, chart type selector), scheduled report config, and export controls.",
+        "payload": {
+          "components": [
+            "DashboardGrid",
+            "WidgetCard",
+            "ChartRenderer",
+            "ReportBuilder",
+            "DimensionPicker",
+            "MetricPicker",
+            "ScheduleReportModal",
+            "ExportButton"
+          ],
+          "chart_library": "Recharts",
+          "dashboard_grid": "react-grid-layout"
+        },
+        "acceptance_criteria": [
+          "Dashboard widgets draggable and resizable; layout persists to backend",
+          "Chart renderer supports bar, line, pie, funnel, and table widget types",
+          "Report builder generates preview in under 3s for datasets up to 100K rows",
+          "Export button triggers CSV streaming download with progress indicator",
+          "Scheduled report modal shows cron-like human-readable schedule preview"
+        ],
+        "depends_on": [
+          7,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 23,
+        "task_type": "FRONTEND",
+        "description": "Build Salesforce migration wizard UI: OAuth connect flow, object selection checklist, field mapping drag-and-drop canvas, pre-import validation report, live progress tracker, conflict resolution review, and rollback control.",
+        "payload": {
+          "components": [
+            "SalesforceConnectStep",
+            "ObjectSelector",
+            "FieldMappingCanvas",
+            "ValidationReport",
+            "ImportProgressTracker",
+            "ConflictReviewTable",
+            "RollbackButton"
+          ]
+        },
+        "acceptance_criteria": [
+          "OAuth connect flow opens popup, captures token, and shows connected org name",
+          "Object selector shows record counts per Salesforce object before import",
+          "Field mapping canvas shows type-mismatch warnings in amber, incompatible types in red",
+          "Validation report downloadable as CSV before confirming import",
+          "Progress tracker polls import job status every 5s with records_processed / total",
+          "Rollback button disabled after 48h post-import with tooltip explanation"
+        ],
+        "depends_on": [
+          7,
+          17
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 24,
+        "task_type": "TESTS",
+        "description": "Write backend unit and integration tests: pytest suite covering all API endpoints, business logic (lead scoring math, forecast calculation, duplicate detection), Celery tasks, and Salesforce sync engine. Target \u226585% code coverage.",
+        "payload": {
+          "framework": "pytest",
+          "coverage_target": 85,
+          "test_types": [
+            "unit",
+            "integration"
+          ],
+          "fixtures": [
+            "postgres_testcontainer",
+            "redis_testcontainer",
+            "salesforce_mock"
+          ],
+          "ci_command": "pytest --cov=app --cov-report=xml"
+        },
+        "acceptance_criteria": [
+          "pytest suite runs to completion with 0 failures on clean checkout",
+          "Coverage report shows \u226585% line coverage across all backend modules",
+          "Salesforce sync tests use mock responses covering happy path + error cases",
+          "Lead scoring unit tests verify composite score formula with known inputs",
+          "Integration tests hit real Postgres (testcontainer) not mocks"
+        ],
+        "depends_on": [
+          16,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "TESTS",
+        "description": "Write frontend component and E2E tests: Vitest unit tests for all React components, Playwright E2E covering critical user journeys (create contact, move deal, launch campaign, run report, complete Salesforce import).",
+        "payload": {
+          "unit_framework": "Vitest",
+          "e2e_framework": "Playwright",
+          "critical_journeys": [
+            "create_and_score_contact",
+            "move_deal_through_pipeline",
+            "create_and_send_email_campaign",
+            "run_custom_report",
+            "complete_salesforce_import"
+          ]
+        },
+        "acceptance_criteria": [
+          "All Vitest component tests pass with \u226580% branch coverage",
+          "Playwright tests run against local docker-compose stack end-to-end",
+          "Each of 5 critical journeys passes in <30s on CI",
+          "Visual regression snapshots captured for all dashboard widgets",
+          "Accessibility tests (axe-core) run as part of Playwright suite with 0 critical violations"
+        ],
+        "depends_on": [
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipeline (GitHub Actions): lint \u2192 test \u2192 build \u2192 container push \u2192 staging deploy \u2192 E2E \u2192 production deploy (manual gate). Include branch protection rules, environment secrets management, and Dependabot config.",
+        "payload": {
+          "ci_provider": "GitHub_Actions",
+          "stages": [
+            "lint",
+            "unit_tests",
+            "build_docker",
+            "push_ghcr",
+            "deploy_staging",
+            "e2e_tests",
+            "deploy_production"
+          ],
+          "production_gate": "manual_approval",
+          "secrets_manager": "GitHub_Secrets",
+          "registry": "GitHub_Container_Registry"
+        },
+        "acceptance_criteria": [
+          "CI pipeline completes lint + test + build in under 10 minutes",
+          "Docker images tagged with git SHA and pushed to GHCR on merge to main",
+          "Staging deploys automatically on merge; production requires manual approval",
+          "Branch protection requires 1 approval + passing CI before merge to main",
+          "Dependabot configured for Python, Node, and Docker base images"
+        ],
+        "depends_on": [
+          24,
+          25
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 27,
+        "task_type": "INFRA",
+        "description": "Define production infrastructure as code (Terraform): Postgres RDS (Multi-AZ), ElastiCache Redis, ECS Fargate services (API, Celery workers, beat scheduler), ALB with WAF, S3 for exports, CloudWatch dashboards and alarms.",
+        "payload": {
+          "iac_tool": "Terraform",
+          "cloud": "AWS",
+          "components": [
+            "RDS_Postgres_Multi_AZ",
+            "ElastiCache_Redis",
+            "ECS_Fargate_API",
+            "ECS_Fargate_Celery",
+            "ALB_WAF",
+            "S3_exports",
+            "CloudWatch_dashboards",
+            "Route53"
+          ],
+          "environments": [
+            "staging",
+            "production"
+          ],
+          "deliverable": "infra/terraform/"
+        },
+        "acceptance_criteria": [
+          "`terraform plan` produces no errors on clean AWS account with required permissions",
+          "RDS Multi-AZ with automated backups (7-day retention) configured",
+          "WAF rules block OWASP Top 10 attack patterns",
+          "CloudWatch alarms defined for API p99 latency >1s, error rate >1%, Celery queue depth >1000",
+          "All secrets stored in AWS Secrets Manager, not Terraform state",
+          "Staging and production environments deployable from same Terraform with workspace var files"
+        ],
+        "depends_on": [
+          26
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 28,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: incident response (P1/P2/P3 classification), on-call rotation setup, database failover procedure, Celery queue drain, Salesforce sync re-trigger, SLA definitions, and capacity planning model.",
+        "payload": {
+          "runbooks": [
+            "incident_response.md",
+            "database_failover.md",
+            "celery_queue_management.md",
+            "salesforce_resync.md",
+            "capacity_planning.md"
+          ],
+          "sla_tiers": {
+            "api_availability": "99.9%",
+            "email_delivery_latency": "5min",
+            "import_completion": "15min_per_100k"
+          },
+          "on_call_tool": "PagerDuty"
+        },
+        "acceptance_criteria": [
+          "Incident response runbook classifies P1/P2/P3 with response time SLAs per tier",
+          "Database failover runbook tested against staging RDS and documented with step times",
+          "Celery queue drain runbook covers graceful shutdown without message loss",
+          "Salesforce re-sync runbook covers partial failure recovery without data duplication",
+          "Capacity planning model projects costs at 1K/10K/100K active contacts"
+        ],
+        "depends_on": [
+          27
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 29,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system tests on staging: load test (k6, 500 concurrent users), Salesforce migration stress test (250K contacts), email throughput test (100K sends/hour), and full pipeline-to-report smoke test.",
+        "payload": {
+          "load_test_tool": "k6",
+          "concurrent_users": 500,
+          "salesforce_load": "250K_contacts",
+          "email_throughput_target": "100K_per_hour",
+          "test_environment": "staging"
+        },
+        "acceptance_criteria": [
+          "API p95 latency <500ms and p99 <1s under 500 concurrent users",
+          "Error rate <0.1% under full load",
+          "Salesforce import of 250K contacts completes in under 45 minutes without data loss",
+          "Email worker sustains 100K sends/hour for 30 minutes without queue backlog growth",
+          "Full journey (create contact \u2192 score \u2192 add to campaign \u2192 move deal \u2192 view report) completes in staging"
+        ],
+        "depends_on": [
+          27,
+          28
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 30,
+        "task_type": "DOCS",
+        "description": "Write developer and end-user documentation: API reference (generated from OpenAPI), developer setup guide, architecture decision records (ADRs) for key choices, user guide per feature area, and Salesforce migration guide.",
+        "payload": {
+          "docs_platform": "Docusaurus",
+          "sections": [
+            "getting_started",
+            "api_reference",
+            "architecture_decisions",
+            "user_guide_contacts",
+            "user_guide_pipeline",
+            "user_guide_email",
+            "user_guide_lead_scoring",
+            "user_guide_reports",
+            "salesforce_migration_guide"
+          ],
+          "api_doc_generation": "redoc_from_openapi"
+        },
+        "acceptance_criteria": [
+          "API reference generated from openapi.yaml with no broken links",
+          "Developer setup guide produces running local environment from zero on clean machine",
+          "ADRs cover: database choice, email provider selection, lead scoring architecture, Salesforce sync strategy",
+          "Salesforce migration guide covers pre-migration checklist, mapping guide, and post-migration validation",
+          "All user guides include screenshots from production-equivalent UI"
+        ],
+        "depends_on": [
+          29
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 30,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 58,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 58,
+          "final_review": {
+            "score": 58,
+            "flaws": [
+              "Elasticsearch referenced in step 12 acceptance criteria ('elasticsearch_search' feature) but never added to Docker Compose (step 11), Terraform (step 27), or any infra step. The entire search feature has no infrastructure backing it.",
+              "Step 15 depends on step 14 (email automation) but lead scoring only needs contacts (step 12) and deal activity (step 13). This creates a false sequential bottleneck that blocks scoring until the entire email engine ships.",
+              "A/B test configuration is built in the frontend (step 20) but the backend email engine (step 14) never implements A/B variant routing, split percentage enforcement, or statistical significance calculation. Feature is half-built.",
+              "Step 3 acceptance criteria states 'MVP scope is achievable in \u226412 weeks by a 3-person team.' This plan has 6 major feature areas, Salesforce CDC sync, AI lead scoring, and SOC 2 controls. That estimate is not grounded in reality \u2014 a realistic 3-person MVP is 9\u201312 months.",
+              "LLM-based Multi-Agent Coordinator for lead scoring (step 15) with 5 specialist agents per score event at 100K contacts nightly = 500K LLM calls per night. At any real pricing, this is cost-prohibitive and the 30-minute SLA is unachievable. This should be a rules engine or lightweight ML model, not LLM agents.",
+              "WebSocket real-time updates in step 19 require pub/sub coordination across multiple API pods. With ECS Fargate running multiple API containers, WebSocket connections are pod-local. Redis pub/sub fanout is never specified anywhere in the plan.",
+              "No dedicated authentication implementation step. JWT issuance, refresh token rotation, OAuth2 callback handling, and session management are referenced in the API spec (step 10) but no backend step owns their implementation.",
+              "PDF export with embedded charts (step 16) requires headless Chrome (Playwright/Puppeteer server-side) or a PDF generation library. Neither is in the backend stack (step 11) or infra (step 27). This is a missing service dependency.",
+              "Salesforce Change Data Capture (step 17) requires Enterprise Edition or higher. Professional and Essentials orgs do not have CDC. The migration tool will silently fail for a significant portion of the target market without a fallback polling strategy.",
+              "CSV import in step 12 sets the bar at 10K rows without timeout. A Salesforce migration tool targeting 100K+ contacts with a 10K limit is inconsistent \u2014 the Salesforce full import target is 250K contacts (step 29). The import bar should match the migration scale.",
+              "Outbound webhook delivery to customers (in the API spec, step 10) has no backend implementation step. Step 14 handles inbound SendGrid webhooks but there is no step for building the outbound webhook dispatcher, retry queue, or signature signing.",
+              "Multi-tenancy is mentioned as a row-level security requirement in step 9 but there is no step defining the tenant provisioning model, per-tenant resource limits, or how tenant context propagates through the Celery task queue."
+            ],
+            "suggestions": [
+              "Replace Elasticsearch with PostgreSQL full-text search (tsvector/GIN indexes) for MVP. Defer Elasticsearch to v1 if query performance demands it \u2014 this eliminates an unbudgeted infrastructure dependency.",
+              "Rebuild lead scoring as a configurable rules engine with weighted dimensions (no LLM agents). Reserve LLM calls for score explanation generation only (on-demand, not on every recompute). This makes the 30-minute nightly batch SLA achievable.",
+              "Move step 15 dependency from [14] to [12, 13]. Email engagement is one scoring dimension \u2014 it can be added as an optional signal after the core scoring engine ships.",
+              "Add a step 11.5: Authentication Service \u2014 implement JWT issuance, refresh rotation, password hashing (bcrypt/argon2), MFA (TOTP), and OAuth2 callback handling as a first-class deliverable before any protected endpoint is built.",
+              "Add Redis pub/sub fanout to the WebSocket architecture. Document in step 19 that the PipelineBoard connects to a single WebSocket gateway that subscribes to a Redis channel broadcast by any API pod on deal mutation.",
+              "Add headless Chrome (Chromium via Playwright) as a backend sidecar service for PDF generation, or adopt a library like WeasyPrint. Define it in step 11 and the Terraform module in step 27.",
+              "Add a fallback polling sync mode to step 17 for Salesforce orgs without CDC access. Gate CDC vs. polling on the detected org edition during the OAuth connect step.",
+              "Salesforce migration rollback via 'snapshot before import' at 250K contacts will take significant time and storage. Use point-in-time recovery on RDS (already configured) plus a sync_log table as the rollback mechanism \u2014 faster and cheaper.",
+              "Step 20 A/B test: add variant routing logic to step 14 backend \u2014 store variant assignment per contact in email_sends, enforce percentage splits at send time via Celery, and add a basic significance calculator to the reports API (step 16).",
+              "SOC 2 Type II language in step 8 is misleading \u2014 you cannot complete Type II in a single planning step. Rename to 'SOC 2 Type II Readiness Framework' and add a note that certification requires a 6\u201312 month observation period post-launch."
+            ],
+            "missing": [
+              "Elasticsearch (or OpenSearch) service in Docker Compose, Terraform, and infra \u2014 or an explicit decision to use PostgreSQL FTS instead.",
+              "SPF, DKIM, and DMARC DNS configuration for email sending domains. Without these, campaigns will land in spam regardless of CAN-SPAM compliance.",
+              "API rate limiting implementation \u2014 both per-tenant REST API throttling and per-campaign email send rate limiting (required by SendGrid and ISPs).",
+              "Data retention and deletion policy implementation \u2014 GDPR right-to-erasure requires contact hard-delete capability with cascade, not just soft-delete. No step covers this.",
+              "Application-level observability: structured logging (JSON to CloudWatch), distributed tracing (OpenTelemetry), and error tracking (Sentry or equivalent). CloudWatch alarms in step 27 cover infra but not application errors.",
+              "Tenant provisioning and onboarding flow \u2014 how does a new customer get a database schema, subdomain, and initial admin account? No step covers this.",
+              "Outbound webhook dispatcher service with retry queue, exponential backoff, dead-letter handling, and HMAC signature signing per delivery.",
+              "Security penetration test or DAST scan step \u2014 the STRIDE threat model (step 6) is design-time only. No dynamic testing of the running application is scheduled before production launch."
+            ],
+            "security_risks": [
+              "Salesforce OAuth tokens stored in the database (referenced in step 6 threat model) need encryption at the application layer, not just AES-256 at rest on disk. If the database is compromised, tokens must not be recoverable in plaintext. No token-level encryption implementation is specified.",
+              "Custom report builder (step 16) accepts 'arbitrary dimension/metric/filter combinations.' The acceptance criteria notes 'without SQL injection risk' but provides no implementation guidance. A naive ORM query builder with user-supplied field names is a classic injection vector \u2014 requires an explicit allowlist of valid columns/tables.",
+              "Email open tracking pixel (step 14) serves a unique image URL per send. Without rate limiting or nonce validation on the pixel endpoint, it can be abused to probe which contact IDs exist in the system (enumeration attack).",
+              "CSV bulk import (step 12) with no mention of file size limits, MIME type validation, or malicious content scanning. A crafted CSV with formula injection (=CMD|...) targeting Excel users viewing exports is a known attack vector.",
+              "Rollback button in step 23 is disabled 'after 48h post-import' \u2014 but the rollback endpoint itself, if not protected by an additional confirmation token or admin-only RBAC, could be triggered accidentally or maliciously during the 48h window by any authenticated user.",
+              "WebSocket connections in step 19 carry deal financial data in real-time. No mention of WebSocket authentication \u2014 connections must present and validate JWT on upgrade, not just at REST API layer."
+            ],
+            "summary": "This is a technically thorough plan with strong coverage of compliance, UX, testing, and operations \u2014 the dependency graph is mostly correct and the acceptance criteria are specific. However, it has several production-blocking gaps that must be fixed before implementation begins: Elasticsearch is referenced as a core feature with no infrastructure anywhere in the plan; the LLM-agent-based lead scoring architecture is economically and technically unworkable at the stated scale; there is no authentication implementation step despite auth being foundational to every other backend step; and the 12-week/3-person MVP estimate is not credible for this scope. The missing SPF/DKIM/DMARC setup is a deliverability killer for any email product. Fix the Elasticsearch decision (commit to PostgreSQL FTS or add it to the stack everywhere), replace the scoring architecture with a rules engine, add an auth step before step 12, and reframe the timeline before any implementation begins. As written, this plan would produce a partially functional system with a broken search feature, undeliverable emails, and no scalable scoring engine.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 58,
+              "flaws": [
+                "Elasticsearch referenced in step 12 acceptance criteria ('elasticsearch_search' feature) but never added to Docker Compose (step 11), Terraform (step 27), or any infra step. The entire search feature has no infrastructure backing it.",
+                "Step 15 depends on step 14 (email automation) but lead scoring only needs contacts (step 12) and deal activity (step 13). This creates a false sequential bottleneck that blocks scoring until the entire email engine ships.",
+                "A/B test configuration is built in the frontend (step 20) but the backend email engine (step 14) never implements A/B variant routing, split percentage enforcement, or statistical significance calculation. Feature is half-built.",
+                "Step 3 acceptance criteria states 'MVP scope is achievable in \u226412 weeks by a 3-person team.' This plan has 6 major feature areas, Salesforce CDC sync, AI lead scoring, and SOC 2 controls. That estimate is not grounded in reality \u2014 a realistic 3-person MVP is 9\u201312 months.",
+                "LLM-based Multi-Agent Coordinator for lead scoring (step 15) with 5 specialist agents per score event at 100K contacts nightly = 500K LLM calls per night. At any real pricing, this is cost-prohibitive and the 30-minute SLA is unachievable. This should be a rules engine or lightweight ML model, not LLM agents.",
+                "WebSocket real-time updates in step 19 require pub/sub coordination across multiple API pods. With ECS Fargate running multiple API containers, WebSocket connections are pod-local. Redis pub/sub fanout is never specified anywhere in the plan.",
+                "No dedicated authentication implementation step. JWT issuance, refresh token rotation, OAuth2 callback handling, and session management are referenced in the API spec (step 10) but no backend step owns their implementation.",
+                "PDF export with embedded charts (step 16) requires headless Chrome (Playwright/Puppeteer server-side) or a PDF generation library. Neither is in the backend stack (step 11) or infra (step 27). This is a missing service dependency.",
+                "Salesforce Change Data Capture (step 17) requires Enterprise Edition or higher. Professional and Essentials orgs do not have CDC. The migration tool will silently fail for a significant portion of the target market without a fallback polling strategy.",
+                "CSV import in step 12 sets the bar at 10K rows without timeout. A Salesforce migration tool targeting 100K+ contacts with a 10K limit is inconsistent \u2014 the Salesforce full import target is 250K contacts (step 29). The import bar should match the migration scale.",
+                "Outbound webhook delivery to customers (in the API spec, step 10) has no backend implementation step. Step 14 handles inbound SendGrid webhooks but there is no step for building the outbound webhook dispatcher, retry queue, or signature signing.",
+                "Multi-tenancy is mentioned as a row-level security requirement in step 9 but there is no step defining the tenant provisioning model, per-tenant resource limits, or how tenant context propagates through the Celery task queue."
+              ],
+              "suggestions": [
+                "Replace Elasticsearch with PostgreSQL full-text search (tsvector/GIN indexes) for MVP. Defer Elasticsearch to v1 if query performance demands it \u2014 this eliminates an unbudgeted infrastructure dependency.",
+                "Rebuild lead scoring as a configurable rules engine with weighted dimensions (no LLM agents). Reserve LLM calls for score explanation generation only (on-demand, not on every recompute). This makes the 30-minute nightly batch SLA achievable.",
+                "Move step 15 dependency from [14] to [12, 13]. Email engagement is one scoring dimension \u2014 it can be added as an optional signal after the core scoring engine ships.",
+                "Add a step 11.5: Authentication Service \u2014 implement JWT issuance, refresh rotation, password hashing (bcrypt/argon2), MFA (TOTP), and OAuth2 callback handling as a first-class deliverable before any protected endpoint is built.",
+                "Add Redis pub/sub fanout to the WebSocket architecture. Document in step 19 that the PipelineBoard connects to a single WebSocket gateway that subscribes to a Redis channel broadcast by any API pod on deal mutation.",
+                "Add headless Chrome (Chromium via Playwright) as a backend sidecar service for PDF generation, or adopt a library like WeasyPrint. Define it in step 11 and the Terraform module in step 27.",
+                "Add a fallback polling sync mode to step 17 for Salesforce orgs without CDC access. Gate CDC vs. polling on the detected org edition during the OAuth connect step.",
+                "Salesforce migration rollback via 'snapshot before import' at 250K contacts will take significant time and storage. Use point-in-time recovery on RDS (already configured) plus a sync_log table as the rollback mechanism \u2014 faster and cheaper.",
+                "Step 20 A/B test: add variant routing logic to step 14 backend \u2014 store variant assignment per contact in email_sends, enforce percentage splits at send time via Celery, and add a basic significance calculator to the reports API (step 16).",
+                "SOC 2 Type II language in step 8 is misleading \u2014 you cannot complete Type II in a single planning step. Rename to 'SOC 2 Type II Readiness Framework' and add a note that certification requires a 6\u201312 month observation period post-launch."
+              ],
+              "missing": [
+                "Elasticsearch (or OpenSearch) service in Docker Compose, Terraform, and infra \u2014 or an explicit decision to use PostgreSQL FTS instead.",
+                "SPF, DKIM, and DMARC DNS configuration for email sending domains. Without these, campaigns will land in spam regardless of CAN-SPAM compliance.",
+                "API rate limiting implementation \u2014 both per-tenant REST API throttling and per-campaign email send rate limiting (required by SendGrid and ISPs).",
+                "Data retention and deletion policy implementation \u2014 GDPR right-to-erasure requires contact hard-delete capability with cascade, not just soft-delete. No step covers this.",
+                "Application-level observability: structured logging (JSON to CloudWatch), distributed tracing (OpenTelemetry), and error tracking (Sentry or equivalent). CloudWatch alarms in step 27 cover infra but not application errors.",
+                "Tenant provisioning and onboarding flow \u2014 how does a new customer get a database schema, subdomain, and initial admin account? No step covers this.",
+                "Outbound webhook dispatcher service with retry queue, exponential backoff, dead-letter handling, and HMAC signature signing per delivery.",
+                "Security penetration test or DAST scan step \u2014 the STRIDE threat model (step 6) is design-time only. No dynamic testing of the running application is scheduled before production launch."
+              ],
+              "security_risks": [
+                "Salesforce OAuth tokens stored in the database (referenced in step 6 threat model) need encryption at the application layer, not just AES-256 at rest on disk. If the database is compromised, tokens must not be recoverable in plaintext. No token-level encryption implementation is specified.",
+                "Custom report builder (step 16) accepts 'arbitrary dimension/metric/filter combinations.' The acceptance criteria notes 'without SQL injection risk' but provides no implementation guidance. A naive ORM query builder with user-supplied field names is a classic injection vector \u2014 requires an explicit allowlist of valid columns/tables.",
+                "Email open tracking pixel (step 14) serves a unique image URL per send. Without rate limiting or nonce validation on the pixel endpoint, it can be abused to probe which contact IDs exist in the system (enumeration attack).",
+                "CSV bulk import (step 12) with no mention of file size limits, MIME type validation, or malicious content scanning. A crafted CSV with formula injection (=CMD|...) targeting Excel users viewing exports is a known attack vector.",
+                "Rollback button in step 23 is disabled 'after 48h post-import' \u2014 but the rollback endpoint itself, if not protected by an additional confirmation token or admin-only RBAC, could be triggered accidentally or maliciously during the 48h window by any authenticated user.",
+                "WebSocket connections in step 19 carry deal financial data in real-time. No mention of WebSocket authentication \u2014 connections must present and validate JWT on upgrade, not just at REST API layer."
+              ],
+              "summary": "This is a technically thorough plan with strong coverage of compliance, UX, testing, and operations \u2014 the dependency graph is mostly correct and the acceptance criteria are specific. However, it has several production-blocking gaps that must be fixed before implementation begins: Elasticsearch is referenced as a core feature with no infrastructure anywhere in the plan; the LLM-agent-based lead scoring architecture is economically and technically unworkable at the stated scale; there is no authentication implementation step despite auth being foundational to every other backend step; and the 12-week/3-person MVP estimate is not credible for this scope. The missing SPF/DKIM/DMARC setup is a deliverability killer for any email product. Fix the Elasticsearch decision (commit to PostgreSQL FTS or add it to the stack everywhere), replace the scoring architecture with a rules engine, add an auth step before step 12, and reframe the timeline before any implementation begins. As written, this plan would produce a partially functional system with a broken search feature, undeliverable emails, and no scalable scoring engine.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T04:59:06.059357+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 162.12,
+      "critic_plan": 101.2
+    }
+  }
+}

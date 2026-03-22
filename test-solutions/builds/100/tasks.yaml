@@ -1,0 +1,279 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user stories, and process flows for
+      IT asset management covering device inventory, software license tracking, automated
+      provisioning, lifecycle management, and security compliance scanning.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - BRD covers all five feature areas with at least 3 user stories each
+    - Process flow diagrams produced for asset onboarding, provisioning, and decommission
+    - ROI analysis quantifies license waste reduction and manual provisioning hours
+      saved
+    - All stakeholder sign-off captured
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce the product requirements document (PRD), feature roadmap,
+      prioritization matrix (MoSCoW), and success metrics (KPIs) for the it_asset_management
+      solution.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD lists all features with acceptance criteria and priority tier
+    - MVP scope and v2 scope are clearly separated with rationale
+    - At least 5 measurable KPIs defined (e.g., license utilization %, provisioning
+      time, scan coverage %)
+    - Roadmap reviewed and approved by product owner
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft terms of service, privacy policy, data retention policy, and
+      third-party software licensing review for the IT asset management platform.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy covers all collected data categories with legal basis
+    - Data retention periods defined per category and aligned to ISO 27001 A.8.3
+    - OSS license inventory completed with no GPL conflicts in commercial distribution
+    - Terms of service reviewed by legal counsel and approved
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Produce compliance evidence artifacts for ISO 27001 and SOC 2: asset
+      management policy, risk matrix, traceability matrix mapping controls to features,
+      and V&V protocol outline.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Asset management policy covers classification, labeling, and handling per ISO
+      27001 A.8
+    - Risk register identifies ≥10 risks with likelihood, impact, and mitigation owner
+    - Traceability matrix maps every ISO 27001 A.8 and SOC 2 CC6/CC7 control to a
+      product feature or process
+    - V&V protocol approved by compliance officer
+    depends_on:
+    - 2
+    - 3
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes and interaction designs
+      for the main product surfaces: asset inventory dashboard, license manager, provisioning
+      wizard, lifecycle timeline, and compliance scan report.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes produced for all 7 screens in low-fidelity
+    - High-fidelity mockups for dashboard and compliance scan report
+    - User research summary from ≥3 IT admin interviews
+    - Accessibility audit checklist completed against WCAG 2.1 AA
+    - Design system tokens (colors, spacing, typography) documented
+    depends_on:
+    - 2
+  DATABASE:
+    description: Design and implement the database schema for asset records, software
+      licenses, provisioning jobs, lifecycle events, compliance scan results, and
+      audit log. Write migrations and seed data.
+    agent_role: developer
+    acceptance_criteria:
+    - All entities created with proper foreign keys and indexes
+    - Alembic migration scripts are idempotent and reversible
+    - Seed script populates 50 sample assets, 20 licenses, and 5 scan results
+    - Schema diagram exported and included in /docs
+    - All text search fields indexed (hostname, software product name)
+    depends_on:
+    - 2
+  API:
+    description: 'Design the OpenAPI 3.1 specification for all REST endpoints: asset
+      CRUD, license management, provisioning job control, lifecycle events, compliance
+      scan triggers, and reporting endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 YAML spec passes validation with no errors
+    - Every endpoint has request/response schemas, error codes, and auth requirement
+      documented
+    - Pagination defined for all list endpoints (cursor-based)
+    - Spec published to /docs/api/openapi.yaml and rendered via Swagger UI at /docs
+    depends_on:
+    - 6
+  SECURITY:
+    description: Produce a threat model (STRIDE), security requirements, and penetration
+      test plan for the IT asset management platform. Define RBAC roles and data encryption
+      requirements.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 5 asset management trust boundaries
+    - RBAC matrix defines read/write/admin permissions per resource type for all 5
+      roles
+    - Pentest plan has ≥15 test cases with expected vs. actual outcome fields
+    - Security requirements document approved and linked to compliance traceability
+      matrix
+    - License key storage confirmed to use AES-256 encryption with KMS
+    depends_on:
+    - 4
+    - 7
+  CONFIG:
+    description: 'Set up the project scaffold: monorepo structure, Python/FastAPI
+      backend with virtual environment, React+TypeScript frontend, Docker Compose
+      for local dev, environment variable management, and agentic pattern configuration
+      (Multi-Agent Coordinator) for the compliance scanning and provisioning subsystems.'
+    agent_role: developer
+    acceptance_criteria:
+    - docker compose up starts all services with no errors
+    - make dev starts backend on :8000 and frontend on :5173
+    - Environment variable template (.env.example) documents all required vars
+    - Pre-commit hooks configured (ruff, mypy, eslint, prettier)
+    - Multi-Agent Coordinator scaffold created with agent stubs and task router
+    depends_on:
+    - 7
+  BACKEND:
+    description: 'Implement the asset inventory service: CRUD endpoints, bulk import
+      (CSV/XLSX), search and filtering, asset categorization, and audit log writes
+      on every mutation.'
+    agent_role: developer
+    acceptance_criteria:
+    - All CRUD endpoints return correct HTTP status codes per OpenAPI spec
+    - Bulk import handles 10,000 rows under 30 seconds with duplicate detection
+    - Full-text search returns results in <200ms for a 100k-asset corpus
+    - Every mutation writes a structured audit log entry with actor and diff
+    - Unit test coverage ≥80% for inventory service module
+    depends_on:
+    - 9
+  FRONTEND:
+    description: 'Build the asset inventory dashboard: searchable/filterable asset
+      table, asset detail drawer, bulk actions (assign, export, retire), and real-time
+      status indicators.'
+    agent_role: developer
+    acceptance_criteria:
+    - Table renders 10,000 rows without layout jank (virtualized)
+    - Search returns filtered results within 300ms of debounce
+    - Asset detail drawer shows all fields, lifecycle timeline, and assigned licenses
+    - Bulk retire action requires confirmation dialog before submission
+    - CSV import modal shows row-level validation errors before committing
+    depends_on:
+    - 5
+    - 10
+  AGENTIC:
+    description: Implement the Multi-Agent Coordinator pattern connecting inventory_agent,
+      license_agent, provisioning_agent, and compliance_scan_agent. Coordinator decomposes
+      cross-domain requests (e.g., 'onboard new device') and routes to specialist
+      agents in parallel waves.
+    agent_role: developer
+    acceptance_criteria:
+    - POST /agent/coordinate with 'onboard device' intent triggers all 4 agents in
+      correct wave order
+    - Parallel wave completes in under 2x single-agent time (measured in integration
+      test)
+    - Coordinator merges outputs with no data loss across 10 test scenarios
+    - Risky actions (bulk retire, data wipe) create HITL approval request before executing
+    - Coordinator response includes trace_id linking to audit log entries from all
+      agents
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+  QA:
+    description: Produce the QA test plan, test case designs, and test execution report
+      covering all five product feature areas and the agentic coordinator.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 7 test categories with entry/exit criteria
+    - ≥120 test cases written with preconditions, steps, and expected results
+    - Test execution report produced after full QA cycle with pass/fail/blocked counts
+    - All critical and high severity defects resolved before sign-off
+    - 'RBAC matrix validated: each role tested for both permitted and denied actions'
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: asset
+      service, license service, provisioning service, lifecycle service, compliance
+      scan service, and agent coordinator.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest runs clean with 0 failures against dockerized PostgreSQL
+    - Coverage report shows ≥80% for each of the 5 service modules
+    - Celery task tests cover success, failure, and retry paths
+    - All API endpoint tests validate status codes, response schemas, and auth rejection
+    - Test run completes under 3 minutes in CI
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+  SYSTEM_TEST:
+    description: 'Execute system-level end-to-end test suites: full device onboarding
+      flow, license over-allocation scenario, provisioning failure and rollback, EOL
+      lifecycle progression, and compliance scan with remediation tracking.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 5 E2E scenarios pass without manual intervention
+    - p99 asset search latency ≤200ms under load test with 100k asset dataset
+    - 50 concurrent provisioning jobs complete without deadlock or data corruption
+    - Scan ingestion rate meets 1000 findings/min throughput target
+    - E2E test report produced with pass/fail status and latency metrics
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 20
+    - 22
+  DEVOPS:
+    description: Set up CI/CD pipelines, production Docker images, monitoring stack
+      (Prometheus + Grafana), alerting rules for compliance SLAs, and SRE runbooks.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and blocks merge on test failure
+    - Docker images built, tagged with git SHA, and pushed to registry on merge to
+      main
+    - Prometheus scrapes all 4 defined metrics with <1% loss
+    - Grafana dashboards load all 3 panels with live data in staging
+    - All 3 alert rules fire correctly in staging chaos test
+    - 4 runbooks reviewed and approved by operations manager
+    depends_on:
+    - 22
+    - 23
+  OPERATIONS:
+    description: Define SLA tiers, write operational runbooks for day-2 operations,
+      incident response playbooks, capacity planning model, and on-call rotation policy
+      for the it_asset_management platform.
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA document defines measurement method and breach notification process for
+      each tier
+    - All 5 runbooks include prerequisites, step-by-step procedure, rollback steps,
+      and verification
+    - Incident response playbook covers P1/P2/P3 classification and escalation path
+    - Capacity model validated against E2E performance test data
+    - On-call rotation policy covers 24/7 with at least 2 responders per shift
+    depends_on:
+    - 24
+  TRAINING:
+    description: Produce user guides, administrator onboarding documentation, and
+      training materials for IT admins, compliance auditors, and read-only viewers.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - All 4 audience guides cover complete task flows end-to-end
+    - In-app onboarding checklist shown on first login and completable in <10 minutes
+    - Every major UI action has a contextual tooltip or help link
+    - Guides reviewed by representative from each user role for accuracy
+    - Documentation published to /docs and linked from app Help menu
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 19
+    - 25
+  DOCS:
+    description: 'Produce final technical documentation: architecture decision records
+      (ADRs), API reference (generated from OpenAPI spec), deployment guide, and developer
+      onboarding README.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - All 3 ADRs include context, decision, and consequences sections
+    - API reference renders all endpoints with examples at /docs
+    - Deployment guide covers both Docker Compose and Kubernetes paths
+    - Developer README enables a new engineer to run the full stack from scratch in
+      <15 minutes
+    - All docs spell-checked and cross-linked
+    depends_on:
+    - 27

@@ -1,0 +1,337 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements, user personas, core use cases, and
+      ROI model for the enterprise workflow automation platform. Document process
+      flows for key user journeys: flow creation, connector setup, monitoring, and
+      error resolution.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - 'BRD covers at minimum: flow builder, connector library, conditional logic,
+      error handling, monitoring'
+    - At least 3 distinct user personas documented with goals and pain points
+    - ROI model includes time-saved metrics vs. manual workflow execution
+    - Process flows validated against 5+ real enterprise workflow patterns
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce the Product Requirements Document, MVP vs. full roadmap,
+      feature prioritization matrix (MoSCoW), and success metrics (DAU, flows executed/day,
+      connector adoption rate, MTTR for failed flows).
+    agent_role: product_manager
+    acceptance_criteria:
+    - 'PRD covers all features: flow builder, 200+ connectors, conditional logic,
+      error handling, execution monitoring'
+    - MVP scope clearly delineated with justification
+    - Success metrics are quantifiable and have baseline targets
+    - Roadmap approved by product stakeholders
+    depends_on:
+    - 1
+  MARKET_RESEARCH:
+    description: 'Competitive analysis of Zapier, Make, n8n, Workato, and Tray.io.
+      Identify differentiation opportunities in enterprise segment: pricing, connector
+      depth, on-premise support, compliance posture.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Feature comparison matrix covers all 5 competitors across 10+ dimensions
+    - Identified at least 3 clear differentiation opportunities
+    - Pricing analysis includes per-seat, consumption-based, and flat-rate models
+    - Positioning statement drafted based on findings
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (DPA), connector vendor licensing review, and open-source dependency license
+      audit.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS and Privacy Policy reviewed by legal counsel
+    - DPA template covers EU/US data residency requirements
+    - OSS license audit flags any GPL/AGPL dependencies in commercial distribution
+    - Connector usage rights confirmed for top-50 connectors at minimum
+    depends_on:
+    - 2
+  SECURITY:
+    description: Produce threat model (STRIDE), define security architecture for credential
+      vault (connector OAuth tokens, API keys), tenant isolation model, RBAC design,
+      and penetration test plan. Map controls to ISO 27001 Annex A and SOC 2 Trust
+      Services Criteria.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all 5 system components
+    - Credential vault design uses envelope encryption (AES-256 + KMS)
+    - 'RBAC matrix covers: admin, flow_builder, viewer, connector_manager roles'
+    - SOC 2 CC6.x and CC7.x controls mapped to implementation artifacts
+    - Pen test plan scoped and signed off
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: Design the visual flow builder canvas (drag-and-drop nodes, edge
+      connectors, zoom/pan), connector picker, conditional logic editor (branch/merge/loop
+      nodes), execution history timeline, and error detail panel. Produce wireframes
+      and a clickable Figma prototype.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All 7 screens have high-fidelity wireframes
+    - 'Clickable Figma prototype covers the primary flow: create flow → add connector
+      → add condition → save → monitor'
+    - Usability test with 5 target users — task completion rate ≥ 80% for 'create
+      a 3-step flow'
+    - WCAG 2.1 AA checklist completed for all screens
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design the multi-tenant database schema: flows, steps, connectors,
+      credentials (encrypted), executions, execution_logs, schedules, teams, and audit_events.
+      Include migration scripts, indexing strategy for execution queries, and data
+      retention policies.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all entities with FK relationships
+    - Row-level security policies enforce tenant isolation — verified by cross-tenant
+      query test
+    - Credential columns use pgcrypto or equivalent column-level encryption
+    - Execution log table has composite index on (tenant_id, flow_id, started_at)
+    - Migration scripts are idempotent and tested on clean schema
+    depends_on:
+    - 5
+  API:
+    description: 'Design the OpenAPI 3.1 contract for all platform endpoints: flow
+      CRUD, step management, connector registry, credential vault, execution trigger
+      and status, schedule management, monitoring/metrics, and webhook ingress.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec passes linting with zero errors (Spectral ruleset)
+    - All endpoints include request/response schemas with examples
+    - Auth flows documented for both OAuth2 and API key paths
+    - Breaking-change policy documented in spec header
+    depends_on:
+    - 7
+  CONFIG:
+    description: Set up the monorepo structure (backend, frontend, connectors, infra),
+      language toolchains (Python/FastAPI for execution engine, TypeScript/React for
+      UI, Go for connector runtime), environment config management (per-environment
+      secrets via Vault/AWS SSM), and local dev bootstrap script.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`make bootstrap` produces a running local environment in under 5 minutes'
+    - All services start via `docker-compose up` with zero manual steps
+    - Secrets loaded from Vault — no plaintext credentials in any config file
+    - Monorepo lint, type-check, and test commands all pass on clean checkout
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Implement the core execution engine: DAG-based flow runner, step
+      scheduler, retry/backoff with configurable policies, dead-letter queue for permanently
+      failed steps, and parallel branch executor. Use Multi-Agent Parallel Execution
+      pattern for independent branches.'
+    agent_role: developer
+    acceptance_criteria:
+    - Engine executes a 10-step linear flow end-to-end with all step outputs persisted
+    - Parallel branches execute concurrently — measured with timing assertions
+    - Retry with exponential backoff triggers on transient connector errors (HTTP
+      429, 503)
+    - Dead-letter queue captures steps that exhaust retries — payload preserved for
+      replay
+    - Execution context is isolated per tenant (no cross-tenant state leak)
+    depends_on:
+    - 9
+  FRONTEND:
+    description: 'Build the visual flow builder canvas: React Flow-based drag-and-drop
+      editor, node palette, connector search, node configuration side panel, canvas
+      zoom/pan/minimap, flow version history viewer, undo/redo, and keyboard shortcuts.'
+    agent_role: developer
+    acceptance_criteria:
+    - Flow canvas renders 100-node flows without visible lag (< 16ms frame time)
+    - Drag-and-drop from palette to canvas creates a configured node
+    - Undo/redo works across 20 sequential operations
+    - Connector search returns results as user types (debounced, < 100ms)
+    - Auto-layout arranges nodes into a readable DAG on demand
+    - Canvas state auto-saves every 30 seconds
+    depends_on:
+    - 6
+    - 9
+  AGENTIC:
+    description: 'Implement the AI Flow Assistant using the Review and Critique (Actor-Critic)
+      pattern: an LLM-powered assistant that suggests next steps in a flow, detects
+      common misconfiguration patterns, and critiques drafted flows for error-handling
+      gaps and performance anti-patterns.'
+    agent_role: developer
+    acceptance_criteria:
+    - Flow assistant suggests relevant next steps based on current flow context in
+      < 2 seconds
+    - Critic agent identifies missing error handlers on HTTP action nodes
+    - Suggestion quality score ≥ 0.8 on a held-out test set of 50 real flow patterns
+    - 'HITL gate: suggestions are proposals — user must explicitly accept before applying
+      to flow'
+    - No hallucinated connector names or actions in suggestions
+    depends_on:
+    - 11
+    - 18
+  COMPLIANCE:
+    description: Produce ISO 27001 Statement of Applicability (SoA), SOC 2 Type II
+      readiness assessment, information security policies (ISMS), data classification
+      policy, incident response plan, and vulnerability management policy.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - SoA documents all 93 ISO 27001 Annex A controls with in-scope/out-of-scope justification
+    - SOC 2 readiness gap assessment lists all open items with owners and due dates
+    - Incident response plan tested via tabletop exercise — debrief report produced
+    - Data classification policy covers all data types in the platform schema
+    - Audit log export covers all SOC 2 CC6.x control evidence requirements
+    depends_on:
+    - 5
+    - 7
+  DEVOPS:
+    description: 'Build CI/CD pipelines (GitHub Actions): lint → unit test → integration
+      test → build → SAST/DAST scan → staging deploy → smoke test → production deploy
+      with canary rollout. Set up observability stack (Prometheus + Grafana + Loki
+      + OpenTelemetry), alerting runbooks, and SLO dashboards.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Full pipeline completes in under 15 minutes for a typical PR
+    - SAST scan blocks merge on high/critical findings
+    - Canary deployment routes 10% traffic before full promotion
+    - SLO dashboards show error budget burn rate with alerting at 5% burn
+    - Rollback pipeline executes in under 3 minutes
+    depends_on:
+    - 9
+    - 16
+  INFRA:
+    description: 'Provision production infrastructure via Terraform: multi-AZ Kubernetes
+      cluster, managed PostgreSQL + TimescaleDB, Redis (task queue + cache), Elasticsearch,
+      Vault (credential store), CDN, WAF, and VPC network segmentation. Define IaC
+      modules for dev/staging/prod parity.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`terraform apply` provisions a complete environment from scratch with zero
+      manual steps'
+    - 'Multi-AZ failover tested: primary DB failure results in < 30s failover'
+    - WAF rules block OWASP Top 10 attack patterns — verified with automated scan
+    - Dev/staging/prod use identical module configs — only sizing parameters differ
+    - Vault unsealing is automated via AWS KMS auto-unseal
+    depends_on:
+    - 24
+  QA:
+    description: 'Design the master test plan: unit test strategy (≥ 80% coverage),
+      integration test strategy (connector contract tests, API contract tests), performance
+      test plan (execution engine under load), security test plan, and regression
+      suite coverage map.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Master test plan approved covering all 6 test levels
+    - Coverage targets documented and enforced in CI pipeline
+    - Test environment provisioning script creates isolated test data per run
+    - 'Defect triage process defined: severity levels, SLA per severity, escalation
+      path'
+    - Regression suite covers all P0 user journeys
+    depends_on:
+    - 8
+    - 10
+  TESTS:
+    description: Write unit tests for the execution engine, conditional logic engine,
+      connector framework, error handler, and schedule engine. Achieve ≥ 80% line
+      coverage. Include property-based tests for the expression evaluator.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Overall unit test coverage ≥ 80% (enforced in CI)
+    - 'Execution engine: all state transitions covered'
+    - 'Expression evaluator: 100 property-based test cases with no failures'
+    - 'Connector framework: auth flows, rate limiting, and error classification all
+      tested'
+    - All tests pass in < 2 minutes in CI
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 15
+    - 17
+  SYSTEM_TEST:
+    description: 'Build end-to-end system test suite: 20 golden-path flow scenarios
+      spanning multiple connectors and conditional logic, multi-tenant isolation validation,
+      execution monitoring verification, schedule trigger accuracy tests, and load
+      test (1000 concurrent executions).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 20 golden-path scenarios pass in staging environment
+    - 'Cross-tenant isolation test: 0 data leaks across 10 tenant boundary test cases'
+    - 'Load test: P95 execution start latency < 500ms at 1000 concurrent executions'
+    - 'Schedule accuracy: 100 consecutive cron triggers fire within 5 seconds of scheduled
+      time'
+    - 'Error recovery scenario: flow resumes correctly after simulated connector outage'
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 17
+    - 24
+  OPERATIONS:
+    description: Write SLA definitions (99.9% uptime, < 5s P95 execution latency),
+      operational runbooks (incident response, on-call escalation, flow execution
+      stuck recovery, connector auth refresh, DB failover), capacity planning model,
+      and disaster recovery plan.
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA document signed off with measurable SLOs and error budgets
+    - Each runbook has a step-by-step procedure testable via tabletop
+    - 'DR plan tested: restore from backup completes within 4-hour RTO'
+    - Capacity model covers 3x current peak load with headroom calculations
+    - On-call rotation and escalation path documented and communicated
+    depends_on:
+    - 24
+    - 25
+  TRAINING:
+    description: 'Produce user-facing documentation: Getting Started guide, visual
+      flow builder tutorial, connector setup guides for top-20 connectors, conditional
+      logic cookbook, error handling best practices, API reference, and 5 video walkthroughs.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Getting Started guide takes a new user from signup to first running flow in
+      under 15 minutes
+    - All 20 tier-1 connector setup guides reviewed for accuracy against live connectors
+    - API reference auto-generated from OpenAPI spec and kept in sync via CI
+    - '5 video walkthroughs cover: create flow, add connector, conditional logic,
+      error handling, monitoring'
+    - In-app tooltips cover all node configuration fields
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 19
+    - 20
+    - 22
+  FINANCIAL:
+    description: 'Build the pricing model: consumption-based (executions/month), per-seat,
+      and enterprise flat-rate tiers. Model unit economics (infra cost per 1M executions,
+      connector API cost pass-through), break-even analysis, and billing integration
+      design (Stripe).'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Three-tier pricing model with clear feature gates between tiers
+    - Unit economics model shows cost per 1M executions at 3 scale levels
+    - Break-even analysis at each pricing tier documented
+    - Stripe billing integration handles subscription creation, metered usage, and
+      invoicing
+    - Usage metering captures execution count per tenant per billing period
+    depends_on:
+    - 3
+    - 16
+  LOCALIZATION:
+    description: Set up i18n infrastructure for the React frontend (i18next), extract
+      all UI strings to translation keys, and produce initial translations for English,
+      Spanish, French, German, and Japanese.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - Zero hardcoded UI strings — all text rendered via i18next keys
+    - Locale switching works at runtime without page reload
+    - All 5 locales have 100% string coverage (no fallback to English keys in non-English
+      mode)
+    - CI fails if a new hardcoded string is introduced (automated string extraction
+      check)
+    - Date, number, and currency formatting uses locale-aware formatters
+    depends_on:
+    - 18
+    - 19
+    - 20
+    - 21

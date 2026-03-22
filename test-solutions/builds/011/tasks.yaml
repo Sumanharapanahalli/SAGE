@@ -1,0 +1,331 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define product requirements: user stories for checking/savings accounts,
+      P2P transfers, virtual debit cards, spending insights, round-up investing. Map
+      regulatory constraints (PCI DSS, KYC/AML) to functional requirements. Produce
+      BRD and process flows.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - BRD covers all six product features with acceptance criteria per feature
+    - Every regulatory constraint mapped to at least one functional requirement
+    - Process flows include KYC onboarding, transaction approval, and dispute resolution
+      paths
+    - Stakeholder sign-off recorded
+    depends_on: []
+  MARKET_RESEARCH:
+    description: Competitive analysis of neobank landscape (Chime, Revolut, Cash App).
+      Identify differentiators, pricing model, target demographics, and go-to-market
+      positioning.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - At least 5 competitors analyzed across pricing, features, and UX
+    - Differentiation statement produced and validated against BRD
+    - GTM brief includes target persona and acquisition channel recommendations
+    depends_on: []
+  COMPLIANCE:
+    description: Produce compliance framework document mapping PCI DSS v4.0 requirements,
+      KYC/AML obligations (FinCEN, FATF), SOC 2 Type II controls, and SOX financial
+      reporting controls to product features. Define data retention, audit trail,
+      and SAR filing procedures.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Every PCI DSS requirement (all 12 domains) mapped to a control owner and technical
+      control
+    - KYC identity verification flow defined with CDD and EDD procedures
+    - AML transaction monitoring thresholds and SAR trigger rules documented
+    - SOC 2 trust criteria mapped to system components
+    - Data retention schedule compliant with BSA 5-year minimum
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (CCPA/GDPR-ready), Electronic
+      Funds Transfer Act disclosures, Regulation E compliance language, and money
+      transmitter licensing requirements by state.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers account ownership, dispute resolution, liability limits, and arbitration
+      clause
+    - Privacy Policy addresses data collection, sharing, retention, and user rights
+      under CCPA and GDPR
+    - Reg E error resolution timeframes and consumer liability limits stated correctly
+    - Money transmitter license requirements identified for all 50 states
+    depends_on:
+    - 3
+  SECURITY:
+    description: 'Conduct threat modeling (STRIDE) for all product surfaces: mobile
+      app, API gateway, card processing, P2P transfer engine, and investing module.
+      Produce penetration test plan, SBOM, and security architecture blueprint. Define
+      secrets management and key rotation policy.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE model covers all six product surfaces with risk ratings
+    - All OWASP Mobile Top 10 threats addressed with mitigations
+    - PCI DSS cardholder data environment (CDE) scoped and network diagram produced
+    - SBOM lists all third-party dependencies with CVE scan results
+    - Key rotation policy defines rotation frequency per key type with automated enforcement
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 3
+  UX_DESIGN:
+    description: 'User research, information architecture, and high-fidelity wireframes
+      for all core flows: onboarding/KYC, dashboard, account management, P2P transfer,
+      virtual card management, spending insights, and round-up investing. Accessibility
+      audit (WCAG 2.1 AA).'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - High-fidelity wireframes for all 7 flows reviewed and approved
+    - KYC onboarding flow completes in under 5 minutes per usability benchmark
+    - Design system includes color tokens, typography, spacing, and component library
+    - Accessibility audit passes WCAG 2.1 AA for contrast, touch targets, and screen
+      reader support
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Define product roadmap, release phases (MVP → v1.0 → v1.5), feature
+      prioritization using MoSCoW, success metrics (MAU, activation rate, NPS, transaction
+      volume), and OKRs for first 12 months.
+    agent_role: product_manager
+    acceptance_criteria:
+    - MoSCoW prioritization completed and agreed with business stakeholders
+    - MVP scope defined with measurable launch criteria
+    - OKRs set for 3, 6, and 12 months post-launch
+    - Success metric baselines and targets documented
+    depends_on:
+    - 1
+    - 2
+  FINANCIAL:
+    description: 'Build unit economics model: interchange revenue, subscription tiers,
+      round-up investing fee structure, operational cost model (banking-as-a-service
+      partner fees, KYC vendor costs, card issuance). Project 3-year P&L and break-even
+      analysis.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Unit economics model shows revenue and cost per active user per month
+    - Break-even analysis completed under 3 scenarios (conservative, base, optimistic)
+    - Interchange revenue assumptions benchmarked against published Visa/Mastercard
+      rates
+    - 3-year P&L with monthly granularity for year 1
+    depends_on:
+    - 1
+    - 2
+  CONFIG:
+    description: 'Set up development environment, repository structure (monorepo:
+      api/, mobile/, infra/, compliance/), configure BaaS partner SDK (e.g., Synapse/Unit/Column
+      Bank), set up secrets manager (AWS Secrets Manager), and configure agentic AI
+      pattern: coordinator + human_in_the_loop for compliance-gated operations.'
+    agent_role: developer
+    acceptance_criteria:
+    - Monorepo initialized with Nx or Turborepo workspace configuration
+    - BaaS partner sandbox credentials provisioned and SDK installed
+    - Secrets Manager configured with rotation enabled for all credentials
+    - HITL approval queue configured for the 4 defined gate points
+    - All team members can clone, install deps, and run local stack within 30 minutes
+    depends_on:
+    - 5
+  DATABASE:
+    description: 'Design and implement the core database schema: users, kyc_verifications,
+      accounts (checking/savings), transactions, p2p_transfers, virtual_cards, spending_categories,
+      round_up_rules, investment_accounts. PCI DSS-compliant tokenization of card
+      data. Write migrations and seed data for testing.'
+    agent_role: developer
+    acceptance_criteria:
+    - All PII fields (SSN, DOB, card PAN) encrypted at rest with column-level encryption
+    - Card PAN never stored — only tokenized reference via BaaS vault
+    - Audit log table captures all writes to accounts and transactions with actor
+      and timestamp
+    - Flyway migrations run idempotently from schema version 0 to current
+    - Seed data covers at least 5 test users across KYC states (pending, approved,
+      rejected, EDD)
+    - Database ERD reviewed and approved
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 9
+  BACKEND:
+    description: 'Build authentication and identity service: email/phone registration,
+      OTP verification, biometric auth handshake (mobile), JWT + refresh token management,
+      device fingerprinting, session revocation, and rate limiting. Implement OAuth
+      2.0 + PKCE for mobile.'
+    agent_role: developer
+    acceptance_criteria:
+    - OTP delivery via SMS and email with 6-digit code, 10-minute expiry
+    - JWT signed with RS256, 15-minute access token TTL, 30-day refresh token with
+      rotation
+    - Device fingerprint stored and used to flag new device logins
+    - 'Brute force protection: account locked after 5 failed OTP attempts with exponential
+      backoff'
+    - OAuth 2.0 PKCE flow tested end-to-end from mobile client
+    - Session revocation propagates within 60 seconds via Redis blocklist
+    depends_on:
+    - 10
+  ML_MODEL:
+    description: 'Train and deploy transaction categorization ML model: data pipeline
+      from historical transactions, feature engineering (merchant name, MCC, amount,
+      time), fine-tune a text classifier, evaluate accuracy, and deploy as a microservice
+      with A/B testing capability.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Training pipeline reproducible with pinned dependency versions
+    - Macro F1 ≥ 0.85 on held-out test set
+    - Model served as REST endpoint with p95 latency < 100ms
+    - A/B testing framework routes X% of traffic to challenger model
+    - Model card documenting training data, limitations, and bias evaluation published
+    depends_on:
+    - 16
+  FRONTEND:
+    description: 'Build React Native mobile app: onboarding and KYC flow, biometric
+      authentication, dashboard with account balances, transaction history, P2P transfer
+      screens, virtual card management UI (reveal PAN with biometric), spending insights
+      charts, and round-up investing screens.'
+    agent_role: developer
+    acceptance_criteria:
+    - All screens match approved high-fidelity designs within 95% pixel accuracy
+    - KYC flow completes end-to-end with live Persona SDK integration
+    - Biometric auth (Face ID, Touch ID, Android Biometric) tested on iOS and Android
+    - Virtual card PAN reveal requires biometric and shows for maximum 30 seconds
+    - Certificate pinning prevents proxy interception in release build
+    - Jailbroken/rooted device detection prompts security warning at app launch
+    - 'Accessibility: all interactive elements have accessibilityLabel, minimum 44pt
+      touch targets'
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 18
+    - 19
+  INFRA:
+    description: 'Provision AWS infrastructure using Terraform: VPC with network segmentation
+      (CDE subnet isolated per PCI DSS), EKS cluster for microservices, RDS PostgreSQL
+      multi-AZ, ElastiCache Redis, MSK Kafka, WAF + API Gateway, CloudTrail logging,
+      and GuardDuty for threat detection.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan applies cleanly with no manual steps
+    - CDE subnet has no direct internet ingress, all traffic via WAF and API Gateway
+    - RDS automated backups enabled with 35-day retention, multi-AZ failover tested
+    - GuardDuty findings routed to Security Hub with PagerDuty alert for HIGH/CRITICAL
+    - CloudTrail logs all API calls to encrypted S3 bucket with 7-year retention
+    - EKS cluster passes CIS Kubernetes Benchmark Level 1
+    depends_on:
+    - 9
+  DEVOPS:
+    description: 'Set up CI/CD pipelines (GitHub Actions): build, test, SAST (Semgrep),
+      SCA (Snyk), container scanning (Trivy), image signing (Cosign), deployment to
+      staging and production with blue-green strategy, automated rollback on health
+      check failure, and DAST scan on staging.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All pipeline stages run on every PR and block merge on failure
+    - SAST scan reports uploaded to Security Hub and block deploy on HIGH severity
+    - Container images signed with Cosign and verified on deployment
+    - Blue-green deployment switches traffic with zero downtime (0 dropped requests
+      in load test)
+    - Automated rollback triggers within 5 minutes of health check failure
+    - DAST scan runs against staging after each deploy with results archived
+    depends_on:
+    - 21
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for all services (≥80%
+      coverage), integration tests for BaaS API, KYC provider, and brokerage API,
+      contract tests (Pact) for inter-service APIs, and regression suite for critical
+      financial calculations (round-up math, interest accrual, transfer limits).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥ 80% across all backend services
+    - Integration tests run against BaaS sandbox, not mocks, for all financial operations
+    - Pact contract tests published to Pact Broker and verified on every CI run
+    - Round-up math tested for all rule types across 1,000 randomized transaction
+      amounts
+    - Interest accrual tested for leap years, month-end edge cases, and APY changes
+    - All tests run in under 15 minutes in CI
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 18
+  QA:
+    description: 'Design and execute QA test plan: exploratory testing of all user
+      flows on iOS and Android, edge case testing (insufficient funds, expired cards,
+      failed KYC), regression suite for each release, and performance testing (API
+      response times under load).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All critical user flows pass on iPhone 15 and Pixel 8 without crashes
+    - Insufficient funds scenario shows correct error without partially completing
+      transaction
+    - All API endpoints meet p95 < 500ms under 500 concurrent users
+    - App cold start time < 2 seconds on mid-range Android device
+    - Zero P0/P1 bugs open at launch gate
+    - QA sign-off report produced for each release candidate
+    depends_on:
+    - 20
+    - 24
+  SYSTEM_TEST:
+    description: 'End-to-end system integration tests: full user journey from registration
+      through first transaction, P2P transfer to external bank account, round-up investment
+      execution, and KYC failure + recovery. Disaster recovery test (RDS failover,
+      EKS node failure). Chaos engineering with Chaos Monkey.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 6 E2E journeys pass in staging environment against BaaS sandbox
+    - RDS failover completes within 60 seconds with no data loss
+    - Application degrades gracefully when BaaS API returns 503 (queues requests,
+      no data loss)
+    - Kafka broker failure recovers automatically with no message loss
+    - Chaos test results documented with MTTR for each failure scenario
+    - System test sign-off required before production deployment
+    depends_on:
+    - 22
+    - 24
+    - 25
+  OPERATIONS:
+    description: 'Define operational runbooks: incident response (P0/P1/P2 severity
+      matrix), on-call rotation, SLA definitions (99.9% uptime), fraud incident response,
+      card breach notification procedure (PCI DSS 10.7), capacity planning model,
+      and runbook for BaaS partner outage.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - All 7 runbooks reviewed and approved by engineering lead and compliance officer
+    - Severity matrix defines P0-P3 with response time SLAs and escalation paths
+    - Card breach notification procedure meets PCI DSS 72-hour notification requirement
+    - BaaS outage runbook tested with tabletop exercise
+    - On-call rotation configured in PagerDuty with escalation policy
+    - Monitoring dashboards cover all critical service health indicators
+    depends_on:
+    - 22
+    - 23
+  TRAINING:
+    description: 'Produce user-facing help content and internal operational training:
+      in-app help articles for all features, FAQ for KYC/identity verification, video
+      walkthroughs for key flows, and internal training for support team on fraud
+      investigation and dispute resolution.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Help articles cover all 6 product features with search functionality in-app
+    - KYC FAQ addresses top 10 rejection scenarios with resolution steps
+    - Support team training completed by all agents before launch with assessment
+      score ≥ 80%
+    - Risk disclosure reviewed by legal and meets Reg BI plain language requirement
+    - Video walkthroughs cover onboarding, P2P transfer, and investing setup
+    depends_on:
+    - 20
+    - 4
+  DOCS:
+    description: 'Produce technical documentation: API reference (OpenAPI 3.1 spec),
+      system architecture document, data dictionary, integration guide for BaaS and
+      brokerage partners, disaster recovery plan, and developer onboarding guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec covers 100% of public API endpoints with request/response schemas
+    - Architecture document includes component diagram, data flow, and technology
+      decisions
+    - DR plan defines RPO ≤ 1 hour and RTO ≤ 4 hours with tested recovery procedures
+    - 'Developer onboarding guide tested: new engineer runs local stack within 30
+      minutes'
+    - All docs version-controlled alongside code and updated on each release
+    depends_on:
+    - 26

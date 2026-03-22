@@ -1,0 +1,890 @@
+{
+  "run_id": "8fd6cc3f-b7c4-4a5c-9a32-74aaf183065d",
+  "solution_name": "surgical_robot_ui",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-21T22:41:04.106168+00:00",
+  "updated_at": "2026-03-21T22:46:09.504175+00:00",
+  "product_description": "Surgeon console interface for a minimally invasive surgical robot with 3D visualization, haptic feedback controls, and real-time instrument tracking. ISO 13485 and IEC 62304 SIL 3.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "SAFETY",
+      "description": "Conduct preliminary hazard analysis (PHA) and system-level FMEA for the surgical robot console. Identify all hazard sources: unintended instrument movement, haptic feedback latency failures, 3D visualization dropout, tracking loss. Map each hazard to severity (ISO 14971 S1\u2013S5) and probability. Produce initial risk acceptability matrix.",
+      "payload": {
+        "standards": [
+          "ISO 14971:2019",
+          "IEC 62304",
+          "ISO 13485"
+        ],
+        "hazard_categories": [
+          "instrument_tracking_loss",
+          "haptic_feedback_failure",
+          "visualization_dropout",
+          "latency_spike",
+          "EMI_interference"
+        ],
+        "output_artifacts": [
+          "PHA_report.md",
+          "FMEA_initial.xlsx",
+          "risk_acceptability_matrix.md"
+        ],
+        "sil_target": "SIL-3"
+      },
+      "acceptance_criteria": [
+        "All identified hazards mapped to ISO 14971 severity + probability matrix",
+        "At least 25 unique hazard scenarios documented",
+        "Risk acceptability decision recorded for each hazard (acceptable / ALARP / unacceptable)",
+        "FMEA table includes failure mode, effect, detection method, and mitigation for each line item",
+        "Document reviewed and signed off by safety_engineer",
+        "ISO 14971 risk management file complete",
+        "Residual risk acceptable"
+      ],
+      "depends_on": [],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 2,
+      "task_type": "COMPLIANCE",
+      "description": "Establish the Design History File (DHF) skeleton and traceability matrix framework per ISO 13485 and IEC 62304. Create document control structure: design inputs, design outputs, verification records, validation records. Map regulatory requirements (FDA 21 CFR Part 820, IEC 62304 clause 5\u20139) to planned deliverables. Set up traceability from requirements \u2192 design \u2192 implementation \u2192 test \u2192 validation.",
+      "payload": {
+        "standards": [
+          "ISO 13485:2016",
+          "IEC 62304:2006+AMD1:2015",
+          "FDA 21 CFR Part 820"
+        ],
+        "dhf_sections": [
+          "design_inputs",
+          "design_outputs",
+          "design_reviews",
+          "verification",
+          "validation",
+          "design_transfer",
+          "design_changes"
+        ],
+        "output_artifacts": [
+          "DHF_skeleton/",
+          "traceability_matrix.xlsx",
+          "document_control_plan.md",
+          "software_development_plan.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "DHF folder structure created with all IEC 62304 clause 5\u20139 sections",
+        "Traceability matrix template populated with regulatory requirement rows",
+        "Document control plan defines versioning, review, and approval workflow",
+        "Software development plan identifies SIL-3 lifecycle activities and responsible roles",
+        "All output document IDs assigned and registered in document register",
+        "DHF (Design History File) structure created",
+        "V&V protocol drafted"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 3,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define software requirements specification (SRS) for the surgical console. Capture functional requirements (3D visualization, haptic rendering, instrument tracking, emergency stop), non-functional requirements (latency <10ms haptic loop, <16ms display refresh, 99.999% uptime in OR), and interface requirements (robot arm CAN bus, haptic device SDK, tracking camera API). Assign SIL levels per IEC 62304 software safety classification.",
+      "payload": {
+        "requirement_categories": [
+          "functional",
+          "performance",
+          "safety",
+          "interface",
+          "security",
+          "usability"
+        ],
+        "latency_budgets": {
+          "haptic_loop_ms": 10,
+          "display_refresh_ms": 16,
+          "tracking_update_ms": 5
+        },
+        "sil_classification": "Class_C_SIL3",
+        "output_artifacts": [
+          "SRS_v1.0.md",
+          "interface_control_document.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "SRS covers all functional, performance, safety, and interface requirements",
+        "Each requirement has unique ID (SRS-001, SRS-002, \u2026) for traceability",
+        "Latency budgets explicitly stated and justified for haptic, display, and tracking loops",
+        "IEC 62304 software safety class (Class C) documented with rationale",
+        "SRS reviewed by safety_engineer and regulatory_specialist before sign-off"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 4,
+      "task_type": "UX_DESIGN",
+      "description": "Design the surgeon console HMI: ergonomic layout for sterile field use, 3D viewport placement, haptic grip control affordances, instrument status overlays, emergency stop placement, and alarm/alert hierarchy. Produce wireframes and interaction flows. Conduct formative usability evaluation against IEC 62366-1. Document use errors and mitigations.",
+      "payload": {
+        "design_tools": [
+          "Figma"
+        ],
+        "screens": [
+          "main_3d_viewport",
+          "instrument_status_panel",
+          "haptic_calibration",
+          "emergency_stop_overlay",
+          "system_health_dashboard"
+        ],
+        "usability_standard": "IEC 62366-1:2015",
+        "output_artifacts": [
+          "wireframes/",
+          "interaction_flows.md",
+          "formative_usability_report.md",
+          "use_error_analysis.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all identified screens including emergency stop and alarm states",
+        "Interaction flows documented for critical paths: instrument selection, haptic calibration, emergency stop activation",
+        "Formative usability evaluation conducted with at least 3 representative user scenarios",
+        "Use error analysis identifies top-5 use errors with mitigation design responses",
+        "Color coding and alarm hierarchy comply with IEC 60601-1-8 alarm standard references"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 5,
+      "task_type": "CONFIG",
+      "description": "Establish the software architecture and development environment. Define real-time component boundaries: hard-real-time haptic control loop (RTOS), soft-real-time 3D rendering pipeline, instrument tracking service, and console UI layer. Set up monorepo with CMake/Conan for firmware, Rust/C++ for real-time services, and React/TypeScript for console UI. Configure IEC 62304-compliant SCM (git with signed commits, branch protection, mandatory code review). Set up human-in-the-loop (HITL) agentic pattern for all safety-critical change proposals.",
+      "payload": {
+        "architecture_layers": {
+          "rtos_layer": "FreeRTOS SIL-3 haptic control loop \u2014 C, MISRA-C:2012",
+          "rt_service_layer": "Rust real-time instrument tracking + state machine",
+          "rendering_layer": "Vulkan/OpenGL 3D visualization \u2014 C++17",
+          "console_ui_layer": "React 18 + TypeScript surgeon dashboard"
+        },
+        "agentic_pattern": "human_in_the_loop",
+        "scm_requirements": [
+          "signed_commits",
+          "branch_protection",
+          "mandatory_review",
+          "automated_static_analysis"
+        ],
+        "toolchain": [
+          "CMake 3.26",
+          "Conan 2",
+          "Rust 1.78",
+          "Node 20",
+          "MISRA-C checker",
+          "Polyspace"
+        ],
+        "output_artifacts": [
+          "ARCHITECTURE.md",
+          "Makefile",
+          "CMakeLists.txt",
+          "Cargo.toml",
+          "package.json",
+          ".github/branch_protection.yml"
+        ]
+      },
+      "acceptance_criteria": [
+        "Monorepo builds all four layers cleanly from a single `make all` command",
+        "MISRA-C:2012 checker integrated into CI and blocks merge on violations",
+        "Branch protection enforces signed commits and at least 2 reviewer approvals",
+        "Architecture document defines IPC contracts between all four layers",
+        "HITL approval gate configured: any safety-critical code change generates a proposal requiring safety_engineer sign-off before merge"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "FIRMWARE",
+      "description": "Implement the hard-real-time haptic control loop in FreeRTOS (SIL-3, MISRA-C:2012). Tasks: HAL driver for haptic actuator (force-torque output), 1kHz control task with deadline monitoring, watchdog supervision with safe-state transition on deadline miss, force saturation limits per safety requirements, CAN bus driver for robot arm telemetry. Implement IEC 62304 Class C coding standards: no dynamic allocation post-init, all pointer dereferences guarded, bounded loops only.",
+      "payload": {
+        "rtos": "FreeRTOS 10.6 LTS",
+        "language": "C (MISRA-C:2012)",
+        "control_loop_hz": 1000,
+        "safe_state": "zero_force_output_and_alert",
+        "drivers": [
+          "haptic_hal.c",
+          "can_bus_driver.c",
+          "watchdog_supervisor.c",
+          "force_saturation.c"
+        ],
+        "tasks": [
+          "haptic_control_task.c",
+          "deadline_monitor_task.c",
+          "safe_state_task.c"
+        ],
+        "output_artifacts": [
+          "firmware/src/",
+          "firmware/hal/",
+          "firmware/CMakeLists.txt"
+        ]
+      },
+      "acceptance_criteria": [
+        "Haptic control task executes at 1kHz \u00b10.1% jitter measured on HIL bench",
+        "Deadline miss triggers safe-state (zero force) within 2ms",
+        "All MISRA-C:2012 mandatory rules pass with zero violations",
+        "No dynamic memory allocation after RTOS scheduler start (verified by static analysis)",
+        "Force output saturates at configured limits; saturation event logged to audit buffer",
+        "CAN bus driver handles bus-off condition gracefully with automatic recovery",
+        "IEC 62304 software class documented",
+        "SOUP components listed"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "BACKEND",
+      "description": "Implement the instrument tracking service in Rust. Consumes stereo camera frames via shared memory ring buffer, runs 6-DOF pose estimation for each tracked instrument, publishes instrument state (position, orientation, velocity, confidence) at 200Hz via Unix domain socket to rendering and UI layers. Implement fault detection: tracking loss, confidence below threshold, camera failure. Each fault transitions to defined degraded mode per safety requirements.",
+      "payload": {
+        "language": "Rust 1.78",
+        "update_rate_hz": 200,
+        "ipc_mechanism": "Unix domain socket (CBOR framing)",
+        "fault_modes": [
+          "tracking_loss",
+          "low_confidence",
+          "camera_failure",
+          "frame_timeout"
+        ],
+        "output_artifacts": [
+          "services/tracking/src/",
+          "services/tracking/Cargo.toml",
+          "services/tracking/proto/instrument_state.schema.json"
+        ]
+      },
+      "acceptance_criteria": [
+        "Instrument state published at 200Hz \u00b11Hz under nominal load",
+        "Tracking loss detected within 50ms and fault event emitted on IPC bus",
+        "Confidence threshold (configurable, default 0.85) triggers degraded-mode overlay on UI",
+        "Camera failure transitions service to safe-state within 100ms",
+        "Service passes 24-hour continuous operation soak test with zero crashes",
+        "All public interfaces documented and schema-validated"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "FRONTEND",
+      "description": "Build the 3D surgical visualization viewport using WebGL/Three.js or Vulkan (surgeon console renderer). Render real-time instrument meshes with 6-DOF pose from tracking service, stereoscopic depth cues, instrument collision proximity indicators, and anatomical reference overlays. Target <16ms frame time (60fps). Implement degraded-mode rendering (monochrome + alert banner) on tracking confidence loss.",
+      "payload": {
+        "renderer": "Three.js r165 (WebGL2) or native Vulkan C++ binding",
+        "target_fps": 60,
+        "features": [
+          "6dof_instrument_meshes",
+          "stereo_depth_cues",
+          "proximity_indicators",
+          "anatomical_overlays",
+          "degraded_mode"
+        ],
+        "data_source": "instrument tracking service IPC",
+        "output_artifacts": [
+          "console-ui/src/components/Viewport3D/",
+          "console-ui/src/hooks/useTrackingFeed.ts"
+        ]
+      },
+      "acceptance_criteria": [
+        "3D viewport renders at \u226560fps on target hardware (verified with frame time profiler)",
+        "Instrument mesh updates reflect tracking data with \u226416ms end-to-end display latency",
+        "Proximity indicator activates and animates when instrument within 5mm of another",
+        "Degraded mode (monochrome + alert banner) activates within one frame of tracking confidence drop",
+        "Viewport renders correctly in both windowed and full-screen modes",
+        "No WebGL context loss in 1-hour continuous operation test"
+      ],
+      "depends_on": [
+        7,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "FRONTEND",
+      "description": "Build the surgeon console dashboard shell: instrument status panel (each instrument: name, tracking confidence, battery/power state), system health strip (haptic loop, tracking service, camera, robot arm), alarm/alert panel (IEC 60601-1-8 priority P1/P2/P3), haptic calibration wizard, and emergency stop overlay. Wire all panels to backend IPC via WebSocket bridge. Implement HITL approval gate UI for any safety-critical configuration changes.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "state_management": "Zustand",
+        "panels": [
+          "InstrumentStatusPanel",
+          "SystemHealthStrip",
+          "AlarmPanel",
+          "HapticCalibrationWizard",
+          "EmergencyStopOverlay",
+          "HITLApprovalModal"
+        ],
+        "websocket_bridge": "services/ws-bridge (Rust axum)",
+        "output_artifacts": [
+          "console-ui/src/pages/",
+          "console-ui/src/components/",
+          "console-ui/src/stores/"
+        ]
+      },
+      "acceptance_criteria": [
+        "All panels render and update in real-time from WebSocket bridge data",
+        "Emergency stop overlay activates on hardware button press AND software trigger within 100ms",
+        "Alarm panel correctly prioritizes P1 (immediate) > P2 (prompt) > P3 (advisory) with distinct audio/visual cues",
+        "Haptic calibration wizard completes full calibration flow and writes result to firmware via IPC",
+        "HITL approval modal blocks safety-critical config changes until operator authenticates and approves",
+        "UI passes WCAG 2.1 AA accessibility audit for controls usable with surgical gloves"
+      ],
+      "depends_on": [
+        8,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement the WebSocket bridge service (Rust/axum) that aggregates IPC streams from the haptic firmware layer, tracking service, and robot arm CAN telemetry into a single multiplexed WebSocket feed for the console UI. Handle reconnection, back-pressure, and message prioritization (safety alerts bypass queue). Implement session authentication and audit logging of all console operator actions.",
+      "payload": {
+        "framework": "axum 0.7 (Rust)",
+        "message_types": [
+          "instrument_state",
+          "haptic_status",
+          "system_health",
+          "alarm_event",
+          "audit_event"
+        ],
+        "priority_queue": "safety_alerts bypass normal queue",
+        "auth": "mTLS client certificate (operator smart card)",
+        "output_artifacts": [
+          "services/ws-bridge/src/",
+          "services/ws-bridge/Cargo.toml"
+        ]
+      },
+      "acceptance_criteria": [
+        "WebSocket delivers alarm_event messages within 50ms of originating fault",
+        "Back-pressure handling: if UI client is slow, safety alerts are never dropped (lower-priority messages shed first)",
+        "mTLS authentication rejects unauthenticated clients with audit log entry",
+        "All operator actions (calibration, config change, acknowledgment) written to append-only audit log",
+        "Service handles UI reconnect within 500ms without data loss for in-flight alarms",
+        "10-minute soak test at 200Hz tracking + 1kHz haptic status shows zero message loss for P1 alarms"
+      ],
+      "depends_on": [
+        7,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "HARDWARE_SIM",
+      "description": "Build hardware simulation models for HIL testing: simulated haptic device (force-torque model with configurable latency injection), simulated stereo camera feed (synthetic instrument poses with configurable dropout), simulated robot arm CAN bus (replays surgical procedure recordings). Models must be injectable without hardware changes, controlled via simulation control API.",
+      "payload": {
+        "sim_components": [
+          "haptic_device_sim",
+          "stereo_camera_sim",
+          "can_bus_sim"
+        ],
+        "injection_mechanism": "compile-time HAL swap (simulation HAL vs production HAL)",
+        "control_api": "gRPC simulation control server",
+        "test_scenarios": [
+          "nominal_procedure",
+          "tracking_dropout",
+          "haptic_deadline_miss",
+          "can_bus_off",
+          "all_faults_simultaneously"
+        ],
+        "output_artifacts": [
+          "sim/haptic_sim/",
+          "sim/camera_sim/",
+          "sim/can_sim/",
+          "sim/control_server/"
+        ]
+      },
+      "acceptance_criteria": [
+        "All three simulation models injectable via HAL swap with zero production code changes",
+        "Simulation control API can trigger any fault condition within 10ms",
+        "Nominal procedure replay produces instrument state stream matching reference within 0.1mm RMS",
+        "Tracking dropout simulation verified to trigger UI degraded mode within specified latency",
+        "Simulation models pass deterministic replay: same inputs \u2192 same outputs (seed-controlled RNG)"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Write Hardware-in-the-Loop (HIL) test harness for the haptic firmware and tracking service. Test suite covers: control loop timing (jitter histogram), safe-state transition on deadline miss, force saturation, CAN bus recovery, tracking fault detection latency, and graceful degradation sequences. Tests execute against simulation models from step 11. Generate IEC 62304 test evidence artifacts automatically.",
+      "payload": {
+        "test_framework": "pytest + custom HIL fixture (gRPC to simulation control server)",
+        "coverage_target": "MC/DC 100% for safety-critical paths (IEC 62304 SIL-3 requirement)",
+        "evidence_artifacts": [
+          "HIL_test_report.pdf",
+          "timing_histograms/",
+          "mcdc_coverage_report.html"
+        ],
+        "test_categories": [
+          "timing",
+          "fault_injection",
+          "boundary_conditions",
+          "long_soak"
+        ],
+        "output_artifacts": [
+          "tests/hil/",
+          "tests/hil/conftest.py",
+          "tests/hil/test_haptic_*.py",
+          "tests/hil/test_tracking_*.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "Haptic loop jitter histogram shows 99.9th percentile \u226410\u00b5s over 1M cycles",
+        "Safe-state transition time \u22642ms measured on 1000 consecutive deadline miss injections",
+        "MC/DC coverage 100% on all safety-critical functions (haptic_control_task, watchdog, safe_state)",
+        "Tracking fault detection latency \u226450ms on 1000 consecutive dropout injections",
+        "24-hour soak test completes with zero crashes, zero missed deadlines, zero alarm suppression failures",
+        "All test results exported as signed PDF evidence artifact for DHF inclusion"
+      ],
+      "depends_on": [
+        11,
+        6,
+        7
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 13,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all software components: tracking service unit tests (pose estimation math, fault state machine transitions), WebSocket bridge tests (message prioritization, reconnect, back-pressure), console UI component tests (alarm panel priority ordering, HITL modal blocking behavior, emergency stop activation latency). Achieve IEC 62304 Class C branch coverage \u226585% for all modules.",
+      "payload": {
+        "test_frameworks": {
+          "rust": "cargo test + proptest",
+          "typescript": "Vitest + Testing Library",
+          "firmware_unit": "CppUTest"
+        },
+        "coverage_targets": {
+          "branch": 85,
+          "line": 90
+        },
+        "output_artifacts": [
+          "tests/unit/",
+          "tests/integration/",
+          "coverage_reports/"
+        ]
+      },
+      "acceptance_criteria": [
+        "All unit tests pass in CI on every commit",
+        "Branch coverage \u226585% for tracking service, ws-bridge, and console-ui components",
+        "Alarm panel tests verify P1 alarm is never blocked by P2/P3 queue entries",
+        "HITL modal test verifies safety-critical action is blocked until explicit approval",
+        "Emergency stop test verifies UI activation path completes within 100ms in Vitest timing simulation",
+        "Test results uploaded as JUnit XML and ingested into traceability matrix"
+      ],
+      "depends_on": [
+        9,
+        10,
+        7
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 14,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system test suite covering full surgical procedure simulation: operator login (mTLS), instrument tracking nominal flow, haptic calibration, 3D visualization rendering under load, fault injection sequence (tracking dropout \u2192 UI degraded mode \u2192 recovery), emergency stop activation end-to-end latency, and multi-fault simultaneous scenario. Produce system test report as IEC 62304 V&V evidence.",
+      "payload": {
+        "test_environment": "full stack against simulation HAL",
+        "scenarios": [
+          "nominal_full_procedure_30min",
+          "tracking_dropout_mid_procedure",
+          "haptic_deadline_miss_recovery",
+          "emergency_stop_end_to_end",
+          "multi_fault_simultaneous",
+          "operator_session_timeout_and_reauth"
+        ],
+        "performance_targets": {
+          "haptic_latency_ms": 10,
+          "display_latency_ms": 16,
+          "estop_latency_ms": 100
+        },
+        "output_artifacts": [
+          "test_reports/system_test_report_v1.pdf",
+          "test_reports/performance_measurements/"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 6 test scenarios pass with zero critical failures",
+        "Emergency stop end-to-end latency (button press \u2192 zero force output + UI alert) \u2264100ms on 50 consecutive trials",
+        "Haptic control loop latency \u226410ms at 99th percentile during full procedure simulation",
+        "Display latency \u226416ms at 99th percentile (60fps maintained) during full procedure simulation",
+        "Multi-fault scenario: all active alarms surfaced within 200ms, no alarm suppression observed",
+        "System test report signed by system_tester and safety_engineer, filed in DHF"
+      ],
+      "depends_on": [
+        12,
+        13,
+        8,
+        9,
+        10
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 15,
+      "task_type": "SAFETY",
+      "description": "Complete detailed FMEA and fault tree analysis (FTA) for the integrated system based on implementation and test results. Update initial FMEA with actual implemented mitigations, residual risk assessments, and evidence references. Produce IEC 62304 + ISO 14971 risk management file. Verify all unacceptable risks from step 1 have been mitigated to ALARP. Perform safety case closure.",
+      "payload": {
+        "methods": [
+          "FMEA",
+          "FTA",
+          "HAZOP_software"
+        ],
+        "evidence_references": [
+          "HIL test report (step 12)",
+          "system test report (step 14)",
+          "MISRA static analysis report"
+        ],
+        "residual_risk_threshold": "ISO 14971 ALARP",
+        "output_artifacts": [
+          "risk_management_file_v1.pdf",
+          "FMEA_final.xlsx",
+          "FTA_diagrams/",
+          "safety_case.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "All hazards from initial PHA traced through FMEA to implemented mitigation",
+        "Fault tree analysis completed for top-level hazards: unintended instrument movement, haptic runaway, visualization failure",
+        "Residual risk for all hazards assessed as ALARP with supporting evidence citations",
+        "Risk management file structured per ISO 14971:2019 Annex D",
+        "Safety case document signed by safety_engineer and regulatory_specialist",
+        "Zero open unacceptable risks at closure",
+        "ISO 14971 risk management file complete",
+        "Residual risk acceptable"
+      ],
+      "depends_on": [
+        14
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 16,
+      "task_type": "COMPLIANCE",
+      "description": "Populate and close the Design History File (DHF). Assemble all evidence artifacts: SRS, architecture doc, design reviews, FMEA, risk management file, HIL test report, system test report, traceability matrix. Ensure full bidirectional traceability: every requirement traces to design, implementation, and test evidence. Generate IEC 62304 software lifecycle evidence summary and ISO 13485 design control checklist.",
+      "payload": {
+        "dhf_artifacts": [
+          "SRS_v1.0.md",
+          "ARCHITECTURE.md",
+          "risk_management_file.pdf",
+          "FMEA_final.xlsx",
+          "HIL_test_report.pdf",
+          "system_test_report.pdf",
+          "traceability_matrix_final.xlsx",
+          "design_review_records/",
+          "MISRA_compliance_report.pdf",
+          "mcdc_coverage_report.html"
+        ],
+        "checklists": [
+          "IEC_62304_software_lifecycle_checklist.xlsx",
+          "ISO_13485_design_control_checklist.xlsx"
+        ],
+        "output_artifacts": [
+          "DHF/",
+          "DHF/README_DHF_index.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "100% of SRS requirements have at least one implementation reference and one test evidence reference in traceability matrix",
+        "DHF index lists all artifacts with version, date, and approval signature",
+        "IEC 62304 software lifecycle checklist shows all Class C activities completed",
+        "ISO 13485 design control checklist signed by regulatory_specialist",
+        "No open traceability gaps (no requirement without test evidence)",
+        "DHF package passes internal audit review with zero critical findings",
+        "DHF (Design History File) structure created",
+        "V&V protocol drafted"
+      ],
+      "depends_on": [
+        15,
+        13,
+        12
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 17,
+      "task_type": "SECURITY",
+      "description": "Perform threat model and security review for the surgical console. Scope: operator authentication (mTLS), WebSocket bridge attack surface, firmware update path, audit log integrity, and network isolation. Produce SBOM (Software Bill of Materials) for all components. Assess against IMDRF cybersecurity guidance for medical devices. Document residual security risks.",
+      "payload": {
+        "methodology": "STRIDE threat model",
+        "scope": [
+          "mtls_auth",
+          "websocket_bridge",
+          "firmware_ota",
+          "audit_log",
+          "network_isolation"
+        ],
+        "standards": [
+          "IMDRF/CYBER WG N60",
+          "FDA_cybersecurity_guidance_2023"
+        ],
+        "output_artifacts": [
+          "security/threat_model.md",
+          "security/SBOM.spdx.json",
+          "security/penetration_test_plan.md",
+          "security/residual_risks.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis completed for all 5 in-scope components",
+        "SBOM generated in SPDX 2.3 format covering all direct and transitive dependencies",
+        "All HIGH and CRITICAL threat findings have documented mitigations",
+        "Firmware update path requires cryptographic signature verification (documented and verified in test)",
+        "Audit log implements append-only protection (tampering attempt logged and alerted)",
+        "Security review signed off by technical_reviewer and filed in DHF"
+      ],
+      "depends_on": [
+        10,
+        6
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline for the surgical console monorepo. Pipeline stages: static analysis (MISRA-C, Clippy, ESLint), unit tests, HIL simulation tests, coverage reporting, signed artifact build, and DHF artifact upload. Enforce that no commit merges to main without all stages passing. Generate build provenance attestation for regulatory traceability.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "pipeline_stages": [
+          "static_analysis",
+          "unit_tests",
+          "hil_sim_tests",
+          "coverage_check",
+          "signed_build",
+          "dhf_artifact_upload"
+        ],
+        "coverage_gate": {
+          "branch": 85,
+          "mcdc_safety_critical": 100
+        },
+        "artifact_signing": "cosign keyless signing (Sigstore)",
+        "output_artifacts": [
+          ".github/workflows/ci.yml",
+          ".github/workflows/release.yml",
+          "Makefile"
+        ]
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs on every PR and blocks merge on any stage failure",
+        "MISRA-C violation \u2192 CI fails with violation report as PR comment",
+        "Coverage below gate (85% branch / 100% MC/DC) \u2192 CI fails",
+        "Release build produces cosign-signed artifact with SLSA provenance attestation",
+        "DHF artifact upload stage pushes signed test reports to artifact registry with immutable version tag",
+        "Pipeline completes in <15 minutes for incremental changes"
+      ],
+      "depends_on": [
+        12,
+        13
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "DOCS",
+      "description": "Write comprehensive technical documentation: system architecture document (SAD), operator manual, software maintenance manual (IEC 62304 \u00a78), and API reference for the WebSocket bridge and tracking service IPC. Documentation must meet ISO 13485 document control requirements: version, author, reviewer, approval signature fields on every document.",
+      "payload": {
+        "documents": [
+          "docs/SAD_system_architecture.md",
+          "docs/operator_manual.md",
+          "docs/software_maintenance_manual.md",
+          "docs/api_reference_ws_bridge.md",
+          "docs/api_reference_tracking_ipc.md"
+        ],
+        "doc_control_fields": [
+          "version",
+          "author",
+          "reviewer",
+          "approver",
+          "date",
+          "change_history"
+        ],
+        "format": "Markdown + auto-generated PDF via Pandoc"
+      },
+      "acceptance_criteria": [
+        "System architecture document covers all four software layers with IPC contracts",
+        "Operator manual covers: startup, calibration, procedure workflow, emergency stop, shutdown, alarm response",
+        "Software maintenance manual covers IEC 62304 \u00a78 requirements: problem resolution, modification process, release process",
+        "All API endpoints/schemas documented with request/response examples",
+        "Every document has version, author, reviewer, and approver fields populated",
+        "PDF generation from Markdown verified in CI pipeline"
+      ],
+      "depends_on": [
+        16,
+        14
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 19,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "SIL-3 (IEC 61508) and IEC 62304 Class C are conflated throughout the plan. IEC 62304 defines Software Safety Classes A/B/C \u2014 it does not use SIL levels. SIL-3 per IEC 61508 requires additional functional safety activities (safe failure fraction analysis, hardware fault tolerance levels, systematic capability SC3 evaluation, common cause failure analysis) that are entirely absent from this plan. Claiming SIL-3 compliance without these activities will fail a notified body audit.",
+            "FreeRTOS 10.6 is not SIL-3 certified. Using uncertified RTOS as SOUP at SIL-3 requires exhaustive validation evidence (test coverage, formal SOUP assessment per IEC 62304 clause 8.1, known-anomaly list). The plan lists 'SOUP components listed' as a checkbox but provides no SOUP validation strategy. Safety-certified alternatives (SAFERTOS, PikeOS, LynxOS-178, Integrity RTOS) would need evaluation. This alone can block regulatory clearance.",
+            "Emergency stop notification travels through the software stack: firmware \u2192 CAN \u2192 Rust WS bridge \u2192 WebSocket \u2192 React \u2192 UI render. Step 9's acceptance criterion 'Emergency stop overlay activates within 100ms via WebSocket' means the safety alert path is software-dependent and can be blocked by browser GC, WebSocket reconnect (step 10 says 500ms reconnect), or axum back-pressure. For a SIL-3 or even Class C device, the e-stop display path must be independent of the normal data path or hardwired. This is an architectural safety failure.",
+            "Three.js / WebGL2 / React 18 for safety-critical surgical display is architecturally unacceptable for SIL-3. JavaScript's non-deterministic GC, React 18 concurrent scheduler preemption, and browser engine update behavior introduce non-deterministic frame timing. The \u226416ms display latency acceptance criterion cannot be guaranteed on this stack \u2014 it can only be measured statistically. For Class C software, this requires documented justification or a native renderer (Vulkan C++ binding was listed as an alternative \u2014 use it).",
+            "Step 17 (security threat model) depends on steps 10 and 6 \u2014 meaning it runs after full implementation. STRIDE on a built system is purely reactive. Threat modeling must occur at architecture phase (step 5) to influence design decisions. Running it post-implementation means any structural finding (e.g., 'the WebSocket bridge needs a separate security boundary') requires expensive rework.",
+            "No IEC 60601-1 (general safety and essential performance for medical electrical equipment) anywhere in the plan. A surgeon console with haptic actuators and electrical connections is a medical electrical system. IEC 60601-1 is mandatory for market access in US (via FDA recognition) and EU (MDR harmonized standard). Missing it is a regulatory show-stopper.",
+            "No IEC 60601-1-2 (EMC for medical electrical equipment) testing or design requirements. EMI interference is correctly listed as a hazard in step 1 but no EMC test plan exists. Surgical ORs are EMI-dense environments (electrosurgical units, cauterizers). Without EMC qualification, the device cannot be demonstrated safe for its intended environment.",
+            "Clinical validation is absent. ISO 13485 clause 7.3.6 requires design validation 'under defined operating conditions' using 'representative units.' For a surgical robot console, this means simulated surgical procedures with representative end-users (surgeons), not just HIL simulation tests. No formative or summative usability validation study plan is defined beyond the UX wireframe review in step 4.",
+            "No FDA regulatory submission pathway defined. A minimally invasive surgical robot is a Class III device in the US requiring PMA or De Novo submission \u2014 not merely 21 CFR Part 820 quality system compliance. The plan treats FDA 21 CFR Part 820 as a checkbox but ignores the submission strategy, predicate device analysis, and clinical study requirements.",
+            "Step 13 firmware unit testing uses CppUTest but step 6 implements in C (MISRA-C). The MC/DC 100% target (correctly required for SIL-3) is listed in step 12 (HIL) but the unit test framework for firmware (CppUTest) does not automatically generate MC/DC evidence. A dedicated coverage tool (LDRA, Polyspace, VectorCAST) integrated with the MISRA checker is required and absent from the toolchain.",
+            "The haptic latency budget is internally inconsistent. Step 3 states 'haptic_loop_ms: 10' but step 6 implements a 1kHz control loop (1ms period). A 10ms haptic control loop is only 100Hz \u2014 unacceptable for transparent force feedback. The requirement likely means end-to-end latency budget is 10ms, but this conflicts with a 1kHz loop period of 1ms. Ambiguity in a safety requirement is a compliance defect.",
+            "No SOUP analysis for the Rust/axum/React/Three.js/Zustand/Node.js stack. IEC 62304 clause 8.1 requires SOUP items to be identified with version, known anomalies, and regression test strategy. The plan mentions SOUP only for firmware (step 6). The entire service layer and UI are unaddressed SOUP.",
+            "Safety-critical parameter change control is missing. Force saturation limits (step 6), confidence thresholds (step 7, 'configurable, default 0.85'), and latency limits are safety-critical parameters. Changing them post-release requires a design change process under ISO 13485 clause 7.3.9. No parameter configuration management or change control process is defined.",
+            "No formal Design Review gates (PDR/CDR) as plan steps. Step 2 creates DHF skeleton with 'design_reviews' as a section but no plan steps schedule a preliminary design review before implementation or critical design review before testing. Without review gates, the DHF will be missing signed design review records \u2014 a common ISO 13485 audit finding.",
+            "No Design Transfer step per ISO 13485 clause 7.3.8. The plan ends at documentation (step 19) with no step covering manufacturing transfer, production qualification, or ensuring design outputs can be consistently reproduced. For a medical device, Design Transfer is a mandatory DHF section."
+          ],
+          "suggestions": [
+            "Separate the IEC 61508 SIL-3 activities from IEC 62304 Class C activities into distinct work streams with a clear scope boundary: IEC 62304 governs the software lifecycle; IEC 61508 governs the system-level functional safety. Hire or contract a T\u00dcV-recognized functional safety assessor to scope this correctly before writing another line of FMEA.",
+            "Replace FreeRTOS with SAFERTOS (FreeRTOS kernel with pre-existing SIL-3 safety case) or a certified RTOS. Alternatively, document FreeRTOS SOUP validation per IEC 62304 clause 8.1 with a full known-anomaly assessment and dedicated regression suite \u2014 but this path adds months.",
+            "Architect the emergency stop path as a hardware-independent safety channel: dedicated SIL-rated safety controller (e.g., Pilz PNOZ, Sick flexi soft) that hardwires e-stop to force-zero at the actuator driver level. The UI overlay is informational only \u2014 it must not be on the critical path for force cessation.",
+            "Move STRIDE threat modeling to immediately after step 5 (architecture), not after step 10. Run it as a gated architecture review. Any HIGH finding that requires structural change is far cheaper to fix before implementation.",
+            "Replace Three.js/WebGL2 with the native Vulkan C++ renderer (already listed as an option in step 8). Implement it as a dedicated process with real-time scheduling priority. The React UI dashboard can remain for non-safety panels, but the 3D viewport and alarm overlay should be native with bounded frame timing.",
+            "Add IEC 60601-1 and IEC 60601-1-2 as explicit plan steps. These need to inform hardware design, PCB layout, power supply isolation class, and applied part classification \u2014 decisions that must be made before manufacturing, not after.",
+            "Add a clinical validation step after system testing: define a simulated use study with \u22655 surgeons executing defined surgical task scenarios, measuring critical use errors, task completion time, and alarm response accuracy. This is required for both FDA Human Factors (FDA HFE guidance 2016) and IEC 62366-1 summative evaluation.",
+            "Define the MC/DC evidence toolchain explicitly: VectorCAST or LDRA for C firmware, cargo-llvm-cov with custom MC/DC extraction for Rust, and document how MC/DC reports map to DHF evidence artifacts. 'MC/DC 100%' as an acceptance criterion without naming the measurement tool is unverifiable.",
+            "Add a step for SBOM vulnerability monitoring process (not just SBOM generation). IMDRF N60 and FDA 2023 cybersecurity guidance require a post-market vulnerability monitoring plan \u2014 who watches CVE feeds, what is the patch SLA, and how is a patch released through the IEC 62304 change control process.",
+            "Specify IPC schema validation at runtime for all cross-component boundaries. CBOR-framed messages between Rust services should be validated against a schema on every deserialization. A malformed tracking state message should be rejected and trigger a fault, not crash the consumer."
+          ],
+          "missing": [
+            "IEC 61508 Part 2/3 system-level functional safety activities (SFF analysis, architectural constraints for SIL-3 hardware, systematic capability SC3 evidence)",
+            "IEC 60601-1 general safety and essential performance analysis and test plan",
+            "IEC 60601-1-2 EMC test plan and design requirements for OR environment",
+            "Summative usability evaluation (IEC 62366-1 clause 5.9) with representative users \u2014 step 4 only covers formative evaluation",
+            "FDA regulatory submission strategy (PMA/De Novo, predicate device, clinical study plan)",
+            "EU MDR clinical evaluation plan (MEDDEV 2.7/1 Rev 4 or MDCG 2020-13)",
+            "FreeRTOS SOUP validation assessment or replacement with SIL-certified RTOS",
+            "Formal design review steps (PDR before step 5, CDR before step 12) with sign-off requirements",
+            "Design Transfer step (ISO 13485 clause 7.3.8) \u2014 manufacturing qualification, production BOM, assembly process validation",
+            "Hardware safety analysis (system-level FMEA including hardware components of the console)",
+            "Post-market surveillance plan (ISO 13485 clause 8.2, MDR Article 83)",
+            "Penetration test execution (step 17 creates a plan but no step executes it)",
+            "Named MC/DC coverage toolchain for each language (not just 'cargo test + proptest')",
+            "Runtime IPC schema validation between all four architecture layers",
+            "Safety-critical parameter change control process (force limits, thresholds, latency budgets)",
+            "Actual execution of the penetration test plan produced in step 17"
+          ],
+          "security_risks": [
+            "Emergency stop display path through WebSocket bridge means a compromised or crashed WS bridge (axum service) prevents the surgeon from seeing the e-stop confirmation alert. If a malicious actor can crash the WS bridge (e.g., via WebSocket flood), the console goes dark during a procedure. The e-stop actuation must be independent of this path.",
+            "Browser-hosted visualization surface: if the console UI runs in a general-purpose browser, it inherits the full browser attack surface. A compromised browser extension or cached malicious content could manipulate the 3D visualization (instrument position rendering) without triggering any firmware-level fault. Mitigate by using a locked-down browser kiosk (Electron with CSP, or purpose-built renderer).",
+            "Firmware OTA update path is mentioned as a security scope item in step 17 but never implemented in any prior step. This is a functional gap: the plan has no step that implements signed firmware update. If firmware update is done over a production interface (USB, Ethernet), an unsigned update path is an unmitigated HIGH-severity finding.",
+            "mTLS smart card authentication in an OR is operationally risky: surgeons wear sterile gloves, cannot touch unsterile card readers, and time-critical moments require immediate access. If the mTLS session expires during a procedure and requires reauthentication, the surgeon cannot comply without breaking sterility. No session management policy or graceful expiry handling is defined \u2014 operator lockout during surgery is a patient safety hazard.",
+            "Audit log append-only protection is stated as an acceptance criterion (step 17) but no cryptographic implementation is specified. An append-only file on a general-purpose Linux system can be trivially overwritten by root. Tamper-evident logging requires WORM storage, cryptographic hash chaining (each entry hashes the previous), or an external write-once sink.",
+            "SBOM covers direct and transitive dependencies but no CVE monitoring or vulnerability SLA is defined. A known-vulnerable version of axum, ring (Rust crypto), or Three.js post-release with no patch process is a regulatory and patient safety risk under FDA 2023 cybersecurity guidance.",
+            "Unix domain socket IPC between Rust services has no authentication. A compromised process on the same host can inject malformed instrument state (fake 6-DOF poses) into the rendering layer, causing the surgeon to see incorrect instrument positions without any alarm. Message signing or SELinux mandatory access control between service processes is absent."
+          ],
+          "summary": "This plan demonstrates genuine regulatory literacy \u2014 the three-YAML structure of DHF/FMEA/FTA, MC/DC targets, HIL simulation, mTLS auth, and audit logging all reflect real medical device engineering experience. However, it contains two architectural failures that would block regulatory clearance and one that is a patient safety risk: (1) The SIL-3 claim cannot be substantiated \u2014 IEC 61508 system-level activities (SFF analysis, HFT architecture, SC3 systematic capability) are absent, and FreeRTOS is not SIL-3 certified SOUP; (2) The emergency stop display path routes through the WebSocket bridge and React render cycle, meaning a software fault in the bridge or browser can prevent the safety alert from rendering \u2014 this is an unacceptable Class C design for a safety function; (3) The decision to render the surgical 3D viewport in Three.js/WebGL2/React 18 introduces non-deterministic GC and scheduler latency that cannot guarantee the \u226416ms display latency acceptance criterion. For a surgical robot requiring ISO 13485 + IEC 62304 Class C, the missing IEC 60601-1, missing clinical validation, missing FreeRTOS SOUP assessment, and absent regulatory submission pathway mean this plan cannot reach design freeze without substantial rework. Estimated rework scope: add 6\u20138 steps, restructure the e-stop architecture, replace or certify the RTOS, and engage a notified body for SIL-3 scope clarification before implementation begins.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "SIL-3 (IEC 61508) and IEC 62304 Class C are conflated throughout the plan. IEC 62304 defines Software Safety Classes A/B/C \u2014 it does not use SIL levels. SIL-3 per IEC 61508 requires additional functional safety activities (safe failure fraction analysis, hardware fault tolerance levels, systematic capability SC3 evaluation, common cause failure analysis) that are entirely absent from this plan. Claiming SIL-3 compliance without these activities will fail a notified body audit.",
+              "FreeRTOS 10.6 is not SIL-3 certified. Using uncertified RTOS as SOUP at SIL-3 requires exhaustive validation evidence (test coverage, formal SOUP assessment per IEC 62304 clause 8.1, known-anomaly list). The plan lists 'SOUP components listed' as a checkbox but provides no SOUP validation strategy. Safety-certified alternatives (SAFERTOS, PikeOS, LynxOS-178, Integrity RTOS) would need evaluation. This alone can block regulatory clearance.",
+              "Emergency stop notification travels through the software stack: firmware \u2192 CAN \u2192 Rust WS bridge \u2192 WebSocket \u2192 React \u2192 UI render. Step 9's acceptance criterion 'Emergency stop overlay activates within 100ms via WebSocket' means the safety alert path is software-dependent and can be blocked by browser GC, WebSocket reconnect (step 10 says 500ms reconnect), or axum back-pressure. For a SIL-3 or even Class C device, the e-stop display path must be independent of the normal data path or hardwired. This is an architectural safety failure.",
+              "Three.js / WebGL2 / React 18 for safety-critical surgical display is architecturally unacceptable for SIL-3. JavaScript's non-deterministic GC, React 18 concurrent scheduler preemption, and browser engine update behavior introduce non-deterministic frame timing. The \u226416ms display latency acceptance criterion cannot be guaranteed on this stack \u2014 it can only be measured statistically. For Class C software, this requires documented justification or a native renderer (Vulkan C++ binding was listed as an alternative \u2014 use it).",
+              "Step 17 (security threat model) depends on steps 10 and 6 \u2014 meaning it runs after full implementation. STRIDE on a built system is purely reactive. Threat modeling must occur at architecture phase (step 5) to influence design decisions. Running it post-implementation means any structural finding (e.g., 'the WebSocket bridge needs a separate security boundary') requires expensive rework.",
+              "No IEC 60601-1 (general safety and essential performance for medical electrical equipment) anywhere in the plan. A surgeon console with haptic actuators and electrical connections is a medical electrical system. IEC 60601-1 is mandatory for market access in US (via FDA recognition) and EU (MDR harmonized standard). Missing it is a regulatory show-stopper.",
+              "No IEC 60601-1-2 (EMC for medical electrical equipment) testing or design requirements. EMI interference is correctly listed as a hazard in step 1 but no EMC test plan exists. Surgical ORs are EMI-dense environments (electrosurgical units, cauterizers). Without EMC qualification, the device cannot be demonstrated safe for its intended environment.",
+              "Clinical validation is absent. ISO 13485 clause 7.3.6 requires design validation 'under defined operating conditions' using 'representative units.' For a surgical robot console, this means simulated surgical procedures with representative end-users (surgeons), not just HIL simulation tests. No formative or summative usability validation study plan is defined beyond the UX wireframe review in step 4.",
+              "No FDA regulatory submission pathway defined. A minimally invasive surgical robot is a Class III device in the US requiring PMA or De Novo submission \u2014 not merely 21 CFR Part 820 quality system compliance. The plan treats FDA 21 CFR Part 820 as a checkbox but ignores the submission strategy, predicate device analysis, and clinical study requirements.",
+              "Step 13 firmware unit testing uses CppUTest but step 6 implements in C (MISRA-C). The MC/DC 100% target (correctly required for SIL-3) is listed in step 12 (HIL) but the unit test framework for firmware (CppUTest) does not automatically generate MC/DC evidence. A dedicated coverage tool (LDRA, Polyspace, VectorCAST) integrated with the MISRA checker is required and absent from the toolchain.",
+              "The haptic latency budget is internally inconsistent. Step 3 states 'haptic_loop_ms: 10' but step 6 implements a 1kHz control loop (1ms period). A 10ms haptic control loop is only 100Hz \u2014 unacceptable for transparent force feedback. The requirement likely means end-to-end latency budget is 10ms, but this conflicts with a 1kHz loop period of 1ms. Ambiguity in a safety requirement is a compliance defect.",
+              "No SOUP analysis for the Rust/axum/React/Three.js/Zustand/Node.js stack. IEC 62304 clause 8.1 requires SOUP items to be identified with version, known anomalies, and regression test strategy. The plan mentions SOUP only for firmware (step 6). The entire service layer and UI are unaddressed SOUP.",
+              "Safety-critical parameter change control is missing. Force saturation limits (step 6), confidence thresholds (step 7, 'configurable, default 0.85'), and latency limits are safety-critical parameters. Changing them post-release requires a design change process under ISO 13485 clause 7.3.9. No parameter configuration management or change control process is defined.",
+              "No formal Design Review gates (PDR/CDR) as plan steps. Step 2 creates DHF skeleton with 'design_reviews' as a section but no plan steps schedule a preliminary design review before implementation or critical design review before testing. Without review gates, the DHF will be missing signed design review records \u2014 a common ISO 13485 audit finding.",
+              "No Design Transfer step per ISO 13485 clause 7.3.8. The plan ends at documentation (step 19) with no step covering manufacturing transfer, production qualification, or ensuring design outputs can be consistently reproduced. For a medical device, Design Transfer is a mandatory DHF section."
+            ],
+            "suggestions": [
+              "Separate the IEC 61508 SIL-3 activities from IEC 62304 Class C activities into distinct work streams with a clear scope boundary: IEC 62304 governs the software lifecycle; IEC 61508 governs the system-level functional safety. Hire or contract a T\u00dcV-recognized functional safety assessor to scope this correctly before writing another line of FMEA.",
+              "Replace FreeRTOS with SAFERTOS (FreeRTOS kernel with pre-existing SIL-3 safety case) or a certified RTOS. Alternatively, document FreeRTOS SOUP validation per IEC 62304 clause 8.1 with a full known-anomaly assessment and dedicated regression suite \u2014 but this path adds months.",
+              "Architect the emergency stop path as a hardware-independent safety channel: dedicated SIL-rated safety controller (e.g., Pilz PNOZ, Sick flexi soft) that hardwires e-stop to force-zero at the actuator driver level. The UI overlay is informational only \u2014 it must not be on the critical path for force cessation.",
+              "Move STRIDE threat modeling to immediately after step 5 (architecture), not after step 10. Run it as a gated architecture review. Any HIGH finding that requires structural change is far cheaper to fix before implementation.",
+              "Replace Three.js/WebGL2 with the native Vulkan C++ renderer (already listed as an option in step 8). Implement it as a dedicated process with real-time scheduling priority. The React UI dashboard can remain for non-safety panels, but the 3D viewport and alarm overlay should be native with bounded frame timing.",
+              "Add IEC 60601-1 and IEC 60601-1-2 as explicit plan steps. These need to inform hardware design, PCB layout, power supply isolation class, and applied part classification \u2014 decisions that must be made before manufacturing, not after.",
+              "Add a clinical validation step after system testing: define a simulated use study with \u22655 surgeons executing defined surgical task scenarios, measuring critical use errors, task completion time, and alarm response accuracy. This is required for both FDA Human Factors (FDA HFE guidance 2016) and IEC 62366-1 summative evaluation.",
+              "Define the MC/DC evidence toolchain explicitly: VectorCAST or LDRA for C firmware, cargo-llvm-cov with custom MC/DC extraction for Rust, and document how MC/DC reports map to DHF evidence artifacts. 'MC/DC 100%' as an acceptance criterion without naming the measurement tool is unverifiable.",
+              "Add a step for SBOM vulnerability monitoring process (not just SBOM generation). IMDRF N60 and FDA 2023 cybersecurity guidance require a post-market vulnerability monitoring plan \u2014 who watches CVE feeds, what is the patch SLA, and how is a patch released through the IEC 62304 change control process.",
+              "Specify IPC schema validation at runtime for all cross-component boundaries. CBOR-framed messages between Rust services should be validated against a schema on every deserialization. A malformed tracking state message should be rejected and trigger a fault, not crash the consumer."
+            ],
+            "missing": [
+              "IEC 61508 Part 2/3 system-level functional safety activities (SFF analysis, architectural constraints for SIL-3 hardware, systematic capability SC3 evidence)",
+              "IEC 60601-1 general safety and essential performance analysis and test plan",
+              "IEC 60601-1-2 EMC test plan and design requirements for OR environment",
+              "Summative usability evaluation (IEC 62366-1 clause 5.9) with representative users \u2014 step 4 only covers formative evaluation",
+              "FDA regulatory submission strategy (PMA/De Novo, predicate device, clinical study plan)",
+              "EU MDR clinical evaluation plan (MEDDEV 2.7/1 Rev 4 or MDCG 2020-13)",
+              "FreeRTOS SOUP validation assessment or replacement with SIL-certified RTOS",
+              "Formal design review steps (PDR before step 5, CDR before step 12) with sign-off requirements",
+              "Design Transfer step (ISO 13485 clause 7.3.8) \u2014 manufacturing qualification, production BOM, assembly process validation",
+              "Hardware safety analysis (system-level FMEA including hardware components of the console)",
+              "Post-market surveillance plan (ISO 13485 clause 8.2, MDR Article 83)",
+              "Penetration test execution (step 17 creates a plan but no step executes it)",
+              "Named MC/DC coverage toolchain for each language (not just 'cargo test + proptest')",
+              "Runtime IPC schema validation between all four architecture layers",
+              "Safety-critical parameter change control process (force limits, thresholds, latency budgets)",
+              "Actual execution of the penetration test plan produced in step 17"
+            ],
+            "security_risks": [
+              "Emergency stop display path through WebSocket bridge means a compromised or crashed WS bridge (axum service) prevents the surgeon from seeing the e-stop confirmation alert. If a malicious actor can crash the WS bridge (e.g., via WebSocket flood), the console goes dark during a procedure. The e-stop actuation must be independent of this path.",
+              "Browser-hosted visualization surface: if the console UI runs in a general-purpose browser, it inherits the full browser attack surface. A compromised browser extension or cached malicious content could manipulate the 3D visualization (instrument position rendering) without triggering any firmware-level fault. Mitigate by using a locked-down browser kiosk (Electron with CSP, or purpose-built renderer).",
+              "Firmware OTA update path is mentioned as a security scope item in step 17 but never implemented in any prior step. This is a functional gap: the plan has no step that implements signed firmware update. If firmware update is done over a production interface (USB, Ethernet), an unsigned update path is an unmitigated HIGH-severity finding.",
+              "mTLS smart card authentication in an OR is operationally risky: surgeons wear sterile gloves, cannot touch unsterile card readers, and time-critical moments require immediate access. If the mTLS session expires during a procedure and requires reauthentication, the surgeon cannot comply without breaking sterility. No session management policy or graceful expiry handling is defined \u2014 operator lockout during surgery is a patient safety hazard.",
+              "Audit log append-only protection is stated as an acceptance criterion (step 17) but no cryptographic implementation is specified. An append-only file on a general-purpose Linux system can be trivially overwritten by root. Tamper-evident logging requires WORM storage, cryptographic hash chaining (each entry hashes the previous), or an external write-once sink.",
+              "SBOM covers direct and transitive dependencies but no CVE monitoring or vulnerability SLA is defined. A known-vulnerable version of axum, ring (Rust crypto), or Three.js post-release with no patch process is a regulatory and patient safety risk under FDA 2023 cybersecurity guidance.",
+              "Unix domain socket IPC between Rust services has no authentication. A compromised process on the same host can inject malformed instrument state (fake 6-DOF poses) into the rendering layer, causing the surgeon to see incorrect instrument positions without any alarm. Message signing or SELinux mandatory access control between service processes is absent."
+            ],
+            "summary": "This plan demonstrates genuine regulatory literacy \u2014 the three-YAML structure of DHF/FMEA/FTA, MC/DC targets, HIL simulation, mTLS auth, and audit logging all reflect real medical device engineering experience. However, it contains two architectural failures that would block regulatory clearance and one that is a patient safety risk: (1) The SIL-3 claim cannot be substantiated \u2014 IEC 61508 system-level activities (SFF analysis, HFT architecture, SC3 systematic capability) are absent, and FreeRTOS is not SIL-3 certified SOUP; (2) The emergency stop display path routes through the WebSocket bridge and React render cycle, meaning a software fault in the bridge or browser can prevent the safety alert from rendering \u2014 this is an unacceptable Class C design for a safety function; (3) The decision to render the surgical 3D viewport in Three.js/WebGL2/React 18 introduces non-deterministic GC and scheduler latency that cannot guarantee the \u226416ms display latency acceptance criterion. For a surgical robot requiring ISO 13485 + IEC 62304 Class C, the missing IEC 60601-1, missing clinical validation, missing FreeRTOS SOUP assessment, and absent regulatory submission pathway mean this plan cannot reach design freeze without substantial rework. Estimated rework scope: add 6\u20138 steps, restructure the e-stop architecture, replace or certify the RTOS, and engage a notified body for SIL-3 scope clarification before implementation begins.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-21T22:46:09.504164+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 155.49,
+    "critic_plan": 149.91
+  }
+}

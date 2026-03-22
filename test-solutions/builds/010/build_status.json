@@ -1,0 +1,908 @@
+{
+  "run_id": "fb68113e-0bbb-466e-b7b2-df40d4791e65",
+  "solution_name": "mental_health_chatbot",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T04:28:55.832066+00:00",
+  "updated_at": "2026-03-22T04:32:54.057365+00:00",
+  "product_description": "AI mental health companion chatbot providing CBT exercises, mood tracking, crisis detection with emergency hotline routing. Not a medical device but wellness category with safety considerations.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define product requirements, user personas, and core use cases for the mental health companion chatbot including CBT exercise catalog, mood tracking flows, and crisis detection thresholds.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "deliverables": [
+          "user_stories.md",
+          "use_case_map.md",
+          "crisis_threshold_spec.md"
+        ],
+        "personas": [
+          "adult_user_mild_anxiety",
+          "user_in_acute_distress",
+          "clinician_reviewer"
+        ]
+      },
+      "acceptance_criteria": [
+        "User stories cover CBT exercises, mood logging, crisis detection, and hotline routing",
+        "Crisis detection thresholds are explicitly defined with escalation tiers",
+        "Non-medical-device scope is documented with clear wellness boundary statement",
+        "All personas have defined happy paths and failure paths"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Research mental health chatbot landscape, competitor positioning, regulatory environment for wellness apps, and safe messaging guidelines from SAMHSA and AFSP.",
+      "payload": {
+        "competitors": [
+          "Woebot",
+          "Wysa",
+          "Headspace",
+          "BetterHelp"
+        ],
+        "standards_to_review": [
+          "SAMHSA safe messaging",
+          "AFSP safe messaging",
+          "Apple App Store mental health guidelines",
+          "Google Play sensitive content policy"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor feature matrix completed covering CBT, crisis, mood tracking",
+        "Safe messaging guidelines summarized and mapped to product features",
+        "Wellness vs. medical device distinction documented per FTC guidance",
+        "Emergency hotline resource list compiled (988, Crisis Text Line, international equivalents)"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 3,
+      "task_type": "LEGAL",
+      "description": "Draft terms of service, privacy policy, disclaimer language, and data processing agreements. Establish wellness (not medical device) scope, liability limitations, and mandatory crisis routing disclosures.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "jurisdiction": [
+          "US",
+          "EU",
+          "UK"
+        ],
+        "key_docs": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "crisis_disclaimer.md",
+          "data_processing_agreement.md"
+        ],
+        "standards": [
+          "HIPAA",
+          "HITECH",
+          "GDPR",
+          "CCPA"
+        ]
+      },
+      "acceptance_criteria": [
+        "ToS explicitly states product is not a medical device and not a substitute for professional care",
+        "Privacy policy covers data minimization, retention limits, and user deletion rights",
+        "Crisis routing disclosure explains when and how hotlines are surfaced",
+        "Data processing agreement covers any third-party LLM providers",
+        "Legal review sign-off documented"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 4,
+      "task_type": "REGULATORY",
+      "description": "Map product to FTC wellness app guidance, SAMHSA safe messaging rules, Apple/Google mental health app policies. Produce standards traceability matrix confirming non-device classification and HIPAA applicability assessment.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "standards": [
+          "HIPAA",
+          "HITECH",
+          "FTC Act Section 5",
+          "SAMHSA safe messaging"
+        ],
+        "deliverables": [
+          "standards_traceability_matrix.xlsx",
+          "hipaa_applicability_assessment.md",
+          "non_device_classification_rationale.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "HIPAA applicability assessment determines whether app qualifies as covered entity or business associate",
+        "Non-device classification rationale documented with FTC/FDA boundary analysis",
+        "SAMHSA safe messaging compliance checklist completed",
+        "Traceability matrix links every regulatory requirement to a product feature or control",
+        "HIPAA risk assessment complete",
+        "BAA template prepared"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "SAFETY",
+      "description": "Perform hazard analysis and risk assessment for crisis detection failures, false negatives in distress identification, hotline routing errors, and AI-generated harmful content. Produce FMEA and safety control matrix.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "hazard_categories": [
+          "missed_crisis_detection",
+          "inappropriate_CBT_suggestion",
+          "hotline_routing_failure",
+          "LLM_harmful_output",
+          "data_breach_stigma_risk"
+        ],
+        "deliverables": [
+          "fmea_mental_health_chatbot.xlsx",
+          "safety_control_matrix.md",
+          "crisis_detection_risk_register.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "FMEA covers all identified hazards with severity, probability, and detectability scores",
+        "Missed crisis detection (false negative) classified as highest severity with mitigations defined",
+        "LLM output guardrails identified as a required safety control",
+        "Safety control matrix maps each risk to a product feature, test, or process control",
+        "Residual risk acceptability documented"
+      ],
+      "depends_on": [
+        1,
+        4
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 6,
+      "task_type": "COMPLIANCE",
+      "description": "Produce HIPAA/HITECH compliance artifacts: risk analysis, workforce training plan, BAA template, minimum necessary data policy, and breach notification procedure.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "standards": [
+          "HIPAA Security Rule",
+          "HIPAA Privacy Rule",
+          "HITECH"
+        ],
+        "deliverables": [
+          "hipaa_risk_analysis.md",
+          "baa_template.docx",
+          "minimum_necessary_policy.md",
+          "breach_notification_procedure.md",
+          "phi_data_flow_diagram.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "HIPAA risk analysis covers all PHI data flows including mood logs and chat history",
+        "BAA template ready for third-party LLM and storage providers",
+        "Data minimization policy specifies what is collected, retention periods, and deletion",
+        "Breach notification procedure covers 60-day HHS notification window",
+        "PHI data flow diagram approved by legal"
+      ],
+      "depends_on": [
+        4,
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 7,
+      "task_type": "SECURITY",
+      "description": "Produce threat model (STRIDE), penetration test plan, SBOM, encryption-at-rest/in-transit spec, and access control design. Cover LLM prompt injection risks specific to mental health context.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "threat_model_methodology": "STRIDE",
+        "key_threats": [
+          "prompt_injection",
+          "PII_exfiltration",
+          "crisis_bypass_via_jailbreak",
+          "session_hijacking",
+          "data_breach"
+        ],
+        "deliverables": [
+          "threat_model.md",
+          "pentest_plan.md",
+          "sbom.json",
+          "encryption_spec.md",
+          "access_control_design.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all system components: frontend, API, LLM gateway, database, crisis router",
+        "Prompt injection attack vectors specific to mental health manipulation documented with mitigations",
+        "SBOM lists all dependencies with license and known CVE status",
+        "Encryption spec mandates TLS 1.3 in transit, AES-256 at rest for all chat/mood data",
+        "Crisis bypass jailbreak scenario tested and mitigated in design",
+        "PHI encryption at rest and in transit",
+        "Access audit logging enabled"
+      ],
+      "depends_on": [
+        5,
+        6
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "UX_DESIGN",
+      "description": "Design user flows, wireframes, and interaction patterns for onboarding, CBT exercise sessions, mood check-ins, crisis escalation UI, and emergency hotline surfacing. Follow safe messaging design guidelines.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "key_flows": [
+          "onboarding_consent",
+          "daily_mood_checkin",
+          "cbt_exercise_session",
+          "crisis_escalation_dialog",
+          "hotline_routing_card",
+          "history_review"
+        ],
+        "accessibility_targets": [
+          "WCAG 2.1 AA",
+          "screen reader support",
+          "high contrast mode"
+        ]
+      },
+      "acceptance_criteria": [
+        "Onboarding flow includes informed consent and wellness disclaimer before first use",
+        "Crisis escalation UI surfaces hotline within 2 taps from any screen",
+        "CBT exercise flows tested with at least 3 representative users for comprehension",
+        "Mood check-in takes under 60 seconds to complete",
+        "All screens pass WCAG 2.1 AA contrast and labeling checks",
+        "Safe messaging design review completed against AFSP/SAMHSA guidelines"
+      ],
+      "depends_on": [
+        1,
+        2,
+        5
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 9,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define MVP feature set, launch roadmap, success metrics (engagement, crisis routing accuracy, CBT completion rate), and HITL approval gates for AI-generated content changes.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "mvp_features": [
+          "onboarding_consent",
+          "mood_tracking_7day",
+          "3_cbt_exercise_types",
+          "crisis_detection_v1",
+          "hotline_routing"
+        ],
+        "success_metrics": [
+          "daily_active_users",
+          "mood_log_completion_rate",
+          "cbt_session_completion_rate",
+          "crisis_detection_precision_recall",
+          "hotline_routing_success_rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "MVP feature list approved by stakeholders with explicit out-of-scope items listed",
+        "Success metrics have baseline targets and measurement methodology defined",
+        "HITL gate points identified: AI prompt changes, crisis threshold changes, new CBT content",
+        "Roadmap covers MVP, v1.1 (personalization), v1.2 (clinician dashboard) phases"
+      ],
+      "depends_on": [
+        1,
+        8
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 10,
+      "task_type": "CONFIG",
+      "description": "Set up the mental_health_chatbot SAGE solution scaffold with project.yaml, prompts.yaml, tasks.yaml. Configure multi-agent coordinator pattern with specialist agents: CBT Coach, Mood Analyzer, Crisis Detector, Safety Guard.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "agentic_pattern": "coordinator",
+        "specialist_agents": [
+          "cbt_coach",
+          "mood_analyzer",
+          "crisis_detector",
+          "safety_guardrail",
+          "hotline_router"
+        ],
+        "hitl_level": "strict",
+        "hitl_gates": [
+          "crisis_threshold_change",
+          "cbt_content_edit",
+          "prompt_modification"
+        ],
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "approvals",
+          "knowledge",
+          "audit",
+          "improvements"
+        ]
+      },
+      "acceptance_criteria": [
+        "project.yaml created with solution metadata, active_modules, and theme",
+        "prompts.yaml defines system prompts for all 5 specialist agent roles",
+        "tasks.yaml registers all task types including crisis_routing and cbt_session",
+        "HITL gates configured in SAGE approval store for prompt and threshold changes",
+        "make run PROJECT=mental_health_chatbot starts without errors"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "DATABASE",
+      "description": "Design and implement database schema for users, mood logs, CBT session history, crisis events, audit trail, and hotline routing records. Enforce HIPAA data minimization and encryption requirements.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "db": "PostgreSQL",
+        "tables": [
+          "users",
+          "mood_logs",
+          "cbt_sessions",
+          "cbt_exercises",
+          "crisis_events",
+          "hotline_routing_log",
+          "audit_trail",
+          "consent_records"
+        ],
+        "encryption": "column-level AES-256 for PHI fields",
+        "retention_policy": "mood_logs 90 days, crisis_events 7 years, audit_trail 7 years"
+      },
+      "acceptance_criteria": [
+        "Schema includes all tables with correct foreign keys and indexes",
+        "PHI fields (chat content, mood scores) encrypted at column level",
+        "Crisis events table captures timestamp, detection_score, routing_action, and outcome",
+        "Consent records table stores version, timestamp, and user acknowledgment hash",
+        "Data retention policies implemented via scheduled deletion jobs",
+        "Migrations run cleanly on fresh database"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build the FastAPI backend: user auth (JWT + MFA), mood logging endpoints, CBT session management, LLM gateway integration with safety guardrails, crisis detection service, and hotline routing logic.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "framework": "FastAPI",
+        "key_modules": [
+          "auth_service (JWT + MFA)",
+          "mood_service (CRUD + trend analysis)",
+          "cbt_service (exercise catalog, session state machine)",
+          "llm_gateway (multi-agent coordinator + safety filter)",
+          "crisis_detection_service (NLP classifier + rule-based escalation)",
+          "hotline_router (geo-aware hotline selection: 988, Crisis Text Line)",
+          "audit_service (append-only event log)"
+        ],
+        "agentic_pattern": "coordinator",
+        "safety_controls": [
+          "output_content_filter",
+          "crisis_keyword_classifier",
+          "jailbreak_detector",
+          "rate_limiter"
+        ]
+      },
+      "acceptance_criteria": [
+        "All endpoints require authentication except /health and /crisis/emergency",
+        "Crisis detection service achieves >95% recall on held-out crisis phrase test set",
+        "Hotline router selects correct regional hotline based on user locale",
+        "LLM output passes safety content filter before returning to client",
+        "Jailbreak detector blocks attempts to bypass crisis detection via prompt manipulation",
+        "Audit log writes an immutable event for every crisis detection trigger",
+        "All PHI transmitted only over TLS; no PHI in server logs"
+      ],
+      "depends_on": [
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "AGENTIC",
+      "description": "Implement the multi-agent coordinator pattern for the chatbot core: Coordinator routes user messages to CBT Coach, Mood Analyzer, or Crisis Detector. Crisis Detector output always passes through Safety Guardrail before response. Implement ReAct loops for CBT Coach.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "pattern": "coordinator",
+        "coordinator_logic": "classify intent \u2192 route to specialist \u2192 Safety Guardrail review \u2192 return response",
+        "agents": {
+          "cbt_coach": "ReAct pattern \u2014 selects exercise, guides user through steps, collects completion",
+          "mood_analyzer": "analyzes mood log history, surfaces trends, suggests CBT based on patterns",
+          "crisis_detector": "NLP + rule classifier, escalation tiers: low/medium/high/acute",
+          "safety_guardrail": "post-hoc review of all LLM outputs \u2014 blocks harmful content, enforces safe messaging",
+          "hotline_router": "triggers on acute crisis tier, selects hotline, formats crisis card response"
+        },
+        "hitl_gates": [
+          "any change to crisis_detector thresholds requires human approval via SAGE /approvals"
+        ]
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly routes >98% of test messages to appropriate specialist agent",
+        "Safety Guardrail intercepts 100% of LLM outputs before delivery to user",
+        "Crisis Detector escalation tiers produce correct routing actions for each tier",
+        "CBT Coach ReAct loop completes a full 5-step breathing exercise with state persistence",
+        "Acute crisis tier always triggers hotline routing within 2 seconds",
+        "HITL approval gate blocks crisis threshold changes until human approves in SAGE"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FRONTEND",
+      "description": "Build React Native (cross-platform iOS/Android) app: onboarding with consent, chat interface, mood check-in widget, CBT exercise player, crisis card UI, history dashboard, and settings.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "framework": "React Native (Expo)",
+        "screens": [
+          "OnboardingConsent",
+          "ChatInterface",
+          "MoodCheckIn (emoji scale + optional journal)",
+          "CBTExercisePlayer (step-by-step with progress)",
+          "CrisisCard (hotline number + tap-to-call)",
+          "MoodHistoryDashboard (7/30/90 day charts)",
+          "Settings (notifications, data export, account deletion)"
+        ],
+        "accessibility": "WCAG 2.1 AA, VoiceOver/TalkBack support"
+      },
+      "acceptance_criteria": [
+        "Onboarding displays full consent text with scroll-to-bottom before 'I Agree' is enabled",
+        "Crisis card renders within 500ms of crisis detection and shows tap-to-call button",
+        "Chat interface streams LLM responses with typing indicator",
+        "Mood check-in widget completes in under 60 seconds",
+        "CBT exercise player tracks step completion and resumes on app relaunch",
+        "All screens pass Expo Accessibility Inspector with no critical violations",
+        "App builds and runs on iOS 15+ and Android 10+"
+      ],
+      "depends_on": [
+        8,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "INFRA",
+      "description": "Set up HIPAA-eligible cloud infrastructure: VPC, encrypted RDS, secrets manager, WAF, CloudTrail audit logging, container orchestration, and CI/CD pipeline with security scanning.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "cloud": "AWS (HIPAA-eligible services)",
+        "components": [
+          "VPC with private subnets for database and LLM gateway",
+          "RDS PostgreSQL with encryption at rest (KMS)",
+          "AWS Secrets Manager for all credentials",
+          "AWS WAF for API protection",
+          "CloudTrail for all API call auditing",
+          "ECS Fargate for containerized backend",
+          "CloudFront + S3 for static assets",
+          "AWS Shield Standard for DDoS protection"
+        ],
+        "ci_cd": "GitHub Actions with Snyk security scan, Trivy container scan, SAST"
+      },
+      "acceptance_criteria": [
+        "All data at rest encrypted with AWS KMS customer-managed key",
+        "VPC flow logs enabled and retained for 7 years",
+        "CloudTrail enabled in all regions with log integrity validation",
+        "CI/CD pipeline blocks deployment if Snyk finds critical CVEs",
+        "RDS accessible only from private subnet; no public endpoint",
+        "AWS BAA signed confirming HIPAA-eligible service usage",
+        "Infrastructure as Code (Terraform) passes tfsec security scan"
+      ],
+      "depends_on": [
+        7,
+        11
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 16,
+      "task_type": "DEVOPS",
+      "description": "Configure monitoring, alerting, and SRE practices: uptime monitoring, crisis routing success rate alerts, LLM latency SLOs, PagerDuty on-call, log aggregation with PHI scrubbing.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "monitoring_stack": "CloudWatch + Datadog",
+        "key_alerts": [
+          "crisis_routing_failure_rate > 0% (P0 alert)",
+          "LLM_response_latency p99 > 5s",
+          "safety_guardrail_error_rate > 0.1%",
+          "API_error_rate > 1%",
+          "database_connection_pool_exhaustion"
+        ],
+        "slos": {
+          "crisis_routing_success": "99.99%",
+          "api_availability": "99.9%",
+          "llm_p95_latency": "3s"
+        },
+        "log_scrubbing": "PII/PHI regex redaction before log shipping"
+      },
+      "acceptance_criteria": [
+        "Crisis routing failure triggers PagerDuty P0 within 60 seconds",
+        "All logs scrubbed of PHI before leaving the VPC",
+        "SLO dashboards display real-time error budget burn rate",
+        "Runbooks linked from every alert definition",
+        "Synthetic canary tests run crisis routing flow every 5 minutes"
+      ],
+      "depends_on": [
+        15
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 17,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for: crisis detection classifier (precision/recall), CBT session state machine, mood trend analysis, hotline router locale logic, safety guardrail content filter, and auth flows.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "test_framework": "pytest + Jest",
+        "critical_test_suites": [
+          "crisis_detector_classifier: 200+ labeled phrases covering all severity tiers",
+          "safety_guardrail: 100+ adversarial LLM output samples",
+          "hotline_router: all supported locales map to correct hotline",
+          "cbt_session_state_machine: all state transitions",
+          "mood_trend_analysis: edge cases (no data, single entry, 90-day span)",
+          "auth: JWT expiry, MFA bypass attempts, session invalidation"
+        ]
+      },
+      "acceptance_criteria": [
+        "Crisis detector tests achieve >95% recall and >85% precision on labeled dataset",
+        "Safety guardrail tests block 100% of known harmful output patterns",
+        "Hotline router correctly maps all 50 US states + 10 international locales",
+        "All state machine transitions covered with no dead states",
+        "Overall test coverage >80% for backend services",
+        "Tests run in CI under 10 minutes"
+      ],
+      "depends_on": [
+        12,
+        13
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "QA",
+      "description": "Develop QA test plan covering functional, regression, accessibility, safe messaging compliance, and crisis flow testing. Define test case designs for all critical user journeys.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "test_plan_sections": [
+          "functional: all features per acceptance criteria",
+          "regression: automated on every PR",
+          "accessibility: WCAG 2.1 AA on all screens",
+          "safe_messaging_compliance: SAMHSA/AFSP checklist per chat response type",
+          "crisis_flow: end-to-end from trigger phrase to hotline card display",
+          "data_privacy: verify no PHI in logs, correct deletion behavior"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan covers 100% of MVP user stories with at least one test case each",
+        "Crisis flow test cases cover all 4 escalation tiers",
+        "Safe messaging compliance checklist integrated as required test gate for every release",
+        "Accessibility test cases cover screen reader, keyboard navigation, and high contrast",
+        "QA sign-off required before any production release"
+      ],
+      "depends_on": [
+        9,
+        17
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system integration tests covering the full user journey from onboarding through crisis routing, including multi-agent coordinator flow, LLM safety guardrail, database persistence, and hotline routing.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "test_environment": "staging (production-equivalent)",
+        "e2e_scenarios": [
+          "new_user_onboarding_consent_to_first_chat",
+          "mood_check_in_triggers_cbt_recommendation",
+          "crisis_phrase_triggers_acute_escalation_and_hotline_card",
+          "jailbreak_attempt_blocked_by_safety_guardrail",
+          "user_data_deletion_removes_all_PHI",
+          "session_resume_after_app_restart",
+          "concurrent_user_load_100_users"
+        ],
+        "performance_targets": {
+          "crisis_routing_latency": "<2s end-to-end",
+          "chat_response_p95": "<5s",
+          "concurrent_users": 100
+        }
+      },
+      "acceptance_criteria": [
+        "All 7 E2E scenarios pass on staging with zero critical failures",
+        "Crisis routing latency <2s measured from trigger phrase to hotline card render",
+        "100 concurrent user load test completes with <1% error rate",
+        "Jailbreak scenario blocked in 100% of 20 tested adversarial inputs",
+        "Data deletion verified: database query returns zero rows for deleted user after 24h",
+        "System test report signed off by QA lead and safety engineer"
+      ],
+      "depends_on": [
+        14,
+        15,
+        16,
+        18
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 20,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks for: crisis routing service outage, LLM provider failover, PHI breach response, on-call escalation paths, capacity planning model, and SLA definitions.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "runbooks": [
+          "crisis_routing_service_outage.md (P0 \u2014 15 min RTO)",
+          "llm_provider_failover.md (switch provider via SAGE /llm/switch)",
+          "phi_breach_response.md (HIPAA 60-day notification timeline)",
+          "on_call_escalation_matrix.md",
+          "capacity_planning_model.md (users \u00d7 sessions \u00d7 token budget)",
+          "sla_definitions.md (99.9% uptime, 99.99% crisis routing)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Crisis routing outage runbook has RTO of 15 minutes with tested failover procedure",
+        "PHI breach runbook maps to HIPAA 60-day HHS notification requirement",
+        "LLM provider failover tested and verified via SAGE /llm/switch in staging",
+        "Capacity planning model projects cost and performance at 10k, 100k, 1M users",
+        "All runbooks reviewed by on-call engineer and operations manager"
+      ],
+      "depends_on": [
+        16,
+        19
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 21,
+      "task_type": "TRAINING",
+      "description": "Produce user onboarding guide, in-app help content, crisis resource guide, HIPAA workforce training for internal staff, and content moderation team playbook for escalated crisis cases.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "deliverables": [
+          "user_onboarding_guide.md",
+          "in_app_help_content.json (tooltips + FAQ)",
+          "crisis_resource_guide.md (hotlines, self-help resources per locale)",
+          "hipaa_workforce_training.md (for all staff with PHI access)",
+          "content_moderation_playbook.md (for escalated crisis cases requiring human review)"
+        ]
+      },
+      "acceptance_criteria": [
+        "User onboarding guide covers first-time setup, consent, and how to reach crisis help",
+        "Crisis resource guide covers US (988), UK (Samaritans), AU (Lifeline), and 5 other locales",
+        "HIPAA workforce training completed and signed by all staff with PHI access before launch",
+        "Content moderation playbook defines response SLA of <1 hour for flagged crisis cases",
+        "In-app help content reviewed by UX designer for tone adherence to safe messaging guidelines"
+      ],
+      "depends_on": [
+        8,
+        19,
+        20
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 22,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: API reference, architecture decision records (ADRs) for crisis detection design, agent coordinator design doc, database schema docs, and security architecture doc.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "deliverables": [
+          "api_reference.md (OpenAPI auto-generated + annotated)",
+          "architecture_overview.md",
+          "adr_001_crisis_detection_design.md",
+          "adr_002_multi_agent_coordinator.md",
+          "database_schema.md",
+          "security_architecture.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec documents all endpoints including crisis routing response format",
+        "ADRs capture decision context, alternatives considered, and rationale",
+        "Security architecture doc reviewed by security engineer",
+        "All docs committed to repo and linked from README"
+      ],
+      "depends_on": [
+        13,
+        19
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 23,
+      "task_type": "SECURITY",
+      "description": "Execute security review: penetration test against staging environment focusing on prompt injection, session management, PHI exfiltration, and crisis bypass. Produce pentest report and remediation tracker.",
+      "payload": {
+        "solution_name": "mental_health_chatbot",
+        "scope": [
+          "API endpoints",
+          "LLM prompt injection surface",
+          "mobile app binary",
+          "auth flows",
+          "crisis detection bypass"
+        ],
+        "tools": [
+          "OWASP ZAP",
+          "Burp Suite",
+          "custom LLM jailbreak test suite"
+        ],
+        "deliverables": [
+          "pentest_report.md",
+          "remediation_tracker.xlsx",
+          "sbom_final.json"
+        ]
+      },
+      "acceptance_criteria": [
+        "Zero critical or high findings unresolved before production launch",
+        "Prompt injection tests cover 50+ adversarial inputs including crisis bypass attempts",
+        "All medium findings have remediation tickets with owners and deadlines",
+        "SBOM submitted to internal security register",
+        "Pentest report signed off by CISO or security lead",
+        "PHI encryption at rest and in transit",
+        "Access audit logging enabled"
+      ],
+      "depends_on": [
+        15,
+        19
+      ],
+      "agent_role": "regulatory_specialist"
+    }
+  ],
+  "task_count": 23,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "Crisis detection '95% recall' acceptance criterion is dangerously low. 1 in 20 missed crisis messages in a mental health context is a life-safety failure, not a product metric. The plan never addresses the downstream consequence of a false negative \u2014 no fallback, no ambiguous-case escalation, no 'when in doubt, route to hotline' default.",
+            "False positive rate for crisis detection is never specified. High recall without precision constraints will flood non-crisis users with hotline cards, causing alert fatigue and app abandonment. The FMEA (step 5) doesn't close this gap in the downstream acceptance criteria.",
+            "HIPAA applicability is determined at step 4 but steps 6, 7, 11, and 15 are already architected around HIPAA being applicable. If the assessment concludes HIPAA doesn't apply (it's a wellness app with no covered-entity relationship), the compliance scaffolding is waste. Conversely, if it does apply and the LLM provider won't sign a BAA, the core architecture is broken. This must be resolved before design, not after.",
+            "LLM provider BAA feasibility is an unaddressed architectural blocker. Mood logs and chat history containing mental health disclosures almost certainly constitute PHI if HIPAA applies. Major LLM providers have inconsistent or restricted BAA policies. If your LLM provider won't sign a BAA, you cannot send session data to them \u2014 which invalidates the entire cloud LLM integration. This is a go/no-go question, not a compliance checkbox.",
+            "Age verification and minors handling are completely absent. Mental health apps disproportionately attract minors. COPPA compliance, parental consent, different escalation protocols for under-18 users (Teen Line, Crisis Text Line's youth protocols), and age-gating are not mentioned anywhere in 23 steps.",
+            "EU AI Act compliance is missing. For EU deployment, AI systems used in mental health contexts are classified as high-risk under Annex III of the EU AI Act. This requires a conformity assessment, transparency disclosures, human oversight documentation, and registration in the EU database. GDPR alone is insufficient \u2014 the plan mentions GDPR but has no EU AI Act analysis.",
+            "The CBT exercise catalog is never reviewed by a licensed clinician. Implementing evidence-based CBT with incorrect sequencing, missing contraindications, or wrong therapeutic targets is harmful. Step 1 lists 'clinician_reviewer' as a persona but there is no formal clinical review gate anywhere in the 23 steps.",
+            "Step 23 assigns penetration testing to 'regulatory_specialist' \u2014 the wrong role. Penetration testing requires a security engineer or external firm with offensive security expertise. Regulatory specialists assess compliance frameworks; they do not run Burp Suite or write custom jailbreak suites.",
+            "Hotline routing by 'user locale' is brittle in crisis conditions. Users travel, use VPNs, or may have a device locale mismatched to their physical location. During an acute crisis, routing to the wrong country's hotline is a critical failure. The plan has no fallback for locale ambiguity.",
+            "99.99% crisis routing SLO is unrealistic for a single-team MVP launch. That is fewer than 53 minutes of downtime per year. The infra plan has no multi-region active-active deployment, no graceful degradation path (e.g., 'if routing service is down, always show 988'), and no SLO violation consequence definition.",
+            "Mood log retention of 90 days may conflict with state mental health records laws. California (CMIA), New York, and several other states mandate 7-year retention for mental health records regardless of wellness vs. medical classification. The plan addresses HIPAA and CCPA but misses state-level mental health data privacy statutes entirely.",
+            "Mobile app local storage encryption is unaddressed. React Native/Expo will cache chat history and mood logs locally. The plan has no specification for iOS Secure Enclave use, Android Keystore, or what happens to PHI cached on a lost or stolen device.",
+            "The 100-concurrent-user system test is not production-scale and does not validate the 99.99% crisis routing SLO or capacity planning claims. Any meaningful public launch will exceed 100 concurrent users within weeks."
+          ],
+          "suggestions": [
+            "Resolve LLM provider BAA feasibility before finalizing the architecture. Evaluate providers specifically for BAA availability (AWS Bedrock, Azure OpenAI, or self-hosted models are safer paths if HIPAA applies). Make this a step 0 or 1 decision, not a step 6 checkbox.",
+            "Replace the '95% recall' crisis detection threshold with a tiered ambiguity policy: any message scoring above a lower confidence threshold should default to hotline surfacing, not suppression. Document explicit false negative consequence scenarios in the FMEA.",
+            "Add a clinical advisory step between step 1 and step 10. All CBT exercise content, crisis escalation tiers, and safe messaging language should be reviewed and signed off by at least one licensed mental health clinician before any code is written.",
+            "Add an EU AI Act conformity assessment as a parallel track to the HIPAA/FTC regulatory work. If EU launch is in scope, this is not optional.",
+            "Add a minors handling specification covering: age-gate at onboarding, COPPA notice, youth-specific hotline routing, different consent requirements for under-13 vs 13-17 users.",
+            "Replace the locale-based hotline router with IP geolocation + locale as a fallback, plus a manual 'I'm in [country]' override in the crisis card UI. Default to 988/International Association for Suicide Prevention directory when geolocation is ambiguous.",
+            "Change step 23's agent role from 'regulatory_specialist' to 'security_engineer' or explicitly require an external third-party penetration testing firm. Internal teams should not self-certify security for a mental health app.",
+            "Add mobile app local storage encryption to step 14 acceptance criteria. Specify SQLCipher or equivalent for any locally persisted chat or mood data.",
+            "Reduce the crisis routing SLO to a defensible target (99.9% = ~8.7 hours/year) and add a graceful degradation design: when crisis routing service is unavailable, the app displays a static crisis card with hardcoded 988 and Crisis Text Line numbers.",
+            "Resolve data retention conflict between step 11 (90-day mood logs) and applicable state mental health records laws before implementing the deletion jobs."
+          ],
+          "missing": [
+            "LLM provider BAA feasibility assessment \u2014 this is a go/no-go architectural decision, not a compliance artifact",
+            "EU AI Act high-risk AI conformity assessment for EU market",
+            "Age verification, COPPA compliance, and minors-specific crisis protocols",
+            "Licensed clinician review gate for CBT content and crisis thresholds",
+            "State-level mental health data privacy law analysis (CA CMIA, NY, TX, etc.)",
+            "Mobile app local data encryption specification (iOS Keychain, Android Keystore, SQLCipher)",
+            "AI disclosure requirement \u2014 several jurisdictions require explicit disclosure that the user is interacting with an AI, not a human clinician. Not present in the consent flow.",
+            "Adverse event reporting and post-market surveillance process. Even wellness apps need a process for capturing and responding to user-reported harms.",
+            "App store review timeline planning \u2014 Apple's mental health app review is stringent and slow. No launch timeline buffer or pre-submission review process is defined.",
+            "Multi-region or static fallback for crisis routing to achieve crisis routing SLO",
+            "Clinical contraindications for CBT exercises (e.g., breathing exercises contraindicated for certain anxiety presentations)",
+            "User opt-out from AI conversation (right to speak to a human or use app without LLM)"
+          ],
+          "security_risks": [
+            "LLM provider receiving PHI without BAA: if HIPAA applies and the LLM provider doesn't have a signed BAA, every API call with session context is a HIPAA violation. The plan lists this as a future compliance artifact rather than a blocking architectural constraint.",
+            "Prompt injection via mood journal entries: users can embed adversarial instructions in free-text journal entries that are subsequently fed to the LLM in context. The threat model names prompt injection but the specific attack surface of user-controlled freetext in the RAG context is not mitigated.",
+            "Crisis bypass via multi-turn context manipulation: a sophisticated adversarial user can gradually shift the conversation context to neutralize crisis detection without triggering any single keyword classifier. The jailbreak detector tests single-turn attempts; multi-turn context poisoning is not addressed.",
+            "PHI in mobile app cache without encryption: chat history and mood logs cached locally are accessible to any app with root access or via iOS backup unless explicitly encrypted. Not addressed in the frontend acceptance criteria.",
+            "Session token exposure in React Native deep links: OAuth/JWT tokens passed via deep links in React Native apps are a known attack vector. The auth design doesn't specify secure deep link handling or PKCE enforcement for mobile auth flows.",
+            "The 100-sample adversarial guardrail test suite is insufficient for production. LLMs can generate harmful content in ways that evade keyword and small-sample classifier testing. Without red-teaming at scale (thousands of samples, including indirect harm like enabling isolation or excessive reassurance that delays real help-seeking), the safety guardrail provides false confidence."
+          ],
+          "summary": "This is a well-structured, thorough plan that correctly identifies the major risk domains \u2014 crisis detection, HIPAA, safe messaging, multi-agent safety guardrails, and penetration testing \u2014 and sequences them with reasonable dependencies. The regulatory and safety steps (1\u20137) are notably better than most AI product plans. However, the plan has three categories of critical gaps that prevent a confident production recommendation: (1) architectural blockers that are treated as compliance artifacts \u2014 particularly LLM provider BAA feasibility, which could invalidate the cloud LLM architecture entirely; (2) absent population-specific requirements \u2014 minors/COPPA and EU AI Act high-risk classification are complete omissions, not oversights, given the stated EU jurisdiction scope; and (3) quantitative thresholds that are insufficiently stringent for the domain \u2014 a 95% crisis recall target means thousands of missed crises at scale, and the 100-user load test does not validate the 99.99% crisis SLO. The plan scores 63 for a wellness MVP context: the bones are sound and the safety thinking is serious, but the LLM BAA question and the minors handling gap are blocking issues that must be resolved before significant engineering investment proceeds.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "Crisis detection '95% recall' acceptance criterion is dangerously low. 1 in 20 missed crisis messages in a mental health context is a life-safety failure, not a product metric. The plan never addresses the downstream consequence of a false negative \u2014 no fallback, no ambiguous-case escalation, no 'when in doubt, route to hotline' default.",
+              "False positive rate for crisis detection is never specified. High recall without precision constraints will flood non-crisis users with hotline cards, causing alert fatigue and app abandonment. The FMEA (step 5) doesn't close this gap in the downstream acceptance criteria.",
+              "HIPAA applicability is determined at step 4 but steps 6, 7, 11, and 15 are already architected around HIPAA being applicable. If the assessment concludes HIPAA doesn't apply (it's a wellness app with no covered-entity relationship), the compliance scaffolding is waste. Conversely, if it does apply and the LLM provider won't sign a BAA, the core architecture is broken. This must be resolved before design, not after.",
+              "LLM provider BAA feasibility is an unaddressed architectural blocker. Mood logs and chat history containing mental health disclosures almost certainly constitute PHI if HIPAA applies. Major LLM providers have inconsistent or restricted BAA policies. If your LLM provider won't sign a BAA, you cannot send session data to them \u2014 which invalidates the entire cloud LLM integration. This is a go/no-go question, not a compliance checkbox.",
+              "Age verification and minors handling are completely absent. Mental health apps disproportionately attract minors. COPPA compliance, parental consent, different escalation protocols for under-18 users (Teen Line, Crisis Text Line's youth protocols), and age-gating are not mentioned anywhere in 23 steps.",
+              "EU AI Act compliance is missing. For EU deployment, AI systems used in mental health contexts are classified as high-risk under Annex III of the EU AI Act. This requires a conformity assessment, transparency disclosures, human oversight documentation, and registration in the EU database. GDPR alone is insufficient \u2014 the plan mentions GDPR but has no EU AI Act analysis.",
+              "The CBT exercise catalog is never reviewed by a licensed clinician. Implementing evidence-based CBT with incorrect sequencing, missing contraindications, or wrong therapeutic targets is harmful. Step 1 lists 'clinician_reviewer' as a persona but there is no formal clinical review gate anywhere in the 23 steps.",
+              "Step 23 assigns penetration testing to 'regulatory_specialist' \u2014 the wrong role. Penetration testing requires a security engineer or external firm with offensive security expertise. Regulatory specialists assess compliance frameworks; they do not run Burp Suite or write custom jailbreak suites.",
+              "Hotline routing by 'user locale' is brittle in crisis conditions. Users travel, use VPNs, or may have a device locale mismatched to their physical location. During an acute crisis, routing to the wrong country's hotline is a critical failure. The plan has no fallback for locale ambiguity.",
+              "99.99% crisis routing SLO is unrealistic for a single-team MVP launch. That is fewer than 53 minutes of downtime per year. The infra plan has no multi-region active-active deployment, no graceful degradation path (e.g., 'if routing service is down, always show 988'), and no SLO violation consequence definition.",
+              "Mood log retention of 90 days may conflict with state mental health records laws. California (CMIA), New York, and several other states mandate 7-year retention for mental health records regardless of wellness vs. medical classification. The plan addresses HIPAA and CCPA but misses state-level mental health data privacy statutes entirely.",
+              "Mobile app local storage encryption is unaddressed. React Native/Expo will cache chat history and mood logs locally. The plan has no specification for iOS Secure Enclave use, Android Keystore, or what happens to PHI cached on a lost or stolen device.",
+              "The 100-concurrent-user system test is not production-scale and does not validate the 99.99% crisis routing SLO or capacity planning claims. Any meaningful public launch will exceed 100 concurrent users within weeks."
+            ],
+            "suggestions": [
+              "Resolve LLM provider BAA feasibility before finalizing the architecture. Evaluate providers specifically for BAA availability (AWS Bedrock, Azure OpenAI, or self-hosted models are safer paths if HIPAA applies). Make this a step 0 or 1 decision, not a step 6 checkbox.",
+              "Replace the '95% recall' crisis detection threshold with a tiered ambiguity policy: any message scoring above a lower confidence threshold should default to hotline surfacing, not suppression. Document explicit false negative consequence scenarios in the FMEA.",
+              "Add a clinical advisory step between step 1 and step 10. All CBT exercise content, crisis escalation tiers, and safe messaging language should be reviewed and signed off by at least one licensed mental health clinician before any code is written.",
+              "Add an EU AI Act conformity assessment as a parallel track to the HIPAA/FTC regulatory work. If EU launch is in scope, this is not optional.",
+              "Add a minors handling specification covering: age-gate at onboarding, COPPA notice, youth-specific hotline routing, different consent requirements for under-13 vs 13-17 users.",
+              "Replace the locale-based hotline router with IP geolocation + locale as a fallback, plus a manual 'I'm in [country]' override in the crisis card UI. Default to 988/International Association for Suicide Prevention directory when geolocation is ambiguous.",
+              "Change step 23's agent role from 'regulatory_specialist' to 'security_engineer' or explicitly require an external third-party penetration testing firm. Internal teams should not self-certify security for a mental health app.",
+              "Add mobile app local storage encryption to step 14 acceptance criteria. Specify SQLCipher or equivalent for any locally persisted chat or mood data.",
+              "Reduce the crisis routing SLO to a defensible target (99.9% = ~8.7 hours/year) and add a graceful degradation design: when crisis routing service is unavailable, the app displays a static crisis card with hardcoded 988 and Crisis Text Line numbers.",
+              "Resolve data retention conflict between step 11 (90-day mood logs) and applicable state mental health records laws before implementing the deletion jobs."
+            ],
+            "missing": [
+              "LLM provider BAA feasibility assessment \u2014 this is a go/no-go architectural decision, not a compliance artifact",
+              "EU AI Act high-risk AI conformity assessment for EU market",
+              "Age verification, COPPA compliance, and minors-specific crisis protocols",
+              "Licensed clinician review gate for CBT content and crisis thresholds",
+              "State-level mental health data privacy law analysis (CA CMIA, NY, TX, etc.)",
+              "Mobile app local data encryption specification (iOS Keychain, Android Keystore, SQLCipher)",
+              "AI disclosure requirement \u2014 several jurisdictions require explicit disclosure that the user is interacting with an AI, not a human clinician. Not present in the consent flow.",
+              "Adverse event reporting and post-market surveillance process. Even wellness apps need a process for capturing and responding to user-reported harms.",
+              "App store review timeline planning \u2014 Apple's mental health app review is stringent and slow. No launch timeline buffer or pre-submission review process is defined.",
+              "Multi-region or static fallback for crisis routing to achieve crisis routing SLO",
+              "Clinical contraindications for CBT exercises (e.g., breathing exercises contraindicated for certain anxiety presentations)",
+              "User opt-out from AI conversation (right to speak to a human or use app without LLM)"
+            ],
+            "security_risks": [
+              "LLM provider receiving PHI without BAA: if HIPAA applies and the LLM provider doesn't have a signed BAA, every API call with session context is a HIPAA violation. The plan lists this as a future compliance artifact rather than a blocking architectural constraint.",
+              "Prompt injection via mood journal entries: users can embed adversarial instructions in free-text journal entries that are subsequently fed to the LLM in context. The threat model names prompt injection but the specific attack surface of user-controlled freetext in the RAG context is not mitigated.",
+              "Crisis bypass via multi-turn context manipulation: a sophisticated adversarial user can gradually shift the conversation context to neutralize crisis detection without triggering any single keyword classifier. The jailbreak detector tests single-turn attempts; multi-turn context poisoning is not addressed.",
+              "PHI in mobile app cache without encryption: chat history and mood logs cached locally are accessible to any app with root access or via iOS backup unless explicitly encrypted. Not addressed in the frontend acceptance criteria.",
+              "Session token exposure in React Native deep links: OAuth/JWT tokens passed via deep links in React Native apps are a known attack vector. The auth design doesn't specify secure deep link handling or PKCE enforcement for mobile auth flows.",
+              "The 100-sample adversarial guardrail test suite is insufficient for production. LLMs can generate harmful content in ways that evade keyword and small-sample classifier testing. Without red-teaming at scale (thousands of samples, including indirect harm like enabling isolation or excessive reassurance that delays real help-seeking), the safety guardrail provides false confidence."
+            ],
+            "summary": "This is a well-structured, thorough plan that correctly identifies the major risk domains \u2014 crisis detection, HIPAA, safe messaging, multi-agent safety guardrails, and penetration testing \u2014 and sequences them with reasonable dependencies. The regulatory and safety steps (1\u20137) are notably better than most AI product plans. However, the plan has three categories of critical gaps that prevent a confident production recommendation: (1) architectural blockers that are treated as compliance artifacts \u2014 particularly LLM provider BAA feasibility, which could invalidate the cloud LLM architecture entirely; (2) absent population-specific requirements \u2014 minors/COPPA and EU AI Act high-risk classification are complete omissions, not oversights, given the stated EU jurisdiction scope; and (3) quantitative thresholds that are insufficiently stringent for the domain \u2014 a 95% crisis recall target means thousands of missed crises at scale, and the 100-user load test does not validate the 99.99% crisis SLO. The plan scores 63 for a wellness MVP context: the bones are sound and the safety thinking is serious, but the LLM BAA question and the minors handling gap are blocking issues that must be resolved before significant engineering investment proceeds.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T04:32:54.057355+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 140.28,
+    "critic_plan": 97.94
+  }
+}

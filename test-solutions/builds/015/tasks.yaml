@@ -1,0 +1,197 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements for corporate expense management: expense
+      submission flows, policy rule types, approval hierarchy models, accounting integration
+      needs, and corporate card program scope.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All user roles documented (employee, approver, finance admin, auditor)
+    - Expense policy rule types enumerated (amount limits, category rules, per-diem
+      rates, receipt requirements)
+    - Approval workflow patterns defined (single, multi-level, amount-based routing)
+    - Accounting field mapping documented for QuickBooks, Xero, and NetSuite
+    - Corporate card program scope defined (virtual cards, physical cards, spend controls)
+    depends_on: []
+  SECURITY:
+    description: Perform threat model and security review for expense management system.
+      Produce SBOM, threat matrix, and PCI DSS scoping document for corporate card
+      data flows.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model completed for all system components
+    - PCI DSS cardholder data environment (CDE) scoped and documented
+    - SBOM lists all third-party dependencies with license and CVE status
+    - Penetration test plan covers API auth, card data endpoints, and OCR pipeline
+    - SOC 2 trust service criteria mapped to system controls
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Produce compliance artifacts for PCI DSS, SOC 2, and SOX: risk matrix,
+      traceability matrix, data retention policy, audit trail requirements, and segregation
+      of duties controls.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Risk matrix covers all identified threats with likelihood and impact scores
+    - Traceability matrix maps every compliance requirement to a system control
+    - Data retention policy specifies receipt storage duration (7 years for SOX)
+    - Audit trail spec requires immutable, timestamped records for all expense state
+      changes
+    - Segregation of duties matrix prevents submitter from also approving their own
+      expenses
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: Design user experience for expense submission, receipt capture, policy
+      feedback, approval inbox, and finance dashboard. Produce wireframes and interaction
+      specifications.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Mobile-first receipt capture flow with camera and file upload options
+    - Real-time policy feedback shown during expense entry (before submission)
+    - Approval inbox shows expenses grouped by urgency and amount
+    - Finance dashboard displays spend by category, department, and policy violation
+      rate
+    - All wireframes reviewed and approved by a representative from each user role
+    depends_on:
+    - 1
+  DATABASE:
+    description: 'Design and implement database schema for expense management: users,
+      organizations, expenses, receipts, policies, approval workflows, accounting
+      mappings, corporate cards, and audit log tables.'
+    agent_role: developer
+    acceptance_criteria:
+    - All tables have created_at, updated_at, and deleted_at (soft delete) columns
+    - Card PAN stored only as last-4 digits; full PAN never persisted (PCI DSS req
+      3)
+    - Audit log table is append-only with no UPDATE/DELETE permissions granted to
+      app role
+    - Foreign key constraints enforce referential integrity across all relationships
+    - Migration scripts run cleanly from empty schema to fully seeded dev database
+    - Seed data includes 3 organizations, 10 users, sample policies, and 50 expense
+      records
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 2
+    - 3
+  BACKEND:
+    description: 'Build core backend service: authentication (OAuth2/SAML SSO), organization
+      management, user/role management, expense CRUD, and audit logging middleware.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints require authentication; unauthenticated requests return 401
+    - Tenant isolation enforced at query layer — org A cannot read org B data
+    - Expense state machine rejects invalid transitions (e.g., PAID → DRAFT)
+    - Every state transition writes an immutable audit log entry with actor, timestamp,
+      and previous state
+    - SAML SSO login tested with a mock IdP (e.g., Okta dev account)
+    - RBAC blocks employees from accessing admin endpoints; returns 403
+    depends_on:
+    - 5
+  FRONTEND:
+    description: 'Build employee-facing web and mobile PWA: expense submission form
+      with real-time policy feedback, receipt camera capture, OCR result review, expense
+      list, and notification center.'
+    agent_role: developer
+    acceptance_criteria:
+    - Receipt photo taken via camera on mobile and uploaded within 3 taps
+    - OCR-extracted fields auto-populate form; user can edit any field
+    - Policy violations shown inline during form entry before submission
+    - Expense list filters by status, date range, amount, and category
+    - Offline draft saved to IndexedDB; submitted automatically when connection restored
+    - PWA installable on iOS and Android; passes Lighthouse PWA audit score ≥ 90
+    depends_on:
+    - 4
+    - 7
+    - 8
+  AGENTIC:
+    description: 'Implement AI-powered expense intelligence using the review_and_critique
+      pattern: anomaly detection agent flags suspicious expenses, policy suggestion
+      agent recommends policy updates based on violation patterns, and spend optimization
+      agent surfaces savings opportunities.'
+    agent_role: analyst
+    acceptance_criteria:
+    - Anomaly detector flags expenses > 3 standard deviations from employee's category
+      baseline
+    - Policy optimizer produces ranked list of policy changes with projected violation
+      rate impact
+    - Spend optimizer identifies top 10 vendors where consolidated buying could reduce
+      cost
+    - All agent proposals displayed in finance admin review queue; none execute automatically
+    - Agent reasoning trace shown alongside each proposal for full explainability
+    - False positive rate for anomaly detection < 5% measured over 30-day pilot
+    depends_on:
+    - 10
+    - 14
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for policy engine and
+      state machine, integration tests for accounting connectors and OCR pipeline,
+      E2E tests for expense submission and approval flows.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Policy engine unit tests cover all 8 rule types with boundary conditions
+    - State machine tests verify all valid transitions and reject all invalid ones
+    - Accounting integration tests run against sandbox/developer accounts for all
+      three providers
+    - E2E tests run in CI against a fully seeded test database
+    - Test coverage report ≥ 85% on backend source
+    - All tests pass in under 10 minutes in CI pipeline
+    depends_on:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+  INFRA:
+    description: 'Set up infrastructure: Docker Compose for local dev, Kubernetes
+      manifests for production, PostgreSQL with read replica, Redis for job queues,
+      S3-compatible storage, and secrets management.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up starts all services and passes health checks within 60 seconds
+    - Kubernetes manifests deploy successfully to staging cluster
+    - PostgreSQL read replica configured; read-heavy queries (analytics) routed to
+      replica
+    - Secrets never appear in environment variables or logs; all read from secrets
+      manager at runtime
+    - CDE subnet has no direct internet access; card data flows only through internal
+      service mesh
+    - Resource limits and pod disruption budgets set on all production deployments
+    depends_on:
+    - 6
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: GitHub Actions workflows for test, build,
+      security scan (SAST/DAST/dependency audit), and deploy to staging and production
+      with rollback capability.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and completes in under 15 minutes
+    - SAST scan with zero high or critical findings required to pass
+    - Dependency audit blocks on known CVEs with CVSS ≥ 7.0
+    - Production deploy requires manual approval gate in GitHub Actions
+    - Automated rollback triggered and completed within 5 minutes of failed smoke
+      test
+    - Deploy logs stored for 90 days for SOX audit trail
+    depends_on:
+    - 16
+    - 17
+  DOCS:
+    description: 'Produce technical and user documentation: API reference (OpenAPI),
+      employee user guide, admin setup guide, accounting integration runbook, and
+      architecture decision records.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec covers all endpoints with request/response schemas and error codes
+    - Employee user guide covers expense submission, receipt capture, and status tracking
+    - Accounting integration runbook includes step-by-step OAuth setup for each provider
+      with screenshots
+    - 'ADRs document key decisions: database choice, card provider selection, OCR
+      provider, auth strategy'
+    - All docs reviewed by a non-engineer (product_manager) for clarity
+    depends_on:
+    - 12
+    - 13
+    - 14
+    - 10

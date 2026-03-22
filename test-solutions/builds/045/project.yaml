@@ -1,0 +1,66 @@
+project_name: grocery_delivery
+display_name: Grocery Delivery
+version: 1.0.0
+domain: ecommerce
+description: Grocery delivery platform with real-time inventory, route optimization,
+  shopper app, customer app, substitution logic, and slot-based delivery scheduling.
+detected_domains: []
+compliance_standards:
+- PCI DSS
+- GDPR
+- Food Safety Regulations
+- WCAG 2.1
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- FINANCIAL
+- FRONTEND
+- INFRA
+- LEGAL
+- MARKET_RESEARCH
+- OPERATIONS
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- TESTS
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- developer
+- devops_engineer
+- financial_analyst
+- legal_advisor
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

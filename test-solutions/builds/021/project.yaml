@@ -1,0 +1,58 @@
+project_name: adas_perception
+display_name: Adas Perception
+version: 1.0.0
+domain: automotive
+description: Advanced Driver Assistance System (ADAS) perception module with camera,
+  LiDAR, and radar sensor fusion for object detection, lane keeping, and adaptive
+  cruise control. ASIL D, ISO 26262.
+detected_domains: []
+compliance_standards:
+- ISO 26262 ASIL D
+- AUTOSAR
+- UNECE R79
+task_types:
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- ML_MODEL
+- PRODUCT_MGMT
+- QA
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

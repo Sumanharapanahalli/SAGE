@@ -1,0 +1,983 @@
+{
+  "run_id": "a3816107-89a7-4c32-ad43-1654bfc18d4e",
+  "solution_name": "analytics_dashboard",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T05:15:05.864177+00:00",
+  "updated_at": "2026-03-22T05:19:47.547274+00:00",
+  "product_description": "Business analytics dashboard builder with data source connectors (PostgreSQL, BigQuery, Snowflake), drag-and-drop chart builder, scheduled reports, and embedding SDK.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze competitors (Looker, Metabase, Superset, Redash, Grafana) and identify market positioning for analytics_dashboard. Map feature gaps, pricing benchmarks, and ICP (ideal customer profiles). Identify embedding SDK differentiator opportunities.",
+      "payload": {
+        "competitors": [
+          "Looker",
+          "Metabase",
+          "Superset",
+          "Redash",
+          "Grafana",
+          "Mode",
+          "Sigma"
+        ],
+        "focus_areas": [
+          "embedding SDK maturity",
+          "connector ecosystem",
+          "self-serve pricing",
+          "SOC 2 compliance as differentiator"
+        ],
+        "deliverables": [
+          "competitive_matrix.md",
+          "icp_profiles.md",
+          "positioning_brief.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive matrix covers \u22657 competitors across 15+ feature dimensions",
+        "ICP profiles define at least 3 distinct buyer personas with pain points",
+        "Positioning brief identifies 2-3 defensible differentiators",
+        "GTM channel recommendations documented"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements and user stories for all four product pillars: data source connectors, chart builder, scheduled reports, and embedding SDK. Produce process flow diagrams for each pillar. Include ROI model for enterprise embedding use case.",
+      "payload": {
+        "pillars": [
+          "data_connectors",
+          "chart_builder",
+          "scheduled_reports",
+          "embedding_sdk"
+        ],
+        "user_story_format": "As a [persona], I want [capability], so that [outcome]",
+        "deliverables": [
+          "requirements.md",
+          "user_stories.yaml",
+          "process_flows/",
+          "roi_model.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "\u226540 user stories covering all four pillars",
+        "Each story has acceptance criteria and priority (MoSCoW)",
+        "Process flow diagrams cover happy path + 2 error paths per pillar",
+        "ROI model quantifies embedding SDK value for 3 customer segments",
+        "Pricing tiers defined",
+        "Churn risk factors identified"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Author the Product Requirements Document (PRD) for analytics_dashboard v1.0. Define success metrics, KPIs, MVP scope vs. post-MVP, and a 6-month roadmap. Set HITL approval gates for data schema migrations and embedding SDK breaking changes.",
+      "payload": {
+        "prd_sections": [
+          "executive_summary",
+          "problem_statement",
+          "success_metrics",
+          "mvp_scope",
+          "out_of_scope",
+          "roadmap",
+          "risks"
+        ],
+        "kpis": [
+          "time_to_first_chart",
+          "connector_setup_success_rate",
+          "scheduled_report_delivery_rate",
+          "embedding_sdk_adoption"
+        ],
+        "hitl_gates": [
+          "db_schema_migration",
+          "sdk_breaking_change",
+          "new_connector_release"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD approved by all stakeholder roles (business, engineering, design)",
+        "MVP scope lists \u226425 features with clear in/out boundary",
+        "Success metrics are measurable with defined baseline and target",
+        "6-month roadmap has quarterly milestones"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 4,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research (5+ interviews with data analysts and BI engineers), then produce wireframes and interaction designs for: connector setup wizard, drag-and-drop chart builder canvas, dashboard layout editor, scheduled report configuration, and embedding SDK code preview panel. Run accessibility audit (WCAG 2.1 AA).",
+      "payload": {
+        "research_method": "semi-structured interviews + usability testing",
+        "screens": [
+          "connector_setup_wizard",
+          "chart_builder_canvas",
+          "dashboard_layout_editor",
+          "report_schedule_config",
+          "embedding_sdk_preview",
+          "data_source_manager",
+          "org_settings"
+        ],
+        "accessibility_standard": "WCAG 2.1 AA",
+        "tool": "Figma"
+      },
+      "acceptance_criteria": [
+        "\u22655 user research interviews completed with synthesized findings report",
+        "Wireframes cover all 7 screens at low-fidelity and 3 key flows at high-fidelity",
+        "Drag-and-drop chart builder prototype is clickable and testable",
+        "Accessibility audit report produced with zero critical violations",
+        "Design system tokens defined (colors, typography, spacing, chart palette)"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 5,
+      "task_type": "FINANCIAL",
+      "description": "Build a financial model covering SaaS pricing tiers (free, pro, enterprise), embedding SDK licensing, connector marketplace revenue share, and 3-year unit economics. Include CAC/LTV analysis and break-even projections.",
+      "payload": {
+        "pricing_tiers": [
+          "free (3 connectors, 5 dashboards)",
+          "pro ($49/mo)",
+          "enterprise (custom)"
+        ],
+        "revenue_streams": [
+          "subscriptions",
+          "embedding_sdk_license",
+          "connector_marketplace_revshare"
+        ],
+        "model_horizon": "3 years",
+        "deliverables": [
+          "pricing_model.xlsx",
+          "unit_economics.md",
+          "pricing_page_copy.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "3-year P&L model with monthly granularity for year 1",
+        "LTV:CAC ratio \u2265 3:1 at enterprise tier",
+        "Break-even month identified under base/bull/bear scenarios",
+        "Pricing page copy reviewed and approved",
+        "MRR/ARR projections modeled",
+        "CAC and LTV estimated"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 6,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (DPA), and embedding SDK EULA. Map data residency obligations for PostgreSQL/BigQuery/Snowflake connectors. Review open-source license compatibility for all planned dependencies.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "dpa.md",
+          "sdk_eula.md"
+        ],
+        "data_residency_regions": [
+          "US",
+          "EU (GDPR)",
+          "APAC"
+        ],
+        "license_review_targets": [
+          "Apache 2.0",
+          "MIT",
+          "BSL 1.1 (Snowflake SDK)"
+        ],
+        "soc2_relevance": "DPA + privacy policy are SOC 2 CC6.1/CC6.6 evidence artifacts"
+      },
+      "acceptance_criteria": [
+        "All 4 legal documents drafted and reviewed",
+        "GDPR Article 28 DPA clauses present",
+        "SDK EULA covers redistribution restrictions and warranty disclaimer",
+        "OSS license compatibility matrix produced (no GPL contamination)",
+        "Subscription terms cover cancellation and refunds",
+        "Data processing agreement drafted"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 7,
+      "task_type": "COMPLIANCE",
+      "description": "Scope SOC 2 Type I readiness for analytics_dashboard. Produce a trust services criteria (TSC) mapping, control inventory, and evidence collection plan for CC6, CC7, and CC9 (security, availability, confidentiality). Define audit log requirements for all data connector operations and embedding SDK token issuance.",
+      "payload": {
+        "standard": "SOC 2 Type I (path to Type II)",
+        "tsc_scope": [
+          "CC6 (logical access)",
+          "CC7 (system operations)",
+          "CC9 (risk management)"
+        ],
+        "evidence_artifacts": [
+          "access_control_policy.md",
+          "encryption_at_rest_config.md",
+          "audit_log_schema.md",
+          "incident_response_plan.md",
+          "vendor_risk_register.md"
+        ],
+        "connector_audit_events": [
+          "connect",
+          "query_execute",
+          "schema_browse",
+          "disconnect",
+          "credential_rotate"
+        ]
+      },
+      "acceptance_criteria": [
+        "TSC control mapping covers \u226530 controls across CC6/CC7/CC9",
+        "Evidence collection plan assigns owner + cadence for each control",
+        "Audit log schema defined with retention policy (\u22651 year)",
+        "Encryption standards documented (AES-256 at rest, TLS 1.2+ in transit)",
+        "Incident response plan reviewed and tabletop exercise scheduled"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "DATABASE",
+      "description": "Design the core database schema for analytics_dashboard: organizations, users, data_sources (connector configs with encrypted credentials), dashboards, charts, chart_config (JSONB), scheduled_reports, report_executions, embedding_tokens, audit_log. Write Alembic migrations. Seed data for local development.",
+      "payload": {
+        "database": "PostgreSQL 15",
+        "orm": "SQLAlchemy 2.0",
+        "migration_tool": "Alembic",
+        "key_tables": [
+          "organizations",
+          "users",
+          "memberships",
+          "data_sources",
+          "data_source_credentials (encrypted)",
+          "dashboards",
+          "charts",
+          "chart_configs",
+          "scheduled_reports",
+          "report_executions",
+          "embedding_tokens",
+          "audit_log"
+        ],
+        "encryption": "pgcrypto for credential fields",
+        "indexes": "GIN on chart_configs JSONB, btree on audit_log(org_id, created_at)"
+      },
+      "acceptance_criteria": [
+        "ERD diagram produced and reviewed",
+        "All Alembic migrations run cleanly on fresh PostgreSQL instance",
+        "credential fields encrypted at rest using pgcrypto or Vault transit",
+        "Seed script populates demo org with 3 data sources, 5 dashboards, 10 charts",
+        "Foreign key constraints and CASCADE rules documented"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "DATA",
+      "description": "Build the data connector abstraction layer: base Connector interface, PostgreSQL connector, BigQuery connector, and Snowflake connector. Implement schema browsing (list tables/columns/types), query execution with parameterized SQL, connection pooling, and query result streaming. Store encrypted credentials using the vault pattern.",
+      "payload": {
+        "connectors": [
+          "PostgreSQL (psycopg3)",
+          "BigQuery (google-cloud-bigquery)",
+          "Snowflake (snowflake-connector-python)"
+        ],
+        "interface_methods": [
+          "connect()",
+          "test_connection()",
+          "list_schemas()",
+          "list_tables(schema)",
+          "describe_table(table)",
+          "execute_query(sql, params, limit)",
+          "stream_results(query_id)"
+        ],
+        "security": "credentials encrypted via Fernet before DB storage, decrypted in-process only",
+        "query_limits": "max 100k rows per query, 30s timeout default",
+        "agentic_pattern": "review_and_critique \u2014 Critic agent validates connector implementation against security checklist before merge"
+      },
+      "acceptance_criteria": [
+        "All 3 connectors pass connection test against live (or Docker) instances",
+        "Schema browsing returns correct types for all 3 connectors",
+        "Parameterized query execution prevents SQL injection (sqlparse validation)",
+        "Credentials never logged or returned in API responses",
+        "Connection pool reuse verified under concurrent load (10 simultaneous queries)"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "API",
+      "description": "Design and document the full OpenAPI 3.1 spec for analytics_dashboard REST API. Cover: auth (JWT + API keys), data source CRUD, schema browsing, query execution, dashboard CRUD, chart CRUD, scheduled report management, embedding token issuance, and audit log streaming. Define versioning strategy (/api/v1/).",
+      "payload": {
+        "spec_format": "OpenAPI 3.1",
+        "auth_schemes": [
+          "Bearer JWT (user sessions)",
+          "X-API-Key (embedding SDK, service accounts)"
+        ],
+        "endpoint_groups": [
+          "/auth",
+          "/datasources",
+          "/datasources/{id}/schema",
+          "/datasources/{id}/query",
+          "/dashboards",
+          "/dashboards/{id}/charts",
+          "/reports",
+          "/reports/{id}/executions",
+          "/embed/tokens",
+          "/embed/dashboards/{token}",
+          "/audit"
+        ],
+        "error_format": "RFC 7807 Problem Details",
+        "rate_limiting": "per-org, documented in spec headers"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates with no errors against 3.1 schema",
+        "All endpoints have request/response examples",
+        "Auth requirements documented for every endpoint",
+        "Error responses follow RFC 7807 format consistently",
+        "Versioning strategy documented with deprecation policy"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement the FastAPI backend for analytics_dashboard. Wire all endpoints from the OpenAPI spec: auth (JWT issuance, refresh, API key management), data source management (CRUD + test connection), query execution (async with result caching in Redis), dashboard/chart CRUD, embedding token issuance with scope/TTL controls. Apply multi-tenant isolation via org_id on every query.",
+      "payload": {
+        "framework": "FastAPI + Python 3.12",
+        "async_runtime": "asyncio + asyncpg",
+        "cache": "Redis (query result cache, 5-min TTL default)",
+        "auth": "PyJWT + passlib bcrypt",
+        "background_tasks": "Celery + Redis broker (for scheduled reports)",
+        "multi_tenancy": "org_id middleware on every DB query, Row-Level Security on PostgreSQL",
+        "agentic_pattern": "human_in_the_loop \u2014 schema migration proposals queued for human approval before execution"
+      },
+      "acceptance_criteria": [
+        "All /api/v1/ endpoints return responses matching OpenAPI spec",
+        "Multi-tenant isolation verified: org A cannot access org B data",
+        "JWT expiry, refresh, and revocation work correctly",
+        "API key scopes enforced (read-only embedding tokens cannot mutate data)",
+        "Query result caching reduces P95 latency by \u226540% on repeated queries",
+        "All endpoints return RFC 7807 errors on failure"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build the scheduled reports engine: Celery Beat scheduler, report execution worker (runs saved queries, renders to PDF/CSV/Excel via Jinja2/WeasyPrint), email delivery via SendGrid, and Slack webhook delivery. Store execution history and support retry-on-failure with exponential backoff.",
+      "payload": {
+        "scheduler": "Celery Beat with cron + interval expressions",
+        "output_formats": [
+          "PDF (WeasyPrint)",
+          "CSV",
+          "Excel (openpyxl)"
+        ],
+        "delivery_channels": [
+          "email (SendGrid)",
+          "Slack webhook",
+          "download URL (S3 pre-signed)"
+        ],
+        "retry_policy": "3 retries, exponential backoff, dead-letter queue after max retries",
+        "execution_record": "report_executions table: status, started_at, completed_at, output_url, error_msg"
+      },
+      "acceptance_criteria": [
+        "Scheduled reports execute within 60s of scheduled time (P95)",
+        "PDF output renders charts correctly using server-side chart rendering",
+        "Email delivery confirmed via SendGrid webhook event (delivered status)",
+        "Failed executions retry correctly and dead-letter after 3 attempts",
+        "Execution history queryable via GET /reports/{id}/executions"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Build the embedding SDK backend: token issuance endpoint (POST /embed/tokens) with dashboard scope, TTL, and allowed-origins list; embed-mode dashboard render endpoint (GET /embed/dashboards/{token}) that returns signed chart data; iframe-friendly CSP headers; and token revocation.",
+      "payload": {
+        "token_type": "short-lived signed JWT (HS256, org secret)",
+        "token_claims": [
+          "org_id",
+          "dashboard_id",
+          "scopes",
+          "allowed_origins",
+          "exp"
+        ],
+        "embed_endpoint": "returns chart configs + pre-fetched query data, no credentials exposed",
+        "security_headers": "X-Frame-Options: ALLOWALL (scoped), CSP frame-ancestors per allowed_origins",
+        "revocation": "token blacklist in Redis with TTL matching token expiry"
+      },
+      "acceptance_criteria": [
+        "Embedding token cannot be used after TTL expiry",
+        "Token with allowed_origins=['app.customer.com'] rejected from other origins",
+        "Embed endpoint returns no raw credentials or internal IDs",
+        "Token revocation takes effect within 1s (Redis TTL)",
+        "SOC 2 audit log entry created for every token issuance and use"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FRONTEND",
+      "description": "Build the React + TypeScript frontend for analytics_dashboard. Implement: auth flows (login, signup, org invite), data source manager (connector setup wizard with connection test), dashboard list/grid view, and overall layout shell (sidebar nav, breadcrumbs, org switcher). Use design tokens from UX step 4.",
+      "payload": {
+        "framework": "React 18 + TypeScript 5 + Vite",
+        "state_management": "Zustand + React Query (TanStack)",
+        "styling": "Tailwind CSS + CSS variables from design tokens",
+        "component_library": "Radix UI (accessible primitives)",
+        "auth_flows": [
+          "login",
+          "signup",
+          "invite_accept",
+          "forgot_password"
+        ],
+        "screens": [
+          "data_source_manager",
+          "connector_setup_wizard",
+          "dashboard_list",
+          "app_shell"
+        ]
+      },
+      "acceptance_criteria": [
+        "Auth flows complete end-to-end with JWT storage in httpOnly cookies",
+        "Connector setup wizard tests connection before saving (live feedback)",
+        "Dashboard list loads with virtualized scroll (\u2265100 dashboards without jank)",
+        "All interactive elements keyboard-navigable (WCAG 2.1 AA)",
+        "Lighthouse accessibility score \u2265 90"
+      ],
+      "depends_on": [
+        4,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Build the drag-and-drop chart builder canvas: chart type palette (bar, line, area, pie, scatter, table, metric card, heatmap), data field binding panel (drag columns to X/Y/group/filter axes), chart config panel (colors, labels, axes, legend), real-time preview rendering via ECharts, and dashboard grid layout (react-grid-layout).",
+      "payload": {
+        "dnd_library": "dnd-kit",
+        "chart_library": "Apache ECharts 5 (via echarts-for-react)",
+        "layout_library": "react-grid-layout",
+        "chart_types": [
+          "bar",
+          "line",
+          "area",
+          "pie",
+          "donut",
+          "scatter",
+          "table",
+          "metric_card",
+          "heatmap",
+          "funnel"
+        ],
+        "config_persistence": "chart_configs JSONB in DB, auto-saved on change with 500ms debounce",
+        "agentic_pattern": "single_agent \u2014 AI chart recommender suggests chart type based on selected columns' data types"
+      },
+      "acceptance_criteria": [
+        "All 10 chart types render correctly with sample data",
+        "Drag-and-drop field binding updates chart preview in \u2264200ms",
+        "Dashboard grid layout saves position/size and restores on reload",
+        "Chart config panel changes reflect in preview without page reload",
+        "Undo/redo supported for chart config changes (\u226510 step history)",
+        "AI chart recommendation available as optional hint (does not block workflow)"
+      ],
+      "depends_on": [
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build the scheduled reports UI: report builder (select dashboard, output format, schedule cron expression with human-readable preview, delivery channel config), execution history table with status badges, manual run trigger, and report template library. Build embedding SDK settings page: token manager, allowed-origins config, copy-paste embed code snippet.",
+      "payload": {
+        "cron_editor": "cron-expression-editor with plain-English preview (e.g. 'Every Monday at 9am')",
+        "delivery_config_ui": [
+          "email recipient list",
+          "Slack channel webhook URL",
+          "download link TTL"
+        ],
+        "execution_history_columns": [
+          "report_name",
+          "status",
+          "started_at",
+          "duration",
+          "output_format",
+          "actions"
+        ],
+        "embed_code_formats": [
+          "HTML iframe snippet",
+          "React component snippet",
+          "Vue component snippet"
+        ],
+        "sdk_token_ui": [
+          "create token",
+          "set TTL",
+          "set allowed origins",
+          "revoke token"
+        ]
+      },
+      "acceptance_criteria": [
+        "Cron expression previews human-readable schedule in real time",
+        "Report history table paginates correctly with 1000+ records",
+        "Manual run trigger shows live status updates via SSE/polling",
+        "Embed code snippets copy to clipboard with one click",
+        "Token revocation reflected in UI within 2s"
+      ],
+      "depends_on": [
+        15,
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "DATA",
+      "description": "Build the query builder and data transformation layer: visual SQL builder (table/column picker, filter conditions, GROUP BY, ORDER BY, LIMIT), saved queries library, query result schema inference (detect numeric/categorical/temporal columns for chart binding hints), and data caching strategy (query fingerprint \u2192 Redis TTL).",
+      "payload": {
+        "sql_builder": "generates safe parameterized SQL from visual config, no raw SQL input in basic mode",
+        "advanced_mode": "raw SQL editor with syntax highlighting (CodeMirror 6) for power users",
+        "schema_inference": "column type detection: numeric, categorical, temporal, boolean, geo",
+        "cache_key": "SHA256(org_id + datasource_id + normalized_sql)",
+        "cache_ttl": "configurable per datasource: 1min to 24h, default 5min"
+      },
+      "acceptance_criteria": [
+        "Visual query builder generates valid SQL for all 3 connector types",
+        "Raw SQL mode validates syntax before execution (no destructive statements: DROP, DELETE, UPDATE blocked)",
+        "Schema inference correctly classifies column types for \u226595% of common schemas",
+        "Cache hit rate \u2265 60% on repeated dashboard loads (measured in tests)",
+        "Query result pagination returns correct data at page boundaries"
+      ],
+      "depends_on": [
+        9,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "ML_MODEL",
+      "description": "Build the AI chart recommendation engine: train a lightweight classifier that takes column metadata (names, types, cardinality, sample values) and suggests the most appropriate chart type. Use a decision-tree/gradient-boost model trained on a synthetic dataset of (schema, chart_type) pairs. Expose as internal inference endpoint. Integrate with chart builder canvas (step 15).",
+      "payload": {
+        "model_type": "GradientBoostingClassifier (scikit-learn) or rule-based heuristic with ML fallback",
+        "features": [
+          "num_numeric_cols",
+          "num_categorical_cols",
+          "num_temporal_cols",
+          "row_count_estimate",
+          "column_name_embeddings (MiniLM)"
+        ],
+        "training_data": "synthetic dataset: 5000 (schema, chart_type) pairs generated from heuristic rules",
+        "serving": "FastAPI inference endpoint: POST /internal/ml/chart-recommend",
+        "evaluation_metric": "top-1 accuracy \u2265 70%, top-3 accuracy \u2265 90% on held-out set",
+        "agentic_pattern": "iterative_refinement \u2014 ML engineer iterates on feature engineering until accuracy threshold met"
+      },
+      "acceptance_criteria": [
+        "Model achieves \u226570% top-1 accuracy on held-out test set (200 samples)",
+        "Inference latency \u2264100ms P95 (local inference, no external API call)",
+        "Model artifacts versioned and stored (not committed to git \u2014 use MLflow or S3)",
+        "Fallback heuristic activates if model unavailable (graceful degradation)",
+        "Training pipeline reproducible via single script with fixed random seed",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 19,
+      "task_type": "CONFIG",
+      "description": "Set up the agentic pattern for analytics_dashboard's internal AI features: configure the coordinator pattern for the AI chart recommender + query optimizer pipeline. Set up the HITL pattern for data schema migration proposals. Configure the review_and_critique pattern for connector implementation quality gates.",
+      "payload": {
+        "patterns_configured": [
+          {
+            "pattern": "coordinator",
+            "use_case": "AI assistant that routes user questions to chart_recommender or query_optimizer agents"
+          },
+          {
+            "pattern": "human_in_the_loop",
+            "use_case": "Schema migration proposals queued for DBA approval before execution"
+          },
+          {
+            "pattern": "review_and_critique",
+            "use_case": "Generated SQL reviewed by critic agent for injection risk before execution"
+          }
+        ],
+        "config_files": [
+          "config/ai_patterns.yaml",
+          "config/hitl_gates.yaml"
+        ],
+        "hitl_thresholds": "any DDL statement, any query touching >1M rows"
+      },
+      "acceptance_criteria": [
+        "coordinator pattern routes correctly to chart_recommender vs query_optimizer based on request type",
+        "HITL gate triggers for all DDL migration proposals (verified in integration test)",
+        "Critic agent rejects SQL containing DROP/DELETE/UPDATE with explanation",
+        "All pattern configs documented in config/ai_patterns.yaml with comments"
+      ],
+      "depends_on": [
+        11,
+        18
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "INFRA",
+      "description": "Create Docker Compose setup for local development (PostgreSQL, Redis, backend, frontend, Celery worker, Celery Beat, Flower monitoring). Write production Dockerfile (multi-stage, non-root user). Create Kubernetes Helm chart for production deployment with HPA, resource limits, and health probes.",
+      "payload": {
+        "local_stack": "docker-compose.yml with services: postgres, redis, backend, frontend, celery_worker, celery_beat, flower",
+        "production_dockerfile": "multi-stage build, python:3.12-slim, non-root USER app, no secrets baked in",
+        "helm_chart": "analytics-dashboard chart with values.yaml for staging/prod environments",
+        "k8s_resources": "Deployment (backend, worker), CronJob (beat), Service, Ingress (nginx), HPA (CPU 70%)",
+        "health_probes": "liveness: GET /health, readiness: GET /ready (checks DB + Redis connectivity)"
+      },
+      "acceptance_criteria": [
+        "`docker compose up` starts full stack in \u22642 minutes from cold pull",
+        "Backend container runs as non-root user",
+        "Helm chart deploys to local k8s (kind/minikube) without errors",
+        "HPA scales backend pods from 2\u21925 under simulated load (k6 test)",
+        "Health probes correctly report unhealthy when DB is unavailable"
+      ],
+      "depends_on": [
+        11,
+        12
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 21,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions): lint (ruff, eslint), type check (mypy, tsc), unit tests, integration tests (Docker-based), security scan (Trivy, Bandit), build Docker image, push to registry, deploy to staging on merge to main, deploy to production on git tag. Add Datadog APM + log aggregation. Set up PagerDuty alerting for P1 incidents.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "pipeline_stages": [
+          "lint",
+          "type_check",
+          "unit_tests",
+          "integration_tests",
+          "security_scan",
+          "build",
+          "push",
+          "deploy_staging",
+          "deploy_prod (tag-triggered)"
+        ],
+        "security_scanners": [
+          "Trivy (container CVE scan)",
+          "Bandit (Python SAST)",
+          "npm audit (JS deps)"
+        ],
+        "monitoring": "Datadog APM (ddtrace), log shipping via Datadog Agent",
+        "alerting": "PagerDuty: P1 (API error rate >5%, P99 latency >5s, scheduled report failure rate >10%)"
+      },
+      "acceptance_criteria": [
+        "Full CI pipeline runs in \u22648 minutes on GitHub Actions",
+        "Security scan blocks merge if HIGH/CRITICAL CVE found in container",
+        "Staging deployment automated on every merge to main",
+        "Datadog dashboard shows API latency, error rate, connector query rate",
+        "PagerDuty alert fires within 2 minutes of simulated P1 condition"
+      ],
+      "depends_on": [
+        20
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 22,
+      "task_type": "SECURITY",
+      "description": "Conduct threat model for analytics_dashboard using STRIDE. Focus on: credential storage (connector passwords/tokens), SQL injection via query builder, embedding token forgery, multi-tenant data leakage, and scheduled report delivery hijacking. Produce penetration test plan and SBOM (CycloneDX format).",
+      "payload": {
+        "methodology": "STRIDE threat modeling",
+        "threat_focus_areas": [
+          "connector credential storage and decryption",
+          "SQL injection via raw query editor",
+          "embedding token forgery and scope escalation",
+          "cross-tenant data access",
+          "report delivery manipulation (SSRF via webhook URLs)"
+        ],
+        "sbom_format": "CycloneDX 1.4 (generated via syft)",
+        "pentest_plan": "covers OWASP Top 10 + API-specific tests (OWASP API Top 10)",
+        "soc2_relevance": "Threat model is CC3.2 evidence; pentest plan is CC7.1 evidence"
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model documents \u226515 threats with mitigations",
+        "SBOM produced and contains all runtime dependencies",
+        "Pentest plan covers all OWASP API Top 10 categories",
+        "All HIGH threats have assigned mitigations with ticket references",
+        "SSRF protection documented for Slack webhook delivery channel"
+      ],
+      "depends_on": [
+        13,
+        12
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write comprehensive test suite: unit tests for all connector classes, query builder SQL generation, embedding token issuance/validation, and report scheduler. Integration tests for full API flows (connector setup \u2192 query \u2192 chart save \u2192 embed token). E2E tests (Playwright) for chart builder drag-and-drop, report scheduling, and embedding iframe render.",
+      "payload": {
+        "unit_test_framework": "pytest + pytest-asyncio",
+        "integration_test_db": "Docker PostgreSQL + Redis (real instances, no mocks for DB)",
+        "e2e_framework": "Playwright (TypeScript)",
+        "coverage_target": "\u226585% line coverage on src/",
+        "key_test_cases": [
+          "connector SQL injection prevention (parameterized query test)",
+          "multi-tenant isolation (org A cannot read org B charts)",
+          "embedding token scope enforcement",
+          "scheduled report retry on transient failure",
+          "chart config serialization/deserialization round-trip"
+        ],
+        "performance_tests": "k6 script: 100 concurrent dashboard loads, P95 \u2264 2s"
+      },
+      "acceptance_criteria": [
+        "\u226585% line coverage on backend source",
+        "All 5 key security test cases pass",
+        "E2E: chart builder drag-and-drop test passes in headed + headless mode",
+        "Integration tests use real PostgreSQL and Redis (not mocks)",
+        "k6 performance test: P95 dashboard load \u2264 2s under 100 concurrent users"
+      ],
+      "depends_on": [
+        16,
+        17,
+        13
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: incident response for connector outages, scheduled report delivery failures, and embedding token service degradation. Define SLAs (API availability 99.9%, report delivery \u00b15min SLA). Create capacity planning model. Write on-call rotation guide.",
+      "payload": {
+        "runbooks": [
+          "runbook_connector_outage.md",
+          "runbook_report_delivery_failure.md",
+          "runbook_embed_service_degraded.md",
+          "runbook_database_failover.md"
+        ],
+        "sla_targets": {
+          "api_availability": "99.9% monthly",
+          "report_delivery_sla": "within 5 minutes of scheduled time (P95)",
+          "query_latency": "P95 \u2264 3s for cached results, \u2264 10s for uncached"
+        },
+        "capacity_model": "based on: avg queries/dashboard load, chart count, concurrent users, connector pool size"
+      },
+      "acceptance_criteria": [
+        "All 4 runbooks have: trigger conditions, diagnostic steps, remediation steps, escalation path",
+        "SLA targets documented and measurable via Datadog SLO monitors",
+        "Capacity model predicts infrastructure cost at 1k/10k/100k MAU",
+        "On-call rotation guide covers handoff checklist and escalation contacts"
+      ],
+      "depends_on": [
+        21
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 25,
+      "task_type": "DOCS",
+      "description": "Write developer documentation: API reference (auto-generated from OpenAPI spec via Redoc), embedding SDK integration guide (HTML iframe, React, Vue examples), connector setup guides for PostgreSQL/BigQuery/Snowflake, and architecture decision records (ADRs) for key design choices (multi-tenancy model, credential encryption, chart config JSONB schema).",
+      "payload": {
+        "doc_site_tool": "Docusaurus 3",
+        "auto_generated": "API reference from OpenAPI spec (redocly build-docs)",
+        "manual_guides": [
+          "quickstart.md",
+          "embedding_sdk_guide.md",
+          "connector_postgresql.md",
+          "connector_bigquery.md",
+          "connector_snowflake.md",
+          "adr/001_multitenancy.md",
+          "adr/002_credential_encryption.md",
+          "adr/003_chart_config_schema.md"
+        ],
+        "sdk_code_examples": [
+          "iframe HTML",
+          "React useEmbedDashboard hook",
+          "Vue composable"
+        ]
+      },
+      "acceptance_criteria": [
+        "API reference builds from OpenAPI spec without manual edits",
+        "Embedding SDK guide includes working copy-paste code examples for all 3 frameworks",
+        "All 3 connector guides verified against live connector setup flow",
+        "3 ADRs written with context/decision/consequences sections",
+        "Docusaurus site builds without warnings"
+      ],
+      "depends_on": [
+        16,
+        10
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 25,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 61,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 61,
+        "final_review": {
+          "score": 61,
+          "flaws": [
+            "CRITICAL: WeasyPrint cannot render ECharts charts. WeasyPrint renders HTML/CSS \u2014 it has no JavaScript engine. ECharts is a JS library that renders to canvas/SVG in the browser. PDF reports with charts will either be blank or fail entirely. You need a headless browser (Puppeteer/Playwright) for server-side chart rendering, which is not mentioned anywhere in the plan.",
+            "CRITICAL: 'X-Frame-Options: ALLOWALL' (Step 13) is not a valid HTTP header value. Valid values are DENY, SAMEORIGIN, and the deprecated ALLOW-FROM. This will be ignored by all major browsers, leaving the embedding security model broken at launch. The correct approach is CSP frame-ancestors, which the plan mentions but then contradicts with this invalid header.",
+            "HIGH: SQL injection prevention via sqlparse (Step 9) is not a security control. sqlparse is a formatting/parsing library explicitly documented as not safe for security use. It can be bypassed with CTEs, subqueries, string concatenation patterns, and Unicode obfuscation. Blocking DROP/DELETE/UPDATE via regex/sqlparse is fragile and gives false confidence \u2014 a determined user can bypass it.",
+            "HIGH: Redis-backed token revocation blacklist (Step 13) loses its entire state on Redis restart or failover. Revoked tokens become valid again after any Redis outage. The plan has no persistence layer for the revocation list, no fallback, and no mention of this failure mode.",
+            "HIGH: Fernet key management is unaddressed. Credentials are encrypted with Fernet, but where is the Fernet key stored? If it's an environment variable, key rotation strategy is completely missing. A rotated key invalidates all stored credentials. This is an operational crisis waiting to happen.",
+            "HIGH: Celery Beat is deployed as a Kubernetes CronJob (Step 20) but Beat is designed as a long-running daemon process, not a job. Running multiple Beat instances (if the CronJob overlaps) causes duplicate scheduled report executions. The Helm chart must enforce singleton Beat \u2014 this requires careful pod disruption budget and locking strategy not mentioned anywhere.",
+            "MEDIUM: Step 15 (chart builder canvas) does not declare Step 17 (query builder) as a dependency, but the chart builder's field binding panel maps data columns to axes \u2014 it fundamentally requires the query builder's schema inference and data fetching. Building Step 15 before Step 17 guarantees integration rework.",
+            "MEDIUM: HS256 embedding tokens signed with 'org secret' (Step 13) means every token ever issued by an org is compromised if that org secret leaks. There is no per-token key isolation. RS256 with a per-org keypair would limit blast radius.",
+            "MEDIUM: ML chart recommendation model (Step 18) is trained on synthetic data generated by heuristic rules. This is circular \u2014 the model learns to approximate the heuristics. The added complexity of GradientBoostingClassifier + MiniLM embeddings delivers no accuracy advantage over the heuristics themselves, adds a 200MB+ model artifact, and creates an MLOps dependency for what should be a simple lookup table.",
+            "MEDIUM: Query cache key uses 'normalized SQL' (Step 17) but SQL normalization is non-trivial. Semantically identical queries differing in whitespace, comment presence, alias names, or predicate ordering will miss cache. The plan provides no normalization specification, making the '\u226560% cache hit rate' acceptance criterion unmeasurable.",
+            "MEDIUM: No per-tenant connection pool isolation for data connectors (Step 9). One tenant running 50 concurrent long-running BigQuery queries will exhaust the shared connection pool, causing latency spikes for all other tenants. This is a multi-tenant SaaS correctness requirement, not an optimization.",
+            "MEDIUM: BigQuery and Snowflake query costs are entirely uncontrolled. A user can execute a query scanning terabytes of data. No per-tenant query cost limits, dry-run checks, or byte-scanned caps are specified. This is a financial liability \u2014 a single bad query can generate a $500 cloud bill."
+          ],
+          "suggestions": [
+            "Replace WeasyPrint with Puppeteer/Playwright (Node) or a Python-controlled headless Chromium for PDF generation. The backend renders the dashboard URL in headless mode, screenshots it, and converts to PDF. This is the only reliable way to capture JS-rendered charts.",
+            "Replace sqlparse SQL injection prevention with a proper AST-based SQL parser (sqlglot or pglast). Use a whitelist approach: only SELECT statements are allowed in the query builder. Reject anything that isn't a SELECT at the AST level, not via string matching.",
+            "Add a persistence layer for the embedding token revocation list. Use a dedicated PostgreSQL table (revoked_tokens) as the source of truth, with Redis as a write-through cache. Redis miss falls back to DB lookup. This survives Redis restarts.",
+            "Replace the ML chart recommendation model with a deterministic rule engine. A decision tree of 15-20 hand-crafted rules based on column type counts and cardinality covers 90% of cases with zero model artifacts, zero MLOps overhead, and 100% explainability. Add the ML model in v2 when you have real usage data to train on.",
+            "Add Step 17 as a dependency of Step 15. The chart builder's data binding panel is a consumer of the query builder's schema inference output \u2014 they must be built in sequence.",
+            "Specify Fernet key rotation strategy before Step 9 is built. Options: (1) store in AWS KMS/GCP KMS with envelope encryption, (2) use HashiCorp Vault transit encryption (re-encrypt without decrypting), (3) store key version alongside ciphertext for rotation. Choose one and document it in the credential schema.",
+            "Deploy Celery Beat as a Kubernetes Deployment with replicas: 1 and a PodDisruptionBudget of maxUnavailable: 0, not as a CronJob. Add a distributed lock (Redlock or DB advisory lock) on Beat startup as a defense-in-depth measure against duplicate execution.",
+            "Add BigQuery/Snowflake query cost controls to Step 9: BigQuery dry-run API call before execution to estimate bytes scanned, reject if above per-tenant limit; Snowflake query tag + warehouse size cap. These are API-level features that require deliberate implementation."
+          ],
+          "missing": [
+            "Fernet/KMS key rotation runbook and schema versioning for encrypted credentials. Without this, the first key rotation is an operational incident.",
+            "Per-tenant database connection limits and query concurrency caps. Multi-tenant correctness requires isolation at the connection pool level, not just the org_id filter level.",
+            "Server-side chart rendering architecture for PDF reports. The current plan has a fundamental technical gap here.",
+            "BigQuery/Snowflake cost governance controls (byte scan limits, dry-run validation, per-tenant spending caps).",
+            "Dashboard public sharing model \u2014 can dashboards be shared via link without embedding tokens? This is a core BI feature completely absent from all 25 steps.",
+            "Data freshness indicators \u2014 users need to know when cached data was last refreshed. No staleness UI or cache invalidation trigger is specified.",
+            "Connector credential rotation workflow \u2014 when a database password changes, how does the user update it? Is the old credential immediately invalidated? What happens to in-flight queries?",
+            "Actual JavaScript/TypeScript SDK npm package for the embedding SDK. The plan describes iframe/React/Vue code snippets but no versioned, publishable SDK package with its own repository, changelog, and semver guarantees.",
+            "PostgreSQL RLS policy testing strategy. RLS misconfiguration is silent and catastrophic for multi-tenant SaaS. The plan enables RLS but has no acceptance criteria for verifying it actually blocks cross-tenant access at the database layer (separate from the application-layer org_id filter).",
+            "Disaster recovery plan and RTO/RPO targets. SOC 2 CC9 requires risk assessment of availability \u2014 the runbooks cover incident response but not full DR scenarios (region failure, data corruption)."
+          ],
+          "security_risks": [
+            "CRITICAL: sqlparse-based SQL injection prevention (Step 9) is bypassable. This is documented by sqlparse maintainers. Any plan that ships a raw SQL editor with sqlparse as the security gate has a SQL injection vulnerability in production.",
+            "HIGH: X-Frame-Options: ALLOWALL is ignored by browsers. The embedding security boundary \u2014 the primary security control for the embedding SDK \u2014 is broken until this is corrected to CSP frame-ancestors.",
+            "HIGH: Shared HS256 org secret for embedding tokens means org-level secret compromise = all historical and future tokens for that org are forgeable. No expiry on the signing key itself is mentioned.",
+            "HIGH: Redis revocation blacklist is ephemeral. A Redis restart between token issuance and expiry silently un-revokes tokens. For an enterprise embedding SDK, this is a security regression.",
+            "MEDIUM: SSRF via Slack webhook delivery URLs (Step 12) is acknowledged in Step 22 but no mitigation is implemented in Step 12. The delivery channel accepts arbitrary webhook URLs \u2014 an attacker can point this at internal AWS metadata endpoints (169.254.169.254) or internal services. Implement an allowlist of HTTPS-only webhook domains with internal RFC 1918 range blocking before Step 12 ships.",
+            "MEDIUM: The embedding token includes allowed_origins as a claim inside the token. If the token is signed with HS256 using the org secret, and the org can create tokens (they must be able to, to use the SDK), a malicious org can mint tokens with allowed_origins=['*'] if they have access to the signing key. The allowed_origins should be validated server-side against a registry, not trusted from the token claim.",
+            "LOW: MiniLM embeddings for column names in the ML model (Step 18) means column names from customer databases are processed through a model. If this model is ever externalized (e.g., OpenAI API call instead of local), column names \u2014 which may contain PII field names \u2014 leave the customer's trust boundary. Ensure the inference endpoint remains local as specified and document this constraint."
+          ],
+          "summary": "This is a well-structured plan with appropriate sequencing, a reasonable tech stack, and commendable coverage of SOC 2, legal, UX research, and financial modeling. However, it has two fundamental technical errors that will block shipping: (1) WeasyPrint cannot render JavaScript-based ECharts charts \u2014 PDF reports will be broken at launch and require an architectural pivot to headless browser rendering; (2) sqlparse is not a security control and ships a SQL injection vulnerability in the raw query editor. Beyond these blockers, the security model has several compounding weaknesses: an invalid X-Frame-Options header, an ephemeral revocation blacklist, and an org-secret HS256 scheme where the customer holds the signing key. The ML chart recommendation model is an unnecessary complexity trap \u2014 it's trained on synthetic data derived from heuristics, adding MLOps overhead to deliver what a 20-line rule function achieves. The plan also has a critical dependency omission (Step 15 should depend on Step 17) that will cause integration rework mid-sprint. At 25 steps covering market research through Kubernetes Helm charts and PagerDuty integration, this is realistically a 12-18 month effort, not a 6-month roadmap. Fix the PDF rendering architecture and SQL injection controls before any other development begins \u2014 these are not deferrable.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 61,
+            "flaws": [
+              "CRITICAL: WeasyPrint cannot render ECharts charts. WeasyPrint renders HTML/CSS \u2014 it has no JavaScript engine. ECharts is a JS library that renders to canvas/SVG in the browser. PDF reports with charts will either be blank or fail entirely. You need a headless browser (Puppeteer/Playwright) for server-side chart rendering, which is not mentioned anywhere in the plan.",
+              "CRITICAL: 'X-Frame-Options: ALLOWALL' (Step 13) is not a valid HTTP header value. Valid values are DENY, SAMEORIGIN, and the deprecated ALLOW-FROM. This will be ignored by all major browsers, leaving the embedding security model broken at launch. The correct approach is CSP frame-ancestors, which the plan mentions but then contradicts with this invalid header.",
+              "HIGH: SQL injection prevention via sqlparse (Step 9) is not a security control. sqlparse is a formatting/parsing library explicitly documented as not safe for security use. It can be bypassed with CTEs, subqueries, string concatenation patterns, and Unicode obfuscation. Blocking DROP/DELETE/UPDATE via regex/sqlparse is fragile and gives false confidence \u2014 a determined user can bypass it.",
+              "HIGH: Redis-backed token revocation blacklist (Step 13) loses its entire state on Redis restart or failover. Revoked tokens become valid again after any Redis outage. The plan has no persistence layer for the revocation list, no fallback, and no mention of this failure mode.",
+              "HIGH: Fernet key management is unaddressed. Credentials are encrypted with Fernet, but where is the Fernet key stored? If it's an environment variable, key rotation strategy is completely missing. A rotated key invalidates all stored credentials. This is an operational crisis waiting to happen.",
+              "HIGH: Celery Beat is deployed as a Kubernetes CronJob (Step 20) but Beat is designed as a long-running daemon process, not a job. Running multiple Beat instances (if the CronJob overlaps) causes duplicate scheduled report executions. The Helm chart must enforce singleton Beat \u2014 this requires careful pod disruption budget and locking strategy not mentioned anywhere.",
+              "MEDIUM: Step 15 (chart builder canvas) does not declare Step 17 (query builder) as a dependency, but the chart builder's field binding panel maps data columns to axes \u2014 it fundamentally requires the query builder's schema inference and data fetching. Building Step 15 before Step 17 guarantees integration rework.",
+              "MEDIUM: HS256 embedding tokens signed with 'org secret' (Step 13) means every token ever issued by an org is compromised if that org secret leaks. There is no per-token key isolation. RS256 with a per-org keypair would limit blast radius.",
+              "MEDIUM: ML chart recommendation model (Step 18) is trained on synthetic data generated by heuristic rules. This is circular \u2014 the model learns to approximate the heuristics. The added complexity of GradientBoostingClassifier + MiniLM embeddings delivers no accuracy advantage over the heuristics themselves, adds a 200MB+ model artifact, and creates an MLOps dependency for what should be a simple lookup table.",
+              "MEDIUM: Query cache key uses 'normalized SQL' (Step 17) but SQL normalization is non-trivial. Semantically identical queries differing in whitespace, comment presence, alias names, or predicate ordering will miss cache. The plan provides no normalization specification, making the '\u226560% cache hit rate' acceptance criterion unmeasurable.",
+              "MEDIUM: No per-tenant connection pool isolation for data connectors (Step 9). One tenant running 50 concurrent long-running BigQuery queries will exhaust the shared connection pool, causing latency spikes for all other tenants. This is a multi-tenant SaaS correctness requirement, not an optimization.",
+              "MEDIUM: BigQuery and Snowflake query costs are entirely uncontrolled. A user can execute a query scanning terabytes of data. No per-tenant query cost limits, dry-run checks, or byte-scanned caps are specified. This is a financial liability \u2014 a single bad query can generate a $500 cloud bill."
+            ],
+            "suggestions": [
+              "Replace WeasyPrint with Puppeteer/Playwright (Node) or a Python-controlled headless Chromium for PDF generation. The backend renders the dashboard URL in headless mode, screenshots it, and converts to PDF. This is the only reliable way to capture JS-rendered charts.",
+              "Replace sqlparse SQL injection prevention with a proper AST-based SQL parser (sqlglot or pglast). Use a whitelist approach: only SELECT statements are allowed in the query builder. Reject anything that isn't a SELECT at the AST level, not via string matching.",
+              "Add a persistence layer for the embedding token revocation list. Use a dedicated PostgreSQL table (revoked_tokens) as the source of truth, with Redis as a write-through cache. Redis miss falls back to DB lookup. This survives Redis restarts.",
+              "Replace the ML chart recommendation model with a deterministic rule engine. A decision tree of 15-20 hand-crafted rules based on column type counts and cardinality covers 90% of cases with zero model artifacts, zero MLOps overhead, and 100% explainability. Add the ML model in v2 when you have real usage data to train on.",
+              "Add Step 17 as a dependency of Step 15. The chart builder's data binding panel is a consumer of the query builder's schema inference output \u2014 they must be built in sequence.",
+              "Specify Fernet key rotation strategy before Step 9 is built. Options: (1) store in AWS KMS/GCP KMS with envelope encryption, (2) use HashiCorp Vault transit encryption (re-encrypt without decrypting), (3) store key version alongside ciphertext for rotation. Choose one and document it in the credential schema.",
+              "Deploy Celery Beat as a Kubernetes Deployment with replicas: 1 and a PodDisruptionBudget of maxUnavailable: 0, not as a CronJob. Add a distributed lock (Redlock or DB advisory lock) on Beat startup as a defense-in-depth measure against duplicate execution.",
+              "Add BigQuery/Snowflake query cost controls to Step 9: BigQuery dry-run API call before execution to estimate bytes scanned, reject if above per-tenant limit; Snowflake query tag + warehouse size cap. These are API-level features that require deliberate implementation."
+            ],
+            "missing": [
+              "Fernet/KMS key rotation runbook and schema versioning for encrypted credentials. Without this, the first key rotation is an operational incident.",
+              "Per-tenant database connection limits and query concurrency caps. Multi-tenant correctness requires isolation at the connection pool level, not just the org_id filter level.",
+              "Server-side chart rendering architecture for PDF reports. The current plan has a fundamental technical gap here.",
+              "BigQuery/Snowflake cost governance controls (byte scan limits, dry-run validation, per-tenant spending caps).",
+              "Dashboard public sharing model \u2014 can dashboards be shared via link without embedding tokens? This is a core BI feature completely absent from all 25 steps.",
+              "Data freshness indicators \u2014 users need to know when cached data was last refreshed. No staleness UI or cache invalidation trigger is specified.",
+              "Connector credential rotation workflow \u2014 when a database password changes, how does the user update it? Is the old credential immediately invalidated? What happens to in-flight queries?",
+              "Actual JavaScript/TypeScript SDK npm package for the embedding SDK. The plan describes iframe/React/Vue code snippets but no versioned, publishable SDK package with its own repository, changelog, and semver guarantees.",
+              "PostgreSQL RLS policy testing strategy. RLS misconfiguration is silent and catastrophic for multi-tenant SaaS. The plan enables RLS but has no acceptance criteria for verifying it actually blocks cross-tenant access at the database layer (separate from the application-layer org_id filter).",
+              "Disaster recovery plan and RTO/RPO targets. SOC 2 CC9 requires risk assessment of availability \u2014 the runbooks cover incident response but not full DR scenarios (region failure, data corruption)."
+            ],
+            "security_risks": [
+              "CRITICAL: sqlparse-based SQL injection prevention (Step 9) is bypassable. This is documented by sqlparse maintainers. Any plan that ships a raw SQL editor with sqlparse as the security gate has a SQL injection vulnerability in production.",
+              "HIGH: X-Frame-Options: ALLOWALL is ignored by browsers. The embedding security boundary \u2014 the primary security control for the embedding SDK \u2014 is broken until this is corrected to CSP frame-ancestors.",
+              "HIGH: Shared HS256 org secret for embedding tokens means org-level secret compromise = all historical and future tokens for that org are forgeable. No expiry on the signing key itself is mentioned.",
+              "HIGH: Redis revocation blacklist is ephemeral. A Redis restart between token issuance and expiry silently un-revokes tokens. For an enterprise embedding SDK, this is a security regression.",
+              "MEDIUM: SSRF via Slack webhook delivery URLs (Step 12) is acknowledged in Step 22 but no mitigation is implemented in Step 12. The delivery channel accepts arbitrary webhook URLs \u2014 an attacker can point this at internal AWS metadata endpoints (169.254.169.254) or internal services. Implement an allowlist of HTTPS-only webhook domains with internal RFC 1918 range blocking before Step 12 ships.",
+              "MEDIUM: The embedding token includes allowed_origins as a claim inside the token. If the token is signed with HS256 using the org secret, and the org can create tokens (they must be able to, to use the SDK), a malicious org can mint tokens with allowed_origins=['*'] if they have access to the signing key. The allowed_origins should be validated server-side against a registry, not trusted from the token claim.",
+              "LOW: MiniLM embeddings for column names in the ML model (Step 18) means column names from customer databases are processed through a model. If this model is ever externalized (e.g., OpenAI API call instead of local), column names \u2014 which may contain PII field names \u2014 leave the customer's trust boundary. Ensure the inference endpoint remains local as specified and document this constraint."
+            ],
+            "summary": "This is a well-structured plan with appropriate sequencing, a reasonable tech stack, and commendable coverage of SOC 2, legal, UX research, and financial modeling. However, it has two fundamental technical errors that will block shipping: (1) WeasyPrint cannot render JavaScript-based ECharts charts \u2014 PDF reports will be broken at launch and require an architectural pivot to headless browser rendering; (2) sqlparse is not a security control and ships a SQL injection vulnerability in the raw query editor. Beyond these blockers, the security model has several compounding weaknesses: an invalid X-Frame-Options header, an ephemeral revocation blacklist, and an org-secret HS256 scheme where the customer holds the signing key. The ML chart recommendation model is an unnecessary complexity trap \u2014 it's trained on synthetic data derived from heuristics, adding MLOps overhead to deliver what a 20-line rule function achieves. The plan also has a critical dependency omission (Step 15 should depend on Step 17) that will cause integration rework mid-sprint. At 25 steps covering market research through Kubernetes Helm charts and PagerDuty integration, this is realistically a 12-18 month effort, not a 6-month roadmap. Fix the PDF rendering architecture and SQL injection controls before any other development begins \u2014 these are not deferrable.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T05:19:47.547263+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 162.3,
+    "critic_plan": 119.38
+  }
+}

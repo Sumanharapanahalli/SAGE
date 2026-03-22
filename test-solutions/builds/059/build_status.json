@@ -1,0 +1,857 @@
+{
+  "run_id": "ef8d3694-0cf1-4c87-9ab6-d5eefb54f8c0",
+  "solution_name": "smart_parking",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T08:14:42.646832+00:00",
+  "updated_at": "2026-03-22T08:18:33.959358+00:00",
+  "product_description": "Smart parking IoT system with occupancy sensors, mobile app guidance, payment integration, reservation system, and city parking analytics.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product requirements document for the smart parking IoT system covering occupancy sensors, mobile guidance, payment, reservations, and analytics.",
+      "payload": {
+        "deliverables": [
+          "PRD",
+          "user_stories",
+          "success_metrics",
+          "feature_list"
+        ],
+        "stakeholders": [
+          "city_operators",
+          "drivers",
+          "parking_lot_owners"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all five major feature areas: sensors, mobile, payment, reservations, analytics",
+        "User stories defined for at least 3 actor types (driver, operator, city admin)",
+        "Success metrics include occupancy accuracy \u226595%, app response <2s, payment success rate \u226599%",
+        "Feature priorities ranked with MoSCoW labeling"
+      ],
+      "depends_on": [],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 2,
+      "task_type": "UX_DESIGN",
+      "description": "Design mobile app wireframes and user flows for parking discovery, navigation, slot reservation, and payment confirmation.",
+      "payload": {
+        "screens": [
+          "map_view",
+          "slot_detail",
+          "reservation_flow",
+          "payment_screen",
+          "booking_history"
+        ],
+        "tools": [
+          "Figma"
+        ],
+        "accessibility": "WCAG 2.1 AA"
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all primary user journeys end-to-end",
+        "Navigation flow validated with at least 3 usability test scenarios",
+        "Accessibility audit passed for color contrast and touch target sizes",
+        "Design system tokens defined (colors, typography, spacing)"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 3,
+      "task_type": "SECURITY",
+      "description": "Produce threat model, IEC 62443 zone/conduit diagram, and SBOM for the full smart parking system including IoT edge, cloud backend, and mobile app.",
+      "payload": {
+        "standard": "IEC 62443",
+        "artifacts": [
+          "threat_model",
+          "zone_conduit_diagram",
+          "SBOM",
+          "attack_surface_analysis"
+        ],
+        "scope": [
+          "sensor_firmware",
+          "gateway",
+          "cloud_api",
+          "mobile_app",
+          "payment_integration"
+        ]
+      },
+      "acceptance_criteria": [
+        "All IEC 62443 security levels (SL1\u2013SL2) assigned to each zone",
+        "STRIDE analysis completed for all data flows",
+        "SBOM lists all firmware and software dependencies with CVE status",
+        "Penetration test plan drafted covering network, API, and device attack vectors",
+        "Countermeasures documented for all HIGH and CRITICAL risks",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 4,
+      "task_type": "CONFIG",
+      "description": "Set up mono-repo structure, CI/CD skeleton, environment configs, and toolchain for firmware (ESP32/STM32), backend (FastAPI), mobile (React Native), and analytics (Python).",
+      "payload": {
+        "repo_structure": [
+          "firmware/",
+          "backend/",
+          "mobile/",
+          "analytics/",
+          "infra/",
+          "docs/"
+        ],
+        "ci_tool": "GitHub Actions",
+        "envs": [
+          "dev",
+          "staging",
+          "prod"
+        ],
+        "secret_management": "AWS Secrets Manager"
+      },
+      "acceptance_criteria": [
+        "Mono-repo bootstrapped with per-service workspace configs",
+        "GitHub Actions workflows scaffold present for all four service types",
+        "Environment variable templates (.env.example) committed for each service",
+        "Pre-commit hooks enforce linting and secret scanning",
+        "README documents local setup in under 10 commands"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 5,
+      "task_type": "FIRMWARE",
+      "description": "Implement occupancy sensor firmware for ultrasonic/IR/magnetic sensor node: HAL drivers, FreeRTOS tasks for sampling, local debounce logic, MQTT publish over WiFi/LoRa.",
+      "payload": {
+        "mcu": "ESP32",
+        "rtos": "FreeRTOS",
+        "sensors": [
+          "HC-SR04 ultrasonic",
+          "IR proximity",
+          "hall-effect magnetic"
+        ],
+        "comms": [
+          "MQTT over WiFi",
+          "LoRaWAN fallback"
+        ],
+        "sampling_rate_hz": 2,
+        "languages": [
+          "C",
+          "C++"
+        ]
+      },
+      "acceptance_criteria": [
+        "HAL drivers compile cleanly for ESP32 target with zero warnings",
+        "FreeRTOS task correctly debounces sensor state transitions (occupied/vacant) with configurable threshold",
+        "MQTT message published within 500ms of state change",
+        "Firmware enters deep sleep between sampling cycles reducing idle current to <50\u00b5A",
+        "OTA update mechanism implemented and verified",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "firmware_engineer"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Design and migrate the relational schema for parking lots, zones, slots, reservations, payments, users, and time-series occupancy events.",
+      "payload": {
+        "engine": "PostgreSQL 15",
+        "timeseries": "TimescaleDB extension for occupancy_events",
+        "tables": [
+          "parking_lots",
+          "zones",
+          "slots",
+          "users",
+          "reservations",
+          "payments",
+          "occupancy_events"
+        ],
+        "migration_tool": "Alembic"
+      },
+      "acceptance_criteria": [
+        "All tables created with proper primary keys, foreign keys, and indexes",
+        "TimescaleDB hypertable configured on occupancy_events with 1-day chunks",
+        "Alembic migration scripts run cleanly from empty database to final schema",
+        "ERD diagram committed to docs/",
+        "Seed data script populates at least one city with 5 parking lots and 200 slots"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 specification for all backend endpoints: slot status, reservation CRUD, payment webhooks, analytics queries, and IoT device ingestion.",
+      "payload": {
+        "spec_format": "OpenAPI 3.1",
+        "endpoint_groups": [
+          "devices",
+          "slots",
+          "reservations",
+          "payments",
+          "analytics",
+          "auth"
+        ],
+        "auth": "JWT Bearer + API key for devices"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates without errors against openapi-generator",
+        "All endpoints have request/response schemas with examples",
+        "Authentication schemes documented for both JWT (users) and API key (IoT devices)",
+        "Error response codes standardized (RFC 7807 Problem Details)",
+        "Spec reviewed against PRD requirements \u2014 100% feature coverage"
+      ],
+      "depends_on": [
+        1,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Implement FastAPI backend: IoT device ingestion endpoint, slot state engine, reservation management, user auth (JWT), and REST API per the OpenAPI spec.",
+      "payload": {
+        "framework": "FastAPI",
+        "auth": "JWT (python-jose) + bcrypt",
+        "orm": "SQLAlchemy 2.0 + asyncpg",
+        "message_broker": "Redis Pub/Sub for real-time slot events",
+        "key_modules": [
+          "device_ingestion",
+          "slot_engine",
+          "reservation_service",
+          "auth_service"
+        ]
+      },
+      "acceptance_criteria": [
+        "All OpenAPI endpoints implemented and return correct HTTP status codes",
+        "IoT device can POST occupancy event and slot state updates in database within 100ms",
+        "Reservation creation validates slot availability with optimistic locking (no double-bookings)",
+        "JWT auth middleware enforces role-based access (driver, operator, admin)",
+        "Redis Pub/Sub broadcasts slot state changes for real-time WebSocket consumers"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Integrate payment gateway (Stripe) for reservation pre-authorization, capture on entry, refund on cancellation, and webhook handling.",
+      "payload": {
+        "provider": "Stripe",
+        "flows": [
+          "pre_auth_on_reservation",
+          "capture_on_entry",
+          "refund_on_cancel",
+          "webhook_verification"
+        ],
+        "pci_scope": "SAQ A (redirect model)"
+      },
+      "acceptance_criteria": [
+        "Stripe PaymentIntent created and pre-authorized at reservation creation",
+        "Capture triggered automatically on validated entry event from sensor",
+        "Cancellation within grace period triggers full refund via Stripe API",
+        "Stripe webhook signature verified before processing any event",
+        "No raw card data passes through backend (PCI SAQ A compliant)"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Build IoT gateway service: MQTT broker (Mosquitto), device registry, TLS mutual authentication, and message routing to slot engine.",
+      "payload": {
+        "broker": "Mosquitto",
+        "auth": "x.509 mutual TLS per device",
+        "topics": [
+          "parking/{lot_id}/slot/{slot_id}/status",
+          "parking/{lot_id}/health"
+        ],
+        "rate_limiting": "100 msgs/device/minute"
+      },
+      "acceptance_criteria": [
+        "Mosquitto broker configured with TLS 1.2+ and client certificate auth",
+        "Device registry enforces certificate-bound device IDs \u2014 no anonymous connections",
+        "Message routing correctly maps MQTT topics to database slot_id updates",
+        "Rate limiter rejects excessive publishing and logs event",
+        "Gateway restarts cleanly and re-subscribes without message loss"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "DATA",
+      "description": "Build analytics data pipeline: ETL from occupancy_events into aggregated hourly/daily summaries, city-level dashboard dataset, and peak demand prediction features.",
+      "payload": {
+        "pipeline_tool": "Apache Airflow",
+        "storage": "TimescaleDB continuous aggregates + S3 Parquet for cold storage",
+        "metrics": [
+          "occupancy_rate",
+          "avg_dwell_time",
+          "revenue_per_slot",
+          "peak_hours",
+          "turnover_rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "Airflow DAG runs hourly aggregations without failures across 7-day backtest",
+        "City-level dashboard dataset refreshed every 15 minutes",
+        "Continuous aggregates in TimescaleDB answer time-range queries in <200ms",
+        "S3 export runs nightly and is queryable via Athena",
+        "Pipeline idempotent \u2014 re-runs produce identical results"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 12,
+      "task_type": "ML_MODEL",
+      "description": "Train occupancy prediction model (LSTM or Prophet) per slot/zone using historical time-series data, and expose predictions via /analytics/predict endpoint.",
+      "payload": {
+        "model_types": [
+          "Prophet (baseline)",
+          "LSTM (production)"
+        ],
+        "features": [
+          "hour_of_day",
+          "day_of_week",
+          "weather",
+          "local_events",
+          "historical_occupancy"
+        ],
+        "target": "occupancy_probability_next_30min",
+        "serving": "FastAPI endpoint backed by MLflow model registry"
+      },
+      "acceptance_criteria": [
+        "Prophet baseline achieves MAE <10% on held-out 30-day test set",
+        "LSTM model outperforms Prophet baseline by \u22655% MAE",
+        "Model registered in MLflow with version tracking and evaluation metrics",
+        "Prediction endpoint responds in <150ms at p95",
+        "Model retrained weekly via Airflow DAG using latest occupancy data"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 13,
+      "task_type": "FRONTEND",
+      "description": "Build React Native mobile app: interactive map with real-time slot availability, turn-by-turn guidance to selected slot, reservation booking flow, and payment screen.",
+      "payload": {
+        "framework": "React Native 0.74",
+        "maps": "Mapbox GL (real-time slot markers)",
+        "navigation": "React Navigation v6",
+        "state": "Zustand + React Query",
+        "payments": "Stripe React Native SDK"
+      },
+      "acceptance_criteria": [
+        "Map renders available/occupied/reserved slots with color coding updated via WebSocket",
+        "User can find, select, and reserve a slot in \u22644 taps from map view",
+        "Turn-by-turn navigation from current location to selected slot functional on iOS and Android",
+        "Payment flow completes via Stripe with success/failure feedback in <3s",
+        "App handles offline mode gracefully with cached last-known slot state"
+      ],
+      "depends_on": [
+        2,
+        8,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FRONTEND",
+      "description": "Build city operator web dashboard: real-time occupancy heatmap, revenue analytics charts, slot management CRUD, and alert configuration UI.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "charts": "Recharts / Apache ECharts",
+        "maps": "Mapbox GL",
+        "auth": "JWT-based login with role-based views"
+      },
+      "acceptance_criteria": [
+        "Heatmap updates occupancy per lot within 5s of sensor state change",
+        "Revenue dashboard shows daily/weekly/monthly breakdown with exportable CSV",
+        "Operators can enable/disable individual slots and override occupancy status",
+        "Alert thresholds configurable per lot (e.g., occupancy >90% triggers notification)",
+        "Dashboard is responsive down to 1280px width"
+      ],
+      "depends_on": [
+        11,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "INFRA",
+      "description": "Provision cloud infrastructure: ECS Fargate for backend + analytics, RDS PostgreSQL with TimescaleDB, ElastiCache Redis, S3, IoT Core, and Terraform IaC.",
+      "payload": {
+        "cloud": "AWS",
+        "iac": "Terraform",
+        "services": [
+          "ECS Fargate",
+          "RDS PostgreSQL",
+          "ElastiCache Redis",
+          "S3",
+          "AWS IoT Core",
+          "CloudFront",
+          "ALB"
+        ],
+        "environments": [
+          "staging",
+          "prod"
+        ],
+        "networking": "VPC with private subnets for DB and IoT broker"
+      },
+      "acceptance_criteria": [
+        "Terraform plan applies cleanly to staging without manual steps",
+        "All sensitive services (RDS, Redis, IoT broker) in private subnets with no public ingress",
+        "Auto-scaling policies configured for ECS tasks based on CPU and SQS queue depth",
+        "RDS multi-AZ enabled for production",
+        "Terraform state stored in S3 with DynamoDB locking"
+      ],
+      "depends_on": [
+        4,
+        10
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 16,
+      "task_type": "DEVOPS",
+      "description": "Build full CI/CD pipelines for firmware, backend, mobile, and analytics: lint, test, build, container push, and blue/green deployment to ECS.",
+      "payload": {
+        "tool": "GitHub Actions",
+        "stages": [
+          "lint",
+          "unit_test",
+          "build",
+          "integration_test",
+          "push_image",
+          "deploy_staging",
+          "smoke_test",
+          "promote_prod"
+        ],
+        "firmware_flash": "esptool.py in CI for integration test harness",
+        "mobile": "Fastlane for iOS/Android build and TestFlight/Play Internal track"
+      },
+      "acceptance_criteria": [
+        "All four pipelines (firmware, backend, mobile, analytics) pass end-to-end on main branch",
+        "Blue/green deployment to ECS with automatic rollback on failed health check",
+        "Firmware binary built, signed, and uploaded to S3 OTA bucket on tag push",
+        "Mobile build deployed to TestFlight and Play Internal Track on release branch",
+        "Pipeline run time <15 minutes for backend service"
+      ],
+      "depends_on": [
+        15
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 17,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Write firmware unit tests (Unity/CMock) and HIL test spec for occupancy sensor node: sensor driver accuracy, MQTT publish timing, sleep/wake cycles, and OTA update validation.",
+      "payload": {
+        "unit_framework": "Unity + CMock",
+        "hil_hardware": "ESP32-DevKit + HC-SR04 + logic analyzer",
+        "test_cases": [
+          "sensor_driver_accuracy",
+          "debounce_logic",
+          "mqtt_publish_timing",
+          "deep_sleep_current",
+          "ota_update_success",
+          "network_reconnect"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test coverage \u226580% of firmware source files excluding HAL stubs",
+        "HIL test measures sensor accuracy: \u226595% correct occupied/vacant classification against ground truth",
+        "MQTT publish latency measured <500ms from state change in 100 consecutive HIL runs",
+        "Deep sleep current measured <50\u00b5A with oscilloscope and logged",
+        "OTA update test installs new firmware over-the-air and verifies rollback on corrupt image"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "TESTS",
+      "description": "Write backend unit and integration tests for slot engine, reservation service, payment flows, and IoT ingestion using pytest and testcontainers.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio",
+        "containers": "testcontainers (PostgreSQL, Redis)",
+        "coverage_target": 85,
+        "mocks": "Stripe test mode, MQTT mock broker"
+      },
+      "acceptance_criteria": [
+        "Line coverage \u226585% across backend src/",
+        "Reservation double-booking test confirms optimistic lock raises conflict on concurrent requests",
+        "Payment webhook handler test covers success, failure, and signature-invalid scenarios",
+        "IoT ingestion test validates 1000 concurrent sensor messages processed without loss",
+        "All tests pass in CI within 5 minutes"
+      ],
+      "depends_on": [
+        8,
+        9,
+        10
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "SYSTEM_TEST",
+      "description": "Design and execute end-to-end system tests: driver books slot via mobile app, sensor confirms entry, payment captured, analytics updated, operator dashboard reflects change.",
+      "payload": {
+        "tool": "Playwright (web) + Detox (mobile)",
+        "scenarios": [
+          "happy_path_reservation",
+          "walk_in_detection",
+          "cancellation_refund",
+          "slot_unavailable_handling",
+          "analytics_refresh_after_event"
+        ],
+        "environment": "staging"
+      },
+      "acceptance_criteria": [
+        "Happy path E2E test passes: reservation \u2192 entry detection \u2192 payment capture in <30s wall time",
+        "Walk-in detection test: sensor triggers slot state change visible in app within 5s",
+        "Cancellation within grace period results in full Stripe refund confirmed via API",
+        "Analytics dashboard reflects new occupancy event within 15 minutes of sensor trigger",
+        "All 5 E2E scenarios pass 3 consecutive times in staging"
+      ],
+      "depends_on": [
+        13,
+        14,
+        17,
+        18
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 20,
+      "task_type": "COMPLIANCE",
+      "description": "Produce IEC 62443 compliance artifacts: security requirements traceability matrix, zone/conduit design documentation, security acceptance test report, and risk treatment register.",
+      "payload": {
+        "standard": "IEC 62443",
+        "artifacts": [
+          "security_requirements_traceability_matrix",
+          "zone_conduit_design_doc",
+          "security_acceptance_test_report",
+          "risk_treatment_register"
+        ],
+        "zones": [
+          "field_devices (SL1)",
+          "gateway (SL2)",
+          "cloud_backend (SL2)",
+          "operator_network (SL2)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Traceability matrix maps every IEC 62443-3-3 security requirement to implemented control",
+        "All HIGH risks in risk treatment register have accepted residual risk or active mitigation",
+        "Security acceptance test report covers authentication, encryption, device identity, and patch management",
+        "Zone/conduit diagram peer-reviewed and signed off by security lead",
+        "Document package reviewed against IEC 62443-2-1 CSMS requirements"
+      ],
+      "depends_on": [
+        3,
+        15,
+        19
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 21,
+      "task_type": "AGENTIC",
+      "description": "Integrate a Multi-Agent Coordinator pattern into the analytics backend: coordinator decomposes city parking queries, routes to specialist agents (occupancy analyst, revenue analyst, prediction agent), and synthesizes responses for operator dashboard.",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_agent": "analytics_coordinator",
+        "specialist_agents": [
+          "occupancy_analyst",
+          "revenue_analyst",
+          "prediction_agent"
+        ],
+        "interface": "POST /analytics/query (natural language or structured)",
+        "memory": "vector store of prior queries and insights per city"
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly routes occupancy queries to occupancy_analyst and revenue queries to revenue_analyst",
+        "Multi-agent response synthesized and returned to caller within 3s for pre-cached data",
+        "Vector store retrieves relevant prior analyses to enrich agent context",
+        "Each specialist agent's output includes confidence score and data source citation",
+        "Human-in-the-loop gate present for any query that triggers bulk data export or policy change"
+      ],
+      "depends_on": [
+        12,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy (GDPR/CCPA), and data processing agreements covering driver location data, payment data retention, and city data sharing.",
+      "payload": {
+        "jurisdictions": [
+          "EU (GDPR)",
+          "US (CCPA)"
+        ],
+        "data_types": [
+          "location",
+          "payment_tokens",
+          "reservation_history",
+          "occupancy_analytics"
+        ],
+        "retention_policy": "payment data 7 years, location data 90 days, anonymized analytics indefinite"
+      },
+      "acceptance_criteria": [
+        "Privacy Policy covers all data types collected with lawful basis stated for each",
+        "Data retention schedule documented and implemented in backend purge job",
+        "GDPR right-to-erasure API endpoint implemented and tested",
+        "DPA template ready for city government contracts",
+        "Legal review sign-off recorded in audit trail"
+      ],
+      "depends_on": [
+        1,
+        3
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 23,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: sensor node replacement procedure, backend incident response, payment processor outage playbook, and SLA definitions for city contracts.",
+      "payload": {
+        "runbooks": [
+          "sensor_node_replacement",
+          "backend_incident_response",
+          "payment_outage_playbook",
+          "database_failover",
+          "ota_firmware_rollback"
+        ],
+        "sla_targets": {
+          "api_availability": "99.9%",
+          "sensor_data_freshness": "30s",
+          "payment_success_rate": "99.5%"
+        }
+      },
+      "acceptance_criteria": [
+        "Sensor replacement runbook allows field technician to swap and re-provision node in <30 minutes",
+        "Incident response runbook defines severity levels P0\u2013P3 with escalation paths and response time SLAs",
+        "Payment outage playbook includes graceful degradation mode (allow exit without capture, reconcile later)",
+        "SLA definitions reviewed and approved by operations manager",
+        "All runbooks accessible in ops wiki with last-tested dates"
+      ],
+      "depends_on": [
+        16,
+        19
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 24,
+      "task_type": "DOCS",
+      "description": "Produce technical documentation: API reference (auto-generated from OpenAPI), firmware developer guide, deployment architecture diagram, and onboarding guide for city operators.",
+      "payload": {
+        "outputs": [
+          "api_reference (Redoc)",
+          "firmware_developer_guide",
+          "architecture_diagram (C4 model)",
+          "operator_onboarding_guide",
+          "SDK_quickstart"
+        ],
+        "format": "Markdown + MkDocs site"
+      },
+      "acceptance_criteria": [
+        "API reference generated from OpenAPI spec and deployed to docs site",
+        "Firmware developer guide covers toolchain setup, flash procedure, and debug via JTAG",
+        "C4 context and container diagrams committed and reviewed for accuracy",
+        "Operator onboarding guide tested with a non-technical user in \u226430 minutes",
+        "MkDocs site builds and deploys via CI without errors"
+      ],
+      "depends_on": [
+        20,
+        22
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 24,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "CRITICAL \u2014 Mosquitto (Step 10) vs AWS IoT Core (Step 15) architectural conflict: the plan simultaneously builds a self-hosted Mosquitto broker AND provisions AWS IoT Core. These are mutually exclusive IoT transport choices. Running both in production creates duplicate device registries, split certificate authorities, and undefined routing logic. Pick one.",
+            "CRITICAL \u2014 TimescaleDB on AWS RDS is not supported: AWS RDS PostgreSQL does not offer TimescaleDB as a managed extension. TimescaleDB on AWS requires either self-managed EC2, Timescale Cloud, or Aurora PostgreSQL with custom extensions. Steps 6, 8, 11, and 15 all assume this works natively \u2014 it does not. The Terraform plan in Step 15 will not produce a working TimescaleDB instance.",
+            "CRITICAL \u2014 LoRaWAN fallback (Step 5) has no supporting infrastructure: the firmware specifies LoRaWAN as a fallback comms path, but nowhere in the 24 steps is LoRa gateway hardware provisioned, cloud network server configured (ChirpStack, TTN, or AWS IoT Core for LoRaWAN), or frequency band/regulatory approval addressed. This feature will not work.",
+            "CRITICAL \u2014 Sensor-triggered payment capture is a liability without error handling: Step 9 acceptance criterion states 'Capture triggered automatically on validated entry event from sensor.' A sensor false positive or network race condition triggers an unauthorized charge. No dispute resolution flow, no sensor confidence threshold for payment decisions, no fallback for failed captures during sensor outage.",
+            "HIGH \u2014 Device certificate provisioning at scale is entirely missing: Step 10 requires x.509 mTLS per-device certificates, but no step covers manufacturing-time certificate injection, a Certificate Authority setup, a device provisioning service, or bulk enrollment tooling. Provisioning 500+ ESP32 nodes in the field manually is not a deployment \u2014 it is a project failure.",
+            "HIGH \u2014 ML cold-start problem is unaddressed: Step 12 trains an LSTM on 'historical time-series data' but a new city deployment has zero historical occupancy data. Prophet requires weeks of data minimum; LSTM requires months. The acceptance criterion 'MAE <10% on held-out 30-day test set' cannot be validated at launch. No synthetic data strategy, transfer learning approach, or fallback-to-rule-based prediction is defined.",
+            "HIGH \u2014 Mosquitto broker in private subnets contradicts field device connectivity: Step 15 specifies 'private subnets for IoT broker' with 'no public ingress,' but ESP32 devices are deployed in parking lots and need internet-accessible MQTT endpoints. A private-subnet-only broker is unreachable from the field without a VPN or bastion \u2014 neither of which is in the plan.",
+            "HIGH \u2014 Security threat model (Step 3) precedes the attack surface being designed: Step 3 runs before Steps 6 (database), 7 (API), 8 (backend), 10 (IoT gateway), and 15 (infra). The STRIDE analysis and zone/conduit diagram will be based on assumptions, not implemented architecture. Step 20 (compliance artifacts) depends on Step 3 outputs that are structurally incomplete when produced.",
+            "HIGH \u2014 API design (Step 7) does not depend on database schema (Step 6): Steps 6 and 7 run in parallel. API response shapes and database column names frequently diverge when designed independently, requiring expensive reconciliation during Step 8 implementation.",
+            "MEDIUM \u2014 Firmware CI with physical hardware flashing is unresolved: Step 16 specifies 'esptool.py in CI for integration test harness' but GitHub Actions hosted runners have no USB/serial ports. Self-hosted runners with attached hardware are required, adding infra overhead and flakiness that can block the entire firmware pipeline.",
+            "MEDIUM \u2014 Turn-by-turn navigation inside parking structures is GPS-dead: Step 13 acceptance criterion requires 'turn-by-turn navigation from current location to selected slot functional on iOS and Android.' Multi-story or underground garages have no GPS signal. No indoor positioning technology (BLE beacons, WiFi RTT, UWB) is specified anywhere.",
+            "MEDIUM \u2014 Weather feature for ML model has no data source: Step 12 lists 'weather' as an input feature but no weather API integration, data ingestion pipeline, or historical weather backfill is defined in any step.",
+            "MEDIUM \u2014 GDPR right-to-erasure across immutable storage is underspecified: Step 22 requires a right-to-erasure API endpoint, but driver data exists across TimescaleDB hypertables (append-only chunks), S3 Parquet files (immutable), vector store embeddings, and potentially Stripe. Deletion across all these systems within GDPR's 30-day window requires a coordinated erasure pipeline that is not scoped.",
+            "MEDIUM \u2014 iOS WebSocket restrictions will break real-time slot updates: Step 13 assumes persistent WebSocket connections for slot availability updates on mobile. iOS aggressively suspends background apps and terminates WebSocket connections. No push notification fallback (APNs/FCM) or reconnection strategy is specified.",
+            "MEDIUM \u2014 Overstay and grace period logic is absent from payment design: Step 9 handles pre-auth, capture on entry, and refund on cancellation \u2014 but defines no behavior for overstay (vehicle stays past reservation end), partial refunds for early exit, or dynamic pricing. City parking contracts typically require these.",
+            "LOW \u2014 Step 3 applies IEC 62443 to a parking system: IEC 62443 is an industrial control system standard designed for SCADA/DCS. Smart parking is not an ICS. While defensible, IEC 62443 compliance adds significant overhead versus OWASP IoT Top 10 + ISO 27001, which are the actual standards city procurement will reference. No rationale for this choice is given."
+          ],
+          "suggestions": [
+            "Resolve IoT transport architecture first (before any other step): choose AWS IoT Core (managed, scales, integrates with ECS natively) OR self-hosted Mosquitto (more control, more ops burden). Remove the other from the plan entirely. AWS IoT Core is the correct answer for a city-scale deployment.",
+            "Replace RDS TimescaleDB with Timescale Cloud or self-managed TimescaleDB on EC2 in the Terraform plan. Alternatively, use RDS PostgreSQL with native partitioning and evaluate whether TimescaleDB's performance guarantees are actually needed at the expected data volumes.",
+            "Add a Step 0 or Step 4.5: Hardware Architecture Decision Record covering sensor type selection (ultrasonic vs magnetic \u2014 fundamentally different deployment models), LoRa vs WiFi-only decision, PCB/enclosure specs, IP rating, and operating temperature range. This gates Steps 5 and 17.",
+            "Add device provisioning as a distinct step (dependency: Step 3 for CA setup, Step 10 for broker): define the Certificate Authority, device enrollment service, manufacturing provisioning tooling, and field replacement procedure. This unblocks actual deployment.",
+            "Address ML cold-start explicitly: ship Prophet with synthetic seasonality priors derived from city-average parking patterns as Day 1 behavior. Gate LSTM training on 90 days of real data. Define the model warm-up period in the PRD acceptance criteria.",
+            "Add a weather data ingestion step between Steps 11 and 12: specify the weather API provider (OpenWeatherMap, Tomorrow.io), ingestion cadence, historical backfill for training, and schema for joining to occupancy_events.",
+            "Move Step 7 (API design) to depend on Step 6 (database), or explicitly run a reconciliation task after both complete before Step 8 begins.",
+            "For Mosquitto CI testing in Step 16: use a software MQTT broker (Eclipse Mosquitto Docker container) for unit/integration tests and document that HIL tests require self-hosted runners with attached hardware \u2014 separate these into distinct CI job types.",
+            "Add indoor navigation strategy to Step 2 (UX) scope: either explicitly descope to outdoor-only navigation with a clear 'walk to entrance' CTA, or specify BLE beacon infrastructure as a dependency and add a beacon deployment step.",
+            "Define sensor confidence threshold policy for payment triggering in Step 9: a single sensor reading should not trigger a financial transaction. Require N consecutive occupied readings over T seconds before capture, with a manual override flow for disputes."
+          ],
+          "missing": [
+            "Device certificate authority and manufacturing-time provisioning workflow (required before any mTLS device auth can work)",
+            "LoRaWAN network server and gateway hardware provisioning (required if LoRaWAN fallback is kept in scope)",
+            "Weather API integration and historical weather data backfill (required for ML feature pipeline)",
+            "Application observability stack: no CloudWatch alarms, no distributed tracing (X-Ray/Jaeger), no error alerting (PagerDuty/OpsGenie) \u2014 the ops runbooks in Step 23 reference incident response but there is nothing to generate alerts",
+            "Overstay detection and dynamic pricing logic (common city contract requirement, affects payment and reservation services)",
+            "Sensor hardware validation: environmental testing (IP67 rating, -20\u00b0C to 60\u00b0C operation), false positive/negative rate baseline measurement against real vehicles before firmware acceptance criteria are meaningful",
+            "Indoor navigation strategy or explicit scope exclusion for sub-level parking structures",
+            "Data residency and sovereignty requirements for city government contracts (many cities require data to remain within national borders \u2014 affects AWS region selection and S3 export in Step 11)",
+            "Stripe payout and revenue split mechanism if the platform takes a fee from parking lot owners (likely required for commercial viability \u2014 no mention of platform economics in payment design)",
+            "API rate limiting and abuse prevention for the public-facing reservation API (no WAF, no rate limiter defined beyond IoT device MQTT limits)"
+          ],
+          "security_risks": [
+            "mTLS certificate revocation is unspecified: if a deployed sensor node is physically stolen or compromised, there is no documented CRL or OCSP responder to revoke its certificate. A stolen node retains valid authentication credentials indefinitely.",
+            "JWT secret rotation strategy absent: Step 8 uses python-jose for JWT but no key rotation procedure, token expiry policy, or refresh token flow is defined. Leaked JWT secrets require a service restart to invalidate \u2014 unacceptable for a city-scale deployment.",
+            "MQTT topic structure exposes lot and slot IDs to all authenticated devices: 'parking/{lot_id}/slot/{slot_id}/status' means any authenticated sensor can subscribe to any other sensor's topic. No per-device topic ACL is defined, enabling a compromised node to eavesdrop on the entire deployment.",
+            "Stripe webhook endpoint in Step 9 is verified by signature \u2014 correct \u2014 but the endpoint must be idempotent. Stripe will retry failed webhooks. If the capture logic is not idempotent, a transient failure causes double-captures. The acceptance criteria do not test idempotency.",
+            "S3 Parquet exports in Step 11 contain raw occupancy and potentially user-attributable data. No mention of S3 bucket encryption at rest, access logging, or pre-signed URL expiry for Athena access. Cold storage is frequently the weakest link in data breach scenarios.",
+            "OTA firmware update in Step 5 verifies the update succeeds but the plan does not specify the signing key custody model. Who holds the firmware signing key? What is the compromise procedure? Unsigned or weakly-signed OTA is the most common IoT supply chain attack vector.",
+            "Multi-agent coordinator in Step 21 accepts 'natural language or structured' queries against the analytics backend. Natural language input to a system with database access and bulk export capabilities is an injection risk. No input sanitization, query scope limiting, or output filtering is defined for the LLM-mediated path."
+          ],
+          "summary": "This is an architecturally ambitious 24-step plan with genuinely good coverage of compliance, testing, and the full stack \u2014 but it contains at least two critical infrastructure contradictions that will cause the build to fail before reaching staging: the Mosquitto/AWS IoT Core dual-broker conflict and the unsupported assumption that TimescaleDB runs on AWS RDS. Beyond these blockers, the plan has no device provisioning strategy (meaning sensors cannot authenticate in production), no LoRaWAN network infrastructure despite specifying it as a firmware feature, and no solution to the ML cold-start problem at new city deployments. The security threat model is produced too early to be accurate, and IoT devices cannot reach a private-subnet-only MQTT broker from parking lots. With the critical infrastructure conflicts resolved and the missing provisioning/LoRa/ML-cold-start gaps addressed, this plan has the right bones \u2014 the dependency graph is mostly sound, the compliance artifacts are appropriately scoped, and the testing strategy is realistic. As written, a team that executes this plan verbatim will hit a wall in the firmware integration sprint and spend weeks in unplanned infrastructure rework. Score: 54 \u2014 fundamental rework on the IoT transport architecture, database hosting, and device provisioning is required before this is executable.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "CRITICAL \u2014 Mosquitto (Step 10) vs AWS IoT Core (Step 15) architectural conflict: the plan simultaneously builds a self-hosted Mosquitto broker AND provisions AWS IoT Core. These are mutually exclusive IoT transport choices. Running both in production creates duplicate device registries, split certificate authorities, and undefined routing logic. Pick one.",
+              "CRITICAL \u2014 TimescaleDB on AWS RDS is not supported: AWS RDS PostgreSQL does not offer TimescaleDB as a managed extension. TimescaleDB on AWS requires either self-managed EC2, Timescale Cloud, or Aurora PostgreSQL with custom extensions. Steps 6, 8, 11, and 15 all assume this works natively \u2014 it does not. The Terraform plan in Step 15 will not produce a working TimescaleDB instance.",
+              "CRITICAL \u2014 LoRaWAN fallback (Step 5) has no supporting infrastructure: the firmware specifies LoRaWAN as a fallback comms path, but nowhere in the 24 steps is LoRa gateway hardware provisioned, cloud network server configured (ChirpStack, TTN, or AWS IoT Core for LoRaWAN), or frequency band/regulatory approval addressed. This feature will not work.",
+              "CRITICAL \u2014 Sensor-triggered payment capture is a liability without error handling: Step 9 acceptance criterion states 'Capture triggered automatically on validated entry event from sensor.' A sensor false positive or network race condition triggers an unauthorized charge. No dispute resolution flow, no sensor confidence threshold for payment decisions, no fallback for failed captures during sensor outage.",
+              "HIGH \u2014 Device certificate provisioning at scale is entirely missing: Step 10 requires x.509 mTLS per-device certificates, but no step covers manufacturing-time certificate injection, a Certificate Authority setup, a device provisioning service, or bulk enrollment tooling. Provisioning 500+ ESP32 nodes in the field manually is not a deployment \u2014 it is a project failure.",
+              "HIGH \u2014 ML cold-start problem is unaddressed: Step 12 trains an LSTM on 'historical time-series data' but a new city deployment has zero historical occupancy data. Prophet requires weeks of data minimum; LSTM requires months. The acceptance criterion 'MAE <10% on held-out 30-day test set' cannot be validated at launch. No synthetic data strategy, transfer learning approach, or fallback-to-rule-based prediction is defined.",
+              "HIGH \u2014 Mosquitto broker in private subnets contradicts field device connectivity: Step 15 specifies 'private subnets for IoT broker' with 'no public ingress,' but ESP32 devices are deployed in parking lots and need internet-accessible MQTT endpoints. A private-subnet-only broker is unreachable from the field without a VPN or bastion \u2014 neither of which is in the plan.",
+              "HIGH \u2014 Security threat model (Step 3) precedes the attack surface being designed: Step 3 runs before Steps 6 (database), 7 (API), 8 (backend), 10 (IoT gateway), and 15 (infra). The STRIDE analysis and zone/conduit diagram will be based on assumptions, not implemented architecture. Step 20 (compliance artifacts) depends on Step 3 outputs that are structurally incomplete when produced.",
+              "HIGH \u2014 API design (Step 7) does not depend on database schema (Step 6): Steps 6 and 7 run in parallel. API response shapes and database column names frequently diverge when designed independently, requiring expensive reconciliation during Step 8 implementation.",
+              "MEDIUM \u2014 Firmware CI with physical hardware flashing is unresolved: Step 16 specifies 'esptool.py in CI for integration test harness' but GitHub Actions hosted runners have no USB/serial ports. Self-hosted runners with attached hardware are required, adding infra overhead and flakiness that can block the entire firmware pipeline.",
+              "MEDIUM \u2014 Turn-by-turn navigation inside parking structures is GPS-dead: Step 13 acceptance criterion requires 'turn-by-turn navigation from current location to selected slot functional on iOS and Android.' Multi-story or underground garages have no GPS signal. No indoor positioning technology (BLE beacons, WiFi RTT, UWB) is specified anywhere.",
+              "MEDIUM \u2014 Weather feature for ML model has no data source: Step 12 lists 'weather' as an input feature but no weather API integration, data ingestion pipeline, or historical weather backfill is defined in any step.",
+              "MEDIUM \u2014 GDPR right-to-erasure across immutable storage is underspecified: Step 22 requires a right-to-erasure API endpoint, but driver data exists across TimescaleDB hypertables (append-only chunks), S3 Parquet files (immutable), vector store embeddings, and potentially Stripe. Deletion across all these systems within GDPR's 30-day window requires a coordinated erasure pipeline that is not scoped.",
+              "MEDIUM \u2014 iOS WebSocket restrictions will break real-time slot updates: Step 13 assumes persistent WebSocket connections for slot availability updates on mobile. iOS aggressively suspends background apps and terminates WebSocket connections. No push notification fallback (APNs/FCM) or reconnection strategy is specified.",
+              "MEDIUM \u2014 Overstay and grace period logic is absent from payment design: Step 9 handles pre-auth, capture on entry, and refund on cancellation \u2014 but defines no behavior for overstay (vehicle stays past reservation end), partial refunds for early exit, or dynamic pricing. City parking contracts typically require these.",
+              "LOW \u2014 Step 3 applies IEC 62443 to a parking system: IEC 62443 is an industrial control system standard designed for SCADA/DCS. Smart parking is not an ICS. While defensible, IEC 62443 compliance adds significant overhead versus OWASP IoT Top 10 + ISO 27001, which are the actual standards city procurement will reference. No rationale for this choice is given."
+            ],
+            "suggestions": [
+              "Resolve IoT transport architecture first (before any other step): choose AWS IoT Core (managed, scales, integrates with ECS natively) OR self-hosted Mosquitto (more control, more ops burden). Remove the other from the plan entirely. AWS IoT Core is the correct answer for a city-scale deployment.",
+              "Replace RDS TimescaleDB with Timescale Cloud or self-managed TimescaleDB on EC2 in the Terraform plan. Alternatively, use RDS PostgreSQL with native partitioning and evaluate whether TimescaleDB's performance guarantees are actually needed at the expected data volumes.",
+              "Add a Step 0 or Step 4.5: Hardware Architecture Decision Record covering sensor type selection (ultrasonic vs magnetic \u2014 fundamentally different deployment models), LoRa vs WiFi-only decision, PCB/enclosure specs, IP rating, and operating temperature range. This gates Steps 5 and 17.",
+              "Add device provisioning as a distinct step (dependency: Step 3 for CA setup, Step 10 for broker): define the Certificate Authority, device enrollment service, manufacturing provisioning tooling, and field replacement procedure. This unblocks actual deployment.",
+              "Address ML cold-start explicitly: ship Prophet with synthetic seasonality priors derived from city-average parking patterns as Day 1 behavior. Gate LSTM training on 90 days of real data. Define the model warm-up period in the PRD acceptance criteria.",
+              "Add a weather data ingestion step between Steps 11 and 12: specify the weather API provider (OpenWeatherMap, Tomorrow.io), ingestion cadence, historical backfill for training, and schema for joining to occupancy_events.",
+              "Move Step 7 (API design) to depend on Step 6 (database), or explicitly run a reconciliation task after both complete before Step 8 begins.",
+              "For Mosquitto CI testing in Step 16: use a software MQTT broker (Eclipse Mosquitto Docker container) for unit/integration tests and document that HIL tests require self-hosted runners with attached hardware \u2014 separate these into distinct CI job types.",
+              "Add indoor navigation strategy to Step 2 (UX) scope: either explicitly descope to outdoor-only navigation with a clear 'walk to entrance' CTA, or specify BLE beacon infrastructure as a dependency and add a beacon deployment step.",
+              "Define sensor confidence threshold policy for payment triggering in Step 9: a single sensor reading should not trigger a financial transaction. Require N consecutive occupied readings over T seconds before capture, with a manual override flow for disputes."
+            ],
+            "missing": [
+              "Device certificate authority and manufacturing-time provisioning workflow (required before any mTLS device auth can work)",
+              "LoRaWAN network server and gateway hardware provisioning (required if LoRaWAN fallback is kept in scope)",
+              "Weather API integration and historical weather data backfill (required for ML feature pipeline)",
+              "Application observability stack: no CloudWatch alarms, no distributed tracing (X-Ray/Jaeger), no error alerting (PagerDuty/OpsGenie) \u2014 the ops runbooks in Step 23 reference incident response but there is nothing to generate alerts",
+              "Overstay detection and dynamic pricing logic (common city contract requirement, affects payment and reservation services)",
+              "Sensor hardware validation: environmental testing (IP67 rating, -20\u00b0C to 60\u00b0C operation), false positive/negative rate baseline measurement against real vehicles before firmware acceptance criteria are meaningful",
+              "Indoor navigation strategy or explicit scope exclusion for sub-level parking structures",
+              "Data residency and sovereignty requirements for city government contracts (many cities require data to remain within national borders \u2014 affects AWS region selection and S3 export in Step 11)",
+              "Stripe payout and revenue split mechanism if the platform takes a fee from parking lot owners (likely required for commercial viability \u2014 no mention of platform economics in payment design)",
+              "API rate limiting and abuse prevention for the public-facing reservation API (no WAF, no rate limiter defined beyond IoT device MQTT limits)"
+            ],
+            "security_risks": [
+              "mTLS certificate revocation is unspecified: if a deployed sensor node is physically stolen or compromised, there is no documented CRL or OCSP responder to revoke its certificate. A stolen node retains valid authentication credentials indefinitely.",
+              "JWT secret rotation strategy absent: Step 8 uses python-jose for JWT but no key rotation procedure, token expiry policy, or refresh token flow is defined. Leaked JWT secrets require a service restart to invalidate \u2014 unacceptable for a city-scale deployment.",
+              "MQTT topic structure exposes lot and slot IDs to all authenticated devices: 'parking/{lot_id}/slot/{slot_id}/status' means any authenticated sensor can subscribe to any other sensor's topic. No per-device topic ACL is defined, enabling a compromised node to eavesdrop on the entire deployment.",
+              "Stripe webhook endpoint in Step 9 is verified by signature \u2014 correct \u2014 but the endpoint must be idempotent. Stripe will retry failed webhooks. If the capture logic is not idempotent, a transient failure causes double-captures. The acceptance criteria do not test idempotency.",
+              "S3 Parquet exports in Step 11 contain raw occupancy and potentially user-attributable data. No mention of S3 bucket encryption at rest, access logging, or pre-signed URL expiry for Athena access. Cold storage is frequently the weakest link in data breach scenarios.",
+              "OTA firmware update in Step 5 verifies the update succeeds but the plan does not specify the signing key custody model. Who holds the firmware signing key? What is the compromise procedure? Unsigned or weakly-signed OTA is the most common IoT supply chain attack vector.",
+              "Multi-agent coordinator in Step 21 accepts 'natural language or structured' queries against the analytics backend. Natural language input to a system with database access and bulk export capabilities is an injection risk. No input sanitization, query scope limiting, or output filtering is defined for the LLM-mediated path."
+            ],
+            "summary": "This is an architecturally ambitious 24-step plan with genuinely good coverage of compliance, testing, and the full stack \u2014 but it contains at least two critical infrastructure contradictions that will cause the build to fail before reaching staging: the Mosquitto/AWS IoT Core dual-broker conflict and the unsupported assumption that TimescaleDB runs on AWS RDS. Beyond these blockers, the plan has no device provisioning strategy (meaning sensors cannot authenticate in production), no LoRaWAN network infrastructure despite specifying it as a firmware feature, and no solution to the ML cold-start problem at new city deployments. The security threat model is produced too early to be accurate, and IoT devices cannot reach a private-subnet-only MQTT broker from parking lots. With the critical infrastructure conflicts resolved and the missing provisioning/LoRa/ML-cold-start gaps addressed, this plan has the right bones \u2014 the dependency graph is mostly sound, the compliance artifacts are appropriately scoped, and the testing strategy is realistic. As written, a team that executes this plan verbatim will hit a wall in the firmware integration sprint and spend weeks in unplanned infrastructure rework. Score: 54 \u2014 fundamental rework on the IoT transport architecture, database hosting, and device provisioning is required before this is executable.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T08:18:33.959333+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 110.21,
+    "critic_plan": 121.1
+  }
+}

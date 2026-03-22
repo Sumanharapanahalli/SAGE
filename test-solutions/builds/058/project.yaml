@@ -1,0 +1,59 @@
+project_name: cold_chain_monitor
+display_name: Cold Chain Monitor
+version: 1.0.0
+domain: iot
+description: Cold chain monitoring for pharmaceuticals with temperature/humidity sensors,
+  GPS tracking, excursion alerting, audit trail, and GDP compliance.
+detected_domains: []
+compliance_standards:
+- GDP
+- WHO Technical Report
+- 21 CFR Part 211
+- IEC 62443
+task_types:
+- AGENTIC
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- PRODUCT_MGMT
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+agent_roles:
+- developer
+- devops_engineer
+- firmware_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

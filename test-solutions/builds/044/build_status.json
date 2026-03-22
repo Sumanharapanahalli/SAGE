@@ -1,0 +1,1112 @@
+{
+  "run_id": "a3578d48-259a-48d7-af81-73d9f23bc020",
+  "solution_name": "dropshipping_automation",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T05:51:59.314526+00:00",
+  "updated_at": "2026-03-22T05:56:41.246997+00:00",
+  "product_description": "Dropshipping automation platform with AliExpress/1688 product import, automated order forwarding, tracking sync, margin calculator, and multi-store management.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the dropshipping automation market: competitor platforms (AutoDS, DSers, Zendrop), AliExpress/1688 API ecosystem, target merchant personas, pricing benchmarks, and go-to-market positioning for dropshipping_automation.",
+      "payload": {
+        "competitors": [
+          "AutoDS",
+          "DSers",
+          "Zendrop",
+          "Spocket",
+          "Dropified"
+        ],
+        "sources": [
+          "AliExpress affiliate program docs",
+          "Shopify app store reviews",
+          "1688 open platform docs"
+        ],
+        "deliverables": [
+          "competitive_matrix.md",
+          "persona_profiles.md",
+          "gtm_strategy.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive matrix covers \u22655 platforms with feature/pricing comparison",
+        "At least 3 distinct merchant personas defined with jobs-to-be-done",
+        "GTM strategy includes channel prioritization and 90-day launch plan",
+        "AliExpress and 1688 API capability gaps documented"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements: product import workflows, order forwarding rules, tracking sync logic, margin calculation formula, and multi-store federation model. Produce user stories and process flow diagrams.",
+      "payload": {
+        "domains": [
+          "product_import",
+          "order_forwarding",
+          "tracking_sync",
+          "margin_calculator",
+          "multi_store"
+        ],
+        "deliverables": [
+          "business_requirements.md",
+          "user_stories.md",
+          "process_flows/"
+        ]
+      },
+      "acceptance_criteria": [
+        "User stories cover all 5 core domains with acceptance criteria per story",
+        "Process flows include happy path and error/exception paths",
+        "Multi-store model defines isolation boundaries and shared-resource rules",
+        "Margin calculator formula validated against real AliExpress pricing examples"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "FINANCIAL",
+      "description": "Build financial model: SaaS pricing tiers (per-store, per-order, or hybrid), unit economics (CAC, LTV, gross margin), revenue projections for 12/24/36 months, and cost breakdown for AliExpress/1688 API usage fees.",
+      "payload": {
+        "pricing_models": [
+          "per_store_subscription",
+          "per_order_fee",
+          "hybrid_tiered"
+        ],
+        "cost_inputs": [
+          "api_call_costs",
+          "hosting",
+          "support",
+          "payment_processing"
+        ],
+        "deliverables": [
+          "pricing_strategy.md",
+          "unit_economics_model.xlsx",
+          "revenue_projection.xlsx"
+        ]
+      },
+      "acceptance_criteria": [
+        "At least 3 pricing tiers modeled with margin analysis per tier",
+        "Break-even analysis shows month and required customer count",
+        "AliExpress/1688 API cost per 1000 orders quantified",
+        "PCI DSS compliance cost factored into financial model"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 4,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, AliExpress/1688 reseller compliance terms, GDPR/CCPA data handling clauses, and merchant agreement for multi-store usage. Review IP implications of scraping vs. official API usage.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "merchant_agreement.md",
+          "data_processing_agreement.md"
+        ],
+        "standards": [
+          "GDPR",
+          "CCPA",
+          "AliExpress_API_ToS",
+          "1688_platform_rules"
+        ]
+      },
+      "acceptance_criteria": [
+        "Terms of Service covers liability limitations for order forwarding failures",
+        "Privacy Policy is GDPR and CCPA compliant with explicit data retention periods",
+        "Merchant agreement defines SLA obligations and acceptable use policy",
+        "IP review concludes whether 1688 product data usage requires licensing",
+        "Return/refund policy drafted",
+        "Consumer protection compliance checked"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 5,
+      "task_type": "SECURITY",
+      "description": "Produce threat model for dropshipping_automation: API key storage for merchant stores (Shopify/WooCommerce tokens), AliExpress/1688 credentials vault, payment data flow (PCI DSS scope), order data isolation between tenants, and OWASP Top 10 review plan.",
+      "payload": {
+        "threat_model_scope": [
+          "api_key_vault",
+          "payment_flow",
+          "multi_tenant_isolation",
+          "webhook_receivers",
+          "order_data_transit"
+        ],
+        "standards": [
+          "PCI_DSS_v4",
+          "OWASP_Top10"
+        ],
+        "deliverables": [
+          "threat_model.md",
+          "security_controls.md",
+          "pentest_plan.md",
+          "sbom.json"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model completed for all 5 scoped areas",
+        "PCI DSS scope defined \u2014 confirm whether platform is SAQ-A or SAQ-D",
+        "API key vault design specifies encryption-at-rest algorithm and rotation policy",
+        "Multi-tenant isolation controls prevent cross-store data leakage",
+        "SBOM generated for all planned third-party dependencies",
+        "Payment flow PCI compliant",
+        "Fraud detection rules defined"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "critic"
+    },
+    {
+      "step": 6,
+      "task_type": "COMPLIANCE",
+      "description": "Produce PCI DSS compliance artifacts: data flow diagram showing cardholder data boundaries, control mapping to PCI DSS v4 requirements, and V&V protocol for payment tokenization. Confirm platform qualifies for SAQ-A by offloading payment processing to Stripe/PayPal.",
+      "payload": {
+        "standard": "PCI_DSS_v4",
+        "deliverables": [
+          "pci_data_flow_diagram.pdf",
+          "pci_control_mapping.xlsx",
+          "vv_protocol_payment.md"
+        ],
+        "payment_processors": [
+          "Stripe",
+          "PayPal"
+        ]
+      },
+      "acceptance_criteria": [
+        "Data flow diagram shows no cardholder data stored on platform servers",
+        "All applicable PCI DSS v4 requirements mapped to implemented or compensating controls",
+        "SAQ-A qualification confirmed in writing or alternative SAQ type justified",
+        "V&V protocol covers tokenization, encryption-in-transit, and access control tests"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 7,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research with dropshipping merchants and produce wireframes for: onboarding flow, product import wizard (AliExpress/1688 URL \u2192 store listing), order management dashboard, tracking sync view, margin calculator UI, and multi-store switcher.",
+      "payload": {
+        "research_methods": [
+          "user_interviews",
+          "competitive_UX_audit"
+        ],
+        "screens": [
+          "onboarding_flow",
+          "product_import_wizard",
+          "product_catalog",
+          "order_dashboard",
+          "tracking_sync_view",
+          "margin_calculator",
+          "multi_store_manager",
+          "settings_and_integrations"
+        ],
+        "deliverables": [
+          "wireframes/",
+          "design_system.md",
+          "accessibility_audit.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all 8 screen areas at low-fidelity",
+        "Product import wizard handles both URL paste and bulk CSV import flows",
+        "Margin calculator wireframe shows real-time cost breakdown (product cost + shipping + platform fees + desired margin = sell price)",
+        "Multi-store switcher supports \u22653 stores without UI degradation",
+        "Accessibility audit confirms WCAG 2.1 AA targets per screen",
+        "Design system defines color tokens, typography, and component library selection"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 8,
+      "task_type": "DATABASE",
+      "description": "Design PostgreSQL schema for dropshipping_automation: tenants (multi-store), stores, products (with AliExpress/1688 source metadata), orders, order_line_items, tracking_events, margin_rules, and api_credentials (encrypted). Write migrations using Alembic.",
+      "payload": {
+        "engine": "PostgreSQL 16",
+        "orm": "SQLAlchemy 2.x + Alembic",
+        "tables": [
+          "tenants",
+          "stores",
+          "products",
+          "product_variants",
+          "orders",
+          "order_line_items",
+          "tracking_events",
+          "margin_rules",
+          "api_credentials",
+          "audit_log"
+        ],
+        "encryption": "pgcrypto for api_credentials column-level encryption"
+      },
+      "acceptance_criteria": [
+        "All tables have created_at, updated_at, and soft-delete (deleted_at) columns",
+        "api_credentials encrypted at column level using pgcrypto \u2014 plaintext never stored",
+        "Multi-tenant isolation enforced by tenant_id foreign key on every table",
+        "Alembic migrations are reversible (down() implemented)",
+        "Indexes exist on order status, store_id, product source_id, tracking carrier+number",
+        "Schema passes normalization review (3NF minimum)"
+      ],
+      "depends_on": [
+        2,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 spec for all dropshipping_automation REST endpoints: auth (JWT + API key), store CRUD, product import (AliExpress/1688), product catalog, order management, order forwarding trigger, tracking sync, margin calculator, and webhook receivers (Shopify/WooCommerce).",
+      "payload": {
+        "spec_file": "openapi.yaml",
+        "auth_schemes": [
+          "Bearer JWT",
+          "X-API-Key"
+        ],
+        "endpoint_groups": [
+          "/auth",
+          "/stores",
+          "/products",
+          "/products/import",
+          "/orders",
+          "/orders/{id}/forward",
+          "/tracking",
+          "/margin",
+          "/webhooks/shopify",
+          "/webhooks/woocommerce"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates with no errors using openapi-validator",
+        "All endpoints define request/response schemas with examples",
+        "Error responses follow RFC 7807 Problem Details format",
+        "Rate limiting headers documented on import and forward endpoints",
+        "Webhook receiver endpoints define HMAC signature verification requirement",
+        "Pagination defined for catalog and order list endpoints"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "CONFIG",
+      "description": "Set up project scaffold: monorepo structure (backend FastAPI + frontend React), Docker Compose for local dev (Postgres, Redis, Celery worker, API), environment variable management (.env.example), and agentic pattern config for the coordinator pattern used by order-forwarding and tracking-sync agents.",
+      "payload": {
+        "structure": "monorepo",
+        "backend": "FastAPI + Python 3.12",
+        "frontend": "React 18 + TypeScript + Vite",
+        "queue": "Redis + Celery",
+        "agentic_pattern": "coordinator",
+        "pattern_components": [
+          "coordinator_agent",
+          "aliexpress_specialist",
+          "order_forward_specialist",
+          "tracking_specialist"
+        ],
+        "files": [
+          "docker-compose.yml",
+          ".env.example",
+          "Makefile",
+          "pyproject.toml",
+          "tsconfig.json"
+        ]
+      },
+      "acceptance_criteria": [
+        "docker-compose up starts all services with no manual steps beyond .env copy",
+        "make dev starts both API and frontend with hot reload",
+        "Coordinator agent config declares specialist routing rules in YAML",
+        ".env.example documents every required variable with description",
+        "pyproject.toml pinned to Python 3.12, all deps version-locked"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement authentication and multi-tenant store management: JWT auth, API key issuance, tenant context middleware, store CRUD endpoints, and encrypted credential storage for Shopify/WooCommerce/Etsy store tokens.",
+      "payload": {
+        "framework": "FastAPI",
+        "auth": [
+          "JWT (python-jose)",
+          "API key (stored hashed)"
+        ],
+        "endpoints": [
+          "/auth/register",
+          "/auth/login",
+          "/auth/refresh",
+          "/auth/api-keys",
+          "/stores",
+          "/stores/{id}"
+        ],
+        "credential_encryption": "Fernet symmetric encryption with per-tenant key"
+      },
+      "acceptance_criteria": [
+        "JWT tokens expire in 15 minutes; refresh tokens in 7 days",
+        "API keys hashed with bcrypt before storage \u2014 plaintext never persisted",
+        "Tenant middleware injects tenant_id into all DB queries automatically",
+        "Store credentials round-trip encrypted \u2014 decrypted only in memory during use",
+        "Rate limiting applied: 10 auth attempts/minute per IP"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build AliExpress and 1688 product import service: URL parser, AliExpress Open API integration (product detail, images, variants, shipping options), 1688 Open API integration, product normalization to internal schema, and bulk import queue via Celery.",
+      "payload": {
+        "integrations": [
+          "AliExpress_Open_Platform_API",
+          "1688_Open_API"
+        ],
+        "features": [
+          "url_parser",
+          "product_detail_fetch",
+          "image_download_to_s3",
+          "variant_mapping",
+          "shipping_option_fetch",
+          "bulk_csv_import"
+        ],
+        "queue": "Celery + Redis",
+        "rate_limiting": "AliExpress: 1000 calls/day free tier; implement exponential backoff"
+      },
+      "acceptance_criteria": [
+        "AliExpress product URL parsed to product_id and fetched via official API (no scraping)",
+        "1688 product API returns title, images, variants, price tiers, and MOQ",
+        "Images downloaded to S3-compatible storage \u2014 original AliExpress URLs not stored as primary",
+        "Bulk import accepts CSV with \u2265100 URLs and queues as Celery batch",
+        "Rate limit errors trigger exponential backoff with max 5 retries",
+        "Product normalization maps both sources to single internal Product schema"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement margin calculator service: configurable rules per store (fixed markup, percentage margin, or tiered), cost components (product cost + shipping + platform fee + payment fee + desired profit), real-time price suggestion API, and bulk repricing job.",
+      "payload": {
+        "margin_types": [
+          "fixed_markup",
+          "percentage_margin",
+          "tiered_by_price_range"
+        ],
+        "cost_components": [
+          "product_cost",
+          "aliexpress_shipping",
+          "platform_fee_pct",
+          "payment_processing_fee_pct",
+          "target_profit_margin"
+        ],
+        "endpoints": [
+          "/margin/calculate",
+          "/margin/rules",
+          "/margin/bulk-reprice"
+        ]
+      },
+      "acceptance_criteria": [
+        "Calculator returns: cost breakdown, suggested sell price, and effective margin % for each variant",
+        "Rules are per-store and per-category with fallback to store default",
+        "Bulk repricing job processes \u2265500 products and writes results without blocking API",
+        "Currency conversion uses live exchange rate (updated \u22641h via cache)",
+        "Negative margin configurations rejected with descriptive validation error"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Build automated order forwarding engine: Shopify/WooCommerce webhook receiver \u2192 order ingestion \u2192 supplier matching \u2192 AliExpress order placement via Open API \u2192 order_id mapping storage \u2192 confirmation back to store. Implement coordinator agentic pattern for multi-step order routing.",
+      "payload": {
+        "agentic_pattern": "coordinator",
+        "coordinator_tasks": [
+          "validate_order",
+          "match_supplier",
+          "check_stock",
+          "place_aliexpress_order",
+          "update_store_order_status"
+        ],
+        "integrations": [
+          "Shopify_Admin_API",
+          "WooCommerce_REST_API",
+          "AliExpress_Order_API"
+        ],
+        "idempotency": "order_id-based idempotency keys to prevent duplicate forwarding"
+      },
+      "acceptance_criteria": [
+        "Webhook HMAC signatures verified before processing (Shopify and WooCommerce)",
+        "Order forwarded to AliExpress within 60 seconds of webhook receipt under normal load",
+        "Idempotency key prevents duplicate orders on webhook retry",
+        "Failed forwarding creates retry queue entry with human-review flag after 3 attempts",
+        "Coordinator agent logs each step with trace_id for audit",
+        "Order status updated in merchant's store upon AliExpress confirmation"
+      ],
+      "depends_on": [
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement tracking sync service: poll AliExpress shipment API for tracking numbers, normalize carrier codes, push tracking updates to Shopify/WooCommerce fulfillment API, store tracking_events history, and expose tracking webhook for merchants.",
+      "payload": {
+        "polling_interval": "every 4 hours via Celery beat",
+        "carriers": [
+          "AliExpress_Standard_Shipping",
+          "ePacket",
+          "DHL",
+          "FedEx",
+          "USPS",
+          "YunExpress"
+        ],
+        "push_targets": [
+          "Shopify_Fulfillment_API",
+          "WooCommerce_Shipment_Tracking_API"
+        ],
+        "endpoints": [
+          "/tracking/{order_id}",
+          "/tracking/sync-all"
+        ]
+      },
+      "acceptance_criteria": [
+        "Tracking number retrieved from AliExpress API within 24h of shipment creation",
+        "Carrier code normalized to a unified enum used across all store integrations",
+        "Shopify and WooCommerce fulfillment records updated automatically on tracking receipt",
+        "tracking_events table stores full status history per order",
+        "Manual sync endpoint triggers immediate poll for a single order",
+        "Stale orders (>60 days, no update) flagged as potentially lost"
+      ],
+      "depends_on": [
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Build multi-store management service: store federation API, per-store product catalog sync scheduler, store health dashboard aggregation, and cross-store product duplication detection.",
+      "payload": {
+        "endpoints": [
+          "/stores/{id}/sync",
+          "/stores/{id}/health",
+          "/stores/dashboard",
+          "/stores/duplicate-check"
+        ],
+        "sync_types": [
+          "full_catalog_sync",
+          "incremental_price_sync",
+          "inventory_sync"
+        ],
+        "scheduler": "Celery beat with per-store cron config"
+      },
+      "acceptance_criteria": [
+        "Each store can have independent sync schedule (not global)",
+        "Store health dashboard returns: last sync time, error rate, pending orders, active products per store",
+        "Cross-store duplicate detection uses AliExpress product_id as deduplication key",
+        "Catalog sync handles \u22651000 products per store without timeout",
+        "Sync failures isolated per store \u2014 one failed store does not block others"
+      ],
+      "depends_on": [
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "AGENTIC",
+      "description": "Implement the ReAct-pattern monitoring agent for order forwarding anomaly detection: observes order forwarding success rate, tracks AliExpress API error patterns, raises human-review proposals for abnormal failure spikes, and self-corrects retry strategy based on observed API behavior.",
+      "payload": {
+        "pattern": "react",
+        "components": [
+          "reasoning_engine",
+          "action_executor",
+          "observation_parser",
+          "loop_controller"
+        ],
+        "observations": [
+          "forwarding_success_rate",
+          "aliexpress_api_error_codes",
+          "tracking_staleness"
+        ],
+        "actions": [
+          "trigger_retry",
+          "flag_for_human_review",
+          "adjust_retry_backoff",
+          "send_alert"
+        ],
+        "hitl_triggers": [
+          "success_rate < 0.85 over 1h window",
+          "same order forwarded >3 times"
+        ]
+      },
+      "acceptance_criteria": [
+        "Agent runs as a Celery beat task every 10 minutes",
+        "ReAct loop produces Thought\u2192Action\u2192Observation trace stored in audit log",
+        "Human-review proposal created (not auto-executed) when success rate drops below 85%",
+        "Agent adjusts retry backoff based on observed AliExpress 429 rate \u2014 logged as self-correction",
+        "Proposal store entry includes full ReAct trace as evidence"
+      ],
+      "depends_on": [
+        15,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build React frontend: app shell, routing, auth pages (login/register), and shared layout (sidebar, header with store switcher, notification bell).",
+      "payload": {
+        "stack": "React 18 + TypeScript + Vite + TailwindCSS + shadcn/ui",
+        "routing": "React Router v6",
+        "state": "Zustand for auth + store context",
+        "pages": [
+          "Login",
+          "Register",
+          "Layout shell"
+        ]
+      },
+      "acceptance_criteria": [
+        "Login and register pages match wireframes from step 7",
+        "JWT stored in httpOnly cookie \u2014 not localStorage",
+        "Store switcher in header updates global store context and refreshes data",
+        "Unauthenticated routes redirect to /login",
+        "App shell renders in \u22642s on 4G connection (Lighthouse performance \u226580)"
+      ],
+      "depends_on": [
+        11,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build product import wizard UI: URL/CSV input, real-time import progress, product preview with image gallery and variant editor, margin rule application preview, and publish-to-store action.",
+      "payload": {
+        "components": [
+          "ImportSourceSelector",
+          "URLInput",
+          "CSVDropzone",
+          "ImportProgressBar",
+          "ProductPreviewCard",
+          "VariantEditor",
+          "MarginPreview",
+          "PublishButton"
+        ],
+        "api_hooks": [
+          "/products/import",
+          "/margin/calculate",
+          "/stores/{id}/publish"
+        ]
+      },
+      "acceptance_criteria": [
+        "Import wizard matches wireframe from step 7",
+        "URL paste triggers immediate single-product preview within 3s",
+        "CSV upload shows per-row import progress",
+        "Variant editor allows price override per variant before publishing",
+        "Margin preview updates live as user adjusts target margin slider",
+        "Publish button disabled until at least one store selected"
+      ],
+      "depends_on": [
+        18,
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build order management dashboard: order list with filters (status, store, date), order detail drawer (line items, forwarding status, AliExpress order link), manual forward trigger, and bulk actions.",
+      "payload": {
+        "components": [
+          "OrderTable",
+          "OrderFilters",
+          "OrderDetailDrawer",
+          "ForwardingStatusBadge",
+          "ManualForwardButton",
+          "BulkActionBar"
+        ],
+        "api_hooks": [
+          "/orders",
+          "/orders/{id}",
+          "/orders/{id}/forward"
+        ]
+      },
+      "acceptance_criteria": [
+        "Order table loads \u2264500ms for first page (20 rows)",
+        "Filters by status (pending/forwarded/failed/delivered) update results without page reload",
+        "Order detail drawer shows AliExpress order ID and link when forwarded",
+        "Manual forward button shows confirmation modal before triggering",
+        "Bulk forward action available for \u226450 selected pending orders"
+      ],
+      "depends_on": [
+        18,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build tracking sync view: per-order tracking timeline, carrier badge, estimated delivery, bulk sync trigger, and staleness alerts for orders with no tracking update in >7 days.",
+      "payload": {
+        "components": [
+          "TrackingTimeline",
+          "CarrierBadge",
+          "EstimatedDelivery",
+          "StalenessAlert",
+          "BulkSyncButton"
+        ],
+        "api_hooks": [
+          "/tracking/{order_id}",
+          "/tracking/sync-all"
+        ]
+      },
+      "acceptance_criteria": [
+        "Tracking timeline shows all status events with timestamps",
+        "Stale orders highlighted in amber with days-since-last-update counter",
+        "Bulk sync button shows progress spinner and result summary",
+        "Carrier logo displayed for all supported carriers",
+        "View accessible from order detail drawer and standalone /tracking route"
+      ],
+      "depends_on": [
+        18,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "FRONTEND",
+      "description": "Build margin calculator page and multi-store management UI: interactive margin calculator with cost breakdown, store list with per-store health stats, sync controls, and store credential settings modal.",
+      "payload": {
+        "components": [
+          "MarginCalculatorForm",
+          "CostBreakdownChart",
+          "StoreCard",
+          "StoreHealthBadge",
+          "SyncScheduleEditor",
+          "CredentialSettingsModal"
+        ],
+        "api_hooks": [
+          "/margin/calculate",
+          "/margin/rules",
+          "/stores/dashboard",
+          "/stores/{id}/sync"
+        ]
+      },
+      "acceptance_criteria": [
+        "Margin calculator shows pie chart of cost breakdown components",
+        "Rules editor allows per-category overrides with drag-to-reorder priority",
+        "Store health card shows last sync, error rate, and active product count",
+        "Credential settings modal never displays stored credentials \u2014 only allows update",
+        "Sync schedule editor accepts cron-like interval (hourly/daily/weekly)"
+      ],
+      "depends_on": [
+        18,
+        13,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 23,
+      "task_type": "QA",
+      "description": "Design QA test plan for dropshipping_automation: test cases for product import (AliExpress and 1688), order forwarding (happy path, retry, duplicate), tracking sync, margin calculation accuracy, and multi-store isolation. Define regression suite and exploratory testing charter.",
+      "payload": {
+        "test_areas": [
+          "product_import",
+          "order_forwarding",
+          "tracking_sync",
+          "margin_calculator",
+          "multi_store_isolation",
+          "auth_and_access_control"
+        ],
+        "deliverables": [
+          "test_plan.md",
+          "test_cases.xlsx",
+          "regression_suite.md",
+          "exploratory_charter.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test cases cover \u226590% of user stories from step 2",
+        "Order forwarding test cases include: success, AliExpress API failure, duplicate webhook, and manual trigger",
+        "Multi-store isolation test cases verify data cannot leak between tenants",
+        "Margin calculation accuracy tested against \u226510 real AliExpress product examples",
+        "Regression suite runnable in CI under 20 minutes"
+      ],
+      "depends_on": [
+        2,
+        9
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "TESTS",
+      "description": "Write backend unit and integration tests: auth (JWT, API key), product import (mocked AliExpress/1688 API), margin calculator (formula correctness), order forwarding state machine, tracking sync, and multi-tenant DB isolation.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio + httpx",
+        "mocking": "respx for HTTP mocking, factory_boy for fixtures",
+        "coverage_target": "\u226580% line coverage on src/",
+        "test_files": [
+          "test_auth.py",
+          "test_import.py",
+          "test_margin.py",
+          "test_order_forwarding.py",
+          "test_tracking.py",
+          "test_multistore.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "All test files pass with pytest --strict-markers",
+        "Coverage report shows \u226580% on backend src/",
+        "Multi-tenant isolation test asserts one tenant cannot read another's orders",
+        "Margin calculator tests cover all three rule types with boundary values",
+        "Order forwarding tests use mocked AliExpress API \u2014 no live API calls in CI"
+      ],
+      "depends_on": [
+        14,
+        15,
+        16,
+        23
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "TESTS",
+      "description": "Write frontend component tests and E2E tests: product import wizard flow, order dashboard filters, tracking timeline rendering, margin calculator live updates, and multi-store switcher context isolation.",
+      "payload": {
+        "unit_framework": "Vitest + React Testing Library",
+        "e2e_framework": "Playwright",
+        "e2e_scenarios": [
+          "import_product_from_aliexpress_url",
+          "forward_order_manually",
+          "view_tracking_timeline",
+          "switch_stores_and_verify_data_isolation"
+        ]
+      },
+      "acceptance_criteria": [
+        "Component tests cover all 4 major pages built in steps 19-22",
+        "E2E test suite runs against local docker-compose stack",
+        "Store switcher E2E verifies orders from store A not visible when store B selected",
+        "Import wizard E2E uses mock API server \u2014 no live AliExpress calls",
+        "All Playwright tests pass in headless mode in CI"
+      ],
+      "depends_on": [
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system test: full order lifecycle from Shopify webhook \u2192 AliExpress order placement \u2192 tracking sync \u2192 fulfillment update, using a staging AliExpress sandbox account. Load test order forwarding at 100 concurrent orders.",
+      "payload": {
+        "environment": "staging",
+        "test_scenarios": [
+          "full_order_lifecycle_shopify",
+          "full_order_lifecycle_woocommerce",
+          "bulk_product_import_500_items",
+          "concurrent_order_forwarding_100",
+          "tracking_sync_50_orders"
+        ],
+        "load_tool": "Locust",
+        "deliverables": [
+          "system_test_report.md",
+          "load_test_results.html"
+        ]
+      },
+      "acceptance_criteria": [
+        "Full order lifecycle completes in \u226490s end-to-end in staging",
+        "100 concurrent order forwards complete with \u226595% success rate",
+        "500-item bulk import completes without OOM or timeout errors",
+        "Tracking sync processes 50 orders within one Celery beat cycle (4h window)",
+        "No cross-tenant data exposure observed in multi-store system test"
+      ],
+      "depends_on": [
+        24,
+        25
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 27,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions), container build and push (ECR/DockerHub), staging and production environment configs, database migration automation, Celery worker deployment, and monitoring stack (Prometheus + Grafana dashboards for order forwarding metrics).",
+      "payload": {
+        "ci_cd": "GitHub Actions",
+        "stages": [
+          "lint",
+          "test",
+          "build",
+          "migrate",
+          "deploy_staging",
+          "smoke_test",
+          "deploy_production"
+        ],
+        "registry": "AWS ECR",
+        "monitoring": "Prometheus + Grafana",
+        "key_metrics": [
+          "order_forwarding_success_rate",
+          "import_queue_depth",
+          "tracking_sync_lag",
+          "api_p99_latency"
+        ]
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs on every PR and blocks merge on test failure",
+        "Alembic migrations run automatically as a pre-deploy step",
+        "Staging deploy triggered on merge to main; production deploy requires manual approval",
+        "Grafana dashboard shows real-time order_forwarding_success_rate",
+        "Alert fires to PagerDuty/Slack when success_rate < 85% for >15min",
+        "Rollback procedure documented and tested in staging"
+      ],
+      "depends_on": [
+        26
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: AliExpress API outage response, order forwarding failure escalation, tracking sync degradation, database failover procedure, Celery worker restart, and SLA definitions for each core workflow.",
+      "payload": {
+        "runbooks": [
+          "aliexpress_api_outage.md",
+          "order_forwarding_failure_escalation.md",
+          "tracking_sync_degradation.md",
+          "db_failover.md",
+          "celery_worker_restart.md"
+        ],
+        "sla_definitions": {
+          "order_forwarding_latency": "\u226460s p95",
+          "tracking_sync_freshness": "\u22644h",
+          "platform_uptime": "99.9% monthly"
+        }
+      },
+      "acceptance_criteria": [
+        "Each runbook has: trigger condition, diagnosis steps, remediation steps, and escalation path",
+        "AliExpress API outage runbook includes fallback to manual forwarding mode",
+        "SLA definitions cover latency, freshness, and availability with measurement method",
+        "Incident response defines severity levels (P1/P2/P3) with response time targets",
+        "Capacity plan estimates resource needs at 1k, 10k, and 100k orders/day"
+      ],
+      "depends_on": [
+        27
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 29,
+      "task_type": "DOCS",
+      "description": "Write developer and merchant documentation: API reference (from OpenAPI spec), merchant onboarding guide (store connection, first product import, first automated order), webhook setup guides for Shopify and WooCommerce, and architecture decision records (ADRs).",
+      "payload": {
+        "deliverables": [
+          "docs/api_reference.md",
+          "docs/merchant_onboarding.md",
+          "docs/shopify_webhook_setup.md",
+          "docs/woocommerce_webhook_setup.md",
+          "docs/adr/001_aliexpress_api_over_scraping.md",
+          "docs/adr/002_celery_for_async_forwarding.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "API reference generated from OpenAPI spec \u2014 no manual duplication",
+        "Merchant onboarding guide walkable in \u226415 minutes by a non-technical user",
+        "Webhook setup guides include screenshots and Shopify/WooCommerce admin paths",
+        "Each ADR documents context, decision, and consequences",
+        "Docs site buildable with mkdocs or equivalent static generator"
+      ],
+      "depends_on": [
+        27
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 29,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 42,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 42,
+        "final_review": {
+          "score": 42,
+          "flaws": [
+            "FATAL: AliExpress Open Platform API does not support automated order placement for third-party platforms in most regions. The core value proposition (automated order forwarding via official API) likely cannot be built as described. AutoDS, DSers, and Dropified all faced this \u2014 most rely on browser automation or affiliate workarounds, not a clean order API. Step 12 forbids scraping, but Step 14 assumes a fully functional AliExpress Order API. This contradiction is unresolved and potentially kills the product.",
+            "FATAL: 1688 Open API requires a Chinese business entity (\u8425\u4e1a\u6267\u7167) for full API access. The plan treats 1688 as a standard open platform. Without addressing the legal entity requirement, 1688 integration cannot proceed for non-Chinese companies.",
+            "AliExpress sandbox environment does not exist for order placement (Step 26). You cannot test automated order forwarding without hitting production with real money. The system test acceptance criteria ('staging AliExpress sandbox account') describes a facility that does not exist.",
+            "1000 AliExpress API calls/day (Step 12) is insufficient at any meaningful scale. A single bulk import of 100 products + variant fetching + image downloads burns through this quota in one operation. At 1000 orders/day, tracking polling alone exhausts it. The plan has no strategy for quota tier negotiation or API usage modeling against the financial projections.",
+            "Payment flow for AliExpress orders is entirely absent. The platform collects payment from end customers, but who funds the AliExpress purchase? The money flow (merchant prepay, platform float, reconciliation, FX exposure) is not addressed anywhere in 29 steps. This is the actual business model.",
+            "Fernet per-tenant key storage is unspecified (Step 11). If keys are stored in the same database as encrypted data, you have obfuscation, not encryption. The key management system (KMS, HSM, or env-var hierarchy) must be defined \u2014 omitting it makes the security model fictional.",
+            "Celery task payloads containing decrypted API credentials (Step 11/12/14) are stored in Redis in plaintext by default. The security model for Steps 5-6 never addresses the Celery/Redis credential exposure surface.",
+            "Multi-tenant isolation relies solely on application-level tenant_id filtering (Step 8). Without PostgreSQL Row Level Security (RLS) policies, a single missing WHERE clause in any query causes cross-tenant data leakage. This is a well-known failure mode for tenanted SaaS. The acceptance criteria should mandate RLS, not just 3NF.",
+            "Shopify App Store review process takes 4-8 weeks and requires partner approval before any merchant can install the app. This is a hard project timeline dependency not accounted for anywhere in the plan.",
+            "Inventory sync at the supplier level is critically underspecified. AliExpress products go out of stock, get discontinued, or change SKUs constantly. The plan mentions 'inventory_sync' in Step 16 but never defines the mechanism to detect supplier-side stock changes \u2014 the primary operational failure mode in dropshipping.",
+            "Supplier price change detection is absent. AliExpress prices change without notice. All margin calculations become stale immediately after import. The repricing job in Step 13 reprices *existing* products but there is no trigger to detect when the *source cost* changes, invalidating all stored margins.",
+            "Refund and return workflow has no backend implementation. Step 4 mentions drafting a return policy but no step implements the dispute/return flow: customer requests return \u2192 merchant needs AliExpress dispute opened \u2192 AliExpress resolution \u2192 refund to customer. This is high-volume operational work that is entirely missing.",
+            "The ReAct agent in Step 17 uses an LLM for what is essentially a threshold alert. An LLM call every 10 minutes for anomaly detection adds 1-5 seconds of latency and significant cost with no benefit over a simple Prometheus alert rule. This is architectural overengineering that will be removed in the first cost review.",
+            "Currency risk at the margin calculator level (Step 13) is underspecified. A CNY/USD fluctuation of 1-2% (common in a week) on a 15% margin product eliminates 10-15% of profit. 'Live exchange rate updated \u22641h' is insufficient \u2014 the plan needs FX hedging strategy or margin buffers defined.",
+            "Step 3 and Step 6 have a circular dependency: PCI DSS compliance costs (Step 6) should feed into the financial model (Step 3), but Step 6 depends on Step 5 which is parallel to Step 3. The financial model will be wrong the first time it is produced."
+          ],
+          "suggestions": [
+            "Before writing a single line of code, validate AliExpress API order placement capability in your target region. Contact AliExpress Open Platform directly and get written confirmation of order API access. If unavailable, pivot the architecture to: (a) browser automation via Playwright/Puppeteer with AliExpress accounts, (b) partnership with a dropshipping aggregator that has API access, or (c) document this as a manual step with clipboard-copy UX.",
+            "Add a Step 0: API Feasibility Spike (1 week) \u2014 actually call AliExpress product API, order API, and 1688 API with test credentials and verify all acceptance criteria in Step 12 and 14 are achievable before the 28-step plan begins.",
+            "Define the money flow explicitly in Step 2 (Business Analysis): does the platform hold a float balance? Does it charge the merchant's card before placing the AliExpress order? Does it use the merchant's own AliExpress account? This determines the entire financial and legal architecture.",
+            "Replace pgcrypto (Step 8) with application-level envelope encryption: encrypt with a data key, wrap the data key with a KMS master key (AWS KMS, HashiCorp Vault). pgcrypto puts the encryption burden on the DB server which is weaker isolation.",
+            "Add PostgreSQL RLS policies to Step 8 acceptance criteria: `ALTER TABLE orders ENABLE ROW LEVEL SECURITY; CREATE POLICY tenant_isolation ON orders USING (tenant_id = current_setting('app.current_tenant')::uuid)`. This is the defense-in-depth layer that makes tenant_id actually enforced.",
+            "Step 26 system test must use a real AliExpress test account with real (small-value) purchases or a stub service that mimics AliExpress API responses exactly. Document this explicitly \u2014 do not list 'sandbox' as a dependency.",
+            "Replace the ReAct agent in Step 17 with Prometheus alerting rules + Celery beat health checks. Reserve LLM-based reasoning for genuinely complex decisions (e.g., 'should I switch to a different supplier for this product category?'). The current design costs ~$50-200/month in LLM calls for no behavioral improvement over a `if rate < 0.85: create_alert()` check.",
+            "Add an inventory webhook subscription or polling cadence to Step 15/16 that detects AliExpress stock depletion and auto-unpublishes or alerts within 1 hour. This is the #1 customer complaint for dropshipping platforms.",
+            "Add Step 8a: Define KMS/secret management strategy. Fernet keys, JWT signing keys, and AliExpress API credentials all need rotation procedures and secure storage. AWS Secrets Manager or HashiCorp Vault integration is required before Step 11.",
+            "Add FX risk to Step 13 acceptance criteria: margin calculator must display cost in both CNY (source) and USD/EUR (sale currency) with the exchange rate timestamp shown, and flag when the rate used is >4h old."
+          ],
+          "missing": [
+            "AliExpress order payment method configuration \u2014 whose payment card funds the AliExpress purchase, how chargebacks are handled, and how the platform reconciles funds between customer payment receipt and supplier payment.",
+            "Product compliance screening \u2014 counterfeit goods detection, prohibited items (weapons, restricted electronics, REACH-regulated chemicals), and customs/import duty estimation for the buyer's country. Shopify will suspend merchant accounts for ToS violations here.",
+            "GDPR right-to-erasure workflow \u2014 soft delete (deleted_at) does not satisfy erasure requirements. PII in orders, tracking events, and audit logs needs a documented purge procedure with verification.",
+            "AliExpress account management \u2014 the platform presumably uses a pool of AliExpress buyer accounts to place orders. Account health monitoring, ban recovery, purchase history limits, and account provisioning are missing.",
+            "Carrier coverage gaps \u2014 AliExpress uses 50+ logistics providers. The plan lists 6 carriers. Missing carriers will result in tracking numbers that display as 'unknown' for a large percentage of orders.",
+            "Database backup and point-in-time recovery \u2014 no step addresses RDS backup configuration, backup retention, restore testing, or RPO/RTO targets. This is missing from both DevOps (Step 27) and Operations (Step 28).",
+            "AliExpress affiliate/API program application process and timeline \u2014 API access applications can take weeks to months. This is a project dependency that belongs in Step 1 or a pre-Step 0.",
+            "Webhook reliability guarantees \u2014 Shopify delivers webhooks at-least-once. WooCommerce delivery is best-effort. The plan mentions idempotency keys but does not define a dead-letter queue or missed-webhook detection mechanism for orders that never trigger a webhook.",
+            "Load balancer and horizontal scaling design \u2014 the CI/CD step (Step 27) deploys containers but doesn't define how the FastAPI app scales under the 100k orders/day capacity target from Step 28. Auto-scaling policies and connection pool sizing for PostgreSQL under load are absent.",
+            "Dispute and chargeback handling workflow \u2014 customer files chargeback with Shopify \u2192 merchant needs to open AliExpress dispute \u2192 documentation of workflow, timelines, and automation hooks is entirely absent despite being a critical operational path."
+          ],
+          "security_risks": [
+            "CRITICAL: Merchant store API tokens (Shopify Admin API key, WooCommerce consumer key) grant full store access including order creation, product deletion, and customer PII. These credentials in Celery task queues (Redis) without encryption mean a Redis compromise is a full merchant store compromise across all tenants.",
+            "HIGH: Webhook HMAC verification is specified in the acceptance criteria (Steps 9, 14) but there is no defense against SSRF via AliExpress product image URLs being forwarded to S3 download (Step 12). A malicious seller on AliExpress could place internal network addresses as image URLs.",
+            "HIGH: The per-tenant Fernet key scheme (Step 11) with keys stored in the same database creates a key-and-lock-in-the-same-drawer problem. A SQL injection or DB dump exposes all tenant data simultaneously. Must use external KMS.",
+            "HIGH: Rate limiting on auth endpoints (10 attempts/minute per IP, Step 11) is bypassable via distributed IPs and provides no protection against credential stuffing with proxies. Should require CAPTCHA or progressive delays after 3 failures.",
+            "MEDIUM: The multi-store switcher context in the frontend (Step 18/22) must ensure the backend validates that the requesting user has access to the selected store \u2014 a frontend-only store context switch with a guessable store ID enables IDOR attacks across tenants.",
+            "MEDIUM: Celery beat tasks in Step 15 (tracking sync) and Step 17 (anomaly detection) run with worker-level permissions and access to all tenant credentials. A compromised Celery worker has access to all decrypted API credentials, not just one tenant's. Worker isolation per tenant is not addressed.",
+            "MEDIUM: The audit log (Step 8) storing 'full ReAct trace as evidence' (Step 17) may log sensitive order data (customer name, address, order contents) in cleartext for compliance visibility. GDPR requires this data to be pseudonymized or purged per retention policy, which conflicts with audit immutability requirements.",
+            "LOW: pgcrypto encryption key passed as a function argument (`pgp_sym_encrypt(data, key)`) appears in PostgreSQL query logs by default. `log_min_duration_statement` or `pg_stat_statements` will leak encryption keys if logging is not explicitly disabled for those queries."
+          ],
+          "summary": "This is a well-structured, ambitious plan that covers the right domains in the right order \u2014 but it is built on a foundation that may not exist. The central assumption \u2014 that AliExpress and 1688 provide accessible, functional APIs for automated order placement by third-party SaaS platforms \u2014 is not verified and is likely false based on how every major competitor in this space actually operates. If this assumption fails, Steps 12, 14, 15, and the entire core value proposition collapse simultaneously. This needs to be the first question answered before any other work begins. Beyond this existential risk, the plan has significant gaps in the money flow design (who funds AliExpress purchases?), multi-tenant security (RLS, key management, Redis credential exposure), and operational realities (inventory sync, refund workflows, carrier coverage). The agentic components are well-conceived but the ReAct pattern is overused for work that is simple threshold alerting. For an MVP targeting small merchants, this plan needs a Step 0 API feasibility spike and fundamental rework of the credential security model before it warrants implementation effort. Current score: 42/100 \u2014 not ready to build.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 42,
+            "flaws": [
+              "FATAL: AliExpress Open Platform API does not support automated order placement for third-party platforms in most regions. The core value proposition (automated order forwarding via official API) likely cannot be built as described. AutoDS, DSers, and Dropified all faced this \u2014 most rely on browser automation or affiliate workarounds, not a clean order API. Step 12 forbids scraping, but Step 14 assumes a fully functional AliExpress Order API. This contradiction is unresolved and potentially kills the product.",
+              "FATAL: 1688 Open API requires a Chinese business entity (\u8425\u4e1a\u6267\u7167) for full API access. The plan treats 1688 as a standard open platform. Without addressing the legal entity requirement, 1688 integration cannot proceed for non-Chinese companies.",
+              "AliExpress sandbox environment does not exist for order placement (Step 26). You cannot test automated order forwarding without hitting production with real money. The system test acceptance criteria ('staging AliExpress sandbox account') describes a facility that does not exist.",
+              "1000 AliExpress API calls/day (Step 12) is insufficient at any meaningful scale. A single bulk import of 100 products + variant fetching + image downloads burns through this quota in one operation. At 1000 orders/day, tracking polling alone exhausts it. The plan has no strategy for quota tier negotiation or API usage modeling against the financial projections.",
+              "Payment flow for AliExpress orders is entirely absent. The platform collects payment from end customers, but who funds the AliExpress purchase? The money flow (merchant prepay, platform float, reconciliation, FX exposure) is not addressed anywhere in 29 steps. This is the actual business model.",
+              "Fernet per-tenant key storage is unspecified (Step 11). If keys are stored in the same database as encrypted data, you have obfuscation, not encryption. The key management system (KMS, HSM, or env-var hierarchy) must be defined \u2014 omitting it makes the security model fictional.",
+              "Celery task payloads containing decrypted API credentials (Step 11/12/14) are stored in Redis in plaintext by default. The security model for Steps 5-6 never addresses the Celery/Redis credential exposure surface.",
+              "Multi-tenant isolation relies solely on application-level tenant_id filtering (Step 8). Without PostgreSQL Row Level Security (RLS) policies, a single missing WHERE clause in any query causes cross-tenant data leakage. This is a well-known failure mode for tenanted SaaS. The acceptance criteria should mandate RLS, not just 3NF.",
+              "Shopify App Store review process takes 4-8 weeks and requires partner approval before any merchant can install the app. This is a hard project timeline dependency not accounted for anywhere in the plan.",
+              "Inventory sync at the supplier level is critically underspecified. AliExpress products go out of stock, get discontinued, or change SKUs constantly. The plan mentions 'inventory_sync' in Step 16 but never defines the mechanism to detect supplier-side stock changes \u2014 the primary operational failure mode in dropshipping.",
+              "Supplier price change detection is absent. AliExpress prices change without notice. All margin calculations become stale immediately after import. The repricing job in Step 13 reprices *existing* products but there is no trigger to detect when the *source cost* changes, invalidating all stored margins.",
+              "Refund and return workflow has no backend implementation. Step 4 mentions drafting a return policy but no step implements the dispute/return flow: customer requests return \u2192 merchant needs AliExpress dispute opened \u2192 AliExpress resolution \u2192 refund to customer. This is high-volume operational work that is entirely missing.",
+              "The ReAct agent in Step 17 uses an LLM for what is essentially a threshold alert. An LLM call every 10 minutes for anomaly detection adds 1-5 seconds of latency and significant cost with no benefit over a simple Prometheus alert rule. This is architectural overengineering that will be removed in the first cost review.",
+              "Currency risk at the margin calculator level (Step 13) is underspecified. A CNY/USD fluctuation of 1-2% (common in a week) on a 15% margin product eliminates 10-15% of profit. 'Live exchange rate updated \u22641h' is insufficient \u2014 the plan needs FX hedging strategy or margin buffers defined.",
+              "Step 3 and Step 6 have a circular dependency: PCI DSS compliance costs (Step 6) should feed into the financial model (Step 3), but Step 6 depends on Step 5 which is parallel to Step 3. The financial model will be wrong the first time it is produced."
+            ],
+            "suggestions": [
+              "Before writing a single line of code, validate AliExpress API order placement capability in your target region. Contact AliExpress Open Platform directly and get written confirmation of order API access. If unavailable, pivot the architecture to: (a) browser automation via Playwright/Puppeteer with AliExpress accounts, (b) partnership with a dropshipping aggregator that has API access, or (c) document this as a manual step with clipboard-copy UX.",
+              "Add a Step 0: API Feasibility Spike (1 week) \u2014 actually call AliExpress product API, order API, and 1688 API with test credentials and verify all acceptance criteria in Step 12 and 14 are achievable before the 28-step plan begins.",
+              "Define the money flow explicitly in Step 2 (Business Analysis): does the platform hold a float balance? Does it charge the merchant's card before placing the AliExpress order? Does it use the merchant's own AliExpress account? This determines the entire financial and legal architecture.",
+              "Replace pgcrypto (Step 8) with application-level envelope encryption: encrypt with a data key, wrap the data key with a KMS master key (AWS KMS, HashiCorp Vault). pgcrypto puts the encryption burden on the DB server which is weaker isolation.",
+              "Add PostgreSQL RLS policies to Step 8 acceptance criteria: `ALTER TABLE orders ENABLE ROW LEVEL SECURITY; CREATE POLICY tenant_isolation ON orders USING (tenant_id = current_setting('app.current_tenant')::uuid)`. This is the defense-in-depth layer that makes tenant_id actually enforced.",
+              "Step 26 system test must use a real AliExpress test account with real (small-value) purchases or a stub service that mimics AliExpress API responses exactly. Document this explicitly \u2014 do not list 'sandbox' as a dependency.",
+              "Replace the ReAct agent in Step 17 with Prometheus alerting rules + Celery beat health checks. Reserve LLM-based reasoning for genuinely complex decisions (e.g., 'should I switch to a different supplier for this product category?'). The current design costs ~$50-200/month in LLM calls for no behavioral improvement over a `if rate < 0.85: create_alert()` check.",
+              "Add an inventory webhook subscription or polling cadence to Step 15/16 that detects AliExpress stock depletion and auto-unpublishes or alerts within 1 hour. This is the #1 customer complaint for dropshipping platforms.",
+              "Add Step 8a: Define KMS/secret management strategy. Fernet keys, JWT signing keys, and AliExpress API credentials all need rotation procedures and secure storage. AWS Secrets Manager or HashiCorp Vault integration is required before Step 11.",
+              "Add FX risk to Step 13 acceptance criteria: margin calculator must display cost in both CNY (source) and USD/EUR (sale currency) with the exchange rate timestamp shown, and flag when the rate used is >4h old."
+            ],
+            "missing": [
+              "AliExpress order payment method configuration \u2014 whose payment card funds the AliExpress purchase, how chargebacks are handled, and how the platform reconciles funds between customer payment receipt and supplier payment.",
+              "Product compliance screening \u2014 counterfeit goods detection, prohibited items (weapons, restricted electronics, REACH-regulated chemicals), and customs/import duty estimation for the buyer's country. Shopify will suspend merchant accounts for ToS violations here.",
+              "GDPR right-to-erasure workflow \u2014 soft delete (deleted_at) does not satisfy erasure requirements. PII in orders, tracking events, and audit logs needs a documented purge procedure with verification.",
+              "AliExpress account management \u2014 the platform presumably uses a pool of AliExpress buyer accounts to place orders. Account health monitoring, ban recovery, purchase history limits, and account provisioning are missing.",
+              "Carrier coverage gaps \u2014 AliExpress uses 50+ logistics providers. The plan lists 6 carriers. Missing carriers will result in tracking numbers that display as 'unknown' for a large percentage of orders.",
+              "Database backup and point-in-time recovery \u2014 no step addresses RDS backup configuration, backup retention, restore testing, or RPO/RTO targets. This is missing from both DevOps (Step 27) and Operations (Step 28).",
+              "AliExpress affiliate/API program application process and timeline \u2014 API access applications can take weeks to months. This is a project dependency that belongs in Step 1 or a pre-Step 0.",
+              "Webhook reliability guarantees \u2014 Shopify delivers webhooks at-least-once. WooCommerce delivery is best-effort. The plan mentions idempotency keys but does not define a dead-letter queue or missed-webhook detection mechanism for orders that never trigger a webhook.",
+              "Load balancer and horizontal scaling design \u2014 the CI/CD step (Step 27) deploys containers but doesn't define how the FastAPI app scales under the 100k orders/day capacity target from Step 28. Auto-scaling policies and connection pool sizing for PostgreSQL under load are absent.",
+              "Dispute and chargeback handling workflow \u2014 customer files chargeback with Shopify \u2192 merchant needs to open AliExpress dispute \u2192 documentation of workflow, timelines, and automation hooks is entirely absent despite being a critical operational path."
+            ],
+            "security_risks": [
+              "CRITICAL: Merchant store API tokens (Shopify Admin API key, WooCommerce consumer key) grant full store access including order creation, product deletion, and customer PII. These credentials in Celery task queues (Redis) without encryption mean a Redis compromise is a full merchant store compromise across all tenants.",
+              "HIGH: Webhook HMAC verification is specified in the acceptance criteria (Steps 9, 14) but there is no defense against SSRF via AliExpress product image URLs being forwarded to S3 download (Step 12). A malicious seller on AliExpress could place internal network addresses as image URLs.",
+              "HIGH: The per-tenant Fernet key scheme (Step 11) with keys stored in the same database creates a key-and-lock-in-the-same-drawer problem. A SQL injection or DB dump exposes all tenant data simultaneously. Must use external KMS.",
+              "HIGH: Rate limiting on auth endpoints (10 attempts/minute per IP, Step 11) is bypassable via distributed IPs and provides no protection against credential stuffing with proxies. Should require CAPTCHA or progressive delays after 3 failures.",
+              "MEDIUM: The multi-store switcher context in the frontend (Step 18/22) must ensure the backend validates that the requesting user has access to the selected store \u2014 a frontend-only store context switch with a guessable store ID enables IDOR attacks across tenants.",
+              "MEDIUM: Celery beat tasks in Step 15 (tracking sync) and Step 17 (anomaly detection) run with worker-level permissions and access to all tenant credentials. A compromised Celery worker has access to all decrypted API credentials, not just one tenant's. Worker isolation per tenant is not addressed.",
+              "MEDIUM: The audit log (Step 8) storing 'full ReAct trace as evidence' (Step 17) may log sensitive order data (customer name, address, order contents) in cleartext for compliance visibility. GDPR requires this data to be pseudonymized or purged per retention policy, which conflicts with audit immutability requirements.",
+              "LOW: pgcrypto encryption key passed as a function argument (`pgp_sym_encrypt(data, key)`) appears in PostgreSQL query logs by default. `log_min_duration_statement` or `pg_stat_statements` will leak encryption keys if logging is not explicitly disabled for those queries."
+            ],
+            "summary": "This is a well-structured, ambitious plan that covers the right domains in the right order \u2014 but it is built on a foundation that may not exist. The central assumption \u2014 that AliExpress and 1688 provide accessible, functional APIs for automated order placement by third-party SaaS platforms \u2014 is not verified and is likely false based on how every major competitor in this space actually operates. If this assumption fails, Steps 12, 14, 15, and the entire core value proposition collapse simultaneously. This needs to be the first question answered before any other work begins. Beyond this existential risk, the plan has significant gaps in the money flow design (who funds AliExpress purchases?), multi-tenant security (RLS, key management, Redis credential exposure), and operational realities (inventory sync, refund workflows, carrier coverage). The agentic components are well-conceived but the ReAct pattern is overused for work that is simple threshold alerting. For an MVP targeting small merchants, this plan needs a Step 0 API feasibility spike and fundamental rework of the credential security model before it warrants implementation effort. Current score: 42/100 \u2014 not ready to build.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T05:56:41.246987+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 159.25,
+    "critic_plan": 122.68
+  }
+}

@@ -1,0 +1,69 @@
+project_name: mental_health_chatbot
+display_name: Mental Health Chatbot
+version: 1.0.0
+domain: medtech
+description: AI mental health companion chatbot providing CBT exercises, mood tracking,
+  crisis detection with emergency hotline routing. Not a medical device but wellness
+  category with safety considerations.
+detected_domains: []
+compliance_standards:
+- HIPAA
+- SOC 2
+- WCAG 2.1
+task_types:
+- AGENTIC
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- LEGAL
+- MARKET_RESEARCH
+- OPERATIONS
+- PRODUCT_MGMT
+- QA
+- REGULATORY
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- developer
+- devops_engineer
+- legal_advisor
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

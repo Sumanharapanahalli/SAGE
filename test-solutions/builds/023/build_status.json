@@ -1,0 +1,1027 @@
+{
+  "run_id": "7203da8c-1acd-43f8-8059-176abccb8cbb",
+  "solution_name": "infotainment_system",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T00:21:05.695903+00:00",
+  "updated_at": "2026-03-22T00:27:04.248529+00:00",
+  "product_description": "In-vehicle infotainment system with Android Automotive integration, voice assistant, navigation, media streaming, and OTA update capability. ISO 26262 QM.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Conduct competitive analysis of IVI market: Android Automotive OEM adopters (Volvo, GM, Renault), competing platforms (QNX BlackBerry, GENIVI), voice assistant landscape (Google Assistant, Alexa Auto, custom), and OTA providers (HARMAN, Aptiv). Define target OEM tier and feature-set positioning.",
+      "payload": {
+        "solution": "infotainment_system",
+        "scope": [
+          "IVI market sizing",
+          "OEM adoption curves",
+          "Voice assistant benchmarks",
+          "Navigation SDK comparison (HERE, Google Maps Platform, Mapbox)",
+          "OTA platform costs"
+        ],
+        "deliverables": [
+          "Competitor matrix",
+          "Market sizing report",
+          "Feature gap analysis",
+          "Go-to-market recommendation"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix covers \u22658 IVI platforms with feature-by-feature comparison",
+        "Market sizing includes TAM/SAM/SOM with cited sources",
+        "Navigation SDK recommendation includes cost, offline capability, and Android Automotive compatibility matrix",
+        "OTA platform comparison covers SOTA and FOTA variants"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce Product Requirements Document (PRD) for the infotainment_system solution. Define ISO 26262 QM scope boundary, feature list (Android Automotive OS, voice assistant, navigation, media streaming, OTA), success metrics, and phased roadmap (MVP \u2192 GA \u2192 Post-launch).",
+      "payload": {
+        "solution": "infotainment_system",
+        "standards": [
+          "ISO 26262 QM",
+          "AUTOSAR Classic/Adaptive",
+          "UNECE R155/R156"
+        ],
+        "feature_areas": [
+          "Android Automotive OS integration",
+          "Voice UI (wake word + NLU)",
+          "Turn-by-turn navigation",
+          "Media streaming (Bluetooth, USB, streaming services)",
+          "FOTA/SOTA OTA updates"
+        ],
+        "deliverables": [
+          "PRD v1.0",
+          "Feature prioritization matrix (MoSCoW)",
+          "Milestone roadmap",
+          "Success metrics dashboard spec"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all five feature areas with functional and non-functional requirements",
+        "ISO 26262 QM ASIL determination documented per feature with rationale",
+        "Success metrics are quantitative (e.g., voice command success rate \u226595%, OTA update success rate \u226599.5%)",
+        "Roadmap has defined MVP scope with locked acceptance criteria per milestone"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct driver-focused UX research and produce wireframes for all IVI surfaces: Home screen, Navigation view, Media player, Voice assistant overlay, Settings, and OTA notification flow. Apply NHTSA distraction guidelines (\u22642s glance time) and accessibility audit (WCAG 2.1 AA for in-vehicle context).",
+      "payload": {
+        "solution": "infotainment_system",
+        "surfaces": [
+          "Home screen",
+          "Navigation active/idle",
+          "Media player (audio/video)",
+          "Voice assistant modal overlay",
+          "OTA progress + confirmation screen",
+          "Settings hierarchy"
+        ],
+        "constraints": [
+          "NHTSA Visual-Manual SRDI guidelines",
+          "Driver distraction: max 2s single glance, 12s total task",
+          "Touch target min 9mm \u00d7 9mm",
+          "High-contrast modes for daylight/night"
+        ],
+        "deliverables": [
+          "User research summary",
+          "Wireframe kit (Figma)",
+          "Interaction flow diagrams",
+          "Accessibility audit report"
+        ]
+      },
+      "acceptance_criteria": [
+        "All primary tasks completable within NHTSA 12-second glance budget",
+        "Wireframes cover all six surfaces with light/dark mode variants",
+        "Accessibility audit identifies and resolves all AA-level contrast failures",
+        "Voice assistant overlay designed for eyes-free operation with audio-only fallback",
+        "App store screenshot mockups prepared",
+        "Onboarding flow under 3 steps"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "SAFETY",
+      "description": "Perform ISO 26262 QM Hazard Analysis and Risk Assessment (HARA) and system-level FMEA for all IVI features. Document item definition, hazardous event catalog, controllability classification, and ASIL determination. Produce Functional Safety Concept (FSC) for OTA update and navigation features as highest-risk surfaces.",
+      "payload": {
+        "solution": "infotainment_system",
+        "standard": "ISO 26262:2018 (Road vehicles \u2014 Functional safety)",
+        "asil_target": "QM (Quality Managed) \u2014 confirm no ASIL A/B/C/D items in scope",
+        "analysis_scope": [
+          "OTA update (FOTA/SOTA): unintended vehicle behavior during update",
+          "Navigation misdirection hazard",
+          "Voice command misinterpretation in safety-critical context",
+          "Media playback distraction",
+          "HMI freeze/crash during driving"
+        ],
+        "deliverables": [
+          "Item Definition",
+          "HARA report",
+          "FMEA spreadsheet",
+          "Functional Safety Concept v1.0",
+          "Safety Goal register"
+        ]
+      },
+      "acceptance_criteria": [
+        "All hazardous events rated with Severity \u00d7 Exposure \u00d7 Controllability per ISO 26262 Table 4",
+        "ASIL determination confirmed QM for all in-scope items with documented rationale",
+        "Safety goals defined for OTA and navigation with verification method specified",
+        "FMEA covers \u226530 failure modes with detection and mitigation columns populated",
+        "ASIL level determined for each function",
+        "Fault tree analysis complete"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 5,
+      "task_type": "COMPLIANCE",
+      "description": "Establish compliance framework for AUTOSAR, ISO 26262 QM, and UNECE R155/R156. Create Design History File (DHF) skeleton, traceability matrix template (requirements \u2192 design \u2192 test), and V&V protocol. Map UNECE R155 cybersecurity management obligations and R156 software update management obligations to architecture decisions.",
+      "payload": {
+        "solution": "infotainment_system",
+        "standards": [
+          "ISO 26262:2018 Parts 1\u201312 (QM scope)",
+          "AUTOSAR Classic 4.4 / Adaptive 21-11",
+          "UNECE R155 (CSMS)",
+          "UNECE R156 (SUMS)"
+        ],
+        "deliverables": [
+          "DHF skeleton with section owners",
+          "Requirements traceability matrix (RTM) template",
+          "V&V protocol document",
+          "UNECE R155 CSMS gap analysis",
+          "UNECE R156 SUMS obligations checklist"
+        ]
+      },
+      "acceptance_criteria": [
+        "DHF skeleton includes all ISO 26262 Part 4 work products with status tracking",
+        "RTM links every PRD requirement to at least one design artifact and one test case",
+        "V&V protocol defines pass/fail criteria for each test phase (unit, integration, HIL, system)",
+        "UNECE R155 gap analysis identifies \u22655 cybersecurity controls required and assigned owners",
+        "UNECE R156 SUMS checklist covers OTA authorization, rollback, and integrity verification"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "CONFIG",
+      "description": "Set up infotainment_system development environment: Android Automotive OS (AAOS) emulator and build system (AOSP with car extensions), AUTOSAR toolchain (Vector CANoe/DaVinci or open-source equivalent), cross-compilation toolchain (ARM Cortex-A / QNX or Linux), OTA test infrastructure (local update server), and CI/CD pipeline stubs. Configure agentic pattern: multi-agent coordinator routing voice, navigation, media, and OTA specialist agents.",
+      "payload": {
+        "solution": "infotainment_system",
+        "toolchain": {
+          "os": "Android Automotive OS 13+ (AOSP car branch)",
+          "build": "Android Build System (Soong + Make)",
+          "emulator": "Android Automotive Emulator (AVD with car APIs)",
+          "autosar": "AUTOSAR Adaptive Platform (ARA::COM, ARA::Exec stubs)",
+          "cross_compiler": "arm-linux-gnueabihf-gcc / clang for ARM Cortex-A",
+          "ota_server": "Local OTA test server (A/B partition update)",
+          "ci": "GitHub Actions with AAOS emulator runner"
+        },
+        "agentic_pattern": "coordinator",
+        "coordinator_agents": [
+          "voice_agent",
+          "navigation_agent",
+          "media_agent",
+          "ota_agent"
+        ],
+        "solution_files": [
+          "solutions/infotainment_system/project.yaml",
+          "solutions/infotainment_system/prompts.yaml",
+          "solutions/infotainment_system/tasks.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "AAOS emulator boots and displays car launcher in <90 seconds",
+        "AOSP car build compiles without errors for x86_64 emulator target",
+        "Cross-compilation toolchain produces ARM ELF binary from sample C file",
+        "Local OTA server accepts and serves a test update package",
+        "CI pipeline runs build + unit tests on PR creation",
+        "Coordinator agent routes test task to correct specialist and returns merged result"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 7,
+      "task_type": "FIRMWARE",
+      "description": "Implement Hardware Abstraction Layer (HAL) modules for IVI hardware interfaces: display controller (DSI/LVDS), touch input (I2C capacitive), audio codec (I2S/TDM), CAN bus interface (vehicle data \u2014 speed, gear, ignition state), and GPS/GNSS receiver (UART/SPI). Implement RTOS task scheduler (FreeRTOS or Zephyr) with priority assignment per functional domain.",
+      "payload": {
+        "solution": "infotainment_system",
+        "target_soc": "ARM Cortex-A53/A72 (e.g., NXP i.MX8 or Qualcomm SA8155P class)",
+        "rtos": "FreeRTOS (safety-qualified variant for QM) or Zephyr RTOS",
+        "hal_modules": [
+          "display_hal.c \u2014 DSI/LVDS init, framebuffer, brightness control",
+          "touch_hal.c \u2014 I2C capacitive touch, gesture debounce",
+          "audio_hal.c \u2014 I2S codec init, volume, mute, source select",
+          "can_hal.c \u2014 CAN 2.0B frame receive, vehicle signal decoder (DBC-based)",
+          "gnss_hal.c \u2014 NMEA/UBX parser, fix acquisition, RTCM support"
+        ],
+        "autosar_bsw": [
+          "COM stack stubs",
+          "Dcm (Diagnostic Communication Manager) stub",
+          "NvM (Non-volatile Memory Manager)"
+        ]
+      },
+      "acceptance_criteria": [
+        "All five HAL modules compile without warnings for ARM target",
+        "display_hal initializes at target resolution (1280\u00d7720 minimum) with verified pixel output",
+        "can_hal decodes vehicle speed signal from DBC file with \u00b11 km/h accuracy in test harness",
+        "gnss_hal achieves first fix within 60 seconds in open-sky simulation",
+        "RTOS task schedule verified with logic analyzer: no priority inversion under load",
+        "All HAL functions have Doxygen headers with parameter and return documentation",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "HARDWARE_SIM",
+      "description": "Build hardware simulation testbench for IVI SoC peripherals: SystemC/TLM model of CAN bus with vehicle ECU simulator, GNSS signal simulator (replay of recorded NMEA traces), and SPI/I2C bus model for touch and audio codec. Integrate with QEMU for full firmware bring-up without physical hardware.",
+      "payload": {
+        "solution": "infotainment_system",
+        "sim_tools": [
+          "QEMU (ARM Cortex-A machine)",
+          "SystemC TLM-2.0",
+          "GNSS signal replay (NMEA log files)",
+          "CAN bus simulator (virtual CAN \u2014 vcan0 via SocketCAN)"
+        ],
+        "models": [
+          "can_ecu_sim.sc \u2014 SystemC ECU model sending speed/gear/ignition CAN frames",
+          "gnss_sim.py \u2014 NMEA sentence replay at 1Hz/10Hz for route simulation",
+          "i2c_touch_model.sc \u2014 touch event injection over simulated I2C",
+          "audio_loopback_model \u2014 I2S loopback for codec validation"
+        ],
+        "testbenches": [
+          "can_hal_tb.sc",
+          "gnss_hal_tb.py",
+          "display_init_tb.sh (QEMU framebuffer check)"
+        ]
+      },
+      "acceptance_criteria": [
+        "QEMU boots firmware image and reaches HAL init stage without hang",
+        "CAN ECU simulator generates valid DBC-encoded frames verified by can_hal_tb",
+        "GNSS simulator replays 100km route trace; gnss_hal_tb verifies coordinate accuracy within 10m",
+        "All testbenches runnable with single `make sim` command",
+        "Simulation coverage: \u226580% of HAL module branches exercised by testbench"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "API",
+      "description": "Define API contracts for all IVI service boundaries: Android Automotive Car API extensions (CarAudioManager, CarNavigationStatusManager, CarVoiceInteractionSession), OTA update REST API (manifest fetch, chunk download, status reporting), Voice NLU API (intent + entity schema), and Navigation SDK integration contract (route request/response, map tile protocol).",
+      "payload": {
+        "solution": "infotainment_system",
+        "api_specs": [
+          "ota_api.yaml \u2014 OpenAPI 3.1: GET /manifest, POST /download/chunk, GET /status/{job_id}, POST /apply, POST /rollback",
+          "voice_nlu_api.yaml \u2014 intents: navigate_to, play_media, call_contact, set_temperature, check_eta",
+          "navigation_api.yaml \u2014 route_request, waypoint_add, recalculate, arrive_notification",
+          "vehicle_data_api.yaml \u2014 speed, fuel, gear, ignition, TPMS (read-only, CAN-sourced)"
+        ],
+        "android_automotive_apis": [
+          "CarAudioManager.setGroupVolume",
+          "CarNavigationStatusManager.sendNavigationStateChange",
+          "VoiceInteractionSession.onComputeNewSession"
+        ]
+      },
+      "acceptance_criteria": [
+        "All OpenAPI specs pass validation (openapi-lint or Spectral)",
+        "OTA API spec covers full update lifecycle: check \u2192 download \u2192 verify \u2192 apply \u2192 confirm/rollback",
+        "Voice NLU intent schema covers \u226510 intents with slot definitions and example utterances",
+        "Android Automotive API usage documented with AAOS version compatibility matrix",
+        "API contracts reviewed and signed off by product_manager before implementation begins"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement OTA Update Server: manifest generation and signing (RSA-2048 or Ed25519), firmware/software package repository, chunked download with resume support, update campaign management (vehicle targeting, rollout percentage), and audit logging for UNECE R156 SUMS compliance. Stack: Python FastAPI + PostgreSQL + S3-compatible object storage.",
+      "payload": {
+        "solution": "infotainment_system",
+        "stack": "Python FastAPI + PostgreSQL + MinIO (S3-compatible)",
+        "features": [
+          "Package upload + integrity hash (SHA-256) + signature verification",
+          "Campaign management: target by VIN, region, software version",
+          "Rollout control: staged percentage-based deployment",
+          "Rollback trigger: automatic on error-rate threshold breach",
+          "UNECE R156 audit log: every update action logged with VIN, timestamp, actor"
+        ],
+        "security": [
+          "mTLS for vehicle-to-server communication",
+          "JWT-based campaign management auth",
+          "Package signing with HSM-backed private key"
+        ]
+      },
+      "acceptance_criteria": [
+        "OTA server boots and passes /health endpoint check",
+        "Package upload, signing, and SHA-256 verification pipeline completes in <30s for 500MB package",
+        "Campaign targeting correctly filters vehicles by VIN pattern and software version",
+        "Rollout percentage limiter tested: 10% campaign delivers to exactly 10% of test VIN pool",
+        "Rollback API reverts vehicle to previous version in test harness",
+        "All UNECE R156 mandatory audit fields present in every logged event"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement Voice Assistant Backend: wake-word detection integration (Picovoice Porcupine or Snowboy), speech-to-text pipeline (on-device via Android SpeechRecognizer or cloud via Whisper API), NLU intent classifier (fine-tuned on automotive domain), text-to-speech (Android TTS or Coqui TTS), and dialog state manager. Expose as Android Service bound to CarVoiceInteractionSession.",
+      "payload": {
+        "solution": "infotainment_system",
+        "agentic_pattern": "react",
+        "components": [
+          "WakeWordDetector \u2014 always-on microphone, low-power DSP offload",
+          "SpeechRecognitionService \u2014 on-device ASR with cloud fallback",
+          "NLUClassifier \u2014 intent + entity extraction, automotive domain fine-tune",
+          "DialogManager \u2014 multi-turn state machine (navigate \u2192 confirm destination \u2192 start)",
+          "TTSEngine \u2014 natural TTS with sentence-boundary streaming",
+          "VoiceInteractionSession \u2014 Android Automotive CarVoiceInteractionSession implementation"
+        ],
+        "supported_intents": [
+          "navigate_to",
+          "play_artist",
+          "play_genre",
+          "call_contact",
+          "set_volume",
+          "check_eta",
+          "find_poi",
+          "report_hazard"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wake word detected within 500ms of utterance onset, false-positive rate <1/hour in cabin noise simulation",
+        "ASR transcription accuracy \u226595% on automotive command test set (200 utterances, 70 dB SNR)",
+        "NLU intent classification F1 \u22650.92 on held-out automotive intent test set",
+        "End-to-end latency (wake word \u2192 TTS response start) \u22641.5s on target SoC",
+        "Multi-turn dialog handles navigate \u2192 ambiguous destination \u2192 disambiguation \u2192 confirm flow",
+        "CarVoiceInteractionSession integration tested on AAOS emulator"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "FRONTEND",
+      "description": "Implement Android Automotive OS car app: Home screen launcher (AAOS CarLauncher extension), Media player activity (ExoPlayer with MediaBrowserService, Bluetooth A2DP, USB Audio), Navigation host activity (Google Maps for Automotive or HERE SDK integration), OTA notification and progress UI, and Settings hierarchy (CarSettingsActivity extensions).",
+      "payload": {
+        "solution": "infotainment_system",
+        "platform": "Android Automotive OS 13+",
+        "framework": "Jetpack Compose for Automotive (Car UI Library 2.0)",
+        "components": [
+          "CarLauncherActivity \u2014 grid of app tiles, vehicle status strip (speed, fuel, time)",
+          "MediaPlayerActivity \u2014 album art, playback controls, source selector (BT/USB/Stream)",
+          "NavigationActivity \u2014 map view, turn card, route summary panel, search bar",
+          "VoiceOverlay \u2014 translucent sheet, waveform animation, transcript, action confirmation",
+          "OtaNotificationActivity \u2014 progress bar, install/defer/rollback CTA",
+          "SettingsActivity \u2014 display brightness, audio zones, language, connected devices, software version"
+        ],
+        "design_tokens": "Sourced from UX wireframes (step 3); dark/light automotive themes"
+      },
+      "acceptance_criteria": [
+        "All activities pass AAOS car app compliance checker (no non-driver-safe UI violations)",
+        "Home screen renders in <1s cold start on emulator",
+        "Media player transitions between BT and USB sources without audio dropout",
+        "Navigation turn card updates within 100ms of GPS position change",
+        "Voice overlay appears within 200ms of wake word detection callback",
+        "OTA progress UI accurately reflects backend job status (polling \u22645s)",
+        "All text elements pass WCAG 2.1 AA contrast ratio (\u22654.5:1)"
+      ],
+      "depends_on": [
+        11,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "FRONTEND",
+      "description": "Implement Navigation module: integrate HERE SDK for Android Automotive (or Mapbox Navigation SDK) with offline map tile support, real-time traffic (HERE Traffic API), Points of Interest (POI) search, route calculation with multiple alternatives, lane guidance, speed limit display, and speed camera warnings. Voice-guided navigation integrated with voice assistant TTS.",
+      "payload": {
+        "solution": "infotainment_system",
+        "sdk": "HERE SDK for Android Automotive (or Mapbox Navigation SDK v3)",
+        "features": [
+          "Offline map tiles: pre-downloaded by region, delta updates via OTA",
+          "Route calculation: fastest/shortest/avoid-tolls alternatives",
+          "Real-time traffic: HERE Flow API, rerouting on incident detection",
+          "Lane guidance: lane arrows overlay at complex junctions",
+          "Speed limit: posted limit from map data + camera DB overlay",
+          "POI search: address, category, along-route filtering",
+          "EV routing: range estimation, charging stop insertion (optional module)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Route calculation completes in <3s for 500km route with traffic",
+        "Offline navigation functional with no network connection using pre-cached tiles",
+        "Lane guidance appears \u2265500m before junction requiring lane change",
+        "Speed limit updates within one map tile transition (no stale data display)",
+        "Rerouting triggers within 10s of deviation detection",
+        "POI search returns \u226510 results within 5km for 'fuel station' query"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FIRMWARE",
+      "description": "Implement OTA client firmware module: A/B partition manager, update download agent (chunked HTTPS with TLS 1.3), package integrity verifier (SHA-256 + signature check against OTA server public key), atomic update applier (writes to inactive partition, flip on success), and watchdog-guarded rollback mechanism. Integrates with AUTOSAR NvM for persistent update state.",
+      "payload": {
+        "solution": "infotainment_system",
+        "standard": "UNECE R156 SUMS \u2014 software update authorization, integrity, rollback",
+        "components": [
+          "ota_client.c \u2014 state machine: IDLE \u2192 CHECK \u2192 DOWNLOAD \u2192 VERIFY \u2192 APPLY \u2192 CONFIRM",
+          "partition_mgr.c \u2014 A/B slot management, active/inactive flip, bootloader flag set",
+          "downloader.c \u2014 HTTPS chunked download, resume on disconnect, progress reporting",
+          "verifier.c \u2014 SHA-256 hash check, Ed25519 signature verification",
+          "rollback_wdt.c \u2014 hardware watchdog arm before apply; disarm after successful boot"
+        ],
+        "safety_constraints": [
+          "Update only when ignition OFF or vehicle parked",
+          "CAN signal gate: reject update if vehicle speed > 0 km/h",
+          "Battery level gate: reject if SOC < 20%"
+        ]
+      },
+      "acceptance_criteria": [
+        "OTA state machine traverses full lifecycle (IDLE\u2192CONFIRM) without manual intervention in simulation",
+        "Signature verification rejects tampered package (bit-flip test) with logged SECURITY_EVENT",
+        "A/B partition flip verified: system boots from inactive partition post-apply",
+        "Watchdog rollback triggered and system returns to active (previous) partition on simulated boot failure",
+        "Speed gate tested: update download rejected when CAN speed signal > 0",
+        "UNECE R156 audit event emitted at each state transition with ISO 8601 timestamp",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        7,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "SECURITY",
+      "description": "Perform threat modeling (STRIDE/TARA per ISO/SAE 21434) for the IVI system. Identify attack surfaces: OTA update channel, voice data pipeline, Bluetooth/WiFi interfaces, CAN bus gateway, and Android app sideloading. Produce UNECE R155 CSMS artifacts: cybersecurity goals, countermeasure catalog, and residual risk acceptance.",
+      "payload": {
+        "solution": "infotainment_system",
+        "methodology": "STRIDE threat modeling + ISO/SAE 21434 TARA",
+        "standards": [
+          "UNECE R155 (CSMS)",
+          "ISO/SAE 21434:2021"
+        ],
+        "attack_surfaces": [
+          "OTA channel: man-in-the-middle, package substitution, replay attack",
+          "Voice pipeline: adversarial audio commands, eavesdropping",
+          "BT/WiFi: pairing exploitation, rogue AP, BlueBorne-class",
+          "CAN gateway: message injection from IVI to powertrain (scope boundary)",
+          "App sideload: APK injection via USB, debug interface abuse"
+        ],
+        "deliverables": [
+          "TARA report",
+          "Cybersecurity goals register",
+          "Countermeasure implementation checklist",
+          "CSMS evidence package for UNECE R155 type approval"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis covers all six attack surfaces with threat rating (likelihood \u00d7 impact)",
+        "Every high-rated threat has at least one countermeasure mapped and assigned to an implementation step",
+        "OTA channel: TLS 1.3 pinning and Ed25519 package signing confirmed as countermeasures",
+        "CAN gateway: IVI\u2192CAN write access confirmed restricted to non-safety bus segments only",
+        "UNECE R155 CSMS artifact package complete: covers 7 mandatory cybersecurity measures",
+        "Residual risk acceptance signed off by safety_engineer"
+      ],
+      "depends_on": [
+        5,
+        10
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 16,
+      "task_type": "DATABASE",
+      "description": "Design and implement data schema for IVI system: vehicle preferences store (driver profiles, seat/mirror/audio presets), navigation history and favorites, media library index (local USB + streaming cache), OTA campaign and job audit database, and voice interaction log (anonymized for model improvement). SQLite on-device + PostgreSQL for OTA server.",
+      "payload": {
+        "solution": "infotainment_system",
+        "on_device": {
+          "engine": "SQLite (Android Room ORM)",
+          "tables": [
+            "driver_profiles",
+            "navigation_history",
+            "favorites",
+            "media_index",
+            "voice_interaction_log",
+            "ota_job_status"
+          ]
+        },
+        "server_side": {
+          "engine": "PostgreSQL 15",
+          "tables": [
+            "ota_packages",
+            "ota_campaigns",
+            "vehicle_enrollments",
+            "update_audit_log",
+            "rollback_events"
+          ]
+        },
+        "privacy": [
+          "voice_interaction_log: anonymized \u2014 no PII, no audio stored",
+          "GDPR Article 5 data minimization applied"
+        ]
+      },
+      "acceptance_criteria": [
+        "All Room migrations run without data loss on schema upgrade test",
+        "Driver profile switch (seat/audio/nav prefs) loads in <200ms",
+        "OTA audit log table has row-level immutability (append-only trigger, no UPDATE/DELETE)",
+        "Voice interaction log confirmed: no speaker identity or raw audio stored",
+        "PostgreSQL schema passes pgTAP unit tests for FK constraints and index coverage",
+        "GDPR data retention policy enforced: voice logs auto-purged after 30 days"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "LOCALIZATION",
+      "description": "Implement i18n/l10n framework for IVI system: Android Automotive string resources for 12 locales (en-US, en-GB, de-DE, fr-FR, es-ES, it-IT, pt-BR, zh-CN, zh-TW, ja-JP, ko-KR, ar-SA), RTL layout support (Arabic), locale-aware number/date/unit formatting (km vs miles, 12h vs 24h clock, temperature units), and Navigation voice prompt audio assets per locale.",
+      "payload": {
+        "solution": "infotainment_system",
+        "locales": [
+          "en-US",
+          "en-GB",
+          "de-DE",
+          "fr-FR",
+          "es-ES",
+          "it-IT",
+          "pt-BR",
+          "zh-CN",
+          "zh-TW",
+          "ja-JP",
+          "ko-KR",
+          "ar-SA"
+        ],
+        "components": [
+          "Android res/values-{locale}/ string resources \u2014 all UI strings externalized",
+          "RTL layout mirroring \u2014 LayoutDirection.RTL for ar-SA",
+          "Unit formatter \u2014 km/miles toggle, \u00b0C/\u00b0F, 24h/12h (sourced from Android locale settings)",
+          "Navigation TTS prompts \u2014 locale-specific audio or TTS voice pack per locale",
+          "Date/time format \u2014 use Android DateFormat per locale, no hardcoded patterns"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 12 locales render without truncation on standard 10-inch IVI display",
+        "RTL layout (ar-SA) mirrors correctly: back button, navigation arrows, text alignment",
+        "Unit formatting switches correctly when device locale changes: km\u2194miles, \u00b0C\u2194\u00b0F",
+        "Navigation voice prompts available in all 12 locales (TTS fallback where audio assets absent)",
+        "No hardcoded strings in codebase (Lint LocaleStrings check passes with zero warnings)",
+        "Date/time display matches Android system locale in all 12 test configurations",
+        "Top 5 target locales identified",
+        "Store listing translated"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline for IVI system: AAOS build pipeline (AOSP car branch, emulator smoke test), OTA server deployment pipeline (Docker \u2192 Kubernetes), firmware cross-compilation pipeline (ARM), automated signing pipeline (OTA packages with HSM integration), release management (semantic versioning, changelog generation), and monitoring stack (Grafana + Prometheus for OTA server, Sentry for Android crashes).",
+      "payload": {
+        "solution": "infotainment_system",
+        "ci_platform": "GitHub Actions",
+        "pipelines": [
+          "android_build.yml \u2014 AOSP car build, lint, unit tests, APK sign, AAOS emulator smoke",
+          "firmware_build.yml \u2014 ARM cross-compile, MISRA-C static analysis, binary sign",
+          "ota_server_deploy.yml \u2014 Docker build, push to registry, Helm deploy to K8s staging/prod",
+          "ota_package_sign.yml \u2014 SHA-256 hash + Ed25519 sign + upload to MinIO",
+          "release.yml \u2014 semantic-release, CHANGELOG.md generation, GitHub Release draft"
+        ],
+        "monitoring": [
+          "Grafana dashboard: OTA campaign success rate, download latency, rollback rate",
+          "Prometheus: OTA server request rate, error rate, update queue depth",
+          "Sentry: Android ANR and crash rate by software version"
+        ]
+      },
+      "acceptance_criteria": [
+        "PR pipeline completes in <20 minutes (build + test + lint)",
+        "OTA server deployment to staging completes in <10 minutes with zero-downtime rolling update",
+        "Firmware binary signing pipeline produces Ed25519-signed artifact verified by OTA verifier module",
+        "Semantic versioning increments correctly on merge to main: PATCH for fixes, MINOR for features",
+        "Grafana dashboard shows OTA success rate with \u226599.5% threshold alert configured",
+        "Sentry crash rate alert triggers when ANR rate >0.1% in rolling 1-hour window"
+      ],
+      "depends_on": [
+        10,
+        14
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Produce Hardware-in-the-Loop (HIL) test specifications for IVI system: test harness design (dSPACE or National Instruments HIL platform), test cases for CAN signal injection (vehicle speed, ignition state, gear), GNSS signal replay, display and touch validation, OTA update over real Ethernet, and fault injection (power loss during OTA, GPS signal loss during navigation).",
+      "payload": {
+        "solution": "infotainment_system",
+        "hil_platform": "dSPACE SCALEXIO or NI VeriStand (specify target in procurement)",
+        "test_categories": [
+          "CAN signal injection: speed 0\u2192200 km/h ramp, ignition cycle, gear sequence",
+          "GNSS replay: recorded drive routes, tunnel signal loss, cold start acquisition",
+          "OTA over Ethernet: full package delivery, mid-transfer disconnect, corrupt package",
+          "Power loss injection: cutoff at each OTA state machine phase, verify rollback",
+          "Audio HIL: speaker output measurement (THD, SNR) via audio analyzer",
+          "Touch input: simulated finger press grid, swipe gesture accuracy"
+        ],
+        "firmware_unit_tests": [
+          "Unity test framework for all HAL modules",
+          "Mock CAN bus for can_hal unit tests",
+          "GNSS NMEA parser unit tests (edge cases: invalid sentences, datum rollover)"
+        ]
+      },
+      "acceptance_criteria": [
+        "HIL test specification covers \u226550 test cases across all categories",
+        "Each test case has: precondition, stimulus sequence, expected response, pass/fail criterion",
+        "OTA power-loss tests confirm rollback for power cut at all 5 state transitions",
+        "HAL unit test coverage: \u226585% branch coverage across all HAL modules (gcov report)",
+        "GNSS parser handles all NMEA 0183 v4.11 sentence types without crash",
+        "HIL spec reviewed and approved by safety_engineer before hardware procurement"
+      ],
+      "depends_on": [
+        8,
+        14,
+        5
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "QA",
+      "description": "Produce QA Test Plan covering all IVI features: test strategy, entry/exit criteria per phase, risk-based test prioritization (ISO 26262 QM coverage requirements), defect management process, and test execution report template. Define regression suite for each OTA software update. Include AUTOSAR BSW integration test cases.",
+      "payload": {
+        "solution": "infotainment_system",
+        "test_phases": [
+          "Unit (developer-owned)",
+          "Integration (HAL + Android service layer)",
+          "HIL (hardware-in-the-loop)",
+          "System (full vehicle simulation)",
+          "Field trial (10-vehicle beta fleet)"
+        ],
+        "coverage_targets": {
+          "unit": "\u226585% branch coverage",
+          "integration": "100% API contract test coverage",
+          "system": "All PRD requirements traced to \u22651 system test case",
+          "regression": "Full regression per OTA update release"
+        },
+        "defect_severity_classification": [
+          "S1: Safety-relevant (ISO 26262 item)",
+          "S2: Feature blocking",
+          "S3: Significant degradation",
+          "S4: Minor / cosmetic"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan covers all five test phases with entry/exit criteria",
+        "Risk matrix identifies top-10 highest-risk test areas with priority ordering",
+        "Every PRD requirement has \u22651 test case mapped in RTM",
+        "Regression suite defined: \u2265150 automated test cases for OTA update qualification",
+        "Defect management process documented with S1 fix SLA = 24 hours",
+        "QA plan reviewed and signed off by product_manager and safety_engineer"
+      ],
+      "depends_on": [
+        5,
+        19
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 21,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute system-level integration test suite: end-to-end voice command \u2192 navigation flow, media playback across all sources, full OTA update cycle (check \u2192 download \u2192 apply \u2192 confirm), multi-driver profile switch, and 8-hour soak test (display, audio, CAN parsing under continuous load). Document results in V&V protocol evidence package.",
+      "payload": {
+        "solution": "infotainment_system",
+        "test_suites": [
+          "voice_e2e_suite \u2014 100 voice commands across all intents; measure success rate",
+          "navigation_e2e_suite \u2014 20 drive scenarios including reroute, toll avoid, offline",
+          "media_e2e_suite \u2014 BT/USB/stream source transitions; audio quality measurement",
+          "ota_e2e_suite \u2014 full update cycle; rollback under fault injection",
+          "multidriver_suite \u2014 3 driver profiles; prefs persist across ignition cycles",
+          "soak_test \u2014 8h continuous operation; monitor for memory leaks, ANR, CPU thermal"
+        ],
+        "pass_criteria": {
+          "voice_success_rate": "\u226595%",
+          "ota_success_rate": "\u226599.5%",
+          "soak_memory_leak": "No >10% heap growth over 8h",
+          "navigation_accuracy": "ETA within \u00b15% of reference route"
+        }
+      },
+      "acceptance_criteria": [
+        "Voice command success rate \u226595% across 100-utterance test set",
+        "OTA full cycle completes without manual intervention in \u226599/100 test runs",
+        "8-hour soak test passes: no ANR, no crash, heap growth <10%",
+        "All system test results documented in V&V evidence package with pass/fail per test case",
+        "All S1 and S2 defects resolved before system test sign-off",
+        "V&V evidence package linked to RTM closing traceability loop"
+      ],
+      "depends_on": [
+        13,
+        14,
+        17,
+        20
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 22,
+      "task_type": "COMPLIANCE",
+      "description": "Compile final ISO 26262 QM compliance package: completed DHF with all work products, closed RTM (requirements \u2192 design \u2192 test evidence), V&V completion report, HARA closure evidence, UNECE R155 CSMS declaration, and UNECE R156 SUMS declaration. Prepare type approval submission package.",
+      "payload": {
+        "solution": "infotainment_system",
+        "deliverables": [
+          "Design History File (DHF) \u2014 all work products completed and signed",
+          "Requirements Traceability Matrix \u2014 fully closed (every req has test evidence)",
+          "V&V Completion Report \u2014 all test phases passed, deviations documented",
+          "ISO 26262 QM Compliance Declaration \u2014 Part 4 work products checklist",
+          "UNECE R155 CSMS Declaration \u2014 cybersecurity measures evidence",
+          "UNECE R156 SUMS Declaration \u2014 software update authorization and integrity evidence",
+          "Software Bill of Materials (SBOM) \u2014 CycloneDX format, all OSS components with licenses"
+        ]
+      },
+      "acceptance_criteria": [
+        "DHF contains all ISO 26262 Part 4 mandatory work products with status 'completed'",
+        "RTM is 100% closed: every requirement traces to at least one passing test case",
+        "UNECE R155 declaration covers all 7 mandatory CSMS measures with evidence references",
+        "UNECE R156 declaration covers update authorization, integrity verification, and rollback evidence",
+        "SBOM lists all third-party components with SPDX license identifiers; no GPL-3 in firmware",
+        "Compliance package reviewed by regulatory_specialist and legal_advisor before submission"
+      ],
+      "depends_on": [
+        21,
+        15
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "TRAINING",
+      "description": "Produce end-user and OEM integration documentation: driver quick-start guide (voice commands, navigation, media controls), OEM integration guide (Android Automotive build system integration, HAL porting guide, OTA server deployment runbook), and service technician guide (diagnostic access via UDS/OBD-II, forced OTA rollback procedure).",
+      "payload": {
+        "solution": "infotainment_system",
+        "documents": [
+          "Driver Quick-Start Guide \u2014 printed card + PDF + in-car onboarding wizard",
+          "Voice Command Reference \u2014 all 10 intents with example phrases, 12 locales",
+          "OEM Integration Guide \u2014 AOSP build instructions, HAL porting checklist, OTA server setup",
+          "Service Technician Guide \u2014 UDS diagnostic session, DTC catalog, forced rollback, reflash procedure",
+          "OTA Campaign Operations Runbook \u2014 how to create/target/monitor/abort campaigns"
+        ],
+        "formats": [
+          "PDF",
+          "In-app contextual help (Android Help overlay)",
+          "HTML (OEM developer portal)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Driver quick-start covers top-5 features with step-by-step illustrated instructions",
+        "Voice command reference lists all intents with \u22653 example utterances per intent in all 12 locales",
+        "OEM integration guide allows a new OEM engineer to build and boot AAOS image following doc alone",
+        "Service technician guide covers DTC catalog for all IVI-specific fault codes",
+        "All documents reviewed by technical_writer and approved by product_manager",
+        "In-app help overlay triggers on first-launch and is accessible from Settings"
+      ],
+      "depends_on": [
+        21
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 24,
+      "task_type": "AGENTIC",
+      "description": "Implement SAGE solution configuration for infotainment_system: prompts.yaml with specialist agent roles (IVI analyst, OTA operations agent, voice quality monitor, compliance tracker), tasks.yaml with 8 task types (ota_campaign_create, voice_quality_alert, navigation_error_triage, can_signal_anomaly, driver_feedback_analysis, software_update_audit, distraction_incident_review, compliance_gap_detect), and project.yaml with active modules and coordinator pattern. Agentic pattern: multi-agent coordinator routing IVI-specific events.",
+      "payload": {
+        "solution": "infotainment_system",
+        "agentic_pattern": "coordinator",
+        "pattern_components": {
+          "coordinator": "routes incoming events (OTA failure, voice error, CAN anomaly, compliance gap) to specialist agents",
+          "specialist_agents": [
+            "ota_agent",
+            "voice_quality_agent",
+            "navigation_agent",
+            "compliance_agent"
+          ],
+          "hitl_gates": [
+            "ota_campaign_create (HITL: strict \u2014 UNECE R156)",
+            "compliance_gap_detect (HITL: strict)",
+            "agent_hire"
+          ],
+          "autonomous_actions": [
+            "voice_quality_alert",
+            "can_signal_anomaly notification",
+            "driver_feedback_analysis"
+          ]
+        },
+        "solution_files": {
+          "project_yaml": "IVI platform, active_modules, theme (automotive dark), coordinator config",
+          "prompts_yaml": "IVI analyst, OTA ops agent, voice quality monitor, compliance tracker roles",
+          "tasks_yaml": "8 IVI-specific task types with HITL level per type"
+        }
+      },
+      "acceptance_criteria": [
+        "project.yaml loads without validation errors via POST /config/switch {project: infotainment_system}",
+        "prompts.yaml defines \u22654 specialist agent roles with automotive-domain system prompts",
+        "tasks.yaml defines \u22658 task types with correct HITL levels (strict for OTA and compliance)",
+        "Coordinator routes test OTA failure event to ota_agent and returns structured proposal",
+        "HITL gate confirmed: ota_campaign_create creates pending proposal, does not auto-execute",
+        "Autonomous action confirmed: voice_quality_alert executes without approval gate",
+        "POST /analyze with IVI-domain payload returns structured analysis from correct specialist agent"
+      ],
+      "depends_on": [
+        6,
+        11
+      ],
+      "agent_role": "developer"
+    }
+  ],
+  "task_count": 24,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 58,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 58,
+        "final_review": {
+          "score": 58,
+          "flaws": [
+            "Step 18 acceptance criteria states 'PR pipeline completes in <20 minutes (build + test + lint)' \u2014 AOSP full builds take 4\u20138 hours; incremental builds take 30\u201360 minutes minimum. This criterion is off by 10\u201320x and will be failed on day one.",
+            "Step 6 acceptance criteria states 'AAOS emulator boots in <90 seconds' \u2014 cold boot of the Android Automotive AVD routinely takes 3\u20138 minutes on standard CI hardware. This will never pass.",
+            "Step 4 pre-determines ASIL as QM before the HARA is performed. The HARA is the process that determines ASIL \u2014 you cannot set a target ASIL and then run the HARA to confirm it. Navigation misdirection and HMI freeze at highway speed may yield ASIL A under rigorous Severity \u00d7 Exposure \u00d7 Controllability analysis. This is methodologically backwards and will fail a third-party functional safety audit.",
+            "Step 15 (TARA/threat modeling) depends on steps 5 and 10, meaning the OTA server is fully implemented before the attack surface is analyzed. Security must inform design, not audit it post-hoc. UNECE R155 requires CSMS to be integrated into the development process, not appended to it.",
+            "Step 11 lists Snowboy as a wake-word detection option. Snowboy was archived in 2020 and is no longer maintained. Using deprecated security-adjacent software in a production vehicle system is a compliance and supply-chain risk.",
+            "Step 7 acceptance criteria demands 'MISRA C violations zero.' Zero MISRA violations is unachievable for any non-trivial embedded codebase. The correct standard is documented and justified deviations \u2014 claiming zero is either a lie or means the checker is not configured correctly.",
+            "Step 14 includes 'battery level gate: reject if SOC < 20%' \u2014 SOC applies to EVs and hybrids only. ICE vehicles use 12V lead-acid without meaningful SOC tracking. No equivalent 12V voltage gate is specified, leaving ICE platforms unprotected against low-voltage brick during OTA.",
+            "Step 10 requires HSM-backed OTA package signing, but Step 18 implements signing in GitHub Actions CI. There is no described mechanism for GitHub Actions to reach an HSM. This gap means signing will be done with software keys in practice, violating the stated security requirement.",
+            "Step 8 proposes using QEMU for AAOS firmware bring-up, but AAOS is not a standard QEMU target. AOSP car builds use the Android Automotive Emulator (AVD), not bare QEMU. Raw QEMU for NXP i.MX8 or SA8155P requires board-specific machine definitions that do not exist in upstream QEMU \u2014 this step will stall without custom QEMU porting work that is not scoped.",
+            "Step 12 specifies 'Jetpack Compose for Automotive (Car UI Library 2.0)' \u2014 as of 2025, Compose for Android Automotive remains experimental with known compatibility gaps against the AAOS Car UI Library. Production commitment to this stack requires explicit compatibility validation against the target AAOS version, which is absent.",
+            "Step 21 specifies an 8-hour soak test. Automotive reliability standards (e.g., AEC-Q100, OEM PPAP requirements) typically require 100\u2013500 hours for thermal cycling and memory leak detection. An 8-hour soak will not catch slow leaks (e.g., a 5MB/hour leak looks fine at 8h, catastrophic at 200h).",
+            "The AUTOSAR Classic/Adaptive stack (step 5, step 7) and Android Automotive OS operate on physically separate compute domains (MCU vs application processor). The plan never defines the architectural boundary between them, inter-domain communication protocol (e.g., SOME/IP, virtio), or which stack owns which feature. Without this, steps 7 and 12 will produce incompatible artifacts."
+          ],
+          "suggestions": [
+            "Move Step 15 (TARA) to immediately after Step 2 (PRD), before any architecture or implementation decisions. Security requirements must gate the API contracts in Step 9, not follow OTA server implementation.",
+            "Replace the AOSP build time acceptance criterion with a realistic split: 'incremental build <45 minutes; full clean build <6 hours on 32-core runner.' Use ccache and Google's build cache to optimize.",
+            "Add an explicit architectural document step (between Steps 6 and 7) that defines the MCU/AUTOSAR \u2194 Android Automotive OS boundary, inter-domain IPC mechanism, and which compute domain owns each feature. This is the single most important missing artifact.",
+            "Replace Snowboy with a supported alternative: Picovoice Porcupine (actively maintained, has automotive licensing), SNIPS (acquired by Sonos but open-source artifacts exist), or custom wake-word model via TensorFlow Lite.",
+            "Replace 'MISRA C violations zero' with 'MISRA C:2012 compliance report generated; all Rule violations are documented deviations with rationale approved by safety_engineer.'",
+            "Add a secure boot chain step after Step 6: define hardware root of trust (ROM bootloader \u2192 U-Boot with verified boot \u2192 AAOS verified boot), key provisioning in manufacturing, and revocation strategy. Without this, UNECE R156 software integrity cannot be demonstrated.",
+            "Add certificate lifecycle management: PKI architecture, certificate expiry strategy for 10-year vehicle lifetime, OEM-specific root CA, and key rotation runbook. The current plan treats TLS/Ed25519 as implementation details with no operational lifecycle.",
+            "Add Android GMS licensing as a dependency blocker before Step 13. Google Maps for Android Automotive requires an OEM GMS contract and passing Android Automotive CDD compatibility testing. This is a 6\u201318 month business process, not a technical task.",
+            "Move HIL platform procurement decision to Step 6 (environment setup), not Step 19. dSPACE SCALEXIO lead times are 4\u20139 months. A decision deferred to Step 19 makes Steps 19\u201321 impossible to execute on schedule.",
+            "Add a Data Protection Impact Assessment (DPIA) step, required under GDPR Article 35 for voice recording pipelines and continuous location tracking \u2014 both present in this system. The current GDPR mention (step 16) is insufficient."
+          ],
+          "missing": [
+            "Secure boot chain design and key provisioning in manufacturing \u2014 no mention anywhere in 24 steps. UNECE R156 Article 7 requires cryptographic integrity of installed software, which requires verified boot.",
+            "Vehicle network security gateway architecture \u2014 the CAN boundary is mentioned in security but no gateway design (e.g., Adaptive AUTOSAR ara::com, SOME/IP firewall, SecOC) is specified. This is the most critical safety boundary in the system.",
+            "Android GMS/GAPPS licensing process \u2014 required before any Google Maps for Automotive integration can proceed. Absent from the plan entirely.",
+            "PKI infrastructure and certificate lifecycle management across a 10+ year vehicle lifetime.",
+            "Multi-SoC porting strategy \u2014 NXP i.MX8 and Qualcomm SA8155P have fundamentally different BSPs, power management, and GPU stacks. The HAL layer must be specified as SoC-agnostic or the target must be locked to one SoC.",
+            "AUTOSAR \u2194 AAOS inter-domain communication specification (SOME/IP, ARA::COM, or virtio-based).",
+            "Manufacturing key provisioning and hardware root of trust specification for production units.",
+            "Driver Monitoring System (DMS) integration point \u2014 EU GSR 2022 mandates DMS; IVI must receive DMS alerts and potentially suppress UI interactions.",
+            "DPIA (Data Protection Impact Assessment) for voice pipeline and location history \u2014 legally required under GDPR Article 35.",
+            "GPS/GNSS privacy \u2014 continuous location tracking requires user consent mechanism and data retention policy beyond the 30-day voice log policy already stated.",
+            "OSS license scanning in CI/CD \u2014 the SBOM GPL-3 check is a one-time compliance artifact (step 22) with no automated enforcement in the pipeline. GPL-3 components can be introduced silently via transitive dependencies.",
+            "Regulatory engagement plan with Technical Service (TS) and Type Approval Authority (TAA) for UNECE R155/R156 \u2014 type approval is not a document submission, it is an 8\u201324 month engagement process."
+          ],
+          "security_risks": [
+            "TARA post-implementation: threat modeling after OTA server is built means discovered high-rated threats (e.g., unauthenticated manifest endpoint, weak VIN-based targeting) require expensive rework rather than cheap design changes.",
+            "HSM-CI gap: if GitHub Actions cannot reach the HSM, signing falls back to software keys on the runner. A compromised runner then signs malicious OTA packages that will be accepted by all enrolled vehicles. This is a fleet-wide remote code execution risk.",
+            "No secure boot: without verified boot, a physical attacker with USB access can reflash the application processor with arbitrary firmware. Combined with CAN gateway access, this is a potential vehicle safety issue even within the IVI QM scope.",
+            "Voice adversarial command surface: 'report_hazard' intent combined with automated responses could be triggered by audio played from a passing vehicle or roadside speaker. The plan's false-positive criterion (1/hour) only covers wake-word, not downstream intent misclassification.",
+            "CAN write access ambiguity: step 15 states 'IVI\u2192CAN write access confirmed restricted to non-safety bus segments only' but no step in the plan implements or tests this restriction at the gateway level. It is a stated goal with no verification path.",
+            "OTA rollback integrity: the watchdog-guarded rollback in step 14 does not specify whether the rollback itself is authenticated. An attacker who can corrupt the active partition could force rollback to a known-vulnerable previous version.",
+            "mTLS vehicle identity: step 10 requires mTLS for vehicle-to-server communication but no step provisions vehicle certificates at manufacturing time or defines certificate rotation for the vehicle lifetime. Expired vehicle certs will brick OTA capability.",
+            "Debug interface: step 15 mentions APK injection via USB debug interface as an attack surface, and step 23 covers technician UDS access. Neither step specifies how ADB and diagnostic interfaces are disabled in production builds vs enabled for service."
+          ],
+          "summary": "This plan is architecturally ambitious and structurally sound \u2014 24 well-sequenced steps covering the full IVI stack from HARA through type approval. The dependency graph is mostly correct, the compliance artifacts are the right ones, and the HITL gating in step 24 is appropriately calibrated. However, it fails on several production-critical dimensions that would cause it to collapse before reaching the regulated-domain threshold of 85. The three most serious flaws are: (1) TARA placed after OTA server implementation, violating security-by-design and UNECE R155 process requirements; (2) AOSP build time acceptance criteria that are physically impossible, meaning CI will be declared broken from day one; and (3) the complete absence of a secure boot chain and PKI lifecycle \u2014 without these, UNECE R156 software integrity claims cannot be substantiated. Additionally, the HARA pre-determining QM before running the analysis is a methodological error that will surface in a third-party functional safety audit. The plan needs a security-architecture step inserted before Step 7, TARA moved to before Step 9, realistic build time targets, secure boot scoped in, and GMS licensing confirmed as a go/no-go gate before navigation implementation begins. In current form, this ships a technically impressive demo that fails regulatory submission.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 58,
+            "flaws": [
+              "Step 18 acceptance criteria states 'PR pipeline completes in <20 minutes (build + test + lint)' \u2014 AOSP full builds take 4\u20138 hours; incremental builds take 30\u201360 minutes minimum. This criterion is off by 10\u201320x and will be failed on day one.",
+              "Step 6 acceptance criteria states 'AAOS emulator boots in <90 seconds' \u2014 cold boot of the Android Automotive AVD routinely takes 3\u20138 minutes on standard CI hardware. This will never pass.",
+              "Step 4 pre-determines ASIL as QM before the HARA is performed. The HARA is the process that determines ASIL \u2014 you cannot set a target ASIL and then run the HARA to confirm it. Navigation misdirection and HMI freeze at highway speed may yield ASIL A under rigorous Severity \u00d7 Exposure \u00d7 Controllability analysis. This is methodologically backwards and will fail a third-party functional safety audit.",
+              "Step 15 (TARA/threat modeling) depends on steps 5 and 10, meaning the OTA server is fully implemented before the attack surface is analyzed. Security must inform design, not audit it post-hoc. UNECE R155 requires CSMS to be integrated into the development process, not appended to it.",
+              "Step 11 lists Snowboy as a wake-word detection option. Snowboy was archived in 2020 and is no longer maintained. Using deprecated security-adjacent software in a production vehicle system is a compliance and supply-chain risk.",
+              "Step 7 acceptance criteria demands 'MISRA C violations zero.' Zero MISRA violations is unachievable for any non-trivial embedded codebase. The correct standard is documented and justified deviations \u2014 claiming zero is either a lie or means the checker is not configured correctly.",
+              "Step 14 includes 'battery level gate: reject if SOC < 20%' \u2014 SOC applies to EVs and hybrids only. ICE vehicles use 12V lead-acid without meaningful SOC tracking. No equivalent 12V voltage gate is specified, leaving ICE platforms unprotected against low-voltage brick during OTA.",
+              "Step 10 requires HSM-backed OTA package signing, but Step 18 implements signing in GitHub Actions CI. There is no described mechanism for GitHub Actions to reach an HSM. This gap means signing will be done with software keys in practice, violating the stated security requirement.",
+              "Step 8 proposes using QEMU for AAOS firmware bring-up, but AAOS is not a standard QEMU target. AOSP car builds use the Android Automotive Emulator (AVD), not bare QEMU. Raw QEMU for NXP i.MX8 or SA8155P requires board-specific machine definitions that do not exist in upstream QEMU \u2014 this step will stall without custom QEMU porting work that is not scoped.",
+              "Step 12 specifies 'Jetpack Compose for Automotive (Car UI Library 2.0)' \u2014 as of 2025, Compose for Android Automotive remains experimental with known compatibility gaps against the AAOS Car UI Library. Production commitment to this stack requires explicit compatibility validation against the target AAOS version, which is absent.",
+              "Step 21 specifies an 8-hour soak test. Automotive reliability standards (e.g., AEC-Q100, OEM PPAP requirements) typically require 100\u2013500 hours for thermal cycling and memory leak detection. An 8-hour soak will not catch slow leaks (e.g., a 5MB/hour leak looks fine at 8h, catastrophic at 200h).",
+              "The AUTOSAR Classic/Adaptive stack (step 5, step 7) and Android Automotive OS operate on physically separate compute domains (MCU vs application processor). The plan never defines the architectural boundary between them, inter-domain communication protocol (e.g., SOME/IP, virtio), or which stack owns which feature. Without this, steps 7 and 12 will produce incompatible artifacts."
+            ],
+            "suggestions": [
+              "Move Step 15 (TARA) to immediately after Step 2 (PRD), before any architecture or implementation decisions. Security requirements must gate the API contracts in Step 9, not follow OTA server implementation.",
+              "Replace the AOSP build time acceptance criterion with a realistic split: 'incremental build <45 minutes; full clean build <6 hours on 32-core runner.' Use ccache and Google's build cache to optimize.",
+              "Add an explicit architectural document step (between Steps 6 and 7) that defines the MCU/AUTOSAR \u2194 Android Automotive OS boundary, inter-domain IPC mechanism, and which compute domain owns each feature. This is the single most important missing artifact.",
+              "Replace Snowboy with a supported alternative: Picovoice Porcupine (actively maintained, has automotive licensing), SNIPS (acquired by Sonos but open-source artifacts exist), or custom wake-word model via TensorFlow Lite.",
+              "Replace 'MISRA C violations zero' with 'MISRA C:2012 compliance report generated; all Rule violations are documented deviations with rationale approved by safety_engineer.'",
+              "Add a secure boot chain step after Step 6: define hardware root of trust (ROM bootloader \u2192 U-Boot with verified boot \u2192 AAOS verified boot), key provisioning in manufacturing, and revocation strategy. Without this, UNECE R156 software integrity cannot be demonstrated.",
+              "Add certificate lifecycle management: PKI architecture, certificate expiry strategy for 10-year vehicle lifetime, OEM-specific root CA, and key rotation runbook. The current plan treats TLS/Ed25519 as implementation details with no operational lifecycle.",
+              "Add Android GMS licensing as a dependency blocker before Step 13. Google Maps for Android Automotive requires an OEM GMS contract and passing Android Automotive CDD compatibility testing. This is a 6\u201318 month business process, not a technical task.",
+              "Move HIL platform procurement decision to Step 6 (environment setup), not Step 19. dSPACE SCALEXIO lead times are 4\u20139 months. A decision deferred to Step 19 makes Steps 19\u201321 impossible to execute on schedule.",
+              "Add a Data Protection Impact Assessment (DPIA) step, required under GDPR Article 35 for voice recording pipelines and continuous location tracking \u2014 both present in this system. The current GDPR mention (step 16) is insufficient."
+            ],
+            "missing": [
+              "Secure boot chain design and key provisioning in manufacturing \u2014 no mention anywhere in 24 steps. UNECE R156 Article 7 requires cryptographic integrity of installed software, which requires verified boot.",
+              "Vehicle network security gateway architecture \u2014 the CAN boundary is mentioned in security but no gateway design (e.g., Adaptive AUTOSAR ara::com, SOME/IP firewall, SecOC) is specified. This is the most critical safety boundary in the system.",
+              "Android GMS/GAPPS licensing process \u2014 required before any Google Maps for Automotive integration can proceed. Absent from the plan entirely.",
+              "PKI infrastructure and certificate lifecycle management across a 10+ year vehicle lifetime.",
+              "Multi-SoC porting strategy \u2014 NXP i.MX8 and Qualcomm SA8155P have fundamentally different BSPs, power management, and GPU stacks. The HAL layer must be specified as SoC-agnostic or the target must be locked to one SoC.",
+              "AUTOSAR \u2194 AAOS inter-domain communication specification (SOME/IP, ARA::COM, or virtio-based).",
+              "Manufacturing key provisioning and hardware root of trust specification for production units.",
+              "Driver Monitoring System (DMS) integration point \u2014 EU GSR 2022 mandates DMS; IVI must receive DMS alerts and potentially suppress UI interactions.",
+              "DPIA (Data Protection Impact Assessment) for voice pipeline and location history \u2014 legally required under GDPR Article 35.",
+              "GPS/GNSS privacy \u2014 continuous location tracking requires user consent mechanism and data retention policy beyond the 30-day voice log policy already stated.",
+              "OSS license scanning in CI/CD \u2014 the SBOM GPL-3 check is a one-time compliance artifact (step 22) with no automated enforcement in the pipeline. GPL-3 components can be introduced silently via transitive dependencies.",
+              "Regulatory engagement plan with Technical Service (TS) and Type Approval Authority (TAA) for UNECE R155/R156 \u2014 type approval is not a document submission, it is an 8\u201324 month engagement process."
+            ],
+            "security_risks": [
+              "TARA post-implementation: threat modeling after OTA server is built means discovered high-rated threats (e.g., unauthenticated manifest endpoint, weak VIN-based targeting) require expensive rework rather than cheap design changes.",
+              "HSM-CI gap: if GitHub Actions cannot reach the HSM, signing falls back to software keys on the runner. A compromised runner then signs malicious OTA packages that will be accepted by all enrolled vehicles. This is a fleet-wide remote code execution risk.",
+              "No secure boot: without verified boot, a physical attacker with USB access can reflash the application processor with arbitrary firmware. Combined with CAN gateway access, this is a potential vehicle safety issue even within the IVI QM scope.",
+              "Voice adversarial command surface: 'report_hazard' intent combined with automated responses could be triggered by audio played from a passing vehicle or roadside speaker. The plan's false-positive criterion (1/hour) only covers wake-word, not downstream intent misclassification.",
+              "CAN write access ambiguity: step 15 states 'IVI\u2192CAN write access confirmed restricted to non-safety bus segments only' but no step in the plan implements or tests this restriction at the gateway level. It is a stated goal with no verification path.",
+              "OTA rollback integrity: the watchdog-guarded rollback in step 14 does not specify whether the rollback itself is authenticated. An attacker who can corrupt the active partition could force rollback to a known-vulnerable previous version.",
+              "mTLS vehicle identity: step 10 requires mTLS for vehicle-to-server communication but no step provisions vehicle certificates at manufacturing time or defines certificate rotation for the vehicle lifetime. Expired vehicle certs will brick OTA capability.",
+              "Debug interface: step 15 mentions APK injection via USB debug interface as an attack surface, and step 23 covers technician UDS access. Neither step specifies how ADB and diagnostic interfaces are disabled in production builds vs enabled for service."
+            ],
+            "summary": "This plan is architecturally ambitious and structurally sound \u2014 24 well-sequenced steps covering the full IVI stack from HARA through type approval. The dependency graph is mostly correct, the compliance artifacts are the right ones, and the HITL gating in step 24 is appropriately calibrated. However, it fails on several production-critical dimensions that would cause it to collapse before reaching the regulated-domain threshold of 85. The three most serious flaws are: (1) TARA placed after OTA server implementation, violating security-by-design and UNECE R155 process requirements; (2) AOSP build time acceptance criteria that are physically impossible, meaning CI will be declared broken from day one; and (3) the complete absence of a secure boot chain and PKI lifecycle \u2014 without these, UNECE R156 software integrity claims cannot be substantiated. Additionally, the HARA pre-determining QM before running the analysis is a methodological error that will surface in a third-party functional safety audit. The plan needs a security-architecture step inserted before Step 7, TARA moved to before Step 9, realistic build time targets, secure boot scoped in, and GMS licensing confirmed as a go/no-go gate before navigation implementation begins. In current form, this ships a technically impressive demo that fails regulatory submission.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T00:27:04.248514+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 218.12,
+    "critic_plan": 140.43
+  }
+}

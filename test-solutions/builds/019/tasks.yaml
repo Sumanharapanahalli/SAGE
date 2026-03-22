@@ -1,0 +1,354 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user stories, and process flows for
+      AI accounting automation covering transaction categorization, bank reconciliation,
+      financial reporting, and tax filing preparation for small businesses.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - Business requirements document covers all four core features with measurable
+      success metrics
+    - User stories written for at least 3 persona types (owner, bookkeeper, accountant)
+      with acceptance criteria per story
+    - Process flow diagrams show end-to-end flows for each major feature
+    - ROI analysis includes cost savings estimate vs manual bookkeeping
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Define product requirements document (PRD), feature roadmap, and
+      success metrics for accounting_automation. Prioritize MVP feature set and phased
+      rollout plan.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD documents all features with priority, effort estimate, and acceptance criteria
+    - Roadmap defines at least 3 milestone phases with release dates
+    - Success metrics include quantitative KPIs (categorization accuracy >= 95%, reconciliation
+      time reduction >= 80%)
+    depends_on:
+    - 1
+  SECURITY:
+    description: Conduct threat modeling, define security architecture, and produce
+      a threat model document, penetration test plan, and Software Bill of Materials
+      (SBOM) for the accounting automation system handling sensitive financial data
+      under PCI DSS, SOC 2, and SOX.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all system components and data flows with mitigations
+      documented
+    - Penetration test plan covers OWASP Top 10, authentication bypass, and financial
+      data exfiltration scenarios
+    - SBOM lists all third-party dependencies with known CVE status
+    - Data classification policy defines handling rules for PII, financial data, and
+      tax identifiers
+    - Security architecture mandates encryption at rest (AES-256) and in transit (TLS
+      1.3)
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Produce compliance artifacts for PCI DSS, SOC 2, and SOX. Define
+      risk matrix, traceability matrix, V&V protocols, and control framework mapping
+      for the accounting automation system.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Risk matrix identifies all risks with likelihood, impact, and mitigation owner
+      assigned
+    - Traceability matrix maps every requirement to at least one test case and one
+      control
+    - SOC 2 Type II control mapping covers all 5 trust service criteria (Security,
+      Availability, Processing Integrity, Confidentiality, Privacy)
+    - PCI DSS SAQ-D completed with all applicable controls documented
+    - Audit trail spec defines immutable log structure for all financial data mutations
+    - Data retention policy specifies retention periods per data type compliant with
+      IRS 7-year rule and SOX
+    depends_on:
+    - 3
+  LEGAL:
+    description: Draft terms of service, privacy policy, data processing agreements
+      (DPA), and licensing documentation. Review IP considerations for AI-generated
+      financial advice and tax preparation.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Terms of service include AI limitation disclaimers and no-liability clause for
+      tax filing errors
+    - Privacy policy complies with CCPA and GLBA financial data protection requirements
+    - DPA template covers GDPR Article 28 requirements for EU business customers
+    - IP review confirms no unlicensed use of tax code databases or financial classification
+      systems
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: Conduct user research and produce wireframes, interaction designs,
+      and accessibility audit for the accounting automation dashboard. Design flows
+      for transaction review, reconciliation workspace, report generation, and tax
+      filing wizard.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research includes at least 5 small business owner interviews with synthesized
+      findings
+    - Wireframes cover all 7 key screens with annotated interaction states
+    - Transaction categorization UI shows AI confidence score and one-click correction
+      workflow
+    - Tax filing wizard has step-by-step flow with progress indicator and review-before-submit
+      gate
+    - Accessibility audit confirms WCAG 2.1 AA compliance on all screens
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 specification for all accounting_automation endpoints:
+      bank connection (OAuth/Plaid), transaction ingestion, categorization, reconciliation,
+      report generation, and tax filing export. Define request/response schemas, error
+      codes, and rate limits.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec passes validation with no errors
+    - All endpoints have defined request schemas, response schemas, and error codes
+      (400, 401, 403, 404, 422, 500)
+    - Bank connection endpoints use OAuth 2.0 PKCE flow with token refresh documented
+    - Rate limits defined per endpoint group (e.g., 100 req/min for transaction sync)
+    - Audit log endpoints return paginated, immutable records with cursor-based pagination
+    depends_on:
+    - 2
+    - 3
+  DATABASE:
+    description: Design and implement database schema for transactions, accounts,
+      categorization rules, reconciliation records, financial reports, tax filings,
+      audit log, and user/tenant data. Create migrations and seed data for development.
+    agent_role: developer
+    acceptance_criteria:
+    - Schema ERD documents all tables with relationships, indexes, and constraints
+    - All migrations run cleanly from scratch with `alembic upgrade head`
+    - Row-level security policies enforce tenant isolation on all financial tables
+    - PII columns (SSN, EIN, bank account numbers) use pgcrypto or application-level
+      AES-256 encryption
+    - audit_events table is append-only (INSERT only, no UPDATE/DELETE permissions)
+    - Seed data includes 3 sample small businesses with 6 months of transaction history
+      for testing
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 7
+  CONFIG:
+    description: 'Set up the multi-agent coordinator pattern for accounting_automation.
+      Configure coordinator agent that routes to specialist agents: TransactionCategorizerAgent,
+      ReconciliationAgent, ReportGeneratorAgent, and TaxFilingAgent. Configure HITL
+      approval gates for tax filings and financial report finalization.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml defines solution name, active_modules, and HITL level as strict
+    - prompts.yaml defines system prompts for all 4 specialist agents with domain-specific
+      accounting context
+    - tasks.yaml registers all task types with routing rules to correct specialist
+      agent
+    - Coordinator routes transaction tasks to TransactionCategorizerAgent and tax
+      tasks to TaxFilingAgent
+    - HITL gates trigger approval queue entries for tax_filing_submission and report_finalization
+    - Critic agent configured to review categorization accuracy and tax computation
+      correctness
+    depends_on:
+    - 7
+  ML_MODEL:
+    description: Build and train the transaction categorization ML model. Implement
+      multi-label classifier using fine-tuned transformer (FinBERT or similar) on
+      transaction descriptions mapped to IRS Schedule C / chart-of-accounts categories.
+      Include confidence scoring and active learning pipeline for user corrections.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model achieves >= 95% top-1 accuracy on held-out test set of 10,000 transactions
+    - Confidence scores are calibrated (ECE < 0.05 on test set)
+    - Model card documents training data, known biases, performance by category, and
+      limitations
+    - Active learning pipeline ingests user corrections and triggers fine-tuning job
+    - Inference latency < 100ms per transaction at p95
+    - Model supports at least 50 IRS Schedule C / COA categories
+    depends_on:
+    - 8
+  BACKEND:
+    description: Implement bank connection and transaction ingestion service. Integrate
+      with Plaid API for bank account linking, transaction sync, and balance retrieval.
+      Implement webhook handlers for real-time transaction updates with idempotent
+      processing.
+    agent_role: developer
+    acceptance_criteria:
+    - Bank linking OAuth flow completes successfully with Plaid Sandbox credentials
+    - Initial sync imports up to 24 months of transactions with deduplication
+    - Webhook handler processes TRANSACTIONS_SYNC events idempotently (duplicate webhooks
+      do not create duplicate records)
+    - Bank credentials (access tokens) stored encrypted, never logged
+    - Error handling covers Plaid API rate limits with exponential backoff and alerting
+    depends_on:
+    - 8
+    - 9
+  FRONTEND:
+    description: Build the React frontend application for accounting_automation. Implement
+      dashboard, transaction review UI, bank connection manager, reconciliation workspace,
+      financial report viewer, and tax filing wizard following the approved wireframes.
+    agent_role: developer
+    acceptance_criteria:
+    - All 8 pages render without errors and match approved wireframes
+    - Transaction table displays AI confidence score with color-coded badge (green
+      >= 0.85, amber >= 0.70, red < 0.70)
+    - Bulk categorization correction UI allows selecting multiple transactions and
+      applying category
+    - Reconciliation workspace shows matched pairs with diff highlighting and one-click
+      approve
+    - Tax filing wizard enforces step-by-step progression with review-before-submit
+      gate
+    - All pages pass WCAG 2.1 AA automated accessibility checks (axe-core)
+    - Lighthouse performance score >= 85 on dashboard page
+    depends_on:
+    - 6
+    - 16
+  INFRA:
+    description: Set up Docker containerization, CI/CD pipeline, and deployment infrastructure.
+      Configure PostgreSQL, Redis (task queue), and the FastAPI backend in Docker
+      Compose for development. Set up GitHub Actions CI/CD with security scanning
+      and compliance checks.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`docker-compose up` starts all services and health checks pass within 60 seconds'
+    - GitHub Actions CI pipeline runs and passes on main branch within 10 minutes
+    - SAST scan (bandit + semgrep) runs on every PR with blocking on HIGH severity
+      findings
+    - Dependency vulnerability scan blocks merge on CRITICAL CVEs
+    - Secrets are never hardcoded — all pulled from environment or secrets manager
+    - Production Docker image uses non-root user and passes Trivy image scan with
+      no CRITICAL vulnerabilities
+    depends_on:
+    - 8
+    - 16
+  DEVOPS:
+    description: Set up monitoring, alerting, SRE runbooks, and observability stack.
+      Configure Prometheus metrics, Grafana dashboards, structured logging, and PagerDuty
+      alerting for the accounting automation platform. Define SLAs and incident response
+      procedures.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Grafana dashboard shows all 6 key metrics with historical data
+    - Alert fires within 2 minutes when API error rate exceeds 1% over 5-minute window
+    - Alert fires immediately when audit_log_write_success_rate drops below 100%
+    - SLA document defines 99.9% uptime, < 2s API p95 latency, and RPO/RTO targets
+    - Incident response playbook covers at least 5 failure scenarios with step-by-step
+      resolution
+    - All logs structured as JSON with trace_id, tenant_id, and severity fields
+    depends_on:
+    - 18
+  TESTS:
+    description: 'Write comprehensive unit tests, integration tests, and end-to-end
+      tests for all backend services: bank sync, transaction categorization, reconciliation,
+      report generation, tax filing, auth, and RBAC. Target >= 85% code coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest runs with >= 85% line coverage across all src/ modules
+    - All unit tests for tax form field mapping verified against IRS known-answer
+      test cases
+    - Integration tests use Plaid Sandbox environment (no live bank credentials)
+    - E2E test for tax filing wizard verifies HITL gate blocks submission until approval
+    - CI pipeline fails if coverage drops below 85%
+    - Zero flaky tests — all tests deterministic with fixed random seeds and frozen
+      time
+    depends_on:
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+  QA:
+    description: Develop and execute QA test plan covering functional, regression,
+      performance, and usability testing. Validate transaction categorization accuracy
+      against labeled dataset, reconciliation correctness, and report financial accuracy.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - QA test plan covers 100% of PRD requirements with at least one test case per
+      requirement
+    - Regression suite runs automatically on every release candidate
+    - Load test confirms system handles 1,000 concurrent users with p95 latency <
+      2 seconds
+    - Categorization accuracy validated at >= 95% on 10,000-transaction labeled test
+      set
+    - Financial report accuracy validated — P&L totals match reference data to the
+      cent
+    - Usability testing with 5 users shows task completion rate >= 80% for core flows
+      with no external help
+    depends_on:
+    - 17
+    - 20
+  SYSTEM_TEST:
+    description: 'Execute system-level integration and end-to-end tests covering the
+      full lifecycle: bank connection → transaction sync → AI categorization → reconciliation
+      → financial report → tax filing preparation with HITL approval. Test multi-tenant
+      isolation at system level.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full lifecycle test for sole proprietor completes end-to-end without manual
+      intervention except required HITL gates
+    - Multi-tenant isolation test confirms zero data leakage between two simultaneously
+      active tenants
+    - Disaster recovery test achieves RTO < 4 hours and RPO < 1 hour from backup
+    - All system test results documented with pass/fail evidence (screenshots, logs)
+      for SOC 2 audit
+    - System test report signed off by QA lead before production release
+    depends_on:
+    - 21
+    - 22
+  DOCS:
+    description: Produce developer documentation, API reference, architecture document,
+      and runbooks. Generate OpenAPI-based API docs, deployment guide, and integration
+      guide for third-party accountants.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - README covers quick start, prerequisites, and local development setup in < 10
+      steps
+    - API reference auto-generated from OpenAPI spec with all endpoints documented
+      and examples
+    - Architecture document includes component diagram, data flow diagram, and security
+      boundary diagram
+    - Deployment guide covers Docker Compose, environment variables, and first-run
+      setup
+    - All docs render correctly in MkDocs with no broken links
+    depends_on:
+    - 23
+  TRAINING:
+    description: Produce user onboarding guide, in-app help content, and training
+      materials for small business owners and bookkeepers. Create video script outlines
+      for key workflows.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Onboarding guide covers bank connection, first categorization review, and first
+      reconciliation in < 20 steps
+    - In-app help content covers all 8 major UI pages with contextual tooltips
+    - FAQ addresses at least 20 common questions including 'Can I trust the AI for
+      taxes?' with appropriate disclaimer
+    - Video scripts reviewed and approved by legal_advisor for accuracy of financial
+      and tax claims
+    depends_on:
+    - 17
+    - 25
+  MARKET_RESEARCH:
+    description: Conduct competitive analysis and go-to-market strategy for accounting_automation.
+      Analyze QuickBooks, Xero, FreshBooks, and AI-native competitors. Define positioning,
+      pricing strategy, and GTM channels for small business market.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive analysis covers at least 6 competitors with feature comparison matrix
+      and pricing
+    - Positioning doc defines unique value proposition differentiating AI-native accuracy
+      and compliance focus
+    - GTM strategy identifies top 3 acquisition channels with estimated CAC per channel
+    - Pricing strategy recommendation includes SaaS tier structure with feature gating
+    depends_on:
+    - 1
+  FINANCIAL:
+    description: Build financial model for accounting_automation business. Model SaaS
+      unit economics, pricing tiers, CAC, LTV, churn assumptions, and 3-year revenue
+      projection.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Financial model covers 36-month projection with monthly granularity
+    - Unit economics analysis shows LTV/CAC ratio >= 3x in base scenario by month
+      18
+    - Three pricing tiers modeled with different feature sets and target customer
+      profiles
+    - Model includes sensitivity analysis on churn rate and CAC assumptions
+    - Break-even analysis shows path to profitability in base scenario
+    depends_on:
+    - 27

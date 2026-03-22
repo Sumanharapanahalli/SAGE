@@ -1,0 +1,369 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze podcast platform market: Spotify, Apple Podcasts, Buzzsprout,
+      Anchor, Podbean. Map competitor features, pricing tiers, creator economics,
+      listener demographics, and whitespace opportunities.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers at least 6 platforms across 8+ feature dimensions
+    - TAM/SAM/SOM estimates with cited sources
+    - Positioning map identifies at least 2 defensible whitespace opportunities
+    - Creator economics breakdown (average revenue per creator per platform)
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements: creator personas, listener personas,
+      monetization flows (host-read ads, dynamic ad insertion, subscriptions, tip
+      jars), RSS import journeys, and key ROI metrics.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - At least 5 distinct user personas with jobs-to-be-done
+    - 40+ user stories in Given/When/Then format covering all major flows
+    - Process flow diagrams for RSS import, ad insertion, and subscription purchase
+    - ROI model showing break-even at projected creator and listener counts
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  FINANCIAL:
+    description: 'Build financial model: revenue streams (subscription tiers, ad revenue
+      share, transaction fees), COGS (storage, CDN, transcription API costs), pricing
+      strategy, and 3-year P&L projection.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - 3-year P&L with monthly granularity in year 1
+    - LTV/CAC ratio modeled per creator tier
+    - Break-even analysis for each pricing tier
+    - Sensitivity analysis on CDN and transcription cost assumptions
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+    - 2
+  PRODUCT_MGMT:
+    description: Define product requirements document, phased roadmap (MVP → v1 →
+      v2), success metrics (OKRs), and MoSCoW prioritization for all features including
+      RSS import, analytics dashboard, transcription, clip sharing, and discovery.
+    agent_role: product_manager
+    acceptance_criteria:
+    - 'PRD covers all 6 platform pillars: hosting, analytics, monetization, transcription,
+      clips, discovery'
+    - Each feature has acceptance criteria and success metric
+    - OKRs defined for first 3 quarters with measurable key results
+    - MoSCoW matrix reviewed against financial model constraints
+    depends_on:
+    - 2
+    - 3
+  UX_DESIGN:
+    description: 'User research, information architecture, and wireframes for: creator
+      dashboard (upload, analytics, monetization), listener app (discovery feed, player,
+      subscriptions), clip editor, and RSS import wizard.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Information architecture covers all routes with max 3-click depth to any feature
+    - Wireframes cover at least 30 distinct screens across creator and listener flows
+    - Clip editor wireframe includes waveform trimming, caption overlay, and share
+      sheet
+    - Accessibility audit documents contrast ratios, keyboard nav, and screen reader
+      support
+    - Usability test with 5+ participants validates RSS import wizard flow
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 4
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), Creator
+      Content License, Advertiser Agreement, DMCA takedown process, and podcast RSS
+      feed content policy.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all data categories collected including audio files, listening
+      history, payment data
+    - Creator Content License grants platform rights to transcode, clip, and index
+      content
+    - DMCA process includes counter-notice procedure and repeat infringer policy
+    - GDPR data subject rights (access, erasure, portability) enumerated with fulfillment
+      process
+    - Content policy prohibits explicit adult content and hate speech with enforcement
+      mechanism
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'SOC 2 Type I readiness: define trust service criteria scope (Security,
+      Availability, Confidentiality), map controls to platform components, produce
+      control matrix, and initiate evidence collection procedures.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Control matrix maps all CC6–CC8, A1, C1 criteria to specific platform controls
+    - At least 40 controls defined with owner, frequency, and evidence artifact type
+    - Vendor risk assessments completed for AWS, Stripe, transcription provider, and
+      CDN
+    - Incident response plan includes <1hr detection, <4hr containment SLOs
+    - Evidence collection procedures automated via AWS Config, CloudTrail, and audit
+      log exports
+    depends_on:
+    - 6
+  CONFIG:
+    description: 'Scaffold monorepo structure: backend (FastAPI), frontend (Next.js
+      14 App Router), worker services (transcription, analytics, discovery). Configure
+      toolchain: pnpm workspaces, ESLint, Prettier, Ruff, pre-commit hooks, environment
+      variable management.'
+    agent_role: developer
+    acceptance_criteria:
+    - pnpm install --frozen-lockfile succeeds from repo root
+    - pre-commit hooks run ruff, mypy, eslint, and prettier on staged files
+    - Environment variable validation fails fast on missing required vars
+    - All apps start with a single `make dev` command via docker-compose
+    - commitlint enforces conventional commits
+    depends_on:
+    - 4
+  DATABASE:
+    description: 'Design PostgreSQL schema: users, podcasts, episodes, rss_imports,
+      transcripts, clips, ad_campaigns, ad_insertions, subscriptions, payments, analytics_events,
+      discovery_scores. Write Alembic migrations and seed scripts.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD reviewed and covers all 20+ tables with foreign keys and cardinality
+    - All migrations run clean on fresh Postgres 16 instance
+    - Indexes defined for all foreign keys and high-cardinality query patterns
+    - Row-level security policies on user data tables
+    - listen_events table uses TimescaleDB hypertable for time-series performance
+    - Seed script populates 3 test podcasts with 10 episodes each including transcripts
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Build core FastAPI backend: authentication (JWT + OAuth2 social
+      login), podcast CRUD, episode upload with S3 presigned URLs, RSS feed parser
+      (feedparser), RSS feed generator, user management, and admin endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT access token expires in 15 minutes; refresh token in 30 days with rotation
+    - RSS import parses episode metadata, cover art, and enclosure URLs; enqueues
+      audio download jobs
+    - Generated RSS feed validates against podcast:namespace and iTunes namespace
+      specs
+    - S3 presigned upload URL expires in 10 minutes; backend validates upload completion
+      via S3 event
+    - All endpoints return OpenAPI-documented responses; /docs renders complete spec
+    - 'Rate limiting: 100 req/min per authenticated user, 20 req/min unauthenticated'
+    depends_on:
+    - 9
+  AGENTIC:
+    description: 'Implement discovery algorithm using Multi-Agent Coordinator pattern:
+      coordinator decomposes discovery into specialist agents (content-based filtering,
+      collaborative filtering, trending scorer, freshness booster). Scores updated
+      nightly via Celery beat.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Discovery score computed for all active podcasts nightly in <30 minutes
+    - Cold-start flow (new user) returns diverse, high-quality recommendations without
+      listen history
+    - Collaborative filtering uses implicit feedback (plays, completions) not explicit
+      ratings
+    - A/B test framework in place to measure click-through and listen-through rate
+      of recommendations
+    - Coordinator logs reasoning trace for each score component to audit log
+    - 'Human-in-the-loop gate: significant algorithm weight changes require product
+      manager approval'
+    depends_on:
+    - 14
+  FRONTEND:
+    description: 'Build creator dashboard in Next.js 14: podcast setup wizard, episode
+      manager with upload progress, RSS import flow with conflict resolution UI, analytics
+      charts (Recharts), monetization setup (ad campaigns, subscription config), and
+      earnings overview.'
+    agent_role: developer
+    acceptance_criteria:
+    - RSS import wizard validates URL, shows parsed episodes preview before committing
+    - Upload progress bar shows percentage with resumable recovery on network drop
+    - Analytics page renders completion rate chart, listener geography map, and episode
+      leaderboard
+    - Earnings page shows current period total, pending payout, and per-episode revenue
+      breakdown
+    - All pages render in <2s LCP on 4G throttled connection
+    - Lighthouse accessibility score ≥90 on all creator pages
+    depends_on:
+    - 5
+    - 10
+    - 12
+    - 14
+  LOCALIZATION:
+    description: 'Implement i18n for creator dashboard and listener app: next-intl
+      setup, extraction of all UI strings, initial translations for EN, ES, PT-BR,
+      FR, DE. RTL layout support. Locale-aware date, number, and currency formatting.'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All UI strings externalized to locale JSON files; zero hardcoded user-facing
+      strings in components
+    - Language switcher available in app settings; preference persisted in user profile
+    - Date and number formatting uses Intl APIs respecting locale conventions
+    - RTL layout renders correctly for future Arabic/Hebrew support (flex-direction,
+      text-align reversed)
+    - Translation completeness CI check blocks merge if any locale <95% translated
+    - Currency displays in user's local currency for subscription pricing
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 16
+    - 17
+  SECURITY:
+    description: 'Security review and threat model: OWASP Top 10 assessment, audio
+      file access control (signed URLs with expiry), payment data handling review,
+      XSS/CSRF protection, dependency vulnerability scan, and penetration test plan.'
+    agent_role: developer
+    acceptance_criteria:
+    - RSS import URL allowlist prevents SSRF to internal network ranges (169.254.x.x,
+      10.x.x.x, 172.16.x.x)
+    - Audio S3 URLs are signed with 1-hour expiry; no public bucket access
+    - 'IDOR check: clip and episode IDs are UUIDs; ownership verified on every mutation'
+    - CSP headers block inline scripts; no eval() usage in frontend
+    - All Python deps scanned with bandit; zero HIGH severity findings unmitigated
+    - Penetration test plan covers top 5 threat scenarios with success criteria
+    depends_on:
+    - 10
+    - 12
+    - 13
+  INFRA:
+    description: 'Provision AWS infrastructure with Terraform: VPC, ECS Fargate clusters
+      (API, workers), RDS PostgreSQL with TimescaleDB extension, ElastiCache Redis,
+      S3 buckets (audio, clips, images), CloudFront CDN, SQS queues, and secrets via
+      AWS Secrets Manager.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - terraform plan produces zero errors on fresh AWS account
+    - 'RDS Multi-AZ failover tested: <30s switchover, no data loss'
+    - S3 lifecycle policy moves audio >90 days to Glacier Instant Retrieval
+    - 'CloudFront serves audio with Cache-Control: public, max-age=86400'
+    - All secrets in Secrets Manager; zero plaintext credentials in Terraform state
+    - VPC has private subnets for ECS and RDS; public subnet only for ALB
+    depends_on:
+    - 8
+  DEVOPS:
+    description: 'CI/CD pipelines in GitHub Actions: lint→test→build→push→deploy pipeline
+      for API and worker, Vercel deployment for Next.js frontend, database migration
+      job, canary deployment strategy for production, and Dependabot auto-merge for
+      patch updates.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Full pipeline (lint to production deploy) completes in <12 minutes
+    - Canary deployment automatically rolls back if error rate >1% in 30-minute window
+    - Migration job runs in a separate pipeline step with explicit approval gate for
+      production
+    - OIDC token used for AWS auth; no static access keys in GitHub secrets
+    - Dependabot PRs for patch versions auto-merged if CI passes
+    - Build artifacts pinned by SHA digest, not mutable tags
+    depends_on:
+    - 20
+  OPERATIONS:
+    description: 'Operational runbooks: content moderation workflow (DMCA response
+      SLA, abuse report queue), creator support escalation, payment dispute handling,
+      audio transcoding failure recovery, and capacity planning model for CDN egress.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - DMCA runbook includes legal review step before takedown; counter-notice process
+      documented
+    - Abuse report queue routes to content moderation tool; escalation path to legal
+      for >P2
+    - CDN capacity model projects costs at 10K, 100K, 1M daily active listeners
+    - DB failover runbook tested in staging; RTO documented as <5 minutes
+    - All runbooks reviewed by a second team member and stored in wiki
+    - Incident response runbook includes communications template for creator-facing
+      outages
+    depends_on:
+    - 22
+    - 6
+  TESTS:
+    description: 'Unit and integration tests for all backend services: auth flows,
+      RSS parser edge cases (malformed feeds, encoding issues), transcription worker
+      retry logic, Stripe webhook idempotency, ad insertion logic, analytics ingest,
+      and discovery score calculation.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest --cov reports ≥85% line coverage across apps/api and apps/worker
+    - RSS parser tests cover malformed XML, ISO-8859-1 encoding, duplicate episode
+      GUIDs, and missing enclosures
+    - Stripe webhook tests verify idempotency key prevents double credit on replay
+    - All tests pass in <3 minutes in CI
+    - Integration tests use real Postgres (via docker-compose) not mocks for DB layer
+    - 'Zero flaky tests: each test run produces same result in isolation'
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  QA:
+    description: 'QA test plan: functional test cases for all user journeys (creator
+      onboarding, RSS import, episode publish, listener subscribe, clip share), regression
+      suite, exploratory testing charter, and bug severity classification matrix.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Test plan covers all 40+ user stories from business requirements step
+    - Playwright E2E tests cover the 5 critical creator journeys end-to-end in staging
+    - 'Load test: 10,000 concurrent listeners playing audio with p99 <200ms on player
+      API'
+    - Axe accessibility scan on all key pages; zero WCAG 2.1 AA violations at P0/P1
+    - Regression suite runs nightly against staging; failures block production deploy
+    - 'Exploratory charter covers monetization edge cases: failed payments, expired
+      trials, upgrade/downgrade'
+    depends_on:
+    - 16
+    - 17
+    - 24
+  DATA:
+    description: 'Build analytics data pipeline: Firehose delivery of listen events
+      to S3 data lake, Glue catalog, Athena queries for ad-hoc analysis, dbt models
+      for creator-facing analytics, and a Metabase dashboard for internal business
+      metrics.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Kinesis Firehose delivers events to S3 with <60 second latency
+    - 'dbt models tested with dbt-expectations: not_null, unique, relationships'
+    - Athena query for 90-day creator analytics completes in <30 seconds
+    - Metabase dashboard auto-refreshes daily; shows MoM growth for key metrics
+    - Data lake partitioned by year/month/day/hour for cost-efficient Athena scans
+    - PII fields (user_email, ip_address) excluded from data lake; only hashed identifiers
+    depends_on:
+    - 14
+    - 20
+  TRAINING:
+    description: 'Create creator onboarding and help documentation: getting started
+      guide, video script for RSS import walkthrough, monetization setup guide, analytics
+      interpretation guide, and in-app onboarding tooltips copy.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Getting started guide covers account creation → first episode published in ≤10
+      steps
+    - RSS import video script is <5 minutes; covers conflict resolution and progress
+      monitoring
+    - Monetization guide explains ad types, CPM ranges, payout schedule, and tax requirements
+    - Analytics guide defines every metric with example interpretation
+    - In-app tooltips written for all 15 dashboard KPI tiles
+    - All docs reviewed for reading level ≤ Grade 8 (Flesch-Kincaid)
+    depends_on:
+    - 16
+    - 17
+  DOCS:
+    description: 'Technical documentation: API reference (OpenAPI rendered via Redoc),
+      architecture decision records (ADRs) for discovery algorithm, ad insertion engine,
+      and transcription provider choice; infrastructure runbook; and developer onboarding
+      guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec covers 100% of public endpoints with request/response schemas and
+      example values
+    - 'Each ADR documents: context, options considered, decision, and consequences'
+    - 'Developer onboarding guide: new engineer runs full stack locally in <30 minutes'
+    - Infrastructure runbook covers scale-up, scale-down, and incident recovery procedures
+    - ADRs committed to /docs/adr/ directory and linked from README
+    - API reference deployed and searchable at /api/docs
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 20

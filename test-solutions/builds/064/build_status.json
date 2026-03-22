@@ -1,0 +1,882 @@
+{
+  "run_id": "09b7c54e-ad58-48e4-b03b-9b26feffcdfe",
+  "solution_name": "recommendation_engine",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T08:37:10.901437+00:00",
+  "updated_at": "2026-03-22T08:41:07.842774+00:00",
+  "product_description": "Real-time ML recommendation engine with collaborative filtering, contextual bandits for exploration, feature store, A/B testing framework, and sub-100ms serving latency.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product requirements, success metrics, and technical constraints for the recommendation engine including latency SLAs, throughput targets, and business KPIs.",
+      "payload": {
+        "solution_name": "recommendation_engine",
+        "deliverables": [
+          "PRD",
+          "technical_requirements.md",
+          "latency_budget.md"
+        ],
+        "key_constraints": [
+          "sub-100ms p99 serving latency",
+          "collaborative filtering + contextual bandits",
+          "A/B testing support"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD documents all functional and non-functional requirements",
+        "Latency budget allocated across feature retrieval, model inference, and response serialization",
+        "Success metrics defined: CTR, NDCG@k, conversion rate, exploration/exploitation ratio",
+        "Throughput and concurrency targets documented (e.g. 10k RPS)"
+      ],
+      "depends_on": [],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 2,
+      "task_type": "DATA",
+      "description": "Design the data model and event schema for user interactions (clicks, impressions, conversions, ratings) and item catalog. Define Kafka topic schemas and Avro/Protobuf contracts.",
+      "payload": {
+        "event_types": [
+          "impression",
+          "click",
+          "purchase",
+          "rating",
+          "skip"
+        ],
+        "item_schema_fields": [
+          "item_id",
+          "category",
+          "embeddings",
+          "metadata",
+          "publish_ts"
+        ],
+        "user_schema_fields": [
+          "user_id",
+          "segment",
+          "context_features",
+          "history_window"
+        ],
+        "serialization": "protobuf"
+      },
+      "acceptance_criteria": [
+        "Protobuf schemas defined and versioned for all event types",
+        "Item catalog schema supports sparse and dense feature vectors",
+        "User context schema captures real-time signals (device, session, geo)",
+        "Schema registry configured with compatibility mode set to BACKWARD"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 3,
+      "task_type": "INFRA",
+      "description": "Provision core infrastructure: Kubernetes cluster, Kafka cluster for event streaming, Redis cluster for feature caching, and object storage for model artifacts.",
+      "payload": {
+        "components": {
+          "orchestration": "kubernetes (k8s)",
+          "streaming": "Apache Kafka",
+          "cache": "Redis Cluster (6-node)",
+          "object_storage": "S3-compatible (MinIO or AWS S3)",
+          "container_registry": "ECR or DockerHub"
+        },
+        "iac_tool": "Terraform",
+        "environments": [
+          "dev",
+          "staging",
+          "prod"
+        ]
+      },
+      "acceptance_criteria": [
+        "Kubernetes cluster running with autoscaling node groups",
+        "Kafka cluster deployed with 3 brokers, replication factor 3",
+        "Redis cluster running with <1ms p99 read latency under load",
+        "S3 bucket with versioning and lifecycle policies for model artifacts",
+        "Terraform state stored remotely with locking"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 4,
+      "task_type": "DATABASE",
+      "description": "Design and provision the feature store schema using a dual-store architecture: online store (Redis) for low-latency serving and offline store (PostgreSQL + Parquet on S3) for training.",
+      "payload": {
+        "online_store": "Redis Hash \u2014 user features, item features, context features",
+        "offline_store": "PostgreSQL for metadata + Parquet files on S3 for historical features",
+        "feature_groups": [
+          "user_profile_features",
+          "item_content_features",
+          "user_item_interaction_features",
+          "contextual_features"
+        ],
+        "ttl_policies": {
+          "user_realtime": "1h",
+          "item_static": "24h",
+          "interaction": "7d"
+        }
+      },
+      "acceptance_criteria": [
+        "Redis schema defined with consistent key naming: {entity_type}:{entity_id}:{feature_group}",
+        "PostgreSQL schema for feature group registry, entity definitions, and feature metadata",
+        "Parquet partition layout defined: /offline/{feature_group}/date={YYYY-MM-DD}/",
+        "TTL policies enforced on all Redis keys",
+        "Point-in-time correct feature retrieval supported for training data generation"
+      ],
+      "depends_on": [
+        2,
+        3
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 5,
+      "task_type": "DATA",
+      "description": "Build real-time feature ingestion pipeline: Kafka consumers that compute and write user and item features to the online feature store (Redis) with sub-10ms write latency.",
+      "payload": {
+        "consumers": [
+          "user_activity_consumer",
+          "item_update_consumer",
+          "context_feature_consumer"
+        ],
+        "framework": "Apache Flink or Kafka Streams",
+        "feature_computations": [
+          "click_rate_1h",
+          "purchase_rate_24h",
+          "recency_score",
+          "category_affinity"
+        ],
+        "target_write_latency_ms": 10
+      },
+      "acceptance_criteria": [
+        "Flink/Kafka Streams jobs process events end-to-end within 10ms (event-time to Redis write)",
+        "User click rate, purchase rate, and recency features computed and updated in real time",
+        "Item popularity and freshness features updated within 30s of catalog changes",
+        "Dead-letter queue configured for malformed events",
+        "Consumer lag monitored with alerts at >10k messages"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 6,
+      "task_type": "DATA",
+      "description": "Build the offline feature pipeline: batch ETL jobs that generate training datasets from raw interaction logs with point-in-time correct feature joins.",
+      "payload": {
+        "scheduler": "Apache Airflow",
+        "processing_engine": "Apache Spark",
+        "pipeline_stages": [
+          "raw_event_ingestion",
+          "deduplication",
+          "feature_join",
+          "label_generation",
+          "train_val_split"
+        ],
+        "output_format": "Parquet on S3",
+        "schedule": "daily at 02:00 UTC"
+      },
+      "acceptance_criteria": [
+        "Airflow DAG defined with proper task dependencies and retry logic",
+        "Spark job produces training dataset with no data leakage (point-in-time correct joins)",
+        "Label generation covers implicit feedback (clicks, purchases) and explicit ratings",
+        "Dataset versioned with metadata: row count, date range, feature schema hash",
+        "Pipeline completes within 4 hours for 30-day history window"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 7,
+      "task_type": "ML_MODEL",
+      "description": "Train collaborative filtering model (matrix factorization / neural CF) for candidate generation. Produce user and item embedding vectors stored in the feature store.",
+      "payload": {
+        "model_type": "Two-Tower Neural Collaborative Filtering",
+        "framework": "PyTorch",
+        "input_features": [
+          "user_id",
+          "item_id",
+          "user_history_embeddings",
+          "item_content_embeddings"
+        ],
+        "output": "256-dim user and item embedding vectors",
+        "training_objective": "BPR loss (Bayesian Personalized Ranking)",
+        "evaluation_metrics": [
+          "NDCG@10",
+          "Recall@50",
+          "MRR"
+        ]
+      },
+      "acceptance_criteria": [
+        "Two-Tower model achieves NDCG@10 >= 0.15 on held-out validation set",
+        "Recall@50 >= 0.40 (50 candidates contain the positive item 40% of the time)",
+        "User and item embeddings exported to FAISS index for ANN retrieval",
+        "Model artifacts versioned and stored in S3 with training metadata",
+        "Embedding refresh pipeline scheduled weekly",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 8,
+      "task_type": "ML_MODEL",
+      "description": "Train contextual bandit ranking model for exploration/exploitation. Implement LinUCB or Neural LinUCB with context features to re-rank candidate items.",
+      "payload": {
+        "algorithm": "Neural LinUCB (contextual bandit)",
+        "framework": "Vowpal Wabbit + custom PyTorch wrapper",
+        "context_features": [
+          "user_segment",
+          "time_of_day",
+          "device_type",
+          "session_depth"
+        ],
+        "exploration_strategy": "UCB with tunable alpha",
+        "reward_signal": "click + 5*purchase (weighted)",
+        "online_update": true
+      },
+      "acceptance_criteria": [
+        "Bandit model trains on historical logged bandit data with propensity weighting (IPS estimator)",
+        "UCB exploration/exploitation ratio configurable via alpha parameter",
+        "Online weight updates processed within 100ms of reward observation",
+        "Cumulative regret tracked and decreasing over evaluation window",
+        "A/B comparison vs. greedy ranker shows >= 5% CTR lift in offline replay evaluation",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 9,
+      "task_type": "ML_MODEL",
+      "description": "Build the FAISS-based approximate nearest neighbor (ANN) index for sub-millisecond candidate retrieval from collaborative filtering embeddings.",
+      "payload": {
+        "library": "FAISS (IVF-PQ index)",
+        "index_type": "IVFFlat or IVFPQ depending on memory budget",
+        "dimensionality": 256,
+        "nlist": 1024,
+        "target_recall": 0.95,
+        "deployment": "in-process within serving container"
+      },
+      "acceptance_criteria": [
+        "FAISS IVF index built on full item embedding corpus (up to 10M items)",
+        "ANN retrieval of top-100 candidates completes within 5ms at 95% recall vs. exact search",
+        "Index rebuild pipeline triggered automatically after embedding model retrain",
+        "Index hot-swap supported (atomic file replace) with zero serving downtime",
+        "Memory footprint documented and within node memory budget",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Build the feature store service API: CRUD endpoints for feature group management, bulk feature read/write, and low-latency batch fetch for serving.",
+      "payload": {
+        "framework": "FastAPI",
+        "language": "Python 3.11",
+        "endpoints": [
+          "POST /features/batch-get",
+          "POST /features/batch-set",
+          "GET /feature-groups",
+          "POST /feature-groups",
+          "GET /features/schema/{group_name}"
+        ],
+        "target_latency_ms": 5
+      },
+      "acceptance_criteria": [
+        "Batch feature GET for 100 entities completes within 5ms p99",
+        "Redis pipeline batching used (no N+1 round trips)",
+        "Feature schema validation on write (type checking, range validation)",
+        "OpenAPI spec auto-generated and accurate",
+        "gRPC interface available alongside REST for internal service-to-service calls"
+      ],
+      "depends_on": [
+        4,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build the recommendation serving API: the critical latency path orchestrating candidate retrieval, feature fetch, bandit re-ranking, and response assembly in under 100ms.",
+      "payload": {
+        "framework": "FastAPI with uvicorn (async)",
+        "language": "Python 3.11",
+        "request_flow": [
+          "1. Parse request + extract context (2ms)",
+          "2. Fetch user features from Redis (5ms)",
+          "3. ANN candidate retrieval via FAISS (5ms)",
+          "4. Batch-fetch item features from Redis (10ms)",
+          "5. Bandit re-ranking with UCB (15ms)",
+          "6. Filter + deduplicate + serialize (3ms)"
+        ],
+        "target_latency_ms": {
+          "p50": 40,
+          "p95": 80,
+          "p99": 100
+        },
+        "endpoints": [
+          "POST /recommend",
+          "GET /recommend/{user_id}",
+          "POST /feedback"
+        ]
+      },
+      "acceptance_criteria": [
+        "POST /recommend responds within 100ms p99 under 1000 RPS load",
+        "All I/O operations (Redis, FAISS) are fully async (asyncio + aioredis)",
+        "Request/response schema validated with Pydantic v2",
+        "Trace ID propagated through all downstream calls for distributed tracing",
+        "Circuit breakers configured on all external dependencies (Redis, feature store)"
+      ],
+      "depends_on": [
+        9,
+        10,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build the A/B testing framework: experiment configuration service, user bucketing (consistent hashing), variant assignment, and metric collection infrastructure.",
+      "payload": {
+        "bucketing_algorithm": "SHA-256 consistent hashing on (experiment_id, user_id)",
+        "storage": "PostgreSQL for experiment config, Redis for active assignments cache",
+        "experiment_types": [
+          "model_comparison",
+          "ranking_strategy",
+          "exploration_alpha",
+          "ui_variant"
+        ],
+        "statistical_tests": [
+          "t-test",
+          "Mann-Whitney U",
+          "sequential testing (mSPRT)"
+        ],
+        "endpoints": [
+          "POST /experiments",
+          "GET /experiments/{id}",
+          "POST /experiments/{id}/assign",
+          "GET /experiments/{id}/results",
+          "POST /experiments/{id}/conclude"
+        ]
+      },
+      "acceptance_criteria": [
+        "User bucketing is deterministic: same (experiment_id, user_id) always returns same variant",
+        "Mutual exclusion between overlapping experiments enforced",
+        "Experiment assignment persisted to audit log for reproducibility",
+        "Statistical significance calculated on demand with configurable alpha (default 0.05)",
+        "Sequential testing (mSPRT) prevents p-hacking from early stopping",
+        "Experiment results dashboard queryable via API"
+      ],
+      "depends_on": [
+        3,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "CONFIG",
+      "description": "Configure the agentic coordinator pattern for the recommendation pipeline: a coordinator agent that routes training, evaluation, and serving optimization tasks to specialist sub-agents (data, ML, devops).",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_role": "RecommendationOrchestratorAgent",
+        "specialist_agents": [
+          "DataPipelineAgent",
+          "ModelTrainingAgent",
+          "BanditUpdateAgent",
+          "ExperimentAnalystAgent"
+        ],
+        "trigger_conditions": [
+          "model_drift_detected",
+          "new_training_data_available",
+          "experiment_concluded",
+          "latency_sla_breach"
+        ],
+        "config_files": [
+          "solutions/recommendation_engine/project.yaml",
+          "solutions/recommendation_engine/prompts.yaml",
+          "solutions/recommendation_engine/tasks.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "SAGE solution YAML files scaffolded for recommendation_engine",
+        "Coordinator agent defined in prompts.yaml with routing logic for all specialist agents",
+        "Task types registered in tasks.yaml: model_retrain, bandit_update, experiment_analysis, feature_backfill",
+        "Agent trigger conditions wired to Kafka events (model_drift topic, data_ready topic)",
+        "HITL gate configured for model promotion to production (human approval required)"
+      ],
+      "depends_on": [
+        11,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Build the feedback ingestion service: collects real-time reward signals (clicks, purchases, ratings) from clients, updates bandit model weights online, and writes to Kafka for offline training.",
+      "payload": {
+        "endpoints": [
+          "POST /feedback/click",
+          "POST /feedback/purchase",
+          "POST /feedback/rating",
+          "POST /feedback/batch"
+        ],
+        "online_update_target_ms": 100,
+        "kafka_topics": [
+          "raw_feedback",
+          "bandit_rewards"
+        ],
+        "deduplication": "Redis SETNX with 24h TTL on (user_id, item_id, session_id)"
+      },
+      "acceptance_criteria": [
+        "Feedback events published to Kafka within 50ms of receipt",
+        "Bandit weight online update triggered within 100ms of reward signal",
+        "Duplicate feedback events deduplicated using Redis atomic SET",
+        "Feedback linked to recommendation request via trace_id for attribution",
+        "Batch feedback endpoint supports up to 1000 events per request"
+      ],
+      "depends_on": [
+        11,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "DEVOPS",
+      "description": "Build CI/CD pipelines for model training (MLflow), serving containers (Docker + Kubernetes), and automated canary deployments with latency gate checks.",
+      "payload": {
+        "ci_tool": "GitHub Actions",
+        "ml_tracking": "MLflow",
+        "container_registry": "ECR",
+        "deployment_strategy": "canary (5% \u2192 25% \u2192 100%) with automated rollback",
+        "rollback_trigger": "p99 latency > 120ms OR error rate > 0.5% for 5 minutes",
+        "pipelines": [
+          "model_train_and_register",
+          "serving_build_and_deploy",
+          "feature_pipeline_deploy",
+          "ab_experiment_deploy"
+        ]
+      },
+      "acceptance_criteria": [
+        "MLflow experiment tracking records all training runs with parameters, metrics, and artifacts",
+        "Model promotion to staging requires passing offline evaluation gates (NDCG@10, Recall@50)",
+        "Canary deployment pipeline deploys to 5% traffic first, monitors for 10 minutes before expanding",
+        "Automated rollback triggered if p99 latency exceeds SLA or error rate spikes",
+        "All pipeline stages produce auditable logs stored in S3"
+      ],
+      "depends_on": [
+        7,
+        8,
+        11,
+        3
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 16,
+      "task_type": "DEVOPS",
+      "description": "Set up observability stack: distributed tracing (OpenTelemetry + Jaeger), metrics (Prometheus + Grafana), and latency dashboards with SLA alerting.",
+      "payload": {
+        "tracing": "OpenTelemetry SDK \u2192 Jaeger",
+        "metrics": "Prometheus + Grafana",
+        "log_aggregation": "Loki or ELK",
+        "key_dashboards": [
+          "serving_latency_breakdown",
+          "candidate_recall",
+          "bandit_reward_rate",
+          "experiment_metrics",
+          "feature_store_hit_rate"
+        ],
+        "alerts": [
+          "p99 latency > 100ms",
+          "feature store hit rate < 95%",
+          "bandit reward rate drops > 20% week-over-week",
+          "Kafka consumer lag > 10k"
+        ]
+      },
+      "acceptance_criteria": [
+        "Every recommendation request has an end-to-end trace spanning all services",
+        "Latency breakdown visible per stage: feature_fetch, ann_retrieval, ranking, serialization",
+        "Grafana dashboard shows real-time p50/p95/p99 latency with SLA line at 100ms",
+        "PagerDuty or Slack alert fires within 2 minutes of SLA breach",
+        "Feature store cache hit rate monitored (target > 98%)"
+      ],
+      "depends_on": [
+        11,
+        15
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 17,
+      "task_type": "SECURITY",
+      "description": "Perform threat model and security review for the recommendation system: user data access controls, feature store authorization, experiment data integrity, and PII handling.",
+      "payload": {
+        "threat_model_scope": [
+          "feature store API",
+          "recommendation serving API",
+          "feedback ingestion",
+          "A/B experiment data"
+        ],
+        "pii_fields": [
+          "user_id must be hashed/pseudonymized",
+          "no raw email/name in feature store"
+        ],
+        "auth_mechanism": "JWT + RBAC for API access",
+        "data_governance": [
+          "GDPR right-to-erasure support",
+          "user data deletion cascades to feature store and offline parquet"
+        ]
+      },
+      "acceptance_criteria": [
+        "Threat model document covers STRIDE categories for all API surfaces",
+        "PII fields pseudonymized before storage (user_id is a UUID, no raw identifiers)",
+        "RBAC enforced: read-only role for analytics, write role for ingestion services only",
+        "GDPR deletion workflow documented: wipes Redis keys, marks Parquet records as deleted",
+        "Dependency SBOM generated and scanned for CVEs with no critical findings unmitigated"
+      ],
+      "depends_on": [
+        10,
+        11,
+        12,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all backend services: feature store service, recommendation API, A/B testing framework, and feedback ingestion.",
+      "payload": {
+        "frameworks": [
+          "pytest",
+          "pytest-asyncio",
+          "httpx (async test client)"
+        ],
+        "coverage_target": 85,
+        "test_types": {
+          "unit": [
+            "feature store CRUD",
+            "bandit UCB calculation",
+            "bucketing hash determinism",
+            "deduplication logic"
+          ],
+          "integration": [
+            "end-to-end recommend flow with mocked Redis and FAISS",
+            "experiment assignment + results pipeline",
+            "feedback \u2192 bandit update loop"
+          ]
+        },
+        "fixtures": [
+          "mock_redis",
+          "mock_faiss_index",
+          "sample_user_features",
+          "sample_item_catalog"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test coverage >= 85% for src/ modules",
+        "Integration tests cover happy path and failure modes (Redis down, FAISS miss, empty candidates)",
+        "Bandit UCB arithmetic verified against known numerical examples",
+        "A/B bucketing test: 10k simulated users produce statistically equal split (chi-square test passes)",
+        "All tests run in CI in under 5 minutes without external dependencies"
+      ],
+      "depends_on": [
+        10,
+        11,
+        12,
+        14
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "SYSTEM_TEST",
+      "description": "End-to-end system test and load test: validate sub-100ms p99 latency under realistic production load (1000+ RPS) and verify correctness of the full recommendation pipeline.",
+      "payload": {
+        "load_testing_tool": "Locust or k6",
+        "target_rps": 1000,
+        "latency_sla": {
+          "p50_ms": 40,
+          "p95_ms": 80,
+          "p99_ms": 100
+        },
+        "correctness_checks": [
+          "Recommended items are from active catalog only",
+          "Experiment variant assignment is stable across requests",
+          "Feedback loop updates bandit weights within 100ms"
+        ],
+        "chaos_scenarios": [
+          "Redis node failure",
+          "FAISS index reload",
+          "feature store cold start"
+        ]
+      },
+      "acceptance_criteria": [
+        "1000 RPS sustained for 10 minutes with p99 latency < 100ms",
+        "Zero correctness violations: no inactive items, no cross-experiment contamination",
+        "System recovers from Redis node failure within 30 seconds with no serving errors",
+        "Cold start (empty cache) degrades gracefully: latency increases but requests succeed",
+        "Load test report generated with percentile breakdown and error rate"
+      ],
+      "depends_on": [
+        16,
+        18,
+        15
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the recommendation engine admin dashboard: experiment management UI, model performance monitoring, feature store explorer, and A/B test results visualization.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "pages": [
+          "ExperimentsPage \u2014 create/manage/conclude A/B tests",
+          "ModelMetricsPage \u2014 NDCG, Recall, reward rate over time",
+          "FeatureStorePage \u2014 inspect feature groups, entity features",
+          "LatencyDashboardPage \u2014 p50/p95/p99 charts, SLA status"
+        ],
+        "charting_library": "Recharts or Nivo",
+        "integration": "SAGE dashboard (extends existing web/src/ structure)"
+      },
+      "acceptance_criteria": [
+        "Experiments page supports full CRUD: create experiment, set traffic split, view assignments, conclude",
+        "Model metrics page shows NDCG@10 and Recall@50 trend lines with training run annotations",
+        "Feature store page allows searching entities by ID and inspecting feature values with TTL",
+        "Latency dashboard shows real-time p50/p95/p99 with SLA threshold line",
+        "All pages load within 2 seconds and are mobile-responsive"
+      ],
+      "depends_on": [
+        12,
+        16,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "ML_MODEL",
+      "description": "Build the model evaluation and drift detection pipeline: offline evaluation harness, online A/B metric collection, and automated drift alerts triggering retraining.",
+      "payload": {
+        "offline_eval": "Replay evaluation on held-out log data with IPS correction",
+        "online_eval": "Live experiment metrics from A/B framework",
+        "drift_signals": [
+          "NDCG@10 drops > 10% week-over-week",
+          "reward rate drops > 15%",
+          "feature distribution shift (PSI > 0.2)"
+        ],
+        "retraining_trigger": "automated Airflow DAG trigger on drift detection",
+        "eval_cadence": "daily offline eval + continuous online monitoring"
+      },
+      "acceptance_criteria": [
+        "Offline replay evaluation runs daily and posts results to MLflow",
+        "PSI computed for top-20 input features daily; alert fires if PSI > 0.2",
+        "Drift detection triggers automatic retraining DAG with Slack notification",
+        "Model promoted to production only if new model outperforms current on offline eval",
+        "Evaluation results retained for 90 days for audit trail",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        7,
+        8,
+        15,
+        12
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 22,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: system architecture overview, API reference, runbook for on-call, and developer onboarding guide.",
+      "payload": {
+        "docs": [
+          "architecture.md \u2014 system diagram, data flow, latency budget breakdown",
+          "api_reference.md \u2014 all endpoints, request/response schemas, error codes",
+          "oncall_runbook.md \u2014 alerts, triage steps, rollback procedures",
+          "developer_guide.md \u2014 local setup, adding features, running tests",
+          "ab_testing_guide.md \u2014 how to design and run experiments"
+        ]
+      },
+      "acceptance_criteria": [
+        "Architecture doc includes sequence diagram for the full recommend request flow",
+        "API reference auto-generated from OpenAPI spec and manually reviewed for accuracy",
+        "On-call runbook covers every Prometheus alert with triage steps and escalation path",
+        "Developer can set up local environment and run all tests following the guide with zero tribal knowledge",
+        "A/B testing guide explains statistical methodology and early-stopping policy"
+      ],
+      "depends_on": [
+        19,
+        20,
+        21
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 22,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "Step 5 claims Flink end-to-end latency of 10ms (event-time to Redis write). Flink's minimum checkpoint interval is typically 100ms\u20131s, and micro-batch processing adds inherent buffering. 10ms is achievable only with Kafka Streams in per-record mode with zero windowing \u2014 the plan conflates processing-time latency with event-time semantics and will fail this acceptance criterion in production.",
+            "Step 8 requires Neural LinUCB online weight updates within 100ms. At 10k RPS with even 1% CTR, that is 100 reward signals/second each triggering a matrix update (Sherman-Morrison or gradient step). The plan proposes a 'Vowpal Wabbit + custom PyTorch wrapper' \u2014 these are fundamentally incompatible paradigms (VW is online-learning native; PyTorch requires explicit gradient management). The wrapper will be a correctness and maintenance liability.",
+            "Step 9 describes FAISS hot-swap as 'atomic file replace with zero serving downtime.' A file-system atomic replace does not produce an atomic in-memory swap. Each serving pod holds the index in RAM; replacing the file on disk requires explicit reload logic per pod. Under rolling reloads, pods serve from different index versions simultaneously with no version-skew handling described.",
+            "Step 11's latency budget sums to 40ms best-case (2+5+5+10+15+3). This leaves only 60ms of headroom for p99 at 100ms SLA. It does not account for: Redis cluster network jitter (can spike 20\u201330ms at p99 under GC pauses), TLS overhead on Redis connections, Python async event loop scheduling overhead, or serialization cost for 100-item feature payloads. The p99 SLA will be violated under realistic production conditions without explicit tail-latency mitigation.",
+            "Step 8's IPS (Inverse Propensity Score) estimator for offline bandit evaluation requires propensity scores \u2014 the probability that each item was shown under the logging policy. Neither Step 11 (serving) nor Step 14 (feedback ingestion) includes propensity logging in the request/response schema. Without stored propensities, the IPS estimator is mathematically invalid and will produce biased offline evaluation results.",
+            "Step 4 claims 'point-in-time correct feature retrieval' using Redis as the online store with TTL eviction. Redis TTLs will evict features that existed at prediction time before the training pipeline runs. There is no mechanism to snapshot feature values at request time for later training label joins. This creates training/serving skew \u2014 a fundamental ML correctness failure that will silently degrade model quality.",
+            "Step 12 claims mutual exclusion between overlapping experiments is 'enforced' but provides no mechanism. SHA-256 consistent hashing assigns users to buckets deterministically but does not prevent the same user from being in two concurrent experiments simultaneously. Mutual exclusion requires an explicit namespace/layer isolation system (as used by Google/Meta). Without this, experiment contamination will corrupt statistical results.",
+            "Step 14 triggers bandit online weight updates within 100ms of reward arrival. Under concurrency, multiple feedback events for the same bandit model arrive simultaneously. Neural LinUCB weight matrices are not thread-safe for concurrent updates. The plan does not address locking strategy, update queuing, or eventual consistency semantics \u2014 race conditions will corrupt model weights silently.",
+            "The cold start problem is unaddressed. New users (no interaction history) and new items (no embeddings) are mentioned only as a chaos scenario in Step 19. At production scale, cold-start requests constitute a significant fraction of traffic and require fallback strategies (popularity-based, content-based, or exploration-heavy bandits). The Two-Tower model produces no embedding for unseen entities.",
+            "FAISS is deployed 'in-process within the serving container' (Step 9) but the serving API scales horizontally on Kubernetes (Step 11). Each pod holds its own FAISS index in RAM. Index rebuilds (Step 9) must propagate atomically to all N pods simultaneously. The plan provides no pod coordination mechanism \u2014 pods will serve from stale indices of different ages during rolling updates, breaking recall guarantees.",
+            "Step 17's GDPR deletion requirement says 'marks Parquet records as deleted.' Parquet is an immutable columnar format \u2014 records cannot be deleted in place. Actual deletion requires rewriting affected partitions. At scale (30-day Parquet history across multiple feature groups), this is a multi-hour Spark job per deletion request. The plan underestimates this by an order of magnitude."
+          ],
+          "suggestions": [
+            "Replace Flink with Kafka Streams for the real-time feature pipeline (Step 5). Kafka Streams processes records synchronously without checkpointing overhead and can achieve sub-10ms Redis writes. Reserve Flink only if complex windowed aggregations are required.",
+            "Decouple Neural LinUCB online updates from the feedback ingestion hot path (Step 8/14). Write rewards to a bounded in-memory queue and process updates asynchronously in a single-writer thread. Expose a 'reward freshness' metric rather than promising 100ms synchronous update \u2014 this is the correct production architecture for online bandits.",
+            "Add propensity logging to Step 11 immediately. The serving response should include `{item_id, score, position, propensity}` tuples. Propensities must be persisted alongside feedback events (Step 14) for IPS correctness. This is a schema change that is expensive to retrofit after deployment.",
+            "Implement feature snapshots for training/serving alignment: when a recommendation request is served, write a snapshot of the feature values used (keyed by trace_id) to a time-limited store (Redis with 7-day TTL). The offline pipeline joins training labels to these snapshots instead of the live feature store, eliminating training/serving skew.",
+            "Add a model serving sidecar pattern for FAISS: instead of in-process per pod, deploy a shared FAISS service (or use Redis Stack with RediSearch for ANN) that all serving pods query. This eliminates the pod coordination problem for index updates and centralizes memory usage.",
+            "For A/B mutual exclusion (Step 12), implement an experiment namespace/layer system: each experiment is assigned to an orthogonal dimension, and user assignment is computed as hash(user_id + layer_salt). Users can participate in one experiment per layer simultaneously. Document this in the PRD as a first-class design constraint.",
+            "Add explicit Redis memory sizing to Step 3/4. At 10M items with 256-dim float32 embeddings: 10M \u00d7 256 \u00d7 4B = 10GB for item embeddings alone, before user features or interaction data. A 6-node cluster with 16GB/node gives 96GB total \u2014 model this explicitly against your feature groups to validate the cluster is sized correctly.",
+            "Replace 'atomic file replace' in Step 9 with a versioned index endpoint: the serving container polls a model registry (MLflow) for the latest index version and loads it into a shadow slot, then atomically swaps the pointer. Use a read-write lock per pod to prevent serving during swap. Coordinate across pods via a shared 'active_index_version' key in Redis.",
+            "For GDPR deletion (Step 17), implement a deletion ledger pattern: maintain a `deleted_users` table in PostgreSQL. All Spark training jobs filter against this table at read time. Schedule quarterly full Parquet rewrites to physically remove deleted records. This is the only approach that scales without per-deletion Spark jobs.",
+            "Add explicit rate limiting (token bucket or leaky bucket) to the serving API (Step 11) with per-user and per-client-id limits. Without this, a single misbehaving client can saturate Redis and blow the p99 SLA for all users."
+          ],
+          "missing": [
+            "Propensity logging schema and storage strategy \u2014 required for IPS bandit evaluation in Step 8 to be mathematically valid",
+            "Cold start strategy for new users and new items \u2014 a critical production gap affecting a significant fraction of traffic",
+            "Feature snapshot mechanism for training/serving alignment \u2014 absence guarantees training data bias",
+            "FAISS index distribution and synchronization strategy across horizontal pod replicas",
+            "Redis memory budget and eviction policy selection (allkeys-lru vs. volatile-lru) \u2014 critical for feature store TTL behavior under memory pressure",
+            "Canary metric isolation strategy in Step 15 \u2014 how are 5% canary request metrics separated from 95% control in Prometheus/Grafana for valid comparison",
+            "Bandit exploration/exploitation policy for cold-start items with no reward history",
+            "Network topology and service mesh configuration (how do serving pods discover Redis, feature store, FAISS service)",
+            "Kafka topic ACLs and broker authentication \u2014 no mention of mTLS or SASL between producers and consumers",
+            "Model rollback strategy beyond binary 'rollback on SLA breach' \u2014 what happens to bandit weights that were updated online during a bad model's serving window",
+            "Data retention and S3 cost model for Parquet offline store \u2014 30-day history with daily partitions across multiple feature groups at scale needs explicit sizing",
+            "Experiment sample size and power calculation tooling in Step 12 \u2014 without minimum detectable effect and required sample size pre-calculation, experiments will be underpowered or run too long"
+          ],
+          "security_risks": [
+            "Redis cluster has no mention of TLS in-transit or Redis AUTH. Feature store data contains behavioral signals tied to pseudonymized user IDs. Unencrypted Redis in a multi-tenant Kubernetes cluster is a data exposure risk if network policies are misconfigured.",
+            "Kafka topics have no ACL specification. Any service that can reach the Kafka brokers can read `raw_feedback` or `bandit_rewards` topics, or inject malicious events that corrupt bandit model weights (model poisoning via feedback injection).",
+            "FAISS index artifacts are stored in S3 with no integrity verification mentioned. A compromised S3 bucket or misconfigured IAM role allows injection of a poisoned FAISS index, causing the recommendation engine to serve attacker-controlled items to all users.",
+            "JWT validation in Step 17 is described at the API level but the feature store service (Step 10) handles internal service-to-service calls. If the feature store trusts internal network calls without verifying service identity (mTLS or service account tokens), a compromised pod can exfiltrate all user features.",
+            "A/B experiment assignment logs contain the full mapping of user_id to experiment variant. If these are stored in plaintext in the audit log alongside behavioral signals, they constitute a behavioral profile that is sensitive under GDPR and could be used to re-identify pseudonymized users.",
+            "The feedback deduplication mechanism (Step 14) uses Redis SETNX on (user_id, item_id, session_id). An adversary who can predict or enumerate session_ids can replay feedback events after the 24h TTL expires, polluting the bandit reward signal without triggering deduplication."
+          ],
+          "summary": "This is a technically sophisticated and architecturally sound plan that demonstrates genuine ML systems expertise \u2014 the component selection (Two-Tower + LinUCB + FAISS + dual-store feature store) is appropriate, the latency budget decomposition is the right approach, and the CI/CD canary strategy is production-grade. However, the plan scores 63 because it contains several critical correctness gaps that would cause silent failures in production rather than visible crashes: the absence of propensity logging makes the bandit's offline evaluation mathematically invalid; the missing feature snapshot mechanism guarantees training/serving skew that will degrade model quality over time; the FAISS in-process deployment pattern breaks under horizontal scaling without a coordination mechanism; and the GDPR Parquet deletion claim is not implementable as described. The 100ms online bandit update promise under concurrent load is an unverified performance claim that will likely require fundamental architectural change (async update queue) rather than optimization. None of these are fatal to the overall design \u2014 they are tractable engineering problems \u2014 but they need explicit resolution before this plan can be executed against the stated acceptance criteria. Recommend addressing the propensity logging, feature snapshot, FAISS pod coordination, and bandit concurrency gaps before committing to the current acceptance criteria.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "Step 5 claims Flink end-to-end latency of 10ms (event-time to Redis write). Flink's minimum checkpoint interval is typically 100ms\u20131s, and micro-batch processing adds inherent buffering. 10ms is achievable only with Kafka Streams in per-record mode with zero windowing \u2014 the plan conflates processing-time latency with event-time semantics and will fail this acceptance criterion in production.",
+              "Step 8 requires Neural LinUCB online weight updates within 100ms. At 10k RPS with even 1% CTR, that is 100 reward signals/second each triggering a matrix update (Sherman-Morrison or gradient step). The plan proposes a 'Vowpal Wabbit + custom PyTorch wrapper' \u2014 these are fundamentally incompatible paradigms (VW is online-learning native; PyTorch requires explicit gradient management). The wrapper will be a correctness and maintenance liability.",
+              "Step 9 describes FAISS hot-swap as 'atomic file replace with zero serving downtime.' A file-system atomic replace does not produce an atomic in-memory swap. Each serving pod holds the index in RAM; replacing the file on disk requires explicit reload logic per pod. Under rolling reloads, pods serve from different index versions simultaneously with no version-skew handling described.",
+              "Step 11's latency budget sums to 40ms best-case (2+5+5+10+15+3). This leaves only 60ms of headroom for p99 at 100ms SLA. It does not account for: Redis cluster network jitter (can spike 20\u201330ms at p99 under GC pauses), TLS overhead on Redis connections, Python async event loop scheduling overhead, or serialization cost for 100-item feature payloads. The p99 SLA will be violated under realistic production conditions without explicit tail-latency mitigation.",
+              "Step 8's IPS (Inverse Propensity Score) estimator for offline bandit evaluation requires propensity scores \u2014 the probability that each item was shown under the logging policy. Neither Step 11 (serving) nor Step 14 (feedback ingestion) includes propensity logging in the request/response schema. Without stored propensities, the IPS estimator is mathematically invalid and will produce biased offline evaluation results.",
+              "Step 4 claims 'point-in-time correct feature retrieval' using Redis as the online store with TTL eviction. Redis TTLs will evict features that existed at prediction time before the training pipeline runs. There is no mechanism to snapshot feature values at request time for later training label joins. This creates training/serving skew \u2014 a fundamental ML correctness failure that will silently degrade model quality.",
+              "Step 12 claims mutual exclusion between overlapping experiments is 'enforced' but provides no mechanism. SHA-256 consistent hashing assigns users to buckets deterministically but does not prevent the same user from being in two concurrent experiments simultaneously. Mutual exclusion requires an explicit namespace/layer isolation system (as used by Google/Meta). Without this, experiment contamination will corrupt statistical results.",
+              "Step 14 triggers bandit online weight updates within 100ms of reward arrival. Under concurrency, multiple feedback events for the same bandit model arrive simultaneously. Neural LinUCB weight matrices are not thread-safe for concurrent updates. The plan does not address locking strategy, update queuing, or eventual consistency semantics \u2014 race conditions will corrupt model weights silently.",
+              "The cold start problem is unaddressed. New users (no interaction history) and new items (no embeddings) are mentioned only as a chaos scenario in Step 19. At production scale, cold-start requests constitute a significant fraction of traffic and require fallback strategies (popularity-based, content-based, or exploration-heavy bandits). The Two-Tower model produces no embedding for unseen entities.",
+              "FAISS is deployed 'in-process within the serving container' (Step 9) but the serving API scales horizontally on Kubernetes (Step 11). Each pod holds its own FAISS index in RAM. Index rebuilds (Step 9) must propagate atomically to all N pods simultaneously. The plan provides no pod coordination mechanism \u2014 pods will serve from stale indices of different ages during rolling updates, breaking recall guarantees.",
+              "Step 17's GDPR deletion requirement says 'marks Parquet records as deleted.' Parquet is an immutable columnar format \u2014 records cannot be deleted in place. Actual deletion requires rewriting affected partitions. At scale (30-day Parquet history across multiple feature groups), this is a multi-hour Spark job per deletion request. The plan underestimates this by an order of magnitude."
+            ],
+            "suggestions": [
+              "Replace Flink with Kafka Streams for the real-time feature pipeline (Step 5). Kafka Streams processes records synchronously without checkpointing overhead and can achieve sub-10ms Redis writes. Reserve Flink only if complex windowed aggregations are required.",
+              "Decouple Neural LinUCB online updates from the feedback ingestion hot path (Step 8/14). Write rewards to a bounded in-memory queue and process updates asynchronously in a single-writer thread. Expose a 'reward freshness' metric rather than promising 100ms synchronous update \u2014 this is the correct production architecture for online bandits.",
+              "Add propensity logging to Step 11 immediately. The serving response should include `{item_id, score, position, propensity}` tuples. Propensities must be persisted alongside feedback events (Step 14) for IPS correctness. This is a schema change that is expensive to retrofit after deployment.",
+              "Implement feature snapshots for training/serving alignment: when a recommendation request is served, write a snapshot of the feature values used (keyed by trace_id) to a time-limited store (Redis with 7-day TTL). The offline pipeline joins training labels to these snapshots instead of the live feature store, eliminating training/serving skew.",
+              "Add a model serving sidecar pattern for FAISS: instead of in-process per pod, deploy a shared FAISS service (or use Redis Stack with RediSearch for ANN) that all serving pods query. This eliminates the pod coordination problem for index updates and centralizes memory usage.",
+              "For A/B mutual exclusion (Step 12), implement an experiment namespace/layer system: each experiment is assigned to an orthogonal dimension, and user assignment is computed as hash(user_id + layer_salt). Users can participate in one experiment per layer simultaneously. Document this in the PRD as a first-class design constraint.",
+              "Add explicit Redis memory sizing to Step 3/4. At 10M items with 256-dim float32 embeddings: 10M \u00d7 256 \u00d7 4B = 10GB for item embeddings alone, before user features or interaction data. A 6-node cluster with 16GB/node gives 96GB total \u2014 model this explicitly against your feature groups to validate the cluster is sized correctly.",
+              "Replace 'atomic file replace' in Step 9 with a versioned index endpoint: the serving container polls a model registry (MLflow) for the latest index version and loads it into a shadow slot, then atomically swaps the pointer. Use a read-write lock per pod to prevent serving during swap. Coordinate across pods via a shared 'active_index_version' key in Redis.",
+              "For GDPR deletion (Step 17), implement a deletion ledger pattern: maintain a `deleted_users` table in PostgreSQL. All Spark training jobs filter against this table at read time. Schedule quarterly full Parquet rewrites to physically remove deleted records. This is the only approach that scales without per-deletion Spark jobs.",
+              "Add explicit rate limiting (token bucket or leaky bucket) to the serving API (Step 11) with per-user and per-client-id limits. Without this, a single misbehaving client can saturate Redis and blow the p99 SLA for all users."
+            ],
+            "missing": [
+              "Propensity logging schema and storage strategy \u2014 required for IPS bandit evaluation in Step 8 to be mathematically valid",
+              "Cold start strategy for new users and new items \u2014 a critical production gap affecting a significant fraction of traffic",
+              "Feature snapshot mechanism for training/serving alignment \u2014 absence guarantees training data bias",
+              "FAISS index distribution and synchronization strategy across horizontal pod replicas",
+              "Redis memory budget and eviction policy selection (allkeys-lru vs. volatile-lru) \u2014 critical for feature store TTL behavior under memory pressure",
+              "Canary metric isolation strategy in Step 15 \u2014 how are 5% canary request metrics separated from 95% control in Prometheus/Grafana for valid comparison",
+              "Bandit exploration/exploitation policy for cold-start items with no reward history",
+              "Network topology and service mesh configuration (how do serving pods discover Redis, feature store, FAISS service)",
+              "Kafka topic ACLs and broker authentication \u2014 no mention of mTLS or SASL between producers and consumers",
+              "Model rollback strategy beyond binary 'rollback on SLA breach' \u2014 what happens to bandit weights that were updated online during a bad model's serving window",
+              "Data retention and S3 cost model for Parquet offline store \u2014 30-day history with daily partitions across multiple feature groups at scale needs explicit sizing",
+              "Experiment sample size and power calculation tooling in Step 12 \u2014 without minimum detectable effect and required sample size pre-calculation, experiments will be underpowered or run too long"
+            ],
+            "security_risks": [
+              "Redis cluster has no mention of TLS in-transit or Redis AUTH. Feature store data contains behavioral signals tied to pseudonymized user IDs. Unencrypted Redis in a multi-tenant Kubernetes cluster is a data exposure risk if network policies are misconfigured.",
+              "Kafka topics have no ACL specification. Any service that can reach the Kafka brokers can read `raw_feedback` or `bandit_rewards` topics, or inject malicious events that corrupt bandit model weights (model poisoning via feedback injection).",
+              "FAISS index artifacts are stored in S3 with no integrity verification mentioned. A compromised S3 bucket or misconfigured IAM role allows injection of a poisoned FAISS index, causing the recommendation engine to serve attacker-controlled items to all users.",
+              "JWT validation in Step 17 is described at the API level but the feature store service (Step 10) handles internal service-to-service calls. If the feature store trusts internal network calls without verifying service identity (mTLS or service account tokens), a compromised pod can exfiltrate all user features.",
+              "A/B experiment assignment logs contain the full mapping of user_id to experiment variant. If these are stored in plaintext in the audit log alongside behavioral signals, they constitute a behavioral profile that is sensitive under GDPR and could be used to re-identify pseudonymized users.",
+              "The feedback deduplication mechanism (Step 14) uses Redis SETNX on (user_id, item_id, session_id). An adversary who can predict or enumerate session_ids can replay feedback events after the 24h TTL expires, polluting the bandit reward signal without triggering deduplication."
+            ],
+            "summary": "This is a technically sophisticated and architecturally sound plan that demonstrates genuine ML systems expertise \u2014 the component selection (Two-Tower + LinUCB + FAISS + dual-store feature store) is appropriate, the latency budget decomposition is the right approach, and the CI/CD canary strategy is production-grade. However, the plan scores 63 because it contains several critical correctness gaps that would cause silent failures in production rather than visible crashes: the absence of propensity logging makes the bandit's offline evaluation mathematically invalid; the missing feature snapshot mechanism guarantees training/serving skew that will degrade model quality over time; the FAISS in-process deployment pattern breaks under horizontal scaling without a coordination mechanism; and the GDPR Parquet deletion claim is not implementable as described. The 100ms online bandit update promise under concurrent load is an unverified performance claim that will likely require fundamental architectural change (async update queue) rather than optimization. None of these are fatal to the overall design \u2014 they are tractable engineering problems \u2014 but they need explicit resolution before this plan can be executed against the stated acceptance criteria. Recommend addressing the propensity logging, feature snapshot, FAISS pod coordination, and bandit concurrency gaps before committing to the current acceptance criteria.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T08:41:07.842759+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 117.01,
+    "critic_plan": 119.93
+  }
+}

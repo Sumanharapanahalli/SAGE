@@ -1,0 +1,64 @@
+project_name: infotainment_system
+display_name: Infotainment System
+version: 1.0.0
+domain: automotive
+description: In-vehicle infotainment system with Android Automotive integration, voice
+  assistant, navigation, media streaming, and OTA update capability. ISO 26262 QM.
+detected_domains: []
+compliance_standards:
+- ISO 26262 QM
+- ISO 15005
+- UNECE R155/R156
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- LOCALIZATION
+- MARKET_RESEARCH
+- PRODUCT_MGMT
+- QA
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- developer
+- devops_engineer
+- localization_engineer
+- marketing_strategist
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

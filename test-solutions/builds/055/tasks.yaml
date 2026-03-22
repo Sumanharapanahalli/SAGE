@@ -1,0 +1,277 @@
+task_types:
+  CONFIG:
+    description: 'Bootstrap monorepo structure for energy_management solution: Python
+      backend, React frontend, firmware workspace, Docker Compose for local stack
+      (PostgreSQL, InfluxDB time-series, MQTT broker, Redis). Configure .env templates,
+      pre-commit hooks, and linting.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up --build starts all services without errors
+    - .env.example documents every required environment variable
+    - pre-commit hooks pass on a clean commit
+    - 'Directory structure matches agreed monorepo layout: /backend, /firmware, /web,
+      /infra, /compliance'
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Define product requirements document (PRD) covering smart meter integration
+      protocols (DLMS/COSEM, ANSI C12), HVAC optimization algorithms, solar panel
+      monitoring via Modbus/SunSpec, demand response (OpenADR 2.0), and carbon footprint
+      calculation methodology (GHG Protocol Scope 2).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all five feature areas with measurable KPIs
+    - Protocol choices are justified against target hardware
+    - Carbon calculation methodology cites GHG Protocol Scope 2
+    - Stakeholder sign-off recorded
+    depends_on: []
+  SECURITY:
+    description: 'Produce IEC 62443 Security Level 2 threat model for the energy management
+      system: asset inventory (meters, sensors, gateways, cloud), attack surface analysis,
+      STRIDE per component, security requirements baseline, and SBOM template. Define
+      network segmentation zones (OT/IT DMZ).'
+    agent_role: developer
+    acceptance_criteria:
+    - All assets in the asset inventory are assigned to a Purdue model zone
+    - STRIDE table covers every zone boundary crossing
+    - Security requirements are traceable to IEC 62443-3-3 FRs
+    - 'SBOM template includes fields: component, version, license, CVE-scan status'
+    - Network segmentation diagram reviewed and approved by security_engineer
+    - Device identity provisioned
+    - Firmware signing enabled
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design and migrate dual-database schema: PostgreSQL for relational
+      data (devices, buildings, users, tariffs, demand response events, carbon entries)
+      and InfluxDB measurement schema for time-series telemetry (energy_reading, hvac_state,
+      solar_output, grid_signal). Include retention policies and downsampling tasks.'
+    agent_role: developer
+    acceptance_criteria:
+    - Alembic migrations run cleanly from empty schema to current version
+    - InfluxDB retention policies and continuous queries are applied via IaC
+    - All foreign keys have indexes; no N+1 query paths in schema design
+    - Time-series writes sustain 10,000 points/sec in load test
+    - Schema ERD is committed to /docs/database_erd.png
+    depends_on:
+    - 1
+  API:
+    description: 'Define OpenAPI 3.1 specification for all REST and WebSocket endpoints:
+      device registration, telemetry ingestion, HVAC command dispatch, solar monitoring,
+      demand response subscription/notification, carbon report generation, and dashboard
+      aggregation queries.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors via swagger-cli validate
+    - All endpoints have request/response schemas with examples
+    - Authentication schemes are documented for both JWT and device API key
+    - WebSocket message envelopes are documented in the spec
+    - Contract reviewed and approved before backend implementation begins
+    depends_on:
+    - 2
+    - 4
+  FIRMWARE:
+    description: 'Implement FreeRTOS-based firmware for the energy gateway device
+      (ESP32-S3 or equivalent): DLMS/COSEM smart meter polling over RS-485, Modbus
+      TCP polling for solar inverters, SunSpec model parsing, MQTT publish to cloud
+      broker with TLS 1.3, OTA update task, watchdog, and hardware abstraction layer
+      (HAL) for UART, GPIO, and NVS.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - Firmware compiles without warnings with -Wall -Werror
+    - meter_poll_task reads DLMS obis codes 1.0.1.8.0.255 and 1.0.2.8.0.255 (import/export
+      kWh)
+    - MQTT publishes telemetry within 2 seconds of poll completion
+    - 'OTA update verified on physical device: firmware upgrades and rolls back on
+      hash mismatch'
+    - Secure boot and flash encryption enabled in sdkconfig.defaults
+    - Watchdog resets device within 10 s of task stall
+    - OTA update mechanism implemented
+    - Watchdog timer configured
+    depends_on:
+    - 1
+    - 3
+  BACKEND:
+    description: 'Implement FastAPI backend services: MQTT ingestion worker (subscribes
+      to device telemetry, writes to InfluxDB + PostgreSQL), smart meter REST adapter
+      (DLMS/COSEM REST bridge), HVAC optimization engine (rule-based + ML setpoint
+      scheduler), demand response OpenADR 2.0 VEN client, solar output aggregator,
+      and carbon intensity calculator using grid emission factor API.'
+    agent_role: developer
+    acceptance_criteria:
+    - MQTT ingestion handles 1,000 msg/s without message loss (measured with paho-mqtt
+      load test)
+    - HVAC optimization endpoint returns setpoint recommendation within 500 ms
+    - OpenADR 2.0 VEN registers with test VTN and processes oadrDistributeEvent correctly
+    - Carbon report endpoint returns kg CO2e per kWh using current grid emission factor
+    - All endpoints match the OpenAPI spec from step 5
+    - 100% of DB writes go through async SQLAlchemy sessions (no blocking I/O in event
+      loop)
+    depends_on:
+    - 4
+    - 5
+    - 6
+  ML_MODEL:
+    description: 'Train and validate the HVAC setpoint optimization model: feature
+      engineering pipeline (weather API, occupancy sensors, historical energy data),
+      gradient boosting model training, cross-validation, hyperparameter tuning, model
+      serialization to ONNX for edge inference, and model card documentation.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model RMSE < 1.5°C on held-out 30-day test set
+    - ONNX model runs inference in < 50 ms on Raspberry Pi 4 (edge target)
+    - 'Model card documents: training data sources, feature list, evaluation metrics,
+      known limitations'
+    - Retraining pipeline is reproducible via single make train command
+    - Model version is tracked in MLflow or equivalent experiment tracker
+    depends_on:
+    - 7
+  AGENTIC:
+    description: 'Implement a Multi-Agent Coordinator pattern for autonomous energy
+      optimization: coordinator agent decomposes building optimization goal into specialist
+      sub-tasks (HVAC agent, solar agent, demand-response agent), collects outputs,
+      and synthesizes a unified energy action plan with human-in-the-loop approval
+      gate before dispatch.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator decomposes a building telemetry payload into ≥3 specialist sub-tasks
+    - Each specialist agent returns a structured JSON action proposal
+    - Synthesized action plan is queued in SAGE proposal store before any dispatch
+    - Human approval triggers actual HVAC/solar/DR dispatch; rejection logs feedback
+      to vector store
+    - End-to-end latency from telemetry event to proposal ready < 10 s
+    depends_on:
+    - 7
+    - 8
+  FRONTEND:
+    description: 'Build React 18 + TypeScript dashboard: real-time energy consumption
+      charts (Recharts), HVAC control panel, solar generation gauge, demand response
+      event timeline, carbon footprint tracker with trend lines, building floor-plan
+      heatmap overlay, and alert notification drawer. Implement WebSocket live feed
+      from /live-feed endpoint.'
+    agent_role: developer
+    acceptance_criteria:
+    - Dashboard renders live energy data within 3 s of page load
+    - HVAC setpoint control dispatches to backend and shows optimistic UI update
+    - Carbon tracker updates in real-time when new telemetry arrives via WebSocket
+    - All pages pass WCAG 2.1 AA accessibility audit (axe-core)
+    - Lighthouse performance score ≥ 85 on production build
+    - Demand response acknowledgement flow matches OpenADR UI workflow
+    depends_on:
+    - 5
+    - 7
+  EMBEDDED_TEST:
+    description: 'Design and implement hardware-in-the-loop (HIL) test suite for the
+      energy gateway firmware: DLMS meter simulator (software RS-485 loopback), Modbus
+      solar inverter stub, MQTT broker health assertions, OTA update regression harness,
+      and fault injection tests (meter disconnect, TLS failure, watchdog trigger).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - 'All Unity firmware unit tests pass: ≥ 90% statement coverage on HAL modules'
+    - 'HIL suite runs end-to-end in CI: dlms_poll → mqtt_publish verified within 5
+      s'
+    - 'Fault injection: meter disconnect triggers alert MQTT message within 30 s'
+    - 'OTA corrupt image: firmware rejects update and logs rollback event'
+    - 'TLS cert expiry: device refuses connection and raises certificate_error alert'
+    - Test report committed to /compliance/embedded_test_report.md
+    depends_on:
+    - 6
+  TESTS:
+    description: 'Write backend unit and integration tests: pytest suite covering
+      meter service, HVAC optimizer, solar aggregator, carbon calculator, and demand
+      response VEN. Mock InfluxDB and PostgreSQL for unit tests; use Docker Compose
+      test stack for integration. Target ≥ 85% coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest -q exits 0 with ≥ 85% combined coverage
+    - Integration tests run against real Postgres + InfluxDB containers via testcontainers
+    - OpenADR VEN test replays a real oadrDistributeEvent XML fixture
+    - 'Carbon calculator tested against known reference: 1000 kWh × 0.233 kg/kWh =
+      233 kg CO2e'
+    - All tests run in < 3 minutes in CI
+    depends_on:
+    - 7
+    - 8
+  DEVOPS:
+    description: 'Build CI/CD pipeline: GitHub Actions workflows for firmware build
+      + HIL test, backend test + Docker image push, frontend build + Lighthouse CI.
+      Kubernetes Helm chart for cloud deployment (backend, workers, Grafana dashboards
+      for InfluxDB). Prometheus metrics exposition from FastAPI.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All three CI workflows pass on a clean main branch merge
+    - Helm chart deploys cleanly to a local Kind cluster with helm install
+    - 'Prometheus /metrics exposes: active_meters_total, hvac_setpoint_lag_seconds,
+      solar_output_kw, carbon_kg_co2e_total'
+    - Grafana dashboard JSON imports without errors and displays live data
+    - Rollback procedure documented in /infra/runbooks/rollback.md
+    depends_on:
+    - 7
+    - 11
+    - 12
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test: simulate a full 24-hour building
+      operation cycle — meter data ingestion, HVAC optimization decisions, solar generation
+      event, demand response signal from utility, and carbon report generation. Validate
+      data integrity across PostgreSQL and InfluxDB.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - System test suite passes without manual intervention
+    - InfluxDB contains exactly 86,400 energy_reading points for the simulated building
+    - HVAC setpoint history shows ≥ 3 optimizer-driven changes
+    - Demand response acknowledgement latency ≤ 60 s recorded in test log
+    - Carbon report value within ± 5% of reference calculation
+    - System test report committed to /compliance/system_test_report.md
+    depends_on:
+    - 9
+    - 10
+    - 12
+  COMPLIANCE:
+    description: 'Produce IEC 62443 compliance artifacts: Security Level 2 requirement
+      traceability matrix (SRS → IEC 62443-3-3 FRs), zone and conduit model diagram,
+      security risk assessment, patch management policy, and incident response plan.
+      Map implemented controls to each FR.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Every IEC 62443-3-3 FR1–FR7 requirement has ≥ 1 implemented control mapped
+    - Zone and conduit model diagram reviewed by security_engineer
+    - Traceability matrix has no empty rows in the 'implementation evidence' column
+    - Patch management policy defines maximum exposure window ≤ 30 days for critical
+      CVEs
+    - All artifacts stored in /compliance/ and referenced in SBOM
+    depends_on:
+    - 3
+    - 13
+  UX_DESIGN:
+    description: 'Conduct usability review of the dashboard: heuristic evaluation
+      against Nielsen''s 10 principles, accessibility audit (WCAG 2.1 AA), and user
+      journey walkthrough for facility manager persona (daily energy review, demand
+      response acknowledgement, carbon report export). Produce prioritized UX findings
+      and implement critical fixes.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Zero WCAG 2.1 AA violations reported by axe-core on all 6 dashboard pages
+    - All interactive elements reachable and operable via keyboard alone
+    - Demand response acknowledgement flow completable in ≤ 4 clicks
+    - Carbon report exportable as PDF and CSV from the UI
+    - UX findings report prioritizes issues by severity; all Critical and High issues
+      resolved
+    depends_on:
+    - 10
+  DOCS:
+    description: 'Write technical documentation: system architecture overview (C4
+      diagrams), API reference (auto-generated from OpenAPI spec), firmware developer
+      guide (toolchain setup, flash procedure, DLMS obis code reference), operator
+      runbook (startup, shutdown, meter provisioning, alert triage), and carbon methodology
+      white paper.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - mkdocs build exits 0 with no broken links
+    - API reference auto-generates from the OpenAPI spec committed in step 5
+    - Firmware guide includes step-by-step flash procedure verified on physical device
+    - Carbon methodology white paper cites GHG Protocol Scope 2 and local grid emission
+      factor source
+    - 'Operator runbook covers: meter provisioning, demand response subscription,
+      alert escalation'
+    depends_on:
+    - 14
+    - 16

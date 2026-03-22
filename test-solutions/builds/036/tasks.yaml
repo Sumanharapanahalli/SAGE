@@ -1,0 +1,300 @@
+task_types:
+  MARKET_RESEARCH:
+    description: Analyze competitors (Looker, Metabase, Superset, Redash, Grafana)
+      and identify market positioning for analytics_dashboard. Map feature gaps, pricing
+      benchmarks, and ICP (ideal customer profiles). Identify embedding SDK differentiator
+      opportunities.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers ≥7 competitors across 15+ feature dimensions
+    - ICP profiles define at least 3 distinct buyer personas with pain points
+    - Positioning brief identifies 2-3 defensible differentiators
+    - GTM channel recommendations documented
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements and user stories for all four product
+      pillars: data source connectors, chart builder, scheduled reports, and embedding
+      SDK. Produce process flow diagrams for each pillar. Include ROI model for enterprise
+      embedding use case.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - ≥40 user stories covering all four pillars
+    - Each story has acceptance criteria and priority (MoSCoW)
+    - Process flow diagrams cover happy path + 2 error paths per pillar
+    - ROI model quantifies embedding SDK value for 3 customer segments
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Author the Product Requirements Document (PRD) for analytics_dashboard
+      v1.0. Define success metrics, KPIs, MVP scope vs. post-MVP, and a 6-month roadmap.
+      Set HITL approval gates for data schema migrations and embedding SDK breaking
+      changes.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved by all stakeholder roles (business, engineering, design)
+    - MVP scope lists ≤25 features with clear in/out boundary
+    - Success metrics are measurable with defined baseline and target
+    - 6-month roadmap has quarterly milestones
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: 'Conduct user research (5+ interviews with data analysts and BI engineers),
+      then produce wireframes and interaction designs for: connector setup wizard,
+      drag-and-drop chart builder canvas, dashboard layout editor, scheduled report
+      configuration, and embedding SDK code preview panel. Run accessibility audit
+      (WCAG 2.1 AA).'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - ≥5 user research interviews completed with synthesized findings report
+    - Wireframes cover all 7 screens at low-fidelity and 3 key flows at high-fidelity
+    - Drag-and-drop chart builder prototype is clickable and testable
+    - Accessibility audit report produced with zero critical violations
+    - Design system tokens defined (colors, typography, spacing, chart palette)
+    depends_on:
+    - 3
+  FINANCIAL:
+    description: Build a financial model covering SaaS pricing tiers (free, pro, enterprise),
+      embedding SDK licensing, connector marketplace revenue share, and 3-year unit
+      economics. Include CAC/LTV analysis and break-even projections.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - 3-year P&L model with monthly granularity for year 1
+    - LTV:CAC ratio ≥ 3:1 at enterprise tier
+    - Break-even month identified under base/bull/bear scenarios
+    - Pricing page copy reviewed and approved
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 2
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (DPA), and embedding SDK EULA. Map data residency obligations for PostgreSQL/BigQuery/Snowflake
+      connectors. Review open-source license compatibility for all planned dependencies.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - All 4 legal documents drafted and reviewed
+    - GDPR Article 28 DPA clauses present
+    - SDK EULA covers redistribution restrictions and warranty disclaimer
+    - OSS license compatibility matrix produced (no GPL contamination)
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: Scope SOC 2 Type I readiness for analytics_dashboard. Produce a trust
+      services criteria (TSC) mapping, control inventory, and evidence collection
+      plan for CC6, CC7, and CC9 (security, availability, confidentiality). Define
+      audit log requirements for all data connector operations and embedding SDK token
+      issuance.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - TSC control mapping covers ≥30 controls across CC6/CC7/CC9
+    - Evidence collection plan assigns owner + cadence for each control
+    - Audit log schema defined with retention policy (≥1 year)
+    - Encryption standards documented (AES-256 at rest, TLS 1.2+ in transit)
+    - Incident response plan reviewed and tabletop exercise scheduled
+    depends_on:
+    - 6
+  DATABASE:
+    description: 'Design the core database schema for analytics_dashboard: organizations,
+      users, data_sources (connector configs with encrypted credentials), dashboards,
+      charts, chart_config (JSONB), scheduled_reports, report_executions, embedding_tokens,
+      audit_log. Write Alembic migrations. Seed data for local development.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD diagram produced and reviewed
+    - All Alembic migrations run cleanly on fresh PostgreSQL instance
+    - credential fields encrypted at rest using pgcrypto or Vault transit
+    - Seed script populates demo org with 3 data sources, 5 dashboards, 10 charts
+    - Foreign key constraints and CASCADE rules documented
+    depends_on:
+    - 3
+  DATA:
+    description: 'Build the data connector abstraction layer: base Connector interface,
+      PostgreSQL connector, BigQuery connector, and Snowflake connector. Implement
+      schema browsing (list tables/columns/types), query execution with parameterized
+      SQL, connection pooling, and query result streaming. Store encrypted credentials
+      using the vault pattern.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 3 connectors pass connection test against live (or Docker) instances
+    - Schema browsing returns correct types for all 3 connectors
+    - Parameterized query execution prevents SQL injection (sqlparse validation)
+    - Credentials never logged or returned in API responses
+    - Connection pool reuse verified under concurrent load (10 simultaneous queries)
+    depends_on:
+    - 8
+  API:
+    description: 'Design and document the full OpenAPI 3.1 spec for analytics_dashboard
+      REST API. Cover: auth (JWT + API keys), data source CRUD, schema browsing, query
+      execution, dashboard CRUD, chart CRUD, scheduled report management, embedding
+      token issuance, and audit log streaming. Define versioning strategy (/api/v1/).'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against 3.1 schema
+    - All endpoints have request/response examples
+    - Auth requirements documented for every endpoint
+    - Error responses follow RFC 7807 format consistently
+    - Versioning strategy documented with deprecation policy
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Implement the FastAPI backend for analytics_dashboard. Wire all
+      endpoints from the OpenAPI spec: auth (JWT issuance, refresh, API key management),
+      data source management (CRUD + test connection), query execution (async with
+      result caching in Redis), dashboard/chart CRUD, embedding token issuance with
+      scope/TTL controls. Apply multi-tenant isolation via org_id on every query.'
+    agent_role: developer
+    acceptance_criteria:
+    - All /api/v1/ endpoints return responses matching OpenAPI spec
+    - 'Multi-tenant isolation verified: org A cannot access org B data'
+    - JWT expiry, refresh, and revocation work correctly
+    - API key scopes enforced (read-only embedding tokens cannot mutate data)
+    - Query result caching reduces P95 latency by ≥40% on repeated queries
+    - All endpoints return RFC 7807 errors on failure
+    depends_on:
+    - 9
+    - 10
+  FRONTEND:
+    description: 'Build the React + TypeScript frontend for analytics_dashboard. Implement:
+      auth flows (login, signup, org invite), data source manager (connector setup
+      wizard with connection test), dashboard list/grid view, and overall layout shell
+      (sidebar nav, breadcrumbs, org switcher). Use design tokens from UX step 4.'
+    agent_role: developer
+    acceptance_criteria:
+    - Auth flows complete end-to-end with JWT storage in httpOnly cookies
+    - Connector setup wizard tests connection before saving (live feedback)
+    - Dashboard list loads with virtualized scroll (≥100 dashboards without jank)
+    - All interactive elements keyboard-navigable (WCAG 2.1 AA)
+    - Lighthouse accessibility score ≥ 90
+    depends_on:
+    - 4
+    - 11
+  ML_MODEL:
+    description: 'Build the AI chart recommendation engine: train a lightweight classifier
+      that takes column metadata (names, types, cardinality, sample values) and suggests
+      the most appropriate chart type. Use a decision-tree/gradient-boost model trained
+      on a synthetic dataset of (schema, chart_type) pairs. Expose as internal inference
+      endpoint. Integrate with chart builder canvas (step 15).'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model achieves ≥70% top-1 accuracy on held-out test set (200 samples)
+    - Inference latency ≤100ms P95 (local inference, no external API call)
+    - Model artifacts versioned and stored (not committed to git — use MLflow or S3)
+    - Fallback heuristic activates if model unavailable (graceful degradation)
+    - Training pipeline reproducible via single script with fixed random seed
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 9
+  CONFIG:
+    description: 'Set up the agentic pattern for analytics_dashboard''s internal AI
+      features: configure the coordinator pattern for the AI chart recommender + query
+      optimizer pipeline. Set up the HITL pattern for data schema migration proposals.
+      Configure the review_and_critique pattern for connector implementation quality
+      gates.'
+    agent_role: developer
+    acceptance_criteria:
+    - coordinator pattern routes correctly to chart_recommender vs query_optimizer
+      based on request type
+    - HITL gate triggers for all DDL migration proposals (verified in integration
+      test)
+    - Critic agent rejects SQL containing DROP/DELETE/UPDATE with explanation
+    - All pattern configs documented in config/ai_patterns.yaml with comments
+    depends_on:
+    - 11
+    - 18
+  INFRA:
+    description: Create Docker Compose setup for local development (PostgreSQL, Redis,
+      backend, frontend, Celery worker, Celery Beat, Flower monitoring). Write production
+      Dockerfile (multi-stage, non-root user). Create Kubernetes Helm chart for production
+      deployment with HPA, resource limits, and health probes.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`docker compose up` starts full stack in ≤2 minutes from cold pull'
+    - Backend container runs as non-root user
+    - Helm chart deploys to local k8s (kind/minikube) without errors
+    - HPA scales backend pods from 2→5 under simulated load (k6 test)
+    - Health probes correctly report unhealthy when DB is unavailable
+    depends_on:
+    - 11
+    - 12
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): lint (ruff, eslint), type
+      check (mypy, tsc), unit tests, integration tests (Docker-based), security scan
+      (Trivy, Bandit), build Docker image, push to registry, deploy to staging on
+      merge to main, deploy to production on git tag. Add Datadog APM + log aggregation.
+      Set up PagerDuty alerting for P1 incidents.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Full CI pipeline runs in ≤8 minutes on GitHub Actions
+    - Security scan blocks merge if HIGH/CRITICAL CVE found in container
+    - Staging deployment automated on every merge to main
+    - Datadog dashboard shows API latency, error rate, connector query rate
+    - PagerDuty alert fires within 2 minutes of simulated P1 condition
+    depends_on:
+    - 20
+  SECURITY:
+    description: 'Conduct threat model for analytics_dashboard using STRIDE. Focus
+      on: credential storage (connector passwords/tokens), SQL injection via query
+      builder, embedding token forgery, multi-tenant data leakage, and scheduled report
+      delivery hijacking. Produce penetration test plan and SBOM (CycloneDX format).'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model documents ≥15 threats with mitigations
+    - SBOM produced and contains all runtime dependencies
+    - Pentest plan covers all OWASP API Top 10 categories
+    - All HIGH threats have assigned mitigations with ticket references
+    - SSRF protection documented for Slack webhook delivery channel
+    depends_on:
+    - 13
+    - 12
+  TESTS:
+    description: 'Write comprehensive test suite: unit tests for all connector classes,
+      query builder SQL generation, embedding token issuance/validation, and report
+      scheduler. Integration tests for full API flows (connector setup → query → chart
+      save → embed token). E2E tests (Playwright) for chart builder drag-and-drop,
+      report scheduling, and embedding iframe render.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - ≥85% line coverage on backend source
+    - All 5 key security test cases pass
+    - 'E2E: chart builder drag-and-drop test passes in headed + headless mode'
+    - Integration tests use real PostgreSQL and Redis (not mocks)
+    - 'k6 performance test: P95 dashboard load ≤ 2s under 100 concurrent users'
+    depends_on:
+    - 16
+    - 17
+    - 13
+  OPERATIONS:
+    description: 'Write operational runbooks: incident response for connector outages,
+      scheduled report delivery failures, and embedding token service degradation.
+      Define SLAs (API availability 99.9%, report delivery ±5min SLA). Create capacity
+      planning model. Write on-call rotation guide.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - 'All 4 runbooks have: trigger conditions, diagnostic steps, remediation steps,
+      escalation path'
+    - SLA targets documented and measurable via Datadog SLO monitors
+    - Capacity model predicts infrastructure cost at 1k/10k/100k MAU
+    - On-call rotation guide covers handoff checklist and escalation contacts
+    depends_on:
+    - 21
+  DOCS:
+    description: 'Write developer documentation: API reference (auto-generated from
+      OpenAPI spec via Redoc), embedding SDK integration guide (HTML iframe, React,
+      Vue examples), connector setup guides for PostgreSQL/BigQuery/Snowflake, and
+      architecture decision records (ADRs) for key design choices (multi-tenancy model,
+      credential encryption, chart config JSONB schema).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference builds from OpenAPI spec without manual edits
+    - Embedding SDK guide includes working copy-paste code examples for all 3 frameworks
+    - All 3 connector guides verified against live connector setup flow
+    - 3 ADRs written with context/decision/consequences sections
+    - Docusaurus site builds without warnings
+    depends_on:
+    - 16
+    - 10

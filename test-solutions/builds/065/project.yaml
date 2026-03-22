@@ -1,0 +1,53 @@
+project_name: fraud_detection
+display_name: Fraud Detection
+version: 1.0.0
+domain: ml_ai
+description: Real-time fraud detection ML pipeline with transaction feature engineering,
+  ensemble models (XGBoost + neural), explainability (SHAP), and case management dashboard.
+detected_domains: []
+compliance_standards:
+- PCI DSS
+- SOC 2
+- GDPR
+- Fair Lending Laws
+task_types:
+- BACKEND
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- ML_MODEL
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- qa_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

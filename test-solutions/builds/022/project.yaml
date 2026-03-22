@@ -1,0 +1,62 @@
+project_name: ev_battery_management
+display_name: Ev Battery Management
+version: 1.0.0
+domain: automotive
+description: Electric vehicle battery management system (BMS) with cell balancing,
+  state-of-charge estimation, thermal management, and degradation prediction. ISO
+  26262 ASIL C.
+detected_domains: []
+compliance_standards:
+- ISO 26262 ASIL C
+- IEC 62619
+- UN ECE R100
+task_types:
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- ML_MODEL
+- PCB_DESIGN
+- QA
+- REGULATORY
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

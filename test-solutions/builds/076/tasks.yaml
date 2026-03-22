@@ -1,0 +1,293 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: 'Gather and document business requirements for all six School ERP
+      modules: student enrollment, attendance tracking, grade management, timetable
+      scheduling, parent communication, and fee collection. Produce user stories,
+      process flow diagrams, and ROI analysis.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories written for all six modules with acceptance criteria
+    - Process flow diagrams cover end-to-end workflows for each module
+    - ROI analysis includes cost savings and efficiency gains
+    - Stakeholder sign-off documented
+    depends_on: []
+  PRODUCT_MGMT:
+    description: Produce the Product Requirements Document (PRD), phased roadmap,
+      prioritization matrix, and success metrics for the School ERP system. Define
+      MVP scope vs. future phases.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all six modules with detailed feature requirements
+    - Roadmap distinguishes MVP from Phase 2 with release milestones
+    - 'Success metrics defined: enrollment time reduction, attendance accuracy ≥99%,
+      parent engagement rate'
+    - Prioritization matrix approved by product owner
+    depends_on: []
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, and Data Processing Agreements
+      compliant with FERPA (student records), COPPA (children under 13), and applicable
+      state education privacy laws. Define data retention and deletion policies.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy explicitly addresses FERPA student record protections
+    - COPPA compliance verified for any features accessible to students under 13
+    - Data retention and deletion schedules documented per FERPA 5-year rule
+    - DPA template ready for school district countersignature
+    - FERPA/COPPA compliance if minors involved
+    depends_on: []
+  UX_DESIGN:
+    description: Conduct user research with school admins, teachers, parents, and
+      students. Produce personas, journey maps, and an initial information architecture
+      for all six modules.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Minimum 5 user interviews conducted per persona type
+    - Journey maps cover end-to-end flows for all six modules
+    - Information architecture validated with representative users
+    - Accessibility requirements captured for WCAG 2.1 AA compliance
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on: []
+  SECURITY:
+    description: Produce a threat model and security design for the School ERP system
+      covering student PII protection, role-based access control, data encryption
+      at rest and in transit, and audit logging requirements.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all six ERP modules
+    - 'RBAC matrix defines permissions for: super_admin, school_admin, teacher, parent,
+      student'
+    - 'Encryption requirements specified: TLS 1.3 in transit, AES-256 at rest'
+    - Audit log requirements defined for FERPA compliance
+    - Security design reviewed and approved
+    depends_on: []
+  COMPLIANCE:
+    description: Create compliance evidence artifacts for FERPA, COPPA, and WCAG 2.1.
+      Produce a traceability matrix mapping each standard's requirements to system
+      features, and a compliance checklist for pre-launch audit.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - FERPA traceability matrix maps all 34 CFR Part 99 requirements to system controls
+    - COPPA checklist covers parental consent workflows and data minimization
+    - WCAG 2.1 AA audit plan defines test cases for all UI components
+    - Risk register identifies compliance gaps with remediation owners
+    depends_on:
+    - 3
+  DATABASE:
+    description: Design the relational database schema for all School ERP modules.
+      Define tables, relationships, indexes, and migration scripts. Schema must support
+      multi-school tenancy, soft deletes for FERPA compliance, and full audit trail.
+    agent_role: developer
+    acceptance_criteria:
+    - Schema supports multi-school tenancy via school_id foreign key on all tenant
+      tables
+    - All student/guardian PII tables have soft delete (deleted_at) for FERPA record
+      retention
+    - 'Audit log table captures: user_id, action, table_name, record_id, old_value,
+      new_value, timestamp'
+    - Indexes defined on all foreign keys and high-frequency query columns
+    - Migration scripts are idempotent and reversible
+    - Schema ERD diagram produced and reviewed
+    depends_on:
+    - 1
+    - 5
+  API:
+    description: Design the OpenAPI 3.0 specification for all School ERP REST API
+      endpoints covering authentication, enrollment, attendance, grades, timetable,
+      messaging, and fee collection. Define request/response schemas, error codes,
+      and rate limits.
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints documented with request/response schemas and example payloads
+    - 'Authentication endpoints: login, logout, refresh, password-reset'
+    - RBAC enforcement documented per endpoint (which roles can call what)
+    - Pagination, filtering, and sorting parameters defined for list endpoints
+    - Error response schema standardized across all endpoints
+    - OpenAPI spec validates with no errors against swagger-parser
+    depends_on:
+    - 1
+    - 8
+  CONFIG:
+    description: Set up the monorepo project structure, development environment configurations,
+      environment variable management, Docker Compose for local development, and toolchain
+      for backend (Python/FastAPI) and frontend (React/TypeScript).
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up starts all services with no manual steps
+    - 'Makefile provides: make dev, make test, make migrate, make lint targets'
+    - .env.example documents all required environment variables with descriptions
+    - Backend linting (ruff) and formatting (black) configured
+    - Frontend linting (ESLint) and formatting (Prettier) configured
+    - Pre-commit hooks enforcing lint/format checks
+    depends_on:
+    - 8
+    - 9
+  LOCALIZATION:
+    description: Set up i18n/l10n infrastructure for the School ERP system. Configure
+      react-i18next for the frontend and a translation management system. Produce
+      initial English locale strings and translation scaffolds for Spanish and French.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All UI strings externalized into locale JSON files — zero hardcoded strings
+      in components
+    - react-i18next configured with namespace-based loading per module
+    - English locale 100% complete; Spanish and French scaffolds with keys present
+    - RTL layout support scaffolded for future locale expansion
+    - Date, time, currency, and number formatting use locale-aware formatters
+    - Translation key naming convention documented in CONTRIBUTING.md
+    depends_on:
+    - 10
+  BACKEND:
+    description: 'Implement the authentication and authorization service: JWT login/logout/refresh,
+      RBAC enforcement middleware, password reset flow, session management, and multi-school
+      tenant context resolution.'
+    agent_role: developer
+    acceptance_criteria:
+    - POST /auth/login returns access token (15min) and refresh token (7d)
+    - POST /auth/refresh rotates refresh token and returns new access token
+    - RBAC middleware enforces role permissions on all protected endpoints
+    - Password reset sends email with time-limited token (1hr expiry)
+    - Tenant context resolved from JWT claim and propagated to all DB queries
+    - Failed login attempts rate-limited to 5 per minute per IP
+    depends_on:
+    - 10
+  FRONTEND:
+    description: 'Build the React frontend foundation: routing, authentication flow
+      (login/logout/password-reset), role-based layout (Admin Portal, Teacher Portal,
+      Parent Portal), global state management, and API client with JWT handling.'
+    agent_role: developer
+    acceptance_criteria:
+    - Login page collects email/password, shows validation errors, redirects by role
+      on success
+    - JWT stored in httpOnly cookie; API client auto-refreshes on 401
+    - ProtectedRoute redirects unauthenticated users to login
+    - RoleGate conditionally renders UI elements based on user role
+    - Role-based navigation shows only permitted menu items per role
+    - React Query configured with stale time, retry policy, and error boundaries
+    - All text rendered via react-i18next — zero hardcoded strings
+    depends_on:
+    - 11
+    - 12
+  TESTS:
+    description: 'Write unit and integration tests for all six backend modules: auth,
+      enrollment, attendance, grades, timetable, messaging, and fees. Target ≥80%
+      code coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All API endpoints have at least one happy-path and one error-path test
+    - 'RBAC tested: each endpoint verifies unauthorized roles receive 403'
+    - 'Enrollment tests cover: create, update, transfer, withdrawal workflows'
+    - 'Attendance tests verify: immutability after 48hr, bulk upload, notification
+      trigger'
+    - Fee tests mock Stripe API and verify webhook handling for success and failure
+    - Test coverage report shows ≥80% for all modules
+    - Tests run in isolation using test database with fixtures and teardown
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+  QA:
+    description: 'Produce a comprehensive QA test plan: test strategy, test cases
+      for all six modules, regression test suite, FERPA/COPPA data handling test cases,
+      and WCAG 2.1 AA accessibility test cases.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all six modules with test objectives and scope
+    - Minimum 10 test cases per module covering positive, negative, and edge cases
+    - 'FERPA test cases verify: data access controls, audit logging, record retention'
+    - 'COPPA test cases verify: parental consent flows, data minimization for minors'
+    - 'WCAG 2.1 AA test cases cover: keyboard navigation, screen reader, color contrast,
+      focus management'
+    - 'Performance test cases define SLAs: page load <2s, API response <500ms p95'
+    depends_on:
+    - 6
+    - 7
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: GitHub Actions workflows for lint, test,
+      build, security scan (Bandit/Trivy), and deployment to staging and production.
+      Configure environment-based secrets management.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - 'CI pipeline runs on every PR: lint → test → security scan, blocks merge on
+      failure'
+    - Docker images built and pushed to container registry on merge to main
+    - Deploy to staging auto-triggers on merge to main
+    - Deploy to production requires manual approval gate in GitHub Actions
+    - Bandit scans for Python security issues; Trivy scans Docker image for CVEs
+    - Secrets managed via GitHub Actions secrets, not hardcoded in workflow files
+    - Pipeline run time under 10 minutes for full CI cycle
+    depends_on:
+    - 26
+  INFRA:
+    description: 'Provision cloud infrastructure: Kubernetes cluster (or managed container
+      service), PostgreSQL managed database, Redis cache, S3 for document storage,
+      CDN for frontend, and monitoring stack (Prometheus + Grafana).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All infrastructure defined as Terraform code (no manual console changes)
+    - RDS configured with Multi-AZ, automated backups (7-day retention), encryption
+      at rest
+    - S3 bucket has server-side encryption, versioning enabled, and public access
+      blocked
+    - Kubernetes deployments have health checks, resource limits, and HPA configured
+    - Prometheus scrapes all services; Grafana dashboards for API latency, error rate,
+      DB connections
+    - 'PagerDuty alerts fire for: p95 latency >1s, error rate >1%, DB connection exhaustion'
+    depends_on:
+    - 28
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system integration tests across all six modules
+      using Playwright. Cover complete user journeys: student enrollment through to
+      fee payment, teacher marking attendance and entering grades, parent viewing
+      report card.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All six E2E user journeys pass on staging environment
+    - Each journey executes in under 3 minutes
+    - Cross-module data consistency verified (e.g., enrolled student appears in attendance)
+    - 'Role isolation verified: parent cannot access admin routes'
+    - Payment E2E uses Stripe test mode with test card numbers
+    - Test reports generated with screenshots on failure
+    depends_on:
+    - 20
+    - 21
+    - 22
+    - 23
+    - 24
+    - 25
+    - 29
+  TRAINING:
+    description: 'Produce user guides, training materials, and onboarding documentation
+      for all four user roles: School Admin, Teacher, Parent, and Student. Include
+      video scripts for key workflows.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - 'Admin guide covers: school setup, user management, timetable creation, financial
+      reporting'
+    - 'Teacher guide covers: attendance marking, grade entry, messaging parents'
+    - 'Parent guide covers: viewing grades, attendance, paying fees, messaging teachers'
+    - All guides reviewed by a representative user from each role for clarity
+    - Video scripts cover the four highest-frequency workflows with step-by-step narration
+      cues
+    - In-app help tooltips added to all complex form fields
+    - FAQ addresses top 20 anticipated support questions
+    depends_on:
+    - 30
+  DOCS:
+    description: 'Write technical documentation: API reference (auto-generated from
+      OpenAPI spec), system architecture diagram, database ERD, deployment runbook,
+      and developer onboarding guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference auto-generated from openapi.yaml and hosted at /docs
+    - Architecture diagram shows all services, data flows, and external integrations
+    - 'Deployment runbook covers: new environment setup, rollback procedure, DB migration
+      steps'
+    - Developer onboarding guide enables a new engineer to run the stack locally in
+      under 30 minutes
+    - CHANGELOG follows Keep a Changelog format with all MVP changes documented
+    depends_on:
+    - 30

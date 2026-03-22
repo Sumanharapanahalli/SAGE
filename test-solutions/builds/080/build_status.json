@@ -1,0 +1,1221 @@
+{
+  "run_id": "42a1cae2-2be3-4e77-9642-319900031aa7",
+  "solution_name": "course_marketplace",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T10:00:17.047078+00:00",
+  "updated_at": "2026-03-22T10:05:17.798831+00:00",
+  "product_description": "Course marketplace connecting instructors with learners. Instructor analytics, revenue sharing, review system, affiliate program, and corporate training licenses.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user personas, and process flows for the course marketplace. Capture instructor onboarding, learner enrollment, revenue sharing model, affiliate commission structure, and corporate licensing workflows. Include ROI projections for each revenue stream.",
+      "payload": {
+        "deliverables": [
+          "business_requirements_doc.md",
+          "user_personas.md",
+          "process_flow_diagrams",
+          "revenue_model_analysis.md"
+        ],
+        "user_types": [
+          "instructor",
+          "learner",
+          "affiliate",
+          "corporate_admin",
+          "platform_admin"
+        ],
+        "revenue_streams": [
+          "course_sales",
+          "subscriptions",
+          "affiliate_commissions",
+          "corporate_licenses"
+        ]
+      },
+      "acceptance_criteria": [
+        "User stories written for all 5 user types with acceptance criteria",
+        "Revenue sharing formula documented with payout rules and thresholds",
+        "Affiliate program commission tiers defined with tracking requirements",
+        "Corporate license tiers (seat-based, unlimited) defined with feature gates",
+        "Process flow diagrams cover course creation, enrollment, payment, and payout flows"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze course marketplace competitors (Udemy, Teachable, Thinkific, Coursera for Business). Identify positioning opportunities, pricing benchmarks for revenue splits and corporate licenses, and go-to-market strategy for instructor acquisition.",
+      "payload": {
+        "competitors": [
+          "Udemy",
+          "Teachable",
+          "Thinkific",
+          "Coursera for Business",
+          "Kajabi"
+        ],
+        "research_areas": [
+          "revenue_share_benchmarks",
+          "corporate_pricing",
+          "affiliate_rates",
+          "instructor_acquisition"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix covering revenue share %, affiliate rates, and corporate pricing tiers",
+        "Recommended revenue split ratio backed by market data",
+        "Differentiation strategy documented with at least 3 unique value propositions",
+        "GTM channel priorities ranked with acquisition cost estimates"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 3,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the product requirements document, feature roadmap, and success metrics. Define MVP scope vs. post-launch features. Set KPIs for GMV, instructor retention, learner completion rates, and corporate contract values.",
+      "payload": {
+        "mvp_scope": [
+          "course_creation",
+          "enrollment",
+          "payment",
+          "basic_analytics",
+          "reviews"
+        ],
+        "phase2": [
+          "affiliate_program",
+          "corporate_licenses",
+          "advanced_analytics",
+          "certificates"
+        ],
+        "kpis": [
+          "GMV",
+          "instructor_retention_rate",
+          "course_completion_rate",
+          "NPS",
+          "corporate_ARR"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD signed off with MVP feature list and explicit out-of-scope items",
+        "Roadmap with milestones for MVP, Phase 2, and Phase 3",
+        "Success metrics defined with baseline targets and measurement methodology",
+        "Feature prioritization matrix (RICE or MoSCoW) for all backlog items"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 4,
+      "task_type": "COMPLIANCE",
+      "description": "Produce compliance artifacts for COPPA (children's data), FERPA (student educational records), and WCAG 2.1 (accessibility). Define data handling policies, age verification requirements, parental consent flows, and accessibility conformance targets.",
+      "payload": {
+        "standards": [
+          "COPPA",
+          "FERPA",
+          "WCAG 2.1 AA"
+        ],
+        "artifacts": [
+          "data_handling_policy",
+          "age_verification_spec",
+          "parental_consent_flow",
+          "accessibility_conformance_plan",
+          "ferpa_data_classification"
+        ],
+        "risk_areas": [
+          "under_13_enrollment",
+          "student_record_sharing",
+          "third_party_data_processors"
+        ]
+      },
+      "acceptance_criteria": [
+        "COPPA compliance checklist completed \u2014 age gate mechanism, parental consent flow, data minimization for minors",
+        "FERPA data classification map identifying all PII and education records",
+        "WCAG 2.1 AA conformance targets documented with audit schedule",
+        "Third-party data processor inventory with DPA requirements",
+        "Data retention and deletion policy covering all user types"
+      ],
+      "depends_on": [
+        1,
+        3
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "LEGAL",
+      "description": "Draft terms of service, privacy policy, instructor agreement, affiliate agreement, and corporate license agreement. Address IP ownership of course content, revenue share terms, affiliate cookie tracking disclosures, and FERPA-compliant data sharing clauses.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "instructor_agreement.md",
+          "affiliate_agreement.md",
+          "corporate_license_agreement.md"
+        ],
+        "key_clauses": [
+          "content_ip_ownership",
+          "revenue_share_terms",
+          "affiliate_disclosure",
+          "data_processing_addendum",
+          "acceptable_use_policy"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 5 legal documents drafted and reviewed",
+        "Revenue share and payout terms legally binding in instructor agreement",
+        "Affiliate FTC disclosure requirements met in affiliate agreement",
+        "FERPA-compliant data processing addendum included in corporate license",
+        "COPPA parental consent language reviewed and approved",
+        "FERPA/COPPA compliance if minors involved"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 6,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes for all user journeys: learner discovery and enrollment, instructor course creation studio, affiliate dashboard, and corporate admin seat management. Perform accessibility audit against WCAG 2.1 AA standards.",
+      "payload": {
+        "user_flows": [
+          "learner_discovery",
+          "course_enrollment_checkout",
+          "instructor_course_creation",
+          "instructor_analytics_dashboard",
+          "affiliate_signup_and_tracking",
+          "corporate_admin_seat_management",
+          "review_submission"
+        ],
+        "accessibility_target": "WCAG 2.1 AA",
+        "deliverables": [
+          "user_research_report",
+          "wireframes_figma",
+          "component_library_spec",
+          "accessibility_audit_report"
+        ]
+      },
+      "acceptance_criteria": [
+        "User research sessions completed with at least 2 learners, 2 instructors, and 1 corporate buyer",
+        "Wireframes cover all critical user flows at medium fidelity",
+        "Accessibility audit report identifies WCAG 2.1 AA violations with remediation notes",
+        "Design system tokens (color, typography, spacing) defined with contrast ratios meeting AA",
+        "Mobile-first responsive layouts specified for all pages",
+        "Accessibility for learners with disabilities",
+        "Mobile-responsive for student devices"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 7,
+      "task_type": "FINANCIAL",
+      "description": "Model revenue share calculation engine, affiliate commission tiers, and corporate license pricing. Define payout schedules, minimum thresholds, refund impact on payouts, and currency conversion rules for international instructors.",
+      "payload": {
+        "revenue_share_model": {
+          "platform_cut_percent": 30,
+          "instructor_cut_percent": 70
+        },
+        "affiliate_tiers": [
+          {
+            "tier": "standard",
+            "commission_percent": 10
+          },
+          {
+            "tier": "premium",
+            "commission_percent": 15
+          },
+          {
+            "tier": "elite",
+            "commission_percent": 20
+          }
+        ],
+        "corporate_tiers": [
+          "starter_10_seats",
+          "business_50_seats",
+          "enterprise_unlimited"
+        ],
+        "payout_schedule": "monthly",
+        "minimum_payout_threshold": 50
+      },
+      "acceptance_criteria": [
+        "Revenue share calculation formula documented with worked examples for refunds and disputes",
+        "Affiliate commission calculation rules defined with cookie window and attribution model",
+        "Corporate license pricing tiers with feature gates and overage rules",
+        "Payout schedule and minimum threshold policy documented",
+        "Tax handling rules (W-9, VAT) documented for domestic and international payouts"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 spec for all platform API contracts: course CRUD, enrollment, payments, analytics, review system, affiliate tracking, and corporate license management. Define authentication schemes (JWT, API keys for corporate), rate limiting, and versioning strategy.",
+      "payload": {
+        "api_groups": [
+          "auth",
+          "courses",
+          "enrollments",
+          "payments",
+          "analytics",
+          "reviews",
+          "affiliates",
+          "corporate",
+          "admin"
+        ],
+        "auth_schemes": [
+          "JWT_bearer",
+          "api_key_corporate"
+        ],
+        "versioning": "URL_path_v1",
+        "spec_format": "OpenAPI_3.1"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec covers all endpoint groups with request/response schemas",
+        "Authentication requirements specified per endpoint",
+        "Pagination strategy defined for list endpoints",
+        "Error response schema standardized across all endpoints",
+        "Webhook contracts defined for enrollment, payment, and payout events"
+      ],
+      "depends_on": [
+        3,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "DATABASE",
+      "description": "Design relational database schema for courses, enrollments, users, reviews, payments, revenue share ledger, affiliate tracking, and corporate licenses. Include indexes for analytics queries and soft-delete for FERPA compliance.",
+      "payload": {
+        "tables": [
+          "users",
+          "instructors",
+          "courses",
+          "modules",
+          "lessons",
+          "enrollments",
+          "reviews",
+          "payments",
+          "revenue_ledger",
+          "affiliates",
+          "affiliate_clicks",
+          "affiliate_conversions",
+          "corporate_licenses",
+          "corporate_seats",
+          "certificates"
+        ],
+        "database": "PostgreSQL",
+        "features": [
+          "soft_delete",
+          "audit_timestamps",
+          "row_level_security"
+        ],
+        "migrations_tool": "Alembic"
+      },
+      "acceptance_criteria": [
+        "ERD diagram covers all tables with relationships and cardinality",
+        "Revenue ledger table supports double-entry bookkeeping for payout accuracy",
+        "Affiliate click and conversion tracking tables include cookie_window and attribution_model columns",
+        "Row-level security policies defined for FERPA-scoped data",
+        "Indexes created for high-frequency query patterns (course search, analytics aggregations)",
+        "Migration scripts are idempotent and reversible"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "CONFIG",
+      "description": "Set up project infrastructure configuration: monorepo structure, environment configs, Docker Compose for local development, secrets management, and agentic AI pattern configuration. Configure the Multi-Agent Coordinator pattern for orchestrating instructor analytics, review moderation, and affiliate fraud detection agents.",
+      "payload": {
+        "repo_structure": "monorepo",
+        "services": [
+          "backend_api",
+          "worker",
+          "frontend",
+          "postgres",
+          "redis",
+          "s3_compatible"
+        ],
+        "agentic_pattern": "coordinator",
+        "coordinator_agents": [
+          "analytics_agent",
+          "review_moderation_agent",
+          "affiliate_fraud_agent",
+          "recommendation_agent"
+        ],
+        "env_files": [
+          ".env.development",
+          ".env.staging",
+          ".env.production"
+        ],
+        "secrets_manager": "AWS_Secrets_Manager"
+      },
+      "acceptance_criteria": [
+        "Docker Compose starts all services with a single command",
+        "Environment variable schema documented with required vs. optional flags",
+        "Coordinator agent pattern wired with task router and result merger components",
+        "Secrets never committed to version control \u2014 .gitignore and pre-commit hook configured",
+        "README documents local setup in under 5 commands"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build core authentication and user management service: registration, login, JWT issuance, role-based access control (learner, instructor, affiliate, corporate_admin, platform_admin), OAuth2 social login, and age verification gate for COPPA compliance.",
+      "payload": {
+        "framework": "FastAPI",
+        "auth": [
+          "JWT",
+          "OAuth2_google",
+          "OAuth2_github"
+        ],
+        "roles": [
+          "learner",
+          "instructor",
+          "affiliate",
+          "corporate_admin",
+          "platform_admin"
+        ],
+        "coppa_gate": "age_verification_on_registration"
+      },
+      "acceptance_criteria": [
+        "Registration flow captures date of birth and enforces COPPA age gate (under 13 blocked or parental consent required)",
+        "JWT tokens expire in 1 hour with refresh token rotation",
+        "RBAC middleware enforces role permissions on all protected endpoints",
+        "OAuth2 social login tested for Google and GitHub providers",
+        "Password reset and email verification flows implemented"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build course creation and management service: course CRUD, module/lesson hierarchy, video upload pipeline (S3 + CDN), draft/published/archived states, prerequisite relationships, pricing tiers (free, one-time, subscription), and course versioning.",
+      "payload": {
+        "storage": "S3_compatible",
+        "cdn": "CloudFront",
+        "video_processing": "AWS_MediaConvert",
+        "content_types": [
+          "video",
+          "text",
+          "quiz",
+          "assignment",
+          "downloadable_resource"
+        ],
+        "pricing_models": [
+          "free",
+          "one_time_purchase",
+          "subscription"
+        ]
+      },
+      "acceptance_criteria": [
+        "Instructors can create courses with nested module/lesson structure",
+        "Video uploads processed to multiple resolutions (360p, 720p, 1080p) with HLS streaming",
+        "Course draft/publish/archive state machine enforced",
+        "Prerequisite course chains resolved before enrollment",
+        "Course versioning preserves enrolled learner progress on content updates"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Build enrollment and payment service: Stripe integration for one-time purchases and subscriptions, enrollment record creation, refund processing with revenue ledger reversal, coupon and discount codes, and corporate bulk seat purchase flow.",
+      "payload": {
+        "payment_provider": "Stripe",
+        "payment_types": [
+          "one_time",
+          "subscription",
+          "corporate_invoice"
+        ],
+        "stripe_features": [
+          "payment_intents",
+          "subscriptions",
+          "coupons",
+          "webhooks"
+        ],
+        "refund_window_days": 30
+      },
+      "acceptance_criteria": [
+        "Stripe payment intent created and confirmed for course purchase",
+        "Enrollment record created only after payment confirmation webhook received",
+        "Refund within 30-day window processes full refund and reverses revenue ledger entry",
+        "Subscription enrollment gates continued access on payment status",
+        "Corporate bulk purchase creates N seat allocations under corporate license",
+        "Stripe webhook idempotency key prevents duplicate processing"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Build revenue sharing and payout service: revenue ledger with instructor earnings calculation, platform fee deduction, affiliate commission calculation, payout batching via Stripe Connect or PayPal Payouts, and tax form collection (W-9/W-8BEN).",
+      "payload": {
+        "payout_providers": [
+          "Stripe_Connect",
+          "PayPal_Payouts"
+        ],
+        "payout_schedule": "monthly",
+        "minimum_threshold_usd": 50,
+        "tax_forms": [
+          "W-9",
+          "W-8BEN"
+        ],
+        "currency_support": [
+          "USD",
+          "EUR",
+          "GBP",
+          "INR"
+        ]
+      },
+      "acceptance_criteria": [
+        "Revenue ledger creates credit entry for instructor and debit for platform on each sale",
+        "Affiliate commission calculated and allocated before instructor earnings",
+        "Monthly payout batch processes only balances above minimum threshold",
+        "Tax form collection enforced before first payout",
+        "Multi-currency payouts converted at time-of-sale exchange rate with rate source documented",
+        "Payout failures logged and retried with admin notification"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Build review and rating service: 5-star rating submission, written review with moderation pipeline, instructor response capability, review helpfulness voting, and AI-powered review moderation agent (coordinator pattern) to flag spam, hate speech, and fake reviews.",
+      "payload": {
+        "rating_scale": "1_to_5_stars",
+        "moderation": "coordinator_agent_pattern",
+        "moderation_checks": [
+          "spam_detection",
+          "hate_speech",
+          "fake_review_signals"
+        ],
+        "features": [
+          "instructor_response",
+          "helpfulness_voting",
+          "verified_purchase_badge"
+        ]
+      },
+      "acceptance_criteria": [
+        "Reviews can only be submitted by enrolled learners with purchase verification",
+        "AI moderation agent scores review within 60 seconds of submission",
+        "Flagged reviews enter human moderation queue before publication",
+        "Instructor responses attached to reviews without editing learner content",
+        "Course aggregate rating recalculated on review approval/removal",
+        "Helpfulness votes affect review ranking in listing order"
+      ],
+      "depends_on": [
+        13,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Build affiliate program service: affiliate registration and approval, unique tracking link generation, click and conversion tracking with 30-day cookie window, multi-touch attribution (last-click), commission tier management, and fraud detection agent.",
+      "payload": {
+        "attribution_model": "last_click",
+        "cookie_window_days": 30,
+        "fraud_signals": [
+          "self_referral",
+          "click_velocity",
+          "ip_clustering",
+          "conversion_rate_anomaly"
+        ],
+        "tracking": "server_side_with_client_fallback"
+      },
+      "acceptance_criteria": [
+        "Each approved affiliate receives a unique tracking code embedded in shareable URLs",
+        "Click events stored server-side with IP, user_agent, and timestamp",
+        "Conversion attributed to last affiliate click within 30-day window",
+        "Self-referral detection prevents instructor from earning affiliate commission on own courses",
+        "Fraud detection agent flags suspicious affiliate accounts for review",
+        "Affiliate dashboard shows clicks, conversions, and pending commission in real time"
+      ],
+      "depends_on": [
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "BACKEND",
+      "description": "Build corporate training license service: license tier provisioning, seat allocation and revocation, SSO/SAML integration for corporate IdP, usage reporting for admins, course catalog curation per corporate account, and SCORM/xAPI progress reporting.",
+      "payload": {
+        "sso_protocols": [
+          "SAML_2.0",
+          "OIDC"
+        ],
+        "license_types": [
+          "seat_based",
+          "unlimited_per_domain"
+        ],
+        "reporting": [
+          "seat_utilization",
+          "course_completion_by_employee",
+          "time_spent"
+        ],
+        "lrs_standard": "xAPI_Tin_Can"
+      },
+      "acceptance_criteria": [
+        "Corporate admin can provision seats and assign them to employees via email or SSO group",
+        "SAML 2.0 SSO login routes employees directly into corporate catalog",
+        "Seat revocation removes access within 15 minutes",
+        "xAPI statements sent to corporate LRS on lesson start, completion, and quiz score",
+        "Corporate usage reports exportable as CSV and available via API",
+        "FERPA data isolation: corporate account data not visible to other tenants"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "BACKEND",
+      "description": "Build instructor analytics service using Multi-Agent Parallel Execution pattern: parallel agents compute revenue metrics, learner engagement, course performance, review sentiment, and refund rates. Aggregate into instructor dashboard API with time-series data.",
+      "payload": {
+        "agentic_pattern": "multi_agent_parallel",
+        "analytics_agents": [
+          "revenue_metrics_agent",
+          "engagement_metrics_agent",
+          "review_sentiment_agent",
+          "completion_funnel_agent"
+        ],
+        "metrics": [
+          "gross_revenue",
+          "net_revenue",
+          "enrollment_count",
+          "completion_rate",
+          "avg_rating",
+          "refund_rate",
+          "revenue_by_course"
+        ],
+        "time_granularities": [
+          "daily",
+          "weekly",
+          "monthly",
+          "all_time"
+        ]
+      },
+      "acceptance_criteria": [
+        "Instructor dashboard API returns all metric groups in a single response under 500ms",
+        "Parallel analytics agents execute in wave with result aggregation",
+        "Revenue figures match revenue ledger to the cent",
+        "Review sentiment analysis categorizes reviews into positive/neutral/negative",
+        "Completion funnel shows drop-off rates per module",
+        "Analytics data refreshed at most 1 hour behind real time"
+      ],
+      "depends_on": [
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build learner-facing UI: course discovery with search and filter, course detail page, video player with progress tracking, learning dashboard, certificate generation, and review submission form. Implement WCAG 2.1 AA accessibility throughout.",
+      "payload": {
+        "framework": "React_18_TypeScript",
+        "player": "Video.js_with_HLS",
+        "accessibility_standard": "WCAG_2.1_AA",
+        "pages": [
+          "home",
+          "search",
+          "course_detail",
+          "player",
+          "my_learning",
+          "checkout",
+          "certificate",
+          "profile"
+        ]
+      },
+      "acceptance_criteria": [
+        "All interactive elements keyboard-navigable with visible focus indicators",
+        "Video player has captions, keyboard controls, and screen reader announcements",
+        "Course search returns results within 300ms with autocomplete",
+        "Checkout flow integrates Stripe Elements with 3DS support",
+        "Certificate page renders and is printable/downloadable as PDF",
+        "axe-core automated scan returns zero critical accessibility violations"
+      ],
+      "depends_on": [
+        6,
+        13,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build instructor-facing UI: course creation studio with drag-and-drop curriculum builder, video upload with progress indicator, pricing configuration, analytics dashboard with charts, revenue and payout history, and review management.",
+      "payload": {
+        "charting_library": "Recharts",
+        "rich_text_editor": "TipTap",
+        "file_upload": "presigned_S3_multipart",
+        "pages": [
+          "instructor_dashboard",
+          "course_builder",
+          "curriculum_editor",
+          "analytics",
+          "revenue",
+          "reviews_management",
+          "payout_settings"
+        ]
+      },
+      "acceptance_criteria": [
+        "Drag-and-drop curriculum reordering works for modules and lessons",
+        "Video upload shows real-time progress and processing status",
+        "Analytics charts render revenue, enrollment, and completion time-series data",
+        "Payout settings allow bank/PayPal connection and show payout history",
+        "Review management page allows instructor responses and report submissions",
+        "Course builder auto-saves draft every 30 seconds"
+      ],
+      "depends_on": [
+        6,
+        18,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build affiliate portal UI: signup and approval flow, tracking link generator, performance dashboard (clicks, conversions, commissions), payout history, and promotional asset library. Build corporate admin UI: seat management, SSO configuration, usage reports, and course catalog curation.",
+      "payload": {
+        "affiliate_pages": [
+          "affiliate_signup",
+          "affiliate_dashboard",
+          "tracking_links",
+          "commission_history"
+        ],
+        "corporate_pages": [
+          "corporate_dashboard",
+          "seat_management",
+          "sso_config",
+          "usage_reports",
+          "catalog_curation"
+        ]
+      },
+      "acceptance_criteria": [
+        "Affiliate tracking link copies to clipboard with one click and shows preview URL",
+        "Affiliate dashboard updates click and conversion counts within 5 minutes",
+        "Corporate admin can add/remove seats and reassign them without data loss",
+        "SSO configuration form validates SAML metadata XML before save",
+        "Usage reports filterable by date range, department, and course",
+        "All corporate pages enforce corporate_admin role gate"
+      ],
+      "depends_on": [
+        6,
+        16,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure for the full platform. Configure react-i18next for frontend and Babel/gettext for backend. Produce initial locale files for English (base), Spanish, French, and Portuguese. Localize all UI strings, email templates, legal documents, and error messages.",
+      "payload": {
+        "i18n_library_frontend": "react-i18next",
+        "i18n_library_backend": "Flask-Babel_equivalent_FastAPI",
+        "base_locale": "en-US",
+        "launch_locales": [
+          "es-ES",
+          "fr-FR",
+          "pt-BR"
+        ],
+        "rtl_support": false,
+        "locale_scope": [
+          "ui_strings",
+          "email_templates",
+          "error_messages",
+          "legal_documents"
+        ]
+      },
+      "acceptance_criteria": [
+        "All UI strings externalized to locale JSON files \u2014 zero hardcoded English in components",
+        "Language switcher in header changes locale without page reload",
+        "Currency and date formats locale-aware (e.g., pt-BR uses R$ and DD/MM/YYYY)",
+        "Email templates rendered in learner's locale preference",
+        "Translation coverage report shows 100% key coverage for all 4 locales at launch",
+        "Missing translation keys fall back to en-US without throwing errors"
+      ],
+      "depends_on": [
+        19,
+        20,
+        21
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "SECURITY",
+      "description": "Conduct security review and threat modeling for the platform. Cover payment data handling (PCI DSS scope), affiliate fraud vectors, IDOR vulnerabilities in course/enrollment APIs, JWT security, and FERPA data leakage risks. Produce SBOM and dependency vulnerability report.",
+      "payload": {
+        "threat_model_framework": "STRIDE",
+        "pci_scope": "SAQ_A_card_data_outsourced_to_Stripe",
+        "focus_areas": [
+          "payment_flow",
+          "affiliate_fraud",
+          "IDOR_in_enrollment_APIs",
+          "JWT_security",
+          "FERPA_data_leakage"
+        ],
+        "tools": [
+          "OWASP_ZAP",
+          "Bandit",
+          "npm_audit",
+          "Trivy_SBOM"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model completed for all 5 API groups",
+        "IDOR tested on course, enrollment, and payout endpoints \u2014 all access checks enforced",
+        "JWT algorithm pinned to RS256 \u2014 none algorithm attack mitigated",
+        "SBOM generated and zero critical CVEs in production dependencies",
+        "OWASP Top 10 checklist completed with findings and mitigations documented",
+        "Affiliate self-referral and click fraud vectors documented with countermeasures implemented"
+      ],
+      "depends_on": [
+        17,
+        16,
+        14
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 24,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline, infrastructure as code, monitoring, and alerting. Configure GitHub Actions for test, build, and deploy stages. Provision AWS infrastructure via Terraform. Set up Datadog (or equivalent) for APM, error tracking, and business metric dashboards.",
+      "payload": {
+        "ci_cd": "GitHub_Actions",
+        "iac": "Terraform",
+        "cloud": "AWS",
+        "services": [
+          "ECS_Fargate",
+          "RDS_PostgreSQL",
+          "ElastiCache_Redis",
+          "S3",
+          "CloudFront",
+          "SES"
+        ],
+        "monitoring": "Datadog",
+        "alerts": [
+          "p95_latency_above_1s",
+          "error_rate_above_1pct",
+          "payout_job_failure",
+          "fraud_flag_spike"
+        ]
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs lint, type-check, unit tests, and security scan on every PR",
+        "CD pipeline deploys to staging on merge to main and production on tag",
+        "Terraform plan reviewed in CI before apply \u2014 no manual console changes",
+        "Datadog dashboards cover API latency, error rate, enrollment rate, and payout job health",
+        "Alerts fire within 2 minutes of threshold breach with on-call runbook links",
+        "Blue-green deployment configured for zero-downtime releases"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all backend services: auth, course management, enrollment, payments (Stripe mocked), revenue ledger, affiliate tracking, corporate licenses, analytics aggregation, and review moderation pipeline.",
+      "payload": {
+        "test_framework": "pytest",
+        "coverage_target": 85,
+        "stripe_testing": "Stripe_test_mode_with_webhooks",
+        "test_categories": [
+          "unit",
+          "integration",
+          "contract"
+        ],
+        "factories": "factory_boy"
+      },
+      "acceptance_criteria": [
+        "Overall backend test coverage >= 85%",
+        "Revenue ledger double-entry invariants tested \u2014 credits always equal debits per transaction",
+        "Stripe webhook idempotency tested with duplicate event simulation",
+        "Affiliate attribution logic tested for all edge cases: expired cookie, self-referral, disputed conversion",
+        "Corporate seat allocation limits enforced in tests",
+        "All API endpoints have at least one authenticated and one unauthorized test case"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "QA",
+      "description": "Design and execute QA test plan for the full platform: functional test cases for all user journeys, regression suite, exploratory testing of payment and payout flows, accessibility testing (manual + automated), and cross-browser/device compatibility matrix.",
+      "payload": {
+        "test_management": "TestRail",
+        "accessibility_tools": [
+          "axe-core",
+          "NVDA",
+          "VoiceOver"
+        ],
+        "browsers": [
+          "Chrome",
+          "Firefox",
+          "Safari",
+          "Edge"
+        ],
+        "devices": [
+          "desktop_1920x1080",
+          "tablet_768px",
+          "mobile_375px"
+        ],
+        "critical_paths": [
+          "purchase_flow",
+          "video_playback",
+          "payout_processing",
+          "corporate_seat_assignment"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan covers all user stories from PRD with traceability matrix",
+        "All critical path test cases executed with pass/fail documented",
+        "Zero P1 bugs in purchase, enrollment, or payout flows at release",
+        "WCAG 2.1 AA manual audit completed with screen reader testing on 3 key flows",
+        "Cross-browser test matrix shows no layout regressions on supported browsers",
+        "Regression suite automated and runs on every staging deploy"
+      ],
+      "depends_on": [
+        19,
+        20,
+        21,
+        25
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute system-level integration and performance tests: end-to-end purchase-to-payout flow, affiliate click-to-commission flow, corporate SSO login-to-completion flow, load testing for video streaming and concurrent enrollments, and chaos engineering for payout job resilience.",
+      "payload": {
+        "load_test_tool": "k6",
+        "performance_targets": {
+          "course_search_p95_ms": 300,
+          "checkout_p95_ms": 800,
+          "video_start_p95_ms": 2000,
+          "concurrent_users": 500
+        },
+        "chaos_targets": [
+          "payout_worker_crash",
+          "stripe_webhook_delay",
+          "database_failover"
+        ]
+      },
+      "acceptance_criteria": [
+        "End-to-end purchase \u2192 enrollment \u2192 completion \u2192 certificate flow passes in all 4 locales",
+        "Affiliate click \u2192 conversion \u2192 commission allocation verified end-to-end",
+        "Corporate SSO login flow verified with mock SAML IdP",
+        "Load test passes at 500 concurrent users with p95 latency within targets",
+        "Payout job recovers from worker crash without duplicate payouts",
+        "Stripe webhook delay simulation: enrollment not created before confirmation received"
+      ],
+      "depends_on": [
+        25,
+        26
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 28,
+      "task_type": "TRAINING",
+      "description": "Produce user-facing onboarding and training materials: instructor getting-started guide, course creation video walkthrough, affiliate program quick-start, corporate admin setup guide, and learner help center articles. Include accessibility-compliant video captions.",
+      "payload": {
+        "instructor_materials": [
+          "getting_started_guide.pdf",
+          "course_creation_walkthrough_video",
+          "payout_setup_guide.pdf"
+        ],
+        "affiliate_materials": [
+          "affiliate_quickstart.pdf",
+          "tracking_link_guide"
+        ],
+        "corporate_materials": [
+          "admin_setup_guide.pdf",
+          "sso_configuration_guide.pdf",
+          "usage_reporting_guide.pdf"
+        ],
+        "learner_materials": [
+          "help_center_articles",
+          "faq"
+        ],
+        "video_captions": "required_WCAG_1.2.2"
+      },
+      "acceptance_criteria": [
+        "Instructor getting-started guide covers account setup, first course creation, and payout configuration",
+        "All training videos have accurate captions meeting WCAG 1.2.2 (Captions: Prerecorded)",
+        "Corporate SSO setup guide tested with IT admin persona \u2014 zero ambiguous steps",
+        "Help center articles cover top 10 learner support queries identified from user research",
+        "All materials reviewed for accuracy against final UI before publication"
+      ],
+      "depends_on": [
+        22,
+        26
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 29,
+      "task_type": "OPERATIONS",
+      "description": "Produce operational runbooks for all critical platform processes: payout batch job monitoring, Stripe webhook failure recovery, affiliate fraud escalation, corporate license provisioning SLA, and incident response playbook for data breaches (FERPA notification requirements).",
+      "payload": {
+        "runbooks": [
+          "payout_job_runbook.md",
+          "stripe_webhook_failure_runbook.md",
+          "affiliate_fraud_escalation_runbook.md",
+          "ferpa_breach_notification_runbook.md",
+          "corporate_provisioning_runbook.md"
+        ],
+        "sla_targets": {
+          "corporate_seat_provisioning_minutes": 15,
+          "payout_failure_response_hours": 4,
+          "ferpa_breach_notification_hours": 72
+        }
+      },
+      "acceptance_criteria": [
+        "Each runbook has clear trigger conditions, step-by-step remediation, and escalation contacts",
+        "FERPA breach notification runbook specifies 72-hour regulatory notification timeline",
+        "Payout job runbook covers duplicate-payout prevention during recovery",
+        "SLA targets documented and tracked in monitoring dashboards",
+        "Runbooks reviewed by at least one engineer who did not write them"
+      ],
+      "depends_on": [
+        24,
+        27
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 30,
+      "task_type": "COMPLIANCE",
+      "description": "Produce final compliance evidence package: WCAG 2.1 AA conformance statement, COPPA verifiable parental consent documentation, FERPA data handling attestation, accessibility remediation closure report, and vendor/third-party data processor inventory for legal review.",
+      "payload": {
+        "deliverables": [
+          "WCAG_2.1_AA_conformance_statement.md",
+          "COPPA_parental_consent_process_doc.md",
+          "FERPA_data_handling_attestation.md",
+          "accessibility_remediation_closure_report.md",
+          "third_party_data_processor_inventory.xlsx"
+        ],
+        "sign_off_required": [
+          "legal_advisor",
+          "regulatory_specialist",
+          "product_manager"
+        ]
+      },
+      "acceptance_criteria": [
+        "WCAG 2.1 AA conformance statement published at /accessibility on the platform",
+        "COPPA parental consent process documented with audit trail mechanism",
+        "FERPA attestation signed confirming no unauthorized disclosure of education records",
+        "All P1/P2 accessibility findings from QA step closed or risk-accepted with documented rationale",
+        "Third-party processor inventory includes DPA status for every processor handling PII"
+      ],
+      "depends_on": [
+        26,
+        27,
+        28
+      ],
+      "agent_role": "regulatory_specialist"
+    }
+  ],
+  "task_count": 30,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 57,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 57,
+        "final_review": {
+          "score": 57,
+          "flaws": [
+            "Revenue share math is broken for affiliate-driven sales: 70% instructor + up to 20% elite affiliate commission = 90% of revenue, leaving 10% for the platform to cover payment processing (~3%), infrastructure, support, and margin. The plan never reconciles whether affiliate commissions come from the platform's 30% or reduce instructor earnings. At elite tier on a $100 course: $70 instructor + $20 affiliate + $10 platform \u2014 then Stripe takes $3.20, leaving $6.80 platform margin. This is a business model failure waiting to happen.",
+            "GDPR is entirely absent from a plan that explicitly targets EUR and GBP markets and mentions French and Spanish locales. Affiliate cookie tracking (Step 16), third-party processor inventory (Step 30), and data retention policies all require GDPR compliance. This is a production-blocking legal exposure for any EU-facing launch.",
+            "FERPA misapplication: FERPA applies to educational institutions receiving federal Title IV funding (K-12, universities). A private commercial course marketplace is not a covered entity under FERPA unless it contracts with Title IV institutions. The plan treats FERPA as a given across all 30 steps without a legal determination of applicability. If the corporate license targets universities, FERPA applies to that vertical only \u2014 not the whole platform.",
+            "Localization is Step 22, after all three frontend surfaces are fully built (Steps 19-21). Retrofitting i18n into a completed React codebase is extremely expensive \u2014 string extraction, component refactoring, RTL-capable layout changes, and locale-aware number/date formatting throughout. i18n scaffolding must be Step 10 and enforced from Step 19 onward, not bolted on after.",
+            "Analytics performance target of 500ms for all instructor metric groups (Step 18) is unrealistic against OLTP PostgreSQL without pre-aggregation. Revenue calculations joining payments, refunds, and ledger entries across time ranges for active instructors will not consistently hit 500ms under production load. No time-series database (TimescaleDB, ClickHouse) or materialized view refresh strategy is specified.",
+            "Course search returning results within 300ms (Step 19 acceptance criteria) has no specified search technology. PostgreSQL full-text search degrades past ~50k courses. The plan has no Elasticsearch, OpenSearch, or vector search layer \u2014 this will fail at scale with no migration path designed.",
+            "Testing strategy is pure waterfall: Steps 25 (unit/integration), 26 (QA), 27 (system test) all run sequentially after all 8 backend services are complete. This creates a massive late-stage integration risk. Revenue ledger bugs, affiliate attribution edge cases, and payout idempotency failures found at Step 25 require rework of code from Steps 11-18. TDD/BDD should be wired from Step 11.",
+            "Refund-to-enrollment access revocation timing is undefined. When a refund is processed (Step 13), learner access revocation, review invalidation, and affiliate commission clawback must be transactional. The plan addresses ledger reversal but not: (a) whether a refunded learner keeps their review, (b) how refunds within 30 days but after monthly payout are clawed back from instructor accounts, (c) whether subscription cancellation mid-month triggers partial refund.",
+            "Stripe Connect compliance is understated. Step 23 correctly identifies SAQ-A scope for card data, but Stripe Connect Express/Custom platforms have additional KYC/AML obligations: collecting instructor identity documentation, monitoring for suspicious payout patterns, and handling Stripe's own compliance reviews. This is not SAQ-A territory for the payout layer.",
+            "Certificate generation appears in Step 19 frontend acceptance criteria but is listed as Phase 2 in Step 3 PRD. This scope inconsistency will cause requirement disputes at Step 19 implementation. Certificate fraud prevention (verifiable credentials, tamper-proof links) is not addressed at all.",
+            "SAML 2.0 implementation complexity for corporate SSO (Step 17) is severely underestimated. JIT (Just-In-Time) provisioning, SP-initiated vs. IdP-initiated flows, attribute mapping per corporate tenant, and certificate rotation are each non-trivial. The 15-minute seat provisioning SLA requires real-time SCIM or JIT provisioning \u2014 a separate engineering concern not captured.",
+            "Content moderation for uploaded course material is absent. Instructors can upload videos, PDFs, and assignments. There is no pipeline for CSAM detection, DMCA-infringing content, or malware-embedded downloadable resources. Review moderation (Step 15) handles text reviews but ignores the primary attack surface.",
+            "India's TDS (Tax Deducted at Source) requirements for INR payouts are missing. India requires platforms paying Indian instructors to deduct TDS at source and file quarterly returns with the Income Tax Department. INR is listed as a supported currency but the regulatory obligation is not captured in Step 7 or Step 14."
+          ],
+          "suggestions": [
+            "Fix the revenue share formula immediately: define explicitly whether affiliate commission is deducted from the platform's 30% (platform absorbs cost), from instructor earnings (instructor absorbs cost), or split. Model the contribution margin at each affiliate tier with Stripe processing fees included. Add a worked example in Step 7 acceptance criteria.",
+            "Add a GDPR compliance step (or extend Step 4) covering: lawful basis for processing per user type, cookie consent management (OneTrust or equivalent), right-to-erasure implementation with cascade delete across ledger/enrollment/review tables, DPA agreements with all EU-facing processors, and records of processing activities (ROPA).",
+            "Move i18n scaffolding to Step 10 (Config). Add acceptance criteria to Steps 19, 20, 21 requiring zero hardcoded strings. Reserve Step 22 for translation QA and locale file completion, not infrastructure setup.",
+            "Add a dedicated search service step (between Steps 9 and 10) to select and provision Elasticsearch/OpenSearch. Define the indexing strategy for courses, instructors, and reviews. Set explicit re-index thresholds and incremental update patterns.",
+            "Replace the waterfall test sequencing with parallel tracks: mandate test files be written in the same step as the service they cover (Steps 11-18 each require unit tests before acceptance). Steps 25-27 become integration, E2E, and performance gates, not the primary test authoring phase.",
+            "Add a pre-launch legal determination on FERPA applicability. If the platform will not contract with Title IV institutions, remove FERPA from compliance scope and replace with SOPIPA (for K-12 EdTech) and relevant state student privacy laws (California SOPIPA, NY Ed Law 2-d). If corporate licensing targets universities, scope FERPA compliance only to that vertical.",
+            "Model the refund-clawback flow explicitly in Step 7 and Step 14. Define: (a) holdback period on instructor payouts equal to refund window, or (b) clawback mechanism from future earnings, or (c) reserve fund. This is a cash flow design decision that affects the entire ledger architecture.",
+            "Add EU VAT/OSS registration requirements to Step 7 and Step 14. Digital services sold to EU consumers require VAT collection at the customer's country rate. Stripe Tax can handle this but must be configured explicitly per transaction \u2014 it is not automatic.",
+            "Extend Step 23 security review to include Stripe Connect KYC/AML requirements, rate limiting implementation verification (not just design), and affiliate link click injection attacks (where fraudsters inject affiliate codes into checkout URLs at payment time)."
+          ],
+          "missing": [
+            "GDPR compliance artifact \u2014 entirely absent despite EUR/GBP targeting and EU locales",
+            "Affiliate commission source definition in the revenue model \u2014 undefined whether it comes from platform cut or instructor earnings",
+            "Cookie consent management system (OneTrust, Cookiebot, or custom) for EU users",
+            "Search infrastructure decision \u2014 Elasticsearch/OpenSearch vs. PostgreSQL FTS with explicit scale threshold",
+            "EU VAT/OSS (One Stop Shop) registration and per-transaction VAT collection rules",
+            "India TDS deduction and filing obligations for INR payouts",
+            "Instructor payout holdback/reserve mechanism to cover post-payout refunds",
+            "Content moderation pipeline for uploaded videos and downloadable files (CSAM, DMCA, malware)",
+            "SCIM provisioning spec for corporate SSO (JIT provisioning alone is insufficient for large orgs)",
+            "Analytics pre-aggregation strategy \u2014 materialized views, ClickHouse, or TimescaleDB decision",
+            "Email deliverability infrastructure \u2014 SPF/DKIM/DMARC configuration for SES, suppression list management, unsubscribe compliance (CAN-SPAM, CASL, GDPR)",
+            "Chargeback handling workflow \u2014 Stripe chargebacks trigger automatic refunds and require dispute evidence submission within 7 days; no runbook exists for this",
+            "Certificate verifiability mechanism \u2014 public verification URL or blockchain anchor to prevent credential fraud"
+          ],
+          "security_risks": [
+            "Affiliate link parameter injection: an attacker can append ?ref=AFFILIATE_CODE to any checkout URL at payment time, retroactively crediting an affiliate for organic conversions. Server-side validation must verify the affiliate code was present at the original click, not at checkout.",
+            "IDOR on revenue ledger endpoints: instructor A querying payout history must be strictly scoped to their own ledger entries. Step 23 lists IDOR testing but the ledger endpoints are not explicitly called out as a target \u2014 and financial IDOR vulnerabilities have the highest real-world exploit rate.",
+            "JWT refresh token rotation gap: Step 11 specifies 1-hour access tokens with refresh rotation, but the plan does not address refresh token family invalidation on theft detection (RFC 6819). A stolen refresh token that rotates before the legitimate user triggers silent account takeover.",
+            "Stripe webhook signature verification is mentioned implicitly via idempotency keys but Step 13/14 acceptance criteria do not explicitly require HMAC-SHA256 signature validation on every webhook. Without this, an attacker can POST fake payment confirmation events to create enrollments without payment.",
+            "Self-referral detection relies on matching affiliate code to instructor account \u2014 but a sophisticated instructor creates a second account as affiliate. IP-based clustering alone is insufficient. Device fingerprinting or payment method correlation is needed.",
+            "Corporate SAML metadata XML input in the SSO configuration form (Step 21) is a prime XXE (XML External Entity) injection surface. The acceptance criteria says 'validates SAML metadata XML before save' but does not specify XXE-safe XML parsing \u2014 a common and serious omission in SAML implementations.",
+            "Multi-currency exchange rate locking: Step 14 specifies 'time-of-sale exchange rate' but does not define the rate source (provider) or rate-lock granularity. If exchange rates are fetched from a third party, a rate manipulation attack (or provider outage) could cause ledger inconsistencies. The rate used must be stored immutably per transaction.",
+            "Video content URL authorization: CloudFront signed URLs for HLS streams must be scoped to enrolled users only. The plan does not specify the token expiry for signed URLs or how re-authentication is handled mid-stream for long videos. An unauthenticated CDN URL leak gives permanent free access."
+          ],
+          "summary": "This is an unusually thorough plan with strong domain coverage \u2014 the compliance artifacts, double-entry ledger, affiliate fraud detection, and corporate SSO scope all reflect genuine production thinking. However, it has two critical business-model defects (revenue share math that allows affiliate commissions to consume the entire platform margin, and FERPA applied as a blanket requirement without a legal determination of coverage) and one critical legal exposure (complete GDPR absence despite explicit EUR/GBP and EU locale targeting). The analytics performance targets (500ms instructor dashboard, 300ms search) are aspirational without the infrastructure to support them \u2014 PostgreSQL alone will not sustain these SLAs at scale. The test strategy is pure waterfall, concentrating all quality risk at the end of the build rather than distributing it per service. The localization sequencing will cause significant rework cost. None of these are insurmountable, but the revenue share flaw and GDPR gap must be resolved before any further implementation decisions are made \u2014 one is a P&L risk, the other is a regulatory enforcement risk on day one of EU launch. Score reflects strong plan structure undermined by foundational business model and compliance gaps.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 57,
+            "flaws": [
+              "Revenue share math is broken for affiliate-driven sales: 70% instructor + up to 20% elite affiliate commission = 90% of revenue, leaving 10% for the platform to cover payment processing (~3%), infrastructure, support, and margin. The plan never reconciles whether affiliate commissions come from the platform's 30% or reduce instructor earnings. At elite tier on a $100 course: $70 instructor + $20 affiliate + $10 platform \u2014 then Stripe takes $3.20, leaving $6.80 platform margin. This is a business model failure waiting to happen.",
+              "GDPR is entirely absent from a plan that explicitly targets EUR and GBP markets and mentions French and Spanish locales. Affiliate cookie tracking (Step 16), third-party processor inventory (Step 30), and data retention policies all require GDPR compliance. This is a production-blocking legal exposure for any EU-facing launch.",
+              "FERPA misapplication: FERPA applies to educational institutions receiving federal Title IV funding (K-12, universities). A private commercial course marketplace is not a covered entity under FERPA unless it contracts with Title IV institutions. The plan treats FERPA as a given across all 30 steps without a legal determination of applicability. If the corporate license targets universities, FERPA applies to that vertical only \u2014 not the whole platform.",
+              "Localization is Step 22, after all three frontend surfaces are fully built (Steps 19-21). Retrofitting i18n into a completed React codebase is extremely expensive \u2014 string extraction, component refactoring, RTL-capable layout changes, and locale-aware number/date formatting throughout. i18n scaffolding must be Step 10 and enforced from Step 19 onward, not bolted on after.",
+              "Analytics performance target of 500ms for all instructor metric groups (Step 18) is unrealistic against OLTP PostgreSQL without pre-aggregation. Revenue calculations joining payments, refunds, and ledger entries across time ranges for active instructors will not consistently hit 500ms under production load. No time-series database (TimescaleDB, ClickHouse) or materialized view refresh strategy is specified.",
+              "Course search returning results within 300ms (Step 19 acceptance criteria) has no specified search technology. PostgreSQL full-text search degrades past ~50k courses. The plan has no Elasticsearch, OpenSearch, or vector search layer \u2014 this will fail at scale with no migration path designed.",
+              "Testing strategy is pure waterfall: Steps 25 (unit/integration), 26 (QA), 27 (system test) all run sequentially after all 8 backend services are complete. This creates a massive late-stage integration risk. Revenue ledger bugs, affiliate attribution edge cases, and payout idempotency failures found at Step 25 require rework of code from Steps 11-18. TDD/BDD should be wired from Step 11.",
+              "Refund-to-enrollment access revocation timing is undefined. When a refund is processed (Step 13), learner access revocation, review invalidation, and affiliate commission clawback must be transactional. The plan addresses ledger reversal but not: (a) whether a refunded learner keeps their review, (b) how refunds within 30 days but after monthly payout are clawed back from instructor accounts, (c) whether subscription cancellation mid-month triggers partial refund.",
+              "Stripe Connect compliance is understated. Step 23 correctly identifies SAQ-A scope for card data, but Stripe Connect Express/Custom platforms have additional KYC/AML obligations: collecting instructor identity documentation, monitoring for suspicious payout patterns, and handling Stripe's own compliance reviews. This is not SAQ-A territory for the payout layer.",
+              "Certificate generation appears in Step 19 frontend acceptance criteria but is listed as Phase 2 in Step 3 PRD. This scope inconsistency will cause requirement disputes at Step 19 implementation. Certificate fraud prevention (verifiable credentials, tamper-proof links) is not addressed at all.",
+              "SAML 2.0 implementation complexity for corporate SSO (Step 17) is severely underestimated. JIT (Just-In-Time) provisioning, SP-initiated vs. IdP-initiated flows, attribute mapping per corporate tenant, and certificate rotation are each non-trivial. The 15-minute seat provisioning SLA requires real-time SCIM or JIT provisioning \u2014 a separate engineering concern not captured.",
+              "Content moderation for uploaded course material is absent. Instructors can upload videos, PDFs, and assignments. There is no pipeline for CSAM detection, DMCA-infringing content, or malware-embedded downloadable resources. Review moderation (Step 15) handles text reviews but ignores the primary attack surface.",
+              "India's TDS (Tax Deducted at Source) requirements for INR payouts are missing. India requires platforms paying Indian instructors to deduct TDS at source and file quarterly returns with the Income Tax Department. INR is listed as a supported currency but the regulatory obligation is not captured in Step 7 or Step 14."
+            ],
+            "suggestions": [
+              "Fix the revenue share formula immediately: define explicitly whether affiliate commission is deducted from the platform's 30% (platform absorbs cost), from instructor earnings (instructor absorbs cost), or split. Model the contribution margin at each affiliate tier with Stripe processing fees included. Add a worked example in Step 7 acceptance criteria.",
+              "Add a GDPR compliance step (or extend Step 4) covering: lawful basis for processing per user type, cookie consent management (OneTrust or equivalent), right-to-erasure implementation with cascade delete across ledger/enrollment/review tables, DPA agreements with all EU-facing processors, and records of processing activities (ROPA).",
+              "Move i18n scaffolding to Step 10 (Config). Add acceptance criteria to Steps 19, 20, 21 requiring zero hardcoded strings. Reserve Step 22 for translation QA and locale file completion, not infrastructure setup.",
+              "Add a dedicated search service step (between Steps 9 and 10) to select and provision Elasticsearch/OpenSearch. Define the indexing strategy for courses, instructors, and reviews. Set explicit re-index thresholds and incremental update patterns.",
+              "Replace the waterfall test sequencing with parallel tracks: mandate test files be written in the same step as the service they cover (Steps 11-18 each require unit tests before acceptance). Steps 25-27 become integration, E2E, and performance gates, not the primary test authoring phase.",
+              "Add a pre-launch legal determination on FERPA applicability. If the platform will not contract with Title IV institutions, remove FERPA from compliance scope and replace with SOPIPA (for K-12 EdTech) and relevant state student privacy laws (California SOPIPA, NY Ed Law 2-d). If corporate licensing targets universities, scope FERPA compliance only to that vertical.",
+              "Model the refund-clawback flow explicitly in Step 7 and Step 14. Define: (a) holdback period on instructor payouts equal to refund window, or (b) clawback mechanism from future earnings, or (c) reserve fund. This is a cash flow design decision that affects the entire ledger architecture.",
+              "Add EU VAT/OSS registration requirements to Step 7 and Step 14. Digital services sold to EU consumers require VAT collection at the customer's country rate. Stripe Tax can handle this but must be configured explicitly per transaction \u2014 it is not automatic.",
+              "Extend Step 23 security review to include Stripe Connect KYC/AML requirements, rate limiting implementation verification (not just design), and affiliate link click injection attacks (where fraudsters inject affiliate codes into checkout URLs at payment time)."
+            ],
+            "missing": [
+              "GDPR compliance artifact \u2014 entirely absent despite EUR/GBP targeting and EU locales",
+              "Affiliate commission source definition in the revenue model \u2014 undefined whether it comes from platform cut or instructor earnings",
+              "Cookie consent management system (OneTrust, Cookiebot, or custom) for EU users",
+              "Search infrastructure decision \u2014 Elasticsearch/OpenSearch vs. PostgreSQL FTS with explicit scale threshold",
+              "EU VAT/OSS (One Stop Shop) registration and per-transaction VAT collection rules",
+              "India TDS deduction and filing obligations for INR payouts",
+              "Instructor payout holdback/reserve mechanism to cover post-payout refunds",
+              "Content moderation pipeline for uploaded videos and downloadable files (CSAM, DMCA, malware)",
+              "SCIM provisioning spec for corporate SSO (JIT provisioning alone is insufficient for large orgs)",
+              "Analytics pre-aggregation strategy \u2014 materialized views, ClickHouse, or TimescaleDB decision",
+              "Email deliverability infrastructure \u2014 SPF/DKIM/DMARC configuration for SES, suppression list management, unsubscribe compliance (CAN-SPAM, CASL, GDPR)",
+              "Chargeback handling workflow \u2014 Stripe chargebacks trigger automatic refunds and require dispute evidence submission within 7 days; no runbook exists for this",
+              "Certificate verifiability mechanism \u2014 public verification URL or blockchain anchor to prevent credential fraud"
+            ],
+            "security_risks": [
+              "Affiliate link parameter injection: an attacker can append ?ref=AFFILIATE_CODE to any checkout URL at payment time, retroactively crediting an affiliate for organic conversions. Server-side validation must verify the affiliate code was present at the original click, not at checkout.",
+              "IDOR on revenue ledger endpoints: instructor A querying payout history must be strictly scoped to their own ledger entries. Step 23 lists IDOR testing but the ledger endpoints are not explicitly called out as a target \u2014 and financial IDOR vulnerabilities have the highest real-world exploit rate.",
+              "JWT refresh token rotation gap: Step 11 specifies 1-hour access tokens with refresh rotation, but the plan does not address refresh token family invalidation on theft detection (RFC 6819). A stolen refresh token that rotates before the legitimate user triggers silent account takeover.",
+              "Stripe webhook signature verification is mentioned implicitly via idempotency keys but Step 13/14 acceptance criteria do not explicitly require HMAC-SHA256 signature validation on every webhook. Without this, an attacker can POST fake payment confirmation events to create enrollments without payment.",
+              "Self-referral detection relies on matching affiliate code to instructor account \u2014 but a sophisticated instructor creates a second account as affiliate. IP-based clustering alone is insufficient. Device fingerprinting or payment method correlation is needed.",
+              "Corporate SAML metadata XML input in the SSO configuration form (Step 21) is a prime XXE (XML External Entity) injection surface. The acceptance criteria says 'validates SAML metadata XML before save' but does not specify XXE-safe XML parsing \u2014 a common and serious omission in SAML implementations.",
+              "Multi-currency exchange rate locking: Step 14 specifies 'time-of-sale exchange rate' but does not define the rate source (provider) or rate-lock granularity. If exchange rates are fetched from a third party, a rate manipulation attack (or provider outage) could cause ledger inconsistencies. The rate used must be stored immutably per transaction.",
+              "Video content URL authorization: CloudFront signed URLs for HLS streams must be scoped to enrolled users only. The plan does not specify the token expiry for signed URLs or how re-authentication is handled mid-stream for long videos. An unauthenticated CDN URL leak gives permanent free access."
+            ],
+            "summary": "This is an unusually thorough plan with strong domain coverage \u2014 the compliance artifacts, double-entry ledger, affiliate fraud detection, and corporate SSO scope all reflect genuine production thinking. However, it has two critical business-model defects (revenue share math that allows affiliate commissions to consume the entire platform margin, and FERPA applied as a blanket requirement without a legal determination of coverage) and one critical legal exposure (complete GDPR absence despite explicit EUR/GBP and EU locale targeting). The analytics performance targets (500ms instructor dashboard, 300ms search) are aspirational without the infrastructure to support them \u2014 PostgreSQL alone will not sustain these SLAs at scale. The test strategy is pure waterfall, concentrating all quality risk at the end of the build rather than distributing it per service. The localization sequencing will cause significant rework cost. None of these are insurmountable, but the revenue share flaw and GDPR gap must be resolved before any further implementation decisions are made \u2014 one is a P&L risk, the other is a regulatory enforcement risk on day one of EU launch. Score reflects strong plan structure undermined by foundational business model and compliance gaps.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T10:05:17.798816+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 169.07,
+    "critic_plan": 131.68
+  }
+}

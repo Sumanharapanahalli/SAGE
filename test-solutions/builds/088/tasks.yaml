@@ -1,0 +1,339 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze event discovery and ticketing market: competitors (Eventbrite,
+      Ticketmaster, Dice), pricing models, market size, and positioning opportunities
+      for event_platform.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers at least 5 competitors across 10+ feature dimensions
+    - Market sizing includes TAM/SAM/SOM with cited sources
+    - Positioning recommendation identifies at least 2 defensible differentiators
+    - Report delivered as structured markdown document
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas (event organizer, attendee,
+      venue manager, check-in staff), user stories, and process flows for all platform
+      capabilities.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All 5 personas defined with goals, pain points, and key jobs-to-be-done
+    - User story map covers all 6 process flows end-to-end
+    - Each user story has definition-of-done and acceptance criteria
+    - ROI analysis includes organizer fee model and break-even projection
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Produce the product requirements document (PRD), phased roadmap (MVP
+      → GA → Growth), feature prioritization using RICE scoring, and success metrics
+      (KPIs).
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all MVP features with functional and non-functional requirements
+    - Roadmap has 3 phases with clear entry/exit criteria
+    - All features RICE-scored; top-20 MVP features identified
+    - KPI dashboard spec defined with measurement methodology for each metric
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all core flows:
+      event discovery, event creation wizard, seating chart selection, checkout, mobile
+      check-in, and organizer analytics dashboard.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - User research summary from minimum 5 participant interviews
+    - Wireframes cover all 7 flows at medium fidelity
+    - Seating chart selector supports general admission, reserved, and mixed configurations
+    - Checkout funnel is 3 steps or fewer (select → details → pay)
+    - Accessibility audit checklist completed; no critical violations
+    - Design tokens (color, typography, spacing) documented in Figma
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 3
+  FINANCIAL:
+    description: 'Build financial model: pricing strategy (service fees, organizer
+      tiers), payment processing cost model, revenue projections (3-year), and payout
+      structure for organizers.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Financial model in spreadsheet with adjustable assumptions
+    - Three organizer pricing tiers defined (free, pro, enterprise) with feature gates
+    - 'Unit economics calculated: CAC, LTV, gross margin per ticket'
+    - Payout schedule logic documented covering fraud hold periods
+    - Break-even analysis shows path to profitability under base-case assumptions
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 2
+  LEGAL:
+    description: Draft terms of service, privacy policy, organizer agreement, and
+      ticket purchase agreement. Review PCI DSS scope and data retention obligations.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - All 6 legal documents drafted and reviewed
+    - GDPR data subject rights (access, deletion, portability) addressed in privacy
+      policy
+    - PCI DSS scope documented — confirm cardholder data environment boundaries
+    - Organizer agreement covers revenue share, refund responsibility, and prohibited
+      events
+    - Open source license audit lists all dependencies and flags any copyleft conflicts
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'Produce SOC 2 readiness artifacts: control inventory, trust service
+      criteria mapping (Security, Availability, Confidentiality), evidence collection
+      plan, and vendor risk assessment.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Control inventory lists at minimum 40 controls mapped to TSC criteria
+    - Evidence collection calendar covers 12-month observation period with owners
+      assigned
+    - Vendor risk register includes all third-party processors (Stripe, AWS, etc.)
+      with risk ratings
+    - Incident response plan defines P1-P3 severity levels and escalation paths
+    - Access review procedure specifies quarterly review cadence
+    depends_on:
+    - 6
+  CONFIG:
+    description: 'Set up the event_platform solution scaffold: monorepo structure,
+      environment configs, secrets management, local development docker-compose, and
+      agentic AI pattern configuration (Multi-Agent Coordinator for platform intelligence).'
+    agent_role: developer
+    acceptance_criteria:
+    - Monorepo initializes with `npm install` and all packages resolve
+    - docker-compose up starts all local services (postgres, redis, stripe-mock) in
+      under 60s
+    - Environment variable schema validated at startup; missing vars fail fast with
+      clear error
+    - Coordinator pattern config file created with agent role definitions
+    - '`npm run dev` starts API and web with hot reload'
+    depends_on:
+    - 3
+  DATABASE:
+    description: 'Design and implement the database schema: events, venues, seating_charts,
+      sections, seats, ticket_types, orders, tickets, check_ins, users, organizers,
+      and analytics_events tables with migrations.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 15 tables created with correct FK relationships and cascades
+    - Prisma migrations run cleanly on fresh database
+    - Seating chart schema supports hierarchical venue → section → row → seat
+    - QR code column on tickets has unique index
+    - Seed script populates representative test data for all tables
+    - Database diagram (ERD) generated and committed to docs/
+    depends_on:
+    - 8
+  API:
+    description: 'Design OpenAPI 3.1 specification for all platform endpoints: events
+      CRUD, ticket types, seating chart management, order/checkout, check-in, analytics,
+      and organizer management.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec is valid (passes swagger-parser validation)
+    - All endpoints documented with request/response schemas and error codes
+    - Authentication requirements specified per endpoint
+    - Seat reservation endpoint documents optimistic locking strategy (seat hold TTL)
+    - Discover endpoint documents all filter parameters with examples
+    depends_on:
+    - 9
+  BACKEND:
+    description: 'Implement core backend services: authentication (JWT + OAuth), event
+      management, venue and seating chart engine, ticket type configuration, and organizer
+      onboarding.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 6 services implement full CRUD with proper error handling
+    - JWT access tokens expire in 15min; refresh tokens in 30 days
+    - Seating chart service correctly calculates available capacity across sections
+    - Event slugs are unique and URL-safe
+    - S3 presigned URLs used for all file uploads (no server-side proxying)
+    - All endpoints return typed responses matching OpenAPI spec
+    depends_on:
+    - 10
+  FRONTEND:
+    description: 'Build the event discovery and detail pages: homepage with search/filter,
+      event cards, event detail page with description, ticket type selector, and organizer
+      profile.'
+    agent_role: developer
+    acceptance_criteria:
+    - Discovery homepage renders event cards with server-side data
+    - Search filters (keyword, category, date, location radius) update results without
+      full page reload
+    - Event detail page renders in under 2s (LCP) on simulated 4G
+    - JSON-LD Event schema validates in Google Rich Results Test
+    - Organizer profile lists events paginated with infinite scroll
+    depends_on:
+    - 4
+    - 11
+  LOCALIZATION:
+    description: 'Set up i18n for web and mobile check-in app: locale detection, translation
+      pipeline, RTL support, currency and date formatting per locale.'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All user-facing strings extracted to locale JSON files (zero hardcoded strings)
+    - ar-SA locale renders with RTL layout and mirrored navigation
+    - Currency displays in locale-appropriate format (€1.234,56 for de-DE)
+    - Event time shown in event's timezone with viewer's local time in parentheses
+    - Language switcher functional in header with preference persisted to user profile
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 16
+    - 17
+  AGENTIC:
+    description: 'Implement Multi-Agent Coordinator pattern for platform intelligence:
+      event recommendation agent, fraud detection agent, and dynamic pricing suggestion
+      agent coordinated by a central router.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator routes requests to correct specialist agent based on task type
+    - RecommendationAgent returns ranked event list with relevance scores
+    - FraudDetectionAgent flags orders above risk threshold and queues for HITL review
+    - PricingSuggestionAgent suggestions require organizer approval before applying
+    - All agent actions logged to audit trail with trace_id
+    - Coordinator gracefully handles specialist agent timeout (fallback to non-personalized
+      results)
+    depends_on:
+    - 13
+  SECURITY:
+    description: 'Perform security review: threat model for payment flows and ticket
+      QR codes, OWASP Top 10 assessment, PCI DSS scope validation, and rate limiting
+      implementation.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Threat model document covers all 4 threat areas with mitigations
+    - 'Rate limiting tested: checkout endpoint blocks after 10 requests/min per IP'
+    - QR codes signed with HMAC-SHA256; forged QR rejected by check-in service
+    - Stripe webhook endpoint rejects requests with invalid signatures
+    - OWASP Top 10 checklist completed with evidence for each item
+    - PCI DSS SAQ A completed confirming no cardholder data stored
+    depends_on:
+    - 12
+    - 19
+  DATA:
+    description: 'Build analytics data pipeline: event tracking ingestion endpoint,
+      analytics_events table writes, materialized view refresh jobs, and organizer
+      reporting aggregation.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Analytics ingestion endpoint accepts batches of up to 100 events and persists
+      all
+    - All 6 event types tracked end-to-end from frontend to database
+    - Sales summary materialized view refreshes within 15min of ticket purchase
+    - Post-event report job triggers automatically 1 hour after event end_time
+    - Funnel conversion rates calculable from stored event data
+    depends_on:
+    - 13
+  INFRA:
+    description: 'Set up AWS infrastructure: ECS Fargate for API and workers, RDS
+      PostgreSQL, ElastiCache Redis, S3 + CloudFront for assets, and Vercel for Next.js
+      frontend.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan applies without errors to staging environment
+    - API auto-scales from 2 to 5 tasks under load test simulating 500 concurrent
+      users
+    - RDS failover completes in under 60s (Multi-AZ test)
+    - CloudFront serves S3 assets with cache-hit ratio above 80%
+    - All services in private subnets; no direct internet access to RDS or Redis
+    depends_on:
+    - 8
+  DEVOPS:
+    description: Build CI/CD pipelines, monitoring, alerting, and SRE runbooks for
+      event_platform.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - PR pipeline completes in under 8 minutes
+    - Blue-green production deployment achieves zero downtime (tested with k6 load)
+    - All 4 alert thresholds configured in Datadog and tested with synthetic traffic
+    - 4 SRE runbooks reviewed and approved by engineering lead
+    - 'Rollback procedure tested: production rollback completes in under 5 minutes'
+    depends_on:
+    - 24
+  TESTS:
+    description: 'Write comprehensive unit and integration tests: backend service
+      tests, API endpoint tests, ticketing engine concurrency tests, and frontend
+      component tests.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All critical test suites pass in CI
+    - 80% line coverage achieved on backend src/
+    - Concurrency test proves exactly 1 successful reservation out of 100 simultaneous
+      attempts
+    - Stripe webhook idempotency test confirms double-delivery does not double-fulfill
+      orders
+    - Frontend component tests cover all checkout funnel steps
+    - Test run completes in under 5 minutes in CI
+    depends_on:
+    - 12
+    - 13
+    - 16
+  QA:
+    description: Create QA test plan, exploratory testing sessions for all user flows,
+      edge case catalog, and bug tracking integration.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 7 flow areas with test cases per flow
+    - All 4 exploratory sessions completed with written findings
+    - All 5 edge cases tested and results documented
+    - Zero open critical bugs at launch
+    - Bug triage process defined with SLA per severity
+    depends_on:
+    - 26
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests: full event lifecycle (create →
+      sell → check-in → analytics), load testing for peak event on-sale scenarios,
+      and disaster recovery test.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 3 E2E scenarios pass on staging environment
+    - 'Load test: p95 response time under 2s with 500 concurrent users'
+    - 'Load test: exactly sold_out tickets sold (no oversell) after 500-user stress'
+    - 'DR test: API health check recovers within 60s of RDS failover'
+    - E2E tests run in CI on every deploy to staging
+    depends_on:
+    - 27
+    - 25
+  OPERATIONS:
+    description: Define operational runbooks, SLA targets, on-call rotation, incident
+      response procedures, and capacity planning model for event_platform.
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA targets documented and approved by product and engineering leads
+    - All 6 runbooks written with step-by-step remediation and escalation paths
+    - On-call rotation configured in PagerDuty with alert routing rules
+    - Capacity model shows infrastructure handles 10x normal load with auto-scaling
+    - Post-incident review template created
+    depends_on:
+    - 25
+  TRAINING:
+    description: 'Create user guides and training materials: organizer onboarding
+      guide, check-in staff quick-start guide, attendee FAQ, and platform admin runbook.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - All 5 documents published to docs site
+    - Organizer guide covers full event creation wizard with screenshots
+    - Check-in staff guide installable as PDF for offline reference
+    - Attendee FAQ addresses top 10 support ticket categories (derived from beta feedback)
+    - All documents available in 3 locales
+    - In-app tooltip copy reviewed and approved by UX designer
+    depends_on:
+    - 20
+    - 19
+  DOCS:
+    description: 'Produce technical documentation: API reference (auto-generated from
+      OpenAPI), architecture decision records (ADRs), deployment guide, and developer
+      onboarding README.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference hosted and searchable at /docs
+    - All 4 ADRs written with context, decision, and consequences sections
+    - Deployment guide tested by team member with no prior context (onboarding test)
+    - 'README: new developer running `npm install && docker-compose up && npm run
+      dev` reaches working app in under 15 minutes'
+    depends_on:
+    - 25

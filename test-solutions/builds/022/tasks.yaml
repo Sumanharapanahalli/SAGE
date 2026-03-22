@@ -1,0 +1,292 @@
+task_types:
+  SAFETY:
+    description: Hazard Analysis and Risk Assessment (HARA) per ISO 26262 Part 3.
+      Identify hazardous events (thermal runaway, overcharge, deep discharge, cell
+      reversal, cooling failure), assign ASIL levels using severity/exposure/controllability,
+      and determine safety goals for ASIL C classification.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All hazardous events enumerated with S/E/C ratings and resulting ASIL
+    - At least one ASIL C safety goal derived covering thermal runaway prevention
+    - ASIL decomposition documented where ASIL C is split across redundant channels
+    - Safety goals are technology-independent and traceable to system requirements
+    - Document signed off by certified functional safety engineer
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define system-level requirements for the EV BMS: cell chemistry
+      constraints (NMC/LFP), pack topology (series/parallel strings), operating voltage/current
+      envelope, communication interfaces (CAN FD, LIN, Ethernet), OEM integration
+      requirements, and non-functional requirements (latency, availability, diagnostics).'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All functional requirements have unique IDs and are testable
+    - Interface Control Document covers all external electrical and software interfaces
+    - Non-functional requirements specify latency (<10ms for protection), MTBF (>50,000
+      hr), and diagnostic coverage (>90% per ISO 26262 ASIL C)
+    - Requirements reviewed and approved by product manager and safety engineer
+    depends_on: []
+  HARDWARE_SIM:
+    description: Build electrochemical cell simulation model using equivalent-circuit
+      model (ECM) in SPICE/Modelica. Model includes R0 (ohmic resistance), RC branches
+      (diffusion), OCV-SOC curve, thermal coupling, and degradation effects. Parameterize
+      for NMC and LFP chemistries from published datasets.
+    agent_role: developer
+    acceptance_criteria:
+    - Model reproduces HPPC (Hybrid Pulse Power Characterization) test data within
+      2% voltage error
+    - Thermal model tracks temperature within 1°C under 1C discharge profile
+    - SOC estimation error <2% over full SOC range at room temperature
+    - Model simulates 1000 cycles of capacity fade to validate degradation curve shape
+    - Testbench produces cell voltage, current, temperature outputs at 1ms resolution
+    depends_on: []
+  COMPLIANCE:
+    description: Create the Design History File (DHF) skeleton and traceability matrix.
+      Establish document control system linking safety goals → system requirements
+      → design → verification → validation. Set up AUTOSAR adaptive platform configuration
+      baseline and UNECE R155 cybersecurity management system (CSMS) registration.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF index contains all mandatory ISO 26262 work products for ASIL C
+    - Traceability matrix populated with safety goals and system requirements from
+      steps 1-2
+    - Every safety requirement has at least one verification test case assigned
+    - CSMS policy document covers vehicle-type approval requirements per UNECE R155
+    - Document version control system established with change request workflow
+    depends_on:
+    - 1
+    - 2
+  PCB_DESIGN:
+    description: 'Design BMS main controller PCB schematic: cell monitoring ICs (e.g.,
+      LTC6813 or BQ76952 stack), isolated gate drivers for balancing MOSFETs, current
+      measurement (shunt + Hall sensor redundancy), thermistor network, CAN FD transceiver,
+      isolated SPI, watchdog hardware, and power supply with ASIL C-compliant isolation
+      barriers.'
+    agent_role: developer
+    acceptance_criteria:
+    - Schematic passes Electrical Rules Check (ERC) with zero errors
+    - Dual-channel redundant voltage measurement paths documented for safety critical
+      signals
+    - Isolation voltage ratings ≥1500V between HV and LV domains
+    - BOM references automotive-grade (AEC-Q100) components only
+    - Hardware watchdog timer enforces ASIL C response time requirement (<10ms shutdown)
+    depends_on:
+    - 2
+    - 3
+  FIRMWARE:
+    description: 'Set up RTOS foundation and Hardware Abstraction Layer (HAL). Initialize
+      FreeRTOS with ASIL C-compatible configuration (stack overflow detection, heap
+      partitioning), implement HAL for SPI (cell monitoring ICs), CAN FD driver (ISO
+      11898-1), I2C (thermal sensors), GPIO (contactor control), and watchdog service.
+      Target: ARM Cortex-M7 (e.g., STM32H7).'
+    agent_role: developer
+    acceptance_criteria:
+    - All HAL modules compile without warnings with -Wall -Wextra -Werror
+    - CAN FD driver achieves 5Mbit/s data phase with <1% frame error rate on bench
+    - SPI communication with LTC6813 stack reads cell voltages within 1ms per 12-cell
+      group
+    - FreeRTOS idle hook triggers watchdog kick; failure to kick causes reset within
+      10ms
+    - Stack usage analysis shows all tasks operate within 80% of allocated stack
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 2
+    - 5
+  DATABASE:
+    description: 'Design time-series database schema for BMS telemetry: cell voltages
+      (per cell, 100ms cadence), pack current, temperatures (per thermistor), SOC/SOH,
+      fault events, balancing state, and diagnostic codes. Include retention policy,
+      compression, and partition strategy for automotive edge deployment.'
+    agent_role: developer
+    acceptance_criteria:
+    - Schema supports 96-cell pack at 100ms resolution ingesting >10,000 rows/second
+    - Cell voltage and temperature tables include cell_id, timestamp, value, quality_flag
+      columns
+    - Fault events table links to ISO 14229 UDS DTC codes
+    - Query for SOC trend over last 24h executes in <100ms on 1M row dataset
+    - Migration scripts idempotent and reversible
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: 'Design operator and fleet-manager dashboard wireframes: real-time
+      cell voltage heat map, SOC/SOH gauge, thermal map, fault panel with severity
+      indicators, historical trend charts, degradation prediction timeline, and maintenance
+      scheduling interface. Accessibility and automotive HMI standards compliance.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All 7 screens wireframed with interactive prototype in Figma
+    - Cell heat map visualizes 96 cells with color-coded voltage deviation
+    - Critical fault alerts follow automotive red/amber/green severity convention
+    - Usability test with 3 EV technicians produces SUS score ≥75
+    - Responsive layout supports 1920×1080 control room and 1280×800 tablet
+    depends_on:
+    - 2
+  ML_MODEL:
+    description: Train battery degradation prediction model (State-of-Health estimation
+      and remaining useful life). Use capacity fade data from cell simulation (step
+      3) augmented with published aging datasets (NASA, CALCE, Oxford). Implement
+      Gaussian Process Regression for uncertainty-aware SOH prediction and RUL estimation.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - SOH estimation MAPE <3% on held-out test set across all three datasets
+    - RUL prediction within ±50 cycles at 80% SOH threshold
+    - 95% confidence intervals are calibrated (coverage matches nominal on test set)
+    - ONNX model inference time <5ms on STM32H7 with CMSIS-NN acceleration
+    - Model card documents training data, known limitations, and refresh cadence
+    depends_on:
+    - 3
+    - 7
+  SECURITY:
+    description: Threat analysis and risk assessment (TARA) per UNECE R155/ISO 21434
+      covering firmware update attack surface, CAN bus injection, diagnostic interface
+      exploitation, cloud telemetry man-in-the-middle, and physical tamper. Derive
+      cybersecurity goals and implement countermeasures.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - TARA identifies all attack paths with damage/feasibility ratings per ISO 21434
+    - 'Secure boot chain verified: ROM → bootloader → application with ed25519 signature
+      validation'
+    - CAN FD messages carrying safety-critical commands protected by CMAC-AES-128
+    - OTA update accepts only firmware signed by production key; rollback attack prevented
+    - SBOM generated in SPDX 2.3 format covering all firmware dependencies
+    depends_on:
+    - 5
+    - 6
+  BACKEND:
+    description: 'Build telemetry ingestion and fleet management backend: REST + MQTT
+      API for BMS data ingestion, real-time alerting pipeline, diagnostic trouble
+      code (DTC) processing per ISO 14229 UDS, OTA firmware update distribution service,
+      and fleet aggregation analytics endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - Telemetry ingestor handles 10,000 vehicles × 100ms cadence without message loss
+      under load test
+    - Alert engine fires PagerDuty/webhook within 5 seconds of thermal runaway fault
+      event
+    - DTC processor maps ISO 14229 DTCs to human-readable descriptions and severity
+    - OTA distributor serves delta firmware packages with CDN caching and vehicle
+      targeting
+    - All endpoints documented in OpenAPI 3.1 spec with example requests and responses
+    depends_on:
+    - 7
+  EMBEDDED_TEST:
+    description: 'Write firmware unit tests for all safety-critical modules: SOC EKF
+      (step 12), cell balancing state machine (step 11), thermal runaway detector
+      (step 13), acquisition plausibility checks (step 10), and degradation predictor
+      (step 15). Use Unity test framework with fault injection harness.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - MC/DC (Modified Condition/Decision Coverage) ≥100% on all ASIL C classified
+      functions
+    - All fault injection scenarios produce correct safe-state transitions
+    - Test suite runs in <60 seconds on CI (host-based with mocked HAL)
+    - Zero memory leaks detected by AddressSanitizer on host-based test build
+    - Coverage report traceable to FMEA failure modes from step 9
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 15
+  FRONTEND:
+    description: 'Implement the fleet operator web dashboard per UX design (step 8):
+      real-time cell voltage heat map using WebSocket streaming, SOC/SOH gauges with
+      trend history, interactive thermal map, fault management panel with DTC lookup,
+      degradation forecast timeline, and fleet summary with vehicle search.'
+    agent_role: developer
+    acceptance_criteria:
+    - Cell heat map renders 96 cells at 100ms update rate without frame drops (60fps
+      target)
+    - Fault panel displays ISO 14229 DTC code, description, severity, and timestamp
+    - Degradation chart shows SOH history and 6-month forecast with confidence band
+    - Fleet table supports search, filter by fault status, and sort by SOH descending
+    - Lighthouse performance score ≥85 on fleet summary page
+    depends_on:
+    - 8
+    - 17
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system integration test suite: firmware on target
+      + HIL bench + backend + dashboard. Cover nominal operation, all fault modes,
+      OTA update flow, multi-vehicle fleet simulation, SOC accuracy over full drive
+      cycle, and cybersecurity penetration test scenarios.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 47 system test cases executed with pass/fail status recorded
+    - 'SOC accuracy over WLTP cycle: RMSE <2% against reference ground truth'
+    - OTA firmware update completes successfully with rollback test passing
+    - Penetration test finds no critical (CVSS≥9) or high (CVSS≥7) unmitigated vulnerabilities
+    - System test report reviewed and signed by QA lead and safety engineer
+    depends_on:
+    - 18
+    - 19
+    - 20
+  REGULATORY:
+    description: 'Compile ISO 26262 functional safety case for ASIL C BMS. Structure
+      arguments using Goal Structuring Notation (GSN): safety goals → functional safety
+      requirements → technical safety requirements → implementation evidence → V&V
+      evidence. Prepare for third-party functional safety assessment.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - GSN argument tree is complete with no undischarged goals or unresolved assumptions
+    - Every safety goal has traceable chain from hazard → requirement → implementation
+      → test evidence
+    - Open points register is empty or all items have accepted mitigations
+    - Mock functional safety assessment completed internally with <10 findings
+    - Safety case document accepted by designated third-party FSA assessor for formal
+      review
+    depends_on:
+    - 22
+    - 9
+  QA:
+    description: 'AUTOSAR adaptive platform compliance audit and software process
+      quality gate. Verify software development process compliance: configuration
+      management, change management, problem resolution process, verification process,
+      and documentation completeness per ISO 26262 Part 8 (supporting processes).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Configuration management audit finds all firmware artifacts under version control
+      with baseline tags
+    - 'Change management: all post-baseline changes have impact analysis and re-verification
+      records'
+    - Tool qualification certificates in place for safety-critical tool chain components
+    - 'Problem resolution process: all P1/P2 defects from system test closed or accepted
+      with rationale'
+    - Audit report issues ≤5 minor findings; zero major/critical findings
+    depends_on:
+    - 6
+    - 16
+    - 21
+  DEVOPS:
+    description: 'Set up CI/CD pipeline for firmware and backend: Git-triggered build,
+      cross-compile for STM32H7, MISRA static analysis gate, unit test execution with
+      coverage enforcement, HIL smoke test trigger, Docker-based backend deployment,
+      and automated release packaging with changelog generation.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Firmware CI pipeline runs in <15 minutes including static analysis and unit
+      tests
+    - Coverage gate blocks merge if MC/DC coverage drops below 100% on ASIL C functions
+    - Backend Docker image passes Trivy vulnerability scan with zero critical CVEs
+    - Release pipeline generates signed firmware binary and uploads to OTA distribution
+      service
+    - Pipeline status visible on team dashboard; failures send Slack alert within
+      2 minutes
+    depends_on:
+    - 18
+  DOCS:
+    description: 'Produce complete technical documentation suite: software architecture
+      document (SAD), software detailed design document (SDD), API reference (OpenAPI
+      + doxygen), operator manual, maintenance manual, and safety manual. All documents
+      cross-referenced to safety case.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - SAD documents all software components, interfaces, and ASIL decomposition decisions
+    - SDD covers all modules with function descriptions, data flows, and ASIL C justifications
+    - Doxygen generated for all public APIs with parameter descriptions and preconditions
+    - Operator manual includes all fault codes with corrective actions in tabular
+      format
+    - Functional safety manual published for OEM integration per ISO 26262-2 clause
+      6.4.8
+    depends_on:
+    - 22

@@ -1,0 +1,287 @@
+task_types:
+  PRODUCT_MGMT:
+    description: 'Define product requirements document (PRD) covering pre-registration
+      flows, kiosk check-in UX, badge printing specs, NDA signing workflow, host notification
+      triggers, and evacuation list generation. Include success metrics: check-in
+      time < 90s, host notification latency < 30s, badge print time < 15s.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all six core flows with user stories in Given/When/Then format
+    - Success metrics defined and measurable for each flow
+    - 'Roadmap with phased delivery: MVP (check-in + badge), Phase 2 (NDA + pre-reg),
+      Phase 3 (evacuation + analytics)'
+    - Stakeholder sign-off checklist included
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Capture business requirements: visitor data retention policies,
+      multi-location site support, host directory integration (LDAP/AD), compliance
+      obligations for visitor PII, evacuation drill workflows, and ROI model (receptionist
+      hours saved, security incident reduction).'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - 'All visitor lifecycle states documented: pre-registered, checked-in, signed-NDA,
+      badged, checked-out, flagged'
+    - LDAP/AD host lookup process flow diagrammed
+    - Data retention rules specified per jurisdiction (GDPR, CCPA minimum)
+    - ROI model shows break-even analysis for enterprise deployment
+    - 'Edge cases documented: denied entry, NDA refusal, host unavailable, printer
+      offline'
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft NDA template (mutual and one-way variants), visitor privacy
+      notice (GDPR Article 13 compliant), terms of use for kiosk and pre-registration
+      portal, data processing agreement template for enterprise customers, and IP
+      ownership clauses for visitor-submitted information.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - NDA templates reviewed and approved by legal counsel
+    - Privacy notice includes all GDPR Article 13 mandatory disclosures
+    - Kiosk ToU is accessible, plain-language, and version-stamped
+    - DPA template covers data sub-processors and breach notification obligations
+    - All documents include effective date and amendment process
+    depends_on:
+    - 2
+  SECURITY:
+    description: 'Produce threat model for visitor management system: PII data at
+      rest and in transit, kiosk physical attack surface, session isolation between
+      visitors, badge cloning risks, evacuation list access controls, and admin portal
+      authentication. Map threats to ISO 27001 Annex A controls and SOC 2 Trust Service
+      Criteria.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis completed for all six threat surfaces
+    - Each threat mapped to ISO 27001 Annex A control (A.5–A.18)
+    - SOC 2 CC criteria (CC6, CC7, CC9) mapped to mitigations
+    - High and critical risks have documented mitigations before development begins
+    - Penetration test scope and rules of engagement documented
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: 'Design wireframes and interaction flows for: (1) kiosk check-in
+      touchscreen UI (large-touch, accessibility AA compliant), (2) pre-registration
+      web portal for hosts and assistants, (3) admin dashboard (visitor log, evacuation
+      list, badge reprint), (4) host notification email/SMS templates. Include error
+      states and offline fallback screens.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Kiosk check-in flow completable in under 5 taps with no keyboard for standard
+      visitors
+    - All interactive elements meet 44x44px minimum touch target size
+    - Colour contrast ratios pass WCAG 2.1 AA for all text
+    - Offline fallback screen shown when network is unavailable
+    - Admin evacuation list view shows count, names, and last-known location sortable
+      in < 2 clicks
+    depends_on:
+    - 1
+    - 2
+  DATABASE:
+    description: 'Design PostgreSQL schema for visitor_management: visitors, pre_registrations,
+      visits, nda_signatures, badges, hosts, sites, evacuation_snapshots, audit_log
+      tables. Include soft-delete, PII encryption-at-rest column annotations, row-level
+      security policies per site_id, and migration scripts.'
+    agent_role: developer
+    acceptance_criteria:
+    - All PII columns encrypted at rest using pgcrypto or column-level encryption
+    - Row-level security policies enforce site_id isolation — cross-site queries return
+      empty
+    - Audit_log table is append-only (INSERT only, no UPDATE/DELETE grants)
+    - Migrations are idempotent and include rollback scripts
+    - ERD reviewed and approved before BACKEND tasks begin
+    depends_on:
+    - 2
+  API:
+    description: 'Design OpenAPI 3.1 spec for all visitor_management endpoints: visitor
+      CRUD, pre-registration lifecycle, kiosk check-in session, NDA signature submission,
+      badge generation, host lookup, evacuation list export, and admin reporting.
+      Include authentication (JWT + API key for kiosk), rate limiting, and webhook
+      schemas for host notification.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 spec validates with no errors using spectral lint
+    - All endpoints have request/response schemas with examples
+    - Evacuation list endpoint supports CSV and JSON export formats
+    - Webhook payloads include idempotency key and timestamp
+    - API versioning strategy documented (v1 prefix, deprecation policy)
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: 'Produce initial ISO 27001 and SOC 2 evidence artifacts: information
+      security policy, asset inventory (visitor PII data assets), risk assessment
+      register, access control policy, and data classification scheme. These seed
+      the compliance evidence library used throughout development.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Risk register covers all threats identified in threat model (step 4)
+    - Asset inventory classifies all PII data assets with owner, location, and retention
+      period
+    - 'Access control policy defines least-privilege roles: kiosk, receptionist, site_admin,
+      global_admin'
+    - Data classification scheme applied to all database tables
+    - All documents version-controlled and include review/approval signatures
+    depends_on:
+    - 4
+  CONFIG:
+    description: 'Set up project infrastructure: Docker Compose for local dev (PostgreSQL,
+      Redis, MinIO for badge/NDA storage, MailHog), environment variable schema (.env.example),
+      pre-commit hooks (lint, type-check, secret scan), and monorepo structure (backend/,
+      frontend-admin/, frontend-kiosk/, frontend-prereg/).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`make dev` starts all services and passes health checks within 60s'
+    - All secrets read from environment variables — no hardcoded values in any file
+    - Pre-commit hooks block commits with detected secrets (gitleaks) or lint failures
+    - MinIO bucket policies enforce private access for visitor photos and NDA blobs
+    - Docker images build reproducibly from pinned base images
+    depends_on:
+    - 6
+    - 7
+  BACKEND:
+    description: 'Implement core backend services: JWT authentication with role-based
+      access control (kiosk, receptionist, site_admin, global_admin), site/tenant
+      management, LDAP/Active Directory host lookup integration, visitor profile CRUD
+      with PII encryption, and audit logging middleware that writes every state transition
+      to audit_log.'
+    agent_role: developer
+    acceptance_criteria:
+    - JWT tokens expire in 8h for staff, 15min for kiosk sessions
+    - LDAP host lookup returns name, email, phone, and department within 500ms
+    - Visitor CRUD correctly encrypts/decrypts PII columns — raw PII never logged
+    - Audit middleware logs user, action, resource_id, site_id, and timestamp for
+      every mutating request
+    - 'Role-based access control tested: kiosk role cannot access admin endpoints'
+    depends_on:
+    - 6
+    - 7
+    - 9
+  AGENTIC:
+    description: 'Implement AI visitor intelligence layer using Multi-Agent Coordinator
+      pattern: coordinator routes check-in context to specialist agents — (1) risk_assessor
+      agent cross-checks visitor against watchlist, flags anomalies (unusual visit
+      frequency, blacklisted domains); (2) routing_agent determines NDA requirement
+      and badge type from visit purpose; (3) host_assistant agent drafts personalised
+      welcome message and meeting notes for host.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator dispatches to all three agents in parallel, aggregates results within
+      10s
+    - Risk flags above threshold pause check-in and notify security before badge prints
+    - Routing agent correctly classifies badge type from visit purpose in > 95% of
+      test cases
+    - Host welcome message generated and included in host notification
+    - HITL gate pauses check-in flow and logs pending approval in SAGE proposal store
+    depends_on:
+    - 10
+    - 12
+    - 15
+  FRONTEND:
+    description: 'Build admin web portal (React 18 + TypeScript): visitor log with
+      search/filter/export, pre-registration management, host management, evacuation
+      list view with live count, badge reprint action, NDA document viewer, site configuration,
+      user management, and analytics dashboard (daily visitors, peak hours, average
+      check-in time).'
+    agent_role: developer
+    acceptance_criteria:
+    - Visitor log loads 1000 records in under 2s with virtual scrolling
+    - Evacuation list auto-refreshes every 10s with live visitor count badge
+    - NDA PDF renders in-browser without download for legal review
+    - Analytics dashboard shows 7/30/90-day visitor trends with chart.js visualizations
+    - All admin actions (badge reprint, visitor flag, user role change) write to audit
+      log
+    depends_on:
+    - 5
+    - 11
+    - 14
+    - 15
+    - 16
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions), container registry, staging
+      and production deployment (Kubernetes or Docker Swarm), monitoring (Prometheus
+      + Grafana: check-in latency p95, badge print queue depth, notification delivery
+      rate, active visitor count), alerting (PagerDuty for printer offline, notification
+      failures, high error rates), and log aggregation (Loki).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs lint, type-check, unit tests, and integration tests on every
+      PR
+    - Deployment to staging automatic on merge to main; production requires manual
+      approval gate
+    - Grafana dashboard shows real-time check-in latency p50/p95/p99
+    - Alert fires within 2 minutes of printer going offline
+    - Log aggregation captures structured JSON logs with trace_id for all services
+    depends_on:
+    - 9
+  QA:
+    description: 'Design and execute quality assurance test plan: test cases for all
+      six core flows (pre-registration, walk-in, NDA, badge, notification, evacuation),
+      boundary cases (printer offline, LDAP unavailable, watchlist match, NDA declined,
+      session timeout), accessibility testing, and cross-browser/device matrix.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all six core flows with at least 3 negative test cases each
+    - Accessibility audit completed using axe-core with zero critical violations
+    - Cross-browser matrix tested on Chrome, Firefox, Safari, and Edge
+    - All P1 defects resolved before system test begins
+    - 'Test coverage meets targets: backend 85%, frontend 70%'
+    depends_on:
+    - 18
+    - 19
+    - 20
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite: full visitor lifecycle from
+      invitation email through check-out, load test (100 concurrent kiosk check-ins),
+      evacuation list accuracy test (verify count matches visits within 2s), notification
+      delivery latency test, badge print throughput test (target: 4 badges/min per
+      printer), and disaster recovery test (DB failover).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full pre-registration → check-in → NDA → badge → notification flow passes in
+      under 90s
+    - 'Load test: p95 check-in latency under 30s at 100 concurrent users'
+    - Evacuation list count matches actual visit count within 2s at 500 visitors on-site
+    - Host notification delivered within 30s in 99% of test runs
+    - DR failover completes within 30s with no visit records lost
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 21
+    - 22
+  OPERATIONS:
+    description: 'Produce operational runbooks: kiosk hardware setup and recovery,
+      badge printer calibration and offline recovery, LDAP sync failure recovery,
+      database backup and restore procedures, incident response playbook for security
+      events (watchlist match, data breach), SLA definitions (99.5% uptime, check-in
+      latency SLO), and capacity planning model for multi-site scaling.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Each runbook tested end-to-end by ops team member not involved in authoring
+    - SLA document specifies measurement methodology, exclusions, and breach credits
+    - Capacity model projects compute/storage requirements for 10, 50, and 100 sites
+    - Incident response playbook specifies escalation contacts and communication templates
+    - 'DB restore runbook tested: restore from backup verified under 1h'
+    depends_on:
+    - 21
+    - 23
+  TRAINING:
+    description: 'Produce training materials: receptionist onboarding guide (kiosk
+      operation, manual override, printer troubleshooting), host user guide (creating
+      pre-registrations, managing invitations, responding to notifications), admin
+      user guide (evacuation procedures, reporting, user management), and security
+      staff quick-reference card for evacuation.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Receptionist guide covers all six core flows with step-by-step screenshots
+    - Evacuation quick-reference card is single-page, printable, laminate-ready
+    - Host guide covers invitation creation and notification response in under 10
+      steps
+    - All guides reviewed by a non-technical test reader and revised for clarity
+    - Video scripts contain scene descriptions, speaker notes, and on-screen action
+      cues
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 18
+    - 19
+    - 20

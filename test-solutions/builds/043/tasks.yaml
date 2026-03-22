@@ -1,0 +1,241 @@
+task_types:
+  MARKET_RESEARCH:
+    description: Analyze subscription box market landscape, competitor pricing tiers,
+      customer acquisition channels, churn benchmarks, and go-to-market positioning
+      for the subscription_box solution.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covers ≥5 direct competitors with pricing, feature, and churn
+      data
+    - GTM strategy includes at least 3 acquisition channels with CAC estimates
+    - Positioning doc identifies differentiators and target customer segment clearly
+    depends_on: []
+  FINANCIAL:
+    description: Build financial model covering subscription tier pricing, COGS per
+      box, LTV, CAC, referral credit costs, refund reserve, and 18-month P&L projection.
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Unit economics sheet shows gross margin per tier at ≥3 COGS scenarios
+    - Referral credit cost modeled against conversion rate sensitivity
+    - 18-month P&L covers revenue, COGS, fulfillment, and platform costs
+    - Break-even subscriber count identified per tier
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: Conduct user research and produce wireframes for subscriber onboarding,
+      box curation quiz, subscription management dashboard (skip/pause/cancel), referral
+      program UI, and admin inventory panel.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all 7 listed screens at mid-fidelity
+    - Skip/pause/cancel flow has ≤3 taps to complete any action
+    - Accessibility audit references WCAG 2.1 AA for each screen
+    - Curation quiz flow validated with ≥5 user interviews or usability sessions
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, subscription cancellation
+      policy, referral program T&Cs, and data retention policy compliant with GDPR/CCPA
+      and PCI DSS data minimization requirements.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS includes subscription auto-renewal disclosure per FTC guidelines
+    - Privacy Policy explicitly covers cardholder data handling per PCI DSS Req 3
+    - Cancellation policy specifies notice period and effective date rules
+    - Referral T&Cs define credit expiry, non-transferability, and fraud clauses
+    - Data retention policy maps each data class to a retention period
+    - Return/refund policy drafted
+    - Consumer protection compliance checked
+    depends_on:
+    - 2
+  SECURITY:
+    description: Produce PCI DSS threat model, SBOM, penetration test plan, and security
+      architecture review covering payment tokenization, API authentication, referral
+      code abuse prevention, and admin access controls.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Threat model covers STRIDE categories for all 4 scoped areas
+    - SBOM lists all third-party dependencies with license and CVE status
+    - Pentest plan includes test cases for SQL injection, IDOR on subscription endpoints,
+      and referral code brute-force
+    - Payment flow uses tokenization — no raw PANs stored (PCI DSS Req 3.4 compliance)
+    - Admin panel requires MFA per PCI DSS Req 8.4
+    - Payment flow PCI compliant
+    - Fraud detection rules defined
+    depends_on:
+    - 4
+  COMPLIANCE:
+    description: 'Produce PCI DSS SAQ A-EP compliance evidence package: network segmentation
+      diagram, cardholder data flow diagram, responsibility matrix (shared with payment
+      processor), and quarterly review checklist.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Data flow diagram shows all cardholder data touchpoints and confirms none stored
+      in application DB
+    - Network segmentation diagram shows payment iframe/redirect isolation
+    - Shared responsibility matrix maps each PCI DSS req to platform vs. payment processor
+    - Quarterly review checklist covers 12 PCI DSS requirement domains
+    depends_on:
+    - 5
+  DATABASE:
+    description: Design and implement database schema for subscribers, subscriptions,
+      billing cycles, boxes/products, inventory, referral codes, and audit log. Include
+      migrations and seed data.
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all 13 tables with FK relationships
+    - subscription_events table records all skip/pause/cancel/resume with timestamps
+      and actor
+    - inventory table supports per-SKU stock levels with reservation for pending orders
+    - Referral credits have expiry date and redeemed_at fields
+    - No raw payment card data fields exist in any table
+    - All migrations run forward and rollback cleanly on a fresh PostgreSQL instance
+    depends_on:
+    - 5
+  CONFIG:
+    description: 'Configure project scaffolding: monorepo structure, Docker Compose
+      (app, db, redis, worker), environment variable schema, pre-commit hooks, and
+      agentic pattern setup for coordinator pattern to manage curation and billing
+      sub-agents.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker-compose up brings all services healthy within 60 seconds
+    - .env.example documents every required variable with type and example value
+    - Coordinator agent routes tasks to curation, billing, and inventory specialist
+      agents
+    - Pre-commit hooks enforce lint, type-check, and secret scanning
+    - 'Makefile targets: dev, test, migrate, seed'
+    depends_on:
+    - 6
+    - 7
+  BACKEND:
+    description: 'Implement subscriber authentication and account management: registration,
+      email verification, login (JWT + refresh tokens), password reset, and profile
+      management endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - Passwords hashed with bcrypt cost factor ≥12
+    - JWT access tokens expire in 15 minutes; refresh tokens in 30 days
+    - Email verification token expires in 24 hours
+    - 'Rate limit: ≤5 failed logins per 15 min per IP before lockout'
+    - All endpoints return RFC 7807 problem+json on errors
+    depends_on:
+    - 8
+  DEVOPS:
+    description: Set up CI/CD pipeline (GitHub Actions), staging and production environments,
+      database migration automation, secret management (AWS Secrets Manager or Vault),
+      and monitoring/alerting stack.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR; blocking on lint, type-check, and test failures
+    - Staging deploy auto-triggers on merge to main; production requires manual approval
+      gate
+    - Database migrations run automatically pre-deploy with rollback on failure
+    - No secrets in environment variables — all loaded from AWS Secrets Manager at
+      runtime
+    - Sentry captures uncaught exceptions with release tagging
+    - 'Grafana dashboard covers: API p95 latency, billing webhook failure rate, inventory
+      alert count'
+    depends_on:
+    - 8
+  FRONTEND:
+    description: 'Build subscriber-facing Next.js frontend: landing page, curation
+      quiz, subscription checkout (Stripe Elements), subscriber dashboard, and skip/pause/cancel
+      flows.'
+    agent_role: developer
+    acceptance_criteria:
+    - Curation quiz collects ≥3 preference dimensions before showing box preview
+    - Checkout uses Stripe Elements — card data never touches application JavaScript
+    - Skip/pause/cancel each complete in ≤3 user interactions from dashboard
+    - Referral page shows code, shareable link, pending/paid credit balance, and conversion
+      count
+    - All pages pass Lighthouse accessibility score ≥90
+    - Responsive layout verified on 375px, 768px, and 1280px viewports
+    depends_on:
+    - 3
+    - 12
+    - 13
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: billing
+      lifecycle, skip/pause/cancel state machine, referral fraud detection, inventory
+      reservation concurrency, and Stripe webhook handling.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - 'State machine tests cover all valid transitions: active→skipped, active→paused,
+      paused→active, active→cancelled'
+    - Stripe webhook tests cover all 4 handled event types with valid and invalid
+      signatures
+    - Inventory concurrency test spawns ≥10 simultaneous reservations and verifies
+      no over-commit
+    - Referral fraud test covers same-IP, same-card, and self-referral scenarios
+    - Overall backend coverage ≥85% reported by pytest-cov
+    - All tests pass in CI in ≤3 minutes
+    depends_on:
+    - 12
+    - 13
+    - 14
+  QA:
+    description: Produce QA test plan covering subscription e2e flows, referral conversion,
+      billing failure recovery, skip/pause cutoff enforcement, and PCI DSS card-data
+      isolation verification.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers ≥50 named test cases across all 6 categories
+    - PCI card-data isolation test confirms no PAN appears in network logs, DB, or
+      application logs
+    - Billing failure recovery test validates dunning email sequence and account lockout
+      timing
+    - Each test case has pass/fail criteria, preconditions, and expected result defined
+    - Severity matrix defines P0–P3 with SLA for fix turnaround
+    depends_on:
+    - 16
+    - 17
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests against staging: full subscriber
+      journey from signup through curation, checkout, first billing, skip, referral
+      conversion, cancel, and admin fulfillment workflow.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 6 Playwright scenarios pass on staging environment
+    - Full subscriber journey completes in ≤2 minutes wall time
+    - Referral discount applied correctly at Stripe checkout
+    - Pause auto-cancel fires at exactly 90 days (verified with time-travel in test
+      mode)
+    - Admin bulk fulfillment confirms ≥10 orders atomically with correct inventory
+      decrement
+    - Zero console errors on any page during test runs
+    depends_on:
+    - 18
+    - 19
+  OPERATIONS:
+    description: 'Write operational runbooks: subscriber billing failure incident
+      response, inventory stockout handling, Stripe webhook retry procedure, referral
+      fraud investigation playbook, and SLA definitions.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Billing failure runbook covers detection, subscriber notification, retry scheduling,
+      and escalation path
+    - Inventory stockout runbook includes supplier contact template and temporary
+      box substitution procedure
+    - Webhook retry procedure covers Stripe retry schedule and manual re-delivery
+      steps
+    - Fraud investigation playbook defines evidence collection, credit hold, and dispute
+      resolution steps
+    - SLA doc signed off with defined measurement methodology for each target
+    depends_on:
+    - 20
+  DOCS:
+    description: 'Produce developer documentation: API reference (OpenAPI 3.1), architecture
+      decision records (ADRs) for billing tokenization and referral fraud model, and
+      subscriber-facing help center articles.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - OpenAPI spec covers 100% of public endpoints with request/response schemas and
+      error codes
+    - ADR for billing tokenization documents why raw PAN storage was rejected
+    - ADR for referral fraud documents the fraud signals chosen and false-positive
+      tradeoffs
+    - Help center articles are <500 words each with step-by-step instructions
+    - README includes quickstart, environment setup, and make targets
+    depends_on:
+    - 20

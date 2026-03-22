@@ -1,0 +1,61 @@
+project_name: recipe_app
+display_name: Recipe App
+version: 1.0.0
+domain: consumer_app
+description: Recipe and meal planning app with ingredient-based search, nutritional
+  info, grocery list generation, step-by-step cooking mode, and social sharing.
+detected_domains: []
+compliance_standards:
+- GDPR
+- FDA Nutritional Label Guidelines
+task_types:
+- API
+- BACKEND
+- CONFIG
+- DATABASE
+- DEVOPS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- LEGAL
+- LOCALIZATION
+- MARKET_RESEARCH
+- PCB_DESIGN
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- developer
+- devops_engineer
+- firmware_engineer
+- legal_advisor
+- localization_engineer
+- marketing_strategist
+- product_manager
+- qa_engineer
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

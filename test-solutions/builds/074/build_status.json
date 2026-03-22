@@ -1,0 +1,1131 @@
+{
+  "run_id": "36951bde-91de-40ad-aab8-03d9cb278431",
+  "solution_name": "language_learning",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T09:26:59.647959+00:00",
+  "updated_at": "2026-03-22T09:32:19.536997+00:00",
+  "product_description": "Language learning app with spaced repetition, speech recognition for pronunciation, conversational AI practice, gamification, and offline mode.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user personas (children under 13, adult learners, educators), user stories, and ROI model. Document COPPA/FERPA applicability based on target age groups and institutional use.",
+      "payload": {
+        "deliverables": [
+          "business_requirements.md",
+          "user_personas.md",
+          "user_stories.md",
+          "roi_analysis.md"
+        ],
+        "personas": [
+          "child_learner_under13",
+          "adult_self_learner",
+          "classroom_student",
+          "educator"
+        ],
+        "coppa_scope": "Determine if under-13 users are in scope and document parental consent flows"
+      },
+      "acceptance_criteria": [
+        "At least 30 user stories written and prioritized by MoSCoW",
+        "COPPA applicability decision documented with legal rationale",
+        "FERPA scope documented for any institutional/educator use cases",
+        "ROI model includes 3 monetization scenarios (freemium, subscription, institutional)"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze competitors (Duolingo, Babbel, Rosetta Stone, Pimsleur), identify differentiators for spaced repetition + speech AI combo, define target languages and markets.",
+      "payload": {
+        "competitors": [
+          "Duolingo",
+          "Babbel",
+          "Rosetta Stone",
+          "Pimsleur",
+          "Anki"
+        ],
+        "focus_areas": [
+          "spaced_repetition_algorithms",
+          "speech_recognition_quality",
+          "conversational_ai_features",
+          "gamification_mechanics",
+          "offline_capabilities"
+        ],
+        "target_languages": [
+          "Spanish",
+          "French",
+          "Mandarin",
+          "Japanese",
+          "German",
+          "Arabic"
+        ]
+      },
+      "acceptance_criteria": [
+        "Feature matrix comparing top 5 competitors across all key dimensions",
+        "Differentiation statement for speech + conversational AI positioning",
+        "Go-to-market strategy for at least 2 language markets",
+        "Pricing benchmark analysis against 3 competitors"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 3,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Write the Product Requirements Document (PRD), define MVP scope, create phased roadmap (MVP \u2192 v1.0 \u2192 v2.0), and establish success metrics (DAU, lesson completion rate, pronunciation accuracy threshold, retention at 30/60/90 days).",
+      "payload": {
+        "mvp_features": [
+          "spaced_repetition_core",
+          "basic_speech_recognition",
+          "offline_mode",
+          "gamification_streaks"
+        ],
+        "v1_features": [
+          "conversational_ai_practice",
+          "leaderboards",
+          "multiple_languages"
+        ],
+        "v2_features": [
+          "adaptive_curriculum",
+          "educator_dashboard",
+          "live_tutoring_integration"
+        ],
+        "success_metrics": [
+          "DAU",
+          "lesson_completion_rate",
+          "D30_retention",
+          "pronunciation_accuracy_score"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all 5 core features with functional requirements and edge cases",
+        "MVP scope agreed with at least 15 user stories tagged as MVP",
+        "3-phase roadmap with milestone dates and success criteria per phase",
+        "OKRs defined for first 6 months post-launch"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 4,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research, create information architecture, design wireframes for all core flows (onboarding, daily lesson, pronunciation drill, conversational AI session, progress dashboard, offline mode), and produce accessibility audit plan for WCAG 2.1 AA compliance.",
+      "payload": {
+        "flows": [
+          "onboarding_placement_test",
+          "daily_lesson_flow",
+          "spaced_repetition_review",
+          "pronunciation_drill",
+          "conversational_ai_chat",
+          "progress_gamification_dashboard",
+          "offline_download_manager"
+        ],
+        "accessibility_targets": [
+          "WCAG_2.1_AA",
+          "screen_reader_support",
+          "color_contrast_4.5:1",
+          "touch_target_44px"
+        ],
+        "child_safe_design": "Simplified UI variant for under-13 users, no social features visible"
+      },
+      "acceptance_criteria": [
+        "Wireframes completed for all 7 core flows in low and high fidelity",
+        "WCAG 2.1 AA checklist documented with pass/fail per component",
+        "Child-safe UI variant wireframes for COPPA-applicable screens",
+        "Usability test plan with at least 5 test participants per persona",
+        "Accessibility audit report with remediation backlog",
+        "Accessibility for learners with disabilities",
+        "Mobile-responsive for student devices"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 5,
+      "task_type": "COMPLIANCE",
+      "description": "Produce compliance evidence artifacts for COPPA, FERPA, and WCAG 2.1. Document parental consent workflows, data minimization policies for minors, FERPA data handling for institutional users, and create traceability matrix mapping features to compliance requirements.",
+      "payload": {
+        "standards": [
+          "COPPA",
+          "FERPA",
+          "WCAG_2.1_AA"
+        ],
+        "artifacts": [
+          "parental_consent_flow.md",
+          "data_minimization_policy.md",
+          "ferpa_data_handling.md",
+          "wcag_traceability_matrix.xlsx",
+          "privacy_impact_assessment.md"
+        ],
+        "coppa_requirements": [
+          "verifiable_parental_consent",
+          "no_behavioral_advertising_to_minors",
+          "data_deletion_on_request",
+          "limited_data_collection"
+        ],
+        "ferpa_requirements": [
+          "educational_records_protection",
+          "institutional_data_sharing_agreements",
+          "student_data_access_controls"
+        ]
+      },
+      "acceptance_criteria": [
+        "COPPA compliance checklist completed with evidence for each requirement",
+        "Parental consent flow documented with verification mechanism (email, credit card micro-charge, or knowledge-based)",
+        "FERPA data handling agreement template drafted for institutional customers",
+        "WCAG 2.1 AA traceability matrix maps every UI component to compliance status",
+        "Privacy Impact Assessment completed and reviewed by legal_advisor"
+      ],
+      "depends_on": [
+        3,
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy (COPPA-compliant with parental consent section), Cookie Policy, and institutional licensing agreement (FERPA-aware). Review IP ownership of user-generated speech data.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "cookie_policy.md",
+          "institutional_license_agreement.md",
+          "speech_data_ip_policy.md"
+        ],
+        "jurisdictions": [
+          "US",
+          "EU_GDPR",
+          "COPPA_FTC"
+        ],
+        "speech_data_note": "Clarify ownership and retention of user pronunciation recordings"
+      },
+      "acceptance_criteria": [
+        "Privacy Policy includes explicit COPPA section with parental rights and consent mechanism",
+        "ToS includes FERPA data processing addendum for institutional users",
+        "Speech data IP policy clearly states user owns recordings, company has limited processing license",
+        "GDPR data subject rights documented (access, deletion, portability)",
+        "Cookie consent mechanism specified for GDPR compliance",
+        "FERPA/COPPA compliance if minors involved"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 7,
+      "task_type": "CONFIG",
+      "description": "Set up project monorepo structure (mobile app + backend + ML services), configure development toolchain (React Native or Flutter for mobile, FastAPI backend, Python ML services), CI/CD skeleton, environment configs, and agentic AI pattern configuration for conversational practice (coordinator pattern with specialist sub-agents for grammar, vocabulary, and pronunciation coaching).",
+      "payload": {
+        "repo_structure": [
+          "apps/mobile (React Native)",
+          "services/api (FastAPI)",
+          "services/ml (Python)",
+          "services/srs (spaced repetition)",
+          "infra/",
+          "shared/"
+        ],
+        "agentic_pattern": "coordinator",
+        "coordinator_components": {
+          "coordinator_agent": "ConversationalCoordinator \u2014 routes to specialist sub-agents",
+          "specialist_agents": [
+            "GrammarCoach",
+            "VocabularyCoach",
+            "PronunciationCoach",
+            "CulturalContextAgent"
+          ],
+          "task_router": "intent classifier routes user message to appropriate specialist",
+          "result_merger": "synthesizes multi-agent responses into coherent conversational reply"
+        },
+        "environment_configs": [
+          "development",
+          "staging",
+          "production"
+        ],
+        "feature_flags": [
+          "speech_recognition_enabled",
+          "conversational_ai_enabled",
+          "offline_mode_enabled"
+        ]
+      },
+      "acceptance_criteria": [
+        "Monorepo initialized with all service directories and shared type definitions",
+        "Coordinator agentic pattern scaffolded with 4 specialist agent stubs",
+        "Feature flag system operational for gradual rollout",
+        "All environment configs validated with no secrets committed",
+        "Pre-commit hooks installed (lint, type check, secret scan)"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "DATABASE",
+      "description": "Design and implement database schema for users, vocabulary items, learning sessions, spaced repetition state (SM-2 or FSRS algorithm state per card per user), gamification (streaks, XP, badges, leaderboard), speech recordings metadata, and conversation history.",
+      "payload": {
+        "tables": [
+          "users",
+          "user_profiles",
+          "languages",
+          "vocabulary_items",
+          "lesson_content",
+          "user_card_state (SRS state per user per card)",
+          "learning_sessions",
+          "speech_recordings_metadata",
+          "conversation_sessions",
+          "gamification_state",
+          "badges",
+          "leaderboard_entries"
+        ],
+        "srs_algorithm": "FSRS (Free Spaced Repetition Scheduler) \u2014 stores stability, difficulty, due_date, review_count",
+        "offline_sync": "Include sync_state and last_synced_at columns on all user-owned tables",
+        "migrations": "Alembic for PostgreSQL migrations",
+        "child_data_isolation": "Separate schema or tenant for under-13 users with enhanced access controls"
+      },
+      "acceptance_criteria": [
+        "ERD documented covering all entities and relationships",
+        "FSRS card state schema supports stability, difficulty, due_date, last_review, review_count",
+        "All user-owned tables include sync_state column for offline support",
+        "Under-13 user data isolation mechanism implemented and tested",
+        "Migrations run cleanly from empty DB to full schema",
+        "Indexes on high-frequency query paths (user_id+due_date for SRS reviews)"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "API",
+      "description": "Design OpenAPI specification for all backend endpoints: auth (with parental consent flow), user management, SRS review queue, lesson content delivery, speech evaluation submission, conversational AI session management, gamification events, and offline sync endpoints.",
+      "payload": {
+        "endpoint_groups": [
+          "POST /auth/register (with age_gate)",
+          "POST /auth/parental-consent",
+          "GET /srs/due-cards",
+          "POST /srs/review",
+          "GET /lessons/{id}",
+          "POST /speech/evaluate",
+          "POST /conversation/start",
+          "POST /conversation/message",
+          "GET /gamification/profile",
+          "POST /gamification/event",
+          "POST /sync/push",
+          "GET /sync/pull"
+        ],
+        "auth": "JWT with refresh tokens, parental consent token for under-13",
+        "rate_limiting": "Speech evaluation: 60/min; Conversation: 30/min",
+        "offline_sync_protocol": "Delta sync with vector clocks for conflict resolution"
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 spec covers all endpoint groups with request/response schemas",
+        "Auth flow includes parental consent endpoint with verification mechanism",
+        "Offline sync endpoints support delta-only payloads with conflict resolution strategy documented",
+        "All endpoints document error codes including COPPA-specific errors",
+        "API contract reviewed and approved before backend implementation begins"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement core backend: FastAPI application with JWT auth, parental consent flow, user management service, COPPA age-gate middleware, FERPA institutional data isolation, and audit logging for all PII access.",
+      "payload": {
+        "services": [
+          "AuthService (JWT + parental consent)",
+          "UserService (profiles, preferences, age-gate)",
+          "AuditService (PII access log for FERPA compliance)"
+        ],
+        "middleware": [
+          "CoppaAgeGateMiddleware",
+          "FerpaDataIsolationMiddleware",
+          "RateLimitMiddleware"
+        ],
+        "parental_consent": "Email verification flow with 7-day pending state before account activation for under-13",
+        "security": "bcrypt password hashing, PKCE for OAuth, PII fields encrypted at rest"
+      },
+      "acceptance_criteria": [
+        "Age gate rejects under-13 registration without verified parental consent",
+        "Parental consent email flow functional end-to-end in staging",
+        "All PII access logged with user_id, accessor_id, timestamp, and purpose",
+        "FERPA institutional users isolated in separate tenant context",
+        "All auth endpoints return correct HTTP status codes and OWASP-safe error messages",
+        "JWT expiry and refresh token rotation working correctly"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement spaced repetition engine service using the FSRS algorithm. Expose endpoints for fetching due review cards, submitting review ratings (0-3 scale), and computing next review schedule. Support bulk offline sync of review sessions.",
+      "payload": {
+        "algorithm": "FSRS-4.5 (Free Spaced Repetition Scheduler)",
+        "parameters": [
+          "stability",
+          "difficulty",
+          "retrievability",
+          "due_date",
+          "last_review",
+          "review_count"
+        ],
+        "review_ratings": "Again(0), Hard(1), Good(2), Easy(3)",
+        "offline_sync": "Accept batched offline review sessions with timestamps, replay in order",
+        "deck_management": "Pre-built language decks + user custom decks"
+      },
+      "acceptance_criteria": [
+        "FSRS algorithm produces correct next-due dates for all 4 rating values (verified against reference implementation)",
+        "Due card queue returns cards sorted by due_date with configurable daily limit",
+        "Offline batch sync correctly replays sessions in chronological order without data loss",
+        "Algorithm state persists across sessions and survives service restart",
+        "Performance: due-card query for user with 5000 cards completes in < 100ms"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "ML_MODEL",
+      "description": "Build speech recognition and pronunciation evaluation pipeline. Integrate Whisper (offline-capable) for transcription and a phoneme-level scoring model to give pronunciation feedback. Deploy as a microservice with async job queue for evaluation results.",
+      "payload": {
+        "transcription_model": "OpenAI Whisper (medium model for accuracy, base model for on-device offline)",
+        "pronunciation_scoring": "Phoneme-level comparison using Montreal Forced Aligner or similar \u2014 scores per phoneme, overall word score, and specific feedback (e.g. 'your R sounds like L')",
+        "on_device_model": "Whisper base (39M params) bundled in mobile app for offline mode",
+        "evaluation_pipeline": "Audio upload \u2192 transcription \u2192 phoneme alignment \u2192 score computation \u2192 structured feedback JSON",
+        "target_languages": [
+          "es",
+          "fr",
+          "zh",
+          "ja",
+          "de",
+          "ar"
+        ],
+        "feedback_format": "{ word: str, score: 0-100, phoneme_breakdown: [{phoneme, expected, actual, score}], tip: str }"
+      },
+      "acceptance_criteria": [
+        "Whisper transcription achieves < 5% WER on clean speech for all 6 target languages",
+        "Pronunciation scoring returns phoneme-level breakdown with actionable tip per word",
+        "On-device Whisper base model bundled and functional offline on iOS and Android",
+        "Evaluation pipeline processes 10-second audio clip in < 3 seconds server-side",
+        "Model evaluation report documents WER and pronunciation scoring accuracy benchmarks"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 13,
+      "task_type": "AGENTIC",
+      "description": "Implement the conversational AI practice system using the Coordinator agentic pattern. Build ConversationalCoordinator that routes user messages to specialist sub-agents (GrammarCoach, VocabularyCoach, PronunciationCoach, CulturalContextAgent), synthesizes responses, and maintains conversation history with learning context injection.",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_agent": {
+          "role": "ConversationalCoordinator",
+          "responsibility": "Classify user intent, route to specialist agents, synthesize final response, maintain conversation state",
+          "system_prompt_inputs": [
+            "current_lesson_topic",
+            "user_proficiency_level",
+            "recent_srs_errors",
+            "conversation_history_last_10_turns"
+          ]
+        },
+        "specialist_agents": {
+          "GrammarCoach": "Detects and explains grammatical errors in user messages with target-language examples",
+          "VocabularyCoach": "Suggests vocabulary improvements, introduces new words from SRS deck, tracks usage",
+          "PronunciationCoach": "Flags words for next pronunciation drill session, references prior speech scores",
+          "CulturalContextAgent": "Adds cultural nuance and appropriate register (formal/informal) guidance"
+        },
+        "conversation_modes": [
+          "free_conversation",
+          "guided_scenario (restaurant, airport, job_interview)",
+          "grammar_focus",
+          "vocabulary_builder"
+        ],
+        "history_management": "Sliding window of 20 turns + summarized long-term context in vector store"
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly routes to all 4 specialist agents based on message intent",
+        "Specialist agent responses synthesized into single coherent reply in < 4 seconds",
+        "Conversation history persists across sessions and injects relevant prior context",
+        "4 conversation modes all functional and produce distinct agent behavior",
+        "Grammar errors flagged inline without breaking conversation flow",
+        "Vocabulary introduced from user's SRS deck (not random) at appropriate intervals"
+      ],
+      "depends_on": [
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement gamification service: XP system, streak tracking, badge/achievement engine, and weekly leaderboard. Support offline-earned XP sync. Implement anti-cheat validation for streak freeze purchases and XP events.",
+      "payload": {
+        "xp_events": [
+          "lesson_completed",
+          "review_session_done",
+          "perfect_pronunciation",
+          "conversation_turn",
+          "streak_milestone",
+          "new_word_mastered"
+        ],
+        "streaks": "Daily streak with streak freeze (purchasable or earnable), timezone-aware midnight reset",
+        "badges": [
+          "7_day_streak",
+          "100_words_mastered",
+          "pronunciation_perfectionist",
+          "first_conversation",
+          "polyglot_starter"
+        ],
+        "leaderboard": "Weekly XP leaderboard, friend groups, and global \u2014 resets Sunday midnight UTC",
+        "anti_cheat": "Server-side XP validation, max XP cap per session type, rate limiting on XP events"
+      },
+      "acceptance_criteria": [
+        "XP correctly awarded for all 6 event types with server-side validation",
+        "Streak resets at midnight user-local timezone, not UTC",
+        "Streak freeze correctly applied when user misses a day",
+        "Badge engine awards all 5 badge types at correct thresholds",
+        "Weekly leaderboard resets correctly and archives prior week",
+        "Offline-earned XP synced on reconnect without duplication"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement offline sync service: content download manager (lesson packs, SRS decks, on-device Whisper model), delta sync protocol for review sessions and XP events, and conflict resolution using vector clocks. Support partial pack downloads and resumable downloads.",
+      "payload": {
+        "downloadable_content": [
+          "lesson_packs_by_language_and_level",
+          "srs_deck_snapshots",
+          "pronunciation_reference_audio",
+          "whisper_base_model_per_language"
+        ],
+        "sync_protocol": "Delta sync: client sends last_sync_timestamp, server returns changes since. Vector clocks for conflict resolution.",
+        "conflict_resolution": "Last-write-wins for XP events; merge (take max) for streak state; SRS state uses server-wins with local queue replay",
+        "storage_estimate": "Full language pack: ~50MB audio + 5MB text. Whisper base: ~150MB per language.",
+        "resumable_downloads": "Chunked downloads with byte-range support, download state persisted locally"
+      },
+      "acceptance_criteria": [
+        "Full lesson pack for one language downloads and is functional offline",
+        "Delta sync sends only changed records since last_sync_timestamp",
+        "Vector clock conflict resolution tested with 3 conflict scenarios (offline edits on 2 devices)",
+        "Resumable download resumes from interruption point without re-downloading completed chunks",
+        "Sync completes for 500 pending reviews in < 10 seconds on WiFi"
+      ],
+      "depends_on": [
+        11,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build mobile app core shell in React Native: navigation structure (tab bar + stack nav), theming system, auth screens (login, register with age-gate, parental consent flow), onboarding placement test, and bottom tab navigation for Home, Practice, Progress, and Profile.",
+      "payload": {
+        "framework": "React Native with Expo",
+        "navigation": "React Navigation v6 \u2014 tab bar (Home, Practice, Progress, Profile) + nested stack navigators",
+        "auth_screens": [
+          "WelcomeScreen",
+          "RegisterScreen (with DoB age gate)",
+          "ParentalConsentScreen",
+          "LoginScreen",
+          "ForgotPasswordScreen"
+        ],
+        "onboarding": "5-question placement test to set initial CEFR level (A1-B2)",
+        "theming": "Light/dark mode, font scaling for accessibility",
+        "accessibility": "All interactive elements have accessibilityLabel, minimum 44pt touch targets"
+      },
+      "acceptance_criteria": [
+        "Age gate on registration blocks under-13 and routes to parental consent flow",
+        "Placement test correctly sets initial CEFR level and seeds SRS deck at that level",
+        "Tab navigation renders all 4 tabs without crashes on iOS 15+ and Android 11+",
+        "All interactive elements pass 44pt touch target requirement",
+        "Light and dark mode switch without visual glitches",
+        "Screen reader (VoiceOver/TalkBack) announces all interactive elements correctly"
+      ],
+      "depends_on": [
+        4,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build the daily lesson and spaced repetition review UI: lesson cards with multiple choice, fill-in-the-blank, and translation exercises; SRS review queue with card flip animation; progress bar showing cards remaining; and end-of-session results screen with XP earned.",
+      "payload": {
+        "card_types": [
+          "multiple_choice",
+          "fill_in_the_blank",
+          "translation_target_to_native",
+          "translation_native_to_target",
+          "listening_comprehension",
+          "image_association"
+        ],
+        "animations": "Card flip (Reanimated 3), progress bar smooth update, XP burst celebration on session complete",
+        "offline_indicator": "Banner when offline, all review functionality still available",
+        "session_config": "Configurable daily new cards (default 10) and review limit (default 100)"
+      },
+      "acceptance_criteria": [
+        "All 6 card types render correctly and submit answers to SRS backend",
+        "Card flip animation runs at 60fps on mid-tier Android device",
+        "Offline mode indicator shows and lesson functions fully offline",
+        "Session results screen shows XP earned, accuracy %, and streak status",
+        "Progress bar updates correctly for each card answered",
+        "Accessibility: card content readable by screen reader without visual dependency"
+      ],
+      "depends_on": [
+        16,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build speech recognition and pronunciation drill UI: record button with waveform visualization, playback of reference pronunciation audio, phoneme-level score display with color coding (green/yellow/red per phoneme), and retry flow with specific feedback.",
+      "payload": {
+        "recording_ui": "Hold-to-record button with real-time waveform (react-native-audio-waveform), 10-second max",
+        "reference_audio": "Play button for native speaker reference recording per word",
+        "score_display": "Word-level score (0-100), phoneme breakdown table with color coding, overall grade (A-F)",
+        "feedback": "Specific tip per low-scoring phoneme (e.g., 'Try placing your tongue behind upper teeth for the T sound')",
+        "offline_mode": "On-device Whisper transcription, server-side phoneme scoring deferred to sync"
+      },
+      "acceptance_criteria": [
+        "Waveform visualization renders during recording without audio dropout",
+        "Phoneme breakdown table displays all phonemes color-coded by score",
+        "Reference audio plays for every vocabulary item",
+        "Offline recording stores audio locally and queues server-side evaluation for next sync",
+        "Score display accessible to screen readers (numeric scores read aloud)",
+        "Retry flow persists previous score for comparison"
+      ],
+      "depends_on": [
+        16,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build the conversational AI practice UI: chat interface with message bubbles, typing indicator, inline grammar correction highlights, vocabulary tap-to-look-up, scenario selector, conversation mode switcher, and speech-to-text input option.",
+      "payload": {
+        "chat_ui": "FlatList-based chat with user/AI message bubbles, typing indicator (3-dot animation)",
+        "grammar_corrections": "AI corrections shown as inline diffs \u2014 strikethrough original + green corrected text",
+        "vocabulary_lookup": "Tap any word in AI response to see definition, example, and 'Add to SRS deck' button",
+        "scenario_selector": "Modal picker for conversation scenarios (Restaurant, Airport, Shopping, Job Interview, etc.)",
+        "voice_input": "Microphone button uses on-device speech recognition (Whisper base) as input method",
+        "conversation_export": "Share conversation transcript as PDF or image"
+      },
+      "acceptance_criteria": [
+        "Chat renders 100+ messages without performance degradation",
+        "Grammar correction diffs display correctly for all correction types (insertion, deletion, substitution)",
+        "Vocabulary lookup opens bottom sheet in < 200ms tap response",
+        "'Add to SRS deck' from vocabulary lookup creates card and confirms with toast",
+        "Voice input transcription appears in text field before sending",
+        "Scenario selector covers at least 8 scenarios",
+        "Conversation export generates shareable transcript"
+      ],
+      "depends_on": [
+        16,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build gamification and progress UI: streak tracker with freeze visualization, XP progress bar and level display, badge collection screen, weekly leaderboard with friend groups and global tab, and achievement celebration animations.",
+      "payload": {
+        "streak_display": "Flame icon with day count, calendar heatmap of past 30 days, streak freeze indicator",
+        "xp_level": "Animated XP bar filling toward next level, level badge, total XP display",
+        "badges_screen": "Grid of earned and locked badges with progress toward locked ones",
+        "leaderboard": "Tab bar: Friends | League | Global. Refresh weekly. Animated rank change arrows.",
+        "celebrations": "Confetti burst on streak milestone, badge unlock modal with share option, level-up screen",
+        "child_safe": "No user-generated content in leaderboard display names for under-13 users"
+      },
+      "acceptance_criteria": [
+        "Streak calendar heatmap correctly reflects past 30 days of activity",
+        "XP bar animation triggers on every XP earn event",
+        "Leaderboard loads in < 2 seconds and correctly shows user's rank",
+        "Badge unlock modal fires on first achievement of each badge condition",
+        "Celebration animations run at 60fps without blocking UI interaction",
+        "Under-13 leaderboard shows anonymized display names (no PII)"
+      ],
+      "depends_on": [
+        16,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build offline mode UI: content download manager screen (language packs, deck snapshots), download progress indicators, offline status banner, and sync progress screen when reconnecting.",
+      "payload": {
+        "download_manager": "Language pack list with size, download/delete buttons, individual component download (lessons only, audio only)",
+        "download_progress": "Per-file progress bars with estimated time remaining, pause/resume controls",
+        "offline_banner": "Persistent top banner when offline, tapping shows what features are limited",
+        "sync_screen": "On reconnect: show pending items to sync (reviews, XP events), sync progress, conflict summary"
+      },
+      "acceptance_criteria": [
+        "Language pack download shows correct total size before download",
+        "Download can be paused and resumed without data re-download",
+        "Offline banner appears within 2 seconds of network loss",
+        "Sync screen shows count of pending items before syncing",
+        "Completed sync shows summary: X reviews synced, Y XP events applied, Z conflicts resolved",
+        "Delete downloaded content frees storage correctly (verified by device storage reading)"
+      ],
+      "depends_on": [
+        16,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure for the app UI itself (separate from language learning content). Support English, Spanish, French, Portuguese, Japanese, and Arabic (RTL) for the app interface. Configure translation workflow, locale-specific number and date formatting, and RTL layout support.",
+      "payload": {
+        "i18n_library": "i18next with react-i18next, locale files in JSON",
+        "supported_app_locales": [
+          "en",
+          "es",
+          "fr",
+          "pt",
+          "ja",
+          "ar"
+        ],
+        "rtl_support": "Arabic RTL layout using React Native's I18nManager.forceRTL and layout mirroring",
+        "translation_keys": "All user-facing strings extracted to locale JSON files \u2014 no hardcoded strings",
+        "date_formatting": "Intl.DateTimeFormat for locale-aware date display",
+        "plural_rules": "ICU message format for pluralization (1 card vs N cards)"
+      },
+      "acceptance_criteria": [
+        "All user-facing strings in app UI use i18n keys (zero hardcoded strings in components)",
+        "Arabic locale renders with correct RTL layout including navigation, icons, and text alignment",
+        "Date formats adapt to locale (e.g., DD/MM/YYYY for European locales)",
+        "Plural rules work correctly for all supported locales (tested with 0, 1, 2, 5 items)",
+        "Translation files cover 100% of i18n keys for English; at least 80% for all other locales",
+        "Missing translation keys fall back to English gracefully"
+      ],
+      "depends_on": [
+        16
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "SECURITY",
+      "description": "Conduct security review: threat model for speech data and user PII, penetration test plan for API endpoints (auth bypass, injection, IDOR on user content), OWASP Mobile Top 10 review for the React Native app, SBOM generation, and data-at-rest encryption review for offline storage.",
+      "payload": {
+        "threat_model": [
+          "speech_recording_unauthorized_access",
+          "parental_consent_bypass",
+          "IDOR_on_SRS_card_data",
+          "XP_manipulation",
+          "offline_data_exfiltration"
+        ],
+        "owasp_mobile_checks": [
+          "M1_improper_credential_usage",
+          "M2_inadequate_supply_chain_security",
+          "M3_insecure_auth",
+          "M4_insufficient_input_output_validation",
+          "M5_insecure_communication"
+        ],
+        "encryption": "SQLite encrypted with SQLCipher for offline storage, Keychain/Keystore for keys",
+        "api_security": "JWT signature verification, rate limiting, parameterized queries, CORS policy",
+        "sbom": "CycloneDX SBOM for all dependencies (npm + pip)"
+      },
+      "acceptance_criteria": [
+        "Threat model covers all 5 identified threats with mitigations documented",
+        "OWASP Mobile Top 10 review completed with pass/fail per item and remediation for failures",
+        "Offline SQLite storage uses SQLCipher encryption (verified by attempting plaintext read of .db file)",
+        "API pen test plan covers auth bypass, IDOR, and injection vectors",
+        "SBOM generated and no critical CVEs in dependencies",
+        "Parental consent bypass attempt documented and mitigated"
+      ],
+      "depends_on": [
+        10,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 24,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all backend services: SRS algorithm correctness (all rating paths, boundary conditions), gamification XP calculations, parental consent flow, offline sync delta logic, and conversational AI coordinator routing logic.",
+      "payload": {
+        "test_framework": "pytest with pytest-asyncio for FastAPI async endpoints",
+        "srs_tests": "Test FSRS algorithm against reference scheduling outputs for all 4 ratings and all initial states",
+        "gamification_tests": "XP award correctness, streak reset timing (timezone edge cases), badge trigger conditions",
+        "auth_tests": "Parental consent flow state machine, JWT expiry, age-gate enforcement",
+        "sync_tests": "Delta sync with various lag scenarios, conflict resolution with vector clocks",
+        "coordinator_tests": "Intent routing to correct specialist agent for 20+ message types",
+        "coverage_target": "80% line coverage for all backend services"
+      },
+      "acceptance_criteria": [
+        "FSRS algorithm tests cover all 4 rating values and match reference implementation outputs",
+        "Timezone edge case tests pass for streak reset at midnight in UTC-12 and UTC+14",
+        "Under-13 age-gate test confirms rejection at exactly DoB threshold",
+        "Delta sync tests cover 5 conflict scenarios with expected resolution outcomes",
+        "Coordinator routing tests cover all 4 specialist agent intents",
+        "Overall backend line coverage >= 80% (reported by pytest-cov)"
+      ],
+      "depends_on": [
+        11,
+        13,
+        14,
+        15
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "QA",
+      "description": "Create QA test plan covering manual test cases for COPPA/FERPA compliance flows, WCAG 2.1 AA accessibility testing on physical devices, pronunciation scoring accuracy test matrix (native vs non-native speakers across 6 languages), and exploratory test charters for gamification edge cases.",
+      "payload": {
+        "compliance_test_cases": [
+          "under_13_registration_blocked",
+          "parental_consent_email_sent",
+          "data_deletion_removes_all_pii",
+          "ferpa_educator_data_isolation"
+        ],
+        "accessibility_test_devices": [
+          "iOS VoiceOver",
+          "Android TalkBack",
+          "Dynamic Type large font",
+          "Color blind mode (deuteranopia)"
+        ],
+        "pronunciation_test_matrix": "10 native speakers + 10 non-native speakers per language, 20 test words each \u2014 measure scoring consistency",
+        "gamification_edge_cases": [
+          "streak at timezone boundary",
+          "offline XP exceeds daily cap",
+          "simultaneous leaderboard update from 2 devices",
+          "badge trigger during sync conflict"
+        ]
+      },
+      "acceptance_criteria": [
+        "COPPA compliance test suite has at least 12 test cases with expected outcomes documented",
+        "WCAG 2.1 AA test cases cover all interactive components on iOS and Android",
+        "Pronunciation scoring test matrix executed and inter-rater reliability >= 0.8 (Cohen's kappa)",
+        "Exploratory test charters written for all 4 gamification edge case areas",
+        "Test plan reviewed and signed off before system testing begins"
+      ],
+      "depends_on": [
+        5,
+        20,
+        18
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system test suite covering: full user journey (register \u2192 placement test \u2192 lesson \u2192 SRS review \u2192 pronunciation drill \u2192 conversation session \u2192 gamification earned), offline mode (airplane mode for full session then sync), and multi-device sync scenarios.",
+      "payload": {
+        "e2e_journeys": [
+          "new_user_full_onboarding_to_first_lesson",
+          "srs_review_session_with_offline_then_sync",
+          "pronunciation_drill_score_and_retry",
+          "conversational_ai_scenario_with_grammar_correction",
+          "streak_preserved_after_offline_day",
+          "under_13_user_cannot_access_social_features"
+        ],
+        "performance_tests": [
+          "app_cold_start < 3s",
+          "SRS due-card query < 100ms at 5000 cards",
+          "conversation_response < 4s",
+          "offline_sync < 10s for 500 reviews"
+        ],
+        "load_test": "1000 concurrent speech evaluation requests \u2014 p95 < 5s"
+      },
+      "acceptance_criteria": [
+        "All 6 E2E journeys pass on iOS 15+ and Android 11+ physical devices",
+        "Offline mode: full SRS session completed in airplane mode, all data synced correctly on reconnect",
+        "Performance benchmarks all met on mid-tier test devices",
+        "Under-13 user cannot access leaderboard or conversation sharing features",
+        "Load test: p95 speech evaluation < 5s at 1000 concurrent users",
+        "Zero data loss after forced app kill mid-sync"
+      ],
+      "depends_on": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        25
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 27,
+      "task_type": "DEVOPS",
+      "description": "Build CI/CD pipeline: GitHub Actions for mobile builds (Expo EAS Build), backend Docker containerization, staging and production environments on AWS (ECS + RDS + S3 for audio assets), CDN for language pack downloads, and monitoring/alerting setup.",
+      "payload": {
+        "ci_pipeline": [
+          "lint + type check",
+          "unit tests (pytest + Jest)",
+          "integration tests",
+          "SBOM scan",
+          "Docker build"
+        ],
+        "cd_pipeline": [
+          "staging auto-deploy on main merge",
+          "production deploy on tag",
+          "EAS Build for iOS TestFlight + Android Play Console internal track"
+        ],
+        "infrastructure": "AWS ECS (FastAPI + ML services), RDS PostgreSQL, S3 (audio assets + language packs), CloudFront CDN",
+        "monitoring": "CloudWatch metrics, Datadog APM for API latency, PagerDuty for p95 > 5s speech eval alert",
+        "secrets_management": "AWS Secrets Manager for all credentials, no secrets in env files"
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs in < 10 minutes on every PR",
+        "Staging auto-deploys within 5 minutes of main merge",
+        "EAS Build produces signed iOS IPA and Android APK for TestFlight/Play Console",
+        "CloudFront CDN serves language packs with < 100ms TTFB in us-east-1",
+        "PagerDuty alert fires correctly when p95 speech eval > 5s in load test",
+        "All secrets managed through AWS Secrets Manager (zero plaintext secrets in codebase verified by secret scan)"
+      ],
+      "depends_on": [
+        23,
+        26
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 28,
+      "task_type": "TRAINING",
+      "description": "Create user-facing onboarding guides, in-app tutorial overlays, educator setup documentation for FERPA institutional accounts, and video scripts for app store preview videos.",
+      "payload": {
+        "deliverables": [
+          "in_app_tutorial_overlay_content.json",
+          "help_center_articles (10 topics)",
+          "educator_setup_guide.pdf",
+          "app_store_preview_video_script.md",
+          "parent_consent_explainer_page.md"
+        ],
+        "tutorial_topics": [
+          "how_spaced_repetition_works",
+          "setting_up_daily_goals",
+          "using_pronunciation_drill",
+          "starting_a_conversation_session",
+          "downloading_for_offline"
+        ],
+        "educator_guide": "FERPA compliance features, student progress dashboard, data export, account management",
+        "video_length": "App store preview: 30 seconds highlighting SRS + speech + AI conversation"
+      },
+      "acceptance_criteria": [
+        "10 help center articles cover all major features with screenshots",
+        "In-app tutorial overlay content covers all 5 tutorial topics in under 60 seconds of reading",
+        "Educator setup guide covers FERPA features, data export, and student account management",
+        "Parent consent explainer page written at 6th-grade reading level (Flesch-Kincaid >= 60)",
+        "App store preview video script approved by product_manager before production"
+      ],
+      "depends_on": [
+        26
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 29,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: API reference (auto-generated from OpenAPI spec), architecture decision records (ADRs) for FSRS algorithm choice, coordinator agentic pattern, offline sync protocol, and SBOM documentation.",
+      "payload": {
+        "api_docs": "Auto-generated from OpenAPI spec + human-written usage examples per endpoint group",
+        "adrs": [
+          "ADR-001: FSRS over SM-2 for spaced repetition",
+          "ADR-002: Coordinator pattern for conversational AI",
+          "ADR-003: Whisper base on-device for offline speech",
+          "ADR-004: Vector clock conflict resolution for offline sync"
+        ],
+        "architecture_overview": "System diagram, data flow diagrams, component boundaries",
+        "runbook": "On-call runbook for speech evaluation service degradation, sync conflicts spike, COPPA data deletion requests"
+      },
+      "acceptance_criteria": [
+        "API reference covers all endpoints with at least one request/response example each",
+        "4 ADRs written with context, decision, consequences, and alternatives considered",
+        "Architecture diagram accurately reflects deployed system components",
+        "On-call runbook covers top 3 incident scenarios with step-by-step resolution",
+        "COPPA data deletion runbook documents process and SLA (must complete within 45 days per FTC)"
+      ],
+      "depends_on": [
+        27
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 29,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "CRITICAL: Email verification does NOT constitute 'verifiable parental consent' under COPPA. The FTC explicitly requires methods such as a signed consent form, credit card micro-charge, knowledge-based authentication, or government ID. An email flow will fail FTC review and expose the company to civil penalties up to $51,744 per violation. This invalidates Step 10's core auth implementation.",
+            "CRITICAL: Zero content creation pipeline. The plan builds a sophisticated engine with no mechanism to produce the actual learning content \u2014 vocabulary decks, professionally-recorded native speaker audio, lesson sequences, cultural context data. This is typically 40-60% of the cost and timeline for a language learning product. No CMS, no content ingestion pipeline, no editorial workflow.",
+            "Montreal Forced Aligner is a batch research tool, not a real-time scoring engine. MFA requires dictionary lookups and G2P models per language, processes audio in sequential steps (not pipelined), and has limited phoneme dictionaries for Arabic and Japanese. The '< 3 seconds server-side' target is not achievable with MFA for all 6 languages, particularly for Arabic.",
+            "Whisper base is a single multilingual model (~140MB), not a per-language model. Stating '~150MB per language' is a fundamental misunderstanding of the architecture. The storage estimate for offline is incorrect, and the download manager UI (Step 21) will show wrong sizes. More critically, Whisper base's WER on Arabic is ~15-25% \u2014 the '< 5% WER for all 6 target languages' acceptance criterion is unachievable with the base model.",
+            "On-device Whisper in a React Native/Expo managed workflow requires native modules (llama.cpp bindings or similar). This creates a hard conflict with Expo managed workflow \u2014 bare workflow is required, which significantly increases CI/CD complexity (EAS Build custom native modules, platform-specific builds). Step 7 picks React Native + Expo without resolving this tension.",
+            "FSRS without per-user parameter optimization is significantly less effective than advertised. The real value of FSRS-4.5 over SM-2 is per-user weight optimization from review history. The plan uses global default parameters, which degrades to near SM-2 quality for new users and never personalizes. No mention of the FSRS optimizer running on user review history.",
+            "Coordinator pattern with 4 sequential specialist agent calls will routinely exceed the 4-second response target. Each LLM call is 1-3 seconds at production load. GrammarCoach + VocabularyCoach + synthesis alone hits the ceiling, before adding PronunciationCoach context lookup and CulturalContextAgent retrieval.",
+            "Offline pronunciation scoring is deferred to sync (Step 18) but Step 26 requires 'pronunciation drill score and retry' as a passing E2E journey. These are contradictory: the user gets no phoneme feedback offline, breaking the core offline value proposition for pronunciation.",
+            "Vector clock conflict resolution for FSRS state (Step 15) is architecturally unsound. FSRS state is path-dependent \u2014 the stability value after rating 'Hard' on a card with stability=5 differs from replaying the same rating on server-updated state=7. 'Server-wins with local queue replay' will produce different scheduling than what the user experienced, causing phantom reviews and broken stability estimates.",
+            "No subscription/payment backend. The ROI model (Step 1) includes freemium and subscription scenarios, but no step implements in-app purchases (StoreKit for iOS, Google Play Billing), subscription state management, or paywall enforcement. In-app purchase integration with Apple/Google is a significant workload with compliance requirements of its own.",
+            "No push notification infrastructure. Daily reminder notifications are the single highest-impact retention mechanism for language learning apps (Duolingo's entire retention strategy depends on this). Absent from every step.",
+            "App Store child-directed designation is unaddressed. Apps targeting under-13 users must register under Apple's 'Made for Kids' category and Google Play's 'Designed for Families' program. These programs restrict third-party SDKs (no Facebook, many analytics), enforce COPPA-compliant data handling at the platform level, and require separate review. The CI/CD plan (Step 27) ignores this entirely.",
+            "No LLM cost model for conversational AI at scale. 4 specialist agents \u00d7 average 500 tokens \u00d7 cost per token \u00d7 DAU \u00d7 sessions/day = potentially $50K-$200K/month at modest scale. No discussion of cost controls, token budget per session, caching, or which LLM provider is used."
+          ],
+          "suggestions": [
+            "Replace email-only parental consent with a compliant COPPA verification service (Veriff, PRIVO, or SuperAwesome) \u2014 these are purpose-built SDKs that handle the FTC's acceptable verification methods and stay current with regulatory changes. Budget 2-4 weeks for integration.",
+            "Add a Step 2.5 or Step 3.5 for content architecture: define the content data model, identify native speaker recording vendors (Voices.com, Speechify Studio, in-house studio), build a content ingestion pipeline, and plan the initial deck sizes per language. Without this, Steps 11, 17, and 18 have no data to work with.",
+            "Replace Montreal Forced Aligner with a purpose-built pronunciation assessment API for production (SpeechAce, Azure Pronunciation Assessment, or Google Speech-to-Text with word confidence scores). Use MFA only for offline/research evaluation. Revisit phoneme-level scoring architecture around these APIs' actual output formats.",
+            "Switch to Expo bare workflow immediately in Step 7 or accept the limitation that on-device Whisper will not be available in the MVP. Document this trade-off explicitly in an ADR. If bare workflow, plan for separate iOS/Android CI lanes with native dependency caching.",
+            "Add FSRS optimizer as a background job in Step 11: collect minimum 50 reviews per user, run parameter optimization weekly, store personalized weights per user. This is the core differentiator over SM-2 and should be in v1.0 not v2.0.",
+            "Cap the conversational AI response at 2 specialist agent calls per turn maximum (route to the most relevant specialist only, not all 4). Add a response streaming SSE endpoint so perceived latency is lower even if total generation time is 5-6 seconds.",
+            "Add Step 10.5: Payment/subscription service \u2014 StoreKit 2 (iOS) + Google Play Billing Library 5+ (Android), server-side receipt validation, subscription state webhook handlers, entitlement management. This blocks the freemium model entirely if absent.",
+            "Add Step 7.5: Push notification infrastructure \u2014 FCM + APNs integration, notification permission flow (critical for under-13: must be parent-consented), streak reminder scheduling, and unsubscribe management for GDPR compliance.",
+            "In the COPPA compliance step (Step 5), add explicit Apple MfK / Google DFF registration requirements and the SDK allow-list review \u2014 many analytics SDKs (Firebase Analytics, Mixpanel) are prohibited in child-directed contexts without special data processing agreements.",
+            "Add a content management system step between Steps 3 and 7: admin panel for deck management, content approval workflow, audio upload + normalization pipeline, and localization of lesson content (separate from app UI i18n in Step 22)."
+          ],
+          "missing": [
+            "Content creation pipeline: vocabulary deck production, native speaker audio recording, lesson sequencing, and cultural content for 6 languages. This is the product's core asset and has no step.",
+            "In-app purchase and subscription management (StoreKit 2, Google Play Billing, server-side receipt validation, entitlement service).",
+            "Push notification infrastructure (FCM, APNs, permission flow, streak reminders, GDPR opt-out).",
+            "CMS / admin panel for content managers and educators to manage decks, lessons, and student accounts.",
+            "Analytics product instrumentation (event schema, Amplitude/Mixpanel integration, funnel analysis setup) \u2014 CloudWatch alone is insufficient for product decisions.",
+            "LLM provider selection and cost model for conversational AI: which model, what token limits per session, cost per conversation turn, monthly budget ceiling.",
+            "App Store submission requirements for child-directed apps: Apple Made for Kids category, Google Designed for Families program, SDK restrictions imposed by each.",
+            "GDPR data portability export format \u2014 what file format, which fields, delivery mechanism (email, in-app download), and SLA.",
+            "Whisper model language-specific performance benchmarks BEFORE committing to the < 5% WER target. Arabic and Mandarin with the base model will fail this criterion.",
+            "Customer support tooling and COPPA data deletion request intake \u2014 the runbook in Step 29 mentions a 45-day SLA but there's no support ticket system or intake form planned.",
+            "FSRS per-user parameter optimization job \u2014 a core differentiator entirely absent from the algorithm implementation.",
+            "Pronunciation reference audio recording plan \u2014 who records native speaker audio for thousands of vocabulary items across 6 languages, at what quality (studio vs. crowdsourced), at what cost."
+          ],
+          "security_risks": [
+            "Children's speech recordings stored in S3 without explicit field-level access controls. S3 bucket policy + presigned URL expiry is insufficient if object keys are guessable (e.g., user_id/recording_id). COPPA violation risk: unauthorized access to minor's voice recordings. Require envelope encryption per recording with per-user KMS keys.",
+            "JWT storage in React Native: AsyncStorage is unencrypted and accessible to any JS code in the app. Refresh tokens in AsyncStorage are exfiltrable by XSS equivalents in WebView components or compromised native modules. Use iOS Keychain / Android Keystore via react-native-keychain for all token storage.",
+            "Offline XP manipulation window: XP events accumulated offline are replayed on sync with only 'server-side validation' as protection. An attacker can manipulate the local SQLite database (especially without SQLCipher, which is only mentioned for review, not guaranteed in implementation) to inject arbitrary XP events. Server must independently recompute achievable XP from session metadata, not trust client-reported values.",
+            "Parental consent endpoint (POST /auth/parental-consent) has no brute-force protection mentioned beyond general rate limiting. An attacker enumerating pending consent tokens (UUID-based or timestamp-predictable) could activate under-13 accounts without genuine parental action. Add HMAC-signed tokens with expiry and one-time use enforcement.",
+            "IDOR on speech recordings: POST /speech/evaluate and related endpoints must enforce that the requesting user_id matches the recording owner. The threat model lists this but the API spec (Step 9) has no explicit ownership enforcement requirement on the speech endpoints \u2014 it must be in the auth middleware, not assumed.",
+            "SBOM scan in CI without a remediation SLA. Generating a CycloneDX SBOM is listed as an acceptance criterion but there is no policy for what happens when a critical CVE is found \u2014 does the build block? Who is notified? For a children's app with COPPA exposure, a critical CVE in a data-handling library must block deployment.",
+            "No mention of SQL injection protection at the ORM layer. 'Parameterized queries' is listed in Step 23 but not enforced in Step 10's implementation acceptance criteria. FastAPI + SQLAlchemy with raw text() queries is a common injection vector \u2014 must be explicitly prohibited in coding standards."
+          ],
+          "summary": "This is an ambitious and structurally well-organized plan that demonstrates genuine product depth \u2014 the FSRS algorithm choice, coordinator agentic pattern, vector clock sync, and compliance awareness all reflect serious thinking. However, it has two critical failures that require rework before any implementation begins: (1) the COPPA parental consent mechanism is legally invalid \u2014 email verification will not satisfy FTC requirements, exposing the company to significant penalties; and (2) there is no content creation pipeline, meaning the entire technical stack will have nothing to teach when it launches. Beyond these blockers, several technical assumptions are incorrect (MFA for real-time pronunciation, Whisper base WER targets for Arabic/Mandarin, per-language Whisper model sizing, Expo managed workflow + on-device ML compatibility), and major product components are entirely absent (payments, push notifications, CMS, app store child-directed registration). The plan scores 54: the architecture is sound enough to build from, but the compliance flaw is a launch-blocking legal risk, the missing content pipeline is a fundamental product gap, and roughly 6-8 steps need to be added before this plan reflects what it would actually take to ship.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "CRITICAL: Email verification does NOT constitute 'verifiable parental consent' under COPPA. The FTC explicitly requires methods such as a signed consent form, credit card micro-charge, knowledge-based authentication, or government ID. An email flow will fail FTC review and expose the company to civil penalties up to $51,744 per violation. This invalidates Step 10's core auth implementation.",
+              "CRITICAL: Zero content creation pipeline. The plan builds a sophisticated engine with no mechanism to produce the actual learning content \u2014 vocabulary decks, professionally-recorded native speaker audio, lesson sequences, cultural context data. This is typically 40-60% of the cost and timeline for a language learning product. No CMS, no content ingestion pipeline, no editorial workflow.",
+              "Montreal Forced Aligner is a batch research tool, not a real-time scoring engine. MFA requires dictionary lookups and G2P models per language, processes audio in sequential steps (not pipelined), and has limited phoneme dictionaries for Arabic and Japanese. The '< 3 seconds server-side' target is not achievable with MFA for all 6 languages, particularly for Arabic.",
+              "Whisper base is a single multilingual model (~140MB), not a per-language model. Stating '~150MB per language' is a fundamental misunderstanding of the architecture. The storage estimate for offline is incorrect, and the download manager UI (Step 21) will show wrong sizes. More critically, Whisper base's WER on Arabic is ~15-25% \u2014 the '< 5% WER for all 6 target languages' acceptance criterion is unachievable with the base model.",
+              "On-device Whisper in a React Native/Expo managed workflow requires native modules (llama.cpp bindings or similar). This creates a hard conflict with Expo managed workflow \u2014 bare workflow is required, which significantly increases CI/CD complexity (EAS Build custom native modules, platform-specific builds). Step 7 picks React Native + Expo without resolving this tension.",
+              "FSRS without per-user parameter optimization is significantly less effective than advertised. The real value of FSRS-4.5 over SM-2 is per-user weight optimization from review history. The plan uses global default parameters, which degrades to near SM-2 quality for new users and never personalizes. No mention of the FSRS optimizer running on user review history.",
+              "Coordinator pattern with 4 sequential specialist agent calls will routinely exceed the 4-second response target. Each LLM call is 1-3 seconds at production load. GrammarCoach + VocabularyCoach + synthesis alone hits the ceiling, before adding PronunciationCoach context lookup and CulturalContextAgent retrieval.",
+              "Offline pronunciation scoring is deferred to sync (Step 18) but Step 26 requires 'pronunciation drill score and retry' as a passing E2E journey. These are contradictory: the user gets no phoneme feedback offline, breaking the core offline value proposition for pronunciation.",
+              "Vector clock conflict resolution for FSRS state (Step 15) is architecturally unsound. FSRS state is path-dependent \u2014 the stability value after rating 'Hard' on a card with stability=5 differs from replaying the same rating on server-updated state=7. 'Server-wins with local queue replay' will produce different scheduling than what the user experienced, causing phantom reviews and broken stability estimates.",
+              "No subscription/payment backend. The ROI model (Step 1) includes freemium and subscription scenarios, but no step implements in-app purchases (StoreKit for iOS, Google Play Billing), subscription state management, or paywall enforcement. In-app purchase integration with Apple/Google is a significant workload with compliance requirements of its own.",
+              "No push notification infrastructure. Daily reminder notifications are the single highest-impact retention mechanism for language learning apps (Duolingo's entire retention strategy depends on this). Absent from every step.",
+              "App Store child-directed designation is unaddressed. Apps targeting under-13 users must register under Apple's 'Made for Kids' category and Google Play's 'Designed for Families' program. These programs restrict third-party SDKs (no Facebook, many analytics), enforce COPPA-compliant data handling at the platform level, and require separate review. The CI/CD plan (Step 27) ignores this entirely.",
+              "No LLM cost model for conversational AI at scale. 4 specialist agents \u00d7 average 500 tokens \u00d7 cost per token \u00d7 DAU \u00d7 sessions/day = potentially $50K-$200K/month at modest scale. No discussion of cost controls, token budget per session, caching, or which LLM provider is used."
+            ],
+            "suggestions": [
+              "Replace email-only parental consent with a compliant COPPA verification service (Veriff, PRIVO, or SuperAwesome) \u2014 these are purpose-built SDKs that handle the FTC's acceptable verification methods and stay current with regulatory changes. Budget 2-4 weeks for integration.",
+              "Add a Step 2.5 or Step 3.5 for content architecture: define the content data model, identify native speaker recording vendors (Voices.com, Speechify Studio, in-house studio), build a content ingestion pipeline, and plan the initial deck sizes per language. Without this, Steps 11, 17, and 18 have no data to work with.",
+              "Replace Montreal Forced Aligner with a purpose-built pronunciation assessment API for production (SpeechAce, Azure Pronunciation Assessment, or Google Speech-to-Text with word confidence scores). Use MFA only for offline/research evaluation. Revisit phoneme-level scoring architecture around these APIs' actual output formats.",
+              "Switch to Expo bare workflow immediately in Step 7 or accept the limitation that on-device Whisper will not be available in the MVP. Document this trade-off explicitly in an ADR. If bare workflow, plan for separate iOS/Android CI lanes with native dependency caching.",
+              "Add FSRS optimizer as a background job in Step 11: collect minimum 50 reviews per user, run parameter optimization weekly, store personalized weights per user. This is the core differentiator over SM-2 and should be in v1.0 not v2.0.",
+              "Cap the conversational AI response at 2 specialist agent calls per turn maximum (route to the most relevant specialist only, not all 4). Add a response streaming SSE endpoint so perceived latency is lower even if total generation time is 5-6 seconds.",
+              "Add Step 10.5: Payment/subscription service \u2014 StoreKit 2 (iOS) + Google Play Billing Library 5+ (Android), server-side receipt validation, subscription state webhook handlers, entitlement management. This blocks the freemium model entirely if absent.",
+              "Add Step 7.5: Push notification infrastructure \u2014 FCM + APNs integration, notification permission flow (critical for under-13: must be parent-consented), streak reminder scheduling, and unsubscribe management for GDPR compliance.",
+              "In the COPPA compliance step (Step 5), add explicit Apple MfK / Google DFF registration requirements and the SDK allow-list review \u2014 many analytics SDKs (Firebase Analytics, Mixpanel) are prohibited in child-directed contexts without special data processing agreements.",
+              "Add a content management system step between Steps 3 and 7: admin panel for deck management, content approval workflow, audio upload + normalization pipeline, and localization of lesson content (separate from app UI i18n in Step 22)."
+            ],
+            "missing": [
+              "Content creation pipeline: vocabulary deck production, native speaker audio recording, lesson sequencing, and cultural content for 6 languages. This is the product's core asset and has no step.",
+              "In-app purchase and subscription management (StoreKit 2, Google Play Billing, server-side receipt validation, entitlement service).",
+              "Push notification infrastructure (FCM, APNs, permission flow, streak reminders, GDPR opt-out).",
+              "CMS / admin panel for content managers and educators to manage decks, lessons, and student accounts.",
+              "Analytics product instrumentation (event schema, Amplitude/Mixpanel integration, funnel analysis setup) \u2014 CloudWatch alone is insufficient for product decisions.",
+              "LLM provider selection and cost model for conversational AI: which model, what token limits per session, cost per conversation turn, monthly budget ceiling.",
+              "App Store submission requirements for child-directed apps: Apple Made for Kids category, Google Designed for Families program, SDK restrictions imposed by each.",
+              "GDPR data portability export format \u2014 what file format, which fields, delivery mechanism (email, in-app download), and SLA.",
+              "Whisper model language-specific performance benchmarks BEFORE committing to the < 5% WER target. Arabic and Mandarin with the base model will fail this criterion.",
+              "Customer support tooling and COPPA data deletion request intake \u2014 the runbook in Step 29 mentions a 45-day SLA but there's no support ticket system or intake form planned.",
+              "FSRS per-user parameter optimization job \u2014 a core differentiator entirely absent from the algorithm implementation.",
+              "Pronunciation reference audio recording plan \u2014 who records native speaker audio for thousands of vocabulary items across 6 languages, at what quality (studio vs. crowdsourced), at what cost."
+            ],
+            "security_risks": [
+              "Children's speech recordings stored in S3 without explicit field-level access controls. S3 bucket policy + presigned URL expiry is insufficient if object keys are guessable (e.g., user_id/recording_id). COPPA violation risk: unauthorized access to minor's voice recordings. Require envelope encryption per recording with per-user KMS keys.",
+              "JWT storage in React Native: AsyncStorage is unencrypted and accessible to any JS code in the app. Refresh tokens in AsyncStorage are exfiltrable by XSS equivalents in WebView components or compromised native modules. Use iOS Keychain / Android Keystore via react-native-keychain for all token storage.",
+              "Offline XP manipulation window: XP events accumulated offline are replayed on sync with only 'server-side validation' as protection. An attacker can manipulate the local SQLite database (especially without SQLCipher, which is only mentioned for review, not guaranteed in implementation) to inject arbitrary XP events. Server must independently recompute achievable XP from session metadata, not trust client-reported values.",
+              "Parental consent endpoint (POST /auth/parental-consent) has no brute-force protection mentioned beyond general rate limiting. An attacker enumerating pending consent tokens (UUID-based or timestamp-predictable) could activate under-13 accounts without genuine parental action. Add HMAC-signed tokens with expiry and one-time use enforcement.",
+              "IDOR on speech recordings: POST /speech/evaluate and related endpoints must enforce that the requesting user_id matches the recording owner. The threat model lists this but the API spec (Step 9) has no explicit ownership enforcement requirement on the speech endpoints \u2014 it must be in the auth middleware, not assumed.",
+              "SBOM scan in CI without a remediation SLA. Generating a CycloneDX SBOM is listed as an acceptance criterion but there is no policy for what happens when a critical CVE is found \u2014 does the build block? Who is notified? For a children's app with COPPA exposure, a critical CVE in a data-handling library must block deployment.",
+              "No mention of SQL injection protection at the ORM layer. 'Parameterized queries' is listed in Step 23 but not enforced in Step 10's implementation acceptance criteria. FastAPI + SQLAlchemy with raw text() queries is a common injection vector \u2014 must be explicitly prohibited in coding standards."
+            ],
+            "summary": "This is an ambitious and structurally well-organized plan that demonstrates genuine product depth \u2014 the FSRS algorithm choice, coordinator agentic pattern, vector clock sync, and compliance awareness all reflect serious thinking. However, it has two critical failures that require rework before any implementation begins: (1) the COPPA parental consent mechanism is legally invalid \u2014 email verification will not satisfy FTC requirements, exposing the company to significant penalties; and (2) there is no content creation pipeline, meaning the entire technical stack will have nothing to teach when it launches. Beyond these blockers, several technical assumptions are incorrect (MFA for real-time pronunciation, Whisper base WER targets for Arabic/Mandarin, per-language Whisper model sizing, Expo managed workflow + on-device ML compatibility), and major product components are entirely absent (payments, push notifications, CMS, app store child-directed registration). The plan scores 54: the architecture is sound enough to build from, but the compliance flaw is a launch-blocking legal risk, the missing content pipeline is a fundamental product gap, and roughly 6-8 steps need to be added before this plan reflects what it would actually take to ship.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T09:32:19.536960+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 207.34,
+    "critic_plan": 112.54
+  }
+}

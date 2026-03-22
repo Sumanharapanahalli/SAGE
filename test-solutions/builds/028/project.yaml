@@ -1,0 +1,62 @@
+project_name: autonomous_parking
+display_name: Autonomous Parking
+version: 1.0.0
+domain: automotive
+description: Automated valet parking system with ultrasonic sensor mapping, path planning,
+  low-speed maneuver control, and mobile app for remote parking/retrieval. ISO 26262
+  ASIL B.
+detected_domains: []
+compliance_standards:
+- ISO 26262 ASIL B
+- SAE J3016
+- UNECE R79
+task_types:
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- INFRA
+- PRODUCT_MGMT
+- QA
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- UX_DESIGN
+agent_roles:
+- developer
+- devops_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

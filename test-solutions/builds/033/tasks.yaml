@@ -1,0 +1,395 @@
+task_types:
+  MARKET_RESEARCH:
+    description: Analyze competitor helpdesk platforms (Zendesk, Freshdesk, Intercom,
+      HubSpot Service Hub). Identify pricing tiers, feature gaps, ICP personas (SMB
+      vs enterprise), and WhatsApp/social channel maturity. Produce positioning matrix
+      and differentiation report.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor matrix covers >=5 platforms with pricing, feature, and channel columns
+    - At least 3 ICP personas defined with jobs-to-be-done
+    - Positioning statement differentiating helpdesk_platform from top 2 competitors
+    - WhatsApp Business API integration complexity documented
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements, user stories, and process flows for
+      all six product pillars: ticket management, knowledge base, live chat, AI auto-response,
+      SLA tracking, and multi-channel inbox. Produce BPMN process diagrams for escalation,
+      routing, and SLA breach workflows.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - '>=40 user stories covering all six pillars, each with acceptance criteria'
+    - BPMN diagrams for ticket lifecycle, escalation, and SLA breach
+    - Role-permission matrix covering all 4 user roles
+    - ROI analysis with customer effort score and first-contact resolution KPIs defined
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: User research sessions with 8-10 support agents and team leads. Produce
+      wireframes for agent inbox, ticket detail view, live chat panel, knowledge base
+      editor, SLA dashboard, and admin multi-channel setup. Accessibility audit to
+      WCAG 2.1 AA.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - 8 research sessions completed with documented findings
+    - Hi-fi wireframes for all 6 core screens in Figma
+    - Component library with 20+ reusable UI components
+    - WCAG 2.1 AA audit report with 0 critical violations
+    - Mobile-responsive layout defined for agent inbox and live chat
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  PRODUCT_MGMT:
+    description: Produce Product Requirements Document (PRD) covering MoSCoW-prioritized
+      feature list, success metrics (CSAT, FCR, AHT, SLA compliance %), release roadmap
+      with v1/v2/v3 milestones, and API-first strategy for third-party integrations.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved with MoSCoW triage for all 40+ user stories
+    - Success metrics baseline defined with measurement method for each KPI
+    - 3-milestone roadmap with estimated scope and go/no-go criteria per release
+    - API-first integration points documented (webhooks, OAuth2, REST)
+    depends_on:
+    - 2
+    - 3
+  FINANCIAL:
+    description: 'Build SaaS financial model: per-seat and usage-based pricing tiers
+      (Starter/Growth/Enterprise), CAC/LTV projections, infrastructure cost model
+      (compute, storage, WhatsApp API per-message fees), 36-month P&L, and break-even
+      analysis.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - 36-month P&L with 3 growth scenarios (base, bull, bear)
+    - Pricing tiers validated against competitor benchmarks from step 1
+    - Infrastructure cost per customer modeled at 3 scale points (100, 1k, 10k tickets/day)
+    - Break-even month identified per scenario
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+    - 4
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), Data
+      Processing Agreement (DPA) for enterprise customers, and WhatsApp Business API
+      acceptable-use compliance review. Define data retention and deletion SLAs.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS and Privacy Policy reviewed against GDPR Art. 13/14 disclosure requirements
+    - DPA template includes SCCs for EU data transfers
+    - WhatsApp AUP review confirms acceptable use for customer support workflows
+    - Data deletion endpoint and 30-day SLA documented in Privacy Policy
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on:
+    - 4
+  DATABASE:
+    description: 'Design multi-tenant PostgreSQL schema covering: tenants, users/roles,
+      tickets, ticket_events (audit log), messages, channels, knowledge_articles,
+      article_feedback, sla_policies, sla_breaches, tags, canned_responses, and ai_suggestion_log.
+      Include Alembic migration scripts and seed data.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD reviewed and approved, all FK constraints defined
+    - Alembic migration baseline runs clean on fresh PostgreSQL instance
+    - Full-text search index on knowledge_articles tested with 10k rows
+    - Row-level security policies implemented for tenant isolation
+    - Seed script populates demo tenant with 50 tickets, 20 KB articles
+    depends_on:
+    - 4
+  API:
+    description: 'Define OpenAPI 3.1 spec for all REST endpoints: auth (OAuth2/JWT),
+      tickets CRUD, messages, knowledge base CRUD, live chat WebSocket protocol, SLA
+      policies, channel configuration, webhook subscriptions, AI suggestion endpoints,
+      and analytics. Version all endpoints under /v1/.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec passes swagger-parser validation with 0 errors
+    - All endpoints documented with request/response schemas and error codes
+    - WebSocket protocol message types documented (connect, message, typing, close)
+    - Rate limiting headers documented on all endpoints
+    - Postman collection generated from spec with example requests
+    depends_on:
+    - 7
+  CONFIG:
+    description: 'Set up project configuration: monorepo structure (backend/frontend/infra),
+      environment variable schema (.env.example), Docker Compose for local dev (PostgreSQL,
+      Redis, Minio, MailHog), pre-commit hooks, ESLint/Black/Ruff linting, and coordinator
+      agentic pattern config for AI auto-response pipeline.'
+    agent_role: developer
+    acceptance_criteria:
+    - docker compose up starts all 7 services with health checks passing
+    - .env.example documents all required and optional env vars with descriptions
+    - Pre-commit hooks block commits with lint errors
+    - Coordinator agentic pattern config created at config/agents.yaml
+    - README dev-setup section enables new developer to reach running app in under
+      10 minutes
+    depends_on:
+    - 8
+  BACKEND:
+    description: 'Implement core ticket management service: create/read/update/close
+      tickets, assign to agents/teams, priority/status state machine (new->open->pending->on_hold->resolved->closed),
+      tagging, internal notes, file attachments (S3/Minio), ticket merging, bulk operations,
+      and full audit event log per ticket.'
+    agent_role: developer
+    acceptance_criteria:
+    - All ticket CRUD endpoints return correct HTTP status codes
+    - State machine rejects invalid transitions with 422 and descriptive reason
+    - File attachments upload to S3 and return signed URL within 2 seconds
+    - Audit event written to ticket_events for every state change with actor_id
+    - Bulk assign/close handles 100 tickets in single request under 500ms
+    depends_on:
+    - 9
+  AGENTIC:
+    description: Implement AI auto-response system using coordinator pattern. IntakeClassifierAgent
+      tags intent/sentiment/language. KBSearchAgent retrieves top-3 relevant articles
+      via pgvector semantic search. AutoResponseAgent drafts reply using LLM plus
+      KB context plus past resolutions. EscalationAgent decides auto-send vs agent-review
+      based on confidence threshold. Coordinator orchestrates per incoming ticket
+      or message.
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator pipeline completes intake to kb to response to escalation in under
+      3 seconds p95
+    - Auto-response sent without agent review only when confidence is >= 0.82
+    - All AI suggestions logged with confidence score and KB article IDs cited
+    - Escalation fires for tickets with confidence below threshold, assigns to queue
+    - Language detection routes non-English tickets to language-specific agent queues
+    - A/B test harness in place to compare AI response vs human response CSAT over
+      time
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+  FRONTEND:
+    description: 'Build agent inbox UI: unified ticket list with channel icons, priority/SLA
+      countdown indicator, assignment controls, filter/sort/search, bulk actions,
+      real-time updates via SSE, and split-pane ticket detail view with conversation
+      thread, internal notes tab, customer profile sidebar, and AI suggestion panel.'
+    agent_role: developer
+    acceptance_criteria:
+    - Inbox renders 200 tickets with virtual scrolling and no layout shift
+    - SLA countdown updates every 30 seconds without page refresh
+    - AI suggestion panel shows top suggestion with one-click accept, edit, or dismiss
+    - Bulk assign and close works for up to 50 selected tickets
+    - Split-pane layout works at 1280px+, collapses to single pane on mobile
+    depends_on:
+    - 15
+  SECURITY:
+    description: 'Conduct STRIDE threat model covering all six product pillars. Define
+      pentest plan for: auth bypass, tenant IDOR, WebSocket hijacking, file upload
+      malware, WhatsApp webhook spoofing, and AI prompt injection. Implement SBOM
+      via syft. Define secrets rotation policy.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model covers all 6 attack surfaces with implemented mitigations
+    - HMAC signature verification tested for all 4 inbound webhook endpoints
+    - File upload rejects executable MIME types and files over 25MB
+    - 'IDOR test: agent from tenant A gets 403 attempting to access tenant B tickets'
+    - Prompt injection test suite passes against AI suggestion endpoints
+    - SBOM generated via syft covering all runtime Python and Node.js dependencies
+    depends_on:
+    - 15
+  COMPLIANCE:
+    description: 'Produce SOC 2 Type II evidence artifacts: control mapping to CC6
+      (logical access), CC7 (system operations), CC8 (change management), CC9 (risk
+      mitigation). Generate audit log report, encryption-at-rest and in-transit evidence,
+      incident response plan, vendor risk assessments for WhatsApp/SendGrid/cloud
+      provider, and access review records.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Control matrix maps each SOC 2 CC criteria to an implemented technical or process
+      control
+    - Audit log demonstrates append-only immutability with hash chain verification
+    - Encryption evidence includes config screenshots and key management procedures
+    - Incident response plan includes RTO/RPO targets and named escalation contacts
+    - Vendor risk assessments completed for WhatsApp API, SendGrid, and primary cloud
+      provider
+    depends_on:
+    - 20
+  QA:
+    description: Write comprehensive QA test plan covering functional, regression,
+      performance, accessibility, cross-browser, and multi-tenant isolation testing.
+      Define test cases for all ticket state transitions, SLA calculations, channel
+      routing, AI suggestion accuracy, and data isolation. Set up Playwright E2E framework
+      with page object model.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all 40+ user stories with at least 1 test case each
+    - Playwright configured with page object model and GitHub Actions integration
+    - k6 load test script simulates 500 concurrent agents for 5 minutes
+    - axe-core accessibility scanner integrated into Playwright E2E suite
+    - Multi-tenant isolation test verifies cross-tenant access returns 403 in all
+      cases
+    depends_on:
+    - 19
+    - 20
+  TESTS:
+    description: 'Write backend unit and integration tests: pytest suite for ticket
+      state machine, SLA clock calculations, channel message parsers (email/WhatsApp/social),
+      AI coordinator pipeline, knowledge base search ranking, and all REST and WebSocket
+      endpoints. Target >=80% line coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest suite passes with 0 failures on CI
+    - '>=80% line coverage across all src/ backend modules'
+    - SLA calculator tests cover business-hours, holiday, and breach boundary edge
+      cases
+    - WhatsApp webhook parser tested with real payload fixtures from Meta documentation
+    - AI coordinator tested with mocked LLMGateway returning deterministic outputs
+    depends_on:
+    - 22
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suites using Playwright: full ticket
+      lifecycle per channel (email, WhatsApp, live chat), AI auto-response acceptance
+      rate, SLA breach notification timing, knowledge base widget search, and cross-tenant
+      data isolation. Run k6 load test at 500 concurrent agents for 5 minutes.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 7 Playwright E2E suites pass on staging with 0 failures
+    - 'k6 load test: p95 API response under 300ms, error rate 0% at 500 VUs'
+    - AI auto-response acceptance rate >=70% on test dataset of 100 labeled tickets
+    - 'Cross-tenant isolation: 0 data leaks across 50 adversarial test cases'
+    - SLA breach notification fires within 60 seconds of breach event in E2E test
+    depends_on:
+    - 23
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): lint to test to build to
+      push Docker images to deploy on Kubernetes (EKS) via Helm. Configure staging
+      and production environments with HPA for API and Celery worker pods, Prometheus
+      + Grafana + Loki observability, PagerDuty alerting on SLA spike/latency/error
+      rate, and blue/green deployment strategy.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline completes lint plus test plus build in under 8 minutes
+    - Blue/green deployment achieves zero downtime verified by continuous uptime probe
+    - HPA scales API pods from 2 to 8 automatically during k6 load test
+    - Grafana dashboard shows per-endpoint p50/p95/p99 latency
+    - PagerDuty alert fires within 2 minutes of simulated SLA breach rate spike
+    depends_on:
+    - 24
+  OPERATIONS:
+    description: 'Write operational runbooks: P0/P1/P2 incident response classification
+      and escalation, SLA breach escalation playbook, database backup and restore
+      procedures (RTO 4h / RPO 1h), WhatsApp API quota management, on-call rotation
+      setup in PagerDuty, and capacity planning model mapping tickets/day to pod counts.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - All 6 runbooks reviewed and approved by engineering lead
+    - DB restore procedure tested from backup with data verified complete
+    - Capacity model validated against k6 load test data
+    - DR failover to secondary region tested and completes within 4 hours
+    - On-call PagerDuty rotation configured with backup escalation path
+    depends_on:
+    - 25
+  LOCALIZATION:
+    description: Set up i18n infrastructure for agent dashboard and customer-facing
+      help center widget. Support en, es, fr, de, pt, ar (RTL). Use react-i18next
+      for frontend, i18next-parser for string extraction in CI, and Phrase or Lokalise
+      for translation management. Locale-aware date/time via date-fns-tz and number
+      formatting via Intl.NumberFormat.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All UI strings extracted to en.json with 0 hardcoded strings in JSX components
+    - Arabic RTL layout renders correctly with mirrored sidebar and correct chat bubble
+      alignment
+    - i18next-parser CI check fails build when new hardcoded strings are detected
+    - Date and time displays in agent local timezone with timezone selector in user
+      profile
+    - Help center widget respects visitor browser locale automatically
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 19
+  TRAINING:
+    description: 'Create user onboarding and training materials: in-app product tour
+      via Shepherd.js (8 stops), interactive agent quickstart guide, admin channel
+      setup guide for email and WhatsApp, YouTube walkthrough video script (5 minutes),
+      and AI auto-response confidence threshold tuning guide for team leads.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - In-app tour completes in under 3 minutes for new user with 0 dead-end steps
+    - Agent quickstart guide tested with 3 non-technical users who complete first
+      ticket unaided
+    - Admin channel setup guide covers email and WhatsApp end-to-end with screenshots
+    - Video script reviewed for technical accuracy against final shipped product
+    - AI tuning guide explains confidence threshold adjustment with before/after CSAT
+      examples
+    depends_on:
+    - 27
+  DOCS:
+    description: 'Write developer and operator documentation: API reference auto-generated
+      from OpenAPI spec via Redoc at /docs, webhook integration guide with payload
+      examples for all channels, Python and Node.js SDK quickstart guides, and ADRs
+      for multi-tenancy design, WebSocket/Redis pub-sub, and AI coordinator pattern.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference hosted at /docs and lists all endpoints with request/response
+      schemas
+    - Webhook guide includes curl examples for all 4 inbound webhook types
+    - Python SDK quickstart creates first ticket in under 20 lines of code
+    - All 3 ADRs document context, decision, and consequences sections
+    - CHANGELOG.md generated automatically in CI on every release tag
+    depends_on:
+    - 28
+  FIRMWARE:
+    description: 'Implement firmware for optional on-premise hardware gateway appliance
+      (ARM Cortex-A, CM4-based carrier board): embedded Linux init service, hardware
+      watchdog daemon, secure boot chain verification, network interface configuration
+      daemon, and OTA update agent with rollback on failure.'
+    agent_role: developer
+    acceptance_criteria:
+    - Firmware image boots and connects to cloud API within 90 seconds of power-on
+    - Watchdog daemon restarts API gateway process within 30 seconds of crash
+    - Secure boot rejects image with mismatched checksum and halts
+    - OTA update applies without data loss and rolls back automatically on boot failure
+    - Network config daemon applies both DHCP and static IP configurations correctly
+    depends_on:
+    - 9
+  HARDWARE_SIM:
+    description: Create QEMU-based simulation environment for the hardware gateway
+      appliance to enable firmware CI testing without physical hardware. Includes
+      simulated virtual Ethernet, watchdog peripheral, and NAND flash storage model.
+      CI runs firmware boot in Docker-wrapped QEMU on every commit to firmware/.
+    agent_role: developer
+    acceptance_criteria:
+    - QEMU boots firmware image headless in CI Docker container in under 60 seconds
+    - Simulated network interface passes ICMP ping test from host
+    - Watchdog timer simulation triggers reboot after 30 second timeout
+    - OTA update completes successfully within QEMU simulation environment
+    depends_on:
+    - 30
+  PCB_DESIGN:
+    description: 'Design PCB schematic and 4-layer layout for on-premise gateway carrier
+      board: CM4 connector, RTL8211F Gigabit Ethernet PHY, USB-C PD power, ATECC608B
+      secure element (I2C), DS3231 RTC, and status LEDs. Generate KiCad files, BOM
+      with supplier part numbers, and Gerber files passing DFM.'
+    agent_role: developer
+    acceptance_criteria:
+    - KiCad DRC passes with 0 errors and 0 unconnected nets
+    - BOM includes Mouser or Digikey part numbers for all components
+    - Gerber files pass JLCPCB DFM check online tool with no critical issues
+    - ATECC608B connected via I2C with correct pull-up resistor values
+    - Power budget confirms USB-C PD at 15W sufficient for all loads with 20% headroom
+    depends_on:
+    - 31
+  EMBEDDED_TEST:
+    description: 'Write Hardware-in-the-Loop (HIL) test specs and firmware unit tests
+      using Unity framework: watchdog behavior, OTA state machine, network config
+      daemon, secure boot chain, and API gateway connectivity. QEMU-based tests run
+      in CI on every commit; HIL tests on physical CM4 hardware run weekly.'
+    agent_role: developer
+    acceptance_criteria:
+    - Unity test suite builds and runs in QEMU CI with 0 failures
+    - '>=75% branch coverage on OTA update state machine via gcov'
+    - 'HIL test: physical CM4 connects to staging API and processes a test ticket
+      end-to-end'
+    - 'Watchdog HIL test: process kill triggers reboot within 30 seconds on physical
+      board'
+    - 'Secure boot HIL test: corrupted firmware image rejected and original boots
+      successfully'
+    depends_on:
+    - 31

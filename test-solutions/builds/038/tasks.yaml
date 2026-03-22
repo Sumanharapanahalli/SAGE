@@ -1,0 +1,291 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the appointment scheduling SaaS market: identify top competitors
+      (Calendly, Acuity, Cal.com), pricing benchmarks, feature gaps, and target segments
+      (SMB vs enterprise, industry verticals).'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covers at least 5 direct competitors
+    - Market sizing includes TAM/SAM/SOM estimates with sources
+    - Differentiators section identifies at least 3 defensible advantages
+    - Pricing benchmarks documented across all major tiers
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Define business requirements and user stories for all core personas:
+      host (scheduling owner), invitee (booker), team admin, and billing owner. Map
+      end-to-end booking flow, cancellation/rescheduling, and team availability logic.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories written for all 4 personas covering happy path and edge cases
+    - Process flow diagrams cover booking, cancellation, rescheduling, and team scheduling
+    - ROI analysis quantifies time-saved and no-show reduction metrics
+    - All stories have testable acceptance criteria
+    - Pricing tiers defined
+    - Churn risk factors identified
+    depends_on: []
+  FINANCIAL:
+    description: 'Build SaaS pricing model: freemium tier, individual pro, team, and
+      enterprise plans. Model unit economics (CAC, LTV, churn), payment processing
+      cost margins, and 24-month revenue projection.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - Pricing tiers clearly differentiated by feature set and user count
+    - Unit economics model includes CAC, LTV, payback period, and gross margin
+    - 24-month revenue projection covers 3 scenarios (conservative, base, optimistic)
+    - Payment processing fee margin analysis included for Stripe integration
+    - MRR/ARR projections modeled
+    - CAC and LTV estimated
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), Data
+      Processing Agreement (DPA) for enterprise customers, and cookie policy. Review
+      payment data handling obligations and CRM data sharing terms.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - ToS covers data ownership, liability limits, SLA commitments, and termination
+    - Privacy Policy addresses GDPR Article 13 disclosure requirements
+    - DPA template includes data sub-processor list and SCCs for EU transfers
+    - Cookie policy categorizes all cookies and provides opt-out mechanism
+    - Subscription terms cover cancellation and refunds
+    - Data processing agreement drafted
+    depends_on: []
+  UX_DESIGN:
+    description: 'Conduct user research (5-8 interviews with target personas), define
+      information architecture, and produce low-fidelity wireframes for: booking page,
+      host dashboard, team scheduling setup, and payment configuration flows.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - At least 5 user interviews conducted and synthesized into key insights
+    - Information architecture covers all primary user flows
+    - Wireframes cover all 6 core screens at lo-fi fidelity
+    - Accessibility audit against WCAG 2.1 AA checklist included
+    depends_on:
+    - 2
+  PRODUCT_MGMT:
+    description: Produce the Product Requirements Document (PRD) consolidating market
+      research, business requirements, and UX findings. Define MVP scope, v1.0 roadmap,
+      success metrics (activation rate, booking volume, churn), and prioritized backlog.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD defines clear in-scope vs out-of-scope for MVP
+    - Each roadmap item has owner, estimated effort, and success metric
+    - Backlog items prioritized using RICE or similar framework
+    - Success metrics are measurable and baselined
+    depends_on:
+    - 1
+    - 2
+    - 3
+    - 5
+  DATABASE:
+    description: 'Design relational database schema for scheduling_app: users, organizations,
+      event_types, availability_rules, bookings, payments, reminders, calendar_connections,
+      crm_integrations. Include indexes, constraints, and migration files.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all entities with cardinality annotations
+    - All foreign keys have indexes; unique constraints enforced on email+org
+    - Soft-delete pattern implemented for bookings and event types
+    - Migration files are idempotent and reversible
+    - Seed data includes representative fixtures for all entity types
+    depends_on:
+    - 6
+  API:
+    description: 'Design OpenAPI 3.1 spec for all scheduling_app endpoints: auth,
+      event types, availability, bookings, calendar sync, payments, reminders, team
+      management, CRM webhooks, and public booking API.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against 3.1 schema
+    - All endpoints have request/response schemas, error codes, and examples
+    - Pagination defined for all list endpoints
+    - Webhook payload schemas documented for calendar and CRM events
+    - Rate limiting headers documented in spec
+    depends_on:
+    - 6
+    - 8
+  CONFIG:
+    description: 'Bootstrap scheduling_app monorepo: Next.js 14 frontend, FastAPI
+      backend, PostgreSQL + Redis, Docker Compose for local dev, environment variable
+      schema, pre-commit hooks, and linting/formatting config.'
+    agent_role: developer
+    acceptance_criteria:
+    - '`docker-compose up` starts all services with health checks passing'
+    - .env.example documents all required environment variables with descriptions
+    - Pre-commit hooks run linting and type checks on staged files
+    - Frontend and backend both have hot-reload working in dev mode
+    - README includes first-run setup instructions
+    depends_on:
+    - 6
+  BACKEND:
+    description: 'Implement core scheduling engine: event type CRUD, availability
+      rule calculation (recurring windows, date overrides, buffer times, max daily
+      bookings), conflict detection, booking lifecycle (pending → confirmed → cancelled/rescheduled),
+      and timezone handling.'
+    agent_role: developer
+    acceptance_criteria:
+    - Availability engine correctly computes open slots across timezone boundaries
+    - Conflict detection prevents double-bookings under concurrent requests (tested
+      with load)
+    - Buffer time before/after events correctly removed from available slots
+    - Booking state machine enforces valid transitions only
+    - All functions have unit tests with >90% coverage
+    depends_on:
+    - 8
+    - 9
+    - 10
+  FRONTEND:
+    description: 'Build public booking page: embeddable iframe and hosted page. Shows
+      event type info, available time slots, timezone selector, invitee form, and
+      payment step. Must be SEO-friendly (SSR) and load under 2s on mobile.'
+    agent_role: developer
+    acceptance_criteria:
+    - Booking page renders correct slots in invitee's local timezone
+    - Payment step integrates Stripe Elements with 3DS support
+    - Page passes Core Web Vitals (LCP < 2.5s, CLS < 0.1, FID < 100ms)
+    - Iframe embed works without CORS issues and is responsive
+    - Confirmation page shows booking details and calendar add links (Google, iCal)
+    depends_on:
+    - 7
+    - 9
+    - 11
+  SECURITY:
+    description: 'Conduct security review: threat model for scheduling_app (STRIDE),
+      OWASP Top 10 assessment, OAuth token storage audit, Stripe PCI-DSS scope validation,
+      SQL injection and XSS scanning, and SOC 2 security control gap analysis.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Threat model covers all trust boundaries including calendar OAuth and Stripe
+      webhook
+    - All High/Critical OWASP findings have remediation plans
+    - OAuth tokens confirmed encrypted at rest (AES-256) and never logged
+    - Stripe integration confirmed SAQ-A scope (no raw card data touches servers)
+    - SOC 2 CC6 (logical access) control gaps documented with remediation owners
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  COMPLIANCE:
+    description: 'Produce SOC 2 Type I readiness artifacts: control matrix mapping
+      to Trust Services Criteria (CC, A, PI, C, P), policy documents (access control,
+      incident response, change management, vendor management), evidence collection
+      plan, and audit preparation checklist.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Control matrix maps every SOC 2 CC criterion to at least one implemented control
+    - All 5 policy documents reviewed and approved by designated owner
+    - Evidence collection plan identifies artifact type, owner, and collection cadence
+      per control
+    - Readiness assessment scores each criterion as implemented/partial/gap with remediation
+      plan
+    - No Critical gaps remain unaddressed in the readiness assessment
+    depends_on:
+    - 4
+    - 20
+  TESTS:
+    description: 'Write unit and integration tests for all backend modules: scheduling
+      engine (availability, conflict detection, timezone), calendar sync, payments
+      (with Stripe test mode), reminders, CRM integrations, and team scheduling logic.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Overall backend test coverage ≥85%
+    - Availability engine has parametrized tests covering DST transitions and edge
+      cases
+    - Stripe payment flow tested with test mode covering success, failure, and refund
+      paths
+    - Calendar sync tests use recorded VCR cassettes for Google and Outlook API calls
+    - All tests pass in CI with no flaky tests (verified over 5 consecutive runs)
+    depends_on:
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+  DEVOPS:
+    description: 'Set up CI/CD pipeline (GitHub Actions): lint/typecheck, unit tests,
+      integration tests, Docker build, staging deploy (Railway or Render), E2E tests
+      against staging, and production deploy gate with manual approval. Add Datadog
+      monitoring and PagerDuty alerting.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and completes in under 15 minutes
+    - Staging deploy is fully automated on merge to main
+    - Production deploy requires manual approval gate in GitHub Actions
+    - Datadog monitors p50/p95/p99 latency for /bookings and /availability endpoints
+    - PagerDuty alert fires within 5 minutes of availability endpoint error rate exceeding
+      1%
+    depends_on:
+    - 10
+    - 22
+    - 23
+  OPERATIONS:
+    description: Define SLA commitments, write operational runbooks for all critical
+      failure modes (calendar sync outage, Stripe webhook lag, reminder delivery failure,
+      DB failover), and set up incident response process with severity levels and
+      escalation paths.
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA document defines uptime calculation methodology and exclusions
+    - Each runbook includes detection, diagnosis, mitigation, and post-mortem steps
+    - Incident severity matrix maps symptoms to severity level (P0-P3) unambiguously
+    - Escalation path documented for each severity level with contact owners
+    - All runbooks linked from Datadog dashboard for on-call reference
+    depends_on:
+    - 24
+  DATA:
+    description: 'Build analytics data pipeline: capture booking events to an analytics
+      schema (booking funnel, drop-off points, revenue by event type, no-show rates).
+      Implement dashboard API endpoints and CSV export for host analytics reports.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - All 6 core metrics computed correctly against test dataset
+    - Analytics endpoints return data within 500ms for up to 10k bookings
+    - CSV export includes all booking fields and is importable to Excel/Sheets
+    - Materialized views refreshed on a schedule (hourly) without blocking booking
+      writes
+    - Funnel drop-off correctly attributes abandonment at each booking step
+    depends_on:
+    - 11
+    - 13
+    - 14
+  AGENTIC:
+    description: 'Implement AI-powered scheduling assistant using the coordinator
+      pattern: booking summary agent (summarizes invitee context from CRM before meeting),
+      smart availability optimizer (suggests optimal booking windows based on host
+      preferences + historical patterns), and no-show prediction agent (flags high-risk
+      bookings for proactive outreach).'
+    agent_role: developer
+    acceptance_criteria:
+    - Booking brief generated within 10s using CRM contact history and past booking
+      data
+    - Availability optimizer returns ranked slot suggestions with reasoning
+    - No-show predictor achieves >70% precision on historical test data
+    - Coordinator routes to correct specialist agent for each request type
+    - All agent outputs logged to audit trail with trace_id
+    depends_on:
+    - 15
+    - 16
+    - 26
+  DOCS:
+    description: 'Write developer documentation: API reference (auto-generated from
+      OpenAPI spec), integration guides (Google Calendar, Outlook, Stripe, HubSpot,
+      Salesforce), embed guide for booking page, webhook event catalog, and architecture
+      decision records (ADRs).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference auto-generated from OpenAPI spec with all examples rendered
+    - Each integration guide includes step-by-step OAuth setup with screenshots
+    - Webhook event catalog documents all event types with example payloads
+    - Embed guide includes iframe snippet, query parameter reference, and CSS override
+      docs
+    - At least 5 ADRs document key architectural decisions (DB choice, sync strategy,
+      payment scope)
+    depends_on:
+    - 9
+    - 12
+    - 13
+    - 15
+    - 17

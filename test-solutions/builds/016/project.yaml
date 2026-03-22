@@ -1,0 +1,63 @@
+project_name: insurance_claims_ai
+display_name: Insurance Claims Ai
+version: 1.0.0
+domain: fintech
+description: AI-powered insurance claims processing with damage photo analysis, fraud
+  detection, automated liability assessment, and settlement recommendation engine.
+detected_domains: []
+compliance_standards:
+- SOC 2
+- State Insurance Regulations
+- NAIC Model Laws
+task_types:
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- ML_MODEL
+- OPERATIONS
+- PRODUCT_MGMT
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

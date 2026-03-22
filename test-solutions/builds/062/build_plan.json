@@ -1,0 +1,768 @@
+{
+  "run_id": "4e2ae24d-4778-4495-a520-6873debe4adf",
+  "status": {
+    "run_id": "4e2ae24d-4778-4495-a520-6873debe4adf",
+    "solution_name": "voice_assistant",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T08:28:24.517024+00:00",
+    "updated_at": "2026-03-22T08:32:30.752455+00:00",
+    "product_description": "Custom voice assistant with wake word detection, ASR (speech-to-text), NLU intent classification, dialog management, and TTS response generation.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "CONFIG",
+        "description": "Scaffold the voice_assistant solution directory structure. Set up Python virtual environment, pyproject.toml with all dependencies (torch, torchaudio, whisper, transformers, pyttsx3/coqui-tts, fastapi, uvicorn, numpy, sounddevice, webrtcvad). Create config.yaml with model paths, sample rates, wake word threshold, ASR model name, NLU confidence threshold, TTS engine choice.",
+        "payload": {
+          "solution_name": "voice_assistant",
+          "directories": [
+            "models/wake_word",
+            "models/asr",
+            "models/nlu",
+            "models/tts",
+            "data/raw",
+            "data/processed",
+            "services/",
+            "tests/"
+          ],
+          "config_keys": [
+            "wake_word_threshold",
+            "sample_rate",
+            "asr_model",
+            "nlu_model",
+            "tts_engine",
+            "dialog_max_turns"
+          ]
+        },
+        "acceptance_criteria": [
+          "All directories created and present",
+          "`pip install -e .` completes without errors",
+          "config.yaml is schema-validated on load",
+          "`python -c 'import torch, whisper, transformers'` succeeds"
+        ],
+        "depends_on": [],
+        "agent_role": "developer"
+      },
+      {
+        "step": 2,
+        "task_type": "DATA",
+        "description": "Build wake word training data pipeline. Collect and augment positive samples (target wake word spoken in varied conditions) and negative samples (background speech, noise). Apply augmentations: speed perturbation, pitch shift, additive noise (SNR 0\u201320 dB), room impulse response convolution. Output 16 kHz mono WAV files with train/val/test splits and a manifest CSV.",
+        "payload": {
+          "wake_word": "hey sage",
+          "positive_samples_target": 2000,
+          "negative_samples_target": 10000,
+          "augmentations": [
+            "speed_perturbation",
+            "pitch_shift",
+            "additive_noise",
+            "rir_convolution"
+          ],
+          "output_format": "16kHz_mono_wav",
+          "split_ratios": {
+            "train": 0.8,
+            "val": 0.1,
+            "test": 0.1
+          }
+        },
+        "acceptance_criteria": [
+          "Manifest CSV exists with columns: file_path, label, split",
+          "All audio files are exactly 16 kHz mono",
+          "Class balance in training split is at most 1:6 (positive:negative)",
+          "Pipeline script is idempotent and reruns without duplicating data"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 3,
+        "task_type": "DATA",
+        "description": "Build NLU intent classification dataset. Define intent taxonomy (e.g., set_timer, play_music, get_weather, smart_home_control, general_qa, cancel). Collect or synthesize 500+ utterances per intent using paraphrasing. Produce entity annotation labels (slots: time, artist, city, device). Export to JSONL format with utterance, intent, and entities fields. Split 80/10/10.",
+        "payload": {
+          "intents": [
+            "set_timer",
+            "play_music",
+            "get_weather",
+            "smart_home_control",
+            "general_qa",
+            "cancel",
+            "volume_control"
+          ],
+          "min_utterances_per_intent": 500,
+          "entity_slots": [
+            "time_value",
+            "artist_name",
+            "location",
+            "device_name",
+            "duration"
+          ],
+          "output_format": "jsonl",
+          "annotation_tool": "label-studio or programmatic"
+        },
+        "acceptance_criteria": [
+          "JSONL files exist for train/val/test splits",
+          "Each intent has >= 400 training examples",
+          "Entity spans are validated as non-overlapping",
+          "Dataset stats report (intent distribution, avg utterance length) generated"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 4,
+        "task_type": "ML_MODEL",
+        "description": "Train wake word detection model. Use a lightweight CNN or MobileNet-V2 on 1-second log-mel spectrogram patches (64 mel bins, 25ms frame, 10ms hop). Train binary classifier (wake word vs. not). Optimize for low false-accept rate (<0.5/hr) and low false-reject rate (<5%). Export to ONNX for CPU inference. Target real-time factor < 0.05.",
+        "payload": {
+          "architecture": "MobileNetV2_spectrogram",
+          "input": "64_mel_bins_1sec_window",
+          "output": "binary_probability",
+          "target_false_accept_rate": 0.005,
+          "target_false_reject_rate": 0.05,
+          "export_format": "onnx",
+          "training_framework": "pytorch"
+        },
+        "acceptance_criteria": [
+          "Model ONNX file < 5 MB",
+          "False-accept rate <= 0.5 per hour on held-out test set",
+          "False-reject rate <= 5% on held-out test set",
+          "Training and evaluation script reproducible with fixed random seed",
+          "Model card documenting architecture, metrics, and limitations written",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 5,
+        "task_type": "ML_MODEL",
+        "description": "Integrate and fine-tune ASR model. Use OpenAI Whisper base.en as backbone. Fine-tune on domain-specific vocabulary (timer commands, music titles, weather queries) using LoRA adapters. Optimize for word error rate (WER) < 8% on domain test set. Export fine-tuned weights. Implement streaming transcription with voice activity detection (VAD) endpoint detection.",
+        "payload": {
+          "base_model": "openai/whisper-base.en",
+          "fine_tuning_method": "lora",
+          "target_wer": 0.08,
+          "vad_library": "webrtcvad",
+          "streaming": true,
+          "language": "en-US"
+        },
+        "acceptance_criteria": [
+          "WER <= 8% on domain test set",
+          "Transcription latency <= 500ms for 5-second utterance on CPU",
+          "VAD correctly segments speech from silence in >= 95% of test cases",
+          "LoRA adapter checkpoint saved and loadable independently of base model",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 6,
+        "task_type": "ML_MODEL",
+        "description": "Train NLU intent classifier with slot filling. Use a fine-tuned DistilBERT for joint intent classification and named entity recognition (NER). Train on the dataset from step 3. Target intent accuracy >= 92% and slot F1 >= 0.88. Export to ONNX. Implement confidence thresholding \u2014 intents below 0.6 confidence trigger clarification dialog.",
+        "payload": {
+          "base_model": "distilbert-base-uncased",
+          "tasks": [
+            "intent_classification",
+            "slot_filling_ner"
+          ],
+          "target_intent_accuracy": 0.92,
+          "target_slot_f1": 0.88,
+          "confidence_threshold": 0.6,
+          "export_format": "onnx",
+          "training_framework": "transformers"
+        },
+        "acceptance_criteria": [
+          "Intent classification accuracy >= 92% on test set",
+          "Slot F1 score >= 0.88 on test set",
+          "ONNX model exported and inference validated against PyTorch output",
+          "Confusion matrix and classification report generated",
+          "Inference latency <= 50ms per utterance on CPU",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 7,
+        "task_type": "ML_MODEL",
+        "description": "Integrate TTS model for response generation. Use Coqui TTS (VITS architecture) with a natural English voice. Implement SSML-like markup support for emphasis, pauses, and speed control. Cache frequently used phrases to disk. Target mean opinion score (MOS) >= 3.8 and synthesis latency <= 300ms for sentences up to 20 words.",
+        "payload": {
+          "tts_engine": "coqui-tts",
+          "model": "tts_models/en/ljspeech/vits",
+          "ssml_support": [
+            "emphasis",
+            "pause",
+            "speed"
+          ],
+          "phrase_cache": true,
+          "target_mos": 3.8,
+          "target_latency_ms": 300,
+          "output_format": "16kHz_wav"
+        },
+        "acceptance_criteria": [
+          "TTS produces intelligible speech for all test prompts",
+          "Synthesis latency <= 300ms for sentences <= 20 words",
+          "Phrase cache reduces latency by >= 50% for cached responses",
+          "SSML pause and speed tags applied correctly in output audio",
+          "Output audio is 16 kHz mono WAV",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Implement wake word detection service. Continuously reads audio from microphone in 1-second overlapping windows (50% hop). Runs ONNX inference on each window. On detection above threshold, emits a WAKE_WORD_DETECTED event on an asyncio queue and mutes further detections for 2 seconds (debounce). Exposes start()/stop() async context manager.",
+        "payload": {
+          "audio_input": "sounddevice_stream",
+          "window_size_ms": 1000,
+          "hop_size_ms": 500,
+          "model": "wake_word_model.onnx",
+          "event_bus": "asyncio_queue",
+          "debounce_seconds": 2
+        },
+        "acceptance_criteria": [
+          "Service starts and stops cleanly without leaked threads",
+          "WAKE_WORD_DETECTED event emitted within 750ms of wake word onset",
+          "No event emitted for non-wake-word speech in 60-second background test",
+          "CPU usage <= 5% during idle listening on a modern laptop"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "BACKEND",
+        "description": "Implement ASR service. On trigger from wake word event, opens a VAD-gated recording session: buffers audio until VAD detects end-of-speech (300ms silence) or 10-second timeout. Passes buffer to Whisper fine-tuned model. Returns TranscriptionResult(text, confidence, duration_ms). Implements async generator for streaming partial results.",
+        "payload": {
+          "trigger": "wake_word_event",
+          "vad_silence_threshold_ms": 300,
+          "max_recording_seconds": 10,
+          "model": "whisper_lora_finetuned",
+          "streaming_partials": true,
+          "result_type": "TranscriptionResult"
+        },
+        "acceptance_criteria": [
+          "Recording begins within 100ms of wake word event",
+          "End-of-speech detected correctly within +/-100ms of actual silence boundary",
+          "Transcription returned within 500ms of end-of-speech for <= 5 second utterances",
+          "10-second timeout triggers graceful cutoff and partial transcription",
+          "Streaming partial results update at least every 300ms"
+        ],
+        "depends_on": [
+          5,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Implement NLU service. Takes TranscriptionResult text, runs ONNX DistilBERT inference for intent + slots. Returns NLUResult(intent, confidence, slots: Dict[str, str], requires_clarification: bool). If confidence < threshold, sets requires_clarification=True and generates a clarification prompt. Implements entity normalization (e.g., 'five minutes' \u2192 300 seconds).",
+        "payload": {
+          "input": "TranscriptionResult",
+          "model": "nlu_distilbert.onnx",
+          "output_type": "NLUResult",
+          "entity_normalization": [
+            "time_to_seconds",
+            "volume_to_percent"
+          ],
+          "clarification_threshold": 0.6
+        },
+        "acceptance_criteria": [
+          "NLUResult returned within 50ms of input text",
+          "Entity normalization applied for all defined slot types",
+          "requires_clarification=True set when confidence < 0.6",
+          "NLUResult is fully serializable to JSON",
+          "Handles empty transcription input gracefully without crash"
+        ],
+        "depends_on": [
+          6,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "AGENTIC",
+        "description": "Implement dialog management engine using a Multi-Agent Sequential Pipeline pattern. DialogManager maintains conversation state (ConversationContext: history, current_intent, pending_slots, turn_count). Routes NLUResult to specialist handlers: ClarificationAgent (asks follow-up questions for missing slots), FulfillmentAgent (executes confirmed intents via tool calls), FallbackAgent (handles low-confidence or OOD inputs). Each agent uses ReAct loops. State persists across turns up to max_turns.",
+        "payload": {
+          "agentic_pattern": "multi_agent_sequential",
+          "agents": [
+            "ClarificationAgent",
+            "FulfillmentAgent",
+            "FallbackAgent"
+          ],
+          "state_schema": "ConversationContext",
+          "max_turns": 10,
+          "tools": [
+            "set_timer_tool",
+            "search_music_tool",
+            "get_weather_tool",
+            "smart_home_tool"
+          ],
+          "react_loops": true
+        },
+        "acceptance_criteria": [
+          "Dialog correctly routes to ClarificationAgent when required_slots are missing",
+          "FulfillmentAgent executes tool call and returns result within 1 second",
+          "Conversation context preserved across all turns up to max_turns",
+          "FallbackAgent triggered when intent confidence < 0.4",
+          "Dialog resets cleanly after cancel intent or max_turns exceeded",
+          "All agent transitions logged with trace_id for audit"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement TTS response service. Takes DialogResponse(text, ssml_markup) from dialog manager. Checks phrase cache first (SHA256 hash key). On cache miss, calls Coqui TTS VITS model. Streams audio chunks to output device via sounddevice. Implements interrupt handling: new wake word event during TTS playback stops playback immediately. Logs synthesis latency per response.",
+        "payload": {
+          "input": "DialogResponse",
+          "cache_strategy": "sha256_hash",
+          "tts_model": "coqui_vits",
+          "output": "sounddevice_stream",
+          "interrupt_on_wake_word": true,
+          "streaming_chunks_ms": 100
+        },
+        "acceptance_criteria": [
+          "Cached responses play within 50ms",
+          "Uncached responses begin playing within 300ms for short sentences",
+          "Wake word interrupt stops playback within 200ms",
+          "No audio artifacts (clicks, pops) at start/stop boundaries",
+          "Synthesis latency logged per response to structured log"
+        ],
+        "depends_on": [
+          7,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "API",
+        "description": "Design and implement REST + WebSocket API for the voice assistant. REST endpoints: POST /session/start, POST /session/end, GET /session/{id}/history, POST /intent/classify (text input for testing), GET /health. WebSocket endpoint: /ws/stream \u2014 streams audio in, streams back partial transcriptions and final DialogResponse. Define OpenAPI spec. Authenticate via API key header.",
+        "payload": {
+          "rest_endpoints": [
+            "POST /session/start",
+            "POST /session/end",
+            "GET /session/{id}/history",
+            "POST /intent/classify",
+            "GET /health"
+          ],
+          "websocket_endpoint": "/ws/stream",
+          "auth": "api_key_header",
+          "framework": "fastapi",
+          "openapi_spec": true
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec generated at /docs with all endpoints documented",
+          "WebSocket accepts binary audio frames at 16 kHz and returns JSON events",
+          "/health returns 200 with model load status for all 4 models",
+          "API key validation returns 401 for missing or invalid keys",
+          "All endpoints respond within SLA: REST < 100ms overhead, WS < 50ms per frame"
+        ],
+        "depends_on": [
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement main voice pipeline orchestrator. Wires all services into end-to-end async pipeline: WakeWordService \u2192 ASRService \u2192 NLUService \u2192 DialogManager \u2192 TTSService. Manages shared event bus (asyncio Queue). Implements pipeline health monitoring: restarts failed services with exponential backoff. Exposes pipeline state (idle/listening/transcribing/processing/speaking) via observable state machine.",
+        "payload": {
+          "pipeline_stages": [
+            "wake_word",
+            "asr",
+            "nlu",
+            "dialog",
+            "tts"
+          ],
+          "event_bus": "asyncio_queue",
+          "state_machine_states": [
+            "idle",
+            "listening",
+            "transcribing",
+            "processing",
+            "speaking"
+          ],
+          "health_monitoring": true,
+          "restart_policy": "exponential_backoff"
+        },
+        "acceptance_criteria": [
+          "Full pipeline end-to-end latency (wake word \u2192 first audio out) <= 2 seconds",
+          "State transitions logged with timestamps",
+          "Failed service restarted within 5 seconds with max 3 retries",
+          "Pipeline gracefully handles concurrent wake word events (debouncing)",
+          "State machine state readable via GET /health"
+        ],
+        "depends_on": [
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build a web-based demo interface for the voice assistant. Display: real-time waveform visualizer (Web Audio API), pipeline state indicator (idle/listening/transcribing/speaking with color coding), live transcription display with confidence score, intent + slots panel showing parsed NLUResult, conversation history scroll panel, manual text input for testing NLU without microphone. Connect via WebSocket to /ws/stream.",
+        "payload": {
+          "framework": "react_typescript",
+          "components": [
+            "WaveformVisualizer",
+            "PipelineStateIndicator",
+            "TranscriptionDisplay",
+            "IntentPanel",
+            "ConversationHistory",
+            "TextInputFallback"
+          ],
+          "connection": "websocket_ws_stream",
+          "design": "dark_theme_minimal"
+        },
+        "acceptance_criteria": [
+          "Waveform updates in real time (<50ms lag) when microphone is active",
+          "Pipeline state indicator changes color within 100ms of state change",
+          "Transcription text appears incrementally as partials arrive",
+          "Intent and slots panel updates on each NLUResult event",
+          "Conversation history scrollable and persists for session duration",
+          "Text input mode works without microphone access"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "INFRA",
+        "description": "Containerize all components with Docker. Write multi-stage Dockerfile: builder stage installs deps and downloads models, runtime stage copies artifacts. Write docker-compose.yaml with services: voice-assistant-api (FastAPI + pipeline), voice-assistant-ui (nginx serving React build). Add model download script that pulls ONNX and TTS model files on first run. Write GitHub Actions CI pipeline: lint, unit tests, Docker build.",
+        "payload": {
+          "dockerfile_stages": [
+            "builder",
+            "runtime"
+          ],
+          "services": [
+            "voice-assistant-api",
+            "voice-assistant-ui"
+          ],
+          "model_download": "entrypoint_script",
+          "ci_pipeline": "github_actions",
+          "ci_steps": [
+            "lint_ruff",
+            "pytest_unit",
+            "docker_build"
+          ]
+        },
+        "acceptance_criteria": [
+          "`docker-compose up` starts all services successfully from cold state",
+          "Models downloaded automatically on first run without manual steps",
+          "Docker image size <= 4 GB including all models",
+          "GitHub Actions CI pipeline passes on clean branch",
+          "Container restarts automatically on crash (restart: unless-stopped)"
+        ],
+        "depends_on": [
+          14,
+          15
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "TESTS",
+        "description": "Write unit tests for all backend services. Test WakeWordService with synthetic audio fixtures (positive and negative). Test ASRService with pre-recorded WAV files and mock VAD. Test NLUService with fixture utterances covering all intents and edge cases (empty string, very long input, non-English). Test DialogManager state transitions and slot filling logic. Test TTSService cache hit/miss behavior. Achieve >= 85% line coverage.",
+        "payload": {
+          "framework": "pytest",
+          "test_targets": [
+            "WakeWordService",
+            "ASRService",
+            "NLUService",
+            "DialogManager",
+            "TTSService"
+          ],
+          "fixtures": "audio_wav_fixtures",
+          "mocking": [
+            "VAD",
+            "ONNX_inference",
+            "sounddevice"
+          ],
+          "coverage_target": 0.85
+        },
+        "acceptance_criteria": [
+          "All unit tests pass with `pytest tests/unit/`",
+          "Line coverage >= 85% reported by pytest-cov",
+          "Wake word tests cover: true positive, true negative, debounce",
+          "NLU tests cover: all intents, low confidence path, entity normalization",
+          "Dialog tests cover: clarification loop, fulfillment, fallback, max turns reset",
+          "No test depends on network or microphone hardware"
+        ],
+        "depends_on": [
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "TESTS",
+        "description": "Write integration tests for the full voice pipeline. Record 20 scripted end-to-end audio scenarios (5 intents \u00d7 4 phrasings each). Inject audio through the pipeline and assert correct final DialogResponse and TTS output. Test WebSocket API with a Python asyncio test client. Test interrupt handling (wake word during TTS). Test session management across multiple turns. Run in CI against containerized backend.",
+        "payload": {
+          "test_scenarios": 20,
+          "scenario_coverage": [
+            "5_intents_x_4_phrasings",
+            "interrupt_handling",
+            "multi_turn_dialog",
+            "low_confidence_clarification"
+          ],
+          "test_client": "python_asyncio_websocket",
+          "run_target": "docker_compose_test_profile",
+          "assertion_targets": [
+            "DialogResponse.intent",
+            "DialogResponse.text",
+            "tts_audio_length"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 20 scripted scenarios produce correct intent classification",
+          "End-to-end latency <= 2 seconds for all scenarios in CI",
+          "Interrupt handling test: TTS stops within 200ms in >= 95% of runs",
+          "Multi-turn clarification resolves to correct fulfillment in all test cases",
+          "Integration tests run fully within Docker without host microphone"
+        ],
+        "depends_on": [
+          14,
+          17
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 19,
+        "task_type": "SECURITY",
+        "description": "Perform security review of the voice assistant. Threat model: unauthorized microphone access, API key exposure, WebSocket injection, audio data retention risks. Implement: API key rotation mechanism, TLS for all WebSocket connections, audio buffer zeroization after processing, rate limiting on /ws/stream (max 5 concurrent sessions), input sanitization on text endpoints to prevent prompt injection into NLU. Document SBOM.",
+        "payload": {
+          "threat_model_areas": [
+            "microphone_access",
+            "api_key_exposure",
+            "websocket_injection",
+            "audio_data_retention"
+          ],
+          "mitigations": [
+            "api_key_rotation",
+            "tls_websocket",
+            "audio_buffer_zeroization",
+            "rate_limiting",
+            "input_sanitization"
+          ],
+          "sbom_format": "cyclonedx",
+          "max_concurrent_ws_sessions": 5
+        },
+        "acceptance_criteria": [
+          "All WebSocket connections require TLS in production config",
+          "Audio buffers explicitly zeroed after ASR processing (verified by unit test)",
+          "Rate limiter rejects 6th concurrent WebSocket session with 429",
+          "Input sanitization strips control characters from text endpoint inputs",
+          "SBOM generated in CycloneDX format listing all Python dependencies"
+        ],
+        "depends_on": [
+          13,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "DOCS",
+        "description": "Write comprehensive documentation. README.md: quick start (docker-compose up), architecture diagram (ASCII or Mermaid), model provenance table, configuration reference. API docs: auto-generated from OpenAPI spec + WebSocket event schema documented manually. Model cards for all 4 models (wake word, ASR, NLU, TTS): training data, metrics, known limitations. Deployment guide: CPU vs GPU config, cloud deployment on AWS EC2.",
+        "payload": {
+          "docs": [
+            "README.md",
+            "ARCHITECTURE.md",
+            "API_REFERENCE.md",
+            "model_cards/wake_word.md",
+            "model_cards/asr.md",
+            "model_cards/nlu.md",
+            "model_cards/tts.md",
+            "DEPLOYMENT.md"
+          ],
+          "diagrams": "mermaid",
+          "api_docs_source": "openapi_spec"
+        },
+        "acceptance_criteria": [
+          "README quick start produces a running system in <= 5 commands",
+          "Architecture diagram shows all 5 pipeline stages and data flow",
+          "All 4 model cards include: training data source, evaluation metrics, known failure modes",
+          "API reference documents all REST endpoints and WebSocket event schema",
+          "Deployment guide covers both CPU-only and GPU-enabled configurations"
+        ],
+        "depends_on": [
+          16,
+          18,
+          19
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 20,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 52,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 52,
+          "final_review": {
+            "score": 52,
+            "flaws": [
+              "Acoustic Echo Cancellation (AEC) is completely absent. When TTS plays through speakers, the microphone will pick it up and continuously re-trigger the wake word detector. This is a fundamental signal processing requirement for any voice assistant with co-located mic+speaker \u2014 not an edge case. Without AEC (or at minimum ducking + gating), the system will loop endlessly on its own output. This is a showstopper.",
+              "Docker audio access is not addressed. Step 16 containerizes everything, but sounddevice requires direct hardware audio (ALSA/PulseAudio on Linux). Containers have no microphone/speaker access without explicit device passthrough (--device /dev/snd, plus PulseAudio socket mounting or PipeWire bridging). The docker-compose.yaml will not work on cold state without this, directly contradicting the Step 16 acceptance criteria.",
+              "End-to-end 2-second latency target (Step 14) is unrealistic on CPU. Whisper base.en alone takes 3-8x real-time on CPU for a 5-second utterance (i.e., 15-40 seconds). Adding Coqui VITS synthesis (notoriously slow on CPU, often 5-15x real-time), DistilBERT inference, and audio buffering, the real figure on a modern laptop is closer to 8-20 seconds. The plan has no GPU dependency or hardware qualification \u2014 it cannot hit 2 seconds on CPU with this model stack.",
+              "Step 11 'ReAct loops' on top of ONNX DistilBERT is architecturally incoherent. ReAct requires an autoregressive LLM capable of chain-of-thought reasoning and dynamic tool invocation. DistilBERT is an encoder-only classification model that outputs a probability vector \u2014 it cannot loop, reason, or call tools. The entire agentic layer (ClarificationAgent, FulfillmentAgent, FallbackAgent) would require a separate generative LLM (e.g., Llama, GPT, Claude), which is never mentioned in the plan.",
+              "False accept rate definition contradicts itself. Step 4 description says '< 0.5 per hour' but the payload says target_false_accept_rate: 0.005 (dimensionless). These are incompatible units. A 0.5/hr FAR on a 1-second sliding window with 50% hop equates to roughly 0.5/(3600 * 2) \u2248 0.0000694 per window \u2014 completely different from 0.005. The acceptance criteria will pass or fail based on which interpretation QA uses.",
+              "No ASR fine-tuning data collection step exists. Step 5 fine-tunes Whisper on domain-specific vocabulary but depends only on Step 1 (setup). There is no data pipeline step for collecting or generating labeled transcribed audio for ASR fine-tuning. The NLU text corpus (Step 3) cannot substitute \u2014 Whisper needs audio+transcript pairs, not text JSONL.",
+              "Tool implementations for FulfillmentAgent are never built. Steps 11 and 14 reference set_timer_tool, search_music_tool, get_weather_tool, and smart_home_tool as callable, but no step anywhere in the plan implements these. No API integrations, no stub implementations, no acceptance criteria around tool execution. The FulfillmentAgent will have no working fulfillment path.",
+              "MOS evaluation requires human listeners and is operationally undefined. Step 7 targets MOS >= 3.8 but Mean Opinion Score requires human raters (ITU-T P.800 protocol). No evaluation protocol, rater pool, or automated proxy (UTMOS, MOSNet) is mentioned. The acceptance criteria 'TTS produces intelligible speech' is not a MOS test \u2014 it's a subjective binary pass.",
+              "Python-level audio buffer zeroization cannot be reliably verified by unit test. Step 19 requires 'audio buffers explicitly zeroed after ASR processing (verified by unit test)'. Python's GC manages memory; numpy arrays and bytes objects cannot be reliably wiped in pure Python without ctypes/mmap tricks. A unit test asserting the array is zeros after del() is not evidence of actual memory zeroization \u2014 it just checks the reference was cleared.",
+              "Wake word positive sample sourcing is unspecified. Step 2 requires 2000 positive samples of 'hey sage' spoken in varied conditions. It says 'collect and augment' but no collection methodology, speaker pool, consent process, or recording setup is defined. This is months of data collection work glossed over in one line. TTS synthesis of the wake word (a standard bootstrapping technique) is never mentioned.",
+              "Phrase cache contradicts audio data retention security goal. Step 12 caches TTS audio to disk keyed by SHA256 of the text. Step 19 says audio buffers must be zeroed after processing. The phrase cache is persistent audio storage on disk \u2014 these two requirements directly conflict. The cache must be in-scope for the retention threat model but is excluded.",
+              "Streaming partial transcription from Whisper is non-trivial and understated. Step 9 requires 'streaming partial results update at least every 300ms' from Whisper. Standard Whisper is batch-only. Achieving this requires either Distil-Whisper-streaming, chunked inference with beam search continuation, or a third-party streaming wrapper \u2014 none of which are mentioned. Chunked inference significantly degrades WER."
+            ],
+            "suggestions": [
+              "Add an AEC/signal processing step before Step 8. Use WebRTC's built-in AEC (available via the webrtcvad package ecosystem or py-webrtc-audio-processing) or implement TTS-gated microphone muting: physically block microphone input while sounddevice is playing TTS output. The latter is simpler for MVP.",
+              "Replace the Docker audio approach with a hybrid deployment: containerize the API and NLU/ASR inference, but run the audio capture/playback pipeline as a native service on the host that communicates with the container over localhost WebSocket. Document this split clearly in the deployment guide.",
+              "Revise latency targets to be hardware-conditional. State explicitly: 'GPU (CUDA) target: 2s, CPU-only target: 8s.' Use faster models for CPU-only path: Whisper tiny.en (3x faster than base.en), Piper TTS instead of Coqui VITS (10-50x faster on CPU), and profile before committing to numbers.",
+              "Replace the ReAct/multi-agent dialog layer with a simpler finite state machine for MVP. A state machine with states (slot_filling, confirming, executing, fallback) driven by NLUResult fields is implementable, testable, and correct. Add an LLM-backed agent layer in a future iteration once the FSM is proven.",
+              "Add Step 2b: ASR fine-tuning data collection. Generate 500-1000 audio+transcript pairs using TTS synthesis of the NLU utterances from Step 3, record 100+ real-user utterances of common commands, and supplement with Mozilla Common Voice domain-filtered subsets.",
+              "Reduce tool scope for MVP. Implement only set_timer_tool (no external API needed, just a local countdown) and get_weather_tool (single OpenWeatherMap API call). Mark search_music_tool and smart_home_tool as stubs that return a canned FulfillmentResponse. This unblocks Step 11 testing without months of integration work.",
+              "Define MOS evaluation concretely or replace with automated proxy. Use UTMOS (a neural MOS predictor) as the automated CI check, targeting a UTMOS score > 3.5. Reserve human MOS evaluation for a quarterly benchmark, not a per-build acceptance criterion.",
+              "Add Step 2c: wake word bootstrap via TTS synthesis. Use a high-quality TTS model to synthesize 'hey sage' in 20+ voice styles, then augment. This is the industry-standard technique for cold-start wake word training and reduces real-recording burden to 200-300 samples for speaker diversity fine-tuning."
+            ],
+            "missing": [
+              "Acoustic Echo Cancellation (AEC) \u2014 no step, no library, no design. Required before any end-to-end test is meaningful.",
+              "Docker audio device passthrough strategy \u2014 --device flags, PulseAudio/PipeWire socket mounting, or host-network audio proxy pattern.",
+              "Tool implementation steps \u2014 set_timer_tool, get_weather_tool, search_music_tool, smart_home_tool need actual implementation steps, API keys, and acceptance criteria.",
+              "ASR fine-tuning dataset creation \u2014 Step 5 has no data dependency despite requiring domain audio+transcript pairs.",
+              "Model warm-up / startup time budget \u2014 loading 4 models (Whisper, DistilBERT, VITS, wake word ONNX) into RAM takes 30-90 seconds. No /health readiness probe or startup sequencing is defined.",
+              "Memory footprint analysis \u2014 PyTorch + 4 models simultaneously in RAM. Whisper base (~145MB), DistilBERT (~260MB), Coqui VITS (~150MB), PyTorch runtime (~1.5GB). Total ~2.5GB RAM floor on CPU. Never mentioned.",
+              "Wake word negative sample sourcing \u2014 Step 2 needs 10,000 negative samples. Where do these come from? LibriSpeech? ESC-50? MUSAN? Not specified.",
+              "GPU/CPU deployment flag \u2014 the entire model stack changes behavior (and meets/fails latency targets) depending on hardware. No mechanism to switch between CPU/GPU inference paths.",
+              "Noise robustness and far-field testing plan \u2014 wake word performance at 3 meters, SNR -5dB, with TV background is never tested. The Step 4 acceptance criteria only tests 'held-out test set' which is likely close-mic clean audio.",
+              "Session state persistence backing store \u2014 Step 11 ConversationContext 'persists across turns' but storage medium (in-memory dict, Redis, SQLite) is never specified. Service restart loses all sessions silently.",
+              "License compliance review \u2014 Coqui TTS has a custom license with attribution requirements; Whisper is MIT but fine-tuned derivatives may have distribution constraints. No legal review step."
+            ],
+            "security_risks": [
+              "API key in plain HTTP header is logged by every reverse proxy, load balancer, and CDN by default. Production deployments will leak keys to access logs. Mitigate with short-lived JWT tokens or HMAC-signed requests, not static keys in X-API-Key headers.",
+              "The phrase cache (Step 12, SHA256 keyed) creates permanent audio files on disk containing synthesized speech of every unique response text. If the system is used with sensitive queries (medical info, personal data), these cached WAV files are unencrypted PII at rest. Step 19's audio zeroization applies to in-memory buffers only \u2014 the cache is excluded.",
+              "Step 19 frames 'prompt injection into NLU' as the threat, but the NLU model is ONNX DistilBERT \u2014 prompt injection is not a valid threat for a classifier. The actual adversarial threat is classifier evasion: crafted utterances that get misclassified into high-confidence wrong intents (e.g., triggering smart_home_tool with a sentence that looks like a weather query). This is unaddressed.",
+              "WebSocket endpoint /ws/stream accepts binary audio frames \u2014 no mention of maximum frame size limits. A client can stream arbitrarily large audio buffers, causing unbounded memory accumulation. The 10-second VAD timeout in Step 9 mitigates this at the application layer but not at the WebSocket protocol layer.",
+              "Model files downloaded by entrypoint script (Step 16) have no integrity verification. A compromised download source or MITM on the model download could substitute malicious ONNX files. ONNX runtime has a history of CVEs around malformed model parsing. SHA256 checksums for all model artifacts must be pinned in the download script.",
+              "Microphone access in a browser context (Step 15 Web UI) requires HTTPS. The plan deploys over HTTP in docker-compose with no TLS termination step. Chrome and Firefox block navigator.mediaDevices.getUserMedia() on non-localhost HTTP origins, breaking the entire frontend without HTTPS."
+            ],
+            "summary": "This plan covers the full pipeline surface area and shows genuine ML/systems depth \u2014 the per-stage latency targets, ONNX export strategy, VAD-gated recording, and confidence-threshold clarification design are all sound. However, it has at least three showstopper-class omissions that will halt implementation before integration testing: (1) no Acoustic Echo Cancellation, which means the deployed system will loop on its own voice; (2) Docker audio passthrough is unaddressed, meaning the containerized acceptance criteria is physically unrunnable; and (3) the 2-second end-to-end latency target is impossible on CPU with Whisper base + Coqui VITS \u2014 the plan will need either a GPU requirement or a model downgrade. Additionally, the dialog layer's ReAct/multi-agent framing is architecturally confused \u2014 encoding models cannot perform reasoning loops \u2014 and the tool implementations are entirely missing. For an MVP, this scores 52: the individual component designs are reasonable, but the integration seams (audio hardware, real latency, generative dialog, tooling) have fundamental gaps that will consume significantly more time than the plan implies. A revised plan that drops the agentic dialog layer to a simple FSM, acknowledges GPU as a hard requirement for the latency targets, adds AEC, and specifies the Docker audio strategy would be credible at 68-72.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 52,
+              "flaws": [
+                "Acoustic Echo Cancellation (AEC) is completely absent. When TTS plays through speakers, the microphone will pick it up and continuously re-trigger the wake word detector. This is a fundamental signal processing requirement for any voice assistant with co-located mic+speaker \u2014 not an edge case. Without AEC (or at minimum ducking + gating), the system will loop endlessly on its own output. This is a showstopper.",
+                "Docker audio access is not addressed. Step 16 containerizes everything, but sounddevice requires direct hardware audio (ALSA/PulseAudio on Linux). Containers have no microphone/speaker access without explicit device passthrough (--device /dev/snd, plus PulseAudio socket mounting or PipeWire bridging). The docker-compose.yaml will not work on cold state without this, directly contradicting the Step 16 acceptance criteria.",
+                "End-to-end 2-second latency target (Step 14) is unrealistic on CPU. Whisper base.en alone takes 3-8x real-time on CPU for a 5-second utterance (i.e., 15-40 seconds). Adding Coqui VITS synthesis (notoriously slow on CPU, often 5-15x real-time), DistilBERT inference, and audio buffering, the real figure on a modern laptop is closer to 8-20 seconds. The plan has no GPU dependency or hardware qualification \u2014 it cannot hit 2 seconds on CPU with this model stack.",
+                "Step 11 'ReAct loops' on top of ONNX DistilBERT is architecturally incoherent. ReAct requires an autoregressive LLM capable of chain-of-thought reasoning and dynamic tool invocation. DistilBERT is an encoder-only classification model that outputs a probability vector \u2014 it cannot loop, reason, or call tools. The entire agentic layer (ClarificationAgent, FulfillmentAgent, FallbackAgent) would require a separate generative LLM (e.g., Llama, GPT, Claude), which is never mentioned in the plan.",
+                "False accept rate definition contradicts itself. Step 4 description says '< 0.5 per hour' but the payload says target_false_accept_rate: 0.005 (dimensionless). These are incompatible units. A 0.5/hr FAR on a 1-second sliding window with 50% hop equates to roughly 0.5/(3600 * 2) \u2248 0.0000694 per window \u2014 completely different from 0.005. The acceptance criteria will pass or fail based on which interpretation QA uses.",
+                "No ASR fine-tuning data collection step exists. Step 5 fine-tunes Whisper on domain-specific vocabulary but depends only on Step 1 (setup). There is no data pipeline step for collecting or generating labeled transcribed audio for ASR fine-tuning. The NLU text corpus (Step 3) cannot substitute \u2014 Whisper needs audio+transcript pairs, not text JSONL.",
+                "Tool implementations for FulfillmentAgent are never built. Steps 11 and 14 reference set_timer_tool, search_music_tool, get_weather_tool, and smart_home_tool as callable, but no step anywhere in the plan implements these. No API integrations, no stub implementations, no acceptance criteria around tool execution. The FulfillmentAgent will have no working fulfillment path.",
+                "MOS evaluation requires human listeners and is operationally undefined. Step 7 targets MOS >= 3.8 but Mean Opinion Score requires human raters (ITU-T P.800 protocol). No evaluation protocol, rater pool, or automated proxy (UTMOS, MOSNet) is mentioned. The acceptance criteria 'TTS produces intelligible speech' is not a MOS test \u2014 it's a subjective binary pass.",
+                "Python-level audio buffer zeroization cannot be reliably verified by unit test. Step 19 requires 'audio buffers explicitly zeroed after ASR processing (verified by unit test)'. Python's GC manages memory; numpy arrays and bytes objects cannot be reliably wiped in pure Python without ctypes/mmap tricks. A unit test asserting the array is zeros after del() is not evidence of actual memory zeroization \u2014 it just checks the reference was cleared.",
+                "Wake word positive sample sourcing is unspecified. Step 2 requires 2000 positive samples of 'hey sage' spoken in varied conditions. It says 'collect and augment' but no collection methodology, speaker pool, consent process, or recording setup is defined. This is months of data collection work glossed over in one line. TTS synthesis of the wake word (a standard bootstrapping technique) is never mentioned.",
+                "Phrase cache contradicts audio data retention security goal. Step 12 caches TTS audio to disk keyed by SHA256 of the text. Step 19 says audio buffers must be zeroed after processing. The phrase cache is persistent audio storage on disk \u2014 these two requirements directly conflict. The cache must be in-scope for the retention threat model but is excluded.",
+                "Streaming partial transcription from Whisper is non-trivial and understated. Step 9 requires 'streaming partial results update at least every 300ms' from Whisper. Standard Whisper is batch-only. Achieving this requires either Distil-Whisper-streaming, chunked inference with beam search continuation, or a third-party streaming wrapper \u2014 none of which are mentioned. Chunked inference significantly degrades WER."
+              ],
+              "suggestions": [
+                "Add an AEC/signal processing step before Step 8. Use WebRTC's built-in AEC (available via the webrtcvad package ecosystem or py-webrtc-audio-processing) or implement TTS-gated microphone muting: physically block microphone input while sounddevice is playing TTS output. The latter is simpler for MVP.",
+                "Replace the Docker audio approach with a hybrid deployment: containerize the API and NLU/ASR inference, but run the audio capture/playback pipeline as a native service on the host that communicates with the container over localhost WebSocket. Document this split clearly in the deployment guide.",
+                "Revise latency targets to be hardware-conditional. State explicitly: 'GPU (CUDA) target: 2s, CPU-only target: 8s.' Use faster models for CPU-only path: Whisper tiny.en (3x faster than base.en), Piper TTS instead of Coqui VITS (10-50x faster on CPU), and profile before committing to numbers.",
+                "Replace the ReAct/multi-agent dialog layer with a simpler finite state machine for MVP. A state machine with states (slot_filling, confirming, executing, fallback) driven by NLUResult fields is implementable, testable, and correct. Add an LLM-backed agent layer in a future iteration once the FSM is proven.",
+                "Add Step 2b: ASR fine-tuning data collection. Generate 500-1000 audio+transcript pairs using TTS synthesis of the NLU utterances from Step 3, record 100+ real-user utterances of common commands, and supplement with Mozilla Common Voice domain-filtered subsets.",
+                "Reduce tool scope for MVP. Implement only set_timer_tool (no external API needed, just a local countdown) and get_weather_tool (single OpenWeatherMap API call). Mark search_music_tool and smart_home_tool as stubs that return a canned FulfillmentResponse. This unblocks Step 11 testing without months of integration work.",
+                "Define MOS evaluation concretely or replace with automated proxy. Use UTMOS (a neural MOS predictor) as the automated CI check, targeting a UTMOS score > 3.5. Reserve human MOS evaluation for a quarterly benchmark, not a per-build acceptance criterion.",
+                "Add Step 2c: wake word bootstrap via TTS synthesis. Use a high-quality TTS model to synthesize 'hey sage' in 20+ voice styles, then augment. This is the industry-standard technique for cold-start wake word training and reduces real-recording burden to 200-300 samples for speaker diversity fine-tuning."
+              ],
+              "missing": [
+                "Acoustic Echo Cancellation (AEC) \u2014 no step, no library, no design. Required before any end-to-end test is meaningful.",
+                "Docker audio device passthrough strategy \u2014 --device flags, PulseAudio/PipeWire socket mounting, or host-network audio proxy pattern.",
+                "Tool implementation steps \u2014 set_timer_tool, get_weather_tool, search_music_tool, smart_home_tool need actual implementation steps, API keys, and acceptance criteria.",
+                "ASR fine-tuning dataset creation \u2014 Step 5 has no data dependency despite requiring domain audio+transcript pairs.",
+                "Model warm-up / startup time budget \u2014 loading 4 models (Whisper, DistilBERT, VITS, wake word ONNX) into RAM takes 30-90 seconds. No /health readiness probe or startup sequencing is defined.",
+                "Memory footprint analysis \u2014 PyTorch + 4 models simultaneously in RAM. Whisper base (~145MB), DistilBERT (~260MB), Coqui VITS (~150MB), PyTorch runtime (~1.5GB). Total ~2.5GB RAM floor on CPU. Never mentioned.",
+                "Wake word negative sample sourcing \u2014 Step 2 needs 10,000 negative samples. Where do these come from? LibriSpeech? ESC-50? MUSAN? Not specified.",
+                "GPU/CPU deployment flag \u2014 the entire model stack changes behavior (and meets/fails latency targets) depending on hardware. No mechanism to switch between CPU/GPU inference paths.",
+                "Noise robustness and far-field testing plan \u2014 wake word performance at 3 meters, SNR -5dB, with TV background is never tested. The Step 4 acceptance criteria only tests 'held-out test set' which is likely close-mic clean audio.",
+                "Session state persistence backing store \u2014 Step 11 ConversationContext 'persists across turns' but storage medium (in-memory dict, Redis, SQLite) is never specified. Service restart loses all sessions silently.",
+                "License compliance review \u2014 Coqui TTS has a custom license with attribution requirements; Whisper is MIT but fine-tuned derivatives may have distribution constraints. No legal review step."
+              ],
+              "security_risks": [
+                "API key in plain HTTP header is logged by every reverse proxy, load balancer, and CDN by default. Production deployments will leak keys to access logs. Mitigate with short-lived JWT tokens or HMAC-signed requests, not static keys in X-API-Key headers.",
+                "The phrase cache (Step 12, SHA256 keyed) creates permanent audio files on disk containing synthesized speech of every unique response text. If the system is used with sensitive queries (medical info, personal data), these cached WAV files are unencrypted PII at rest. Step 19's audio zeroization applies to in-memory buffers only \u2014 the cache is excluded.",
+                "Step 19 frames 'prompt injection into NLU' as the threat, but the NLU model is ONNX DistilBERT \u2014 prompt injection is not a valid threat for a classifier. The actual adversarial threat is classifier evasion: crafted utterances that get misclassified into high-confidence wrong intents (e.g., triggering smart_home_tool with a sentence that looks like a weather query). This is unaddressed.",
+                "WebSocket endpoint /ws/stream accepts binary audio frames \u2014 no mention of maximum frame size limits. A client can stream arbitrarily large audio buffers, causing unbounded memory accumulation. The 10-second VAD timeout in Step 9 mitigates this at the application layer but not at the WebSocket protocol layer.",
+                "Model files downloaded by entrypoint script (Step 16) have no integrity verification. A compromised download source or MITM on the model download could substitute malicious ONNX files. ONNX runtime has a history of CVEs around malformed model parsing. SHA256 checksums for all model artifacts must be pinned in the download script.",
+                "Microphone access in a browser context (Step 15 Web UI) requires HTTPS. The plan deploys over HTTP in docker-compose with no TLS termination step. Chrome and Firefox block navigator.mediaDevices.getUserMedia() on non-localhost HTTP origins, breaking the entire frontend without HTTPS."
+              ],
+              "summary": "This plan covers the full pipeline surface area and shows genuine ML/systems depth \u2014 the per-stage latency targets, ONNX export strategy, VAD-gated recording, and confidence-threshold clarification design are all sound. However, it has at least three showstopper-class omissions that will halt implementation before integration testing: (1) no Acoustic Echo Cancellation, which means the deployed system will loop on its own voice; (2) Docker audio passthrough is unaddressed, meaning the containerized acceptance criteria is physically unrunnable; and (3) the 2-second end-to-end latency target is impossible on CPU with Whisper base + Coqui VITS \u2014 the plan will need either a GPU requirement or a model downgrade. Additionally, the dialog layer's ReAct/multi-agent framing is architecturally confused \u2014 encoding models cannot perform reasoning loops \u2014 and the tool implementations are entirely missing. For an MVP, this scores 52: the individual component designs are reasonable, but the integration seams (audio hardware, real latency, generative dialog, tooling) have fundamental gaps that will consume significantly more time than the plan implies. A revised plan that drops the agentic dialog layer to a simple FSM, acknowledges GPU as a hard requirement for the latency targets, adds AEC, and specifies the Docker audio strategy would be credible at 68-72.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T08:32:30.752442+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 122.09,
+      "critic_plan": 124.15
+    }
+  }
+}

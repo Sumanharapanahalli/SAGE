@@ -1,0 +1,70 @@
+project_name: neobank_mobile_app
+display_name: Neobank Mobile App
+version: 1.0.0
+domain: fintech
+description: Mobile-first neobank app with checking/savings accounts, P2P transfers,
+  virtual debit cards, spending insights, and round-up investing. PCI DSS, KYC/AML
+  compliance.
+detected_domains: []
+compliance_standards:
+- PCI DSS
+- KYC/AML
+- SOC 2
+- GDPR
+task_types:
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- FINANCIAL
+- FRONTEND
+- INFRA
+- LEGAL
+- MARKET_RESEARCH
+- ML_MODEL
+- OPERATIONS
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- data_scientist
+- developer
+- devops_engineer
+- financial_analyst
+- legal_advisor
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

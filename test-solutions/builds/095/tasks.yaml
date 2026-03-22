@@ -1,0 +1,291 @@
+task_types:
+  PRODUCT_MGMT:
+    description: 'Define product requirements document (PRD) for the compliance_platform
+      GRC system: scope, personas (CISO, Compliance Officer, Auditor, Risk Manager),
+      success metrics, and phased roadmap covering SOC 2 / ISO 27001 / GDPR control
+      frameworks, evidence collection, risk register, and audit management modules.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD document covers all four core modules with user stories per persona
+    - Roadmap has at least two phases with milestone dates
+    - Success metrics are quantifiable and tied to business outcomes
+    - Scope explicitly states which compliance frameworks v1 supports
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: 'Conduct business requirements analysis: map stakeholder workflows
+      for each GRC process (control assessment, evidence gathering, risk treatment,
+      audit lifecycle), produce process flow diagrams, identify integration touch-points
+      with HRIS, ticketing (Jira/ServiceNow), cloud providers (AWS/GCP/Azure), and
+      identity providers.'
+    agent_role: business_analyst
+    acceptance_criteria:
+    - BPMN diagrams produced for all five core workflows
+    - Integration requirements matrix lists data exchanged, direction, frequency,
+      and auth method for each system
+    - All personas from PRD are represented in at least one workflow
+    - Non-functional requirements (availability, response time, data residency) documented
+    - Integration points with existing systems mapped
+    - Migration plan drafted
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy, Data Processing Agreement
+      (DPA) template for customers, and open-source license review for all third-party
+      dependencies used in compliance_platform.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - DPA template includes mandatory Art. 28 GDPR clauses
+    - Privacy policy addresses data subject rights (access, erasure, portability)
+    - OSS license inventory flags any copyleft licenses requiring review
+    - Terms of Service includes liability limitations and SLA references
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Build the canonical control framework library: normalize SOC 2 TSC
+      criteria, ISO 27001:2022 Annex A controls, and GDPR Articles into a unified
+      control taxonomy. Produce cross-walk mapping table showing overlap/equivalence
+      between frameworks. This becomes the seed data for the control_framework_mapping
+      module.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - All 64 SOC 2 TSC criteria captured with category tags
+    - All 93 ISO 27001:2022 Annex A controls captured
+    - GDPR Articles relevant to security and privacy operations mapped
+    - Cross-walk table covers 100% of SOC 2 criteria with ISO 27001 equivalents
+    - Control library validated against official standard text for accuracy
+    depends_on:
+    - 2
+  UX_DESIGN:
+    description: 'Design UX for all four modules: control framework dashboard (heat-map
+      of coverage status), evidence collection (upload, link, expiry tracking), risk
+      register (likelihood/impact matrix, treatment workflow), and audit management
+      (audit calendar, PBC request list, finding tracker). Produce wireframes and
+      component spec.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes produced for all 10 listed pages
+    - Risk matrix (5×5) interaction design specified
+    - Evidence upload component handles bulk upload and version history
+    - Audit PBC (Provided By Client) request list shows status, due dates, and owner
+      assignment
+    - Color-coding scheme for control status (compliant / partial / gap / not-applicable)
+      defined
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design and implement the relational database schema for compliance_platform:
+      tenants, users, roles, control_frameworks, controls, control_assessments, evidence_items,
+      risk_register_items, risk_treatments, audits, audit_scopes, pbc_requests, findings,
+      remediation_tasks. Include migrations, indexes, and audit trail triggers.'
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations run cleanly on a fresh PostgreSQL instance
+    - Row-level security policies enforced — cross-tenant query returns 0 rows
+    - Foreign key constraints and indexes defined on all join columns
+    - Audit log trigger fires on every DML operation across all sensitive tables
+    - Schema ER diagram generated and matches implementation
+    depends_on:
+    - 2
+  API:
+    description: 'Design the OpenAPI 3.1 specification for compliance_platform REST
+      API: authentication (OAuth2/JWT), tenant management, control framework CRUD,
+      assessment workflows, evidence upload/download, risk register CRUD, audit lifecycle
+      endpoints, finding management, and reporting endpoints.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors via swagger-parser
+    - Every endpoint has request/response schemas, error responses, and auth requirements
+    - File upload endpoint spec includes size limits and allowed MIME types
+    - Report export endpoints support PDF and XLSX response formats
+    - API changelog section documents breaking vs non-breaking changes
+    depends_on:
+    - 2
+  BACKEND:
+    description: 'Implement the FastAPI backend for compliance_platform: all API endpoints
+      per OpenAPI spec, multi-tenant middleware, JWT auth with RBAC, control framework
+      seeding from the canonical library (step 4), evidence storage service (S3-compatible),
+      risk scoring engine (likelihood × impact matrix), audit lifecycle state machine,
+      and background job scheduler for evidence expiry reminders and overdue PBC notifications.'
+    agent_role: developer
+    acceptance_criteria:
+    - All OpenAPI endpoints implemented and return correct HTTP status codes
+    - 'Multi-tenant isolation verified: user from tenant A cannot read tenant B data'
+    - Evidence files stored with tenant-scoped prefixes; pre-signed URLs expire in
+      1 hour
+    - Risk score recalculates automatically when likelihood or impact is updated
+    - Audit state machine enforces valid transitions (planning→fieldwork→review→closed)
+    - Background jobs execute on schedule and create notifications in DB
+    - '`make test-api` passes with 100% endpoint coverage'
+    depends_on:
+    - 6
+    - 7
+    - 4
+  AGENTIC:
+    description: 'Implement a Multi-Agent Coordinator (coordinator pattern) for automated
+      compliance monitoring: a Coordinator agent decomposes compliance assessment
+      tasks and routes to specialist agents — ControlGapAnalyst (identifies missing
+      evidence and failing controls), RiskScoringAgent (recalculates risk exposure
+      from new findings), and AuditPrepAgent (generates PBC request lists and audit
+      readiness summaries). All agent proposals surface as HITL-gated approval items.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes trigger events to appropriate specialist agents
+    - ControlGapAnalyst identifies controls with evidence older than policy threshold
+    - RiskScoringAgent proposal includes before/after risk score with justification
+    - AuditPrepAgent generates a PBC list covering all in-scope controls for an audit
+    - All agent outputs create approval-gated proposals — none auto-execute
+    - Agent reasoning traces written to audit log with trace_id
+    depends_on:
+    - 8
+  FRONTEND:
+    description: 'Implement the React 18 + TypeScript frontend per UX designs: control
+      framework dashboard with coverage heat-map, control detail with assessment history,
+      evidence locker with drag-and-drop upload and version history, risk register
+      with 5×5 matrix visualization, audit management with calendar view and PBC tracker,
+      finding remediation board, and reports/export page. Wire all API calls via typed
+      client.'
+    agent_role: developer
+    acceptance_criteria:
+    - All 13 pages render without console errors
+    - Risk matrix renders correctly at all viewport sizes (desktop + tablet)
+    - Evidence upload handles files up to 100MB with progress indicator
+    - Control coverage heat-map updates in real-time after assessment status change
+    - Export page triggers PDF and XLSX downloads from API
+    - All forms include client-side validation with accessible error messages (WCAG
+      2.1 AA)
+    - TypeScript strict mode — zero `any` types in API client layer
+    depends_on:
+    - 5
+    - 8
+  SECURITY:
+    description: 'Conduct security review of compliance_platform: threat model (STRIDE),
+      OWASP Top 10 assessment, RBAC permission matrix review, evidence file upload
+      security (MIME type validation, AV scan hook, path traversal prevention), JWT
+      configuration review, SQL injection and XSS audit, and generate Software Bill
+      of Materials (SBOM).'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - STRIDE threat model covers all four GRC modules
+    - No OWASP Top 10 Critical or High findings left unmitigated before release
+    - RBAC matrix reviewed — Auditor role has read-only access to evidence (no write)
+    - File upload rejects executables and validates MIME type against allowlist
+    - SBOM generated with all dependencies, versions, and licenses
+    - JWT tokens expire in ≤ 1 hour and refresh tokens are rotated on use
+    depends_on:
+    - 8
+  TESTS:
+    description: 'Write unit and integration tests for the compliance_platform backend:
+      control framework seeding, assessment state transitions, risk scoring calculations,
+      evidence versioning, audit lifecycle state machine, RBAC enforcement, and multi-tenant
+      isolation. Target ≥ 85% backend coverage.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All tests pass with `pytest` — zero failures, zero errors
+    - Coverage report shows ≥ 85% line coverage on src/
+    - Multi-tenant isolation test proves cross-tenant data access returns 403
+    - Audit state machine tests cover all valid transitions and all invalid transition
+      rejections
+    - Risk scoring tests cover all 25 cells of the 5×5 matrix
+    depends_on:
+    - 8
+  QA:
+    description: 'Produce QA test plan for compliance_platform: test strategy, test
+      case catalog for each module (control mapping, evidence, risk register, audit),
+      regression suite definition, UAT acceptance criteria per persona, and exploratory
+      testing charters for edge cases (bulk evidence upload, concurrent audit edits,
+      framework cross-walk accuracy).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan document covers all four modules with at least 5 test cases each
+    - UAT acceptance criteria defined per persona from PRD
+    - Edge case charters specify preconditions, steps, and expected outcomes
+    - Test case catalog stored in shared format (Excel/TestRail compatible)
+    - Regression suite identifies the P0/P1 cases that must pass for every release
+    depends_on:
+    - 8
+    - 10
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system tests for compliance_platform: full SOC
+      2 assessment cycle (map controls → assign owners → collect evidence → assess
+      → generate readiness report), full audit lifecycle (create audit → issue PBC
+      requests → upload evidence → raise findings → remediate → close), and load test
+      with 50 concurrent users performing evidence uploads.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 6 E2E scenarios pass without manual intervention
+    - 'k6 load test: p95 < 2s, p99 < 5s, zero 5xx errors under 50 VU load'
+    - After E2E-04, audit DB record shows status=closed with all findings linked
+    - E2E-06 confirms external auditor cannot POST/PATCH/DELETE any resource
+    - Test report artifacts (HTML + JUnit XML) generated for CI consumption
+    - Load test simulates expected concurrent users
+    - Failover scenario tested
+    depends_on:
+    - 10
+    - 12
+    - 13
+  DEVOPS:
+    description: 'Set up CI/CD pipeline, containerization, and monitoring for compliance_platform:
+      Dockerfile for backend + frontend, docker-compose for local dev, GitHub Actions
+      pipeline (lint → test → build → security scan → deploy to staging), Prometheus
+      + Grafana dashboards for API latency and evidence upload throughput, and PagerDuty
+      alerting rules.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - GitHub Actions pipeline completes in < 10 minutes on a typical PR
+    - Trivy scan blocks merge if CRITICAL CVEs found in Docker image
+    - Staging environment auto-deployed and smoke-tested on every merge to main
+    - Grafana dashboard shows API p95 latency and evidence upload throughput panels
+    - PagerDuty alert fires in < 2 minutes when error rate threshold breached in a
+      test
+    depends_on:
+    - 8
+    - 10
+  OPERATIONS:
+    description: 'Write operational runbooks for compliance_platform: SLA definitions
+      (99.5% uptime, RTO 4h, RPO 1h), incident response playbook (P1/P2/P3 definitions,
+      escalation paths), database backup and restore procedure, evidence storage DR
+      procedure, and capacity planning model for evidence file growth.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - SLA document defines availability, RTO, RPO with measurement methodology
+    - Incident response runbook has P1/P2/P3 severity definitions and escalation contacts
+    - DB restore runbook tested — restore from backup completes within RTO in a drill
+    - Tenant offboarding runbook covers GDPR erasure requirements (Art. 17)
+    - Capacity model projects infrastructure costs at 10 / 50 / 100 tenant milestones
+    depends_on:
+    - 15
+  TRAINING:
+    description: 'Produce user training materials for compliance_platform: getting
+      started guide (tenant setup, framework selection, user invitation), role-based
+      quick-reference cards (CISO, Compliance Officer, Auditor), video script outlines
+      for 3 core workflows (control assessment, evidence upload, audit lifecycle),
+      and in-app onboarding tooltip copy.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Getting started guide covers tenant setup to first completed control assessment
+      in ≤ 10 steps
+    - Each role quick-reference card fits on one printed page
+    - All three video scripts have scene-by-scene breakdown with UI action callouts
+    - 15 in-app tooltip strings written and keyed to component IDs from frontend
+    - Documents reviewed by a non-technical stakeholder for clarity
+    - Admin guide separate from end-user guide
+    - Role-based training paths defined
+    depends_on:
+    - 10
+  CONFIG:
+    description: 'Configure the SAGE compliance_platform solution: create project.yaml
+      (domain manifest with active modules), prompts.yaml (system prompts for ControlGapAnalyst,
+      RiskScoringAgent, AuditPrepAgent, ComplianceCoordinator roles), tasks.yaml (task
+      types: control_assessment, evidence_review, risk_treatment_proposal, audit_readiness_report,
+      finding_remediation_plan), and environment configuration files for dev/staging/production.'
+    agent_role: developer
+    acceptance_criteria:
+    - project.yaml validates with SAGE YAML validator without errors
+    - prompts.yaml defines system prompts for all 4 agent roles with domain-specific
+      GRC context
+    - tasks.yaml registers all 5 task types with input/output schema
+    - '`.env.production` template has no hardcoded secrets — all values are placeholders'
+    - '`make run PROJECT=compliance_platform` starts without errors after config applied'
+    depends_on:
+    - 1
+    - 9

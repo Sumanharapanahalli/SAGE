@@ -1,0 +1,1272 @@
+{
+  "run_id": "ac212ac0-747d-4bb6-a934-472d3e566cb8",
+  "status": {
+    "run_id": "ac212ac0-747d-4bb6-a934-472d3e566cb8",
+    "solution_name": "returns_management",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T06:19:19.861464+00:00",
+    "updated_at": "2026-03-22T06:24:39.752609+00:00",
+    "product_description": "Returns and exchange management platform with self-service portal, return label generation, warehouse receiving, refund automation, and analytics dashboard.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements and user stories for the returns and exchange management platform. Map end-to-end return lifecycle: customer initiates return \u2192 label generated \u2192 warehouse receives \u2192 inspection \u2192 refund/exchange issued. Identify all actor types: end customer, warehouse staff, finance team, admin.",
+        "payload": {
+          "deliverables": [
+            "business_requirements_doc.md",
+            "user_stories.md",
+            "process_flow_diagrams.pdf",
+            "roi_analysis.md"
+          ],
+          "scope": [
+            "self-service return portal",
+            "return label generation",
+            "warehouse receiving workflow",
+            "refund automation rules engine",
+            "analytics dashboard"
+          ],
+          "actor_types": [
+            "end_customer",
+            "warehouse_operator",
+            "finance_team",
+            "platform_admin"
+          ]
+        },
+        "acceptance_criteria": [
+          "All actor types have documented user stories with acceptance criteria",
+          "End-to-end return lifecycle is mapped with decision points and branching logic",
+          "ROI analysis includes projected reduction in manual processing time and return fraud rates",
+          "Business rules for refund eligibility (time window, condition, reason codes) are enumerated",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the returns management SaaS market. Profile competitors (Loop Returns, Returnly, Happy Returns, AfterShip Returns). Identify differentiation opportunities in warehouse integration depth and analytics fidelity. Define target customer segments (SMB e-commerce, mid-market retail).",
+        "payload": {
+          "competitors": [
+            "Loop Returns",
+            "Returnly",
+            "Happy Returns",
+            "AfterShip Returns",
+            "narvar"
+          ],
+          "segments": [
+            "SMB e-commerce",
+            "mid-market retail",
+            "DTC brands"
+          ],
+          "deliverables": [
+            "market_analysis.md",
+            "competitor_matrix.xlsx",
+            "positioning_doc.md",
+            "gtm_strategy.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitor feature matrix covers at minimum 5 direct competitors across 20+ feature dimensions",
+          "Addressable market size estimated with source citations",
+          "Go-to-market strategy includes channel mix, ICP definition, and launch sequencing",
+          "Differentiation narrative is validated against at least 3 customer interview summaries"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes for all platform surfaces: customer self-service return portal, warehouse operator receiving UI, finance refund review dashboard, and admin analytics dashboard. Ensure WCAG 2.1 AA accessibility compliance throughout.",
+        "payload": {
+          "surfaces": [
+            "customer_portal",
+            "warehouse_receiving_ui",
+            "finance_dashboard",
+            "admin_analytics"
+          ],
+          "research_methods": [
+            "user_interviews",
+            "usability_testing",
+            "journey_mapping"
+          ],
+          "deliverables": [
+            "user_research_report.md",
+            "journey_maps.pdf",
+            "wireframes.figma",
+            "accessibility_audit.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Customer portal wireframes cover: return initiation, reason selection, label download, status tracking",
+          "Warehouse UI wireframes cover: scan-to-receive, item condition grading, exception flagging",
+          "All interactive components pass WCAG 2.1 AA contrast and keyboard navigation requirements",
+          "Usability test with at least 5 participants conducted on key flows before handoff"
+        ],
+        "depends_on": [],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce the Product Requirements Document, prioritized roadmap (MVP vs. post-launch), and success metrics framework. Define MVP scope: return initiation, prepaid label generation, warehouse receiving confirmation, automatic refund to original payment method, basic analytics.",
+        "payload": {
+          "mvp_features": [
+            "return_initiation",
+            "prepaid_label_generation",
+            "warehouse_receiving",
+            "automatic_refund",
+            "basic_analytics"
+          ],
+          "success_metrics": [
+            "return_processing_time",
+            "refund_cycle_time",
+            "portal_self_service_rate",
+            "return_fraud_rate"
+          ],
+          "deliverables": [
+            "prd.md",
+            "roadmap.md",
+            "metrics_framework.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD has acceptance criteria for every MVP feature",
+          "Roadmap distinguishes MVP (v1) from v2 and v3 with rationale for sequencing",
+          "Success metrics are SMART (specific, measurable, achievable, relevant, time-bound)",
+          "MVP scope is signed off as feasible against engineering estimates"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 5,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model covering SaaS pricing tiers (per-return volume bands), unit economics (CAC, LTV, gross margin), 3-year P&L projection, and cost breakdown for infrastructure, label postage subsidies, and support operations.",
+        "payload": {
+          "pricing_models": [
+            "per_return_volume",
+            "monthly_subscription_tiers",
+            "enterprise_custom"
+          ],
+          "cost_categories": [
+            "infrastructure",
+            "label_postage_subsidy",
+            "support_ops",
+            "engineering"
+          ],
+          "deliverables": [
+            "financial_model.xlsx",
+            "pricing_strategy.md",
+            "unit_economics.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Three pricing tiers modeled with break-even volume per tier",
+          "3-year P&L projection includes sensitivity analysis on key assumptions",
+          "LTV:CAC ratio targets defined for each customer segment",
+          "Label postage cost model accounts for carrier rate cards (USPS, UPS, FedEx)",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          2,
+          4
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 6,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (for merchant customers), and return policy template merchants can white-label. Review IP exposure on label generation integrations with carrier APIs. Ensure GDPR/CCPA compliance requirements are captured for data retention and deletion.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "data_processing_agreement.md",
+            "return_policy_template.md"
+          ],
+          "regulations": [
+            "GDPR",
+            "CCPA",
+            "PCI_DSS_merchant_obligations"
+          ],
+          "ip_review": [
+            "carrier_api_tocs",
+            "label_generation_libraries"
+          ]
+        },
+        "acceptance_criteria": [
+          "ToS covers refund SLA commitments, fraud liability allocation, and API rate limits",
+          "Privacy policy enumerates all PII collected (customer name, address, email, payment token) with retention periods",
+          "DPA is GDPR Article 28 compliant with sub-processor list",
+          "GDPR right-to-erasure flow is documented and mapped to data deletion endpoints",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted",
+          "Return/refund policy drafted",
+          "Consumer protection compliance checked"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 7,
+        "task_type": "SECURITY",
+        "description": "Produce threat model using STRIDE methodology for all platform surfaces. Identify high-risk attack vectors: return fraud automation, label generation abuse, payment refund manipulation, warehouse scan spoofing. Define security controls, pen test scope, and SBOM requirements.",
+        "payload": {
+          "methodology": "STRIDE",
+          "threat_surfaces": [
+            "customer_portal",
+            "merchant_api",
+            "warehouse_scanner_integration",
+            "payment_processor_webhook",
+            "admin_dashboard"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "security_controls_matrix.md",
+            "pentest_scope.md",
+            "sbom_requirements.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE analysis completed for all 5 threat surfaces",
+          "Return fraud threat vectors enumerated with mitigations (rate limiting, ML scoring, manual review queues)",
+          "Payment refund flow secured against replay attacks and IDOR",
+          "SBOM lists all third-party dependencies with known CVE status",
+          "Pen test scope document ready for external vendor engagement",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 8,
+        "task_type": "COMPLIANCE",
+        "description": "Produce PCI DSS scoping document (cardholder data environment boundaries) and SOC 2 Type II readiness assessment. Map controls to Trust Service Criteria. Since payment tokens (not raw card data) are stored, confirm PCI scope reduction via tokenization architecture. Generate evidence collection plan.",
+        "payload": {
+          "standards": [
+            "PCI_DSS_v4.0",
+            "SOC_2_Type_II"
+          ],
+          "trust_service_criteria": [
+            "security",
+            "availability",
+            "confidentiality"
+          ],
+          "deliverables": [
+            "pci_scoping_doc.md",
+            "soc2_readiness_assessment.md",
+            "controls_matrix.md",
+            "evidence_collection_plan.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PCI DSS CDE boundary defined and tokenization architecture confirmed as scope-reducing",
+          "SOC 2 control gaps identified with remediation owners and target dates",
+          "Evidence collection plan maps each control to automated vs. manual evidence sources",
+          "Traceability matrix links business requirements to compliance controls"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 9,
+        "task_type": "DATABASE",
+        "description": "Design and implement the core database schema: returns, return_line_items, exchange_orders, labels, warehouse_receipts, refund_transactions, merchants, customers. Include audit log tables, soft-delete patterns, and PII-tagged columns for GDPR compliance. Write migration scripts.",
+        "payload": {
+          "engine": "PostgreSQL 16",
+          "core_tables": [
+            "merchants",
+            "customers",
+            "returns",
+            "return_line_items",
+            "exchange_orders",
+            "labels",
+            "warehouse_receipts",
+            "refund_transactions",
+            "audit_log"
+          ],
+          "patterns": [
+            "soft_delete",
+            "row_level_security",
+            "pii_column_tagging",
+            "event_sourcing_for_status_history"
+          ],
+          "deliverables": [
+            "schema.sql",
+            "migrations/",
+            "er_diagram.pdf",
+            "data_dictionary.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "All tables have created_at, updated_at, deleted_at (soft delete) columns",
+          "PII columns (customer_email, customer_address) are tagged with comments for data map",
+          "Row-level security policies isolate merchant data at the database level",
+          "Return status history stored as append-only event log (not mutable status column)",
+          "Migration scripts are idempotent and include rollback procedures"
+        ],
+        "depends_on": [
+          1,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "API",
+        "description": "Design the full OpenAPI 3.1 specification for the platform API. Surfaces: Merchant API (return policy config, webhooks, reporting), Customer Portal API (return initiation, status, label download), Warehouse API (scan-to-receive, grading, exceptions), Finance API (refund queue, approval, batch export).",
+        "payload": {
+          "api_surfaces": [
+            "merchant_api",
+            "customer_portal_api",
+            "warehouse_api",
+            "finance_api",
+            "admin_api"
+          ],
+          "auth": [
+            "OAuth2_PKCE_for_customers",
+            "API_key_for_merchants",
+            "JWT_for_internal_services"
+          ],
+          "deliverables": [
+            "openapi.yaml",
+            "api_design_doc.md",
+            "webhook_event_catalog.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates without errors against openapi-spec-validator",
+          "All endpoints have request/response examples and error response schemas",
+          "Webhook event catalog covers: return.created, return.received, refund.issued, exchange.created",
+          "Rate limit headers documented on all merchant-facing endpoints",
+          "API versioning strategy defined (URI versioning v1/)"
+        ],
+        "depends_on": [
+          1,
+          3,
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "CONFIG",
+        "description": "Set up development environment, project structure, and toolchain for a monorepo containing: backend (Python/FastAPI), frontend (React/TypeScript), and infrastructure (Terraform). Configure linting, pre-commit hooks, secrets management (Vault/AWS Secrets Manager), and environment promotion (dev/staging/prod). Configure agentic pattern: coordinator with specialist agents for return fraud scoring, label routing, and refund decisioning.",
+        "payload": {
+          "structure": "monorepo",
+          "backend": "Python 3.12 / FastAPI",
+          "frontend": "React 18 / TypeScript / Vite",
+          "infra": "Terraform / AWS",
+          "secrets": "AWS Secrets Manager",
+          "agentic_pattern": "coordinator",
+          "agent_components": [
+            "return_fraud_scorer",
+            "label_routing_agent",
+            "refund_decision_agent",
+            "coordinator_agent"
+          ],
+          "deliverables": [
+            "repo_structure.md",
+            ".pre-commit-config.yaml",
+            "docker-compose.yml",
+            "Makefile",
+            ".env.example"
+          ]
+        },
+        "acceptance_criteria": [
+          "`make dev` spins up full local stack (API, DB, Redis, frontend) via docker-compose",
+          "Pre-commit hooks enforce: ruff lint, mypy type check, prettier format, secret scanning",
+          "Environment variables documented in .env.example with no real secrets",
+          "Agentic coordinator pattern scaffolded with agent registry and task routing config"
+        ],
+        "depends_on": [
+          4,
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipelines (GitHub Actions), containerization (Docker), and AWS infrastructure provisioning (Terraform). Stages: test \u2192 lint \u2192 build \u2192 deploy to staging \u2192 smoke test \u2192 promote to prod. Include branch protection, deployment approvals for prod, and rollback procedures.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "container": "Docker / ECR",
+          "cloud": "AWS (ECS Fargate, RDS Aurora PostgreSQL, ElastiCache Redis, S3, CloudFront)",
+          "iac": "Terraform",
+          "deliverables": [
+            ".github/workflows/ci.yml",
+            ".github/workflows/cd.yml",
+            "terraform/",
+            "docker/",
+            "runbooks/deployment.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs in under 10 minutes for a typical PR",
+          "Production deployments require manual approval step in GitHub Actions",
+          "Terraform plan is generated and posted as PR comment on infra changes",
+          "Rollback procedure documented and tested: previous ECS task definition restores in under 5 minutes",
+          "Secrets never appear in CI logs (masked via GitHub Actions secrets)"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement core backend services: authentication/authorization (OAuth2 + API keys), merchant management, return policy engine (configurable eligibility rules: return window, item conditions, reason codes, non-returnable SKUs), and customer return initiation flow.",
+        "payload": {
+          "services": [
+            "auth_service",
+            "merchant_service",
+            "policy_engine",
+            "return_initiation_service"
+          ],
+          "frameworks": [
+            "FastAPI",
+            "SQLAlchemy",
+            "Celery for async tasks",
+            "Redis for caching"
+          ],
+          "policy_rules": [
+            "return_window_days",
+            "eligible_conditions",
+            "reason_codes",
+            "excluded_skus",
+            "max_return_value"
+          ],
+          "deliverables": [
+            "src/services/",
+            "src/models/",
+            "src/api/v1/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Policy engine evaluates return eligibility in under 50ms p99",
+          "Merchant API key rotation supported without downtime",
+          "Return initiation creates return record, sets status to PENDING_LABEL, emits return.created webhook",
+          "All API endpoints return RFC 7807 Problem Details on error",
+          "OAuth2 PKCE flow implemented for customer portal with CSRF protection"
+        ],
+        "depends_on": [
+          9,
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement return label generation service with multi-carrier support (USPS, UPS, FedEx via EasyPost or ShipEngine). Handle: carrier rate shopping, prepaid label creation, label PDF/ZPL generation, label voiding, and tracking event ingestion via webhooks. Store label metadata and postage cost per return.",
+        "payload": {
+          "carrier_integration": "EasyPost API",
+          "carriers": [
+            "USPS",
+            "UPS",
+            "FedEx"
+          ],
+          "label_formats": [
+            "PDF",
+            "ZPL_for_thermal_printers"
+          ],
+          "features": [
+            "rate_shopping",
+            "prepaid_label_creation",
+            "label_voiding",
+            "tracking_webhooks"
+          ],
+          "deliverables": [
+            "src/services/label_service.py",
+            "src/integrations/easypost_client.py",
+            "src/api/v1/labels.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Label generated and returned to customer within 3 seconds p95",
+          "Rate shopping selects cheapest qualifying carrier by default (configurable per merchant)",
+          "Label voiding triggers postage credit recovery within 24 hours",
+          "Tracking events (in_transit, delivered_to_warehouse) update return status and emit webhooks",
+          "Label generation failures retry 3 times with exponential backoff before alerting"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement warehouse receiving module: barcode/QR scan endpoint for return identification, item condition grading workflow (new/like-new/damaged/unsellable), exception handling (wrong item, missing item), warehouse receipt confirmation, and inventory disposition routing (restock/refurbish/dispose).",
+        "payload": {
+          "features": [
+            "scan_to_receive",
+            "condition_grading",
+            "exception_flagging",
+            "inventory_disposition"
+          ],
+          "grading_conditions": [
+            "new",
+            "like_new",
+            "good",
+            "damaged",
+            "unsellable"
+          ],
+          "disposition_routes": [
+            "restock",
+            "refurbish_queue",
+            "liquidation",
+            "dispose"
+          ],
+          "deliverables": [
+            "src/services/warehouse_service.py",
+            "src/api/v1/warehouse.py",
+            "src/api/v1/receiving.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Scan endpoint resolves return by tracking number or return ID in under 200ms",
+          "Condition grading updates refund amount per merchant-configured condition discount rules",
+          "Exception items routed to manual review queue with photo attachment support",
+          "Warehouse receipt confirmation emits return.received webhook and triggers refund evaluation",
+          "Batch receiving report available for end-of-shift warehouse supervisor summary"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Implement refund automation engine: condition-based refund calculation, payment processor integration (Stripe for refunds, extensible to Braintree/PayPal), exchange order creation via merchant e-commerce platform webhooks (Shopify/BigCommerce adapters), fraud scoring integration, and configurable approval thresholds (auto-approve below $X, manual review above).",
+        "payload": {
+          "payment_processors": [
+            "Stripe"
+          ],
+          "ecommerce_adapters": [
+            "Shopify",
+            "BigCommerce"
+          ],
+          "fraud_scoring": "coordinator_agent_pattern",
+          "refund_types": [
+            "original_payment_method",
+            "store_credit",
+            "exchange"
+          ],
+          "agentic_pattern": "coordinator",
+          "deliverables": [
+            "src/services/refund_service.py",
+            "src/integrations/stripe_client.py",
+            "src/integrations/shopify_adapter.py",
+            "src/agents/refund_coordinator.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Refund to original payment method processed via Stripe in under 5 seconds",
+          "Fraud coordinator agent scores each refund request and flags high-risk cases for manual review",
+          "Auto-approval threshold configurable per merchant (default $150)",
+          "Exchange orders created in merchant Shopify store with correct SKU and 0-charge",
+          "Refund issued event emitted with amount, method, and trace_id for audit log",
+          "PCI DSS scope confirmed: only payment intent IDs stored, no raw card data"
+        ],
+        "depends_on": [
+          13,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "BACKEND",
+        "description": "Implement analytics data pipeline and reporting backend: real-time metrics (returns volume, return rate by SKU/reason, refund cycle time, postage cost per return), time-series aggregation into analytics_snapshots table, export APIs (CSV/JSON), and scheduled report generation (daily/weekly merchant summaries via email).",
+        "payload": {
+          "metrics": [
+            "return_volume",
+            "return_rate_by_sku",
+            "return_rate_by_reason",
+            "refund_cycle_time_p50_p95",
+            "postage_cost_per_return",
+            "fraud_flag_rate",
+            "warehouse_throughput"
+          ],
+          "aggregation": "materialized_views_with_15min_refresh",
+          "export_formats": [
+            "CSV",
+            "JSON"
+          ],
+          "scheduled_reports": [
+            "daily_merchant_summary",
+            "weekly_analytics_digest"
+          ],
+          "deliverables": [
+            "src/services/analytics_service.py",
+            "src/api/v1/analytics.py",
+            "src/tasks/report_tasks.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Dashboard metrics API responds in under 500ms for 90-day date range",
+          "Materialized views refresh on 15-minute schedule without locking production tables",
+          "CSV export supports date range filtering and merchant-scoped data isolation",
+          "Scheduled daily summary emails delivered via SES with merchant branding",
+          "Return rate by SKU identifies top-10 most-returned items per merchant"
+        ],
+        "depends_on": [
+          13,
+          15,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build the customer self-service return portal: return initiation form (order lookup, item selection, reason selection), return policy eligibility display, label download page, return status tracker, and exchange selection UI. Must be embeddable as iframe for merchant storefronts.",
+        "payload": {
+          "framework": "React 18 / TypeScript / Vite",
+          "pages": [
+            "order_lookup",
+            "item_selection",
+            "reason_selection",
+            "label_download",
+            "status_tracker",
+            "exchange_selector"
+          ],
+          "embed_mode": "iframe with postMessage API",
+          "styling": "Tailwind CSS with merchant white-label theming via CSS variables",
+          "deliverables": [
+            "web/customer-portal/src/",
+            "web/customer-portal/embed.js"
+          ]
+        },
+        "acceptance_criteria": [
+          "Portal loads in under 2 seconds on 4G connection (Lighthouse performance score >= 85)",
+          "Order lookup works by order number + email or order number + zip code",
+          "Return eligibility clearly communicated when return window has expired",
+          "Label download provides both PDF (desktop) and QR code (mobile) options",
+          "White-label theming applied via merchant CSS variable overrides with no code changes",
+          "WCAG 2.1 AA accessibility audit passes (axe-core zero violations)"
+        ],
+        "depends_on": [
+          3,
+          10,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build the warehouse operator receiving UI: scan-to-receive interface (barcode input optimized for USB scanners), item condition grading panel, exception reporting form with photo upload, batch processing queue, and end-of-shift receiving summary dashboard.",
+        "payload": {
+          "pages": [
+            "scan_receive",
+            "condition_grading",
+            "exception_report",
+            "batch_queue",
+            "shift_summary"
+          ],
+          "optimizations": [
+            "USB_scanner_keyboard_input",
+            "offline_capable_PWA",
+            "large_touch_targets_for_warehouse_use"
+          ],
+          "deliverables": [
+            "web/warehouse-ui/src/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Scan input auto-focuses on page load and re-focuses after each scan with no mouse interaction required",
+          "Condition grading UI operable with single hand (touch-optimized for tablet use)",
+          "Photo upload for exceptions supports camera capture on mobile devices",
+          "PWA offline mode queues scans locally and syncs when connectivity restored",
+          "Shift summary shows receiving throughput, exception rate, and comparison to prior shift"
+        ],
+        "depends_on": [
+          3,
+          10,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build the merchant analytics dashboard and admin interface: real-time return volume charts, return reason breakdown (pie/bar), SKU-level return rate table, refund cycle time trends, postage cost analytics, refund approval queue for manual review cases, and merchant configuration panel (return policy, label settings, webhook management).",
+        "payload": {
+          "pages": [
+            "analytics_overview",
+            "sku_analysis",
+            "refund_queue",
+            "merchant_config",
+            "webhook_management",
+            "team_management"
+          ],
+          "charting": "Recharts",
+          "features": [
+            "date_range_picker",
+            "csv_export",
+            "real_time_refresh_30s",
+            "dark_mode"
+          ],
+          "deliverables": [
+            "web/merchant-dashboard/src/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Analytics charts render with up to 90 days of data without pagination",
+          "Refund approval queue shows fraud score, return history, and one-click approve/reject",
+          "Return policy configuration form validates rules before save (e.g., window must be > 0 days)",
+          "Webhook management shows last 50 delivery attempts with response codes and retry option",
+          "CSV export initiated and downloaded client-side for data sets under 10k rows"
+        ],
+        "depends_on": [
+          3,
+          10,
+          16,
+          17
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "AGENTIC",
+        "description": "Implement the coordinator-pattern agentic AI system for automated return decision-making. Coordinator receives return + warehouse receipt \u2192 dispatches to: (1) FraudScorerAgent (ReAct pattern: checks customer return history, IP, order value), (2) RefundDecisionAgent (policy lookup + condition discount calculation), (3) LabelRoutingAgent (carrier rate shopping). Coordinator synthesizes outputs into approved/flagged decision with trace_id for audit.",
+        "payload": {
+          "pattern": "coordinator",
+          "specialist_agents": [
+            {
+              "name": "FraudScorerAgent",
+              "pattern": "react",
+              "tools": [
+                "customer_return_history_lookup",
+                "ip_reputation_check",
+                "order_value_threshold_check"
+              ],
+              "output": "fraud_risk_score_0_to_100"
+            },
+            {
+              "name": "RefundDecisionAgent",
+              "pattern": "review_and_critique",
+              "tools": [
+                "policy_engine_lookup",
+                "condition_discount_calculator",
+                "refund_amount_validator"
+              ],
+              "output": "refund_amount_and_method"
+            },
+            {
+              "name": "LabelRoutingAgent",
+              "pattern": "react",
+              "tools": [
+                "carrier_rate_shop",
+                "zone_calculator",
+                "postage_budget_check"
+              ],
+              "output": "selected_carrier_and_service"
+            }
+          ],
+          "hitl_threshold": "fraud_score > 75 OR refund_amount > merchant_auto_approve_limit",
+          "deliverables": [
+            "src/agents/coordinator.py",
+            "src/agents/fraud_scorer.py",
+            "src/agents/refund_decision.py",
+            "src/agents/label_router.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Coordinator dispatches all three specialist agents in parallel (wave execution) for each return evaluation",
+          "FraudScorerAgent produces score with reasoning trace logged to audit_log",
+          "Returns with fraud_score > 75 placed in manual review queue \u2014 never auto-approved",
+          "RefundDecisionAgent output reviewed by critic agent before coordinator accepts it",
+          "Full coordinator decision trace stored with return record for SOC 2 evidence",
+          "Coordinator completes evaluation in under 8 seconds p95 for non-flagged returns"
+        ],
+        "depends_on": [
+          13,
+          15,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write comprehensive unit and integration tests for all backend services: policy engine edge cases, label generation mocks, warehouse receiving state machine, refund calculation accuracy, fraud scorer thresholds, analytics aggregation correctness, and all API endpoint contracts.",
+        "payload": {
+          "frameworks": [
+            "pytest",
+            "pytest-asyncio",
+            "factory_boy",
+            "respx for HTTP mocking"
+          ],
+          "coverage_target": "90% line coverage on src/services/",
+          "test_categories": [
+            "unit",
+            "integration",
+            "contract"
+          ],
+          "deliverables": [
+            "tests/unit/",
+            "tests/integration/",
+            "tests/contracts/",
+            "pytest.ini"
+          ]
+        },
+        "acceptance_criteria": [
+          "Unit test coverage >= 90% on all service modules",
+          "Policy engine tested for: expired window, excluded SKU, over-value limit, valid return",
+          "Refund calculation tested for: full refund, condition-discounted refund, store credit conversion",
+          "Fraud scorer tested with: known-good customer, high-velocity returner, mismatched IP",
+          "All API contracts tested against OpenAPI spec using schemathesis",
+          "Tests run in CI under 3 minutes via pytest-xdist parallelization"
+        ],
+        "depends_on": [
+          13,
+          14,
+          15,
+          16,
+          17,
+          21
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "QA",
+        "description": "Produce QA test plan covering functional, regression, and exploratory testing for all user-facing flows. Define test case matrix for customer portal, warehouse UI, merchant dashboard, and refund workflows. Execute test cases against staging environment and produce test execution report.",
+        "payload": {
+          "test_types": [
+            "functional",
+            "regression",
+            "exploratory",
+            "cross_browser",
+            "mobile_responsive"
+          ],
+          "browsers": [
+            "Chrome",
+            "Firefox",
+            "Safari",
+            "Edge"
+          ],
+          "devices": [
+            "desktop_1920x1080",
+            "tablet_iPad",
+            "mobile_iPhone_375px"
+          ],
+          "deliverables": [
+            "qa_test_plan.md",
+            "test_case_matrix.xlsx",
+            "test_execution_report.md",
+            "defect_log.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test case matrix covers 100% of MVP user stories from PRD",
+          "All P0 and P1 defects resolved before production launch",
+          "Cross-browser test executed on Chrome, Firefox, Safari, Edge \u2014 no functional regressions",
+          "Mobile responsive test confirms customer portal usable on 375px viewport",
+          "Exploratory testing session (2 hours) conducted by tester unfamiliar with the system"
+        ],
+        "depends_on": [
+          18,
+          19,
+          20,
+          22
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system tests covering complete return lifecycles: (1) customer initiates \u2192 label generated \u2192 warehouse scans \u2192 auto-refund issued, (2) high-fraud return \u2192 flagged \u2192 manual review \u2192 approved \u2192 refund, (3) exchange return \u2192 exchange order created in Shopify \u2192 label generated, (4) load test: 500 concurrent return initiations.",
+        "payload": {
+          "test_scenarios": [
+            "happy_path_full_return_lifecycle",
+            "fraud_flagged_manual_review_path",
+            "exchange_order_creation_path",
+            "condition_discounted_refund_path",
+            "label_carrier_failover_path"
+          ],
+          "load_test_tool": "Locust",
+          "load_targets": {
+            "concurrent_users": 500,
+            "return_initiations_per_minute": 1000
+          },
+          "deliverables": [
+            "tests/e2e/",
+            "tests/load/locustfile.py",
+            "system_test_report.md",
+            "load_test_results.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 5 lifecycle scenarios pass without manual intervention",
+          "Load test sustains 1000 return initiations/minute with p95 latency under 3 seconds",
+          "No data leakage between merchant tenants in multi-tenant load test",
+          "Carrier API failover tested: EasyPost timeout triggers fallback carrier selection",
+          "Webhook delivery tested: 100% of return events delivered within 30 seconds under load"
+        ],
+        "depends_on": [
+          22,
+          23
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 25,
+        "task_type": "SECURITY",
+        "description": "Execute security hardening and pre-launch security validation: OWASP Top 10 scan, dependency vulnerability scan (Snyk/Dependabot), secrets scan on full repo history, authentication penetration test (token replay, IDOR, privilege escalation), and PCI DSS tokenization verification audit.",
+        "payload": {
+          "tools": [
+            "OWASP_ZAP",
+            "Snyk",
+            "truffleHog",
+            "Bandit_for_Python"
+          ],
+          "test_areas": [
+            "IDOR_on_merchant_data",
+            "token_replay_on_refund_endpoints",
+            "SQL_injection",
+            "XSS_in_portal",
+            "rate_limit_bypass"
+          ],
+          "deliverables": [
+            "security_scan_report.md",
+            "vulnerability_remediation_log.md",
+            "pci_tokenization_audit.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Zero OWASP Top 10 critical/high findings unresolved at launch",
+          "No secrets found in git history via truffleHog scan",
+          "Snyk reports zero critical CVEs in production dependencies",
+          "IDOR test confirms merchant A cannot access merchant B's returns or refunds",
+          "Refund endpoint protected against replay attacks (idempotency key required)",
+          "PCI tokenization audit confirms no raw PANs stored anywhere in system",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          16,
+          18,
+          20,
+          24
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 26,
+        "task_type": "COMPLIANCE",
+        "description": "Produce SOC 2 Type II evidence artifacts and PCI DSS self-assessment questionnaire (SAQ A-EP). Generate: access control matrix, encryption-at-rest and in-transit evidence, audit log completeness report, incident response policy, change management evidence from CI/CD pipeline, and vendor risk assessments for EasyPost and Stripe.",
+        "payload": {
+          "soc2_evidence": [
+            "access_control_matrix",
+            "encryption_evidence",
+            "audit_log_report",
+            "incident_response_policy",
+            "change_management_evidence",
+            "vendor_risk_assessments"
+          ],
+          "pci_artifact": "SAQ_A-EP",
+          "deliverables": [
+            "compliance/soc2_evidence_package/",
+            "compliance/pci_saq_a_ep.pdf",
+            "compliance/vendor_risk/easypost.md",
+            "compliance/vendor_risk/stripe.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "SOC 2 evidence package covers all Trust Service Criteria controls mapped in step 8",
+          "Audit log completeness report shows 100% of refund and approval events logged with trace_id",
+          "PCI SAQ A-EP completed and signed \u2014 confirms merchant is not storing/processing/transmitting PANs",
+          "Vendor risk assessments for EasyPost and Stripe confirm their SOC 2 and PCI compliance",
+          "Incident response policy includes defined RTO/RPO and breach notification timeline per GDPR 72-hour rule"
+        ],
+        "depends_on": [
+          8,
+          25
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 27,
+        "task_type": "OPERATIONS",
+        "description": "Produce operational runbooks, define SLAs, set up monitoring and alerting (Datadog or CloudWatch), and create incident response playbooks for: label generation service outage, payment processor downtime, warehouse receiving backlog, and fraud spike events.",
+        "payload": {
+          "monitoring": "Datadog",
+          "sla_targets": {
+            "api_availability": "99.9%",
+            "label_generation_p95": "3s",
+            "refund_processing_p95": "5s"
+          },
+          "alerts": [
+            "label_generation_error_rate > 1%",
+            "refund_queue_depth > 100",
+            "fraud_flag_rate > 10%",
+            "api_5xx_rate > 0.1%"
+          ],
+          "deliverables": [
+            "runbooks/label_service_outage.md",
+            "runbooks/payment_processor_downtime.md",
+            "runbooks/warehouse_backlog.md",
+            "runbooks/fraud_spike.md",
+            "sla_definitions.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 4 runbooks include: detection criteria, immediate mitigation steps, escalation path, and post-mortem template",
+          "Datadog dashboards cover: API latency, error rates, queue depths, refund pipeline throughput",
+          "PagerDuty alerts configured for all P0 conditions with on-call rotation defined",
+          "SLA definitions include measurement methodology and credit calculation for breaches",
+          "Runbooks tested in staging via tabletop exercises before production launch"
+        ],
+        "depends_on": [
+          12,
+          24
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 28,
+        "task_type": "DOCS",
+        "description": "Produce complete technical documentation: API reference (auto-generated from OpenAPI spec + narrative guides), merchant integration guide (Shopify setup, webhook configuration, SDK quickstart), warehouse operator setup guide, and architecture decision records (ADRs) for key design choices.",
+        "payload": {
+          "doc_types": [
+            "api_reference",
+            "merchant_integration_guide",
+            "warehouse_setup_guide",
+            "architecture_decision_records"
+          ],
+          "tools": [
+            "Mintlify or Docusaurus for API docs",
+            "Markdown for ADRs"
+          ],
+          "deliverables": [
+            "docs/api/",
+            "docs/guides/merchant_quickstart.md",
+            "docs/guides/warehouse_setup.md",
+            "docs/adr/"
+          ]
+        },
+        "acceptance_criteria": [
+          "API reference generated directly from openapi.yaml \u2014 no manual duplication",
+          "Merchant quickstart guide enables a developer with Shopify access to send first test return in under 30 minutes",
+          "Warehouse setup guide covers: hardware requirements, network setup, scanner pairing, and first-scan walkthrough",
+          "ADRs written for: database choice, tokenization approach, coordinator agent pattern, label carrier selection"
+        ],
+        "depends_on": [
+          10,
+          18,
+          19,
+          20
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 29,
+        "task_type": "TRAINING",
+        "description": "Create training materials for three user groups: (1) warehouse operators \u2014 video walkthrough of scan-to-receive and condition grading, (2) merchant administrators \u2014 onboarding video and configuration guide, (3) finance team \u2014 refund queue management and CSV export guide. Include in-app onboarding tooltips.",
+        "payload": {
+          "audiences": [
+            "warehouse_operators",
+            "merchant_admins",
+            "finance_team"
+          ],
+          "formats": [
+            "video_scripts",
+            "written_guides",
+            "in_app_tooltips",
+            "faq_docs"
+          ],
+          "deliverables": [
+            "training/warehouse_operator_guide.md",
+            "training/merchant_admin_onboarding.md",
+            "training/finance_team_guide.md",
+            "training/video_scripts/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Warehouse operator guide validated by at least one warehouse operator completing scan-to-receive without assistance",
+          "Merchant admin onboarding covers: return policy setup, label settings, webhook configuration, team invitation",
+          "In-app tooltips implemented for all first-time user flows (guided by ux_designer wireframes)",
+          "FAQ covers top 10 support questions identified during QA testing"
+        ],
+        "depends_on": [
+          23,
+          28
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 29,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 68,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 68,
+          "final_review": {
+            "score": 68,
+            "flaws": [
+              "Step 3 (UX Design) has no dependencies but its acceptance criteria reference return eligibility display and policy rules \u2014 content that only exists after Step 1 (Business Analysis). This will cause design rework when policy rules surface post-handoff.",
+              "Step 21 agentic coordinator runs 3 LLM calls per return. At Step 24's target of 1000 return initiations/minute, that's 3000 LLM calls/minute. No LLM provider rate limit analysis, no cost model, and the 8-second p95 SLA is unenforceable without a hard timeout + rule-based fallback when the LLM is slow or unavailable.",
+              "Step 9 tags PII columns but PostgreSQL Row-Level Security does not encrypt data at rest. No pgcrypto, application-level column encryption, or KMS-backed envelope encryption is specified. A compromised RDS snapshot exposes all PII in plaintext.",
+              "GDPR right-to-erasure (Step 6) directly conflicts with the append-only audit_log (Step 9) and SOC 2 evidence requirements (Step 26). The plan has no reconciliation strategy \u2014 you cannot anonymize PII in an immutable audit trail without a deliberate design (e.g., pseudonymization with a separately erasable key table).",
+              "Step 14 mentions EasyPost carrier failover in Step 24's acceptance criteria but Step 14 itself does not implement failover logic. The carrier fallback path (which carrier? direct API or secondary aggregator?) is untested and unimplemented.",
+              "Steps 13-17 use FastAPI + SQLAlchemy + Celery on ECS Fargate. No PgBouncer or connection pooler is specified. At 500 concurrent users, PostgreSQL's default max_connections (100) will be exhausted. This is a production-killing omission.",
+              "Step 16 (Stripe integration) does not explicitly call out Stripe-Signature header validation on incoming Stripe webhooks. This is a mandatory security control \u2014 without it, any caller can forge refund-issued events.",
+              "Customer portal order lookup (Step 18) uses order number + email or order number + zip code. Order numbers are typically sequential and zip codes have low entropy. This is an enumeration attack vector \u2014 a bad actor can iterate order numbers with common zip codes to harvest other customers' return status and PII.",
+              "Step 19 PWA offline mode queues scans locally but defines no conflict resolution strategy. If two warehouse operators scan the same item offline, or the backend processes a return while offline scans are queued, the sync will produce duplicate warehouse_receipt records with no defined resolution.",
+              "Step 16 exchange creation assumes Shopify's API handles 0-charge draft orders cleanly. In practice: Shopify's 2 req/s rate limit on standard plans, variant/inventory reservation complexity, and tax recalculation on exchanges create failure modes not addressed anywhere in the plan. No SLA defined for exchange order creation latency.",
+              "Celery async task failure handling (Step 13) has no dead letter queue, retry limit definition, or alerting for permanently failed tasks. If a refund Celery task fails after warehouse_receipt is confirmed, the return is stuck in a terminal state with no automated recovery path.",
+              "Step 17 analytics uses materialized views with 15-minute refresh. At scale (millions of returns across hundreds of merchants), REFRESH MATERIALIZED VIEW CONCURRENTLY on PostgreSQL will run long and degrade primary DB performance. No partitioning strategy or migration path to a dedicated analytics store (Redshift, BigQuery) is defined.",
+              "No feature flag or circuit breaker system is specified for the agentic components. If FraudScorerAgent starts producing systematically bad scores in production, the only rollback is a full deployment. This is unacceptable for a system processing real refunds.",
+              "Webhook delivery to merchants (Step 10, Step 27) has no idempotency key documentation or guidance for merchants. Duplicate delivery is expected in any at-least-once system. Merchants who don't implement idempotency will double-process refund events."
+            ],
+            "suggestions": [
+              "Add a hard timeout (2s) on each specialist agent call in the coordinator with a deterministic rule-based fallback for each: if FraudScorerAgent times out, apply conservative fraud score (e.g., 50); if RefundDecisionAgent times out, hold for manual review. This protects the p95 SLA regardless of LLM latency.",
+              "Add PgBouncer as a sidecar to each ECS task or use RDS Proxy. Document max_connections budget explicitly: (ECS task count \u00d7 workers per task) must be well under RDS max_connections.",
+              "Resolve the GDPR/audit log conflict explicitly: store PII in a separately keyed pseudonym table; audit_log stores only pseudonym IDs. On erasure request, delete the key \u2014 audit log events become permanently anonymized. Document this in the data architecture.",
+              "Add column-level encryption for PII fields (customer_email, customer_address, customer_name) using application-level AES-256 with KMS-managed keys. Tag encrypted columns in the data dictionary. RLS alone is not a substitute.",
+              "Implement order lookup rate limiting (max 10 attempts per IP per hour) and add CAPTCHA after 3 failed lookups. Consider requiring the last 4 digits of the order payment method instead of zip code for the second factor \u2014 higher entropy, same UX.",
+              "Define carrier failover explicitly in Step 14: primary EasyPost, fallback ShipStation or direct USPS API. Add a circuit breaker that switches carriers after 3 consecutive failures within 60 seconds. Test this path in Step 24.",
+              "Add Stripe webhook signature verification (stripe.webhooks.construct_event) as a named acceptance criterion in Step 16. Same for EasyPost tracking webhooks.",
+              "Add a feature flag system (LaunchDarkly or a simple DB-backed flags table) as part of Step 11 CONFIG. Gate the agentic components behind flags so they can be disabled instantly without a deployment.",
+              "Step 3 should declare a soft dependency on Step 1 (or at minimum, run after the return lifecycle mapping from Step 1 is complete). UX wireframes cannot be finalized without knowing the policy branching logic.",
+              "Add database index strategy to Step 9: composite indexes on (merchant_id, created_at), (merchant_id, status), (tracking_number), and partial indexes for active returns. These are not derivable from the schema alone and will determine whether analytics queries are fast or fatal.",
+              "Replace 'validated by at least one warehouse operator' (Step 29) with a minimum of 3 operators across different experience levels. Single-user validation cannot catch workflow ambiguity."
+            ],
+            "missing": [
+              "Merchant onboarding flow \u2014 no step covers how a new merchant connects their Shopify store, configures OAuth, and receives their first API key. This is a critical path that is implied but never built.",
+              "Label download URL expiry \u2014 generated label URLs should be signed S3 presigned URLs with a TTL (e.g., 72 hours). Permanent label URLs can be shared, enabling label reuse fraud.",
+              "SSRF protection for merchant-configured webhook URLs \u2014 merchants configure where webhooks are delivered. Without SSRF mitigation (allowlist of public IPs, block of RFC 1918 ranges), a malicious merchant can use the platform to probe internal AWS infrastructure.",
+              "PgBouncer / RDS Proxy in infrastructure plan \u2014 not in Terraform or Docker Compose specs.",
+              "Explicit Celery dead letter queue and failure alerting in the async task architecture.",
+              "Database partitioning strategy for the returns table \u2014 at scale this table will have hundreds of millions of rows. Range partitioning by created_at is necessary before launch, not post-launch.",
+              "Multi-tenant load test for data isolation \u2014 Step 24 mentions it in acceptance criteria but there is no dedicated test step that verifies merchant A's API key cannot access merchant B's data under concurrent load.",
+              "Shopify rate limit handling in the Shopify adapter (Step 16) \u2014 the 2 req/s limit and 429 backoff handling must be explicit.",
+              "Carrier API credential rotation procedure \u2014 EasyPost API keys are long-lived credentials. No key rotation runbook exists.",
+              "Cost model for LLM API calls in the agentic layer \u2014 Step 5 financial model covers postage and infrastructure but not LLM inference costs at 3000 calls/minute under peak load, which could be material."
+            ],
+            "security_risks": [
+              "Order enumeration via customer portal: sequential order numbers + low-entropy zip codes = enumerable customer PII. No rate limiting or lockout defined.",
+              "Missing Stripe-Signature webhook validation: any network actor between Stripe and the app can forge refund-issued events, triggering unauthorized refund confirmations.",
+              "IDOR on return status and label endpoints: if return IDs are sequential integers (not UUIDs) and endpoint authorization is insufficiently scoped, customers can access other merchants' or customers' return data. UUIDs are implied by PostgreSQL but not mandated in the schema spec.",
+              "SSRF via merchant webhook URL configuration: merchants can configure arbitrary webhook URLs; without IP allowlisting, this is an internal network probe vector.",
+              "RefundDecisionAgent adversarial input: a sophisticated merchant could craft return conditions that appear valid to the critic agent but result in over-refund. The agentic review chain needs deterministic bounds checks that are not LLM-delegatable.",
+              "PWA offline sync race condition: if offline scan queue replays to the backend after another operator has already processed the item, the duplicate receipt could trigger a second refund evaluation \u2014 double refund risk.",
+              "Label URL permanence: if labels are stored at predictable or permanent URLs, a stolen URL allows printing and reusing a return label for fraudulent returns of different items.",
+              "Condition grading tampering: the warehouse API grading endpoint (Step 15) must be authenticated and authorized to warehouse operator role only. If a customer-facing API key can call it (e.g., via parameter confusion), they can downgrade their own return condition to force a full refund despite damage."
+            ],
+            "summary": "This is a well-structured, unusually thorough plan for a returns management SaaS platform. The dependency graph is coherent, compliance considerations (PCI, SOC 2, GDPR) are addressed early, and the acceptance criteria are specific and testable. However, three categories of concrete production failures are unaddressed: (1) The agentic coordinator pattern is placed in the critical refund path with an 8-second SLA and no hard timeout or rule-based fallback \u2014 LLM latency variance will breach this SLA under any meaningful load, and 1000 returns/minute translates to ~3000 LLM calls/minute with no provider capacity plan. (2) Infrastructure gaps \u2014 missing connection pooling, no partitioning strategy, no Celery dead letter queue \u2014 will cause operational failures within weeks of launch at scale. (3) The GDPR right-to-erasure vs. immutable audit log tension is unresolved and represents a regulatory liability. The security posture is generally sound but has three specific exploitable gaps: order enumeration, missing Stripe webhook signature validation, and SSRF via merchant webhook URLs. Scoring 68: the core domain logic and architecture are sound enough for an MVP, but the agentic layer's production readiness and the infrastructure omissions require concrete remediation before a production launch serving real payments.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 68,
+              "flaws": [
+                "Step 3 (UX Design) has no dependencies but its acceptance criteria reference return eligibility display and policy rules \u2014 content that only exists after Step 1 (Business Analysis). This will cause design rework when policy rules surface post-handoff.",
+                "Step 21 agentic coordinator runs 3 LLM calls per return. At Step 24's target of 1000 return initiations/minute, that's 3000 LLM calls/minute. No LLM provider rate limit analysis, no cost model, and the 8-second p95 SLA is unenforceable without a hard timeout + rule-based fallback when the LLM is slow or unavailable.",
+                "Step 9 tags PII columns but PostgreSQL Row-Level Security does not encrypt data at rest. No pgcrypto, application-level column encryption, or KMS-backed envelope encryption is specified. A compromised RDS snapshot exposes all PII in plaintext.",
+                "GDPR right-to-erasure (Step 6) directly conflicts with the append-only audit_log (Step 9) and SOC 2 evidence requirements (Step 26). The plan has no reconciliation strategy \u2014 you cannot anonymize PII in an immutable audit trail without a deliberate design (e.g., pseudonymization with a separately erasable key table).",
+                "Step 14 mentions EasyPost carrier failover in Step 24's acceptance criteria but Step 14 itself does not implement failover logic. The carrier fallback path (which carrier? direct API or secondary aggregator?) is untested and unimplemented.",
+                "Steps 13-17 use FastAPI + SQLAlchemy + Celery on ECS Fargate. No PgBouncer or connection pooler is specified. At 500 concurrent users, PostgreSQL's default max_connections (100) will be exhausted. This is a production-killing omission.",
+                "Step 16 (Stripe integration) does not explicitly call out Stripe-Signature header validation on incoming Stripe webhooks. This is a mandatory security control \u2014 without it, any caller can forge refund-issued events.",
+                "Customer portal order lookup (Step 18) uses order number + email or order number + zip code. Order numbers are typically sequential and zip codes have low entropy. This is an enumeration attack vector \u2014 a bad actor can iterate order numbers with common zip codes to harvest other customers' return status and PII.",
+                "Step 19 PWA offline mode queues scans locally but defines no conflict resolution strategy. If two warehouse operators scan the same item offline, or the backend processes a return while offline scans are queued, the sync will produce duplicate warehouse_receipt records with no defined resolution.",
+                "Step 16 exchange creation assumes Shopify's API handles 0-charge draft orders cleanly. In practice: Shopify's 2 req/s rate limit on standard plans, variant/inventory reservation complexity, and tax recalculation on exchanges create failure modes not addressed anywhere in the plan. No SLA defined for exchange order creation latency.",
+                "Celery async task failure handling (Step 13) has no dead letter queue, retry limit definition, or alerting for permanently failed tasks. If a refund Celery task fails after warehouse_receipt is confirmed, the return is stuck in a terminal state with no automated recovery path.",
+                "Step 17 analytics uses materialized views with 15-minute refresh. At scale (millions of returns across hundreds of merchants), REFRESH MATERIALIZED VIEW CONCURRENTLY on PostgreSQL will run long and degrade primary DB performance. No partitioning strategy or migration path to a dedicated analytics store (Redshift, BigQuery) is defined.",
+                "No feature flag or circuit breaker system is specified for the agentic components. If FraudScorerAgent starts producing systematically bad scores in production, the only rollback is a full deployment. This is unacceptable for a system processing real refunds.",
+                "Webhook delivery to merchants (Step 10, Step 27) has no idempotency key documentation or guidance for merchants. Duplicate delivery is expected in any at-least-once system. Merchants who don't implement idempotency will double-process refund events."
+              ],
+              "suggestions": [
+                "Add a hard timeout (2s) on each specialist agent call in the coordinator with a deterministic rule-based fallback for each: if FraudScorerAgent times out, apply conservative fraud score (e.g., 50); if RefundDecisionAgent times out, hold for manual review. This protects the p95 SLA regardless of LLM latency.",
+                "Add PgBouncer as a sidecar to each ECS task or use RDS Proxy. Document max_connections budget explicitly: (ECS task count \u00d7 workers per task) must be well under RDS max_connections.",
+                "Resolve the GDPR/audit log conflict explicitly: store PII in a separately keyed pseudonym table; audit_log stores only pseudonym IDs. On erasure request, delete the key \u2014 audit log events become permanently anonymized. Document this in the data architecture.",
+                "Add column-level encryption for PII fields (customer_email, customer_address, customer_name) using application-level AES-256 with KMS-managed keys. Tag encrypted columns in the data dictionary. RLS alone is not a substitute.",
+                "Implement order lookup rate limiting (max 10 attempts per IP per hour) and add CAPTCHA after 3 failed lookups. Consider requiring the last 4 digits of the order payment method instead of zip code for the second factor \u2014 higher entropy, same UX.",
+                "Define carrier failover explicitly in Step 14: primary EasyPost, fallback ShipStation or direct USPS API. Add a circuit breaker that switches carriers after 3 consecutive failures within 60 seconds. Test this path in Step 24.",
+                "Add Stripe webhook signature verification (stripe.webhooks.construct_event) as a named acceptance criterion in Step 16. Same for EasyPost tracking webhooks.",
+                "Add a feature flag system (LaunchDarkly or a simple DB-backed flags table) as part of Step 11 CONFIG. Gate the agentic components behind flags so they can be disabled instantly without a deployment.",
+                "Step 3 should declare a soft dependency on Step 1 (or at minimum, run after the return lifecycle mapping from Step 1 is complete). UX wireframes cannot be finalized without knowing the policy branching logic.",
+                "Add database index strategy to Step 9: composite indexes on (merchant_id, created_at), (merchant_id, status), (tracking_number), and partial indexes for active returns. These are not derivable from the schema alone and will determine whether analytics queries are fast or fatal.",
+                "Replace 'validated by at least one warehouse operator' (Step 29) with a minimum of 3 operators across different experience levels. Single-user validation cannot catch workflow ambiguity."
+              ],
+              "missing": [
+                "Merchant onboarding flow \u2014 no step covers how a new merchant connects their Shopify store, configures OAuth, and receives their first API key. This is a critical path that is implied but never built.",
+                "Label download URL expiry \u2014 generated label URLs should be signed S3 presigned URLs with a TTL (e.g., 72 hours). Permanent label URLs can be shared, enabling label reuse fraud.",
+                "SSRF protection for merchant-configured webhook URLs \u2014 merchants configure where webhooks are delivered. Without SSRF mitigation (allowlist of public IPs, block of RFC 1918 ranges), a malicious merchant can use the platform to probe internal AWS infrastructure.",
+                "PgBouncer / RDS Proxy in infrastructure plan \u2014 not in Terraform or Docker Compose specs.",
+                "Explicit Celery dead letter queue and failure alerting in the async task architecture.",
+                "Database partitioning strategy for the returns table \u2014 at scale this table will have hundreds of millions of rows. Range partitioning by created_at is necessary before launch, not post-launch.",
+                "Multi-tenant load test for data isolation \u2014 Step 24 mentions it in acceptance criteria but there is no dedicated test step that verifies merchant A's API key cannot access merchant B's data under concurrent load.",
+                "Shopify rate limit handling in the Shopify adapter (Step 16) \u2014 the 2 req/s limit and 429 backoff handling must be explicit.",
+                "Carrier API credential rotation procedure \u2014 EasyPost API keys are long-lived credentials. No key rotation runbook exists.",
+                "Cost model for LLM API calls in the agentic layer \u2014 Step 5 financial model covers postage and infrastructure but not LLM inference costs at 3000 calls/minute under peak load, which could be material."
+              ],
+              "security_risks": [
+                "Order enumeration via customer portal: sequential order numbers + low-entropy zip codes = enumerable customer PII. No rate limiting or lockout defined.",
+                "Missing Stripe-Signature webhook validation: any network actor between Stripe and the app can forge refund-issued events, triggering unauthorized refund confirmations.",
+                "IDOR on return status and label endpoints: if return IDs are sequential integers (not UUIDs) and endpoint authorization is insufficiently scoped, customers can access other merchants' or customers' return data. UUIDs are implied by PostgreSQL but not mandated in the schema spec.",
+                "SSRF via merchant webhook URL configuration: merchants can configure arbitrary webhook URLs; without IP allowlisting, this is an internal network probe vector.",
+                "RefundDecisionAgent adversarial input: a sophisticated merchant could craft return conditions that appear valid to the critic agent but result in over-refund. The agentic review chain needs deterministic bounds checks that are not LLM-delegatable.",
+                "PWA offline sync race condition: if offline scan queue replays to the backend after another operator has already processed the item, the duplicate receipt could trigger a second refund evaluation \u2014 double refund risk.",
+                "Label URL permanence: if labels are stored at predictable or permanent URLs, a stolen URL allows printing and reusing a return label for fraudulent returns of different items.",
+                "Condition grading tampering: the warehouse API grading endpoint (Step 15) must be authenticated and authorized to warehouse operator role only. If a customer-facing API key can call it (e.g., via parameter confusion), they can downgrade their own return condition to force a full refund despite damage."
+              ],
+              "summary": "This is a well-structured, unusually thorough plan for a returns management SaaS platform. The dependency graph is coherent, compliance considerations (PCI, SOC 2, GDPR) are addressed early, and the acceptance criteria are specific and testable. However, three categories of concrete production failures are unaddressed: (1) The agentic coordinator pattern is placed in the critical refund path with an 8-second SLA and no hard timeout or rule-based fallback \u2014 LLM latency variance will breach this SLA under any meaningful load, and 1000 returns/minute translates to ~3000 LLM calls/minute with no provider capacity plan. (2) Infrastructure gaps \u2014 missing connection pooling, no partitioning strategy, no Celery dead letter queue \u2014 will cause operational failures within weeks of launch at scale. (3) The GDPR right-to-erasure vs. immutable audit log tension is unresolved and represents a regulatory liability. The security posture is generally sound but has three specific exploitable gaps: order enumeration, missing Stripe webhook signature validation, and SSRF via merchant webhook URLs. Scoring 68: the core domain logic and architecture are sound enough for an MVP, but the agentic layer's production readiness and the infrastructure omissions require concrete remediation before a production launch serving real payments.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T06:24:39.752582+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 194.27,
+      "critic_plan": 125.62
+    }
+  }
+}

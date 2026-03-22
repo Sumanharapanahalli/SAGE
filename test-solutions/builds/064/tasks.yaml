@@ -1,0 +1,202 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements, success metrics, and technical constraints
+      for the recommendation engine including latency SLAs, throughput targets, and
+      business KPIs.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD documents all functional and non-functional requirements
+    - Latency budget allocated across feature retrieval, model inference, and response
+      serialization
+    - 'Success metrics defined: CTR, NDCG@k, conversion rate, exploration/exploitation
+      ratio'
+    - Throughput and concurrency targets documented (e.g. 10k RPS)
+    depends_on: []
+  DATA:
+    description: Design the data model and event schema for user interactions (clicks,
+      impressions, conversions, ratings) and item catalog. Define Kafka topic schemas
+      and Avro/Protobuf contracts.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Protobuf schemas defined and versioned for all event types
+    - Item catalog schema supports sparse and dense feature vectors
+    - User context schema captures real-time signals (device, session, geo)
+    - Schema registry configured with compatibility mode set to BACKWARD
+    depends_on:
+    - 1
+  INFRA:
+    description: 'Provision core infrastructure: Kubernetes cluster, Kafka cluster
+      for event streaming, Redis cluster for feature caching, and object storage for
+      model artifacts.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Kubernetes cluster running with autoscaling node groups
+    - Kafka cluster deployed with 3 brokers, replication factor 3
+    - Redis cluster running with <1ms p99 read latency under load
+    - S3 bucket with versioning and lifecycle policies for model artifacts
+    - Terraform state stored remotely with locking
+    depends_on:
+    - 1
+  DATABASE:
+    description: 'Design and provision the feature store schema using a dual-store
+      architecture: online store (Redis) for low-latency serving and offline store
+      (PostgreSQL + Parquet on S3) for training.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - 'Redis schema defined with consistent key naming: {entity_type}:{entity_id}:{feature_group}'
+    - PostgreSQL schema for feature group registry, entity definitions, and feature
+      metadata
+    - 'Parquet partition layout defined: /offline/{feature_group}/date={YYYY-MM-DD}/'
+    - TTL policies enforced on all Redis keys
+    - Point-in-time correct feature retrieval supported for training data generation
+    depends_on:
+    - 2
+    - 3
+  ML_MODEL:
+    description: Train collaborative filtering model (matrix factorization / neural
+      CF) for candidate generation. Produce user and item embedding vectors stored
+      in the feature store.
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Two-Tower model achieves NDCG@10 >= 0.15 on held-out validation set
+    - Recall@50 >= 0.40 (50 candidates contain the positive item 40% of the time)
+    - User and item embeddings exported to FAISS index for ANN retrieval
+    - Model artifacts versioned and stored in S3 with training metadata
+    - Embedding refresh pipeline scheduled weekly
+    - Bias evaluation performed
+    - Model card generated
+    depends_on:
+    - 6
+  BACKEND:
+    description: 'Build the feature store service API: CRUD endpoints for feature
+      group management, bulk feature read/write, and low-latency batch fetch for serving.'
+    agent_role: developer
+    acceptance_criteria:
+    - Batch feature GET for 100 entities completes within 5ms p99
+    - Redis pipeline batching used (no N+1 round trips)
+    - Feature schema validation on write (type checking, range validation)
+    - OpenAPI spec auto-generated and accurate
+    - gRPC interface available alongside REST for internal service-to-service calls
+    depends_on:
+    - 4
+    - 5
+  CONFIG:
+    description: 'Configure the agentic coordinator pattern for the recommendation
+      pipeline: a coordinator agent that routes training, evaluation, and serving
+      optimization tasks to specialist sub-agents (data, ML, devops).'
+    agent_role: developer
+    acceptance_criteria:
+    - SAGE solution YAML files scaffolded for recommendation_engine
+    - Coordinator agent defined in prompts.yaml with routing logic for all specialist
+      agents
+    - 'Task types registered in tasks.yaml: model_retrain, bandit_update, experiment_analysis,
+      feature_backfill'
+    - Agent trigger conditions wired to Kafka events (model_drift topic, data_ready
+      topic)
+    - HITL gate configured for model promotion to production (human approval required)
+    depends_on:
+    - 11
+    - 12
+  DEVOPS:
+    description: Build CI/CD pipelines for model training (MLflow), serving containers
+      (Docker + Kubernetes), and automated canary deployments with latency gate checks.
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - MLflow experiment tracking records all training runs with parameters, metrics,
+      and artifacts
+    - Model promotion to staging requires passing offline evaluation gates (NDCG@10,
+      Recall@50)
+    - Canary deployment pipeline deploys to 5% traffic first, monitors for 10 minutes
+      before expanding
+    - Automated rollback triggered if p99 latency exceeds SLA or error rate spikes
+    - All pipeline stages produce auditable logs stored in S3
+    depends_on:
+    - 7
+    - 8
+    - 11
+    - 3
+  SECURITY:
+    description: 'Perform threat model and security review for the recommendation
+      system: user data access controls, feature store authorization, experiment data
+      integrity, and PII handling.'
+    agent_role: developer
+    acceptance_criteria:
+    - Threat model document covers STRIDE categories for all API surfaces
+    - PII fields pseudonymized before storage (user_id is a UUID, no raw identifiers)
+    - 'RBAC enforced: read-only role for analytics, write role for ingestion services
+      only'
+    - 'GDPR deletion workflow documented: wipes Redis keys, marks Parquet records
+      as deleted'
+    - Dependency SBOM generated and scanned for CVEs with no critical findings unmitigated
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 14
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: feature
+      store service, recommendation API, A/B testing framework, and feedback ingestion.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage >= 85% for src/ modules
+    - Integration tests cover happy path and failure modes (Redis down, FAISS miss,
+      empty candidates)
+    - Bandit UCB arithmetic verified against known numerical examples
+    - 'A/B bucketing test: 10k simulated users produce statistically equal split (chi-square
+      test passes)'
+    - All tests run in CI in under 5 minutes without external dependencies
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 14
+  SYSTEM_TEST:
+    description: 'End-to-end system test and load test: validate sub-100ms p99 latency
+      under realistic production load (1000+ RPS) and verify correctness of the full
+      recommendation pipeline.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 1000 RPS sustained for 10 minutes with p99 latency < 100ms
+    - 'Zero correctness violations: no inactive items, no cross-experiment contamination'
+    - System recovers from Redis node failure within 30 seconds with no serving errors
+    - 'Cold start (empty cache) degrades gracefully: latency increases but requests
+      succeed'
+    - Load test report generated with percentile breakdown and error rate
+    depends_on:
+    - 16
+    - 18
+    - 15
+  FRONTEND:
+    description: 'Build the recommendation engine admin dashboard: experiment management
+      UI, model performance monitoring, feature store explorer, and A/B test results
+      visualization.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'Experiments page supports full CRUD: create experiment, set traffic split,
+      view assignments, conclude'
+    - Model metrics page shows NDCG@10 and Recall@50 trend lines with training run
+      annotations
+    - Feature store page allows searching entities by ID and inspecting feature values
+      with TTL
+    - Latency dashboard shows real-time p50/p95/p99 with SLA threshold line
+    - All pages load within 2 seconds and are mobile-responsive
+    depends_on:
+    - 12
+    - 16
+    - 13
+  DOCS:
+    description: 'Write technical documentation: system architecture overview, API
+      reference, runbook for on-call, and developer onboarding guide.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Architecture doc includes sequence diagram for the full recommend request flow
+    - API reference auto-generated from OpenAPI spec and manually reviewed for accuracy
+    - On-call runbook covers every Prometheus alert with triage steps and escalation
+      path
+    - Developer can set up local environment and run all tests following the guide
+      with zero tribal knowledge
+    - A/B testing guide explains statistical methodology and early-stopping policy
+    depends_on:
+    - 19
+    - 20
+    - 21

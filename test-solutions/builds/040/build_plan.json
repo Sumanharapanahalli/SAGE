@@ -1,0 +1,999 @@
+{
+  "run_id": "769f81d2-f733-4ba1-851a-aedfd945cc7a",
+  "status": {
+    "run_id": "769f81d2-f733-4ba1-851a-aedfd945cc7a",
+    "solution_name": "api_gateway",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T05:35:17.672511+00:00",
+    "updated_at": "2026-03-22T05:39:47.447028+00:00",
+    "product_description": "API management platform with gateway proxy, rate limiting, API key management, developer portal, OpenAPI documentation, and usage analytics.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the API management market: profile Kong, Apigee, AWS API Gateway, Tyk, MuleSoft, and Azure APIM. Identify pricing tiers, differentiation gaps, ICP segments (startups vs enterprise), and positioning opportunity for api_gateway.",
+        "payload": {
+          "competitors": [
+            "Kong",
+            "Apigee",
+            "AWS API Gateway",
+            "Tyk",
+            "MuleSoft",
+            "Azure APIM"
+          ],
+          "deliverables": [
+            "competitor_matrix.md",
+            "positioning_map.md",
+            "icp_segments.md",
+            "gtm_strategy.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitor matrix covers pricing, features, and target segments for at least 5 competitors",
+          "Positioning map identifies at least 2 defensible differentiation angles",
+          "ICP segments defined with firmographic and behavioral attributes",
+          "GTM strategy includes channel mix and launch sequencing"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements and user stories for all personas: API consumers (developers), API publishers, and platform admins. Map end-to-end process flows for onboarding, key provisioning, rate limit configuration, and analytics review.",
+        "payload": {
+          "personas": [
+            "API Developer (consumer)",
+            "API Publisher (provider)",
+            "Platform Admin"
+          ],
+          "process_flows": [
+            "developer_onboarding",
+            "api_key_provisioning",
+            "rate_limit_configuration",
+            "usage_analytics_review"
+          ],
+          "deliverables": [
+            "business_requirements.md",
+            "user_stories.md",
+            "process_flow_diagrams.md",
+            "roi_analysis.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "At least 20 user stories written in standard format with acceptance criteria",
+          "All three persona journeys fully mapped with swimlane diagrams",
+          "ROI analysis includes payback period and NPV projections",
+          "Business requirements traceable to product features",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "FINANCIAL",
+        "description": "Build the financial model for api_gateway: pricing tiers (free, developer, pro, enterprise), unit economics (cost per API call, infra cost per tenant), revenue projections for 3 years, and break-even analysis.",
+        "payload": {
+          "pricing_tiers": [
+            "free",
+            "developer",
+            "pro",
+            "enterprise"
+          ],
+          "unit_economics": [
+            "cost_per_million_requests",
+            "infra_cost_per_tenant",
+            "support_cost"
+          ],
+          "deliverables": [
+            "pricing_strategy.md",
+            "financial_model.xlsx",
+            "break_even_analysis.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Pricing tiers defined with request quotas, rate limits, and feature gates",
+          "Unit economics calculated for each tier at 3 scale levels (100, 1k, 10k tenants)",
+          "3-year P&L projection with monthly granularity in year 1",
+          "Break-even analysis identifies customer count threshold per tier",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 4,
+        "task_type": "LEGAL",
+        "description": "Draft all legal artifacts for api_gateway: Terms of Service, Privacy Policy (GDPR/CCPA aligned), API usage policy, data processing agreement (DPA) template for enterprise customers, and open-source license review for dependencies.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "api_usage_policy.md",
+            "dpa_template.md",
+            "license_review.md"
+          ],
+          "standards": [
+            "GDPR",
+            "CCPA"
+          ],
+          "scope": "SaaS API platform with EU and US customers"
+        },
+        "acceptance_criteria": [
+          "ToS covers acceptable use, SLA disclaimers, rate limit enforcement rights, and termination clauses",
+          "Privacy Policy addresses data retention, processing basis, and user rights under GDPR/CCPA",
+          "API usage policy defines prohibited use cases and enforcement actions",
+          "DPA template compliant with GDPR Article 28 requirements",
+          "All key open-source dependencies license-reviewed for commercial use compatibility",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 5,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce the Product Requirements Document (PRD), feature prioritization matrix (RICE scored), and 12-month roadmap with quarterly milestones. Define success metrics and KPIs for each major feature cluster: gateway, rate limiting, key management, developer portal, analytics.",
+        "payload": {
+          "feature_clusters": [
+            "gateway_proxy",
+            "rate_limiting",
+            "api_key_management",
+            "developer_portal",
+            "openapi_docs",
+            "usage_analytics"
+          ],
+          "prioritization_method": "RICE",
+          "deliverables": [
+            "prd.md",
+            "roadmap.md",
+            "success_metrics.md",
+            "feature_priority_matrix.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all 6 feature clusters with functional and non-functional requirements",
+          "Every feature RICE-scored with reach, impact, confidence, effort values documented",
+          "12-month roadmap with quarterly milestones and explicit MVP scope",
+          "Success metrics defined for each cluster (e.g., p99 gateway latency < 5ms, API key provisioning < 3 clicks)",
+          "PRD reviewed against business requirements from step 2 \u2014 all BRs traceable"
+        ],
+        "depends_on": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 6,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research interviews with 5+ API developers. Produce wireframes and interaction designs for: developer portal (registration, key management, docs explorer, usage dashboard), admin dashboard (tenant management, rate limit config, analytics), and onboarding flow.",
+        "payload": {
+          "research_method": "user_interviews",
+          "participant_count": 5,
+          "surfaces": [
+            "developer_portal",
+            "admin_dashboard",
+            "onboarding_flow",
+            "api_key_management_ui",
+            "usage_analytics_ui"
+          ],
+          "deliverables": [
+            "user_research_report.md",
+            "wireframes/",
+            "interaction_spec.md",
+            "accessibility_audit.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "User research report synthesizes findings from at least 5 interviews with actionable insights",
+          "Wireframes cover all 5 surfaces with annotated interaction notes",
+          "Onboarding flow achieves first API call in under 5 user actions in prototype testing",
+          "Accessibility audit confirms WCAG 2.1 AA compliance for all designed components",
+          "Interaction spec defines error states, loading states, and empty states for each surface"
+        ],
+        "depends_on": [
+          2,
+          5
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design the complete OpenAPI 3.1 specification for all api_gateway internal and external APIs: gateway proxy endpoint schema, admin API (tenant/key/rate-limit CRUD), developer portal API, analytics query API, and webhook event schema.",
+        "payload": {
+          "api_surfaces": [
+            "gateway_proxy",
+            "admin_api",
+            "developer_portal_api",
+            "analytics_api",
+            "webhook_events"
+          ],
+          "spec_format": "OpenAPI 3.1",
+          "deliverables": [
+            "openapi/gateway.yaml",
+            "openapi/admin.yaml",
+            "openapi/portal.yaml",
+            "openapi/analytics.yaml",
+            "openapi/webhooks.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "All endpoints defined with request/response schemas, error codes, and authentication requirements",
+          "OpenAPI specs pass validation with no errors (openapi-validator)",
+          "Rate limiting headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset) standardized across all specs",
+          "Webhook event schema covers: key.created, key.revoked, rate_limit.exceeded, quota.exhausted",
+          "Specs reviewed against PRD \u2014 all required operations covered"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design the data schema for api_gateway: tenants, API keys (hashed), routes, rate limit policies (token bucket config), request logs (time-series), usage aggregates, audit events. Choose PostgreSQL for relational data and Redis for rate limit counters.",
+        "payload": {
+          "datastores": {
+            "postgresql": [
+              "tenants",
+              "api_keys",
+              "routes",
+              "rate_limit_policies",
+              "audit_events"
+            ],
+            "redis": [
+              "rate_limit_counters",
+              "key_lookup_cache",
+              "request_id_dedup"
+            ],
+            "timeseries": [
+              "request_logs_aggregates"
+            ]
+          },
+          "deliverables": [
+            "schema/migrations/",
+            "schema/erd.md",
+            "schema/redis_key_design.md",
+            "schema/seed_data.sql"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD covers all entities with cardinality and FK constraints documented",
+          "API key stored as bcrypt hash \u2014 plaintext never persisted after creation",
+          "Rate limit counter schema supports sliding window and token bucket algorithms",
+          "Migrations are idempotent and include rollback scripts",
+          "Seed data includes 3 tiers of test tenants, 10 sample routes, and 50 test API keys",
+          "Redis key naming convention documented and enforced with TTL strategy per key type"
+        ],
+        "depends_on": [
+          5,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "COMPLIANCE",
+        "description": "Define the SOC 2 Type II evidence collection framework for api_gateway. Map Trust Service Criteria (Security, Availability, Confidentiality) to implemented controls. Produce control matrix, audit log requirements, and evidence collection runbook.",
+        "payload": {
+          "standard": "SOC 2 Type II",
+          "trust_criteria": [
+            "Security (CC)",
+            "Availability (A)",
+            "Confidentiality (C)"
+          ],
+          "deliverables": [
+            "compliance/soc2_control_matrix.md",
+            "compliance/audit_log_spec.md",
+            "compliance/evidence_collection_runbook.md",
+            "compliance/vendor_review_checklist.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Control matrix maps every applicable TSC criterion to a specific technical or procedural control",
+          "Audit log spec defines retention (minimum 12 months), immutability requirement, and query interface",
+          "Evidence collection runbook is executable \u2014 each control has named artifact and collection cadence",
+          "Vendor review checklist covers all third-party services (cloud provider, monitoring, email) with risk ratings",
+          "Gap analysis identifies any controls not yet implemented with remediation priority"
+        ],
+        "depends_on": [
+          4,
+          5
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 10,
+        "task_type": "CONFIG",
+        "description": "Scaffold the api_gateway project: monorepo structure, Docker Compose dev environment (PostgreSQL, Redis, gateway, portal, admin), environment variable schema (.env.example), Makefile targets, pre-commit hooks (lint, type-check, secret scanning), and dependency manifests.",
+        "payload": {
+          "structure": {
+            "services": [
+              "gateway",
+              "admin-api",
+              "portal-api",
+              "analytics-worker",
+              "portal-frontend",
+              "admin-frontend"
+            ],
+            "infra": [
+              "docker-compose.yml",
+              "docker-compose.test.yml"
+            ]
+          },
+          "tooling": [
+            "pre-commit",
+            "ruff/eslint",
+            "mypy/tsc",
+            "gitleaks"
+          ],
+          "deliverables": [
+            "docker-compose.yml",
+            ".env.example",
+            "Makefile",
+            ".pre-commit-config.yaml",
+            "pyproject.toml",
+            "package.json"
+          ]
+        },
+        "acceptance_criteria": [
+          "`make dev` brings up all services with health checks passing within 60 seconds",
+          ".env.example documents every required variable with description and example value",
+          "Pre-commit hooks block commits with: lint errors, type errors, or detected secrets",
+          "Docker Compose uses named volumes for PostgreSQL and Redis persistence across restarts",
+          "All services declare explicit healthcheck endpoints used by Docker Compose depends_on"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build the core gateway proxy service: reverse proxy with dynamic route resolution from DB, request/response transformation (header injection, path rewriting), upstream health checking, circuit breaker, and TLS termination. Implement async request handling targeting p99 < 5ms overhead.",
+        "payload": {
+          "language": "Python (FastAPI + httpx) or Go (net/http)",
+          "patterns": [
+            "reverse_proxy",
+            "circuit_breaker",
+            "health_checking"
+          ],
+          "features": [
+            "dynamic_route_resolution",
+            "header_injection",
+            "path_rewriting",
+            "tls_termination"
+          ],
+          "deliverables": [
+            "services/gateway/",
+            "services/gateway/Dockerfile",
+            "services/gateway/tests/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Gateway proxies requests to registered upstream routes with correct header forwarding",
+          "p99 added latency < 5ms measured under 1000 req/s load in local benchmark",
+          "Circuit breaker trips after 5 consecutive upstream failures and recovers after 30s",
+          "Unknown routes return RFC 7807 Problem Details JSON with 404 status",
+          "TLS termination works with self-signed cert in dev and configurable cert paths in prod",
+          "All route configs loaded from DB at startup with 30s hot-reload interval"
+        ],
+        "depends_on": [
+          7,
+          8,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement the rate limiting engine: sliding window and token bucket algorithms using Redis atomic Lua scripts. Support per-key, per-tenant, and per-route limit tiers. Emit standard rate limit headers and return 429 responses with Retry-After on exhaustion.",
+        "payload": {
+          "algorithms": [
+            "sliding_window",
+            "token_bucket"
+          ],
+          "granularities": [
+            "per_api_key",
+            "per_tenant",
+            "per_route",
+            "global"
+          ],
+          "storage": "Redis (Lua atomic scripts)",
+          "deliverables": [
+            "services/gateway/rate_limiter.py",
+            "services/gateway/lua/sliding_window.lua",
+            "services/gateway/lua/token_bucket.lua"
+          ]
+        },
+        "acceptance_criteria": [
+          "Sliding window algorithm passes correctness tests for boundary edge cases (requests at window boundary)",
+          "Token bucket refill is accurate to within 1% over 60-second test window",
+          "Rate limit check adds < 1ms latency at p99 under Redis load",
+          "429 response includes Retry-After header with correct seconds-until-reset value",
+          "Standard headers set on every response: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset",
+          "Per-key limits override per-tenant limits; per-route limits apply independently"
+        ],
+        "depends_on": [
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build the API key management service: key generation (cryptographically secure, prefixed format `sk_live_...`), bcrypt hashing for storage, key lookup cache in Redis (5-min TTL), key metadata (name, scopes, expiry, tenant), revocation, and rotation flow.",
+        "payload": {
+          "key_format": "sk_{env}_{random_32_bytes_base62}",
+          "storage": "bcrypt hash in PostgreSQL + plaintext lookup cache in Redis",
+          "features": [
+            "key_generation",
+            "revocation",
+            "rotation",
+            "scope_enforcement",
+            "expiry"
+          ],
+          "deliverables": [
+            "services/admin-api/key_manager.py",
+            "services/admin-api/routes/keys.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Generated keys pass entropy check (min 128-bit effective entropy)",
+          "Plaintext key returned exactly once at creation \u2014 never again retrievable",
+          "Key lookup resolves in < 2ms from Redis cache hit",
+          "Revoked keys rejected within 5 seconds of revocation (cache invalidation)",
+          "Key rotation generates new key and sets old key grace period (configurable, default 24h)",
+          "Scope enforcement blocks requests to routes outside declared key scopes with 403"
+        ],
+        "depends_on": [
+          8,
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "DATA",
+        "description": "Build the usage analytics data pipeline: async request log emission from gateway (Kafka or Redis Streams), aggregation worker (hourly/daily rollups by tenant, key, route, status code), storage in time-series table, and query API with filtering, grouping, and time bucketing.",
+        "payload": {
+          "pipeline": "gateway \u2192 Redis Streams \u2192 analytics_worker \u2192 PostgreSQL (time-series)",
+          "aggregations": [
+            "requests_per_hour",
+            "error_rate",
+            "p50/p95/p99_latency",
+            "top_routes",
+            "top_keys"
+          ],
+          "retention": "raw logs 7 days, hourly aggregates 90 days, daily aggregates 2 years",
+          "deliverables": [
+            "services/analytics-worker/",
+            "services/admin-api/routes/analytics.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Gateway emits structured log events to Redis Stream with < 0.5ms overhead per request",
+          "Analytics worker processes 10k events/s without lag accumulation under sustained load",
+          "Hourly aggregates available within 5 minutes of the close of each hour",
+          "Query API supports: time range, tenant_id, api_key_id, route_id, status_code filters",
+          "Data retention policy enforced by scheduled cleanup job with idempotent execution",
+          "Query for 30-day dashboard data returns in < 500ms for p95"
+        ],
+        "depends_on": [
+          8,
+          10
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Build the developer portal backend API: self-service registration, API key CRUD (list, create, revoke, rotate), route catalog browsing, OpenAPI spec serving, usage dashboard data endpoints, webhook subscription management, and account settings.",
+        "payload": {
+          "features": [
+            "self_registration",
+            "key_crud",
+            "route_catalog",
+            "openapi_serving",
+            "usage_dashboard_api",
+            "webhooks",
+            "account_settings"
+          ],
+          "auth": "JWT (short-lived) + refresh token rotation",
+          "deliverables": [
+            "services/portal-api/",
+            "services/portal-api/routes/",
+            "services/portal-api/Dockerfile"
+          ]
+        },
+        "acceptance_criteria": [
+          "Self-registration flow sends email verification before account activation",
+          "JWT access tokens expire in 15 minutes; refresh tokens expire in 7 days with rotation",
+          "API key list endpoint paginates correctly (cursor-based) for tenants with 1000+ keys",
+          "OpenAPI spec endpoint serves merged spec for all routes the developer's plan has access to",
+          "Webhook delivery includes HMAC-SHA256 signature header for consumer verification",
+          "All portal API endpoints return consistent RFC 7807 error responses"
+        ],
+        "depends_on": [
+          11,
+          13,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build the developer portal React frontend: registration/login, API key management dashboard (create/list/revoke/rotate), interactive OpenAPI docs explorer (Swagger UI or Redoc), real-time usage charts, and account settings. Implement designs from UX step 6.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "pages": [
+            "register",
+            "login",
+            "keys",
+            "docs",
+            "analytics",
+            "settings",
+            "webhooks"
+          ],
+          "components": [
+            "KeyCard",
+            "UsageChart",
+            "DocExplorer",
+            "OnboardingFlow"
+          ],
+          "design_source": "wireframes from step 6",
+          "deliverables": [
+            "apps/portal-frontend/",
+            "apps/portal-frontend/Dockerfile"
+          ]
+        },
+        "acceptance_criteria": [
+          "First meaningful paint < 1.5s on 3G simulated connection (Lighthouse audit)",
+          "Onboarding flow: registration \u2192 key creation \u2192 first test request completable in under 5 clicks",
+          "OpenAPI explorer renders all routes with try-it-out working against live gateway using developer's key",
+          "Usage charts update without page reload; polling interval configurable (default 30s)",
+          "All pages pass WCAG 2.1 AA automated checks (axe-core)",
+          "Key creation modal shows plaintext key exactly once with copy button and clear warning"
+        ],
+        "depends_on": [
+          6,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build the admin dashboard React frontend: tenant management (CRUD, plan assignment, suspension), route management (upstream config, middleware chain), rate limit policy editor, system-wide analytics, audit log viewer, and SOC 2 evidence export.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "pages": [
+            "tenants",
+            "routes",
+            "rate-limits",
+            "analytics",
+            "audit-log",
+            "compliance"
+          ],
+          "components": [
+            "TenantTable",
+            "RouteEditor",
+            "RateLimitPolicyForm",
+            "AuditLogViewer"
+          ],
+          "design_source": "wireframes from step 6",
+          "deliverables": [
+            "apps/admin-frontend/",
+            "apps/admin-frontend/Dockerfile"
+          ]
+        },
+        "acceptance_criteria": [
+          "Route editor allows upstream URL, path prefix, middleware selection, and rate limit policy assignment without requiring service restart",
+          "Tenant suspension takes effect within 5 seconds of admin action (key cache invalidation)",
+          "Audit log viewer supports full-text search and date range filtering across 12 months of events",
+          "Analytics dashboard shows system-wide request volume, error rates, and top consumers with 1-minute resolution",
+          "Compliance export generates SOC 2 evidence bundle (audit CSV + control summary) in one click",
+          "Role-based access: super-admin vs read-only admin roles enforced on all mutation endpoints"
+        ],
+        "depends_on": [
+          6,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "SECURITY",
+        "description": "Conduct a full security review: threat model (STRIDE) for gateway proxy and key management, OWASP API Security Top 10 mapping, secrets scanning, dependency vulnerability audit (SBOM generation), SQL injection / header injection review, and penetration test plan.",
+        "payload": {
+          "methodology": [
+            "STRIDE",
+            "OWASP_API_Top10"
+          ],
+          "scope": [
+            "gateway_proxy",
+            "api_key_management",
+            "developer_portal",
+            "admin_api"
+          ],
+          "deliverables": [
+            "security/threat_model.md",
+            "security/owasp_mapping.md",
+            "security/sbom.json",
+            "security/pentest_plan.md",
+            "security/vuln_report.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Threat model covers all 6 STRIDE categories for gateway and key management components",
+          "OWASP API Top 10 items each mapped to a control or documented as accepted risk with rationale",
+          "SBOM generated in SPDX format covering all direct and transitive dependencies",
+          "Zero high or critical CVEs in dependencies \u2014 medium CVEs documented with remediation timeline",
+          "SQL injection review confirms all DB queries use parameterized statements (no string interpolation)",
+          "Penetration test plan covers: auth bypass, rate limit bypass, key enumeration, SSRF via proxy upstream"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 19,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend services: gateway proxy routing logic, rate limiter algorithm correctness (sliding window boundary cases, token bucket refill accuracy), API key hashing and lookup, analytics aggregation worker, and portal API authentication flows.",
+        "payload": {
+          "test_types": [
+            "unit",
+            "integration"
+          ],
+          "frameworks": [
+            "pytest",
+            "pytest-asyncio",
+            "testcontainers (PostgreSQL + Redis)"
+          ],
+          "coverage_target": 85,
+          "deliverables": [
+            "services/*/tests/",
+            "pytest.ini",
+            "coverage report"
+          ]
+        },
+        "acceptance_criteria": [
+          "Unit test coverage \u2265 85% across all backend services",
+          "Rate limiter tests include: exact boundary requests, concurrent request races, Redis failure fallback",
+          "API key tests include: creation entropy validation, revocation cache invalidation timing, rotation grace period",
+          "Integration tests use testcontainers (real PostgreSQL + Redis, not mocks) to catch schema mismatches",
+          "All tests pass in CI in under 3 minutes on GitHub Actions standard runner",
+          "Test report published as CI artifact with per-module coverage breakdown"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "TESTS",
+        "description": "Write frontend component tests and E2E tests: portal onboarding flow (register \u2192 key create \u2192 test call), admin route creation and suspension flow, rate limit policy assignment, and usage analytics chart rendering with mocked data.",
+        "payload": {
+          "unit_framework": "Vitest + React Testing Library",
+          "e2e_framework": "Playwright",
+          "test_scenarios": [
+            "portal_onboarding",
+            "key_lifecycle",
+            "admin_route_crud",
+            "rate_limit_policy",
+            "analytics_dashboard"
+          ],
+          "deliverables": [
+            "apps/*/tests/",
+            "e2e/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Playwright tests cover all 5 critical user flows end-to-end against Docker Compose stack",
+          "Component tests cover: KeyCard (all states), UsageChart (empty/loading/data), OnboardingFlow (steps 1-5)",
+          "All E2E tests deterministic \u2014 no flaky assertions; retry count set to 0 in CI",
+          "Accessibility violations captured as test failures for all interactive components",
+          "E2E suite completes in under 5 minutes in CI"
+        ],
+        "depends_on": [
+          15,
+          16,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines (GitHub Actions), production deployment configs (Kubernetes Helm chart or Docker Compose with Traefik), monitoring stack (Prometheus + Grafana dashboards for gateway p99 latency, error rate, rate limit hit rate), alerting rules, and SRE runbooks.",
+        "payload": {
+          "ci_cd": "GitHub Actions",
+          "deployment": "Kubernetes + Helm or Docker Compose + Traefik",
+          "monitoring": "Prometheus + Grafana",
+          "alerting": "PagerDuty or Alertmanager",
+          "deliverables": [
+            ".github/workflows/",
+            "helm/",
+            "monitoring/dashboards/",
+            "monitoring/alerts/",
+            "runbooks/"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs on every PR: lint \u2192 type-check \u2192 unit tests \u2192 integration tests \u2192 security scan",
+          "CD pipeline deploys to staging automatically on merge to main; production requires manual approval",
+          "Grafana dashboard includes: gateway p99 latency, request rate, error rate (4xx/5xx), rate limit hit rate, key lookup cache hit rate",
+          "Alerting rules fire within 2 minutes for: error rate > 1%, p99 latency > 50ms, service health check failure",
+          "Zero-downtime deployment verified by rolling update strategy with readiness probe validation",
+          "Helm chart configures resource requests/limits for each service with documented sizing guidance"
+        ],
+        "depends_on": [
+          19,
+          20
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "OPERATIONS",
+        "description": "Define SLAs for api_gateway (uptime, latency, support response times per tier), incident response runbooks (gateway outage, Redis failure, PostgreSQL failover, rate limit misconfiguration), capacity planning model, and on-call rotation guide.",
+        "payload": {
+          "sla_tiers": [
+            "free",
+            "developer",
+            "pro",
+            "enterprise"
+          ],
+          "runbooks": [
+            "gateway_outage",
+            "redis_failure",
+            "postgresql_failover",
+            "rate_limit_misconfiguration",
+            "api_key_compromise"
+          ],
+          "deliverables": [
+            "operations/sla.md",
+            "operations/runbooks/",
+            "operations/capacity_planning.md",
+            "operations/oncall_guide.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "SLA document defines uptime %, latency SLO, and support response time for each tier",
+          "Each runbook includes: detection signal, diagnosis steps, mitigation steps, escalation path, and post-mortem template",
+          "API key compromise runbook covers mass revocation procedure executable in < 5 minutes",
+          "Capacity planning model projects infra cost at 1M, 10M, and 100M requests/day",
+          "On-call guide defines severity levels P1\u2013P4 with response time expectations and escalation contacts"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 23,
+        "task_type": "DOCS",
+        "description": "Produce all public and internal documentation: developer quickstart guide (first API call in < 5 minutes), API reference (auto-generated from OpenAPI specs), admin operations guide, architecture decision records (ADRs) for key technical choices, and onboarding guide for new engineers.",
+        "payload": {
+          "docs_platform": "Docusaurus or Mintlify",
+          "deliverables": [
+            "docs/quickstart.md",
+            "docs/api-reference/",
+            "docs/admin-guide.md",
+            "docs/architecture/adrs/",
+            "docs/engineering/onboarding.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Quickstart guide enables a new developer to make their first authenticated API call in < 5 minutes following docs alone",
+          "API reference generated directly from OpenAPI specs \u2014 no manual drift possible",
+          "ADRs cover: choice of Redis for rate limiting, key hashing strategy, time-series storage approach, auth token strategy",
+          "Admin guide covers: tenant onboarding, route configuration, rate limit policy management, and SOC 2 evidence export",
+          "Engineering onboarding guide enables new team member to run `make dev` and pass all tests within 30 minutes"
+        ],
+        "depends_on": [
+          15,
+          16
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 24,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute full system integration test suite: end-to-end load test (10k req/s sustained for 10 minutes via k6), rate limit enforcement correctness under concurrent load, API key revocation propagation timing, failover scenarios (kill Redis \u2192 verify degraded mode), and SOC 2 control verification.",
+        "payload": {
+          "load_tool": "k6",
+          "target_load": "10000 req/s",
+          "test_scenarios": [
+            "sustained_load",
+            "rate_limit_enforcement",
+            "key_revocation_propagation",
+            "redis_failover",
+            "postgres_failover",
+            "soc2_control_verification"
+          ],
+          "deliverables": [
+            "system-tests/",
+            "system-tests/reports/load_test_results.html",
+            "compliance/soc2_test_evidence/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Gateway sustains 10k req/s for 10 minutes with p99 latency < 10ms and error rate < 0.1%",
+          "Rate limiter correctly enforces limits with < 0.01% over-admission under concurrent load (race condition test)",
+          "Key revocation propagates to all gateway instances within 5 seconds under load",
+          "Redis failure degrades gracefully: rate limiting falls back to allow-all mode with alert; no 5xx errors",
+          "PostgreSQL failover (primary \u2192 replica) completes with < 30s service interruption",
+          "SOC 2 control test evidence collected and stored for each applicable control in control matrix"
+        ],
+        "depends_on": [
+          16,
+          17,
+          21
+        ],
+        "agent_role": "system_tester"
+      }
+    ],
+    "task_count": 24,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 58,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 58,
+          "final_review": {
+            "score": 58,
+            "flaws": [
+              "Step 13 uses bcrypt for API key lookup \u2014 bcrypt is intentionally slow (~100-300ms per check). Per-request key authentication cannot go through bcrypt on cache miss. The correct pattern is: store a fast hash (SHA-256/BLAKE2) for lookup indexed by key prefix, and bcrypt only for optional secondary verification. This breaks the < 2ms lookup SLA on every cold cache miss.",
+              "Step 13 stores plaintext API keys in Redis as a 'lookup cache'. If Redis is compromised (common attack surface), every active key is exposed in cleartext. Redis should store the fast hash, not the plaintext. This is a critical security anti-pattern for a key management service.",
+              "Step 11 targets p99 added latency < 5ms using 'Python (FastAPI + httpx) or Go'. Python cannot reliably hit 5ms p99 under 1000 req/s once you add Redis round-trip (~0.5ms), async httpx proxying, and route DB hot-reload. The plan defers the language decision to implementation time \u2014 this is an architectural decision that must be made before code is written, not during.",
+              "There is zero billing implementation anywhere in 24 steps. Steps 2\u20133 define pricing tiers and financial models; steps 15\u201316 build the portal. But there is no Stripe/payment provider integration, no subscription lifecycle management, no metered billing hooks, no invoice generation, and no dunning flow. Without billing, this is not a SaaS product \u2014 it is a free product with unpaid premium tiers.",
+              "Step 9 claims 'SOC 2 Type II evidence collection framework' as a deliverable. SOC 2 Type II requires a minimum 6-month observation period before an auditor can opine. This plan treats it as a document artifact. The deliverable should be 'SOC 2 Type II readiness' \u2014 the certification itself cannot be a build output.",
+              "Redis is a single point of failure for rate limiting (Step 12), key lookup cache (Step 13), request dedup (Step 8), and the analytics pipeline (Step 14). Step 24 explicitly accepts 'allow-all mode' on Redis failure \u2014 meaning any Redis outage fully disables rate limiting, making the gateway unprotected. Redis Sentinel or Redis Cluster is not mentioned anywhere.",
+              "The gateway (Step 11) implements reverse proxying with configurable upstream URLs from an admin API. This creates an SSRF attack vector: a malicious admin could configure 'http://169.254.169.254/latest/meta-data/' as an upstream. The pentest plan (Step 18) lists SSRF as a test target but no mitigation control is mandated in the gateway implementation step \u2014 the threat is identified but not mitigated.",
+              "Step 20 acceptance criterion: 'All E2E tests deterministic \u2014 no flaky assertions; retry count set to 0 in CI.' Playwright tests against a full Docker Compose stack with real database timing, email verification, and cache invalidation windows will have inherent timing nondeterminism. Setting retry to 0 with this criterion will produce a permanently failing CI suite. This criterion is aspirational, not achievable.",
+              "Steps 11\u201315 never define where API key authentication happens in the gateway request pipeline. The orchestration of: authenticate key \u2192 resolve tenant \u2192 check rate limit \u2192 proxy upstream \u2192 emit analytics event is the most critical hot-path design decision and is split across steps 11, 12, 13 with no integration spec. The middleware chain order (auth before rate limit, or rate limit before auth?) has significant security implications.",
+              "Step 14 uses Redis Streams for the analytics pipeline at 10k req/s \u2014 that's 864M events/day. The plan defines 7-day raw log retention but provides no sizing for Redis Stream memory (at ~200 bytes/event = ~1.7TB/day of Stream data before compaction). No consumer group dead-letter handling or backpressure mechanism is defined."
+            ],
+            "suggestions": [
+              "Replace bcrypt for key lookup with a two-field storage model: store a SHA-256 or BLAKE2b hash of the full key (fast, for lookup) plus an optional bcrypt hash (slow, for secondary audit verification if ever needed). Index the fast hash. Cache the fast hash in Redis, never the plaintext.",
+              "Decide Go vs Python for the gateway in Step 5 (PRD) or Step 7 (API design), not Step 11. If the 5ms p99 target is a hard SLA, Go is required. If Python is chosen, revise the latency target to p99 < 15ms, which is achievable with proper async httpx + connection pooling.",
+              "Add a Step 10.5 or amend Step 15: Billing Integration \u2014 Stripe (or equivalent) subscription management, metered usage reporting, plan enforcement (block requests when quota exhausted), invoice webhooks, and dunning emails. Without this, Steps 3 and 16 are vaporware.",
+              "Add SSRF mitigations to Step 11 acceptance criteria: upstream URL allowlist or deny-list (block RFC 1918, link-local, loopback), URL scheme enforcement (https only in prod), and request timeout enforcement to prevent proxy-based port scanning.",
+              "Change Step 9 scope from 'SOC 2 Type II' to 'SOC 2 Type II Readiness'. Add a note that audit observation period begins at production launch. Actual Type II report is a ~12-month post-launch milestone.",
+              "Add Redis HA to Step 10 (infrastructure scaffold): Redis Sentinel for failover or Redis Cluster for sharding. Change Step 12 and Step 24 Redis failure behavior from 'allow-all fallback' to 'last-known-rate-limit fallback with TTL' \u2014 safer degraded mode than open admission.",
+              "Add a dedicated Step 11.5 or acceptance criterion to Step 11: define and implement the gateway middleware pipeline spec \u2014 the exact order of middleware execution (auth \u2192 tenant resolution \u2192 rate limit \u2192 upstream proxy \u2192 response transform \u2192 analytics emit) with latency budget allocated per stage.",
+              "Add email provider setup to Step 10 infrastructure scaffold (.env.example should include SMTP/SendGrid config). Step 15's email verification acceptance criterion is currently undeliverable without an email provider in the dev environment.",
+              "Step 20 E2E: change retry count from 0 to 2 with documented flake tracking, and add explicit wait conditions (waitForResponse, waitForSelector) instead of fixed sleeps. Determinism comes from proper async handling, not zero retries.",
+              "Add PgBouncer or explicit connection pool sizing to Step 8 (database design) and Step 10 (infra scaffold). At 10k req/s with multiple services, naive PostgreSQL connection handling will exhaust connection limits before hitting any application bottleneck."
+            ],
+            "missing": [
+              "Billing / payment infrastructure (Stripe integration, subscription lifecycle, metered billing, dunning) \u2014 entirely absent across all 24 steps",
+              "Email provider configuration and transactional email templates (verification, key creation confirmation, rate limit warnings, invoice receipts)",
+              "Redis HA topology (Sentinel or Cluster) \u2014 the plan assumes a single Redis instance for all critical workloads",
+              "Gateway middleware pipeline integration spec \u2014 the auth\u2192rate-limit\u2192proxy execution order and latency budget per stage",
+              "SSRF mitigation controls in the gateway implementation (upstream URL validation, RFC 1918 blocking)",
+              "Database connection pooling strategy (PgBouncer configuration, pool sizing per service)",
+              "Key prefix indexing design \u2014 how the gateway maps an incoming `sk_live_...` key to its stored hash without full table scan",
+              "Webhook retry logic, exponential backoff, dead-letter queue, and at-least-once delivery guarantee (Step 15 mentions webhooks but omits delivery reliability mechanics)",
+              "Multi-instance rate limit coordination specification \u2014 what happens when 10 gateway pods all hit Redis simultaneously for the same tenant's counter",
+              "Test data isolation strategy \u2014 how integration tests clean up between runs without interfering with each other in shared PostgreSQL/Redis instances",
+              "Tenant isolation validation \u2014 confirmation that tenant A cannot access tenant B's keys, routes, or analytics via API parameter manipulation (IDOR testing)"
+            ],
+            "security_risks": [
+              "CRITICAL: Plaintext API keys stored in Redis cache (Step 13). Redis is a common lateral-movement target; this design hands an attacker every active key in the system on a single Redis compromise.",
+              "HIGH: Bcrypt on cache miss means the key authentication path has a 100-300ms window per missed cache entry, enabling timing-based key enumeration attacks and making bcrypt the practical rate limiter rather than the application's own rate limiter.",
+              "HIGH: SSRF via admin-configurable upstream URLs (Steps 11, 17). No mitigation is implemented \u2014 only tested in pentest plan. A compromised admin account gains SSRF against cloud metadata endpoints.",
+              "HIGH: 'Allow-all' rate limiting fallback on Redis failure (Step 24) \u2014 any Redis outage disables the platform's primary abuse prevention mechanism, enabling traffic amplification attacks during incidents.",
+              "MEDIUM: OpenAPI spec endpoint serving 'merged spec for all routes the developer's plan has access to' (Step 15) may leak internal upstream hostnames, IP addresses, or undocumented parameters if the upstream OpenAPI specs contain internal details.",
+              "MEDIUM: JWT refresh token rotation without explicit mention of refresh token binding (device fingerprint, IP) or revocation list \u2014 a stolen refresh token is valid for 7 days with no revocation mechanism described.",
+              "MEDIUM: Tenant isolation relies on application-level tenant_id filtering. No database row-level security (RLS) or schema-per-tenant isolation is specified. A query injection or ORM misconfiguration could break tenant boundaries.",
+              "LOW: Pre-commit secret scanning with gitleaks (Step 10) only catches secrets at commit time. CI pipeline secret scanning (Step 21) should also run on PRs \u2014 the plan lists 'security scan' in CI but doesn't specify the tool or scope."
+            ],
+            "summary": "This is a well-structured, comprehensive plan that covers the right categories for a production API management platform \u2014 the dependency graph is logical, acceptance criteria are mostly measurable, and the technology choices are defensible. However, it has two critical security anti-patterns that must be fixed before any code is written: storing plaintext API keys in Redis (Step 13) and using bcrypt for per-request key lookup (Steps 13/11), which is both a security flaw and a performance impossibility given the stated latency targets. The plan also has a critical business gap \u2014 zero billing implementation despite defining four paid pricing tiers across three steps. The performance target (p99 < 5ms, 10k req/s) with an undecided Python/Go language choice is a deferred architectural risk that will force expensive rewrites. The SOC 2 Type II framing is unrealistic as a build deliverable. Fixing the bcrypt/Redis key design, adding billing infrastructure, deciding the gateway language, and adding Redis HA would push this to a 75-80 range. As written, the critical security flaws and missing billing make this unshippable as a commercial product.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 58,
+              "flaws": [
+                "Step 13 uses bcrypt for API key lookup \u2014 bcrypt is intentionally slow (~100-300ms per check). Per-request key authentication cannot go through bcrypt on cache miss. The correct pattern is: store a fast hash (SHA-256/BLAKE2) for lookup indexed by key prefix, and bcrypt only for optional secondary verification. This breaks the < 2ms lookup SLA on every cold cache miss.",
+                "Step 13 stores plaintext API keys in Redis as a 'lookup cache'. If Redis is compromised (common attack surface), every active key is exposed in cleartext. Redis should store the fast hash, not the plaintext. This is a critical security anti-pattern for a key management service.",
+                "Step 11 targets p99 added latency < 5ms using 'Python (FastAPI + httpx) or Go'. Python cannot reliably hit 5ms p99 under 1000 req/s once you add Redis round-trip (~0.5ms), async httpx proxying, and route DB hot-reload. The plan defers the language decision to implementation time \u2014 this is an architectural decision that must be made before code is written, not during.",
+                "There is zero billing implementation anywhere in 24 steps. Steps 2\u20133 define pricing tiers and financial models; steps 15\u201316 build the portal. But there is no Stripe/payment provider integration, no subscription lifecycle management, no metered billing hooks, no invoice generation, and no dunning flow. Without billing, this is not a SaaS product \u2014 it is a free product with unpaid premium tiers.",
+                "Step 9 claims 'SOC 2 Type II evidence collection framework' as a deliverable. SOC 2 Type II requires a minimum 6-month observation period before an auditor can opine. This plan treats it as a document artifact. The deliverable should be 'SOC 2 Type II readiness' \u2014 the certification itself cannot be a build output.",
+                "Redis is a single point of failure for rate limiting (Step 12), key lookup cache (Step 13), request dedup (Step 8), and the analytics pipeline (Step 14). Step 24 explicitly accepts 'allow-all mode' on Redis failure \u2014 meaning any Redis outage fully disables rate limiting, making the gateway unprotected. Redis Sentinel or Redis Cluster is not mentioned anywhere.",
+                "The gateway (Step 11) implements reverse proxying with configurable upstream URLs from an admin API. This creates an SSRF attack vector: a malicious admin could configure 'http://169.254.169.254/latest/meta-data/' as an upstream. The pentest plan (Step 18) lists SSRF as a test target but no mitigation control is mandated in the gateway implementation step \u2014 the threat is identified but not mitigated.",
+                "Step 20 acceptance criterion: 'All E2E tests deterministic \u2014 no flaky assertions; retry count set to 0 in CI.' Playwright tests against a full Docker Compose stack with real database timing, email verification, and cache invalidation windows will have inherent timing nondeterminism. Setting retry to 0 with this criterion will produce a permanently failing CI suite. This criterion is aspirational, not achievable.",
+                "Steps 11\u201315 never define where API key authentication happens in the gateway request pipeline. The orchestration of: authenticate key \u2192 resolve tenant \u2192 check rate limit \u2192 proxy upstream \u2192 emit analytics event is the most critical hot-path design decision and is split across steps 11, 12, 13 with no integration spec. The middleware chain order (auth before rate limit, or rate limit before auth?) has significant security implications.",
+                "Step 14 uses Redis Streams for the analytics pipeline at 10k req/s \u2014 that's 864M events/day. The plan defines 7-day raw log retention but provides no sizing for Redis Stream memory (at ~200 bytes/event = ~1.7TB/day of Stream data before compaction). No consumer group dead-letter handling or backpressure mechanism is defined."
+              ],
+              "suggestions": [
+                "Replace bcrypt for key lookup with a two-field storage model: store a SHA-256 or BLAKE2b hash of the full key (fast, for lookup) plus an optional bcrypt hash (slow, for secondary audit verification if ever needed). Index the fast hash. Cache the fast hash in Redis, never the plaintext.",
+                "Decide Go vs Python for the gateway in Step 5 (PRD) or Step 7 (API design), not Step 11. If the 5ms p99 target is a hard SLA, Go is required. If Python is chosen, revise the latency target to p99 < 15ms, which is achievable with proper async httpx + connection pooling.",
+                "Add a Step 10.5 or amend Step 15: Billing Integration \u2014 Stripe (or equivalent) subscription management, metered usage reporting, plan enforcement (block requests when quota exhausted), invoice webhooks, and dunning emails. Without this, Steps 3 and 16 are vaporware.",
+                "Add SSRF mitigations to Step 11 acceptance criteria: upstream URL allowlist or deny-list (block RFC 1918, link-local, loopback), URL scheme enforcement (https only in prod), and request timeout enforcement to prevent proxy-based port scanning.",
+                "Change Step 9 scope from 'SOC 2 Type II' to 'SOC 2 Type II Readiness'. Add a note that audit observation period begins at production launch. Actual Type II report is a ~12-month post-launch milestone.",
+                "Add Redis HA to Step 10 (infrastructure scaffold): Redis Sentinel for failover or Redis Cluster for sharding. Change Step 12 and Step 24 Redis failure behavior from 'allow-all fallback' to 'last-known-rate-limit fallback with TTL' \u2014 safer degraded mode than open admission.",
+                "Add a dedicated Step 11.5 or acceptance criterion to Step 11: define and implement the gateway middleware pipeline spec \u2014 the exact order of middleware execution (auth \u2192 tenant resolution \u2192 rate limit \u2192 upstream proxy \u2192 response transform \u2192 analytics emit) with latency budget allocated per stage.",
+                "Add email provider setup to Step 10 infrastructure scaffold (.env.example should include SMTP/SendGrid config). Step 15's email verification acceptance criterion is currently undeliverable without an email provider in the dev environment.",
+                "Step 20 E2E: change retry count from 0 to 2 with documented flake tracking, and add explicit wait conditions (waitForResponse, waitForSelector) instead of fixed sleeps. Determinism comes from proper async handling, not zero retries.",
+                "Add PgBouncer or explicit connection pool sizing to Step 8 (database design) and Step 10 (infra scaffold). At 10k req/s with multiple services, naive PostgreSQL connection handling will exhaust connection limits before hitting any application bottleneck."
+              ],
+              "missing": [
+                "Billing / payment infrastructure (Stripe integration, subscription lifecycle, metered billing, dunning) \u2014 entirely absent across all 24 steps",
+                "Email provider configuration and transactional email templates (verification, key creation confirmation, rate limit warnings, invoice receipts)",
+                "Redis HA topology (Sentinel or Cluster) \u2014 the plan assumes a single Redis instance for all critical workloads",
+                "Gateway middleware pipeline integration spec \u2014 the auth\u2192rate-limit\u2192proxy execution order and latency budget per stage",
+                "SSRF mitigation controls in the gateway implementation (upstream URL validation, RFC 1918 blocking)",
+                "Database connection pooling strategy (PgBouncer configuration, pool sizing per service)",
+                "Key prefix indexing design \u2014 how the gateway maps an incoming `sk_live_...` key to its stored hash without full table scan",
+                "Webhook retry logic, exponential backoff, dead-letter queue, and at-least-once delivery guarantee (Step 15 mentions webhooks but omits delivery reliability mechanics)",
+                "Multi-instance rate limit coordination specification \u2014 what happens when 10 gateway pods all hit Redis simultaneously for the same tenant's counter",
+                "Test data isolation strategy \u2014 how integration tests clean up between runs without interfering with each other in shared PostgreSQL/Redis instances",
+                "Tenant isolation validation \u2014 confirmation that tenant A cannot access tenant B's keys, routes, or analytics via API parameter manipulation (IDOR testing)"
+              ],
+              "security_risks": [
+                "CRITICAL: Plaintext API keys stored in Redis cache (Step 13). Redis is a common lateral-movement target; this design hands an attacker every active key in the system on a single Redis compromise.",
+                "HIGH: Bcrypt on cache miss means the key authentication path has a 100-300ms window per missed cache entry, enabling timing-based key enumeration attacks and making bcrypt the practical rate limiter rather than the application's own rate limiter.",
+                "HIGH: SSRF via admin-configurable upstream URLs (Steps 11, 17). No mitigation is implemented \u2014 only tested in pentest plan. A compromised admin account gains SSRF against cloud metadata endpoints.",
+                "HIGH: 'Allow-all' rate limiting fallback on Redis failure (Step 24) \u2014 any Redis outage disables the platform's primary abuse prevention mechanism, enabling traffic amplification attacks during incidents.",
+                "MEDIUM: OpenAPI spec endpoint serving 'merged spec for all routes the developer's plan has access to' (Step 15) may leak internal upstream hostnames, IP addresses, or undocumented parameters if the upstream OpenAPI specs contain internal details.",
+                "MEDIUM: JWT refresh token rotation without explicit mention of refresh token binding (device fingerprint, IP) or revocation list \u2014 a stolen refresh token is valid for 7 days with no revocation mechanism described.",
+                "MEDIUM: Tenant isolation relies on application-level tenant_id filtering. No database row-level security (RLS) or schema-per-tenant isolation is specified. A query injection or ORM misconfiguration could break tenant boundaries.",
+                "LOW: Pre-commit secret scanning with gitleaks (Step 10) only catches secrets at commit time. CI pipeline secret scanning (Step 21) should also run on PRs \u2014 the plan lists 'security scan' in CI but doesn't specify the tool or scope."
+              ],
+              "summary": "This is a well-structured, comprehensive plan that covers the right categories for a production API management platform \u2014 the dependency graph is logical, acceptance criteria are mostly measurable, and the technology choices are defensible. However, it has two critical security anti-patterns that must be fixed before any code is written: storing plaintext API keys in Redis (Step 13) and using bcrypt for per-request key lookup (Steps 13/11), which is both a security flaw and a performance impossibility given the stated latency targets. The plan also has a critical business gap \u2014 zero billing implementation despite defining four paid pricing tiers across three steps. The performance target (p99 < 5ms, 10k req/s) with an undecided Python/Go language choice is a deferred architectural risk that will force expensive rewrites. The SOC 2 Type II framing is unrealistic as a build deliverable. Fixing the bcrypt/Redis key design, adding billing infrastructure, deciding the gateway language, and adding Redis HA would push this to a 75-80 range. As written, the critical security flaws and missing billing make this unshippable as a commercial product.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T05:39:47.447020+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 159.82,
+      "critic_plan": 109.95
+    }
+  }
+}

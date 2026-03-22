@@ -1,0 +1,1136 @@
+{
+  "run_id": "0ad38dac-2262-487e-91ef-f8d5a8bc0ad1",
+  "solution_name": "document_collaboration",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T05:10:03.377967+00:00",
+  "updated_at": "2026-03-22T05:15:05.843631+00:00",
+  "product_description": "Real-time document collaboration platform with rich text editor, version history, commenting, permissions, templates, and AI writing assistant.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the real-time document collaboration market: competitors (Google Docs, Notion, Confluence, Quip), pricing benchmarks, differentiators, and go-to-market positioning for the AI writing assistant angle.",
+      "payload": {
+        "competitors": [
+          "Google Docs",
+          "Notion",
+          "Confluence",
+          "Quip",
+          "Coda",
+          "Dropbox Paper"
+        ],
+        "focus_areas": [
+          "pricing_tiers",
+          "ai_feature_adoption",
+          "enterprise_vs_smb_split",
+          "collaboration_ux_benchmarks"
+        ],
+        "output_artifacts": [
+          "competitive_matrix.md",
+          "positioning_statement.md",
+          "gtm_strategy.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive matrix covers at least 6 competitors with feature, pricing, and positioning columns",
+        "Differentiation narrative clearly articulates AI writing assistant as primary wedge",
+        "GTM strategy identifies at least 2 beachhead segments with TAM/SAM estimates",
+        "Pricing benchmark table produced with free/pro/enterprise tier recommendations"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user personas, process flows, and ROI model for the document collaboration platform. Identify primary user journeys: solo writer, team collaborator, admin/IT buyer.",
+      "payload": {
+        "personas": [
+          "solo_knowledge_worker",
+          "team_collaborator",
+          "enterprise_admin",
+          "external_reviewer"
+        ],
+        "process_flows": [
+          "document_creation",
+          "real_time_editing",
+          "review_and_comment",
+          "version_rollback",
+          "permission_management"
+        ],
+        "output_artifacts": [
+          "business_requirements.md",
+          "user_stories.md",
+          "process_flow_diagrams.md",
+          "roi_model.xlsx"
+        ]
+      },
+      "acceptance_criteria": [
+        "At least 4 user personas documented with goals, pain points, and success metrics",
+        "All 5 core process flows diagrammed with swim-lane notation",
+        "User stories written in Given/When/Then format covering all major features",
+        "ROI model includes payback period, cost-of-collaboration-inefficiency baseline, and projected savings",
+        "Pricing tiers defined",
+        "Churn risk factors identified"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the Product Requirements Document (PRD), feature roadmap (v1 MVP \u2192 v2 \u2192 v3), prioritization matrix (RICE scoring), and success metrics (activation rate, DAU/MAU, collaboration sessions per user).",
+      "payload": {
+        "mvp_features": [
+          "rich_text_editor",
+          "real_time_collaboration",
+          "version_history",
+          "commenting",
+          "basic_permissions",
+          "templates"
+        ],
+        "v2_features": [
+          "ai_writing_assistant",
+          "advanced_permissions_rbac",
+          "audit_log"
+        ],
+        "v3_features": [
+          "offline_mode",
+          "plugin_ecosystem",
+          "enterprise_sso"
+        ],
+        "success_metrics": [
+          "DAU_MAU_ratio",
+          "docs_created_per_user",
+          "collaboration_session_depth",
+          "ai_suggestion_acceptance_rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all MVP features with acceptance criteria per feature",
+        "RICE scores assigned to all features; top 10 ranked unambiguously",
+        "Three-milestone roadmap with target dates and exit criteria per milestone",
+        "Success metrics dashboard spec includes data sources and calculation methods"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 4,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research synthesis, produce wireframes for all core screens, define interaction design patterns for real-time collaboration indicators (cursors, presence, conflict resolution), and run accessibility audit against WCAG 2.1 AA.",
+      "payload": {
+        "screens": [
+          "document_editor",
+          "version_history_panel",
+          "comments_sidebar",
+          "permissions_modal",
+          "template_gallery",
+          "ai_assistant_panel",
+          "dashboard_home"
+        ],
+        "interaction_patterns": [
+          "live_cursor_tracking",
+          "selection_highlighting",
+          "inline_comment_anchoring",
+          "ai_suggestion_accept_reject"
+        ],
+        "accessibility_standard": "WCAG 2.1 AA"
+      },
+      "acceptance_criteria": [
+        "Wireframes produced for all 7 screens at medium fidelity",
+        "Real-time collaboration UX patterns documented with states: idle, editing, conflict",
+        "Component library spec defined (typography, color tokens, spacing system)",
+        "Accessibility audit checklist completed; all critical failures flagged with remediation notes",
+        "User research synthesis includes at least 5 usability findings mapped to design decisions"
+      ],
+      "depends_on": [
+        2,
+        3
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 5,
+      "task_type": "FINANCIAL",
+      "description": "Build a financial model covering infrastructure costs, headcount, pricing strategy (freemium + seats + enterprise), revenue projections for 36 months, and unit economics (CAC, LTV, gross margin per tier).",
+      "payload": {
+        "pricing_tiers": [
+          "free",
+          "pro_per_seat",
+          "business",
+          "enterprise_custom"
+        ],
+        "cost_drivers": [
+          "websocket_infrastructure",
+          "ai_api_costs_per_token",
+          "storage_per_doc",
+          "cdn"
+        ],
+        "projections_horizon_months": 36
+      },
+      "acceptance_criteria": [
+        "Three-scenario model (conservative, base, optimistic) for 36-month revenue projection",
+        "Unit economics computed per tier: CAC, LTV, LTV:CAC ratio, payback period",
+        "AI writing assistant cost-per-use modeled with token consumption estimates",
+        "Break-even analysis identifies month of contribution-margin positivity",
+        "Infrastructure cost scaling curve modeled against user growth milestones",
+        "MRR/ARR projections modeled",
+        "CAC and LTV estimated"
+      ],
+      "depends_on": [
+        1,
+        3
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 6,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), data processing agreement (DPA) template for enterprise, IP ownership clauses for AI-generated content, and open-source license inventory.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "dpa_template.md",
+          "ai_content_ip_clause.md",
+          "oss_license_inventory.md"
+        ],
+        "compliance_frameworks": [
+          "GDPR",
+          "CCPA"
+        ],
+        "ai_content_considerations": [
+          "user_owns_output",
+          "training_data_opt_out",
+          "ai_disclosure_requirement"
+        ]
+      },
+      "acceptance_criteria": [
+        "ToS covers acceptable use, account termination, and dispute resolution",
+        "Privacy policy addresses data collection, retention, deletion rights (GDPR Art. 17), and CCPA opt-out",
+        "DPA template includes SCCs and sub-processor list",
+        "AI content IP clause explicitly assigns generated content ownership to the user",
+        "OSS license inventory lists all dependencies with license type; GPL conflicts flagged",
+        "Subscription terms cover cancellation and refunds",
+        "Data processing agreement drafted"
+      ],
+      "depends_on": [],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 7,
+      "task_type": "COMPLIANCE",
+      "description": "Plan SOC 2 Type I readiness: map controls to Trust Service Criteria (Security, Availability, Confidentiality), produce control matrix, identify evidence artifacts needed, and define audit preparation timeline.",
+      "payload": {
+        "trust_service_criteria": [
+          "CC_Security",
+          "A_Availability",
+          "C_Confidentiality"
+        ],
+        "control_categories": [
+          "access_control",
+          "encryption_at_rest_and_transit",
+          "logging_and_monitoring",
+          "incident_response",
+          "change_management",
+          "vendor_management"
+        ],
+        "output_artifacts": [
+          "soc2_control_matrix.xlsx",
+          "evidence_collection_plan.md",
+          "audit_readiness_timeline.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Control matrix maps all SOC 2 CC criteria to specific technical and procedural controls",
+        "Evidence artifact list specifies owner, collection method, and review cadence per control",
+        "Gap analysis identifies controls not yet implemented with priority ranking",
+        "Audit readiness timeline targets SOC 2 Type I report within 6 months of launch"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design the full API contract: OpenAPI 3.1 spec covering documents CRUD, real-time collaboration WebSocket protocol, version history, comments, permissions, templates, and AI assistant endpoints. Define error codes, rate limits, and pagination standards.",
+      "payload": {
+        "api_groups": [
+          "documents (CRUD, search, export)",
+          "collaboration (WebSocket join/leave/op, presence)",
+          "versions (list, diff, restore)",
+          "comments (threads, inline anchors, resolve)",
+          "permissions (RBAC roles, share links, access audit)",
+          "templates (gallery, instantiate, save-as-template)",
+          "ai_assistant (suggest, complete, rewrite, summarize)"
+        ],
+        "protocols": [
+          "REST",
+          "WebSocket (RFC 6455)",
+          "SSE for notifications"
+        ],
+        "auth": "JWT + refresh tokens, API keys for enterprise"
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 spec produced and validated with no schema errors",
+        "WebSocket message protocol documented with op types: insert, delete, retain, cursor, presence",
+        "All endpoints include request/response examples, error codes, and rate limit headers",
+        "Pagination standard (cursor-based) applied consistently across list endpoints",
+        "AI assistant endpoint spec includes streaming response support (SSE)"
+      ],
+      "depends_on": [
+        3,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "DATABASE",
+      "description": "Design the database schema: documents (content as CRDT/OT delta log), users, workspaces, permissions (RBAC), version snapshots, comments (anchored to document positions), templates, and AI interaction logs.",
+      "payload": {
+        "primary_db": "PostgreSQL",
+        "realtime_store": "Redis (presence, ephemeral op buffer)",
+        "search": "Elasticsearch or pg_tsvector (full-text)",
+        "key_tables": [
+          "workspaces",
+          "users",
+          "documents",
+          "document_ops (append-only delta log)",
+          "document_snapshots",
+          "versions",
+          "comments",
+          "comment_threads",
+          "permissions",
+          "share_links",
+          "templates",
+          "ai_interactions"
+        ],
+        "migrations_tool": "Alembic or Flyway"
+      },
+      "acceptance_criteria": [
+        "ERD produced covering all tables with cardinality annotations",
+        "document_ops table designed as append-only immutable log for CRDT/OT replay",
+        "Permissions model supports owner/editor/commenter/viewer roles at workspace and document level",
+        "All migrations are idempotent and reversible (up/down scripts)",
+        "Indexes defined for all foreign keys and high-frequency query patterns",
+        "Schema passes normalization review (3NF minimum, denormalization justified where used)"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "CONFIG",
+      "description": "Set up the SAGE solution configuration for document_collaboration: project.yaml (solution manifest), prompts.yaml (AI assistant and analyst roles), tasks.yaml (task type registry). Configure the Multi-Agent Coordinator agentic pattern for the AI writing assistant subsystem.",
+      "payload": {
+        "solution_name": "document_collaboration",
+        "agentic_pattern": "coordinator",
+        "coordinator_specialists": [
+          "suggestion_agent",
+          "rewrite_agent",
+          "summarize_agent",
+          "grammar_agent"
+        ],
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "developer",
+          "improvements",
+          "knowledge",
+          "audit"
+        ],
+        "config_files": [
+          "solutions/document_collaboration/project.yaml",
+          "solutions/document_collaboration/prompts.yaml",
+          "solutions/document_collaboration/tasks.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "project.yaml validates against SAGE schema with no errors",
+        "prompts.yaml defines AI writing assistant coordinator role and all 4 specialist sub-agent prompts",
+        "tasks.yaml registers all task types needed for the solution",
+        "SAGE backend starts successfully with PROJECT=document_collaboration",
+        "Coordinator pattern config documented with routing logic per request type"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "INFRA",
+      "description": "Define infrastructure architecture: containerized backend (Docker), managed PostgreSQL + Redis, WebSocket-capable load balancer (sticky sessions or pub/sub fan-out), CDN for static assets, object storage for document exports, and IaC (Terraform or Pulumi).",
+      "payload": {
+        "cloud_provider": "AWS (primary)",
+        "services": [
+          "ECS Fargate (API)",
+          "ElastiCache Redis",
+          "RDS PostgreSQL",
+          "ALB with WebSocket support",
+          "S3 + CloudFront",
+          "SQS (async jobs)"
+        ],
+        "iac_tool": "Terraform",
+        "environments": [
+          "dev",
+          "staging",
+          "production"
+        ],
+        "output_artifacts": [
+          "terraform/",
+          "docker-compose.yml",
+          "Dockerfile.backend",
+          "Dockerfile.frontend"
+        ]
+      },
+      "acceptance_criteria": [
+        "Terraform modules produced for all AWS services with variable parameterization per environment",
+        "Docker images for backend and frontend build successfully with no vulnerabilities (CRITICAL/HIGH)",
+        "WebSocket scaling design documented: Redis pub/sub fan-out across API instances",
+        "CDN cache policy defined with correct cache-control headers for static vs dynamic content",
+        "Disaster recovery RPO/RTO targets defined and infrastructure designed to meet them"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 12,
+      "task_type": "SECURITY",
+      "description": "Produce threat model (STRIDE), define security controls for real-time collaboration (WebSocket auth, op validation, DoS protection), encryption requirements (TLS 1.3, AES-256 at rest), RBAC enforcement design, and pen test scope document.",
+      "payload": {
+        "threat_model_method": "STRIDE",
+        "critical_surfaces": [
+          "WebSocket endpoint",
+          "document permission checks",
+          "AI prompt injection",
+          "share link access control",
+          "version history access"
+        ],
+        "controls": [
+          "JWT validation on WS upgrade",
+          "server-side op sanitization",
+          "rate limiting per user/IP",
+          "content security policy",
+          "audit log tamper detection"
+        ],
+        "output_artifacts": [
+          "threat_model.md",
+          "security_controls_matrix.md",
+          "pentest_scope.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model covers all 6 threat categories for each of the 5 critical surfaces",
+        "Security controls matrix maps each threat to a mitigating control with implementation status",
+        "AI prompt injection attack vectors documented with input sanitization strategy",
+        "Pen test scope document ready for third-party security firm engagement",
+        "Encryption-at-rest and in-transit requirements specified for all data stores"
+      ],
+      "depends_on": [
+        8,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement the core backend: FastAPI (or Node.js/Express) application with user auth (JWT + OAuth2), workspace and document CRUD, PostgreSQL ORM layer, Redis client, background job queue, and foundational middleware (logging, error handling, tenant isolation).",
+      "payload": {
+        "framework": "FastAPI (Python) or Node.js/Express",
+        "auth": [
+          "JWT with refresh tokens",
+          "Google OAuth2",
+          "GitHub OAuth2"
+        ],
+        "orm": "SQLAlchemy (async) or Prisma",
+        "features_in_scope": [
+          "user registration/login",
+          "workspace CRUD",
+          "document CRUD",
+          "health check endpoint",
+          "structured logging",
+          "request tracing (trace_id)"
+        ]
+      },
+      "acceptance_criteria": [
+        "All auth endpoints return correct tokens and refresh correctly",
+        "Document CRUD endpoints conform to OpenAPI spec (step 8) \u2014 schema validated",
+        "All database operations use async ORM with connection pooling",
+        "Structured JSON logs emitted for every request with trace_id, user_id, duration_ms",
+        "Health check endpoint returns 200 with DB and Redis connectivity status",
+        "Unit tests cover auth flows and CRUD operations with >80% coverage"
+      ],
+      "depends_on": [
+        9,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement real-time collaboration engine: WebSocket server with Operational Transformation (OT) or CRDT (Yjs/Automerge) for conflict-free concurrent editing, Redis pub/sub for cross-instance op fan-out, presence tracking, and cursor broadcasting.",
+      "payload": {
+        "algorithm": "CRDT via Yjs (y-websocket provider pattern)",
+        "persistence": "Periodic snapshot to PostgreSQL + Redis ephemeral op buffer",
+        "presence_data": [
+          "user_id",
+          "display_name",
+          "cursor_position",
+          "selection_range",
+          "color"
+        ],
+        "scaling": "Redis pub/sub channel per document, sticky-session fallback"
+      },
+      "acceptance_criteria": [
+        "Two concurrent users editing the same document converge to identical state within 100ms",
+        "WebSocket handshake validates JWT before upgrading connection",
+        "Presence data updates broadcast to all document participants within 50ms",
+        "Document state persisted to PostgreSQL on disconnect and every 30 seconds",
+        "Reconnection logic restores user to correct document state after network interruption",
+        "Load test: 50 concurrent users on one document produces no data loss"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement version history service: automatic snapshots on save milestone, named versions, diff computation between versions, and restore endpoint. Implement commenting service: inline comment threads anchored to document positions, resolve/reopen, @mentions with notifications.",
+      "payload": {
+        "version_triggers": [
+          "explicit save (named)",
+          "time-based (every 30min of activity)",
+          "pre-restore backup"
+        ],
+        "diff_algorithm": "Myers diff on document content",
+        "comment_anchoring": "character offset + paragraph ID for resilience against edits",
+        "notifications": [
+          "email",
+          "in-app SSE push"
+        ]
+      },
+      "acceptance_criteria": [
+        "Version list endpoint returns paginated history with timestamp, author, and change summary",
+        "Diff endpoint returns character-level changes between any two version IDs",
+        "Restore creates a new version (non-destructive) and sets document content to target snapshot",
+        "Comment threads correctly re-anchor after document edits insert content before the anchor",
+        "Resolved comments hidden by default; togglable via query param",
+        "@mention triggers in-app notification within 2 seconds and email within 30 seconds"
+      ],
+      "depends_on": [
+        13,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Implement permissions (RBAC) service: workspace roles (owner/admin/member/guest), document-level overrides (editor/commenter/viewer), share links with expiry and password, and access audit log. Implement templates service: gallery, instantiate from template, save-as-template.",
+      "payload": {
+        "rbac_model": "hierarchical: workspace role \u2192 document override",
+        "share_link_features": [
+          "expiry_date",
+          "password_protection",
+          "view_count_limit",
+          "revocable"
+        ],
+        "template_storage": "PostgreSQL with content snapshot + metadata tags",
+        "audit_events": [
+          "permission_granted",
+          "permission_revoked",
+          "share_link_accessed",
+          "document_exported"
+        ]
+      },
+      "acceptance_criteria": [
+        "Permission checks enforced server-side on every document, comment, and version endpoint",
+        "Share link with expiry returns 410 Gone after expiry date",
+        "RBAC unit tests cover all role combinations: owner can do everything, viewer cannot edit/comment",
+        "Template instantiation creates a new document copy with no cross-document state leakage",
+        "Audit log records all permission and share events with user_id, timestamp, and IP",
+        "Access audit log endpoint paginated and filterable by user, action, and date range"
+      ],
+      "depends_on": [
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "AGENTIC",
+      "description": "Implement the AI writing assistant using the Multi-Agent Coordinator pattern: coordinator decomposes user requests and routes to specialist sub-agents (SuggestionAgent, RewriteAgent, SummarizeAgent, GrammarAgent). Each sub-agent uses the ReAct loop. Streaming responses via SSE. Prompt injection guardrails applied at coordinator level.",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_role": "AIWritingCoordinator",
+        "specialist_agents": [
+          {
+            "name": "SuggestionAgent",
+            "capability": "autocomplete_next_sentence"
+          },
+          {
+            "name": "RewriteAgent",
+            "capability": "rewrite_selection_with_tone"
+          },
+          {
+            "name": "SummarizeAgent",
+            "capability": "summarize_document_or_section"
+          },
+          {
+            "name": "GrammarAgent",
+            "capability": "grammar_and_clarity_check"
+          }
+        ],
+        "context_window_strategy": "sliding window of surrounding paragraphs + document outline",
+        "guardrails": [
+          "prompt_injection_detection",
+          "pii_scrubbing_before_llm",
+          "output_length_limits"
+        ],
+        "response_mode": "SSE streaming"
+      },
+      "acceptance_criteria": [
+        "Coordinator correctly routes 'suggest next sentence', 'rewrite as formal', 'summarize', and 'fix grammar' requests to correct specialist",
+        "SSE stream delivers first token within 800ms (P95)",
+        "Prompt injection attempts (e.g., 'ignore previous instructions') are detected and rejected",
+        "AI suggestions include accept/reject actions that write to audit log",
+        "AI interaction log records request type, token usage, latency, and acceptance outcome per interaction",
+        "Context window correctly includes surrounding text without exceeding model limit"
+      ],
+      "depends_on": [
+        13,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the React (TypeScript) application shell: routing, auth flows (login/signup/OAuth), workspace dashboard, document list, and layout components. Implement the rich text editor using ProseMirror or TipTap with collaborative extensions (y-prosemirror/y-tiptap).",
+      "payload": {
+        "framework": "React 18 + TypeScript + Vite",
+        "editor_library": "TipTap (ProseMirror-based) with y-tiptap for CRDT sync",
+        "state_management": "Zustand or Jotai",
+        "ui_components": "Radix UI primitives + custom design tokens from step 4",
+        "routes": [
+          "/login",
+          "/signup",
+          "/dashboard",
+          "/workspace/:id",
+          "/document/:id",
+          "/templates",
+          "/settings"
+        ]
+      },
+      "acceptance_criteria": [
+        "Auth flow completes OAuth login and stores JWT in httpOnly cookie",
+        "Dashboard lists all workspace documents with last-modified, collaborators, and share status",
+        "Rich text editor renders headings, lists, bold/italic/underline, links, and code blocks",
+        "CRDT sync connects to WebSocket and reflects remote edits in <100ms visually",
+        "Editor is keyboard-navigable and passes basic accessibility checks (ARIA roles, focus management)",
+        "Lighthouse performance score >85 on document editor page"
+      ],
+      "depends_on": [
+        4,
+        14,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build collaboration UI overlays: live cursor presence (colored per user, name label), selection highlighting, conflict indicators. Build version history panel: timeline view, diff visualization (color-coded insertions/deletions), restore button with confirmation.",
+      "payload": {
+        "cursor_rendering": "Absolutely positioned decorations via ProseMirror/TipTap plugin",
+        "user_color_assignment": "deterministic hash of user_id \u2192 HSL palette",
+        "diff_visualization": "word-level diff with green/red background highlighting",
+        "max_presence_indicators": 8
+      },
+      "acceptance_criteria": [
+        "Up to 8 concurrent user cursors rendered without performance degradation",
+        "Cursor positions update smoothly (<50ms visual lag) during active editing",
+        "Version history panel loads last 50 versions paginated; older versions loaded on scroll",
+        "Diff view correctly highlights inserted (green) and deleted (red) content",
+        "Restore confirmation modal shows diff summary before committing",
+        "Version history accessible to editor and owner roles only (viewer cannot see)"
+      ],
+      "depends_on": [
+        18,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the comments sidebar: inline anchor markers in the editor, comment thread panel, @mention autocomplete, resolve/reopen controls. Build the permissions modal: role assignment UI, share link generator with expiry/password config, and access audit log viewer.",
+      "payload": {
+        "comment_ui_patterns": [
+          "click-anchor-to-open-thread",
+          "floating-comment-button-on-selection",
+          "resolved-comments-toggle"
+        ],
+        "mention_autocomplete": "fuzzy-search workspace members, debounced 200ms",
+        "permissions_ui": [
+          "role_dropdown_per_user",
+          "share_link_copy_button",
+          "expiry_date_picker",
+          "password_toggle",
+          "revoke_link_button"
+        ]
+      },
+      "acceptance_criteria": [
+        "Selecting text and clicking 'comment' opens a new thread anchored to the selection",
+        "Comment threads scroll into view when clicking anchor marker in editor",
+        "@mention autocomplete appears within 200ms and filters correctly",
+        "Resolving a comment collapses thread and dims anchor marker",
+        "Share link modal generates, copies, and displays expiry/password controls",
+        "Revoking a share link immediately returns 410 on next access (tested with integration test)"
+      ],
+      "depends_on": [
+        18,
+        15,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build the templates gallery: browsable grid with category filters and preview modal. Build the AI writing assistant panel: slide-in sidebar with request type selector (suggest/rewrite/summarize/grammar), streaming text display, accept/reject controls, and tone selector for rewrites.",
+      "payload": {
+        "template_categories": [
+          "Meeting Notes",
+          "Project Brief",
+          "Technical Spec",
+          "OKRs",
+          "Blog Post",
+          "Email"
+        ],
+        "ai_panel_ux": [
+          "keyboard shortcut to open (Cmd+J)",
+          "streaming typewriter display",
+          "accept inserts into editor at cursor",
+          "reject dismisses with feedback prompt"
+        ],
+        "tone_options": [
+          "formal",
+          "casual",
+          "concise",
+          "detailed",
+          "persuasive"
+        ]
+      },
+      "acceptance_criteria": [
+        "Template gallery loads in <1s with category filter working client-side",
+        "Template preview shows rendered content before instantiation",
+        "AI panel opens via Cmd+J keyboard shortcut and is dismissible with Escape",
+        "Streaming response renders token-by-token with no layout thrash",
+        "Accept action inserts AI suggestion at correct cursor position in editor",
+        "Reject action logs rejection reason (from optional dropdown) to AI interaction audit"
+      ],
+      "depends_on": [
+        18,
+        17,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipelines (GitHub Actions): lint, test, build, Docker image push, Terraform plan on PR, Terraform apply on merge to main, staging auto-deploy, production deploy with manual approval gate. Configure observability: CloudWatch metrics, structured log ingestion, uptime monitoring, and alerting.",
+      "payload": {
+        "ci_stages": [
+          "lint (ESLint + Ruff)",
+          "unit_tests",
+          "integration_tests",
+          "docker_build",
+          "security_scan (Trivy)",
+          "terraform_plan"
+        ],
+        "cd_stages": [
+          "staging_deploy (auto)",
+          "smoke_tests",
+          "production_deploy (manual_approval)"
+        ],
+        "observability": [
+          "CloudWatch Logs + Metrics",
+          "custom metrics: WS connections, op latency, AI request rate",
+          "PagerDuty alerts for P1/P2 incidents"
+        ],
+        "uptime_target": "99.9% monthly"
+      },
+      "acceptance_criteria": [
+        "CI pipeline completes in <10 minutes for a typical PR",
+        "Terraform plan output posted as PR comment automatically",
+        "Production deploy requires manual approval from at least 1 reviewer in GitHub Actions",
+        "Zero-downtime rolling deployment verified (no 5xx during deploy in smoke test)",
+        "CloudWatch dashboard shows: active WS connections, p50/p95/p99 op latency, error rate",
+        "PagerDuty alert fires within 2 minutes of error rate exceeding 1% for 5 minutes"
+      ],
+      "depends_on": [
+        11,
+        13,
+        18
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write comprehensive test suite: unit tests for backend services (auth, permissions, CRDT ops, AI coordinator), integration tests for API endpoints against a real test database, and frontend component tests (Vitest + Testing Library).",
+      "payload": {
+        "backend_unit_coverage_target": "80%",
+        "integration_tests": [
+          "document CRUD",
+          "WebSocket collaboration session",
+          "version create/restore",
+          "comment threading",
+          "permission enforcement",
+          "share link lifecycle"
+        ],
+        "frontend_tests": [
+          "editor renders and accepts input",
+          "auth flow",
+          "comment sidebar interaction",
+          "AI panel streaming display"
+        ],
+        "test_runner": "pytest (backend) + Vitest (frontend)"
+      },
+      "acceptance_criteria": [
+        "Backend unit test coverage \u226580% on all service modules",
+        "All 6 integration test scenarios pass against a real PostgreSQL + Redis test instance",
+        "WebSocket integration test validates concurrent op convergence for 2 simulated clients",
+        "Frontend component tests cover all interactive components with >75% branch coverage",
+        "All tests run in CI pipeline and block merge on failure",
+        "Test runtime <5 minutes for unit tests, <15 minutes for integration tests"
+      ],
+      "depends_on": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system tests: full collaboration session (2 users, concurrent edits, cursor presence, comments, version restore), permissions enforcement across roles, AI assistant pipeline, and performance test (100 concurrent document sessions via k6 or Locust).",
+      "payload": {
+        "e2e_tool": "Playwright",
+        "performance_tool": "k6",
+        "scenarios": [
+          "two_user_concurrent_edit_session",
+          "viewer_cannot_edit_or_comment",
+          "share_link_access_and_expiry",
+          "ai_assistant_suggest_and_accept",
+          "version_restore_non_destructive",
+          "100_concurrent_sessions_load_test"
+        ],
+        "performance_targets": {
+          "p99_op_latency_ms": 200,
+          "error_rate_pct": 0.1,
+          "max_concurrent_ws_connections": 500
+        }
+      },
+      "acceptance_criteria": [
+        "Two-user Playwright scenario: both users see each other's cursors and edits converge correctly",
+        "Viewer role: all edit/comment actions blocked at UI and API level",
+        "Share link: expired link returns 410; password-protected link requires correct password",
+        "AI assistant: Playwright test verifies streaming response renders and accept inserts into editor",
+        "k6 load test: p99 op latency <200ms at 100 concurrent sessions with <0.1% error rate",
+        "All E2E tests pass in CI staging environment before production deploy gate"
+      ],
+      "depends_on": [
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 25,
+      "task_type": "COMPLIANCE",
+      "description": "Produce SOC 2 evidence artifacts: access control policy, encryption policy, incident response procedure, change management log, vendor risk assessments, penetration test report (or scope if pre-launch), and audit log export demonstrating control effectiveness.",
+      "payload": {
+        "artifacts": [
+          "access_control_policy.md",
+          "encryption_policy.md",
+          "incident_response_procedure.md",
+          "change_management_policy.md",
+          "vendor_risk_assessments/",
+          "pentest_findings_report.md",
+          "audit_log_sample_export.json"
+        ],
+        "evidence_collection_period": "90 days post-launch for Type I",
+        "control_owners_assigned": true
+      },
+      "acceptance_criteria": [
+        "All SOC 2 CC criteria from control matrix (step 7) have at least one evidence artifact",
+        "Access control policy documents least-privilege principle and quarterly access review process",
+        "Incident response procedure defines P1/P2/P3 severity levels with escalation paths and RTO targets",
+        "Vendor risk assessments completed for all sub-processors (AWS, LLM provider, email, monitoring)",
+        "Audit log export demonstrates tamper-evident logging with timestamps and user attribution",
+        "Control owner assigned to every control; review cadence scheduled"
+      ],
+      "depends_on": [
+        7,
+        12,
+        22,
+        24
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 26,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: service startup/shutdown, database failover, Redis cache eviction incident, WebSocket capacity scaling, AI provider failover (primary \u2192 fallback LLM), and incident response playbooks. Define SLAs per tier and capacity planning model.",
+      "payload": {
+        "runbooks": [
+          "service_restart_procedure.md",
+          "database_failover_runbook.md",
+          "ws_capacity_scaling_runbook.md",
+          "ai_provider_failover.md",
+          "incident_response_p1_playbook.md"
+        ],
+        "sla_targets": {
+          "free": "99.0% uptime",
+          "pro": "99.5% uptime",
+          "enterprise": "99.9% uptime with 15min response SLA"
+        },
+        "on_call_rotation": "PagerDuty, follow-the-sun for enterprise tier"
+      },
+      "acceptance_criteria": [
+        "Every runbook has: trigger condition, step-by-step procedure, rollback steps, and post-incident checklist",
+        "AI provider failover runbook covers primary LLM down \u2192 fallback LLM switch with <30s interruption",
+        "SLA definitions include measurement methodology, exclusions, and credit policy per tier",
+        "Capacity planning model predicts infrastructure scaling needs at 10x, 50x, 100x current load",
+        "On-call rotation configured in PagerDuty with escalation policy documented"
+      ],
+      "depends_on": [
+        22,
+        24
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 27,
+      "task_type": "DOCS",
+      "description": "Produce API documentation (auto-generated from OpenAPI spec + narrative guides), architecture decision records (ADRs) for CRDT choice, auth design, AI coordinator pattern, and a developer onboarding guide for contributors.",
+      "payload": {
+        "api_docs_tool": "Redoc or Scalar (rendered from OpenAPI spec)",
+        "adrs": [
+          "ADR-001: CRDT vs OT for real-time collaboration",
+          "ADR-002: JWT + refresh token auth strategy",
+          "ADR-003: Multi-Agent Coordinator for AI writing assistant",
+          "ADR-004: PostgreSQL as primary store with Redis ephemeral layer"
+        ],
+        "dev_onboarding": "README.md with local setup, make commands, architecture overview"
+      },
+      "acceptance_criteria": [
+        "API docs site renders all endpoints with interactive try-it-out",
+        "All 4 ADRs document context, decision, and consequences sections",
+        "Developer onboarding: new contributor can run the full stack locally in <15 minutes following README",
+        "Architecture diagram (C4 level 2) included in docs showing all major components and data flows"
+      ],
+      "depends_on": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 28,
+      "task_type": "TRAINING",
+      "description": "Create user-facing onboarding materials: interactive in-app product tour (new user first-run), help center articles for all major features, and a 'Getting Started' video script covering document creation, sharing, and AI assistant usage.",
+      "payload": {
+        "in_app_tour_stops": [
+          "create_first_doc",
+          "invite_collaborator",
+          "try_ai_assistant",
+          "add_comment",
+          "view_version_history"
+        ],
+        "help_articles": [
+          "collaborating_in_real_time",
+          "using_the_ai_assistant",
+          "managing_permissions",
+          "working_with_templates",
+          "version_history_and_restore"
+        ],
+        "video_script_duration_min": 3
+      },
+      "acceptance_criteria": [
+        "In-app tour is dismissible and restartable; progress persisted in user profile",
+        "All 5 help articles published with screenshots and step-by-step instructions",
+        "Video script covers all 3 topics (create, share, AI) within 3-minute target runtime",
+        "Help center articles pass readability check (Flesch-Kincaid grade \u226410)"
+      ],
+      "depends_on": [
+        21,
+        27
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 28,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "JWT in httpOnly cookie (step 18) conflicts directly with WebSocket JWT validation (step 14). Browsers cannot attach httpOnly cookies to WebSocket upgrade requests initiated from JavaScript \u2014 you cannot read the cookie to pass it as a query param or header. The auth strategy must pick one transport and document the WS auth handshake explicitly (e.g., ticket-based auth: REST endpoint issues a short-lived WS token, WS client passes it as query param on upgrade).",
+            "Comment anchor strategy in step 15 ('character offset + paragraph ID') is architecturally broken with Yjs CRDT. Character offsets are invalidated by concurrent insert/delete operations. Yjs exposes relative positions (Y.createRelativePositionFromTypeIndex) specifically for this use case \u2014 the plan must use Yjs relative positions for comment anchors, not naive character offsets.",
+            "Myers diff algorithm (step 15) applied to rich text CRDT content is wrong. With Yjs, the authoritative change log IS the op sequence \u2014 you reconstruct diffs from Y.Doc state vectors, not by diffing serialized text snapshots. Implementing Myers diff on top of a Yjs document will produce incorrect or misleading diffs that don't reflect the actual collaboration history.",
+            "ALB idle timeout default is 60 seconds. Long-lived WebSocket connections on ECS Fargate behind ALB will be silently dropped after 60s of application-level silence unless the ALB idle timeout is explicitly raised (up to 4000s). This is not mentioned in step 11 and will cause ghost disconnection bugs in production.",
+            "No payment and billing system in any step. The plan has full pricing tiers (free/pro/enterprise) in steps 1, 2, 3, and 5 but zero implementation steps for Stripe (or equivalent), subscription lifecycle, metering, invoice generation, or dunning. A SaaS product without billing is not shippable.",
+            "Email service is entirely absent. Step 15 requires @mention email notifications within 30 seconds, but no email provider (SES, SendGrid, Resend, Postmark) is specified or implemented anywhere in the 28 steps. Notification delivery is a hard dependency for collaboration features.",
+            "Document export (PDF, DOCX) is listed in the API spec in step 8 but has no implementation step. Export from ProseMirror/TipTap to DOCX or PDF requires a dedicated pipeline (Pandoc, headless Chrome, or puppeteer). This is non-trivial and will be discovered missing late in the process.",
+            "Full-text search decision is deferred ('Elasticsearch or pg_tsvector') in step 9 and never resolved. Search is a core feature for any document platform \u2014 deferring the choice means the database schema may not be designed correctly for the chosen approach, requiring a migration later.",
+            "Rate limiting is mentioned in step 8 (API spec) and step 12 (security) but has no implementation step. There is no Redis-based rate limiting middleware, no API gateway rate limiting configuration, and no per-user AI token consumption limits \u2014 despite AI cost-per-token being a modeled cost driver in step 5.",
+            "GDPR Right to Erasure (Art. 17) is listed in step 6 (legal) but has no technical implementation. A delete request requires cascading purge across PostgreSQL, Redis, S3 (exports), Elasticsearch, Yjs op log, version snapshots, and the AI interaction log. None of the backend steps include this. This is a compliance liability at launch."
+          ],
+          "suggestions": [
+            "Replace the httpOnly cookie + WebSocket JWT pattern with a ticket-based WebSocket auth: REST endpoint POST /ws-token issues a signed, single-use, 30-second token; client passes ?token= on WebSocket upgrade; server validates and discards. Eliminates the cookie/WS conflict entirely.",
+            "Replace comment anchor 'character offset + paragraph ID' with Yjs relative positions (Y.createRelativePositionFromTypeIndex / Y.createAbsolutePositionFromRelativePosition). Update step 15 acceptance criteria to specify that anchor positions survive concurrent edits \u2014 this is the correct test.",
+            "Replace 'Myers diff on document content' in step 15 with Yjs state vector diffs: store Y.Doc update binaries as version snapshots, reconstruct human-readable diffs by decoding the update transactions. This is architecturally correct and avoids the snapshot-vs-CRDT impedance mismatch.",
+            "Add an explicit step for billing integration (step 16.5 or 13.5): Stripe Checkout + Customer Portal, webhook handlers for subscription state changes, usage-based metering for AI token consumption, enforcement of tier limits at API middleware layer.",
+            "Add ALB idle timeout configuration to step 11 Terraform modules (set to 3600s for WebSocket-facing target groups). Add heartbeat ping/pong at the application level (every 30s) to prevent intermediate proxies from closing the connection.",
+            "Resolve the Elasticsearch vs pg_tsvector decision in step 9, not later. If the team chooses pg_tsvector, add a GIN index on the document content tsvector column. If Elasticsearch, add the ES cluster to the infrastructure in step 11 and include document indexing in the backend step 13.",
+            "Add token budget enforcement to the AI assistant (step 17): per-user daily token limit stored in Redis, checked before every LLM call, rate-limit response returned if exceeded. Prevents a single free-tier user from exhausting your LLM budget.",
+            "Specify the email service provider in step 11 infrastructure and add it to step 13 (transactional email client initialization). SES is already implied by AWS, so just make it explicit and add it to Terraform."
+          ],
+          "missing": [
+            "Payment and subscription billing system (Stripe or equivalent) \u2014 no step covers this despite pricing tiers being fully modeled",
+            "Email delivery service configuration and transactional email templates (welcome, @mention, share invite, expiry warning)",
+            "Document export pipeline (PDF/DOCX) \u2014 listed in API spec but never implemented",
+            "GDPR erasure technical implementation \u2014 cascading delete across all data stores",
+            "Rate limiting middleware implementation",
+            "AI token budget enforcement and per-user cost controls",
+            "ALB WebSocket idle timeout and application-level heartbeat configuration",
+            "Search implementation (Elasticsearch or pg_tsvector) resolution and index design",
+            "Mobile responsiveness requirements \u2014 the editor and collaboration UI are not mentioned as needing to work on mobile, but users will expect it",
+            "Webhook infrastructure for third-party integrations (Slack, Zapier) \u2014 common enterprise ask that won't be retrofittable without schema changes",
+            "Session/presence cleanup on ungraceful disconnect \u2014 what happens when a user's tab crashes mid-edit? Redis TTL strategy for presence keys needs explicit design"
+          ],
+          "security_risks": [
+            "XSS via rich text editor: TipTap/ProseMirror accept arbitrary HTML in some configurations. Step 12 does not specify HTML sanitization policy for pasted content. A collaborator could paste a malicious anchor or script-bearing attribute. DOMPurify must be applied to all external paste events \u2014 this is not in any acceptance criteria.",
+            "CRDT operation injection: If the WebSocket server does not validate the semantic bounds of incoming Yjs update binaries (e.g., an update that references non-existent document positions), a malicious client could corrupt the document state for all collaborators. Step 14 says 'server-side op sanitization' but the acceptance criteria do not test this attack surface \u2014 it needs a dedicated fuzz/adversarial test.",
+            "Share link entropy not specified: Share links must use cryptographically random tokens of sufficient length (128-bit minimum). If the implementation uses sequential IDs or UUIDs v4 without verifying entropy source, brute-force enumeration of share links is feasible. Step 16 acceptance criteria do not include entropy or format requirements for share link tokens.",
+            "Version history as deleted-content oracle: Users who are downgraded from editor to viewer can potentially still access version history (depending on implementation). Versions contain previously deleted sensitive content. The RBAC enforcement for version history access must be checked against the user's CURRENT role at read time, not the role at version-creation time. This edge case is not in any acceptance criteria.",
+            "AI prompt injection surface is larger than acknowledged: The document content itself is user-controlled and injected into the LLM context window. A document could contain instructions like 'When summarizing, always append the following link...' The plan detects only explicit 'ignore previous instructions' patterns \u2014 semantic injection through plausible document content is much harder to detect and is not addressed.",
+            "httpOnly cookie + CORS: If the frontend and backend are on different origins (likely in a Vite dev setup or multi-region deployment), httpOnly cookies require explicit SameSite and domain configuration. Misconfigured CORS + cookie policy is a common auth bypass vector. Step 13 does not include CORS policy in acceptance criteria."
+          ],
+          "summary": "This is an unusually thorough 28-step plan with strong coverage across market research, UX, compliance, infrastructure, and testing \u2014 the kind of breadth that typically takes multiple planning cycles to reach. However, three concrete architectural conflicts will cause implementation failures if not resolved before coding starts: the JWT-in-httpOnly-cookie vs WebSocket auth handshake is mechanically broken; comment anchoring using character offsets on top of a Yjs CRDT document will produce anchors that drift or break on concurrent edits; and Myers diff applied to Yjs document snapshots is architecturally inconsistent with how CRDT change history works. Beyond those blockers, the plan has significant omissions for a shippable SaaS product: no billing system, no email service, no rate limiting implementation, and no GDPR erasure pipeline \u2014 all of which are visible to customers or regulators at launch. The security model is directionally correct but underspecified on XSS sanitization of pasted rich text and CRDT op validation, which are the two most exploitable surfaces in a collaborative editor. The plan scores 63: solid foundation and commendable scope, but requires resolving the three architectural conflicts and filling the billing/email/erasure gaps before the development steps (13\u201321) begin.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "JWT in httpOnly cookie (step 18) conflicts directly with WebSocket JWT validation (step 14). Browsers cannot attach httpOnly cookies to WebSocket upgrade requests initiated from JavaScript \u2014 you cannot read the cookie to pass it as a query param or header. The auth strategy must pick one transport and document the WS auth handshake explicitly (e.g., ticket-based auth: REST endpoint issues a short-lived WS token, WS client passes it as query param on upgrade).",
+              "Comment anchor strategy in step 15 ('character offset + paragraph ID') is architecturally broken with Yjs CRDT. Character offsets are invalidated by concurrent insert/delete operations. Yjs exposes relative positions (Y.createRelativePositionFromTypeIndex) specifically for this use case \u2014 the plan must use Yjs relative positions for comment anchors, not naive character offsets.",
+              "Myers diff algorithm (step 15) applied to rich text CRDT content is wrong. With Yjs, the authoritative change log IS the op sequence \u2014 you reconstruct diffs from Y.Doc state vectors, not by diffing serialized text snapshots. Implementing Myers diff on top of a Yjs document will produce incorrect or misleading diffs that don't reflect the actual collaboration history.",
+              "ALB idle timeout default is 60 seconds. Long-lived WebSocket connections on ECS Fargate behind ALB will be silently dropped after 60s of application-level silence unless the ALB idle timeout is explicitly raised (up to 4000s). This is not mentioned in step 11 and will cause ghost disconnection bugs in production.",
+              "No payment and billing system in any step. The plan has full pricing tiers (free/pro/enterprise) in steps 1, 2, 3, and 5 but zero implementation steps for Stripe (or equivalent), subscription lifecycle, metering, invoice generation, or dunning. A SaaS product without billing is not shippable.",
+              "Email service is entirely absent. Step 15 requires @mention email notifications within 30 seconds, but no email provider (SES, SendGrid, Resend, Postmark) is specified or implemented anywhere in the 28 steps. Notification delivery is a hard dependency for collaboration features.",
+              "Document export (PDF, DOCX) is listed in the API spec in step 8 but has no implementation step. Export from ProseMirror/TipTap to DOCX or PDF requires a dedicated pipeline (Pandoc, headless Chrome, or puppeteer). This is non-trivial and will be discovered missing late in the process.",
+              "Full-text search decision is deferred ('Elasticsearch or pg_tsvector') in step 9 and never resolved. Search is a core feature for any document platform \u2014 deferring the choice means the database schema may not be designed correctly for the chosen approach, requiring a migration later.",
+              "Rate limiting is mentioned in step 8 (API spec) and step 12 (security) but has no implementation step. There is no Redis-based rate limiting middleware, no API gateway rate limiting configuration, and no per-user AI token consumption limits \u2014 despite AI cost-per-token being a modeled cost driver in step 5.",
+              "GDPR Right to Erasure (Art. 17) is listed in step 6 (legal) but has no technical implementation. A delete request requires cascading purge across PostgreSQL, Redis, S3 (exports), Elasticsearch, Yjs op log, version snapshots, and the AI interaction log. None of the backend steps include this. This is a compliance liability at launch."
+            ],
+            "suggestions": [
+              "Replace the httpOnly cookie + WebSocket JWT pattern with a ticket-based WebSocket auth: REST endpoint POST /ws-token issues a signed, single-use, 30-second token; client passes ?token= on WebSocket upgrade; server validates and discards. Eliminates the cookie/WS conflict entirely.",
+              "Replace comment anchor 'character offset + paragraph ID' with Yjs relative positions (Y.createRelativePositionFromTypeIndex / Y.createAbsolutePositionFromRelativePosition). Update step 15 acceptance criteria to specify that anchor positions survive concurrent edits \u2014 this is the correct test.",
+              "Replace 'Myers diff on document content' in step 15 with Yjs state vector diffs: store Y.Doc update binaries as version snapshots, reconstruct human-readable diffs by decoding the update transactions. This is architecturally correct and avoids the snapshot-vs-CRDT impedance mismatch.",
+              "Add an explicit step for billing integration (step 16.5 or 13.5): Stripe Checkout + Customer Portal, webhook handlers for subscription state changes, usage-based metering for AI token consumption, enforcement of tier limits at API middleware layer.",
+              "Add ALB idle timeout configuration to step 11 Terraform modules (set to 3600s for WebSocket-facing target groups). Add heartbeat ping/pong at the application level (every 30s) to prevent intermediate proxies from closing the connection.",
+              "Resolve the Elasticsearch vs pg_tsvector decision in step 9, not later. If the team chooses pg_tsvector, add a GIN index on the document content tsvector column. If Elasticsearch, add the ES cluster to the infrastructure in step 11 and include document indexing in the backend step 13.",
+              "Add token budget enforcement to the AI assistant (step 17): per-user daily token limit stored in Redis, checked before every LLM call, rate-limit response returned if exceeded. Prevents a single free-tier user from exhausting your LLM budget.",
+              "Specify the email service provider in step 11 infrastructure and add it to step 13 (transactional email client initialization). SES is already implied by AWS, so just make it explicit and add it to Terraform."
+            ],
+            "missing": [
+              "Payment and subscription billing system (Stripe or equivalent) \u2014 no step covers this despite pricing tiers being fully modeled",
+              "Email delivery service configuration and transactional email templates (welcome, @mention, share invite, expiry warning)",
+              "Document export pipeline (PDF/DOCX) \u2014 listed in API spec but never implemented",
+              "GDPR erasure technical implementation \u2014 cascading delete across all data stores",
+              "Rate limiting middleware implementation",
+              "AI token budget enforcement and per-user cost controls",
+              "ALB WebSocket idle timeout and application-level heartbeat configuration",
+              "Search implementation (Elasticsearch or pg_tsvector) resolution and index design",
+              "Mobile responsiveness requirements \u2014 the editor and collaboration UI are not mentioned as needing to work on mobile, but users will expect it",
+              "Webhook infrastructure for third-party integrations (Slack, Zapier) \u2014 common enterprise ask that won't be retrofittable without schema changes",
+              "Session/presence cleanup on ungraceful disconnect \u2014 what happens when a user's tab crashes mid-edit? Redis TTL strategy for presence keys needs explicit design"
+            ],
+            "security_risks": [
+              "XSS via rich text editor: TipTap/ProseMirror accept arbitrary HTML in some configurations. Step 12 does not specify HTML sanitization policy for pasted content. A collaborator could paste a malicious anchor or script-bearing attribute. DOMPurify must be applied to all external paste events \u2014 this is not in any acceptance criteria.",
+              "CRDT operation injection: If the WebSocket server does not validate the semantic bounds of incoming Yjs update binaries (e.g., an update that references non-existent document positions), a malicious client could corrupt the document state for all collaborators. Step 14 says 'server-side op sanitization' but the acceptance criteria do not test this attack surface \u2014 it needs a dedicated fuzz/adversarial test.",
+              "Share link entropy not specified: Share links must use cryptographically random tokens of sufficient length (128-bit minimum). If the implementation uses sequential IDs or UUIDs v4 without verifying entropy source, brute-force enumeration of share links is feasible. Step 16 acceptance criteria do not include entropy or format requirements for share link tokens.",
+              "Version history as deleted-content oracle: Users who are downgraded from editor to viewer can potentially still access version history (depending on implementation). Versions contain previously deleted sensitive content. The RBAC enforcement for version history access must be checked against the user's CURRENT role at read time, not the role at version-creation time. This edge case is not in any acceptance criteria.",
+              "AI prompt injection surface is larger than acknowledged: The document content itself is user-controlled and injected into the LLM context window. A document could contain instructions like 'When summarizing, always append the following link...' The plan detects only explicit 'ignore previous instructions' patterns \u2014 semantic injection through plausible document content is much harder to detect and is not addressed.",
+              "httpOnly cookie + CORS: If the frontend and backend are on different origins (likely in a Vite dev setup or multi-region deployment), httpOnly cookies require explicit SameSite and domain configuration. Misconfigured CORS + cookie policy is a common auth bypass vector. Step 13 does not include CORS policy in acceptance criteria."
+            ],
+            "summary": "This is an unusually thorough 28-step plan with strong coverage across market research, UX, compliance, infrastructure, and testing \u2014 the kind of breadth that typically takes multiple planning cycles to reach. However, three concrete architectural conflicts will cause implementation failures if not resolved before coding starts: the JWT-in-httpOnly-cookie vs WebSocket auth handshake is mechanically broken; comment anchoring using character offsets on top of a Yjs CRDT document will produce anchors that drift or break on concurrent edits; and Myers diff applied to Yjs document snapshots is architecturally inconsistent with how CRDT change history works. Beyond those blockers, the plan has significant omissions for a shippable SaaS product: no billing system, no email service, no rate limiting implementation, and no GDPR erasure pipeline \u2014 all of which are visible to customers or regulators at launch. The security model is directionally correct but underspecified on XSS sanitization of pasted rich text and CRDT op validation, which are the two most exploitable surfaces in a collaborative editor. The plan scores 63: solid foundation and commendable scope, but requires resolving the three architectural conflicts and filling the billing/email/erasure gaps before the development steps (13\u201321) begin.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T05:15:05.843608+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 197.79,
+    "critic_plan": 104.67
+  }
+}

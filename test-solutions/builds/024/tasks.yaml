@@ -1,0 +1,366 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements, roadmap, and success metrics for the
+      fleet_telematics platform covering GPS tracking, driver behavior scoring, fuel
+      optimization, predictive maintenance, and ELD compliance.
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD approved by stakeholders with all five feature areas scoped
+    - Success metrics defined and measurable
+    - Roadmap with phased milestones (MVP → GA) documented
+    depends_on: []
+  BUSINESS_ANALYSIS:
+    description: Document business requirements, fleet operator user stories, driver
+      workflows, and ROI model for fuel savings and maintenance cost reduction.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - User stories cover all five product feature areas with acceptance criteria
+    - Process flows validated with at least two fleet operator personas
+    - ROI model shows ≥ 12-month payback period calculation
+    depends_on:
+    - 1
+  MARKET_RESEARCH:
+    description: Competitive analysis of Samsara, Verizon Connect, Motive (KeepTruckin),
+      and Geotab. Identify differentiation opportunities in AI-driven fuel optimization
+      and predictive maintenance.
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Feature comparison matrix covering all five competitors
+    - Three or more differentiation opportunities identified with evidence
+    - Pricing benchmarks documented
+    depends_on:
+    - 1
+  REGULATORY:
+    description: 'Map all applicable regulatory requirements: FMCSA ELD mandate (49
+      CFR Part 395), UNECE R155/R156 (vehicle cybersecurity), ISO 26262 (functional
+      safety), and AUTOSAR compliance checklist.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Traceability matrix maps every regulatory clause to a product requirement
+    - ELD technical specifications checklist complete (FMCSA self-certification checklist)
+    - UNECE R155 cybersecurity threat catalog populated
+    - ISO 26262 ASIL level assigned per vehicle function
+    depends_on:
+    - 2
+  SAFETY:
+    description: Perform system-level FMEA and hazard analysis for the telematics
+      ECU and connected vehicle systems. Assign ASIL levels per ISO 26262. Produce
+      fault tree for GPS spoofing, ECU lockup, and false maintenance alerts.
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - FMEA covers all hardware and software failure modes with severity/occurrence/detection
+      ratings
+    - ASIL levels assigned for all safety-relevant functions (at minimum ASIL A for
+      HOS alerts, ASIL B for brake event detection)
+    - Fault trees drawn for top five hazard scenarios
+    - Safety goals documented and traceable to system requirements
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on:
+    - 4
+  SECURITY:
+    description: Perform threat modeling (STRIDE) for the telematics platform per
+      UNECE R155/R156. Cover OTA update pipeline, CAN bus injection, cloud API exposure,
+      and driver data privacy.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis covers all six attack surfaces
+    - CSMS (Cybersecurity Management System) policy document produced per UNECE R155
+    - OTA signing key management procedure defined
+    - SBOM generated covering all ECU firmware dependencies
+    depends_on:
+    - 4
+  UX_DESIGN:
+    description: Design fleet manager dashboard, driver mobile app, and compliance
+      officer reporting UI. Wireframes for GPS live map, driver scorecard, fuel analytics,
+      maintenance queue, and ELD log viewer.
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all seven screen types
+    - 'Driver mobile app flow covers: login → view HOS → sign log → view score'
+    - Accessibility audit passes WCAG 2.1 AA for fleet portal
+    - Design reviewed and approved by at least one fleet operator persona
+    depends_on:
+    - 2
+  HARDWARE_SIM:
+    description: 'Create hardware simulation models for the telematics ECU: CAN bus
+      simulation (Vector CANoe / CAPL scripts), GPS signal injection test bench, OBD-II
+      diagnostic simulation, and accelerometer behavior model for driver scoring.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - CAN bus simulation produces valid J1939 and OBD-II PID messages at 250/500 kbps
+    - GPS simulator generates NMEA 0183 sentences with configurable spoofing scenarios
+    - Accelerometer model outputs configurable g-force profiles for harsh event injection
+    - All four test scenarios produce deterministic, repeatable outputs
+    depends_on:
+    - 5
+  FIRMWARE:
+    description: 'Implement telematics ECU firmware: RTOS task architecture (FreeRTOS),
+      HAL drivers for GPS (UART/NMEA), CAN bus (SocketCAN/MCP2515), OBD-II reader,
+      accelerometer (SPI/I2C), LTE modem (PPP/MQTT), and secure OTA bootloader.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - All RTOS tasks boot without deadlock; watchdog recovery tested
+    - GPS task parses NMEA GGA/RMC at 10Hz and buffers with < 100ms latency
+    - 'CAN task decodes J1939 PGNs: fuel rate (PGN 65266), engine speed (PGN 61444),
+      odometer (PGN 65248)'
+    - OTA bootloader verifies firmware signature (ECDSA-256) before flashing
+    - AUTOSAR BSW layer mapping documented for OS, COM, and DIAG modules
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 8
+  DATABASE:
+    description: 'Design time-series and relational database schema for fleet_telematics:
+      vehicle telemetry (TimescaleDB/InfluxDB), trip records, driver events, maintenance
+      schedules, ELD logs, and fuel transactions.'
+    agent_role: developer
+    acceptance_criteria:
+    - TimescaleDB hypertable for telemetry ingests 1000 rows/sec with < 10ms write
+      latency
+    - Geospatial queries (vehicles within bounding box) return in < 200ms on 1M row
+      dataset
+    - All foreign key relationships enforced with cascade rules defined
+    - Migrations written and reversible via Alembic
+    - ELD records table enforces immutability via append-only policy (no UPDATE/DELETE)
+    depends_on:
+    - 4
+  CONFIG:
+    description: 'Set up project infrastructure: monorepo structure, Docker Compose
+      for local dev (TimescaleDB, Redis, MQTT broker, backend, frontend), GitHub Actions
+      CI, environment configs, and MQTT topic schema for telematics ingestion.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - docker compose up starts all services with no manual intervention
+    - MQTT broker accepts messages on all defined topic patterns
+    - GitHub Actions CI pipeline runs on every PR and blocks merge on failure
+    - Environment config uses .env files with no secrets in source control
+    depends_on:
+    - 11
+  BACKEND:
+    description: 'Implement telemetry ingestion service: MQTT subscriber consuming
+      GPS/CAN/event payloads, validation pipeline, time-series write to TimescaleDB,
+      real-time position broadcasting via WebSocket, and geofence evaluation engine.'
+    agent_role: developer
+    acceptance_criteria:
+    - Ingestion service sustains 10,000 msg/sec with < 500ms end-to-end latency
+    - Invalid messages rejected with error logged; valid messages persisted with 100%
+      durability
+    - WebSocket broadcasts vehicle positions to subscribed fleet dashboards within
+      1 second
+    - Geofence violations generate alert events within 2 seconds of boundary crossing
+    - Reconnecting device flushes store-and-forward buffer without data loss
+    depends_on:
+    - 12
+  ML_MODEL:
+    description: 'Build driver behavior scoring model: feature engineering from acceleration,
+      braking, cornering, speeding, phone use events; supervised model trained on
+      labeled fleet data; score normalization (0–100); per-trip and rolling 30-day
+      scores.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Model achieves AUC > 0.82 on held-out test set predicting accident risk quartile
+    - SHAP values expose top contributing factors per driver score
+    - Score computed within 5 seconds of trip completion
+    - Scoring endpoint returns p99 latency < 100ms from Redis cache
+    - Score normalization produces uniform distribution across synthetic fleet dataset
+    depends_on:
+    - 13
+  FRONTEND:
+    description: 'Build fleet manager web dashboard: real-time GPS map (Mapbox GL
+      JS), vehicle status panel, driver leaderboard, fuel analytics charts, maintenance
+      alert queue, and ELD compliance report viewer.'
+    agent_role: developer
+    acceptance_criteria:
+    - Live map renders 1000 vehicles with smooth pan/zoom (60fps)
+    - Driver scorecard displays score, trend chart, and top 3 SHAP factors
+    - ELD HOS log viewer renders grid with 24-hour duty status timeline
+    - Fuel analytics page loads in < 2 seconds with 90-day data
+    - All pages mobile-responsive (1024px breakpoint)
+    - 'Accessibility: keyboard navigable, ARIA labels on interactive elements'
+    depends_on:
+    - 17
+    - 7
+  AGENTIC:
+    description: 'Implement multi-agent coordinator pattern for fleet intelligence:
+      coordinator routes to specialist agents (driver coaching, maintenance planner,
+      compliance monitor, fuel advisor). Each agent uses ReAct loops against fleet
+      data tools.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator correctly routes trip completion events to driver_coach and fuel_advisor
+      in parallel
+    - Each agent produces a structured proposal with confidence score and supporting
+      evidence
+    - HITL gates fire for work orders and corrective actions before any external notification
+    - Agent proposals stored in proposal_store with trace_id and audit trail
+    - ReAct loops terminate within 10 seconds per agent with valid output or explicit
+      failure
+    depends_on:
+    - 17
+  INFRA:
+    description: 'Provision production infrastructure: Kubernetes cluster (EKS/GKE),
+      TimescaleDB managed (Timescale Cloud or self-hosted), Redis Cluster, MQTT broker
+      (HiveMQ or EMQ X), CDN for dashboard, VPN for device connectivity.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan applies without errors; state stored in S3 backend
+    - EKS cluster autoscales from 3 to 20 nodes based on CPU/memory
+    - TimescaleDB achieves 99.9% uptime SLA with automated backups every 6 hours
+    - ELD data confirmed stored only in us-east-1 / us-west-2
+    - MQTT broker handles 50,000 concurrent device connections
+    depends_on:
+    - 12
+  DEVOPS:
+    description: 'Build CI/CD pipelines: GitHub Actions for backend (test → build
+      → deploy), firmware (compile → unit test → OTA package signing), frontend (lint
+      → test → build → deploy to CDN), and ML model retraining pipeline.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Backend pipeline deploys to staging in < 8 minutes from merge to main
+    - Firmware OTA package signed with HSM-backed key before S3 upload
+    - ML pipeline blocks promotion if MAPE regresses > 2% vs production
+    - Zero-downtime deployments via rolling update strategy on EKS
+    - PagerDuty alert fires within 2 minutes of p99 latency exceeding 1 second
+    depends_on:
+    - 21
+  EMBEDDED_TEST:
+    description: 'Build hardware-in-the-loop (HIL) test harness for the telematics
+      ECU: inject simulated GPS, CAN, and OBD-II signals; validate firmware event
+      detection, ELD state machine, and OTA bootloader on target hardware.'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - All eight HIL test cases pass with deterministic outcomes across 10 repetitions
+    - Firmware branch coverage report shows ≥ 90% coverage
+    - OTA rollback test completes in < 60 seconds with valid previous firmware restored
+    - ELD state machine test covers all FMCSA-defined duty status transitions
+    - HIL test suite runnable in CI via USB-connected target board
+    depends_on:
+    - 10
+  COMPLIANCE:
+    description: 'Produce FMCSA ELD self-certification package: technical documentation,
+      test results, registration, and compliance declaration. Produce UNECE R155 cybersecurity
+      type-approval documentation.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - FMCSA ELD self-certification checklist 100% complete with evidence for every
+      item
+    - ELD registered on FMCSA ELD list (or submission confirmation in hand)
+    - UNECE R155 CSMS audit report signed by qualified cybersecurity assessor
+    - ISO 26262 safety plan approved by functional safety manager
+    - All traceability matrices link requirements → design → test evidence
+    depends_on:
+    - 23
+    - 6
+    - 5
+  LEGAL:
+    description: Draft terms of service, driver data privacy policy (CCPA/GDPR), data
+      processing agreements for fleet operators, and ELD data retention policy (minimum
+      6 months per FMCSA).
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy covers all collected data categories with CCPA opt-out mechanism
+    - GDPR data subject rights (access, deletion, portability) procedures documented
+    - ELD data retention policy specifies 6-month minimum and deletion schedule
+    - DPA reviewed and approved by legal counsel
+    - Driver consent flow in mobile app reviewed against privacy policy
+    depends_on:
+    - 4
+  TESTS:
+    description: 'Write backend unit and integration tests: telemetry ingestion pipeline,
+      ELD state machine, driver scoring service, predictive maintenance endpoint,
+      geofence engine, and multi-tenant data isolation.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - pytest suite passes with ≥ 85% line coverage
+    - ELD state machine tests cover all FMCSA-defined transitions without gaps
+    - Multi-tenant isolation test confirms zero data leakage between fleet_ids
+    - MQTT ingestion integration test achieves 10,000 msg/batch without errors
+    - CI pipeline blocks merge on any test failure
+    depends_on:
+    - 17
+  QA:
+    description: 'Design and execute QA test plan: driver app ELD workflow, fleet
+      dashboard GPS accuracy, driver score consistency, fuel report accuracy vs fuel
+      card actuals, and cross-browser compatibility.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All critical path test cases pass with zero P1/P2 defects open
+    - Cross-browser matrix complete across four browsers on latest two versions
+    - Accessibility audit scores WCAG 2.1 AA pass on fleet portal
+    - Mobile app tested on iOS 16+ (iPhone 12+) and Android 12+ (Pixel 6+)
+    - QA sign-off report produced and approved before production deployment
+    depends_on:
+    - 18
+    - 19
+    - 26
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test: physical or simulated ECU → MQTT
+      → backend → dashboard. Validate full telemetry flow, ELD compliance scenario,
+      predictive maintenance alert lifecycle, and load test at 10,000 vehicles.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All four E2E scenarios pass without manual intervention
+    - GPS telemetry end-to-end latency p95 < 5 seconds
+    - Load test sustains 10,000 vehicles at 10,000 msg/sec with < 1% error rate
+    - ELD export file from E2E test validates against FMCSA validator tool
+    - No P1 defects outstanding after system test execution
+    depends_on:
+    - 23
+    - 27
+    - 20
+    - 22
+  FINANCIAL:
+    description: 'Build fleet_telematics financial model: hardware BOM cost, SaaS
+      pricing tiers, CAC, LTV, break-even analysis, and 3-year P&L projection.'
+    agent_role: financial_analyst
+    acceptance_criteria:
+    - 3-year P&L model with monthly granularity
+    - Break-even analysis at three fleet sizes (50, 500, 5000 vehicles)
+    - Hardware + SaaS unit economics show positive contribution margin at 500 vehicles
+    - Model reviewed and approved by financial_analyst
+    depends_on:
+    - 3
+  TRAINING:
+    description: 'Produce user documentation and training materials: fleet manager
+      admin guide, driver mobile app quick-start, ELD compliance training module,
+      and API integration guide for fleet management system partners.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Admin guide covers all dashboard features with screenshots
+    - Driver quick-start walkthrough validated by at least one non-technical driver
+      tester
+    - ELD training module covers FMCSA HOS rules, duty statuses, and violation penalties
+    - API guide includes working curl and SDK code examples for top 10 endpoints
+    - All docs published and accessible at /docs subdomain
+    depends_on:
+    - 28
+  OPERATIONS:
+    description: 'Write operational runbooks: vehicle onboarding SOP, ELD investigation
+      procedure, incident response for telemetry outage, data retention enforcement,
+      and SLA definitions for fleet customers.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Vehicle onboarding runbook enables a new field tech to provision a device in
+      < 30 minutes
+    - Telemetry outage triage tree covers all failure points from ECU to database
+    - SLA definitions reviewed and approved by operations_manager
+    - Data retention job tested in staging with confirmed deletion audit log
+    - Incident response runbook includes after-incident review template
+    depends_on:
+    - 22
+  DOCS:
+    description: 'Produce architecture documentation: system architecture diagram,
+      data flow diagrams, MQTT topic schema reference, API contract, firmware ICD,
+      and regulatory evidence index.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - C4 architecture diagrams cover all four levels (Context, Container, Component,
+      Code for critical paths)
+    - Regulatory evidence index maps every artifact to its governing standard clause
+    - OpenAPI spec validates without errors in Swagger editor
+    - Firmware ICD documents every MQTT payload field with type, unit, and range
+    - Docs reviewed by developer and regulatory_specialist before release
+    depends_on:
+    - 28
+    - 24

@@ -1,0 +1,66 @@
+project_name: patient_monitoring_dashboard
+display_name: Patient Monitoring Dashboard
+version: 1.0.0
+domain: medtech
+description: ICU patient monitoring dashboard aggregating data from ventilators, infusion
+  pumps, and vital sign monitors. Real-time alerting with nurse station integration.
+  HL7 FHIR compliant.
+detected_domains: []
+compliance_standards:
+- IEC 62304
+- ISO 13485
+- HL7 FHIR
+- ISO 14971
+task_types:
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- LEGAL
+- OPERATIONS
+- QA
+- REGULATORY
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- developer
+- devops_engineer
+- legal_advisor
+- operations_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

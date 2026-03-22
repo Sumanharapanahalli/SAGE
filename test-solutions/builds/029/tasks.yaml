@@ -1,0 +1,404 @@
+task_types:
+  SAFETY:
+    description: 'Conduct ISO 26262 Hazard Analysis and Risk Assessment (HARA) for
+      all safety-relevant functions: remote vehicle control (ASIL-C/D), OTA firmware
+      update integrity (ASIL-B), telematics data pipeline, and dealer remote diagnostics.
+      Produce HARA table, safety goals, Automotive Safety Integrity Level (ASIL) decomposition,
+      and functional safety concept document.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - HARA table covers all 5 in-scope functions with severity, exposure, and controllability
+      ratings
+    - Safety goals defined and numbered (SG-001 through SG-N) per ISO 26262 Part 3
+    - ASIL decomposition reviewed and signed off by safety engineer
+    - Functional Safety Concept document version-controlled and traceable to safety
+      goals
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on: []
+  MARKET_RESEARCH:
+    description: 'Analyze the connected car cloud platform market: key players (Harman,
+      Lear, Bosch), OEM adoption trends, UBI telematics pricing models, dealer DMS
+      integration standards (CDK, Reynolds & Reynolds, Dealertrack), UNECE R155/R156
+      regulatory landscape across EU, US, and APAC markets, and competitive differentiation
+      opportunities.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitive matrix covering at least 5 platforms across 4 product dimensions
+    - UBI pricing model comparison across 3+ insurance data providers
+    - Dealer DMS integration API landscape documented with compatibility matrix
+    - UNECE R155/R156 adoption timeline by region with compliance deadlines
+    depends_on: []
+  UX_DESIGN:
+    description: 'Design user experience for three distinct interfaces: (1) OEM/fleet
+      operator web dashboard (vehicle health, remote control, OTA campaign management),
+      (2) consumer mobile app (remote lock/unlock, engine start, trip history, insurance
+      score), (3) dealer service portal (vehicle diagnostics, service scheduling,
+      DTC code access). Include accessibility audit per WCAG 2.1 AA.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Lo-fi wireframes cover all primary user flows for all 3 interfaces
+    - Hi-fi prototype validated with at least 5 user test sessions per interface
+    - Accessibility audit passes WCAG 2.1 AA for all critical flows
+    - Design system with component library (tokens, colors, typography) published
+    depends_on: []
+  CONFIG:
+    description: 'Set up the full development environment and toolchain: AUTOSAR Classic/Adaptive
+      toolchain (Vector CANoe, DaVinci Configurator or open-source equivalent), embedded
+      cross-compilation (ARM GCC for Cortex-M/A), cloud project scaffolding (monorepo
+      with backend, firmware, web, infra directories), linting/formatting, pre-commit
+      hooks, and secrets management strategy.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All developers can build firmware and run unit tests with single `make all`
+      command
+    - Cloud services start locally via `docker-compose up` with no manual config steps
+    - Pre-commit hooks enforce code style and run static analysis for both C and Python
+    - Secrets never appear in git history (verified by gitleaks scan)
+    depends_on: []
+  HARDWARE_SIM:
+    description: Build SystemC simulation models for the Telematics Control Unit (TCU)
+      and gateway ECU. Simulate CAN bus traffic, LTE modem AT command interface, GPS/GNSS
+      data feed, and OTA bootloader state machine. Provide Python test bench that
+      drives the simulation and validates TCU response timing against ISO 26262 ASIL-B
+      requirements from Step 1.
+    agent_role: developer
+    acceptance_criteria:
+    - SystemC TCU model compiles and runs on Linux CI without hardware
+    - CAN bus simulation handles ISO 15765-2 segmented frames correctly
+    - OTA bootloader simulation covers A/B rollback on checksum failure
+    - Python test bench achieves >90% branch coverage of simulated state machines
+    - Timing analysis report confirms ASIL-B response constraints are met in simulation
+    depends_on:
+    - 1
+    - 4
+  DATABASE:
+    description: 'Design and implement the vehicle data platform schema: time-series
+      vehicle telemetry (TimescaleDB/InfluxDB), relational vehicle registry and ownership
+      (PostgreSQL), OTA campaign state machine tables, UBI trip and driving-behavior
+      event tables, dealer service record schema, and audit log with immutable append-only
+      design. Include partitioning strategy for multi-million-vehicle scale.'
+    agent_role: developer
+    acceptance_criteria:
+    - All migrations run idempotently via Alembic with rollback support
+    - TimescaleDB telemetry ingestion sustains 50,000 events/sec in load test
+    - PostgreSQL schema passes normalization review (3NF minimum)
+    - Row-level security policies enforce VIN-to-tenant isolation
+    - 'GDPR deletion cascade tested: owner deletion anonymizes all PII within 72 hours'
+    depends_on:
+    - 4
+  API:
+    description: 'Design the complete OpenAPI 3.1 specification for all platform APIs:
+      Vehicle Data API (telemetry ingestion, vehicle registry), Remote Command API
+      (lock, unlock, engine start/stop, with HITL approval gate for safety-critical
+      commands), OTA Management API (campaign CRUD, rollout control, device status),
+      UBI Data API (trip events, scoring), and Dealer Integration API (DTC pull, service
+      scheduling).'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI 3.1 YAML validates without errors against spectral ruleset
+    - All endpoints have request/response schemas with examples
+    - Safety-critical commands (engine start/stop) documented with HITL approval flow
+    - mTLS device authentication scheme documented with certificate lifecycle
+    - Breaking-change policy and versioning strategy documented in API governance
+      guide
+    depends_on:
+    - 1
+    - 4
+  FIRMWARE:
+    description: 'Implement TCU firmware in C (AUTOSAR-compatible layered architecture):
+      HAL drivers for CAN transceiver (ISO 15765-2), LTE modem (AT commands over UART),
+      GPS/GNSS parser (NMEA 0183), secure element interface for key storage, FreeRTOS
+      tasks for telemetry publishing, remote command reception, and OTA bootloader
+      with A/B partition management per UNECE R156. Implement signed firmware package
+      format (SHA-256 + ECDSA P-256).'
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - Firmware builds without warnings under -Wall -Wextra for ARM Cortex-M7
+    - CAN RX task processes ISO 15765-2 multi-frame messages within 10ms
+    - OTA bootloader successfully performs A/B switch and rollback in simulation (Step
+      5)
+    - ECDSA signature verification rejects tampered firmware images 100% of test cases
+    - Static analysis (PC-lint or Polyspace) passes with zero MISRA C:2012 mandatory
+      violations
+    - FreeRTOS stack watermark never below 20% in 72-hour soak test simulation
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 1
+    - 4
+    - 5
+  SECURITY:
+    description: 'Perform comprehensive threat modeling using STRIDE and TARA (Threat
+      Analysis and Risk Assessment per ISO/SAE 21434) for all attack surfaces: TCU
+      cloud channel (LTE), CAN bus internal, OTA update delivery, dealer API, UBI
+      data pipeline, and mobile app Bluetooth pairing. Produce UNECE R155 cybersecurity
+      management system artifacts: attack path analysis, risk treatment decisions,
+      SBOM for firmware and cloud services.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - TARA covers all 6 attack surfaces with impact and feasibility ratings
+    - All CAL-3 and CAL-4 risks have documented treatment decisions (mitigate/accept/transfer)
+    - SBOM generated for firmware binary and all backend Docker images
+    - Penetration test plan covers OWASP API Top 10 and automotive-specific attack
+      vectors
+    - UNECE R155 CSMS documentation maps to all 7 regulation categories
+    depends_on:
+    - 1
+    - 4
+    - 7
+  BACKEND:
+    description: 'Implement the Vehicle Cloud Gateway: MQTT broker (EMQX or HiveMQ)
+      for TCU connections with mTLS authentication, message validation and routing
+      service (FastAPI), device registry service (VIN → connection state), real-time
+      command dispatcher with ACK tracking and timeout handling, telemetry ingestion
+      pipeline to TimescaleDB, and WebSocket push endpoint for dashboard live updates.
+      Implement HITL approval gate for ASIL-C commands (engine start/stop) using the
+      coordinator agentic pattern.'
+    agent_role: developer
+    acceptance_criteria:
+    - MQTT broker handles 10,000 simultaneous mTLS device connections in load test
+    - Command RTT (issued → TCU ACK) < 500ms at p95 under nominal load
+    - ENGINE_START and ENGINE_STOP commands blocked until human approval in dashboard
+    - Telemetry pipeline sustains 50,000 events/sec with < 1% loss in 30-min soak
+    - Dead-letter queue captures all unACKed commands with full replay capability
+    - Device certificate revocation propagated to MQTT broker within 60 seconds
+    depends_on:
+    - 6
+    - 7
+  COMPLIANCE:
+    description: 'Produce AUTOSAR-compliance artifacts for the TCU software architecture:
+      ARXML component descriptions for all SWCs (Software Components), interface contracts,
+      port definitions, and runnable scheduling. Generate ISO 26262 Part 6 software-level
+      safety requirements derived from the functional safety concept (Step 1), software
+      design specification, and traceability matrix linking safety requirements →
+      design → implementation → test cases.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - ARXML validates against AUTOSAR Schema 4.4 without errors
+    - All ASIL-B SSRs traceable to safety goals from HARA (Step 1)
+    - Traceability matrix covers 100% of SSRs with at least one test case each
+    - Software Architecture Description reviewed and signed off by safety engineer
+    - No orphan requirements (requirements with no downstream trace)
+    depends_on:
+    - 1
+    - 7
+    - 8
+  EMBEDDED_TEST:
+    description: 'Implement the hardware-in-the-loop (HIL) test harness and firmware
+      unit test suite: HIL test bench using CANoe/CANalyzer or open-source alternatives
+      (python-can + pytest) driving the TCU simulation from Step 5, firmware unit
+      tests using Unity/CMock for all HAL drivers and RTOS task logic, integration
+      test scenarios for OTA state machine (success, failure, rollback), remote command
+      processing (lock, unlock, engine start with auth), and boundary/fault injection
+      tests per ISO 26262 ASIL-B coverage requirements.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Firmware unit test suite runs on CI (no hardware) via SystemC simulation in
+      <5 minutes
+    - Branch coverage >= 80% achieved for all ASIL-B classified firmware modules
+    - OTA state machine tests cover all 8 states and all documented transition conditions
+    - 'Security negative tests: 100% pass rate (tampered/replayed packages always
+      rejected)'
+    - HIL test results formatted as JUnit XML importable into CI pipeline
+    - Coverage report linked to traceability matrix from Step 12
+    depends_on:
+    - 5
+    - 8
+    - 12
+  DATA:
+    description: 'Build the insurance analytics data pipeline: streaming event enrichment
+      (Kafka → Faust → enriched trip events with speed limits, road type, weather),
+      batch scoring pipeline (Spark or dbt), data warehouse schema (Redshift or BigQuery)
+      for insurance partner reporting, anomaly detection for odometer fraud and data
+      spoofing, and self-serve analytics API for insurance partners with parameterized
+      queries and export throttling.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Streaming pipeline enriches trip events with speed limit and weather within
+      5 seconds of ingestion
+    - Batch scoring pipeline completes nightly refresh within 2-hour window for 1M
+      vehicle dataset
+    - Fraud detection flags >90% of synthetic odometer spoofing test cases with <5%
+      false positive rate
+    - Insurance partner export API returns first 100k rows in <10 seconds
+    - Data warehouse schema passes dbt test suite (not-null, unique, referential integrity)
+    depends_on:
+    - 15
+  FRONTEND:
+    description: 'Build the Fleet Operations Dashboard (React 18 + TypeScript): real-time
+      vehicle map (Mapbox GL JS, 10s polling), vehicle detail panel (live telemetry,
+      status, last-seen), OTA campaign management UI (create campaign, target criteria
+      builder, staged rollout progress chart, halt button), remote command panel with
+      HITL approval workflow (pending approvals queue, one-click approve/reject),
+      and fleet-level analytics (online %, error rate, firmware version distribution).'
+    agent_role: developer
+    acceptance_criteria:
+    - Fleet map renders 10,000 vehicle markers without jank (60fps, Mapbox clustering)
+    - Approval queue shows pending ENGINE_START/STOP commands with approve/reject
+      actions
+    - OTA campaign creation flow validated end-to-end (create → target → launch →
+      progress)
+    - Lighthouse performance score >= 85 on Fleet Map page
+    - All interactive elements keyboard-accessible (Tab order correct, focus visible)
+    - WebSocket reconnects automatically after connection drop within 5 seconds
+    depends_on:
+    - 3
+    - 10
+    - 14
+  TESTS:
+    description: 'Write comprehensive unit and integration test suites for all backend
+      services: vehicle gateway (MQTT connection handling, message routing, command
+      dispatch), OTA service (campaign CRUD, staged rollout FSM, package verification),
+      remote control service (auth, rate limiting, HITL gate), UBI scoring engine
+      (trip segmentation, scoring algorithm regression tests), and dealer integration
+      adapters (all 3 DMS adapters with recorded API responses).'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Full test suite runs in <10 minutes on CI
+    - Line coverage >= 85% for all backend services (enforced by coverage gate)
+    - 'UBI scoring regression: zero score regressions > ±3 points on golden dataset'
+    - All 3 DMS adapter test suites pass with recorded cassettes (no real DMS calls
+      in CI)
+    - 'HITL gate tested: ENGINE_START dispatched if and only if approval record exists'
+    depends_on:
+    - 14
+    - 15
+    - 16
+    - 11
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system integration tests across the full stack:
+      vehicle-to-cloud telemetry pipeline (TCU simulator → MQTT → gateway → TimescaleDB
+      → dashboard), remote command round-trip (dashboard → API → MQTT → TCU sim →
+      ACK → dashboard), OTA update campaign (create campaign → delta generation →
+      TCU download → apply → status update → rollback scenario), dealer DTC flow (dealer
+      portal → dealer API → vehicle gateway → TCU → DTC response), and UBI trip end-to-end
+      (driving events → trip boundary → scoring → insurance export).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 5 system test scenarios pass without manual intervention
+    - 'Telemetry soak: <0.1% event loss at 50,000 events/sec over 30 minutes'
+    - ENGINE_START never executed without HITL approval record in audit log
+    - 'OTA rollback scenario: device returns to previous firmware version within 5
+      minutes'
+    - All 3 DMS adapter flows return DTC data within 10 second SLA
+    - Performance targets met in load test with <2% error rate
+    depends_on:
+    - 18
+    - 19
+    - 20
+    - 22
+    - 13
+  REGULATORY:
+    description: 'Prepare UNECE R155 and R156 type-approval submission artifacts for
+      target markets (EU, key APAC jurisdictions): cybersecurity management system
+      (CSMS) description document, software update management system (SUMS) description,
+      completed assessment questionnaires per UNECE Working Party 29 requirements,
+      OEM type-approval application checklist, and GDPR Data Protection Impact Assessment
+      (DPIA) for UBI data processing.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - CSMS document covers all UNECE R155 Annex 5 mandatory sections
+    - SUMS document covers all UNECE R156 Annex 5 mandatory sections
+    - DPIA identifies all high-risk UBI processing activities with mitigation measures
+    - Self-assessment questionnaire completed with evidence references for all questions
+    - Legal review sign-off on DPIA and data retention policy
+    depends_on:
+    - 24
+  DEVOPS:
+    description: 'Build the CI/CD pipelines and production monitoring infrastructure:
+      GitHub Actions multi-stage pipeline (firmware build + static analysis + unit
+      tests, backend tests + coverage gate, frontend build + Lighthouse, Docker image
+      build + SBOM scan + Trivy CVE gate), OTA deployment pipeline with staged rollout
+      automation and automatic halt, Prometheus + Grafana observability stack (vehicle
+      connection count, command RTT, OTA success rate, telemetry ingestion rate),
+      PagerDuty alerting, and SRE runbooks.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Full CI pipeline completes in <15 minutes for a typical code change
+    - Coverage gate blocks merge if backend coverage drops below 85%
+    - SBOM CVE gate blocks Docker push if Critical CVE found in new dependency
+    - OTA staged rollout halts automatically in staging when injected error rate exceeds
+      2%
+    - 'Grafana dashboard covers all 5 SLIs: availability, latency, error rate, throughput,
+      OTA success'
+    - 'PagerDuty alerts tested: P1 fires within 2 minutes of vehicle gateway going
+      down'
+    depends_on:
+    - 23
+    - 11
+  INFRA:
+    description: 'Provision production cloud infrastructure using Terraform: multi-region
+      deployment (us-east-1 primary, eu-west-1 for GDPR data residency), EKS clusters
+      for backend services, RDS PostgreSQL 16 Multi-AZ, ElastiCache Redis cluster,
+      MSK (managed Kafka), CloudFront CDN for OTA firmware packages, VPC with private
+      subnets for MQTT broker, WAF rules for all external API gateways, and disaster
+      recovery runbook with RTO/RPO targets.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All infrastructure provisioned via Terraform with no manual console steps
+    - EU vehicle telemetry data confirmed to stay in eu-west-1 (verified by VPC flow
+      logs)
+    - 'RDS Multi-AZ failover tested: automatic failover completes within 60 seconds'
+    - WAF rules block OWASP Top 10 attack patterns (verified by WAF test suite)
+    - 'Disaster recovery drill: full system restored in us-east-1 from eu-west-1 backup
+      within RTO'
+    - Terraform plan produces zero unexpected changes on second apply (idempotency)
+    depends_on:
+    - 27
+  QA:
+    description: 'Execute final quality assurance validation: functional test execution
+      against all acceptance criteria from Steps 10–23, regression test run on full
+      automated suite, user acceptance testing (UAT) sessions with OEM fleet operator,
+      insurance partner, and dealer personas, performance benchmark report (all SLAs
+      vs targets), and sign-off checklist for production readiness review.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Zero P0 or P1 defects open at production readiness review
+    - All 3 UAT persona sign-offs obtained with no blocking feedback
+    - Full regression suite passes with >99% pass rate
+    - All performance SLA targets met in final benchmark run
+    - Production readiness checklist (security, compliance, ops) signed off by all
+      stakeholders
+    depends_on:
+    - 23
+    - 24
+    - 26
+  DOCS:
+    description: 'Produce all technical and operational documentation: architecture
+      decision records (ADRs) for key design choices (MQTT vs HTTPS for TCU, A/B OTA
+      strategy, HITL gate scope), API developer documentation (auto-generated from
+      OpenAPI + narrative guides), runbook library (vehicle gateway restart, OTA campaign
+      rollback, DMS adapter failover, GDPR erasure procedure), security operations
+      guide, and integration guide for new OEM and insurance partners.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - All 4 ADRs written with context, decision, and consequences sections
+    - All 5 runbooks tested by an engineer unfamiliar with the system (dry-run)
+    - API developer docs include working curl examples for every endpoint
+    - Partner integration guides peer-reviewed by one representative from each partner
+      type
+    - Documentation site deployed and searchable
+    depends_on:
+    - 29
+    - 27
+  TRAINING:
+    description: 'Develop training materials and onboarding programs for all user
+      groups: OEM fleet operator training (dashboard walkthrough, OTA campaign management,
+      HITL approval workflow), dealer technician training (DTC pull, service triage
+      AI, appointment booking), insurance partner onboarding (API integration guide,
+      data schema, consent management), and internal engineering onboarding (firmware
+      dev environment setup, cloud architecture walkthrough, compliance process).'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - 'Fleet operator training module validated: 5 new users complete full workflow
+      without assistance'
+    - HITL approval training completed by all users with approval authority before
+      production access
+    - Dealer technician training covers all 3 DMS adapters with adapter-specific steps
+    - Insurance partner developer sandbox successfully used by 2 external partners
+      in beta
+    - 'Engineering onboarding: new hire reaches first code contribution within 5 business
+      days'
+    depends_on:
+    - 30

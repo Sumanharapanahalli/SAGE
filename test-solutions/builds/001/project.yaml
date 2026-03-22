@@ -1,0 +1,63 @@
+project_name: elder_fall_detection
+display_name: Elder Fall Detection
+version: 1.0.0
+domain: medtech
+description: IoT wearable device for elderly fall detection with real-time caregiver
+  alerts, GPS tracking, and automatic emergency dispatch. Must comply with FDA Class
+  II and IEC 62304 for medical device software.
+detected_domains: []
+compliance_standards:
+- FDA Class II
+- IEC 62304
+- ISO 14971
+- ISO 13485
+task_types:
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- PCB_DESIGN
+- PRODUCT_MGMT
+- QA
+- REGULATORY
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- developer
+- devops_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- safety_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

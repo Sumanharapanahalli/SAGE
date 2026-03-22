@@ -1,0 +1,1048 @@
+{
+  "run_id": "290dd8eb-ac9b-47d3-b18e-7fdea4ecf8fe",
+  "solution_name": "insurance_claims_ai",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-21T23:45:53.967852+00:00",
+  "updated_at": "2026-03-21T23:49:56.771903+00:00",
+  "product_description": "AI-powered insurance claims processing with damage photo analysis, fraud detection, automated liability assessment, and settlement recommendation engine.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user stories, and process flows for the insurance claims lifecycle \u2014 intake, photo upload, fraud scoring, liability assessment, and settlement recommendation.",
+      "payload": {
+        "deliverables": [
+          "business_requirements_doc.md",
+          "user_story_map.md",
+          "claims_process_flow.drawio"
+        ],
+        "stakeholders": [
+          "claims_adjuster",
+          "fraud_analyst",
+          "compliance_officer",
+          "claimant"
+        ],
+        "process_flows": [
+          "first_notice_of_loss",
+          "photo_submission",
+          "fraud_review",
+          "settlement_approval"
+        ]
+      },
+      "acceptance_criteria": [
+        "All actor roles documented with their goals and pain points",
+        "End-to-end claims lifecycle mapped with decision points",
+        "Acceptance thresholds defined for fraud score, damage estimate, and settlement amount",
+        "Edge cases documented: total loss, disputed liability, multi-party claims"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the product requirements document (PRD), define success metrics (claims cycle time, fraud catch rate, settlement accuracy), and prioritize the MVP feature set.",
+      "payload": {
+        "deliverables": [
+          "PRD.md",
+          "metrics_baseline.md",
+          "mvp_scope.md"
+        ],
+        "key_metrics": [
+          "avg_claims_cycle_days",
+          "fraud_true_positive_rate",
+          "settlement_accuracy_pct",
+          "adjuster_override_rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD approved with in-scope and out-of-scope features explicitly listed",
+        "Quantitative success metrics defined with baseline and target values",
+        "MVP scope locked: damage analysis + fraud flag + settlement recommendation",
+        "RACI matrix defined for human-approval gates"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "SECURITY",
+      "description": "Produce threat model, STRIDE analysis, penetration test plan, and SBOM for the insurance claims platform. Address PII (claimant data), PCI DSS (payment for settlements), and SOC 2 controls.",
+      "payload": {
+        "frameworks": [
+          "STRIDE",
+          "PCI_DSS_v4",
+          "SOC2_Type2",
+          "OWASP_Top10"
+        ],
+        "threat_surfaces": [
+          "photo_upload_endpoint",
+          "settlement_payment_flow",
+          "fraud_model_api",
+          "adjuster_portal"
+        ],
+        "deliverables": [
+          "threat_model.md",
+          "pentest_plan.md",
+          "sbom.json",
+          "data_classification_matrix.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "All data flows classified: PII, PCI, internal",
+        "STRIDE threats enumerated per component with mitigations assigned",
+        "SBOM generated covering all runtime dependencies",
+        "Pen test plan covers authentication, upload injection, payment bypass, model inversion",
+        "PCI DSS SAQ completed",
+        "Encryption at rest and in transit"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 4,
+      "task_type": "COMPLIANCE",
+      "description": "Produce compliance artifacts for PCI DSS, SOC 2, and SOX: risk matrix, traceability matrix, V&V protocol templates, and audit evidence checklist.",
+      "payload": {
+        "standards": [
+          "PCI_DSS_v4",
+          "SOC2_Type2",
+          "SOX_ITGC"
+        ],
+        "deliverables": [
+          "risk_matrix.xlsx",
+          "traceability_matrix.md",
+          "vv_protocol.md",
+          "audit_evidence_checklist.md",
+          "data_retention_policy.md"
+        ],
+        "controls": [
+          "access_control",
+          "encryption_at_rest",
+          "encryption_in_transit",
+          "audit_logging",
+          "change_management",
+          "incident_response"
+        ]
+      },
+      "acceptance_criteria": [
+        "Every functional requirement linked to at least one compliance control",
+        "Risk matrix covers likelihood \u00d7 impact for all identified threats",
+        "V&V protocol includes test IDs that map back to requirements",
+        "Audit evidence checklist approved by compliance officer"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "UX_DESIGN",
+      "description": "Design wireframes and interaction flows for: claimant self-service portal (photo upload, status tracking), adjuster workbench (AI recommendations, override workflow), and fraud analyst dashboard.",
+      "payload": {
+        "views": [
+          "claim_submission_wizard",
+          "photo_upload_interface",
+          "adjuster_review_panel",
+          "fraud_score_dashboard",
+          "settlement_recommendation_card",
+          "appeals_flow"
+        ],
+        "accessibility_standard": "WCAG_2.1_AA",
+        "deliverables": [
+          "wireframes.figma",
+          "interaction_flow.md",
+          "accessibility_audit.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "All primary user journeys wireframed end-to-end",
+        "AI recommendation cards show confidence scores and explainability",
+        "Human override UI clearly distinguishes AI suggestion from final decision",
+        "Accessibility audit passes WCAG 2.1 AA for all primary flows"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Design and implement the database schema: claims, claimants, policies, photos, damage_assessments, fraud_scores, liability_assessments, settlements, audit_events. Includes migrations and seed data.",
+      "payload": {
+        "engine": "PostgreSQL 16",
+        "tables": [
+          "claims",
+          "claimants",
+          "policies",
+          "claim_photos",
+          "damage_assessments",
+          "fraud_evaluations",
+          "liability_assessments",
+          "settlement_recommendations",
+          "adjuster_decisions",
+          "audit_events",
+          "payment_records"
+        ],
+        "encryption": "column-level AES-256 for PII fields",
+        "deliverables": [
+          "schema.sql",
+          "migrations/",
+          "seed_data.sql",
+          "erd.drawio"
+        ]
+      },
+      "acceptance_criteria": [
+        "All PII columns encrypted at rest with column-level encryption",
+        "Foreign key constraints enforce referential integrity",
+        "Audit_events table captures every state transition with actor, timestamp, reason",
+        "Migrations are idempotent and reversible",
+        "Seed data covers 50+ representative claim scenarios including fraud cases",
+        "Transaction isolation level documented",
+        "Audit trail on all writes"
+      ],
+      "depends_on": [
+        1,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "DATA",
+      "description": "Build data pipelines for: ingesting historical claims data, labeling damage severity from photos, computing fraud feature vectors, and feeding the analytics schema for reporting.",
+      "payload": {
+        "pipeline_types": [
+          "claims_ingestion_etl",
+          "photo_feature_extraction",
+          "fraud_feature_engineering",
+          "settlement_history_loader",
+          "analytics_mart_refresh"
+        ],
+        "tools": [
+          "Apache Airflow",
+          "dbt",
+          "S3 for photo storage"
+        ],
+        "analytics_schema": [
+          "claims_mart",
+          "fraud_metrics_mart",
+          "settlement_accuracy_mart"
+        ],
+        "deliverables": [
+          "dags/",
+          "dbt_models/",
+          "feature_store_schema.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "ETL pipeline processes 10k historical claims with < 5% error rate",
+        "Photo feature vectors extracted and stored in feature store within 30s per image",
+        "Fraud feature pipeline produces \u2265 25 engineered features per claim",
+        "dbt models tested with schema tests and data freshness assertions",
+        "Analytics mart refreshes on daily schedule with SLA alerting"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 8,
+      "task_type": "ML_MODEL",
+      "description": "Train and evaluate the damage photo analysis model (computer vision \u2014 severity classification and repair cost estimation) using transfer learning on vehicle/property damage datasets.",
+      "payload": {
+        "model_type": "vision_transformer",
+        "base_model": "ResNet-50 or ViT-B/16",
+        "outputs": [
+          "damage_severity_class: [minor, moderate, severe, total_loss]",
+          "estimated_repair_cost_usd",
+          "damage_region_heatmap"
+        ],
+        "training_data": "historical claims photos with adjuster-verified labels",
+        "deliverables": [
+          "damage_model.pkl",
+          "model_card.md",
+          "eval_report.md",
+          "explainability_report.md (Grad-CAM)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Damage severity classification F1 \u2265 0.82 on held-out test set",
+        "Cost estimate within \u00b115% of adjuster-verified amount on 80% of cases",
+        "Model card documents training data, known biases, and performance across claim types",
+        "Grad-CAM heatmaps generated per inference for explainability",
+        "Model versioned in MLflow with reproducible training run",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 9,
+      "task_type": "ML_MODEL",
+      "description": "Train and evaluate the fraud detection model using claim metadata, behavioral signals, network graph features, and historical fraud labels. Output: fraud probability score + top contributing features.",
+      "payload": {
+        "model_type": "gradient_boosted_ensemble + GNN for network features",
+        "features": [
+          "claim_frequency",
+          "policy_age",
+          "damage_photo_metadata_anomalies",
+          "claimant_network_centrality",
+          "repair_shop_relationships",
+          "filing_time_patterns"
+        ],
+        "outputs": [
+          "fraud_probability_score_0_1",
+          "top_3_contributing_features",
+          "fraud_ring_membership_flag"
+        ],
+        "deliverables": [
+          "fraud_model.pkl",
+          "model_card.md",
+          "fairness_audit.md",
+          "threshold_analysis.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Fraud detection AUC-ROC \u2265 0.88 on held-out labeled dataset",
+        "False positive rate \u2264 8% at operating threshold to protect legitimate claimants",
+        "Fairness audit shows no statistically significant performance disparity across protected groups",
+        "Top contributing features surfaced per prediction for adjuster review",
+        "Model card includes limitations and recommended human review triggers",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 10,
+      "task_type": "ML_MODEL",
+      "description": "Build the liability assessment engine (rules + ML hybrid): determines fault percentage per party using police reports, photos, telematics, and jurisdiction rules. Build the settlement recommendation engine using damage estimate + liability + policy limits.",
+      "payload": {
+        "liability_engine": "rules-based jurisdiction layer + ML override for ambiguous cases",
+        "settlement_engine": "regression model over damage_cost \u00d7 liability_pct \u00d7 policy_coverage",
+        "outputs": [
+          "liability_split_pct_per_party",
+          "confidence_interval",
+          "settlement_recommendation_usd",
+          "negotiation_range_usd"
+        ],
+        "deliverables": [
+          "liability_engine.py",
+          "settlement_model.pkl",
+          "model_card.md",
+          "jurisdiction_rules.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "Liability assessment matches adjuster final decision within 10% on 75% of test cases",
+        "Settlement recommendation within \u00b110% of final settled amount on 70% of cases",
+        "Jurisdiction rules loaded from YAML and easily extensible without code changes",
+        "Confidence intervals calibrated (ECE \u2264 0.05) on validation set",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 11,
+      "task_type": "CONFIG",
+      "description": "Configure the multi-agent coordinator pattern for the claims processing pipeline. The coordinator routes each claim through: photo-analysis agent \u2192 fraud-detection agent \u2192 liability-assessment agent \u2192 settlement-recommendation agent with HITL gates.",
+      "payload": {
+        "agentic_pattern": "coordinator",
+        "components": [
+          "coordinator_agent",
+          "photo_analysis_agent",
+          "fraud_detection_agent",
+          "liability_agent",
+          "settlement_agent",
+          "hitl_approval_queue"
+        ],
+        "hitl_gates": [
+          "fraud_flag_review",
+          "total_loss_confirmation",
+          "settlement_above_threshold"
+        ],
+        "config_files": [
+          "agent_coordinator.yaml",
+          "hitl_thresholds.yaml",
+          "agent_routing_rules.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "Coordinator routes claims to all four specialist agents in correct dependency order",
+        "HITL gate triggers on fraud_score > 0.6, settlement > $25k, or total_loss classification",
+        "Agent outputs include trace_id for full audit chain",
+        "Config files allow threshold adjustment without code changes"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build the core FastAPI backend: claims CRUD, photo upload (S3 presigned URLs), async ML inference pipeline, proposal/approval store, settlement payment initiation, and webhook handlers.",
+      "payload": {
+        "framework": "FastAPI + Python 3.12",
+        "endpoints": [
+          "POST /claims \u2014 create claim",
+          "POST /claims/{id}/photos \u2014 upload damage photos",
+          "POST /claims/{id}/analyze \u2014 trigger full AI pipeline",
+          "GET /claims/{id}/assessment \u2014 retrieve AI assessment",
+          "POST /claims/{id}/approve \u2014 adjuster approves/overrides",
+          "POST /claims/{id}/settle \u2014 initiate settlement payment",
+          "GET /approvals \u2014 pending HITL items",
+          "POST /approvals/{id}/decision \u2014 approve or reject AI proposal",
+          "GET /audit/{claim_id} \u2014 full audit trail"
+        ],
+        "async_queue": "Celery + Redis",
+        "storage": "S3 for photos, PostgreSQL for structured data"
+      },
+      "acceptance_criteria": [
+        "All endpoints return typed Pydantic response models",
+        "Photo upload uses presigned S3 URLs \u2014 backend never streams file bytes",
+        "Async ML pipeline triggered on photo upload, result stored on completion",
+        "All state transitions written to audit_events table atomically",
+        "API returns 400 with structured error body for all validation failures",
+        "Authentication via JWT with role-based access (claimant, adjuster, fraud_analyst, admin)"
+      ],
+      "depends_on": [
+        6,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "API",
+      "description": "Produce the OpenAPI specification for the insurance claims API, including request/response schemas, authentication requirements, error codes, and webhook contracts.",
+      "payload": {
+        "format": "OpenAPI 3.1",
+        "deliverables": [
+          "openapi.yaml",
+          "postman_collection.json"
+        ],
+        "auth": "Bearer JWT + API key for service-to-service",
+        "webhooks": [
+          "claim_status_changed",
+          "fraud_flag_raised",
+          "settlement_ready"
+        ]
+      },
+      "acceptance_criteria": [
+        "All endpoints documented with example requests and responses",
+        "Error codes enumerated: 400 validation, 401 auth, 403 forbidden, 404 not found, 422 unprocessable, 500 internal",
+        "Webhook payloads documented with retry and signing specifications",
+        "Postman collection passes automated schema validation",
+        "OpenAPI spec passes spectral linting with zero errors"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "FRONTEND",
+      "description": "Build the claimant self-service portal: claim submission wizard, drag-and-drop photo upload with preview, real-time processing status, AI assessment display, and settlement offer acceptance flow.",
+      "payload": {
+        "framework": "React 18 + TypeScript + Tailwind CSS",
+        "pages": [
+          "NewClaimWizard",
+          "PhotoUploadPage",
+          "ClaimStatusPage",
+          "AssessmentResultPage",
+          "SettlementOfferPage"
+        ],
+        "components": [
+          "DamagePhotoUploader",
+          "AIAssessmentCard",
+          "FraudAlertBanner",
+          "SettlementOfferCard",
+          "AppealsForm"
+        ],
+        "state_management": "Zustand",
+        "accessibility": "WCAG 2.1 AA"
+      },
+      "acceptance_criteria": [
+        "Claim submission wizard completes in \u2264 5 steps with progress indicator",
+        "Photo upload supports drag-and-drop, multiple files, shows upload progress",
+        "AI assessment card shows damage severity, cost estimate, and confidence score",
+        "Settlement offer card clearly distinguishes AI recommendation from final offer",
+        "All interactive elements meet WCAG 2.1 AA contrast and keyboard navigation requirements"
+      ],
+      "depends_on": [
+        5,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Build the adjuster workbench: claims queue with priority sorting, AI recommendation panel with explainability (heatmaps, top features), override workflow, fraud investigation view, and batch settlement approval.",
+      "payload": {
+        "pages": [
+          "AdjusterDashboard",
+          "ClaimReviewPage",
+          "FraudInvestigationPage",
+          "SettlementApprovalQueue",
+          "AuditTrailViewer"
+        ],
+        "components": [
+          "AIRecommendationPanel",
+          "DamageHeatmapViewer",
+          "FraudScoreBreakdown",
+          "LiabilitySlider",
+          "OverrideReasonForm",
+          "BatchApprovalTable"
+        ],
+        "features": [
+          "real-time claim queue updates via SSE",
+          "side-by-side photo comparison",
+          "adjuster notes with version history"
+        ]
+      },
+      "acceptance_criteria": [
+        "Adjuster can review and decision a claim in \u2264 3 clicks from queue view",
+        "Damage heatmap overlaid on photo with severity annotation",
+        "Fraud score shows top 3 contributing features with plain-language explanations",
+        "Override requires mandatory reason selection from predefined taxonomy",
+        "Audit trail shows all AI proposals, human decisions, and timestamps in chronological order"
+      ],
+      "depends_on": [
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build the fraud analyst dashboard: network graph visualization of related claims/claimants/repair shops, fraud ring detection alerts, model performance metrics, and case management workflow.",
+      "payload": {
+        "pages": [
+          "FraudAnalystDashboard",
+          "NetworkGraphPage",
+          "FraudRingCasePage",
+          "ModelMetricsDashboard"
+        ],
+        "components": [
+          "ClaimNetworkGraph (D3.js)",
+          "FraudRingAlertCard",
+          "ModelPerformanceChart",
+          "CaseEscalationForm"
+        ],
+        "data_refresh": "30-second polling for new fraud flags"
+      },
+      "acceptance_criteria": [
+        "Network graph renders up to 500 nodes with pan/zoom without performance degradation",
+        "Fraud ring alerts group related claims with shared entities highlighted",
+        "Model metrics dashboard shows live AUC, precision, recall, and false positive rate",
+        "Case escalation form captures all required fields for SIU referral"
+      ],
+      "depends_on": [
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "INFRA",
+      "description": "Set up Docker Compose for local development and Kubernetes manifests for production: API server, Celery workers, ML inference service, PostgreSQL, Redis, S3-compatible storage, Airflow, and MLflow.",
+      "payload": {
+        "local": "docker-compose.yml with all services",
+        "production": "Kubernetes Helm charts",
+        "services": [
+          "api-server",
+          "celery-worker",
+          "ml-inference-service",
+          "postgres",
+          "redis",
+          "minio (S3)",
+          "airflow",
+          "mlflow",
+          "nginx-ingress"
+        ],
+        "deliverables": [
+          "docker-compose.yml",
+          "helm/",
+          "k8s/",
+          ".env.example"
+        ]
+      },
+      "acceptance_criteria": [
+        "`docker-compose up` starts all services and API health check passes within 60 seconds",
+        "Helm charts parameterized for staging and production environments",
+        "ML inference service scales independently from the API service",
+        "Secrets managed via environment variables \u2014 no hardcoded credentials in any config file",
+        "Resource limits defined for all containers"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "DEVOPS",
+      "description": "Implement CI/CD pipelines: automated testing, Docker image build and push, ML model validation gate, staging deployment, and production promotion with rollback capability.",
+      "payload": {
+        "ci_platform": "GitHub Actions",
+        "stages": [
+          "lint",
+          "unit_tests",
+          "integration_tests",
+          "ml_model_validation",
+          "docker_build",
+          "staging_deploy",
+          "smoke_test",
+          "prod_promote"
+        ],
+        "model_gate": "fail pipeline if new model AUC drops > 2% from baseline",
+        "deliverables": [
+          ".github/workflows/ci.yml",
+          ".github/workflows/cd.yml",
+          "Makefile"
+        ]
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs on every PR and must pass before merge",
+        "ML model validation gate blocks deployment if performance degrades beyond threshold",
+        "Production deployment requires manual approval step in GitHub Actions",
+        "Rollback to previous version executable via single pipeline trigger",
+        "Pipeline completes in \u2264 15 minutes for standard code changes"
+      ],
+      "depends_on": [
+        17
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "TESTS",
+      "description": "Write unit tests for all backend services, ML model inference wrappers, fraud feature engineering pipeline, settlement calculation engine, and HITL approval workflow.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio",
+        "coverage_target": "\u2265 85% line coverage on src/",
+        "test_categories": [
+          "api_endpoint_tests",
+          "ml_inference_unit_tests",
+          "feature_engineering_tests",
+          "settlement_calculation_tests",
+          "fraud_scoring_tests",
+          "hitl_workflow_tests",
+          "database_migration_tests"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test suite passes with 0 failures on clean checkout",
+        "Line coverage \u2265 85% on all backend modules",
+        "ML inference tests use fixture inputs and assert output schema + value ranges",
+        "Settlement calculation tests cover edge cases: $0 liability, policy cap exceeded, multi-party split",
+        "HITL workflow tests verify proposals are created and require approval before execution"
+      ],
+      "depends_on": [
+        12,
+        10
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "TESTS",
+      "description": "Write integration tests for the end-to-end claims pipeline: photo upload \u2192 ML analysis \u2192 fraud scoring \u2192 liability assessment \u2192 settlement recommendation \u2192 adjuster approval \u2192 settlement execution.",
+      "payload": {
+        "framework": "pytest with testcontainers for PostgreSQL and Redis",
+        "scenarios": [
+          "happy_path_minor_damage",
+          "fraud_flagged_claim_requires_hitl",
+          "total_loss_claim_with_adjuster_override",
+          "multi_party_liability_split",
+          "settlement_above_threshold_triggers_approval",
+          "duplicate_claim_detection"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 6 scenario paths pass end-to-end against real database and queue",
+        "Fraud flag scenario confirms HITL gate fires and blocks auto-settlement",
+        "Adjuster override correctly replaces AI recommendation in audit log",
+        "Each test cleans up its own test data on completion"
+      ],
+      "depends_on": [
+        19,
+        17
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 21,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute system-level performance and load tests: simulate 500 concurrent claim submissions, ML pipeline throughput under load, and settlement payment processing latency.",
+      "payload": {
+        "tool": "Locust",
+        "scenarios": [
+          "500_concurrent_submissions",
+          "ml_pipeline_throughput_100rpm",
+          "photo_upload_10mb_files",
+          "fraud_scoring_burst_50_claims"
+        ],
+        "slos": {
+          "api_p95_latency_ms": 500,
+          "ml_inference_p95_latency_ms": 3000,
+          "settlement_processing_p95_latency_ms": 1000,
+          "error_rate_pct": 0.1
+        },
+        "deliverables": [
+          "load_test_report.html",
+          "performance_baseline.json"
+        ]
+      },
+      "acceptance_criteria": [
+        "API p95 latency \u2264 500ms at 500 concurrent users",
+        "ML inference p95 \u2264 3000ms for photo analysis under load",
+        "Error rate \u2264 0.1% under peak load scenario",
+        "System recovers to baseline performance within 60 seconds after load spike ends",
+        "Performance baseline JSON committed for regression comparison in CI"
+      ],
+      "depends_on": [
+        20,
+        18
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 22,
+      "task_type": "SECURITY",
+      "description": "Execute security validation: OWASP Top 10 scan on the API, dependency vulnerability scan (SBOM), authentication bypass testing, file upload security testing, and payment flow security review.",
+      "payload": {
+        "tools": [
+          "OWASP ZAP",
+          "Trivy for SBOM/CVE",
+          "Bandit for Python SAST"
+        ],
+        "test_cases": [
+          "sql_injection_on_claim_fields",
+          "path_traversal_on_photo_upload",
+          "jwt_algorithm_confusion",
+          "idor_on_claim_access",
+          "payment_amount_tampering"
+        ],
+        "deliverables": [
+          "security_test_report.md",
+          "vulnerability_register.md",
+          "remediation_log.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Zero critical or high OWASP ZAP findings in production build",
+        "No CVE score \u2265 7.0 in runtime SBOM without documented waiver",
+        "SQL injection attempts return 400 with no stack trace leakage",
+        "IDOR test confirms claimants cannot access other claimants' claims",
+        "Payment amount tampering blocked server-side \u2014 amount always recomputed from DB",
+        "PCI DSS SAQ completed",
+        "Encryption at rest and in transit"
+      ],
+      "depends_on": [
+        20,
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "COMPLIANCE",
+      "description": "Generate final compliance evidence package: completed traceability matrix linking requirements to tests, SOC 2 control evidence, PCI DSS SAQ, and SOX ITGC test results. Prepare audit-ready artifact bundle.",
+      "payload": {
+        "deliverables": [
+          "final_traceability_matrix.xlsx",
+          "soc2_control_evidence.zip",
+          "pci_dss_saq_d.pdf",
+          "sox_itgc_test_results.xlsx",
+          "audit_ready_bundle.zip"
+        ],
+        "evidence_types": [
+          "test_execution_logs",
+          "access_control_review",
+          "change_management_log",
+          "encryption_certificate",
+          "pen_test_report",
+          "model_fairness_audit"
+        ]
+      },
+      "acceptance_criteria": [
+        "Every SOC 2 Trust Services Criterion mapped to at least one implemented control with evidence",
+        "PCI DSS SAQ-D completed with all applicable requirements marked compliant or N/A with justification",
+        "SOX ITGC covers: logical access, change management, computer operations, data backup",
+        "Traceability matrix shows 100% requirement coverage by passing tests",
+        "Audit bundle reviewed and signed off by compliance officer"
+      ],
+      "depends_on": [
+        21,
+        22
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 24,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: incident response for ML model degradation, fraud system outage, payment processing failure, and PII data breach. Define SLAs and on-call escalation paths.",
+      "payload": {
+        "runbooks": [
+          "ml_model_degradation_runbook.md",
+          "fraud_system_outage_runbook.md",
+          "payment_failure_runbook.md",
+          "pii_data_breach_runbook.md",
+          "claims_queue_backlog_runbook.md"
+        ],
+        "slas": {
+          "claims_api_uptime": "99.9%",
+          "ml_inference_availability": "99.5%",
+          "settlement_processing_slo": "< 2 business days"
+        },
+        "monitoring": "Prometheus + Grafana dashboards + PagerDuty alerting"
+      },
+      "acceptance_criteria": [
+        "Each runbook includes: detection criteria, immediate actions, escalation path, and post-incident review steps",
+        "SLA definitions include measurement methodology and consequence of breach",
+        "Monitoring dashboards cover: API latency, ML model drift, fraud flag volume, settlement queue depth",
+        "PII breach runbook aligns with regulatory notification timelines (72h GDPR, applicable state laws)"
+      ],
+      "depends_on": [
+        18
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 25,
+      "task_type": "DOCS",
+      "description": "Produce technical and user-facing documentation: API reference (auto-generated from OpenAPI), architecture decision records (ADRs), ML model cards, and adjuster user guide.",
+      "payload": {
+        "deliverables": [
+          "docs/api_reference/ (generated from openapi.yaml)",
+          "docs/architecture/adr-001-coordinator-pattern.md",
+          "docs/architecture/adr-002-hitl-thresholds.md",
+          "docs/ml/damage_model_card.md",
+          "docs/ml/fraud_model_card.md",
+          "docs/ml/settlement_model_card.md",
+          "docs/user_guide/adjuster_workbench.md",
+          "docs/user_guide/claimant_portal.md",
+          "README.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "API reference generated from OpenAPI spec and renders correctly in docs site",
+        "Each ADR documents: context, decision, alternatives considered, and consequences",
+        "All three model cards include: intended use, training data description, performance metrics, known limitations, and fairness considerations",
+        "Adjuster user guide covers all primary workflows with screenshots",
+        "README includes: local setup in \u2264 10 commands, architecture diagram, and environment variable reference"
+      ],
+      "depends_on": [
+        23,
+        13
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 26,
+      "task_type": "TRAINING",
+      "description": "Develop training materials for adjusters, fraud analysts, and compliance officers covering: how to interpret AI recommendations, when to override, how to use the HITL approval queue, and model limitations.",
+      "payload": {
+        "audiences": [
+          "claims_adjuster",
+          "fraud_analyst",
+          "compliance_officer"
+        ],
+        "formats": [
+          "written_guide.pdf",
+          "quick_reference_card.pdf",
+          "video_script.md"
+        ],
+        "topics": [
+          "interpreting_damage_severity_scores",
+          "understanding_fraud_probability_with_explainability",
+          "when_and_how_to_override_AI_recommendations",
+          "audit_trail_and_compliance_obligations",
+          "escalation_procedures_for_edge_cases"
+        ]
+      },
+      "acceptance_criteria": [
+        "Training materials cover all three audience roles with role-specific content",
+        "Override procedures documented with real examples of legitimate override reasons",
+        "Model limitations section clearly states what the AI cannot reliably assess",
+        "Quick reference card fits on one printed page per role",
+        "Training materials reviewed and approved by product and compliance teams"
+      ],
+      "depends_on": [
+        25
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 26,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 48,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 48,
+        "final_review": {
+          "score": 48,
+          "flaws": [
+            "Training data for the vision model (Step 8) assumes 'historical claims photos with adjuster-verified labels' as a given \u2014 but acquiring labeled insurance photo datasets is a multi-month legal and procurement effort. No carrier will hand over raw claims photos. There is no data acquisition, licensing, or data sharing agreement step anywhere in this plan. Without training data, Steps 8\u201310 and everything downstream cannot execute.",
+            "GNN for fraud detection (Step 9) has a severe cold-start problem. A graph neural network requires a dense, labeled historical fraud graph to produce useful embeddings. For a new system with no transaction history, you have no edges, no fraud labels at scale, and no graph structure. This is a research-grade deliverable disguised as an MVP task. It will not hit AUC-ROC \u2265 0.88 without 2\u20133 years of historical claims data with confirmed fraud labels.",
+            "Automated settlement recommendations are legally regulated at the state level in the US. Most state insurance codes require a licensed adjuster (a human) to issue the final settlement determination. Deploying a 'settlement recommendation engine' without state insurance department review and potentially prior approval creates regulatory liability that could result in operating license revocation. No regulatory pre-approval step exists in this plan.",
+            "PCI DSS compliance for 'settlement payment initiation' (Step 12) is vastly underspecified. The plan lists 'POST /claims/{id}/settle' as an endpoint but names no payment rail (ACH, check, wire transfer), no payment processor integration (Stripe, Plaid, bank API), and no scoping of PCI DSS cardholder data environment. PCI DSS SAQ-D without a defined payment architecture is checkbox theater.",
+            "Column-level AES-256 encryption (Step 6) has no key management implementation. pgcrypto or application-level encryption requires a KMS (AWS KMS, HashiCorp Vault, GCP KMS). Without KMS, encryption keys are stored adjacent to the data they protect \u2014 defeating the control. No KMS selection, integration, or key rotation policy is anywhere in this plan.",
+            "The EXIF metadata tension is unresolved: Step 9 uses 'damage_photo_metadata_anomalies' as a fraud signal (GPS, device model, timestamp) but PII regulations (CCPA, GDPR, and carrier data minimization policies) typically require stripping GPS coordinates from uploaded photos. You cannot simultaneously use EXIF GPS as a fraud feature and comply with data minimization. This architectural conflict is never acknowledged.",
+            "No model monitoring or drift detection is implemented. Steps 8\u201310 produce models; Step 24 mentions 'ML model drift' in runbooks \u2014 but there is no implementation step for production model monitoring (data drift, prediction drift, PSI scores, shadow scoring). MLflow is listed only for training. A fraud model that silently degrades in production is a compliance failure and a financial loss event.",
+            "The critical path is dangerously long: Steps 1\u21926\u21927\u21928+9\u219210\u219211\u219212 must complete sequentially before any end-to-end integration test can run. This means 10 steps of unbounded research and ML work (data pipelines, model training, feature engineering) before you can validate a single claim flows through the system. If Step 7's ETL produces poor features, Steps 8\u201310 must be retrained \u2014 there is no feedback loop or parallel prototype path.",
+            "Appeals processing has no backend. Step 5 wireframes an appeals flow; Step 14 builds an AppealsForm component \u2014 but no backend endpoint, state machine, or database table handles the appeals lifecycle. The UI will submit to nothing.",
+            "Step 7's photo feature extraction SLA (30 seconds per image) is incompatible with Step 21's load test of 500 concurrent submissions. At 500 concurrent claims each with multiple photos, you need GPU-backed inference infrastructure. Step 17's infrastructure spec lists no GPU nodes, no GPU-optimized instance types, and no autoscaling policy for the ML inference service. The SLA will be violated under any realistic load.",
+            "Fraud model feature importance output (top 3 contributing features surfaced to adjusters) leaks model internals. Bad actors can iteratively probe which features trigger lower fraud scores and tune claim submissions accordingly \u2014 a model gaming attack. No adversarial robustness or feature obfuscation strategy is mentioned.",
+            "Celery task idempotency is unaddressed. If a worker crashes mid-analysis (after photo analysis but before fraud scoring), the claim is in an inconsistent intermediate state. No idempotency keys, no at-least-once/exactly-once semantics, and no compensation logic are specified. Under load this will produce claims stuck in 'analyzing' forever."
+          ],
+          "suggestions": [
+            "Add a Step 0: Data Strategy. Define the training data source explicitly \u2014 licensed datasets (CCC ONE, Mitchell, Tractable APIs), synthetic data generation, or a pilot data-sharing agreement with a carrier. Without this, Steps 7\u201310 have no foundation. Timebox this as a go/no-go gate before committing to ML model development.",
+            "Replace GNN fraud detection in MVP with a well-tuned gradient boosted model (XGBoost/LightGBM) on tabular features. Ship the GNN as a Phase 2 enhancement once you have 12+ months of production fraud labels. The acceptance criteria of AUC-ROC \u2265 0.88 is achievable with tabular models on good features; it is not achievable with a GNN on sparse cold-start data.",
+            "Add a dedicated Legal/Regulatory Review step (after Step 2, before Step 3) that specifically covers: state insurance department notification/approval requirements, whether automated settlement outputs require a licensed adjuster signature, adverse action notice obligations under FCRA for fraud-flagged claimants, and ECOA/disparate impact analysis for the fraud model.",
+            "Add KMS integration to Step 6 as a hard requirement: specify the KMS provider, key hierarchy (master key \u2192 data encryption keys), key rotation schedule, and envelope encryption pattern. This is a prerequisite for PCI DSS and SOC 2 compliance, not a nice-to-have.",
+            "Make the photo pipeline decision explicit: either strip EXIF GPS on upload (privacy-first) and use only device model/timestamp for fraud features, or retain GPS under explicit consent with documented legal basis. Document this as an ADR. Do not allow this ambiguity to reach production.",
+            "Add a Model Monitoring step (between Steps 18 and 19): implement Evidently AI or WhyLogs for production drift detection, configure alerting when PSI > 0.2 on key fraud features, and define the retraining trigger criteria. The runbook in Step 24 cannot reference a capability that was never built.",
+            "Introduce a vertical slice integration test after Step 12: before building Steps 13\u201316 (frontend), wire a single happy-path claim through the stub ML pipeline with hardcoded model responses. This validates the full backend data flow, catches schema mismatches early, and reduces the risk of discovering fundamental architecture issues after 3 frontend sprints.",
+            "Specify a payment gateway in Step 12 (Stripe, Dwolla for ACH, or a bank API). Define whether settlements are check, ACH, or wire. PCI DSS scope changes dramatically based on this choice \u2014 a tokenized gateway approach can reduce PCI scope to SAQ-A rather than SAQ-D, which is a multi-month compliance effort difference.",
+            "Add rate limiting and abuse prevention to Step 12's acceptance criteria: per-IP limits on photo upload endpoints, per-claimant claim submission rate limits, and signed S3 presigned URL expiry (5 minutes max). These are not stretch goals \u2014 they are table stakes for a public-facing upload endpoint.",
+            "Add a named feature store technology to Step 7 (Feast, Hopsworks, or even a simple Redis + PostgreSQL pattern) and include feature serving latency as an acceptance criterion. 'Feature store schema' as a markdown document is not a feature store."
+          ],
+          "missing": [
+            "Training data acquisition strategy \u2014 the single largest gap. The entire ML pipeline (Steps 7\u201310) has no defined data source.",
+            "State insurance regulatory pre-approval process for AI-assisted claims and automated settlement recommendations.",
+            "KMS/secrets management implementation step \u2014 encryption is specified everywhere but the key management infrastructure is never built.",
+            "Model monitoring and drift detection implementation \u2014 mentioned in runbooks but not built.",
+            "Payment gateway integration and payment rail selection.",
+            "Disaster recovery / backup-restore implementation with defined RTO/RPO.",
+            "GPU infrastructure specification for ML inference at load.",
+            "Adversarial robustness testing for the damage vision model (adversarial image attacks are a known vector in insurance fraud).",
+            "Appeals processing backend (state machine, endpoints, database tables).",
+            "Legal review of FCRA adverse action notice obligations when a claimant is fraud-flagged and denied or delayed settlement.",
+            "GDPR Data Protection Impact Assessment (DPIA) \u2014 any EU claimant triggers this requirement for automated decision-making under GDPR Article 22.",
+            "Rollback strategy for ML models in production (not just code rollback \u2014 model rollback with data migration).",
+            "Feature store technology selection and serving-latency SLA."
+          ],
+          "security_risks": [
+            "S3 presigned URL expiry is unspecified. Long-lived presigned URLs (>1 hour) shared in emails or browser history become persistent access vectors to PII-containing claim photos. Specify max 5-minute expiry with one-time-use enforcement.",
+            "Fraud model feature importance output enables model gaming. Publishing 'top 3 contributing features' per claim to adjusters means those features are one social engineering call away from being known to organized fraud rings. Consider surrogate explanations that describe behavior without revealing exact feature weights.",
+            "ML model inversion attacks: the damage severity classifier and cost estimator are queryable via API. A sophisticated attacker can reconstruct approximate training data or discover decision boundaries by making many inference requests. No rate limiting or input validation on the inference endpoint is specified.",
+            "JWT algorithm confusion attack is listed in Step 22's test cases but no mitigation is specified in Step 12's implementation. Explicitly pin the algorithm to RS256 in the JWT validation middleware \u2014 do not accept 'alg: none' or HS256 with a public key.",
+            "Webhook handlers (Step 12) are vulnerable to SSRF if the webhook URL is user-controlled. Validate all webhook destinations against an allowlist and block RFC 1918 ranges.",
+            "Celery task serialization: if using pickle serializer (Celery default), a malicious Redis compromise enables arbitrary code execution via deserialized task payloads. Enforce JSON serialization in Celery configuration.",
+            "EXIF GPS data in uploaded photos constitutes precise location PII. If stored unstripped in S3, a breach exposes claimant home/work locations. Ensure EXIF stripping occurs server-side before storage, not client-side where it can be bypassed.",
+            "Settlement amount recomputation (Step 22 acceptance criteria correctly flags 'amount always recomputed from DB') must also apply to liability percentage and policy limits \u2014 not just the settlement dollar amount. A partial tampering attack could manipulate liability_pct via a race condition if these values are passed through client state."
+          ],
+          "summary": "This is a technically coherent plan with well-structured HITL gates, reasonable compliance surface awareness, and appropriate ML acceptance criteria \u2014 but it has three fatal gaps that prevent production deployment in a regulated insurance context. First, there is no training data acquisition strategy: the vision model and fraud model both assume labeled historical data that does not exist without carrier partnerships or licensed dataset procurement, making the entire ML stack speculative. Second, automated settlement recommendations in insurance are state-regulated \u2014 deploying this without insurance department review in each operating jurisdiction is a license-revocation risk, and this regulatory approval process is entirely absent from the plan. Third, key management for the encryption controls is never implemented \u2014 encryption is mandated at every layer but the KMS infrastructure that makes encryption meaningful is missing. Beyond these blockers, the GNN fraud model is a cold-start impossibility for an MVP, model drift monitoring is referenced in runbooks but never built, and payment rail selection is deferred to the point where PCI DSS scoping is undefined. For an MVP score calibration: the core backend architecture and HITL patterns are solid (would score ~68 in isolation), but the regulatory and data gaps are not polish items \u2014 they are architectural prerequisites that invalidate the shipping timeline as written. Fundamental rework required before this can be considered production-ready.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 48,
+            "flaws": [
+              "Training data for the vision model (Step 8) assumes 'historical claims photos with adjuster-verified labels' as a given \u2014 but acquiring labeled insurance photo datasets is a multi-month legal and procurement effort. No carrier will hand over raw claims photos. There is no data acquisition, licensing, or data sharing agreement step anywhere in this plan. Without training data, Steps 8\u201310 and everything downstream cannot execute.",
+              "GNN for fraud detection (Step 9) has a severe cold-start problem. A graph neural network requires a dense, labeled historical fraud graph to produce useful embeddings. For a new system with no transaction history, you have no edges, no fraud labels at scale, and no graph structure. This is a research-grade deliverable disguised as an MVP task. It will not hit AUC-ROC \u2265 0.88 without 2\u20133 years of historical claims data with confirmed fraud labels.",
+              "Automated settlement recommendations are legally regulated at the state level in the US. Most state insurance codes require a licensed adjuster (a human) to issue the final settlement determination. Deploying a 'settlement recommendation engine' without state insurance department review and potentially prior approval creates regulatory liability that could result in operating license revocation. No regulatory pre-approval step exists in this plan.",
+              "PCI DSS compliance for 'settlement payment initiation' (Step 12) is vastly underspecified. The plan lists 'POST /claims/{id}/settle' as an endpoint but names no payment rail (ACH, check, wire transfer), no payment processor integration (Stripe, Plaid, bank API), and no scoping of PCI DSS cardholder data environment. PCI DSS SAQ-D without a defined payment architecture is checkbox theater.",
+              "Column-level AES-256 encryption (Step 6) has no key management implementation. pgcrypto or application-level encryption requires a KMS (AWS KMS, HashiCorp Vault, GCP KMS). Without KMS, encryption keys are stored adjacent to the data they protect \u2014 defeating the control. No KMS selection, integration, or key rotation policy is anywhere in this plan.",
+              "The EXIF metadata tension is unresolved: Step 9 uses 'damage_photo_metadata_anomalies' as a fraud signal (GPS, device model, timestamp) but PII regulations (CCPA, GDPR, and carrier data minimization policies) typically require stripping GPS coordinates from uploaded photos. You cannot simultaneously use EXIF GPS as a fraud feature and comply with data minimization. This architectural conflict is never acknowledged.",
+              "No model monitoring or drift detection is implemented. Steps 8\u201310 produce models; Step 24 mentions 'ML model drift' in runbooks \u2014 but there is no implementation step for production model monitoring (data drift, prediction drift, PSI scores, shadow scoring). MLflow is listed only for training. A fraud model that silently degrades in production is a compliance failure and a financial loss event.",
+              "The critical path is dangerously long: Steps 1\u21926\u21927\u21928+9\u219210\u219211\u219212 must complete sequentially before any end-to-end integration test can run. This means 10 steps of unbounded research and ML work (data pipelines, model training, feature engineering) before you can validate a single claim flows through the system. If Step 7's ETL produces poor features, Steps 8\u201310 must be retrained \u2014 there is no feedback loop or parallel prototype path.",
+              "Appeals processing has no backend. Step 5 wireframes an appeals flow; Step 14 builds an AppealsForm component \u2014 but no backend endpoint, state machine, or database table handles the appeals lifecycle. The UI will submit to nothing.",
+              "Step 7's photo feature extraction SLA (30 seconds per image) is incompatible with Step 21's load test of 500 concurrent submissions. At 500 concurrent claims each with multiple photos, you need GPU-backed inference infrastructure. Step 17's infrastructure spec lists no GPU nodes, no GPU-optimized instance types, and no autoscaling policy for the ML inference service. The SLA will be violated under any realistic load.",
+              "Fraud model feature importance output (top 3 contributing features surfaced to adjusters) leaks model internals. Bad actors can iteratively probe which features trigger lower fraud scores and tune claim submissions accordingly \u2014 a model gaming attack. No adversarial robustness or feature obfuscation strategy is mentioned.",
+              "Celery task idempotency is unaddressed. If a worker crashes mid-analysis (after photo analysis but before fraud scoring), the claim is in an inconsistent intermediate state. No idempotency keys, no at-least-once/exactly-once semantics, and no compensation logic are specified. Under load this will produce claims stuck in 'analyzing' forever."
+            ],
+            "suggestions": [
+              "Add a Step 0: Data Strategy. Define the training data source explicitly \u2014 licensed datasets (CCC ONE, Mitchell, Tractable APIs), synthetic data generation, or a pilot data-sharing agreement with a carrier. Without this, Steps 7\u201310 have no foundation. Timebox this as a go/no-go gate before committing to ML model development.",
+              "Replace GNN fraud detection in MVP with a well-tuned gradient boosted model (XGBoost/LightGBM) on tabular features. Ship the GNN as a Phase 2 enhancement once you have 12+ months of production fraud labels. The acceptance criteria of AUC-ROC \u2265 0.88 is achievable with tabular models on good features; it is not achievable with a GNN on sparse cold-start data.",
+              "Add a dedicated Legal/Regulatory Review step (after Step 2, before Step 3) that specifically covers: state insurance department notification/approval requirements, whether automated settlement outputs require a licensed adjuster signature, adverse action notice obligations under FCRA for fraud-flagged claimants, and ECOA/disparate impact analysis for the fraud model.",
+              "Add KMS integration to Step 6 as a hard requirement: specify the KMS provider, key hierarchy (master key \u2192 data encryption keys), key rotation schedule, and envelope encryption pattern. This is a prerequisite for PCI DSS and SOC 2 compliance, not a nice-to-have.",
+              "Make the photo pipeline decision explicit: either strip EXIF GPS on upload (privacy-first) and use only device model/timestamp for fraud features, or retain GPS under explicit consent with documented legal basis. Document this as an ADR. Do not allow this ambiguity to reach production.",
+              "Add a Model Monitoring step (between Steps 18 and 19): implement Evidently AI or WhyLogs for production drift detection, configure alerting when PSI > 0.2 on key fraud features, and define the retraining trigger criteria. The runbook in Step 24 cannot reference a capability that was never built.",
+              "Introduce a vertical slice integration test after Step 12: before building Steps 13\u201316 (frontend), wire a single happy-path claim through the stub ML pipeline with hardcoded model responses. This validates the full backend data flow, catches schema mismatches early, and reduces the risk of discovering fundamental architecture issues after 3 frontend sprints.",
+              "Specify a payment gateway in Step 12 (Stripe, Dwolla for ACH, or a bank API). Define whether settlements are check, ACH, or wire. PCI DSS scope changes dramatically based on this choice \u2014 a tokenized gateway approach can reduce PCI scope to SAQ-A rather than SAQ-D, which is a multi-month compliance effort difference.",
+              "Add rate limiting and abuse prevention to Step 12's acceptance criteria: per-IP limits on photo upload endpoints, per-claimant claim submission rate limits, and signed S3 presigned URL expiry (5 minutes max). These are not stretch goals \u2014 they are table stakes for a public-facing upload endpoint.",
+              "Add a named feature store technology to Step 7 (Feast, Hopsworks, or even a simple Redis + PostgreSQL pattern) and include feature serving latency as an acceptance criterion. 'Feature store schema' as a markdown document is not a feature store."
+            ],
+            "missing": [
+              "Training data acquisition strategy \u2014 the single largest gap. The entire ML pipeline (Steps 7\u201310) has no defined data source.",
+              "State insurance regulatory pre-approval process for AI-assisted claims and automated settlement recommendations.",
+              "KMS/secrets management implementation step \u2014 encryption is specified everywhere but the key management infrastructure is never built.",
+              "Model monitoring and drift detection implementation \u2014 mentioned in runbooks but not built.",
+              "Payment gateway integration and payment rail selection.",
+              "Disaster recovery / backup-restore implementation with defined RTO/RPO.",
+              "GPU infrastructure specification for ML inference at load.",
+              "Adversarial robustness testing for the damage vision model (adversarial image attacks are a known vector in insurance fraud).",
+              "Appeals processing backend (state machine, endpoints, database tables).",
+              "Legal review of FCRA adverse action notice obligations when a claimant is fraud-flagged and denied or delayed settlement.",
+              "GDPR Data Protection Impact Assessment (DPIA) \u2014 any EU claimant triggers this requirement for automated decision-making under GDPR Article 22.",
+              "Rollback strategy for ML models in production (not just code rollback \u2014 model rollback with data migration).",
+              "Feature store technology selection and serving-latency SLA."
+            ],
+            "security_risks": [
+              "S3 presigned URL expiry is unspecified. Long-lived presigned URLs (>1 hour) shared in emails or browser history become persistent access vectors to PII-containing claim photos. Specify max 5-minute expiry with one-time-use enforcement.",
+              "Fraud model feature importance output enables model gaming. Publishing 'top 3 contributing features' per claim to adjusters means those features are one social engineering call away from being known to organized fraud rings. Consider surrogate explanations that describe behavior without revealing exact feature weights.",
+              "ML model inversion attacks: the damage severity classifier and cost estimator are queryable via API. A sophisticated attacker can reconstruct approximate training data or discover decision boundaries by making many inference requests. No rate limiting or input validation on the inference endpoint is specified.",
+              "JWT algorithm confusion attack is listed in Step 22's test cases but no mitigation is specified in Step 12's implementation. Explicitly pin the algorithm to RS256 in the JWT validation middleware \u2014 do not accept 'alg: none' or HS256 with a public key.",
+              "Webhook handlers (Step 12) are vulnerable to SSRF if the webhook URL is user-controlled. Validate all webhook destinations against an allowlist and block RFC 1918 ranges.",
+              "Celery task serialization: if using pickle serializer (Celery default), a malicious Redis compromise enables arbitrary code execution via deserialized task payloads. Enforce JSON serialization in Celery configuration.",
+              "EXIF GPS data in uploaded photos constitutes precise location PII. If stored unstripped in S3, a breach exposes claimant home/work locations. Ensure EXIF stripping occurs server-side before storage, not client-side where it can be bypassed.",
+              "Settlement amount recomputation (Step 22 acceptance criteria correctly flags 'amount always recomputed from DB') must also apply to liability percentage and policy limits \u2014 not just the settlement dollar amount. A partial tampering attack could manipulate liability_pct via a race condition if these values are passed through client state."
+            ],
+            "summary": "This is a technically coherent plan with well-structured HITL gates, reasonable compliance surface awareness, and appropriate ML acceptance criteria \u2014 but it has three fatal gaps that prevent production deployment in a regulated insurance context. First, there is no training data acquisition strategy: the vision model and fraud model both assume labeled historical data that does not exist without carrier partnerships or licensed dataset procurement, making the entire ML stack speculative. Second, automated settlement recommendations in insurance are state-regulated \u2014 deploying this without insurance department review in each operating jurisdiction is a license-revocation risk, and this regulatory approval process is entirely absent from the plan. Third, key management for the encryption controls is never implemented \u2014 encryption is mandated at every layer but the KMS infrastructure that makes encryption meaningful is missing. Beyond these blockers, the GNN fraud model is a cold-start impossibility for an MVP, model drift monitoring is referenced in runbooks but never built, and payment rail selection is deferred to the point where PCI DSS scoping is undefined. For an MVP score calibration: the core backend architecture and HITL patterns are solid (would score ~68 in isolation), but the regulatory and data gaps are not polish items \u2014 they are architectural prerequisites that invalidate the shipping timeline as written. Fundamental rework required before this can be considered production-ready.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-21T23:49:56.771890+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 129.99,
+    "critic_plan": 112.81
+  }
+}

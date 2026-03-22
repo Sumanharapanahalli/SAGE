@@ -1,0 +1,1207 @@
+{
+  "run_id": "fe3b7eb3-fd0b-496a-b3c3-4df2f424ac69",
+  "status": {
+    "run_id": "fe3b7eb3-fd0b-496a-b3c3-4df2f424ac69",
+    "solution_name": "robo_advisor",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-21T23:36:43.681511+00:00",
+    "updated_at": "2026-03-21T23:41:17.251587+00:00",
+    "product_description": "Automated investment advisory platform with risk profiling, portfolio construction using Modern Portfolio Theory, tax-loss harvesting, and rebalancing. SEC RIA registration.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user personas, and regulatory scope for the robo-advisor platform. Document investor onboarding flows, risk tolerance questionnaire structure, and investment mandate constraints.",
+        "payload": {
+          "deliverables": [
+            "BRD",
+            "user_personas",
+            "process_flow_diagrams",
+            "investment_policy_statement_template"
+          ],
+          "scope": [
+            "retail_investors",
+            "accredited_investors",
+            "tax_advantaged_accounts",
+            "taxable_accounts"
+          ]
+        },
+        "acceptance_criteria": [
+          "BRD covers all product features: risk profiling, MPT portfolio construction, tax-loss harvesting, rebalancing",
+          "At least 3 user personas defined with investment goals and risk profiles",
+          "Investor onboarding flow diagram approved by legal and compliance",
+          "Investment Policy Statement template reviewed by regulatory_specialist"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "REGULATORY",
+        "description": "Prepare SEC Registered Investment Adviser (RIA) registration package: Form ADV Part 1 and Part 2, compliance policies, fiduciary duty documentation, and fee disclosure schedules. Map to Investment Advisers Act of 1940 requirements.",
+        "payload": {
+          "filings": [
+            "Form_ADV_Part1",
+            "Form_ADV_Part2A_Brochure",
+            "Form_ADV_Part2B"
+          ],
+          "policies": [
+            "code_of_ethics",
+            "compliance_manual",
+            "proxy_voting_policy",
+            "best_execution_policy"
+          ],
+          "standards": [
+            "Investment_Advisers_Act_1940",
+            "Regulation_BI",
+            "Form_CRS"
+          ]
+        },
+        "acceptance_criteria": [
+          "Form ADV Part 1 fully completed with all required sections for robo-advisory services",
+          "Form ADV Part 2A brochure discloses all fees, conflicts of interest, and investment methodologies",
+          "Compliance manual includes written supervisory procedures (WSP) for automated advisory",
+          "Form CRS relationship summary meets SEC plain-language requirements",
+          "Legal advisor sign-off on all fiduciary duty disclosures"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 3,
+        "task_type": "LEGAL",
+        "description": "Draft client agreements, terms of service, privacy policy (CCPA/GLBA compliant), arbitration clauses, and investment advisory agreements. Define data retention and breach notification procedures.",
+        "payload": {
+          "documents": [
+            "investment_advisory_agreement",
+            "terms_of_service",
+            "privacy_policy",
+            "data_retention_policy",
+            "breach_notification_procedure"
+          ],
+          "regulations": [
+            "CCPA",
+            "GLBA",
+            "GDPR_if_EU_clients",
+            "SEC_Regulation_SP"
+          ]
+        },
+        "acceptance_criteria": [
+          "Investment Advisory Agreement includes fee schedule, termination rights, and conflicts disclosure",
+          "Privacy policy is GLBA Safeguards Rule compliant with annual notice provision",
+          "Data retention schedule defined for all PII and financial data per SEC 17a-4",
+          "Breach notification procedure meets 72-hour regulatory reporting requirement",
+          "All documents reviewed and signed off by legal_advisor"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 4,
+        "task_type": "SECURITY",
+        "description": "Produce threat model, penetration test plan, and Software Bill of Materials (SBOM). Define security architecture for PCI DSS Level 1, SOC 2 Type II, and SOX IT controls. Include data encryption standards, key management, and zero-trust network design.",
+        "payload": {
+          "frameworks": [
+            "PCI_DSS_v4",
+            "SOC2_TypeII",
+            "SOX_ITGC",
+            "NIST_CSF"
+          ],
+          "scope": [
+            "payment_processing",
+            "PII_storage",
+            "financial_data",
+            "API_security",
+            "key_management"
+          ],
+          "deliverables": [
+            "threat_model",
+            "pentest_plan",
+            "SBOM",
+            "security_architecture_doc",
+            "encryption_key_management_plan"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model completed for all system components",
+          "SBOM generated for all third-party dependencies with CVE scan results",
+          "PCI DSS cardholder data environment (CDE) scoped and network segmentation documented",
+          "SOC 2 trust service criteria (Security, Availability, Confidentiality) mapped to controls",
+          "SOX ITGC controls documented for financial reporting systems",
+          "Encryption standards defined: AES-256 at rest, TLS 1.3 in transit, HSM for key management",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "COMPLIANCE",
+        "description": "Build compliance traceability matrix mapping features to regulatory requirements (SEC, PCI DSS, SOC 2, SOX). Create risk matrix for compliance gaps, V&V protocols for advisory algorithm outputs, and audit trail requirements.",
+        "payload": {
+          "artifacts": [
+            "traceability_matrix",
+            "risk_matrix",
+            "VV_protocols",
+            "audit_trail_spec",
+            "change_management_policy"
+          ],
+          "standards": [
+            "PCI_DSS",
+            "SOC2",
+            "SOX",
+            "SEC_RIA",
+            "FINRA_if_applicable"
+          ]
+        },
+        "acceptance_criteria": [
+          "Every regulatory requirement from SEC RIA, PCI DSS, SOC 2, and SOX has at least one mapped control",
+          "Risk matrix identifies all compliance gaps with severity ratings and remediation owners",
+          "V&V protocols defined for MPT algorithm, risk profiling engine, and rebalancing logic",
+          "Audit trail specification covers all user actions, portfolio changes, and advisory decisions",
+          "Compliance traceability matrix approved by regulatory_specialist and legal_advisor"
+        ],
+        "depends_on": [
+          2,
+          3,
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 6,
+        "task_type": "UX_DESIGN",
+        "description": "Design end-to-end user experience: onboarding risk questionnaire, portfolio dashboard, rebalancing notifications, tax-loss harvesting reports, and account management. Conduct accessibility audit (WCAG 2.1 AA).",
+        "payload": {
+          "flows": [
+            "onboarding",
+            "risk_questionnaire",
+            "portfolio_view",
+            "rebalancing_approval",
+            "tax_report",
+            "account_settings"
+          ],
+          "deliverables": [
+            "wireframes",
+            "interactive_prototype",
+            "design_system",
+            "accessibility_report"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 6 flows have high-fidelity wireframes approved by product_manager",
+          "Risk questionnaire UX follows SEC suitability assessment best practices",
+          "Portfolio dashboard displays allocation, performance, risk metrics, and tax exposure",
+          "Rebalancing and tax-loss harvesting actions include HITL confirmation dialogs",
+          "Accessibility audit confirms WCAG 2.1 AA compliance for all screens",
+          "Interactive prototype usability-tested with at least 5 representative users"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 7,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document (PRD), success metrics (AUM growth, Sharpe ratio improvement, churn rate), MVP feature set, and phased roadmap. Prioritize features against regulatory go-live requirements.",
+        "payload": {
+          "metrics": [
+            "AUM",
+            "client_retention_rate",
+            "avg_portfolio_sharpe_ratio",
+            "tax_alpha",
+            "rebalancing_drift_reduction"
+          ],
+          "phases": [
+            "MVP_RIA_registration",
+            "core_advisory",
+            "tax_optimization",
+            "advanced_features"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD defines MVP scope with regulatory-required features flagged as P0",
+          "Success metrics have baseline targets and measurement methodology defined",
+          "Phased roadmap aligns Phase 1 with SEC RIA go-live prerequisites",
+          "Feature prioritization matrix reviewed and approved by regulatory_specialist",
+          "Go/no-go criteria defined for each phase launch"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema for investor profiles, portfolios, holdings, transactions, risk scores, rebalancing history, tax lots, and audit logs. Apply PCI DSS data tokenization for payment data and field-level encryption for SSN/account numbers.",
+        "payload": {
+          "tables": [
+            "investors",
+            "risk_profiles",
+            "portfolios",
+            "holdings",
+            "transactions",
+            "tax_lots",
+            "rebalancing_events",
+            "audit_log",
+            "asset_universe",
+            "market_data_cache"
+          ],
+          "encryption": [
+            "SSN_field_level_AES256",
+            "account_numbers_tokenized",
+            "PII_encrypted_at_rest"
+          ],
+          "migrations": true,
+          "seed_data": [
+            "asset_universe_ETFs",
+            "benchmark_indices"
+          ]
+        },
+        "acceptance_criteria": [
+          "All tables have primary keys, foreign key constraints, and created_at/updated_at timestamps",
+          "SSN and account numbers encrypted at field level with separate key management",
+          "Tax lot table tracks purchase date, cost basis, and wash sale restrictions",
+          "Audit log table is append-only with tamper-evident hash chaining",
+          "All migrations are idempotent and reversible",
+          "Seed data includes at least 50 ETFs across asset classes for MPT universe",
+          "Database schema reviewed against PCI DSS data minimization requirements",
+          "Transaction isolation level documented",
+          "Audit trail on all writes"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "INFRA",
+        "description": "Set up cloud infrastructure with PCI DSS-compliant network segmentation, multi-region failover, WAF, DDoS protection, secrets management (HashiCorp Vault or AWS Secrets Manager), and SOC 2 logging pipeline. Configure IaC with Terraform.",
+        "payload": {
+          "cloud": "AWS",
+          "components": [
+            "VPC_with_CDE_segmentation",
+            "RDS_encrypted",
+            "ElastiCache",
+            "API_Gateway",
+            "WAF",
+            "CloudTrail",
+            "GuardDuty",
+            "Secrets_Manager",
+            "KMS"
+          ],
+          "iac_tool": "Terraform",
+          "regions": [
+            "us-east-1",
+            "us-west-2"
+          ]
+        },
+        "acceptance_criteria": [
+          "CDE network segment isolated from public internet with dedicated subnets",
+          "All data stores encrypted at rest using KMS with automatic key rotation",
+          "CloudTrail enabled across all accounts with logs shipped to immutable S3 bucket",
+          "WAF rules configured for OWASP Top 10 and financial API abuse patterns",
+          "Terraform state stored remotely with state locking enabled",
+          "Multi-region RDS read replica configured for failover < 30 seconds RTO",
+          "All secrets stored in Secrets Manager \u2014 zero secrets in code or environment variables"
+        ],
+        "depends_on": [
+          4,
+          8
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 10,
+        "task_type": "CONFIG",
+        "description": "Configure agentic AI pattern for the robo-advisor: Multi-Agent Coordinator pattern with specialist agents for risk assessment, portfolio optimization, tax strategy, and rebalancing. Set up HITL approval gates for all portfolio-altering actions.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": {
+            "coordinator": "investment_coordinator_agent",
+            "specialists": [
+              "risk_profiler_agent",
+              "mpt_optimizer_agent",
+              "tax_harvester_agent",
+              "rebalancer_agent"
+            ]
+          },
+          "hitl_gates": [
+            "portfolio_construction",
+            "rebalancing_execution",
+            "tax_loss_trade",
+            "risk_profile_update"
+          ],
+          "approval_workflow": "strict"
+        },
+        "acceptance_criteria": [
+          "Coordinator agent routes tasks to correct specialist based on investment action type",
+          "HITL approval gate configured for all 4 portfolio-altering action types",
+          "Agent proposal store connected to audit log for SEC compliance",
+          "Each specialist agent has system prompt grounded in its regulatory constraints",
+          "Coordinator timeout and fallback behavior defined for agent failures"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "ML_MODEL",
+        "description": "Build the risk profiling engine: questionnaire scoring model mapping investor responses to risk tolerance scores (1\u201310 scale), time horizon classification, and suitability assessment. Implement Modern Portfolio Theory (MPT) optimizer using mean-variance optimization with Black-Litterman model enhancements.",
+        "payload": {
+          "models": {
+            "risk_profiler": "weighted_questionnaire_scoring + behavioral_finance_adjustments",
+            "mpt_optimizer": "mean_variance_optimization + black_litterman",
+            "expected_returns": "historical_factor_model + CAPM",
+            "covariance": "Ledoit_Wolf_shrinkage_estimator"
+          },
+          "constraints": [
+            "long_only",
+            "weight_bounds",
+            "sector_limits",
+            "ESG_screens_optional"
+          ],
+          "libraries": [
+            "scipy.optimize",
+            "numpy",
+            "pandas",
+            "cvxpy",
+            "PyPortfolioOpt"
+          ]
+        },
+        "acceptance_criteria": [
+          "Risk profiler maps questionnaire responses to 10-point scale with documented methodology",
+          "MPT optimizer produces efficient frontier and selects portfolio at investor's risk tolerance",
+          "Black-Litterman model accepts market views as configurable inputs",
+          "Ledoit-Wolf covariance shrinkage applied to handle ill-conditioned matrices",
+          "Optimizer enforces all constraints (long-only, weight bounds, sector limits)",
+          "Backtested Sharpe ratio improvement over equal-weight benchmark documented",
+          "All model outputs include explainability metadata for regulatory disclosure"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Build investor onboarding service: KYC/AML verification integration, risk questionnaire API, suitability assessment engine, account creation, and investment mandate storage. Implement Plaid integration for bank account linking.",
+        "payload": {
+          "services": [
+            "KYC_AML_service",
+            "questionnaire_service",
+            "suitability_engine",
+            "account_service"
+          ],
+          "integrations": [
+            "Plaid_bank_linking",
+            "identity_verification_provider"
+          ],
+          "endpoints": [
+            "POST /onboarding/start",
+            "POST /onboarding/kyc",
+            "POST /onboarding/questionnaire",
+            "POST /onboarding/complete",
+            "GET /onboarding/status/:id"
+          ]
+        },
+        "acceptance_criteria": [
+          "KYC/AML check completes synchronously for 95% of users, async with webhook for remainder",
+          "Questionnaire API validates all required fields and returns suitability score",
+          "Account creation is transactional \u2014 all-or-nothing with rollback on failure",
+          "Plaid integration links bank accounts with OAuth and stores tokenized account references",
+          "All onboarding events written to audit log with timestamp and user ID",
+          "OFAC/sanctions screening integrated into KYC flow"
+        ],
+        "depends_on": [
+          8,
+          9,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build portfolio management service: portfolio construction API calling MPT optimizer, holdings CRUD, NAV calculation, performance attribution (time-weighted return), and benchmark comparison. Integrate with brokerage API (Alpaca or Interactive Brokers) for order execution.",
+        "payload": {
+          "services": [
+            "portfolio_service",
+            "order_execution_service",
+            "performance_service"
+          ],
+          "integrations": [
+            "Alpaca_brokerage_API",
+            "market_data_provider"
+          ],
+          "endpoints": [
+            "POST /portfolios",
+            "GET /portfolios/:id",
+            "GET /portfolios/:id/performance",
+            "GET /portfolios/:id/holdings",
+            "POST /portfolios/:id/construct"
+          ]
+        },
+        "acceptance_criteria": [
+          "Portfolio construction endpoint calls MPT optimizer and returns target allocation within 2 seconds",
+          "Order execution service places fractional share orders via brokerage API",
+          "NAV calculated daily with time-weighted return methodology",
+          "Performance attribution breaks down returns by asset class and individual holding",
+          "All order executions logged with timestamps, quantities, prices, and execution IDs",
+          "Brokerage API errors handled gracefully with retry logic and dead letter queue"
+        ],
+        "depends_on": [
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Build rebalancing engine: drift detection (threshold-based and calendar-based triggers), rebalancing proposal generation with tax impact preview, HITL approval workflow, and trade order generation. Implement cash flow rebalancing to minimize tax events.",
+        "payload": {
+          "triggers": [
+            "drift_threshold_5pct",
+            "quarterly_calendar",
+            "cash_deposit_event",
+            "withdrawal_event"
+          ],
+          "strategies": [
+            "buy_and_hold_drift",
+            "cash_flow_rebalancing",
+            "full_rebalancing"
+          ],
+          "hitl": true,
+          "endpoints": [
+            "POST /rebalancing/check",
+            "POST /rebalancing/propose",
+            "POST /rebalancing/approve/:id",
+            "GET /rebalancing/history"
+          ]
+        },
+        "acceptance_criteria": [
+          "Drift detection runs daily and flags portfolios exceeding 5% absolute deviation from target",
+          "Rebalancing proposal includes tax impact estimate before execution",
+          "Cash flow rebalancing routes new deposits toward underweight assets before selling",
+          "HITL approval required \u2014 proposal stored and no trades execute until human approval",
+          "Approved rebalancing generates optimized trade list minimizing transaction count",
+          "All rebalancing events logged with before/after allocations and cost basis impact"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Build tax-loss harvesting (TLH) engine: unrealized loss scanning, wash sale rule (30-day) enforcement, substitute security selection, harvesting opportunity scoring, and realized tax savings tracking. Generate IRS Form 8949 data.",
+        "payload": {
+          "rules": [
+            "wash_sale_30day",
+            "short_vs_long_term_distinction",
+            "substitute_security_correlation_minimum_0.85"
+          ],
+          "triggers": [
+            "daily_scan",
+            "market_decline_3pct",
+            "year_end_optimization"
+          ],
+          "tax_forms": [
+            "Form_8949_data",
+            "Schedule_D_summary"
+          ],
+          "endpoints": [
+            "GET /tax/opportunities",
+            "POST /tax/harvest/:opportunity_id",
+            "GET /tax/harvested/ytd",
+            "GET /tax/lots/:portfolio_id"
+          ]
+        },
+        "acceptance_criteria": [
+          "Daily scan identifies all positions with unrealized losses exceeding $100",
+          "Wash sale rule enforced: blocks harvest if same or substantially identical security purchased within 30 days",
+          "Substitute security selection maintains portfolio beta within 0.05 of original",
+          "Harvesting opportunity score accounts for transaction costs and expected holding period",
+          "HITL approval required before any tax-loss trade executes",
+          "YTD harvested losses tracked with cumulative tax savings estimate",
+          "Form 8949 data export is IRS-format compliant and CPA-reviewable"
+        ],
+        "depends_on": [
+          13,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Build fee management service: advisory fee calculation (AUM-based tiered schedule), fee accrual, billing cycle management, and fee disclosure reporting. Implement fee billing via ACH with Stripe or Dwolla.",
+        "payload": {
+          "fee_structure": "tiered_AUM_basis_points",
+          "billing_cycle": "quarterly_in_arrears",
+          "integrations": [
+            "Dwolla_ACH",
+            "Stripe_fallback"
+          ],
+          "endpoints": [
+            "GET /fees/schedule",
+            "GET /fees/accrued/:portfolio_id",
+            "POST /fees/bill/:portfolio_id",
+            "GET /fees/history/:client_id"
+          ]
+        },
+        "acceptance_criteria": [
+          "Fee calculation applies correct tier based on AUM breakpoints defined in ADV",
+          "Accrual calculation is daily, billing collected quarterly",
+          "Fee disclosure report matches exactly what is stated in Form ADV Part 2A",
+          "ACH billing fails gracefully with retry and client notification",
+          "Fee history is immutable and forms part of audit trail",
+          "Zero discrepancy between accrued fees and billed amounts over 12-month test period"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build investor onboarding UI: multi-step risk questionnaire wizard, KYC document upload, bank account linking via Plaid Link, investment goal setting, and account confirmation screen.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "components": [
+            "RiskQuestionnaireWizard",
+            "KYCDocumentUpload",
+            "PlaidLinkButton",
+            "GoalSetter",
+            "OnboardingConfirmation"
+          ],
+          "state_management": "React Query + Zustand"
+        },
+        "acceptance_criteria": [
+          "Multi-step wizard with progress indicator completes in < 10 minutes for median user",
+          "Questionnaire validates all required fields with inline error messages",
+          "Plaid Link integration opens OAuth flow and returns linked account on success",
+          "KYC document upload supports PDF/JPG/PNG with file size validation",
+          "Onboarding confirmation shows risk score, recommended allocation, and fee schedule",
+          "All screens meet WCAG 2.1 AA accessibility standards"
+        ],
+        "depends_on": [
+          6,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build portfolio dashboard UI: asset allocation donut chart, performance chart (vs benchmark), holdings table, risk metrics panel (Sharpe, Volatility, Max Drawdown), rebalancing alerts, and tax exposure summary.",
+        "payload": {
+          "components": [
+            "AllocationChart",
+            "PerformanceChart",
+            "HoldingsTable",
+            "RiskMetricsPanel",
+            "RebalancingAlert",
+            "TaxExposureSummary"
+          ],
+          "charting_library": "Recharts or Visx",
+          "real_time": "polling_every_60s"
+        },
+        "acceptance_criteria": [
+          "Allocation chart updates within 1 second of portfolio change",
+          "Performance chart supports 1M, 3M, 6M, YTD, 1Y, All time ranges",
+          "Holdings table sortable by allocation %, gain/loss, and tax lot age",
+          "Risk metrics panel shows Sharpe ratio, annualized volatility, and max drawdown",
+          "Rebalancing alerts badge count reflects pending proposals requiring approval",
+          "Tax exposure summary shows unrealized gains/losses split by short/long term"
+        ],
+        "depends_on": [
+          6,
+          13,
+          17
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build rebalancing and tax-loss harvesting approval UI: proposal review page with before/after allocation visualization, tax impact table, trade order list, and approve/reject HITL controls.",
+        "payload": {
+          "components": [
+            "ProposalReviewPage",
+            "AllocationDiffChart",
+            "TaxImpactTable",
+            "TradeOrderList",
+            "HITLApprovalButtons"
+          ],
+          "hitl_pattern": "human_in_the_loop"
+        },
+        "acceptance_criteria": [
+          "Proposal page renders within 1 second and shows full before/after allocation side-by-side",
+          "Tax impact table shows estimated short-term vs long-term gains/losses per trade",
+          "Trade order list shows all buy/sell orders with estimated costs",
+          "Approve button requires confirmation modal with explicit acknowledgment text",
+          "Reject with feedback captures rejection reason and stores in audit log",
+          "Approved proposals trigger real-time status update without page reload"
+        ],
+        "depends_on": [
+          6,
+          14,
+          15,
+          18
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "FRONTEND",
+        "description": "Build reporting and tax center UI: annual tax summary (harvested losses, realized gains, Form 8949 preview), fee statements, performance attribution report, and document download center.",
+        "payload": {
+          "components": [
+            "TaxSummaryPage",
+            "FeeStatement",
+            "PerformanceAttributionReport",
+            "DocumentDownloadCenter"
+          ],
+          "export_formats": [
+            "PDF",
+            "CSV"
+          ]
+        },
+        "acceptance_criteria": [
+          "Annual tax summary shows total harvested losses, tax savings estimate, and realized gains",
+          "Form 8949 preview renders all closed positions with correct short/long term classification",
+          "Fee statement matches billing records with zero discrepancy",
+          "All reports exportable as PDF and CSV",
+          "Document download center lists all generated statements with date and type filters",
+          "Pages meet WCAG 2.1 AA accessibility standards"
+        ],
+        "depends_on": [
+          6,
+          15,
+          16,
+          18
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipeline with mandatory security scans (SAST, DAST, dependency CVE), SOC 2 change management controls, blue-green deployment, rollback automation, and SOX change approval workflow.",
+        "payload": {
+          "pipeline": "GitHub Actions",
+          "stages": [
+            "lint",
+            "unit_tests",
+            "SAST_semgrep",
+            "dependency_scan_snyk",
+            "build",
+            "integration_tests",
+            "DAST_OWASP_ZAP",
+            "SOX_change_approval",
+            "blue_green_deploy"
+          ],
+          "monitoring": [
+            "CloudWatch",
+            "PagerDuty",
+            "Datadog_APM"
+          ]
+        },
+        "acceptance_criteria": [
+          "SAST scan runs on every PR and blocks merge on high/critical findings",
+          "Dependency CVE scan blocks deploy on CVSS >= 7.0 unpatched vulnerabilities",
+          "SOX change approval step requires 4-eyes sign-off before production deploy",
+          "Blue-green deployment enables zero-downtime releases with automatic health check validation",
+          "Rollback completes in < 5 minutes via automated pipeline trigger",
+          "All deployment events logged to immutable audit trail for SOX compliance",
+          "Canary release option available for gradual traffic shifting"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write comprehensive unit tests for MPT optimizer, risk profiling engine, tax-loss harvesting logic (including wash sale edge cases), rebalancing drift detection, and fee calculation. Target 90%+ code coverage on all financial logic.",
+        "payload": {
+          "framework": "pytest",
+          "coverage_target": "90",
+          "test_categories": [
+            "mpt_optimizer_unit",
+            "risk_profiler_unit",
+            "wash_sale_rule_unit",
+            "rebalancing_drift_unit",
+            "fee_calculation_unit",
+            "tax_lot_tracking_unit"
+          ],
+          "property_based_testing": "hypothesis_library_for_optimizer"
+        },
+        "acceptance_criteria": [
+          "MPT optimizer tests cover: efficient frontier generation, constraint enforcement, ill-conditioned covariance handling",
+          "Wash sale tests cover: 30-day window, substantially identical securities, replacement security rules",
+          "Rebalancing tests cover: drift threshold trigger, cash flow rebalancing, quarterly calendar trigger",
+          "Fee tests cover: all AUM tier breakpoints, quarterly proration, zero-balance edge case",
+          "All financial calculation tests use exact decimal arithmetic (no floating point ambiguity)",
+          "Overall backend code coverage >= 90% on src/ financial modules",
+          "Property-based tests confirm MPT optimizer handles random valid inputs without crashing"
+        ],
+        "depends_on": [
+          11,
+          14,
+          15,
+          16
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "TESTS",
+        "description": "Write integration tests for all API endpoints, brokerage API integration (Alpaca sandbox), Plaid integration, KYC/AML flow, and HITL approval workflow. Include negative tests for unauthorized access and invalid inputs.",
+        "payload": {
+          "framework": "pytest + httpx",
+          "environments": [
+            "test_with_sandboxes"
+          ],
+          "test_categories": [
+            "onboarding_api",
+            "portfolio_api",
+            "rebalancing_api",
+            "tax_api",
+            "fee_api",
+            "auth_and_authz",
+            "brokerage_integration",
+            "plaid_integration"
+          ]
+        },
+        "acceptance_criteria": [
+          "All happy-path API flows tested end-to-end against test database",
+          "Brokerage API tests run against Alpaca paper trading sandbox",
+          "Plaid integration tests use Plaid sandbox with test credentials",
+          "Auth tests verify JWT expiry, RBAC enforcement, and session invalidation",
+          "All 4xx and 5xx error responses tested for correct status codes and messages",
+          "HITL workflow test: proposal created \u2192 displayed \u2192 approved \u2192 trade executed",
+          "Negative tests: unauthenticated requests return 401, forbidden resources return 403"
+        ],
+        "depends_on": [
+          12,
+          13,
+          14,
+          15,
+          16,
+          22
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system tests: full investor lifecycle (onboarding \u2192 portfolio construction \u2192 rebalancing \u2192 TLH \u2192 fee billing \u2192 reporting), load testing (1000 concurrent users), and disaster recovery test (failover RTO < 30s).",
+        "payload": {
+          "tools": [
+            "Playwright_e2e",
+            "Locust_load_testing",
+            "chaos_engineering_AWS_FIS"
+          ],
+          "scenarios": [
+            "full_investor_lifecycle",
+            "concurrent_rebalancing_1000_portfolios",
+            "market_data_feed_failure",
+            "brokerage_API_timeout",
+            "database_failover"
+          ],
+          "performance_targets": {
+            "api_p99_latency_ms": 500,
+            "portfolio_construction_p99_ms": 2000,
+            "concurrent_users": 1000
+          }
+        },
+        "acceptance_criteria": [
+          "Full investor lifecycle E2E test passes: onboarding to first portfolio statement",
+          "Load test: p99 API latency < 500ms under 1000 concurrent users",
+          "Portfolio construction p99 < 2000ms under load",
+          "Database failover completes in < 30 seconds with zero data loss",
+          "Brokerage API timeout handled gracefully \u2014 orders queued and retried, no duplicate trades",
+          "Market data feed failure degrades gracefully \u2014 rebalancing deferred, clients notified",
+          "All E2E tests pass in staging environment before production release"
+        ],
+        "depends_on": [
+          21,
+          23
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 25,
+        "task_type": "QA",
+        "description": "Execute pre-launch QA: suitability algorithm audit (verify each risk score maps to correct model portfolio), regulatory disclosure review (ADV matches fee schedule in system), and Form 8949 accuracy validation against manual calculations.",
+        "payload": {
+          "audit_areas": [
+            "risk_score_to_portfolio_mapping",
+            "ADV_fee_schedule_vs_system",
+            "form_8949_accuracy",
+            "wash_sale_enforcement",
+            "audit_log_completeness"
+          ],
+          "method": "manual_review_plus_automated_comparison"
+        },
+        "acceptance_criteria": [
+          "All 10 risk scores mapped to documented model portfolios with zero unexplained deviations",
+          "Fee schedule in system matches Form ADV Part 2A exactly \u2014 zero discrepancies",
+          "Form 8949 output validated against manual calculation for 50 sample tax lots",
+          "Wash sale enforcement tested with 20 edge cases \u2014 100% rule enforcement",
+          "Audit log completeness check: every portfolio-altering action has a corresponding log entry",
+          "QA sign-off report produced and retained for SEC examination readiness"
+        ],
+        "depends_on": [
+          22,
+          23,
+          24
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 26,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model for the business: AUM growth projections, unit economics (CAC, LTV, break-even AUM), fee revenue forecasting, and capital requirements for SEC RIA net worth requirements.",
+        "payload": {
+          "models": [
+            "aum_growth_model",
+            "unit_economics",
+            "fee_revenue_forecast",
+            "regulatory_net_worth_compliance"
+          ],
+          "horizon_years": 5,
+          "sec_net_worth_requirement": "documented_per_state_regulations"
+        },
+        "acceptance_criteria": [
+          "AUM growth model uses S-curve adoption with conservative/base/optimistic scenarios",
+          "LTV:CAC ratio > 3:1 modeled at steady state",
+          "Fee revenue forecast tied directly to AUM projections with tiered fee schedule",
+          "SEC/state RIA net worth requirements documented and funded in financial plan",
+          "Break-even AUM calculation shows path to profitability",
+          "Model reviewed and approved by financial_analyst and regulatory_specialist"
+        ],
+        "depends_on": [
+          2,
+          7
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 27,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Conduct competitive analysis of robo-advisor market (Betterment, Wealthfront, Schwab Intelligent Portfolios), identify differentiation opportunities, and define go-to-market strategy targeting underserved segments.",
+        "payload": {
+          "competitors": [
+            "Betterment",
+            "Wealthfront",
+            "Schwab_Intelligent_Portfolios",
+            "Vanguard_Digital_Advisor"
+          ],
+          "analysis_dimensions": [
+            "fee_structure",
+            "minimum_investment",
+            "tax_features",
+            "customer_segment",
+            "technology_stack"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitive matrix completed for all 4 named competitors across 5 analysis dimensions",
+          "Differentiation opportunities identified with supporting evidence",
+          "Target customer segment defined with TAM/SAM/SOM estimate",
+          "Go-to-market strategy includes acquisition channels and partnership opportunities",
+          "Research report approved by product_manager and marketing_strategist"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 28,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: incident response for trading outages, brokerage API failures, market data gaps, regulatory examination preparation checklist, and business continuity plan (BCP). Define SLAs for advisory services.",
+        "payload": {
+          "runbooks": [
+            "trading_outage_response",
+            "brokerage_API_failure",
+            "market_data_gap",
+            "SEC_examination_prep",
+            "BCP_DR"
+          ],
+          "SLAs": {
+            "portfolio_construction": "< 2 hours of account funding",
+            "rebalancing_execution": "< 1 business day of approval",
+            "reporting": "monthly_statements_by_5th_of_month"
+          }
+        },
+        "acceptance_criteria": [
+          "Trading outage runbook defines client communication template and regulatory notification timeline",
+          "Brokerage API failure runbook includes manual order entry fallback procedure",
+          "SEC examination prep checklist covers all books-and-records requirements (17a-4)",
+          "BCP defines RPO < 1 hour and RTO < 4 hours for all critical systems",
+          "SLAs documented and signed off by operations_manager and regulatory_specialist",
+          "All runbooks reviewed by at least two team members and version-controlled"
+        ],
+        "depends_on": [
+          5,
+          21
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 29,
+        "task_type": "TRAINING",
+        "description": "Create investor-facing onboarding guide, help center articles (MPT explained, tax-loss harvesting FAQ, rebalancing explained), and compliance training materials for staff covering fiduciary duty and RIA obligations.",
+        "payload": {
+          "materials": [
+            "investor_onboarding_guide",
+            "help_center_articles_15",
+            "fiduciary_duty_training",
+            "RIA_compliance_training"
+          ],
+          "formats": [
+            "web_help_center",
+            "PDF",
+            "video_scripts"
+          ]
+        },
+        "acceptance_criteria": [
+          "Investor onboarding guide covers all steps from account opening to first portfolio review",
+          "15 help center articles cover all major platform features at reading level 8 or below",
+          "MPT and tax-loss harvesting explanations reviewed by financial_analyst for accuracy",
+          "Staff compliance training covers fiduciary duty, conflict of interest disclosure, and code of ethics",
+          "All materials reviewed by regulatory_specialist for regulatory accuracy",
+          "Video scripts produced for top 5 most common investor questions"
+        ],
+        "depends_on": [
+          3,
+          17,
+          18,
+          19,
+          20
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 30,
+        "task_type": "DOCS",
+        "description": "Produce technical documentation: API reference (OpenAPI spec), architecture decision records (ADRs), MPT algorithm specification, tax-loss harvesting rule engine documentation, and SEC examination-ready books-and-records index.",
+        "payload": {
+          "documents": [
+            "OpenAPI_spec",
+            "architecture_ADRs",
+            "MPT_algorithm_spec",
+            "TLH_rule_engine_doc",
+            "books_and_records_index"
+          ],
+          "format": [
+            "OpenAPI_3.1_YAML",
+            "Markdown_ADRs",
+            "PDF_regulatory_docs"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec covers all endpoints with request/response schemas and auth requirements",
+          "ADRs document all major architecture decisions with rationale and alternatives considered",
+          "MPT algorithm spec includes mathematical formulation, assumptions, and known limitations",
+          "TLH rule engine documentation covers all wash sale rules and substitute security logic",
+          "Books-and-records index maps SEC 17a-4 requirements to specific system components",
+          "All regulatory documents reviewed and approved by regulatory_specialist"
+        ],
+        "depends_on": [
+          11,
+          13,
+          14,
+          15,
+          25
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 30,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 52,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 52,
+          "final_review": {
+            "score": 52,
+            "flaws": [
+              "SOX (Sarbanes-Oxley) does not apply to private companies. Applying SOX ITGC controls throughout adds enormous compliance overhead with zero legal obligation. The correct framework is SOC 2 Type II. This error propagates through Steps 4, 5, 9, 21, and 25.",
+              "SEC vs. state RIA registration threshold is missing. The SEC only registers advisers managing $100M+ AUM. A startup robo-advisor almost certainly registers with individual state securities regulators first, not the SEC. Preparing Form ADV for SEC registration before hitting the AUM threshold is premature and potentially misfiled.",
+              "The Custody Rule (Rule 206(4)-2) is never mentioned. If the RIA deducts advisory fees directly from client accounts (which Step 16 plans), that constitutes custody, triggering annual surprise examinations by an independent public accountant. This is a hard regulatory requirement and a significant operational cost.",
+              "Wash sale rule enforcement is broken by design. The wash sale rule applies across ALL of a taxpayer's accounts \u2014 IRAs, 401ks, spouse accounts \u2014 not just accounts held at this platform. Step 15 only tracks within-platform positions. This will generate incorrect Form 8949 data and expose clients and the RIA to IRS penalties.",
+              "No authentication/authorization service is ever built. Steps 17-20 build frontends and Step 23 tests auth, but no step implements JWT issuance, OAuth 2.0, MFA, session management, or RBAC. Financial services regulators expect MFA. This is a missing vertical slice, not a gap in testing.",
+              "PCI DSS Level 1 is almost certainly wrong scope. PCI DSS Level 1 applies to merchants processing 6M+ card transactions/year. An RIA charging advisory fees via ACH (Step 16 uses Dwolla/Stripe for ACH) is likely not in card scope at all. Over-scoping PCI DSS Level 1 costs hundreds of thousands in QSA audits and remediation unnecessarily.",
+              "No notification service is ever built. Steps 14, 16, 24, and 28 all reference 'client notifications' for rebalancing alerts, fee billing failures, and outages, but no step builds email/SMS/push notification infrastructure.",
+              "Black-Litterman 'market views' have no defined source. The model requires subjective forward-looking views as inputs. Step 11 says they are 'configurable inputs' but never defines who generates them, how they are reviewed, or how they are disclosed in the ADV. If an AI agent generates these views, that is an undisclosed AI-driven investment decision.",
+              "Order lifecycle management is naive. Step 13 treats brokerage order execution as a single API call. Real execution involves order states (pending, partial fill, rejected, expired), T+2 settlement, and position reconciliation. No reconciliation job is ever built \u2014 the platform's internal holdings can silently diverge from actual brokerage positions.",
+              "Tax-loss harvesting is applied to tax-advantaged accounts. The plan handles both taxable and tax-advantaged accounts but Step 15 scans 'all positions with unrealized losses.' TLH has zero benefit and different wash sale implications inside IRAs/401ks. The engine needs account-type gating.",
+              "Steps 26 (Financial Model) and 27 (Market Research) are placed after all technical decisions. AUM projections, unit economics, and target customer segment should inform architecture scale, minimum viable AUM for profitability, and which features are P0. Doing this analysis at step 26-27 means all infrastructure and algorithm complexity decisions were made without knowing the business model.",
+              "ERISA fiduciary standard is absent. Any client using an IRA account triggers ERISA obligations, including the DOL Fiduciary Rule. The compliance framework in Step 5 only covers SEC RIA rules. ERISA adds a separate and stricter fiduciary standard with prohibited transaction rules.",
+              "Best execution obligation conflicts with Alpaca selection. Step 2 includes a best execution policy, but Step 13 hardcodes Alpaca without a comparative execution quality analysis. An RIA must be able to demonstrate to the SEC that it selected the execution venue in clients' best interest \u2014 hardcoding a single broker without documented evaluation fails this test.",
+              "Rule 17a-4 is cited for books-and-records but it applies to broker-dealers, not RIAs. The applicable rule is Rule 204-2 under the Investment Advisers Act. This is a direct regulatory citation error in Steps 3, 28, and 30.",
+              "No corporate actions handling. ETF splits, mergers, fund closures, and distributions affect cost basis, tax lots, and holdings. No step addresses corporate actions processing, which means cost basis data will silently corrupt over time.",
+              "Market data licensing is unaddressed. Real-time and historical market data from NYSE/NASDAQ for MPT optimization requires commercial licenses (e.g., from Refinitiv, Bloomberg, or exchange direct feeds). These cost $10K-$500K+/year and have redistribution restrictions. 'market_data_provider' is listed as an integration with no specification."
+            ],
+            "suggestions": [
+              "Add a Step 1.5 for state RIA registration research: determine which state(s) apply, identify the AUM threshold for SEC registration eligibility, and plan the registration sequence accordingly. Build a trigger to file the SEC switch when AUM crosses $100M.",
+              "Replace all SOX ITGC references with SOC 2 Type II controls. If any investors are publicly traded companies using this as a corporate treasury tool, note SOX may apply to them \u2014 but not to the robo-advisor platform itself.",
+              "Add a Custody Rule compliance step between Steps 2 and 5. Document whether fee billing from client accounts constitutes custody, engage a qualified custodian, and plan for the annual surprise examination requirement if custody applies.",
+              "Expand wash sale enforcement to accept external account positions via API or manual input. Document explicitly in the Form ADV that cross-account wash sale accuracy depends on client-provided information when outside accounts are held away.",
+              "Add an explicit authentication/authorization backend step (JWT service, OAuth 2.0 PKCE for public clients, MFA via TOTP/SMS, role definitions: investor, advisor, admin, auditor). This should precede Step 12.",
+              "Add a daily reconciliation job step: compare internal holdings/positions/cash against brokerage API positions, flag discrepancies, and route to operations queue. This is non-negotiable for any RIA.",
+              "Move Steps 26 and 27 to immediately after Step 1 (or run them in parallel with Step 1). Business viability, target AUM, and competitive positioning must inform infrastructure scale decisions before a dollar is spent on cloud architecture.",
+              "Add account-type gating to the TLH engine. Only run TLH scans on taxable accounts. Add explicit handling for wash sale interactions between taxable and IRA accounts held on-platform.",
+              "Define the Black-Litterman market views governance process: who inputs them, how often, what the review and sign-off process is, and how they are disclosed in the ADV. Or explicitly choose the 'market-implied returns only' variant to eliminate subjective views entirely.",
+              "Scope a notification service explicitly: transactional email (SES/SendGrid), SMS (Twilio), and in-app notifications for rebalancing proposals, fee billing, and account alerts. Wire it to rebalancing, fee billing, and operations runbooks.",
+              "Consult a fintech attorney on whether the tax-loss harvesting feature and Form 8949 generation constitutes tax advice requiring CPA oversight or creates state-specific licensing requirements.",
+              "Replace PCI DSS Level 1 with Level 4 SAQ-A or SAQ-D based on actual card processing volume, or scope PCI out entirely if payment processing is entirely ACH and no card data is stored or transmitted."
+            ],
+            "missing": [
+              "Authentication and authorization service (JWT, OAuth 2.0, MFA) \u2014 never built, only tested",
+              "Daily position reconciliation between internal records and brokerage \u2014 critical operational control",
+              "Custody Rule (Rule 206(4)-2) compliance analysis and annual surprise examination planning",
+              "State RIA registration path for sub-$100M AUM launch phase",
+              "ERISA fiduciary obligations for IRA account holders",
+              "Corporate actions processing (splits, mergers, fund closures, distributions affecting cost basis)",
+              "Notification service (email, SMS, in-app) \u2014 referenced in 6+ steps but never implemented",
+              "Market data licensing procurement and cost modeling",
+              "Cross-account wash sale tracking design (or explicit disclosure of its absence)",
+              "Account-type gating for tax-loss harvesting (taxable vs. tax-advantaged)",
+              "Investor suitability re-assessment trigger (life events, large cash flows, annual review)",
+              "Client portal document delivery (statements, trade confirmations, tax documents) \u2014 this is a regulatory requirement under Rule 204-3",
+              "OFAC sanctions list update mechanism \u2014 Step 12 mentions screening but not how the list is kept current",
+              "Black-Litterman views governance process and ADV disclosure language for AI-influenced inputs",
+              "Business continuity plan for the RIA itself (not just IT) \u2014 regulatory examiners look for this separately from the DR runbook",
+              "Minimum investment amount design decision and its downstream implications for fractional share requirements"
+            ],
+            "security_risks": [
+              "No rate limiting specified on order execution endpoints (/portfolios/:id/construct, /rebalancing/approve, /tax/harvest). A compromised session or SSRF vulnerability could trigger unlimited trade generation.",
+              "Agent coordinator pattern with external market data inputs creates a prompt injection surface. If market data or news feeds are injected into agent context, adversarial data could influence portfolio construction or TLH decisions.",
+              "Brokerage API webhook signature verification not mentioned. If Alpaca/IB webhooks are accepted without HMAC verification, an attacker can inject fake fill confirmations, creating phantom positions.",
+              "No idle session timeout requirement specified for the investor portal. Financial applications are required by most state privacy laws and GLBA to enforce session timeouts. An unattended session exposes all HITL approval actions.",
+              "Plaid OAuth token storage: the plan stores 'tokenized account references' but does not specify token rotation policy or what happens when Plaid access tokens expire (typically 30 days for some products). Stale tokens cause silent ACH billing failures.",
+              "The audit log is described as 'append-only with tamper-evident hash chaining' but the threat model for the audit log itself is not scoped \u2014 specifically, who has DELETE or DDL access to the audit log database, and whether that access is monitored.",
+              "SBOM and CVE scanning blocks on CVSS >= 7.0 but PyPortfolioOpt, cvxpy, and scipy dependencies have complex transitive dependency trees in scientific Python. A vulnerable numpy version could pass CVE scans if the CVE is scored below 7.0 but still exploitable in the optimization context."
+            ],
+            "summary": "This is a technically detailed plan that covers the surface area of a robo-advisor competently, but it contains several regulatory errors that are company-ending, not just costly. The misapplication of SOX to a private company is the most visible signal that the compliance framework was assembled by pattern-matching against enterprise compliance checklists rather than fintech-specific regulatory analysis. More critically, the plan omits the SEC Custody Rule, misidentifies Rule 17a-4 (broker-dealer) as the books-and-records standard instead of Rule 204-2 (RIA), and misses the state vs. SEC RIA registration threshold entirely \u2014 three errors that SEC examiners would flag on day one. The wash sale cross-account gap will generate incorrect tax documents at scale, creating direct client harm and IRS liability. On the technical side, the absence of a built authentication service, position reconciliation job, notification service, and corporate actions handler means four critical operational systems are planned to exist but never constructed. The plan reads as a sophisticated waterfall spec written for a well-funded team, but its regulatory foundation needs a fintech attorney review before a single line of code is written. Score 52: the technical architecture is sound, but the regulatory layer has enough fundamental errors to require a full rework pass with qualified fintech legal and compliance counsel.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 52,
+              "flaws": [
+                "SOX (Sarbanes-Oxley) does not apply to private companies. Applying SOX ITGC controls throughout adds enormous compliance overhead with zero legal obligation. The correct framework is SOC 2 Type II. This error propagates through Steps 4, 5, 9, 21, and 25.",
+                "SEC vs. state RIA registration threshold is missing. The SEC only registers advisers managing $100M+ AUM. A startup robo-advisor almost certainly registers with individual state securities regulators first, not the SEC. Preparing Form ADV for SEC registration before hitting the AUM threshold is premature and potentially misfiled.",
+                "The Custody Rule (Rule 206(4)-2) is never mentioned. If the RIA deducts advisory fees directly from client accounts (which Step 16 plans), that constitutes custody, triggering annual surprise examinations by an independent public accountant. This is a hard regulatory requirement and a significant operational cost.",
+                "Wash sale rule enforcement is broken by design. The wash sale rule applies across ALL of a taxpayer's accounts \u2014 IRAs, 401ks, spouse accounts \u2014 not just accounts held at this platform. Step 15 only tracks within-platform positions. This will generate incorrect Form 8949 data and expose clients and the RIA to IRS penalties.",
+                "No authentication/authorization service is ever built. Steps 17-20 build frontends and Step 23 tests auth, but no step implements JWT issuance, OAuth 2.0, MFA, session management, or RBAC. Financial services regulators expect MFA. This is a missing vertical slice, not a gap in testing.",
+                "PCI DSS Level 1 is almost certainly wrong scope. PCI DSS Level 1 applies to merchants processing 6M+ card transactions/year. An RIA charging advisory fees via ACH (Step 16 uses Dwolla/Stripe for ACH) is likely not in card scope at all. Over-scoping PCI DSS Level 1 costs hundreds of thousands in QSA audits and remediation unnecessarily.",
+                "No notification service is ever built. Steps 14, 16, 24, and 28 all reference 'client notifications' for rebalancing alerts, fee billing failures, and outages, but no step builds email/SMS/push notification infrastructure.",
+                "Black-Litterman 'market views' have no defined source. The model requires subjective forward-looking views as inputs. Step 11 says they are 'configurable inputs' but never defines who generates them, how they are reviewed, or how they are disclosed in the ADV. If an AI agent generates these views, that is an undisclosed AI-driven investment decision.",
+                "Order lifecycle management is naive. Step 13 treats brokerage order execution as a single API call. Real execution involves order states (pending, partial fill, rejected, expired), T+2 settlement, and position reconciliation. No reconciliation job is ever built \u2014 the platform's internal holdings can silently diverge from actual brokerage positions.",
+                "Tax-loss harvesting is applied to tax-advantaged accounts. The plan handles both taxable and tax-advantaged accounts but Step 15 scans 'all positions with unrealized losses.' TLH has zero benefit and different wash sale implications inside IRAs/401ks. The engine needs account-type gating.",
+                "Steps 26 (Financial Model) and 27 (Market Research) are placed after all technical decisions. AUM projections, unit economics, and target customer segment should inform architecture scale, minimum viable AUM for profitability, and which features are P0. Doing this analysis at step 26-27 means all infrastructure and algorithm complexity decisions were made without knowing the business model.",
+                "ERISA fiduciary standard is absent. Any client using an IRA account triggers ERISA obligations, including the DOL Fiduciary Rule. The compliance framework in Step 5 only covers SEC RIA rules. ERISA adds a separate and stricter fiduciary standard with prohibited transaction rules.",
+                "Best execution obligation conflicts with Alpaca selection. Step 2 includes a best execution policy, but Step 13 hardcodes Alpaca without a comparative execution quality analysis. An RIA must be able to demonstrate to the SEC that it selected the execution venue in clients' best interest \u2014 hardcoding a single broker without documented evaluation fails this test.",
+                "Rule 17a-4 is cited for books-and-records but it applies to broker-dealers, not RIAs. The applicable rule is Rule 204-2 under the Investment Advisers Act. This is a direct regulatory citation error in Steps 3, 28, and 30.",
+                "No corporate actions handling. ETF splits, mergers, fund closures, and distributions affect cost basis, tax lots, and holdings. No step addresses corporate actions processing, which means cost basis data will silently corrupt over time.",
+                "Market data licensing is unaddressed. Real-time and historical market data from NYSE/NASDAQ for MPT optimization requires commercial licenses (e.g., from Refinitiv, Bloomberg, or exchange direct feeds). These cost $10K-$500K+/year and have redistribution restrictions. 'market_data_provider' is listed as an integration with no specification."
+              ],
+              "suggestions": [
+                "Add a Step 1.5 for state RIA registration research: determine which state(s) apply, identify the AUM threshold for SEC registration eligibility, and plan the registration sequence accordingly. Build a trigger to file the SEC switch when AUM crosses $100M.",
+                "Replace all SOX ITGC references with SOC 2 Type II controls. If any investors are publicly traded companies using this as a corporate treasury tool, note SOX may apply to them \u2014 but not to the robo-advisor platform itself.",
+                "Add a Custody Rule compliance step between Steps 2 and 5. Document whether fee billing from client accounts constitutes custody, engage a qualified custodian, and plan for the annual surprise examination requirement if custody applies.",
+                "Expand wash sale enforcement to accept external account positions via API or manual input. Document explicitly in the Form ADV that cross-account wash sale accuracy depends on client-provided information when outside accounts are held away.",
+                "Add an explicit authentication/authorization backend step (JWT service, OAuth 2.0 PKCE for public clients, MFA via TOTP/SMS, role definitions: investor, advisor, admin, auditor). This should precede Step 12.",
+                "Add a daily reconciliation job step: compare internal holdings/positions/cash against brokerage API positions, flag discrepancies, and route to operations queue. This is non-negotiable for any RIA.",
+                "Move Steps 26 and 27 to immediately after Step 1 (or run them in parallel with Step 1). Business viability, target AUM, and competitive positioning must inform infrastructure scale decisions before a dollar is spent on cloud architecture.",
+                "Add account-type gating to the TLH engine. Only run TLH scans on taxable accounts. Add explicit handling for wash sale interactions between taxable and IRA accounts held on-platform.",
+                "Define the Black-Litterman market views governance process: who inputs them, how often, what the review and sign-off process is, and how they are disclosed in the ADV. Or explicitly choose the 'market-implied returns only' variant to eliminate subjective views entirely.",
+                "Scope a notification service explicitly: transactional email (SES/SendGrid), SMS (Twilio), and in-app notifications for rebalancing proposals, fee billing, and account alerts. Wire it to rebalancing, fee billing, and operations runbooks.",
+                "Consult a fintech attorney on whether the tax-loss harvesting feature and Form 8949 generation constitutes tax advice requiring CPA oversight or creates state-specific licensing requirements.",
+                "Replace PCI DSS Level 1 with Level 4 SAQ-A or SAQ-D based on actual card processing volume, or scope PCI out entirely if payment processing is entirely ACH and no card data is stored or transmitted."
+              ],
+              "missing": [
+                "Authentication and authorization service (JWT, OAuth 2.0, MFA) \u2014 never built, only tested",
+                "Daily position reconciliation between internal records and brokerage \u2014 critical operational control",
+                "Custody Rule (Rule 206(4)-2) compliance analysis and annual surprise examination planning",
+                "State RIA registration path for sub-$100M AUM launch phase",
+                "ERISA fiduciary obligations for IRA account holders",
+                "Corporate actions processing (splits, mergers, fund closures, distributions affecting cost basis)",
+                "Notification service (email, SMS, in-app) \u2014 referenced in 6+ steps but never implemented",
+                "Market data licensing procurement and cost modeling",
+                "Cross-account wash sale tracking design (or explicit disclosure of its absence)",
+                "Account-type gating for tax-loss harvesting (taxable vs. tax-advantaged)",
+                "Investor suitability re-assessment trigger (life events, large cash flows, annual review)",
+                "Client portal document delivery (statements, trade confirmations, tax documents) \u2014 this is a regulatory requirement under Rule 204-3",
+                "OFAC sanctions list update mechanism \u2014 Step 12 mentions screening but not how the list is kept current",
+                "Black-Litterman views governance process and ADV disclosure language for AI-influenced inputs",
+                "Business continuity plan for the RIA itself (not just IT) \u2014 regulatory examiners look for this separately from the DR runbook",
+                "Minimum investment amount design decision and its downstream implications for fractional share requirements"
+              ],
+              "security_risks": [
+                "No rate limiting specified on order execution endpoints (/portfolios/:id/construct, /rebalancing/approve, /tax/harvest). A compromised session or SSRF vulnerability could trigger unlimited trade generation.",
+                "Agent coordinator pattern with external market data inputs creates a prompt injection surface. If market data or news feeds are injected into agent context, adversarial data could influence portfolio construction or TLH decisions.",
+                "Brokerage API webhook signature verification not mentioned. If Alpaca/IB webhooks are accepted without HMAC verification, an attacker can inject fake fill confirmations, creating phantom positions.",
+                "No idle session timeout requirement specified for the investor portal. Financial applications are required by most state privacy laws and GLBA to enforce session timeouts. An unattended session exposes all HITL approval actions.",
+                "Plaid OAuth token storage: the plan stores 'tokenized account references' but does not specify token rotation policy or what happens when Plaid access tokens expire (typically 30 days for some products). Stale tokens cause silent ACH billing failures.",
+                "The audit log is described as 'append-only with tamper-evident hash chaining' but the threat model for the audit log itself is not scoped \u2014 specifically, who has DELETE or DDL access to the audit log database, and whether that access is monitored.",
+                "SBOM and CVE scanning blocks on CVSS >= 7.0 but PyPortfolioOpt, cvxpy, and scipy dependencies have complex transitive dependency trees in scientific Python. A vulnerable numpy version could pass CVE scans if the CVE is scored below 7.0 but still exploitable in the optimization context."
+              ],
+              "summary": "This is a technically detailed plan that covers the surface area of a robo-advisor competently, but it contains several regulatory errors that are company-ending, not just costly. The misapplication of SOX to a private company is the most visible signal that the compliance framework was assembled by pattern-matching against enterprise compliance checklists rather than fintech-specific regulatory analysis. More critically, the plan omits the SEC Custody Rule, misidentifies Rule 17a-4 (broker-dealer) as the books-and-records standard instead of Rule 204-2 (RIA), and misses the state vs. SEC RIA registration threshold entirely \u2014 three errors that SEC examiners would flag on day one. The wash sale cross-account gap will generate incorrect tax documents at scale, creating direct client harm and IRS liability. On the technical side, the absence of a built authentication service, position reconciliation job, notification service, and corporate actions handler means four critical operational systems are planned to exist but never constructed. The plan reads as a sophisticated waterfall spec written for a well-funded team, but its regulatory foundation needs a fintech attorney review before a single line of code is written. Score 52: the technical architecture is sound, but the regulatory layer has enough fundamental errors to require a full rework pass with qualified fintech legal and compliance counsel.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-21T23:41:17.251573+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 160.75,
+      "critic_plan": 112.82
+    }
+  }
+}

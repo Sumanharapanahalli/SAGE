@@ -1,0 +1,1105 @@
+{
+  "run_id": "02d70b5a-c2da-4c77-81d3-a8128f4363b2",
+  "status": {
+    "run_id": "02d70b5a-c2da-4c77-81d3-a8128f4363b2",
+    "solution_name": "product_recommendation",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T06:00:56.387580+00:00",
+    "updated_at": "2026-03-22T06:05:30.991749+00:00",
+    "product_description": "AI product recommendation engine with collaborative filtering, content-based filtering, real-time personalization, A/B testing, and Shopify/WooCommerce plugins.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the product recommendation engine market: competitors (Nosto, Dynamic Yield, Barilliance), pricing models, Shopify/WooCommerce plugin ecosystems, and buyer personas.",
+        "payload": {
+          "competitors": [
+            "Nosto",
+            "Dynamic Yield",
+            "Barilliance",
+            "LimeSpot",
+            "Frequently Bought Together"
+          ],
+          "platforms": [
+            "Shopify",
+            "WooCommerce"
+          ],
+          "outputs": [
+            "competitor_matrix.md",
+            "market_sizing.md",
+            "positioning_brief.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitor matrix covers at least 5 tools with pricing, features, and weaknesses",
+          "Market sizing estimate with TAM/SAM/SOM figures",
+          "Positioning statement differentiating on real-time personalization and open plugin model"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements: user stories for merchants and shoppers, KPIs (CTR lift, AOV increase, conversion rate), integration requirements for Shopify and WooCommerce, and data ownership model.",
+        "payload": {
+          "stakeholders": [
+            "merchants",
+            "shoppers",
+            "platform admins"
+          ],
+          "kpis": [
+            "click-through rate lift",
+            "average order value",
+            "conversion rate",
+            "recommendation coverage"
+          ],
+          "outputs": [
+            "business_requirements.md",
+            "user_stories.md",
+            "acceptance_criteria_matrix.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "User stories written for merchant onboarding, recommendation widget display, A/B test creation, and analytics dashboard",
+          "KPI baseline targets defined for each story",
+          "Data ownership and GDPR/CCPA consent flows documented"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model: SaaS pricing tiers (starter/growth/enterprise), plugin marketplace revenue share, infrastructure cost per merchant tier, and 3-year P&L projection.",
+        "payload": {
+          "pricing_tiers": [
+            "starter",
+            "growth",
+            "enterprise"
+          ],
+          "revenue_streams": [
+            "SaaS subscription",
+            "Shopify app store",
+            "WooCommerce marketplace"
+          ],
+          "cost_drivers": [
+            "GPU inference",
+            "data storage",
+            "CDN",
+            "support"
+          ],
+          "outputs": [
+            "financial_model.xlsx",
+            "pricing_strategy.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Unit economics (CAC, LTV, payback period) calculated per tier",
+          "Infrastructure cost model validated against AWS/GCP pricing",
+          "Break-even month identified under conservative and optimistic scenarios"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 4,
+        "task_type": "UX_DESIGN",
+        "description": "Design merchant dashboard UX: onboarding wizard, recommendation widget configurator, A/B test manager, and analytics reporting screens. Include accessibility audit against WCAG 2.1 AA.",
+        "payload": {
+          "screens": [
+            "onboarding",
+            "widget_configurator",
+            "ab_test_manager",
+            "analytics_dashboard",
+            "plugin_settings"
+          ],
+          "design_tool": "Figma",
+          "accessibility_standard": "WCAG 2.1 AA",
+          "outputs": [
+            "wireframes.fig",
+            "component_library.fig",
+            "accessibility_audit.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all 5 primary screens with mobile and desktop breakpoints",
+          "Onboarding wizard completes in under 5 steps for a new merchant",
+          "Accessibility audit shows zero critical violations",
+          "Widget configurator allows preview of recommendation layout before publish"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 5,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (GDPR/CCPA), and Shopify/WooCommerce marketplace compliance review. Include IP ownership clause for trained models.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "dpa_gdpr.md",
+            "dpa_ccpa.md"
+          ],
+          "standards": [
+            "GDPR",
+            "CCPA",
+            "Shopify Partner Agreement",
+            "WooCommerce Marketplace TOS"
+          ],
+          "outputs": [
+            "legal_package/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy policy specifies data collected, retention periods, and deletion rights",
+          "DPA includes sub-processor list and data transfer mechanisms (SCCs)",
+          "IP clause clarifies merchant data ownership vs. aggregated model improvements",
+          "Shopify Partner Agreement requirements checklist fully satisfied",
+          "Return/refund policy drafted",
+          "Consumer protection compliance checked"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 6,
+        "task_type": "SECURITY",
+        "description": "Produce threat model (STRIDE), PCI DSS compliance gap analysis, SBOM for all ML dependencies, and penetration test plan. Define API authentication and data encryption standards.",
+        "payload": {
+          "methodology": "STRIDE",
+          "standards": [
+            "PCI DSS 4.0",
+            "OWASP Top 10"
+          ],
+          "scope": [
+            "recommendation API",
+            "merchant dashboard",
+            "Shopify/WooCommerce plugins",
+            "data pipeline"
+          ],
+          "outputs": [
+            "threat_model.md",
+            "pci_dss_gap_analysis.md",
+            "sbom.json",
+            "pentest_plan.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all data flows between shopper, plugin, API, and ML inference layer",
+          "PCI DSS gap analysis identifies all in-scope controls with remediation owners",
+          "SBOM generated for Python ML stack and Node.js plugin dependencies",
+          "Pen test plan covers OWASP Top 10 for web API and stored XSS in widget embed",
+          "Payment flow PCI compliant",
+          "Fraud detection rules defined"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 7,
+        "task_type": "COMPLIANCE",
+        "description": "Produce PCI DSS evidence artifacts: data flow diagram with cardholder data environment scoping, control evidence checklist (Req 1\u201312), and merchant-facing compliance attestation template.",
+        "payload": {
+          "standard": "PCI DSS 4.0",
+          "artifacts": [
+            "cde_scope_diagram.md",
+            "control_evidence_checklist.xlsx",
+            "merchant_attestation_template.md"
+          ],
+          "note": "Recommendation engine must not touch cardholder data; scoping must prove out-of-scope"
+        },
+        "acceptance_criteria": [
+          "CDE scope diagram confirms recommendation engine is out-of-scope for cardholder data",
+          "All 12 PCI DSS requirement areas have an evidence owner assigned",
+          "Merchant attestation template ready for SAQ-A or SAQ-D as applicable"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design data schema: product catalog, user events (views, clicks, purchases), recommendation logs, A/B test assignments, and merchant configuration. Define partitioning and retention strategy.",
+        "payload": {
+          "databases": {
+            "transactional": "PostgreSQL",
+            "event_store": "Apache Kafka + ClickHouse",
+            "vector_store": "Pinecone or pgvector",
+            "cache": "Redis"
+          },
+          "tables": [
+            "products",
+            "users",
+            "events",
+            "recommendations",
+            "ab_experiments",
+            "ab_assignments",
+            "merchants",
+            "api_keys"
+          ],
+          "outputs": [
+            "schema.sql",
+            "migrations/",
+            "erd.png"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD covers all 8 entity types with foreign key relationships",
+          "Events table partitioned by merchant_id and date",
+          "Vector store schema supports product embeddings with metadata filters",
+          "Retention policy defined: raw events 90 days, aggregated metrics 2 years"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 9,
+        "task_type": "DATA",
+        "description": "Build data ingestion pipeline: real-time event streaming (Kafka), batch product catalog sync, ETL to ClickHouse for analytics, and feature store population for ML training.",
+        "payload": {
+          "pipeline_stages": [
+            "event_ingest",
+            "catalog_sync",
+            "feature_extraction",
+            "feature_store_write",
+            "analytics_etl"
+          ],
+          "technologies": [
+            "Apache Kafka",
+            "Flink or Spark Streaming",
+            "ClickHouse",
+            "Feast feature store"
+          ],
+          "event_types": [
+            "product_view",
+            "add_to_cart",
+            "purchase",
+            "search",
+            "click"
+          ],
+          "outputs": [
+            "pipeline/",
+            "feature_definitions.yaml",
+            "data_quality_checks.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Event pipeline processes at least 10,000 events/sec under load test",
+          "Catalog sync supports incremental updates (delta) and full refresh modes",
+          "Feature store serves features with p99 latency < 20ms",
+          "Data quality checks flag null product IDs, duplicate events, and schema violations"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 10,
+        "task_type": "ML_MODEL",
+        "description": "Train and evaluate collaborative filtering model (ALS matrix factorization + neural CF) for user-item affinity scores. Include cold-start handling via popularity fallback.",
+        "payload": {
+          "algorithm": [
+            "ALS",
+            "Neural Collaborative Filtering"
+          ],
+          "framework": "PyTorch + implicit library",
+          "training_data": "user-item interaction matrix from feature store",
+          "cold_start_strategy": "popularity-based fallback + item metadata similarity",
+          "metrics": [
+            "NDCG@10",
+            "Hit Rate@10",
+            "Coverage",
+            "Diversity"
+          ],
+          "outputs": [
+            "models/collaborative_filtering/",
+            "training_pipeline.py",
+            "eval_report.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "NDCG@10 >= 0.35 on held-out test split",
+          "Hit Rate@10 >= 0.45",
+          "Cold-start users receive non-empty recommendations within 100ms",
+          "Training pipeline runs end-to-end with reproducible results via seed",
+          "Model versioned in MLflow with eval metrics logged",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 11,
+        "task_type": "ML_MODEL",
+        "description": "Build content-based filtering model: product embedding from text (title, description) and image features using CLIP. Compute cosine similarity index for 'similar products' recommendations.",
+        "payload": {
+          "text_model": "sentence-transformers/all-MiniLM-L6-v2",
+          "image_model": "CLIP ViT-B/32",
+          "similarity_index": "FAISS or pgvector HNSW",
+          "features": [
+            "product_title",
+            "description",
+            "category_path",
+            "tags",
+            "product_image"
+          ],
+          "outputs": [
+            "models/content_based/",
+            "embedding_pipeline.py",
+            "eval_report.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Embedding pipeline processes 100K products in under 30 minutes",
+          "Similar product retrieval p99 latency < 50ms for top-20 results",
+          "Human evaluation: >= 80% of top-5 results rated as relevant by sample merchants",
+          "FAISS index rebuilds nightly without downtime via blue/green swap",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 12,
+        "task_type": "ML_MODEL",
+        "description": "Build real-time personalization ranking layer: combine CF scores + CB scores + contextual signals (time of day, device, session behavior) using LightGBM re-ranker. Deploy as low-latency inference service.",
+        "payload": {
+          "model": "LightGBM ranker",
+          "features": [
+            "cf_score",
+            "cb_score",
+            "user_recency",
+            "device_type",
+            "session_depth",
+            "price_affinity"
+          ],
+          "serving": "BentoML or Triton Inference Server",
+          "target_latency_p99": "< 100ms",
+          "outputs": [
+            "models/ranker/",
+            "serving/",
+            "feature_serving.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Ranker improves NDCG@10 by >= 5% over CF-only baseline",
+          "Inference service p99 latency < 100ms at 1000 RPS",
+          "Feature pipeline for real-time context signals tested with synthetic session replay",
+          "Model canary deployment tested: traffic split 10/90 with automatic rollback on error spike",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          10,
+          11
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 13,
+        "task_type": "CONFIG",
+        "description": "Configure multi-agent coordinator pattern for the recommendation engine: coordinator decomposes request into CF retrieval, CB retrieval, and ranking subtasks, then merges results. Wire ReAct loops for dynamic fallback.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": [
+            "cf_retrieval_agent",
+            "cb_retrieval_agent",
+            "ranker_agent",
+            "fallback_agent"
+          ],
+          "coordinator": "recommendation_coordinator",
+          "fallback_strategy": "popularity_agent on empty results",
+          "config_file": "solutions/product_recommendation/project.yaml"
+        },
+        "acceptance_criteria": [
+          "Coordinator routes requests to CF + CB agents in parallel (wave execution)",
+          "Fallback agent activates automatically when CF returns < 3 results",
+          "ReAct loop retries ranking with relaxed filters on timeout",
+          "Agent routing config committed to project.yaml and validated by SAGE loader"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "planner"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Build the core recommendation API service: REST + GraphQL endpoints for recommendation retrieval, merchant configuration management, API key auth, rate limiting, and multi-tenant isolation.",
+        "payload": {
+          "framework": "FastAPI",
+          "endpoints": [
+            "GET /recommend/{merchant_id}?user_id&context",
+            "POST /events",
+            "GET /merchants/{id}/config",
+            "PUT /merchants/{id}/config",
+            "POST /ab-tests",
+            "GET /ab-tests/{id}/results",
+            "GET /analytics/summary"
+          ],
+          "auth": "API key (header X-API-Key) + HMAC webhook signing",
+          "rate_limiting": "Redis token bucket per merchant tier",
+          "outputs": [
+            "src/api/",
+            "src/services/",
+            "src/models/"
+          ]
+        },
+        "acceptance_criteria": [
+          "All endpoints return responses in < 200ms at p50 under 500 concurrent users",
+          "API key authentication rejects invalid keys with 401 and logs attempt",
+          "Rate limiter enforces per-tier limits (starter: 100 RPM, growth: 1000 RPM, enterprise: unlimited)",
+          "Multi-tenant isolation: merchant A cannot retrieve merchant B's recommendations or config",
+          "OpenAPI spec auto-generated and validated"
+        ],
+        "depends_on": [
+          8,
+          12,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement A/B testing framework: experiment creation, user assignment (hash-based, sticky), variant tracking, statistical significance calculation (frequentist t-test and Bayesian), and winner declaration.",
+        "payload": {
+          "assignment_strategy": "deterministic hash on user_id + experiment_id",
+          "stats_methods": [
+            "two-sample t-test",
+            "Bayesian beta-binomial"
+          ],
+          "metrics_tracked": [
+            "CTR",
+            "conversion_rate",
+            "revenue_per_user"
+          ],
+          "outputs": [
+            "src/ab_testing/",
+            "src/stats/significance.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "User assignment is deterministic: same user always gets same variant",
+          "Statistical significance computed with both frequentist (p-value < 0.05) and Bayesian (95% credible interval) methods",
+          "Experiment results API returns sample size, conversion rates, and confidence intervals",
+          "Multi-armed bandit mode available as alternative to fixed split"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Build Shopify plugin backend: OAuth 2.0 handshake, webhook receivers (products/create, orders/paid, customers/update), storefront theme script injection endpoint, and proxy API for cross-origin widget calls.",
+        "payload": {
+          "auth_flow": "Shopify OAuth 2.0 with HMAC verification",
+          "webhooks": [
+            "products/create",
+            "products/update",
+            "orders/paid",
+            "app/uninstalled"
+          ],
+          "proxy_endpoint": "/shopify/proxy",
+          "script_tag": "Shopify ScriptTag API for widget JS injection",
+          "outputs": [
+            "src/integrations/shopify/"
+          ]
+        },
+        "acceptance_criteria": [
+          "OAuth flow completes and stores encrypted merchant tokens in database",
+          "All webhook payloads verified via HMAC-SHA256 before processing",
+          "Product catalog syncs within 60 seconds of products/create webhook",
+          "ScriptTag registered automatically on app install with nonce-based CSP header"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "BACKEND",
+        "description": "Build WooCommerce plugin backend: REST API authentication (Application Passwords), webhook receivers for product and order events, shortcode/block API for widget rendering, and catalog import job.",
+        "payload": {
+          "auth": "WooCommerce Application Passwords + consumer key/secret",
+          "webhooks": [
+            "product.created",
+            "product.updated",
+            "order.completed"
+          ],
+          "widget_delivery": "REST endpoint returns widget HTML/JSON for shortcode rendering",
+          "outputs": [
+            "src/integrations/woocommerce/"
+          ]
+        },
+        "acceptance_criteria": [
+          "WooCommerce auth verified and tokens stored encrypted at rest (AES-256)",
+          "Webhook receiver processes order events and updates user purchase history within 30 seconds",
+          "Widget HTML endpoint returns semantic, accessible markup (ARIA labels present)",
+          "Catalog import job handles stores with up to 500K SKUs without timeout"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build the merchant dashboard React app: onboarding wizard, recommendation widget configurator with live preview, A/B test manager, analytics reporting, and plugin connection settings.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "state_management": "Zustand",
+          "charts": "Recharts",
+          "pages": [
+            "onboarding",
+            "dashboard",
+            "widget-config",
+            "ab-tests",
+            "analytics",
+            "settings"
+          ],
+          "outputs": [
+            "dashboard/src/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Onboarding wizard guides merchant through API key generation and plugin install in < 5 steps",
+          "Widget configurator renders live preview matching production widget output",
+          "A/B test manager displays real-time significance indicator updating every 5 minutes",
+          "Analytics page loads with < 2s LCP on a standard merchant dataset",
+          "All pages pass Lighthouse accessibility score >= 90"
+        ],
+        "depends_on": [
+          4,
+          14,
+          15
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build the embeddable recommendation widget: vanilla JS/Web Component for Shopify and WooCommerce storefronts. Supports carousel, grid, and inline placement modes. Lazy-loads to avoid blocking page render.",
+        "payload": {
+          "technology": "Vanilla JS Web Component (no framework dependency)",
+          "placement_modes": [
+            "carousel",
+            "grid",
+            "inline",
+            "popup"
+          ],
+          "bundle_size_target": "< 30KB gzipped",
+          "cdn": "CloudFront for widget JS delivery",
+          "outputs": [
+            "widget/src/",
+            "widget/dist/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Widget bundle size < 30KB gzipped",
+          "Widget renders first recommendation within 300ms of DOMContentLoaded",
+          "Lazy-load mode defers widget load until merchant scroll threshold",
+          "Carousel mode is keyboard-navigable and screen-reader announced",
+          "Widget works on Shopify Dawn theme and WooCommerce Storefront without CSS conflicts"
+        ],
+        "depends_on": [
+          4,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "INFRA",
+        "description": "Set up infrastructure: Kubernetes cluster (EKS), Helm charts for all services, CDN (CloudFront) for widget delivery, RDS PostgreSQL, MSK (Kafka), ElastiCache Redis, and Terraform IaC for all resources.",
+        "payload": {
+          "cloud": "AWS",
+          "orchestration": "Kubernetes (EKS)",
+          "iac": "Terraform",
+          "services": [
+            "api",
+            "ml-inference",
+            "data-pipeline",
+            "dashboard",
+            "widget-cdn"
+          ],
+          "networking": "VPC with private subnets for data tier, WAF in front of API",
+          "outputs": [
+            "infra/terraform/",
+            "infra/helm/",
+            "infra/k8s/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Terraform plan produces no drift against deployed state",
+          "All data-tier resources (RDS, Redis, Kafka) deployed in private subnets",
+          "WAF rules block OWASP Top 10 attack patterns at API Gateway",
+          "Helm charts support per-environment values (dev/staging/prod)",
+          "CloudFront distribution serves widget JS with cache-control max-age=86400"
+        ],
+        "depends_on": [
+          14,
+          18,
+          19
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "DEVOPS",
+        "description": "Build CI/CD pipelines: GitHub Actions for API, ML model training, dashboard, and widget builds. Include automated model evaluation gate, blue/green deployment for inference service, and Slack deploy notifications.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "pipelines": [
+            "api-ci",
+            "ml-training",
+            "ml-deploy",
+            "dashboard-ci",
+            "widget-ci",
+            "infra-plan"
+          ],
+          "deployment_strategy": "blue/green for ML inference, rolling for API",
+          "quality_gates": [
+            "unit tests pass",
+            "ML eval metrics above threshold",
+            "Lighthouse score >= 90"
+          ],
+          "outputs": [
+            ".github/workflows/"
+          ]
+        },
+        "acceptance_criteria": [
+          "All pipelines complete in < 15 minutes for standard commits",
+          "ML deploy pipeline gates on NDCG@10 >= 0.35 before promoting to production",
+          "Blue/green ML deploy achieves zero-downtime cutover with automatic rollback on error rate spike",
+          "Slack notification sent on every production deployment with diff summary and metrics link"
+        ],
+        "depends_on": [
+          20
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend services: recommendation API, A/B testing engine, Shopify/WooCommerce webhook handlers, and data pipeline transformations.",
+        "payload": {
+          "framework": "pytest",
+          "coverage_target": "85%",
+          "test_types": [
+            "unit",
+            "integration",
+            "contract"
+          ],
+          "mocking": "pytest-mock for external services; test containers for Postgres/Redis/Kafka",
+          "outputs": [
+            "tests/unit/",
+            "tests/integration/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Line coverage >= 85% across all backend modules",
+          "Shopify HMAC verification tested with valid and tampered signatures",
+          "A/B assignment tested for determinism: same user+experiment always returns same variant",
+          "Data pipeline tests validate schema enforcement and duplicate-event deduplication",
+          "Integration tests run against real Postgres/Redis/Kafka via test containers"
+        ],
+        "depends_on": [
+          14,
+          15,
+          16,
+          17
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "TESTS",
+        "description": "Write ML model evaluation tests: offline metrics regression suite, data drift detection tests, embedding similarity sanity checks, and inference latency benchmarks.",
+        "payload": {
+          "framework": "pytest + MLflow",
+          "tests": [
+            "ndcg_regression",
+            "hitrate_regression",
+            "data_drift_psi",
+            "embedding_sanity",
+            "latency_benchmark"
+          ],
+          "outputs": [
+            "tests/ml/"
+          ]
+        },
+        "acceptance_criteria": [
+          "NDCG@10 regression test fails build if score drops > 5% from baseline",
+          "PSI data drift test alerts when input feature distribution shifts > 0.2",
+          "Embedding similarity test verifies same-category products have cosine similarity > 0.7",
+          "Latency benchmark asserts p99 < 100ms at 1000 RPS under simulated load"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "QA",
+        "description": "Define QA test plan: test cases for all widget placement modes, A/B test lifecycle, merchant onboarding, plugin install/uninstall, and recommendation accuracy on synthetic merchant catalogs.",
+        "payload": {
+          "test_environments": [
+            "staging-shopify-dev-store",
+            "staging-woocommerce-sandbox"
+          ],
+          "test_cases": [
+            "widget_render",
+            "widget_keyboard_nav",
+            "ab_test_create_run_conclude",
+            "merchant_onboard",
+            "shopify_install_flow",
+            "woocommerce_install_flow",
+            "recommendation_relevance"
+          ],
+          "outputs": [
+            "qa/test_plan.md",
+            "qa/test_cases.xlsx"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test plan covers all 7 test case categories with pass/fail criteria",
+          "Widget keyboard navigation test cases aligned with WCAG 2.1 AA SC 2.1.1",
+          "A/B test lifecycle test covers: create \u2192 assign users \u2192 record conversions \u2192 conclude \u2192 export results",
+          "Shopify install flow tested on Shopify Partner sandbox with OAuth and webhook verification"
+        ],
+        "depends_on": [
+          18,
+          19,
+          22
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "SYSTEM_TEST",
+        "description": "End-to-end system tests: full purchase-to-recommendation cycle, multi-merchant isolation test, A/B test assignment consistency under load, and widget delivery via CDN with cache validation.",
+        "payload": {
+          "framework": "Playwright (widget E2E) + Locust (load testing)",
+          "scenarios": [
+            "purchase_to_reco_cycle",
+            "multi_tenant_isolation",
+            "ab_consistency_under_load",
+            "widget_cdn_cache_hit",
+            "cold_start_fallback"
+          ],
+          "load_target": "1000 concurrent merchants, 10K RPS",
+          "outputs": [
+            "tests/e2e/",
+            "tests/load/",
+            "load_test_report.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Purchase event reflected in recommendations within 60 seconds end-to-end",
+          "Merchant A's recommendations never contain Merchant B's products under concurrent load",
+          "A/B variant assignment consistent across 10,000 simulated users at 5000 RPS",
+          "Widget JS served from CDN with cache-hit ratio >= 95% in load test",
+          "Cold-start fallback activates and returns results within 200ms for new users"
+        ],
+        "depends_on": [
+          20,
+          22,
+          23,
+          24
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 26,
+        "task_type": "OPERATIONS",
+        "description": "Write operational runbooks: incident response for recommendation downtime, ML model rollback procedure, Kafka lag alerting, SLA definitions per merchant tier, and capacity planning model.",
+        "payload": {
+          "runbooks": [
+            "recommendation_api_downtime.md",
+            "ml_model_rollback.md",
+            "kafka_lag_alert.md",
+            "db_failover.md"
+          ],
+          "slas": {
+            "starter": "99.5% uptime",
+            "growth": "99.9% uptime",
+            "enterprise": "99.95% uptime"
+          },
+          "alerting": "PagerDuty integration with severity tiers",
+          "outputs": [
+            "ops/runbooks/",
+            "ops/sla.md",
+            "ops/capacity_model.xlsx"
+          ]
+        },
+        "acceptance_criteria": [
+          "Each runbook has RTO and RPO targets, step-by-step recovery procedure, and escalation path",
+          "ML model rollback runbook tested in staging: rollback completes in < 10 minutes",
+          "Kafka lag alert fires when consumer lag exceeds 10,000 messages for > 5 minutes",
+          "Capacity model projects infrastructure cost at 100, 500, and 1000 merchants"
+        ],
+        "depends_on": [
+          20,
+          21
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 27,
+        "task_type": "DOCS",
+        "description": "Write developer documentation: API reference (OpenAPI), plugin integration guides for Shopify and WooCommerce, A/B testing cookbook, and architecture decision records (ADRs) for key design choices.",
+        "payload": {
+          "docs_platform": "Docusaurus",
+          "sections": [
+            "quickstart",
+            "api_reference",
+            "shopify_guide",
+            "woocommerce_guide",
+            "ab_testing_cookbook",
+            "adrs"
+          ],
+          "outputs": [
+            "docs/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Shopify integration guide covers OAuth, webhook setup, and widget placement in < 15 minutes for a developer",
+          "API reference auto-generated from OpenAPI spec with working curl examples for every endpoint",
+          "ADRs written for: CF vs CB model choice, Kafka vs SQS, blue-green vs canary deployment",
+          "WooCommerce guide includes screenshots from sandbox store with annotated plugin settings"
+        ],
+        "depends_on": [
+          14,
+          16,
+          17,
+          25
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 28,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product roadmap: V1 feature set (launch), V1.1 (A/B test improvements + more widget types), V2 (LLM-powered contextual recommendations), success metrics dashboard, and feature prioritization framework.",
+        "payload": {
+          "roadmap_horizon": "12 months",
+          "v1_scope": [
+            "CF + CB recommendations",
+            "A/B testing",
+            "Shopify plugin",
+            "WooCommerce plugin",
+            "merchant dashboard"
+          ],
+          "v2_scope": [
+            "LLM contextual recommendations",
+            "voice search personalization",
+            "cross-device identity graph"
+          ],
+          "metrics": [
+            "monthly active merchants",
+            "recommendation CTR",
+            "revenue attributed"
+          ],
+          "outputs": [
+            "product/roadmap.md",
+            "product/prd_v1.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD defines launch criteria for V1 with measurable success thresholds",
+          "Roadmap items scored by ICE framework (Impact \u00d7 Confidence \u00f7 Effort)",
+          "Success metrics dashboard spec lists data sources and update frequency for each KPI",
+          "V2 LLM recommendation approach includes build-vs-buy analysis for Claude API integration"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "product_manager"
+      }
+    ],
+    "task_count": 28,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 63,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 63,
+          "final_review": {
+            "score": 63,
+            "flaws": [
+              "Cold-start for the SYSTEM (not just users): Collaborative filtering (step 10) requires historical user-item interaction data to train on. Day-1 deployment has zero data. There is no plan for synthetic data generation, data acquisition partnerships, or a pure content-based bootstrap phase before CF becomes viable. The system cannot deliver CF recommendations at launch.",
+              "Shopify ScriptTag API is deprecated: Step 16/19 use Shopify ScriptTag for widget JS injection. Shopify deprecated ScriptTag in favor of Theme App Extensions (TAE) for Online Store 2.0 themes. TAE requires a completely different delivery mechanism (app blocks, app embeds). This is not a minor refactor \u2014 it affects architecture, the app review process, and whether the app passes Shopify Partner review at all.",
+              "Real-time update conflict: Step 25 acceptance criteria requires 'purchase event reflected in recommendations within 60 seconds.' Step 11 rebuilds the FAISS index nightly via blue/green swap. These are irreconcilable: the content-based index is stale for up to 24 hours after a purchase, and the CF model is batch-trained. There is no incremental update path defined.",
+              "GPU/ML training infrastructure completely absent: Steps 10-12 describe training ALS, Neural CF, CLIP (ViT-B/32), and LightGBM, but there is no step or mention of GPU node pools, SageMaker, spot instance strategy, training job orchestration, or estimated training time/cost per run. CLIP alone requires significant GPU time for 100K+ products. This is a major budget and timeline unknown.",
+              "Multi-agent coordinator (step 13) couples this product to SAGE internals: The coordinator is wired to SAGE's project.yaml and SAGE loader. If this system is deployed as a standalone SaaS product, SAGE's agent routing framework is not a production inference serving layer \u2014 it was not designed for p99 < 100ms at 1000 RPS. This creates a false dependency between the recommendation engine and an unrelated agent management framework.",
+              "Rate limiting 'unlimited' for enterprise is a DoS vector: Step 14 states enterprise = unlimited RPM. In production this is exploitable. A misconfigured or compromised enterprise merchant can saturate inference capacity and cause degradation for all other tenants. No ceiling at all for enterprise is operationally untenable.",
+              "GDPR right to erasure has no technical implementation: Step 5 documents a privacy policy with deletion rights. Step 2 documents consent flows. But there is no technical task for cascading user deletion across PostgreSQL, Kafka (compacted topics require tombstone records), ClickHouse (mutation-based deletes are async and slow), FAISS/pgvector embeddings, Feast feature store, and trained model weights (memorization risk). Legal without the engineering is a liability, not a compliance posture.",
+              "Missing observability stack: 28 steps and no Prometheus, Grafana, OpenTelemetry, or centralized logging (Elasticsearch/CloudWatch Logs Insights). Step 26 wires PagerDuty alerting with no defined data source. You cannot alert on Kafka consumer lag or error rate spikes without first instrumenting the services. This is the foundational missing layer.",
+              "Webhook idempotency not addressed: Shopify and WooCommerce both retry webhook delivery on non-2xx responses (up to 19 attempts over 48 hours). The webhook handlers in steps 16 and 17 have no idempotency key design, no deduplication logic, and no dead-letter queue. Duplicate order events will corrupt purchase history and skew recommendation training data.",
+              "GraphQL is declared but never designed: Step 14 lists 'REST + GraphQL endpoints' in the description but the payload enumerates only REST paths. GraphQL schema, resolver architecture, and N+1 query protection are entirely absent. This is either scope inflation in the description or an unplanned workstream.",
+              "FAISS index memory footprint not modeled: CLIP ViT-B/32 produces 512-dim float32 embeddings. At 500K SKUs this is ~1GB for the flat vectors alone, plus HNSW graph overhead (typically 3-4x). Blue/green swap during peak traffic means doubling that in memory simultaneously. No instance sizing or memory budget is defined.",
+              "API versioning strategy absent: Step 14 defines endpoints with no version prefix (no /v1/ path). Shopify plugin merchants will embed these endpoint URLs. Breaking changes in the API post-launch with no versioning strategy will silently break installed plugins across the merchant base.",
+              "Consent management for widget tracking missing: The widget (step 19) tracks product_view, click, and session behavior. In EU markets, behavioral tracking via embedded JS requires explicit cookie consent under ePrivacy Directive. There is no mention of consent signal propagation from the merchant's CMP (Cookiebot, OneTrust, etc.) to the widget's event firing logic."
+            ],
+            "suggestions": [
+              "Add a step 0 or step 9.1: 'Data bootstrap strategy' \u2014 define synthetic interaction generation for cold-start training, catalog-similarity seeding, and a pure content-based serving mode for the first 30 days until CF has sufficient signal.",
+              "Replace ScriptTag with Shopify Theme App Extensions in steps 16 and 19. Design an app embed block and app block for Online Store 2.0. Keep ScriptTag only as a legacy fallback for older themes with explicit documentation of its EOL status.",
+              "Add a step between 9 and 10: 'Incremental index update design' \u2014 define an online update path for CF (e.g., EASE^R or incremental ALS) and an append-only embedding update for FAISS so the 60-second purchase-to-recommendation SLA is achievable without full nightly retraining.",
+              "Add a dedicated ML Infrastructure step: define GPU node pools (EKS GPU nodegroup with spot instances + on-demand fallback), Argo Workflows or SageMaker Pipelines for training orchestration, S3 model artifact storage, and training cost estimates per model per run.",
+              "Replace 'enterprise = unlimited' with a documented ceiling (e.g., 100K RPM) with auto-scaling budgets and a burst allowance model. Define what happens when the burst is exceeded \u2014 queue, throttle, or dedicated capacity.",
+              "Add a 'Data Subject Rights Implementation' step covering cascading deletion APIs, Kafka tombstone records for user events, ClickHouse async mutation tracking, FAISS segment deletion, and a 30-day deletion SLA tracking dashboard.",
+              "Add a step 20.5: 'Observability stack' \u2014 Prometheus + Grafana for infrastructure metrics, OpenTelemetry for distributed tracing across API \u2192 inference \u2192 data pipeline, and structured logging to CloudWatch Logs with a defined log retention policy.",
+              "Add idempotency keys to all webhook handlers (steps 16, 17): store processed webhook IDs in Redis with a 48-hour TTL. Add a dead-letter queue (SQS DLQ) for failed webhook processing with alerting on DLQ depth > 0.",
+              "Either fully design the GraphQL layer (schema, resolvers, DataLoader for N+1 prevention, persisted queries) or remove it from step 14 scope. Do not list it in acceptance criteria without implementation detail.",
+              "Add a consent propagation spec to step 19: define the window.__sage_consent API contract, event-firing gating logic, and the consent update listener so merchants' existing CMPs can control tracking without code changes.",
+              "Add a step for widget versioning: versioned CDN paths (/widget/v1.js, /widget/v2.js), a changelog-driven migration guide, and a deprecation notice mechanism for merchants still on old versions."
+            ],
+            "missing": [
+              "ML training infrastructure design (GPU instances, training orchestration, spot instance fallback, cost per training run)",
+              "Incremental/online model update path for sub-minute recommendation freshness after purchases",
+              "Observability stack (metrics collection, distributed tracing, centralized logging) \u2014 without this, the runbooks in step 26 have no data sources",
+              "Shopify Theme App Extensions design to replace deprecated ScriptTag",
+              "GDPR/CCPA technical deletion cascade implementation across all six data stores",
+              "Webhook idempotency design and dead-letter queue for Shopify and WooCommerce",
+              "Cookie/consent signal propagation to widget event tracking",
+              "API versioning strategy (/v1/ path prefix, deprecation policy)",
+              "Multi-region architecture for enterprise 99.95% SLA (single-region EKS cannot guarantee this)",
+              "Shadow DOM usage in web component (step 19) to prevent CSS bleed from merchant themes \u2014 mentioned as a goal but not specified as implementation approach",
+              "Recommendation explainability for GDPR Article 22 (automated decision-making transparency) in EU markets",
+              "Shopify App Review timeline risk in the product roadmap \u2014 typically 2-6 weeks, a launch blocker",
+              "Training data quality / data lineage tracking \u2014 no data versioning (DVC or similar) defined for reproducible model training",
+              "Model serving cost model \u2014 GPU inference for CLIP + NCF at SaaS scale is the dominant cost driver and it's underdefined in step 3"
+            ],
+            "security_risks": [
+              "Merchant token storage: Step 16 stores 'encrypted merchant tokens in database' but specifies no encryption standard, key management (AWS KMS vs application-level), or key rotation schedule. If the database is breached and keys are co-located, encryption provides no protection.",
+              "Widget XSS surface: An embeddable JS widget injected into third-party storefronts that renders merchant-controlled content (product titles, descriptions) is a stored XSS vector. The pen test plan (step 6) mentions this but there is no explicit HTML sanitization library or Content Security Policy nonce strategy defined for the widget itself.",
+              "SSRF via catalog sync: Step 17 imports product catalogs from WooCommerce REST APIs using merchant-supplied store URLs. Without URL validation and SSRF protection (block RFC-1918 ranges, require HTTPS, validate hostname), a malicious merchant can use the catalog sync as an SSRF probe against internal infrastructure.",
+              "Tenant isolation in vector store: Step 8 defines Pinecone or pgvector for embeddings. Multi-tenant vector stores require strict namespace/collection isolation. Pinecone's free/starter tiers share infrastructure \u2014 a query filter bypass could expose another merchant's product embeddings. The isolation mechanism is undefined.",
+              "A/B test hash collision: Step 15 uses deterministic hash on user_id + experiment_id. If user_ids are sequential integers or predictable, an attacker can enumerate variant assignments for competitor experiments. The hash function and salting strategy are unspecified.",
+              "HMAC key management for webhooks: Step 16 verifies Shopify webhooks via HMAC-SHA256. The Shopify webhook secret is a sensitive credential \u2014 its storage, rotation, and per-merchant-vs-global scope are undefined. A single shared secret across all merchants means one leak compromises all webhook verification.",
+              "Rate limit bypass via IP rotation: Step 14 rate-limits by merchant tier using Redis token bucket per merchant. If rate limiting is keyed only on API key and not on source IP, an attacker with a valid (stolen) API key can bypass the intended per-tier limits by distributing requests. API key + IP combination limiting is not defined."
+            ],
+            "summary": "This is a highly ambitious and structurally sound plan that covers an impressive breadth of concerns \u2014 legal, financial, security, ML, infrastructure, and product \u2014 in a single coherent dependency graph. The technology choices are credible and the ML evaluation criteria are specific and measurable. However, the plan has three categories of failure risk that prevent a score above 65: (1) foundational bootstrapping gaps \u2014 there is no training data on day 1, no incremental update path to meet the 60-second freshness SLA, and no GPU infrastructure plan, meaning the core ML value proposition cannot be delivered at launch; (2) a critical Shopify technical risk \u2014 the ScriptTag API is deprecated and switching to Theme App Extensions mid-development will add weeks of rework and delay App Store approval; and (3) missing cross-cutting concerns \u2014 no observability stack, no webhook idempotency, no API versioning, and no GDPR deletion cascade implementation, each of which will cause production incidents within 90 days of launch. The plan reads like a thorough document exercise that hasn't been stress-tested against actual launch constraints. Before execution, the team needs a data bootstrap strategy, a Shopify architecture revision, an observability step, and a right-to-erasure implementation plan. With those additions, this could reach 78-82.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 63,
+              "flaws": [
+                "Cold-start for the SYSTEM (not just users): Collaborative filtering (step 10) requires historical user-item interaction data to train on. Day-1 deployment has zero data. There is no plan for synthetic data generation, data acquisition partnerships, or a pure content-based bootstrap phase before CF becomes viable. The system cannot deliver CF recommendations at launch.",
+                "Shopify ScriptTag API is deprecated: Step 16/19 use Shopify ScriptTag for widget JS injection. Shopify deprecated ScriptTag in favor of Theme App Extensions (TAE) for Online Store 2.0 themes. TAE requires a completely different delivery mechanism (app blocks, app embeds). This is not a minor refactor \u2014 it affects architecture, the app review process, and whether the app passes Shopify Partner review at all.",
+                "Real-time update conflict: Step 25 acceptance criteria requires 'purchase event reflected in recommendations within 60 seconds.' Step 11 rebuilds the FAISS index nightly via blue/green swap. These are irreconcilable: the content-based index is stale for up to 24 hours after a purchase, and the CF model is batch-trained. There is no incremental update path defined.",
+                "GPU/ML training infrastructure completely absent: Steps 10-12 describe training ALS, Neural CF, CLIP (ViT-B/32), and LightGBM, but there is no step or mention of GPU node pools, SageMaker, spot instance strategy, training job orchestration, or estimated training time/cost per run. CLIP alone requires significant GPU time for 100K+ products. This is a major budget and timeline unknown.",
+                "Multi-agent coordinator (step 13) couples this product to SAGE internals: The coordinator is wired to SAGE's project.yaml and SAGE loader. If this system is deployed as a standalone SaaS product, SAGE's agent routing framework is not a production inference serving layer \u2014 it was not designed for p99 < 100ms at 1000 RPS. This creates a false dependency between the recommendation engine and an unrelated agent management framework.",
+                "Rate limiting 'unlimited' for enterprise is a DoS vector: Step 14 states enterprise = unlimited RPM. In production this is exploitable. A misconfigured or compromised enterprise merchant can saturate inference capacity and cause degradation for all other tenants. No ceiling at all for enterprise is operationally untenable.",
+                "GDPR right to erasure has no technical implementation: Step 5 documents a privacy policy with deletion rights. Step 2 documents consent flows. But there is no technical task for cascading user deletion across PostgreSQL, Kafka (compacted topics require tombstone records), ClickHouse (mutation-based deletes are async and slow), FAISS/pgvector embeddings, Feast feature store, and trained model weights (memorization risk). Legal without the engineering is a liability, not a compliance posture.",
+                "Missing observability stack: 28 steps and no Prometheus, Grafana, OpenTelemetry, or centralized logging (Elasticsearch/CloudWatch Logs Insights). Step 26 wires PagerDuty alerting with no defined data source. You cannot alert on Kafka consumer lag or error rate spikes without first instrumenting the services. This is the foundational missing layer.",
+                "Webhook idempotency not addressed: Shopify and WooCommerce both retry webhook delivery on non-2xx responses (up to 19 attempts over 48 hours). The webhook handlers in steps 16 and 17 have no idempotency key design, no deduplication logic, and no dead-letter queue. Duplicate order events will corrupt purchase history and skew recommendation training data.",
+                "GraphQL is declared but never designed: Step 14 lists 'REST + GraphQL endpoints' in the description but the payload enumerates only REST paths. GraphQL schema, resolver architecture, and N+1 query protection are entirely absent. This is either scope inflation in the description or an unplanned workstream.",
+                "FAISS index memory footprint not modeled: CLIP ViT-B/32 produces 512-dim float32 embeddings. At 500K SKUs this is ~1GB for the flat vectors alone, plus HNSW graph overhead (typically 3-4x). Blue/green swap during peak traffic means doubling that in memory simultaneously. No instance sizing or memory budget is defined.",
+                "API versioning strategy absent: Step 14 defines endpoints with no version prefix (no /v1/ path). Shopify plugin merchants will embed these endpoint URLs. Breaking changes in the API post-launch with no versioning strategy will silently break installed plugins across the merchant base.",
+                "Consent management for widget tracking missing: The widget (step 19) tracks product_view, click, and session behavior. In EU markets, behavioral tracking via embedded JS requires explicit cookie consent under ePrivacy Directive. There is no mention of consent signal propagation from the merchant's CMP (Cookiebot, OneTrust, etc.) to the widget's event firing logic."
+              ],
+              "suggestions": [
+                "Add a step 0 or step 9.1: 'Data bootstrap strategy' \u2014 define synthetic interaction generation for cold-start training, catalog-similarity seeding, and a pure content-based serving mode for the first 30 days until CF has sufficient signal.",
+                "Replace ScriptTag with Shopify Theme App Extensions in steps 16 and 19. Design an app embed block and app block for Online Store 2.0. Keep ScriptTag only as a legacy fallback for older themes with explicit documentation of its EOL status.",
+                "Add a step between 9 and 10: 'Incremental index update design' \u2014 define an online update path for CF (e.g., EASE^R or incremental ALS) and an append-only embedding update for FAISS so the 60-second purchase-to-recommendation SLA is achievable without full nightly retraining.",
+                "Add a dedicated ML Infrastructure step: define GPU node pools (EKS GPU nodegroup with spot instances + on-demand fallback), Argo Workflows or SageMaker Pipelines for training orchestration, S3 model artifact storage, and training cost estimates per model per run.",
+                "Replace 'enterprise = unlimited' with a documented ceiling (e.g., 100K RPM) with auto-scaling budgets and a burst allowance model. Define what happens when the burst is exceeded \u2014 queue, throttle, or dedicated capacity.",
+                "Add a 'Data Subject Rights Implementation' step covering cascading deletion APIs, Kafka tombstone records for user events, ClickHouse async mutation tracking, FAISS segment deletion, and a 30-day deletion SLA tracking dashboard.",
+                "Add a step 20.5: 'Observability stack' \u2014 Prometheus + Grafana for infrastructure metrics, OpenTelemetry for distributed tracing across API \u2192 inference \u2192 data pipeline, and structured logging to CloudWatch Logs with a defined log retention policy.",
+                "Add idempotency keys to all webhook handlers (steps 16, 17): store processed webhook IDs in Redis with a 48-hour TTL. Add a dead-letter queue (SQS DLQ) for failed webhook processing with alerting on DLQ depth > 0.",
+                "Either fully design the GraphQL layer (schema, resolvers, DataLoader for N+1 prevention, persisted queries) or remove it from step 14 scope. Do not list it in acceptance criteria without implementation detail.",
+                "Add a consent propagation spec to step 19: define the window.__sage_consent API contract, event-firing gating logic, and the consent update listener so merchants' existing CMPs can control tracking without code changes.",
+                "Add a step for widget versioning: versioned CDN paths (/widget/v1.js, /widget/v2.js), a changelog-driven migration guide, and a deprecation notice mechanism for merchants still on old versions."
+              ],
+              "missing": [
+                "ML training infrastructure design (GPU instances, training orchestration, spot instance fallback, cost per training run)",
+                "Incremental/online model update path for sub-minute recommendation freshness after purchases",
+                "Observability stack (metrics collection, distributed tracing, centralized logging) \u2014 without this, the runbooks in step 26 have no data sources",
+                "Shopify Theme App Extensions design to replace deprecated ScriptTag",
+                "GDPR/CCPA technical deletion cascade implementation across all six data stores",
+                "Webhook idempotency design and dead-letter queue for Shopify and WooCommerce",
+                "Cookie/consent signal propagation to widget event tracking",
+                "API versioning strategy (/v1/ path prefix, deprecation policy)",
+                "Multi-region architecture for enterprise 99.95% SLA (single-region EKS cannot guarantee this)",
+                "Shadow DOM usage in web component (step 19) to prevent CSS bleed from merchant themes \u2014 mentioned as a goal but not specified as implementation approach",
+                "Recommendation explainability for GDPR Article 22 (automated decision-making transparency) in EU markets",
+                "Shopify App Review timeline risk in the product roadmap \u2014 typically 2-6 weeks, a launch blocker",
+                "Training data quality / data lineage tracking \u2014 no data versioning (DVC or similar) defined for reproducible model training",
+                "Model serving cost model \u2014 GPU inference for CLIP + NCF at SaaS scale is the dominant cost driver and it's underdefined in step 3"
+              ],
+              "security_risks": [
+                "Merchant token storage: Step 16 stores 'encrypted merchant tokens in database' but specifies no encryption standard, key management (AWS KMS vs application-level), or key rotation schedule. If the database is breached and keys are co-located, encryption provides no protection.",
+                "Widget XSS surface: An embeddable JS widget injected into third-party storefronts that renders merchant-controlled content (product titles, descriptions) is a stored XSS vector. The pen test plan (step 6) mentions this but there is no explicit HTML sanitization library or Content Security Policy nonce strategy defined for the widget itself.",
+                "SSRF via catalog sync: Step 17 imports product catalogs from WooCommerce REST APIs using merchant-supplied store URLs. Without URL validation and SSRF protection (block RFC-1918 ranges, require HTTPS, validate hostname), a malicious merchant can use the catalog sync as an SSRF probe against internal infrastructure.",
+                "Tenant isolation in vector store: Step 8 defines Pinecone or pgvector for embeddings. Multi-tenant vector stores require strict namespace/collection isolation. Pinecone's free/starter tiers share infrastructure \u2014 a query filter bypass could expose another merchant's product embeddings. The isolation mechanism is undefined.",
+                "A/B test hash collision: Step 15 uses deterministic hash on user_id + experiment_id. If user_ids are sequential integers or predictable, an attacker can enumerate variant assignments for competitor experiments. The hash function and salting strategy are unspecified.",
+                "HMAC key management for webhooks: Step 16 verifies Shopify webhooks via HMAC-SHA256. The Shopify webhook secret is a sensitive credential \u2014 its storage, rotation, and per-merchant-vs-global scope are undefined. A single shared secret across all merchants means one leak compromises all webhook verification.",
+                "Rate limit bypass via IP rotation: Step 14 rate-limits by merchant tier using Redis token bucket per merchant. If rate limiting is keyed only on API key and not on source IP, an attacker with a valid (stolen) API key can bypass the intended per-tier limits by distributing requests. API key + IP combination limiting is not defined."
+              ],
+              "summary": "This is a highly ambitious and structurally sound plan that covers an impressive breadth of concerns \u2014 legal, financial, security, ML, infrastructure, and product \u2014 in a single coherent dependency graph. The technology choices are credible and the ML evaluation criteria are specific and measurable. However, the plan has three categories of failure risk that prevent a score above 65: (1) foundational bootstrapping gaps \u2014 there is no training data on day 1, no incremental update path to meet the 60-second freshness SLA, and no GPU infrastructure plan, meaning the core ML value proposition cannot be delivered at launch; (2) a critical Shopify technical risk \u2014 the ScriptTag API is deprecated and switching to Theme App Extensions mid-development will add weeks of rework and delay App Store approval; and (3) missing cross-cutting concerns \u2014 no observability stack, no webhook idempotency, no API versioning, and no GDPR deletion cascade implementation, each of which will cause production incidents within 90 days of launch. The plan reads like a thorough document exercise that hasn't been stress-tested against actual launch constraints. Before execution, the team needs a data bootstrap strategy, a Shopify architecture revision, an observability step, and a right-to-erasure implementation plan. With those additions, this could reach 78-82.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T06:05:30.991725+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 147.8,
+      "critic_plan": 126.8
+    }
+  }
+}

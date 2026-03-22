@@ -1,0 +1,280 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user stories, and process flows for
+      cross-border payment platform including multi-currency wallet operations, FX
+      conversion, SWIFT/SEPA rails, sanctions screening, and remittance lifecycle
+      tracking.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - BRD covers all payment corridors and currency pairs in scope
+    - User stories defined for sender, receiver, compliance officer, and ops roles
+    - SWIFT MT103 and SEPA Credit Transfer process flows documented
+    - Remittance lifecycle state machine (initiated → screened → routed → settled
+      → confirmed) documented
+    depends_on: []
+  REGULATORY:
+    description: Map PSD2 (Strong Customer Authentication, open banking APIs, liability
+      framework), FATF Recommendation 16 (Travel Rule for transfers ≥ €1000), and
+      applicable AML/KYC obligations. Produce standards-to-requirements traceability
+      matrix.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - Every PSD2 Article requirement mapped to a system control or process
+    - FATF Travel Rule originator/beneficiary data fields identified and mapped to
+      data model
+    - Gap analysis complete with risk-ranked remediation items
+    - Traceability matrix links regulation → requirement → control → test case
+    depends_on:
+    - 1
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR-aligned), data retention
+      policy, and payment service provider licensing framework. Define liability caps
+      and dispute resolution procedures for failed or delayed transfers.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy Policy covers all personal data categories processed (name, IBAN, transaction
+      history)
+    - Data retention periods aligned with AML requirements (5 years minimum)
+    - ToS includes PSD2 consumer rights (refund windows, liability rules)
+    - Dispute resolution SLAs defined (T+1 acknowledgement, T+15 resolution)
+    depends_on:
+    - 2
+  SECURITY:
+    description: 'Produce threat model (STRIDE), penetration test plan, cryptographic
+      controls specification, and Software Bill of Materials (SBOM). Address payment-specific
+      threats: replay attacks, IBAN swapping, sanctions bypass, and credential stuffing.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model covers all data flows in architecture diagram
+    - All HIGH/CRITICAL threats have mitigation controls assigned
+    - Cryptographic spec mandates TLS 1.3, AES-256 at rest, RSA-4096 for key exchange
+    - SBOM generated covering all third-party libraries and their CVE status
+    - Pentest plan covers OWASP API Security Top 10
+    - PCI DSS SAQ completed
+    - Encryption at rest and in transit
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: 'Build PCI DSS v4.0 compliance framework: cardholder data environment
+      scoping, control mapping, evidence collection plan, and SAQ/RoC preparation
+      checklist. Map SOC 2 Type II trust service criteria (Security, Availability,
+      Confidentiality, Processing Integrity). Produce risk matrix.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - CDE scoped and network segmentation controls documented
+    - All 12 PCI DSS requirements mapped to system controls with evidence owners
+    - SOC 2 control matrix covers all 5 trust service categories
+    - Risk matrix rates likelihood × impact for top 20 risks with residual risk after
+      mitigations
+    - V&V protocol defines IQ/OQ/PQ stages for payment processing subsystems
+    depends_on:
+    - 2
+    - 4
+  UX_DESIGN:
+    description: Design user flows, wireframes, and accessibility audit for sender
+      dashboard (wallet overview, send money, FX rate display, transfer history),
+      compliance officer portal (sanctions queue, AML alerts, KYC review), and operations
+      dashboard (transfer monitoring, failure triage).
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all critical flows end-to-end for each persona
+    - FX rate quote screen shows mid-rate, spread, total cost, and estimated arrival
+      time
+    - Accessibility audit passes WCAG 2.1 AA for all primary flows
+    - Compliance officer portal has one-click approve/reject for sanctions queue items
+    depends_on:
+    - 1
+  API:
+    description: 'Design OpenAPI 3.1 specifications for all platform APIs: wallet
+      management, FX quote/execute, payment initiation, sanctions screening, remittance
+      status, and PSD2 AIS/PIS open banking endpoints. Define error codes, idempotency
+      keys, and pagination contracts.'
+    agent_role: developer
+    acceptance_criteria:
+    - OpenAPI spec validates with no errors against 3.1 schema
+    - All payment initiation endpoints require idempotency key
+    - PSD2 PIS and AIS endpoints conform to Berlin Group NextGenPSD2 1.3.12 spec
+    - 'Error response schema is consistent: {code, message, trace_id, details}'
+    - Webhook event catalog documented with payload examples for all event types
+    depends_on:
+    - 2
+    - 6
+  DATABASE:
+    description: Design PostgreSQL schema for multi-currency wallets, ledger entries
+      (double-entry bookkeeping), FX rates cache, SWIFT/SEPA transaction records,
+      sanctions screening results, KYC profiles, and audit trail. Define migrations,
+      indexes, and partitioning strategy for high-volume transaction tables.
+    agent_role: developer
+    acceptance_criteria:
+    - Double-entry ledger enforces that debit sum equals credit sum via DB constraint
+    - All monetary amounts stored as NUMERIC(38,18) with explicit currency_code column
+    - ledger_entries table partitioned by month with partition pruning verified
+    - Migrations are idempotent and reversible (up/down)
+    - All foreign keys indexed; query plan confirms index usage on payment lookup
+      by trace_id
+    - sanctions_screenings table stores full screening payload for audit trail
+    - Transaction isolation level documented
+    - Audit trail on all writes
+    depends_on:
+    - 7
+  CONFIG:
+    description: 'Set up project scaffold: FastAPI backend, React + TypeScript frontend,
+      Docker Compose (postgres, redis, localstack for AWS simulation), pre-commit
+      hooks (ruff, mypy, bandit), environment variable schema, and secrets management
+      via HashiCorp Vault integration. Configure agentic pattern: coordinator with
+      specialist agents for FX, compliance, and routing.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`docker compose up` starts all services with health checks passing'
+    - All environment variables documented in .env.example with descriptions
+    - Pre-commit hooks run and pass on clean repo
+    - 'Vault integration tested: secrets injected at runtime, not in env files'
+    - Coordinator agent pattern scaffolded with task router and specialist agent interfaces
+    depends_on:
+    - 7
+    - 8
+  BACKEND:
+    description: 'Implement multi-currency wallet service: wallet creation, balance
+      inquiry, funding (top-up), and internal transfer between wallets. Enforce double-entry
+      ledger writes within database transactions. Implement idempotency layer using
+      Redis for deduplication of concurrent requests.'
+    agent_role: developer
+    acceptance_criteria:
+    - Concurrent fund + transfer requests with same idempotency key return identical
+      response
+    - 'Double-entry constraint: every debit has matching credit in same DB transaction'
+    - Wallet balance never goes negative (enforced at DB and application layer)
+    - Funding and transfer endpoints return within 200ms at p99 under 100 RPS load
+      test
+    - All mutations emit audit_log entry with actor_id, trace_id, and timestamp
+    depends_on:
+    - 8
+    - 9
+  AGENTIC:
+    description: 'Implement coordinator-pattern agentic AI layer: FxAgent (monitors
+      rate movements, suggests hedge alerts), SanctionsAgent (autonomous list refresh,
+      pattern detection on frequent hitters), RoutingAgent (Q-learning adaptive routing
+      to cheapest/fastest corridor), and ComplianceAgent (AML transaction monitoring,
+      STR draft generation). All proposals routed through HITL approval queue.'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator routes tasks to correct specialist agent based on task type
+    - All agent proposals stored in approval queue — zero autonomous side effects
+    - RoutingAgent selects lowest-cost corridor within latency SLA for test payment
+      matrix
+    - ComplianceAgent STR drafts include all FATF-required fields
+    - Agent reasoning traces logged to audit_log with trace_id for examiner review
+    depends_on:
+    - 15
+    - 16
+  FRONTEND:
+    description: 'Build sender dashboard: wallet balance cards per currency, send
+      money wizard (recipient, amount, FX quote with rate lock countdown, review,
+      SCA step), transfer history with status timeline, and notification center for
+      payment events.'
+    agent_role: developer
+    acceptance_criteria:
+    - Send money wizard completes in ≤5 steps with progress indicator
+    - FX rate lock countdown displayed and quote auto-expired on timer end
+    - SCA challenge renders TOTP input and push notification status
+    - Transfer history paginated (cursor-based), loads in < 1s
+    - Payment status updates in real-time via WebSocket without page refresh
+    - All screens pass WCAG 2.1 AA automated audit
+    depends_on:
+    - 16
+    - 7
+  TESTS:
+    description: 'Write unit tests for all backend services: wallet ledger (balance
+      invariants, concurrency), FX engine (rate expiry, spread calculation), sanctions
+      screening (fuzzy match accuracy, hit/no-hit classification), SWIFT MT103 generation,
+      SEPA XML generation, state machine transitions, and FATF Travel Rule assembly.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit test coverage ≥ 90% for all service modules
+    - Ledger tests assert debit == credit for every transaction permutation
+    - Concurrency test spawns 50 simultaneous transfers and verifies no balance inconsistency
+    - Sanctions fuzzy match test covers 500 name pairs with known ground truth labels
+    - MT103 generation test validates output against SWIFT schema for 20 payment scenarios
+    - All tests run in < 60s in CI (no external I/O in unit tests)
+    depends_on:
+    - 15
+    - 16
+  SYSTEM_TEST:
+    description: 'Execute system-level performance and resilience tests: 1000 TPS
+      payment throughput benchmark, FX rate engine under load, sanctions screening
+      latency (p99 < 500ms), chaos testing (DB failover, Redis outage, SWIFT connectivity
+      loss), and PSD2 SCA flow under concurrent users.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Platform sustains 1000 TPS with p99 latency < 2s and 0% error rate
+    - Sanctions screening p99 < 500ms at 500 concurrent screens
+    - 'PostgreSQL failover: payments queue (not drop) during 30s outage and resume'
+    - 'Redis outage: idempotency degrades gracefully (no duplicate payments)'
+    - 'SWIFT connectivity loss: payments queued and auto-retried when connectivity
+      restored'
+    - k6 HTML report generated and stored as CI artifact
+    depends_on:
+    - 22
+  DEVOPS:
+    description: 'Build CI/CD pipeline (GitHub Actions): lint + type-check, unit tests,
+      integration tests, Docker image build, SBOM generation, container image vulnerability
+      scan (Trivy), staging deploy, smoke test, and production deploy with manual
+      approval gate. Configure Prometheus + Grafana observability stack with payment-specific
+      dashboards and PagerDuty alerting.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs in < 15 minutes end-to-end
+    - CRITICAL CVEs in container images block deployment
+    - SBOM published to release artifacts on every prod deploy
+    - Grafana dashboard shows payment volume, FX rate health, sanctions queue depth,
+      and error rates
+    - PagerDuty alert fires within 2 minutes of payment failure rate exceeding 1%
+    - Production deploy requires explicit manual approval in GitHub Actions
+    depends_on:
+    - 22
+  INFRA:
+    description: 'Define Terraform infrastructure for AWS: VPC with private subnets,
+      RDS PostgreSQL Multi-AZ, ElastiCache Redis cluster, ECS Fargate services, ALB,
+      WAF rules (OWASP managed rules + rate limiting), ACM certificates, KMS keys
+      for encryption at rest, CloudTrail, and S3 with versioning for compliance artifacts.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - '`terraform plan` produces 0 errors for both staging and production workspaces'
+    - RDS configured with Multi-AZ, automated backups, and encryption at rest via
+      KMS CMK
+    - WAF rules block OWASP Top 10 attack patterns (verified with OWASP test suite)
+    - CloudTrail enabled in all regions with log integrity validation
+    - S3 compliance bucket rejects deletes without MFA
+    - All resources tagged with environment, cost_center, and data_classification
+    depends_on:
+    - 24
+  OPERATIONS:
+    description: 'Write operational runbooks: payment failure triage (SWIFT NACK codes,
+      SEPA reject reasons), FX rate feed outage recovery, sanctions list emergency
+      update procedure, database failover playbook, and on-call rotation definition.
+      Define SLAs and SLOs.'
+    agent_role: operations_manager
+    acceptance_criteria:
+    - Each runbook has estimated resolution time and escalation path
+    - SWIFT NACK code reference table covers all codes in MT199 error catalogue
+    - DB failover runbook tested in staging with RTO < 5 minutes verified
+    - SLO error budget dashboard configured in Grafana
+    - 'On-call rotation defined with clear escalation: L1 ops → L2 engineering → L3
+      compliance'
+    depends_on:
+    - 25
+  DOCS:
+    description: 'Produce developer documentation: API reference (auto-generated from
+      OpenAPI spec), integration guide (SWIFT setup, SEPA onboarding, sanctions provider
+      config), architecture decision records (ADRs) for key choices (double-entry
+      ledger, event sourcing, coordinator agent pattern), and operator manual.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - API reference auto-generated from OpenAPI spec with zero broken links
+    - Integration guide covers end-to-end SEPA test payment from zero to submitted
+    - All 5 ADRs document context, decision, consequences, and alternatives considered
+    - Operator manual includes startup, shutdown, backup restore, and log access procedures
+    - Docs site deployable via `mkdocs build` with no warnings
+    depends_on:
+    - 26
+    - 27

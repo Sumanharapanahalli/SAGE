@@ -1,0 +1,63 @@
+project_name: insulin_pump_controller
+display_name: Insulin Pump Controller
+version: 1.0.0
+domain: medtech
+description: Closed-loop insulin pump controller with continuous glucose monitoring
+  integration, predictive dosing algorithm, and mobile app for patient monitoring.
+  FDA Class III, ISO 13485, IEC 62304.
+detected_domains: []
+compliance_standards:
+- FDA Class III
+- ISO 13485
+- IEC 62304
+- ISO 14971
+task_types:
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- DATA
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- HARDWARE_SIM
+- INFRA
+- LEGAL
+- MARKET_RESEARCH
+- ML_MODEL
+- OPERATIONS
+- PCB_DESIGN
+- PRODUCT_MGMT
+- QA
+- REGULATORY
+- SAFETY
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- analyst
+- developer
+- planner
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: strict
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

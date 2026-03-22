@@ -1,0 +1,69 @@
+project_name: email_marketing
+display_name: Email Marketing
+version: 1.0.0
+domain: saas
+description: Email marketing platform with drag-and-drop template builder, audience
+  segmentation, A/B testing, automation workflows, deliverability monitoring, and
+  GDPR consent management.
+detected_domains: []
+compliance_standards:
+- GDPR
+- CAN-SPAM
+- CCPA
+- SOC 2
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- BUSINESS_ANALYSIS
+- COMPLIANCE
+- CONFIG
+- DATABASE
+- DEVOPS
+- DOCS
+- FINANCIAL
+- FRONTEND
+- LEGAL
+- MARKET_RESEARCH
+- OPERATIONS
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- business_analyst
+- developer
+- devops_engineer
+- financial_analyst
+- legal_advisor
+- marketing_strategist
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

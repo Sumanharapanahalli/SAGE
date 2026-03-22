@@ -1,0 +1,867 @@
+{
+  "run_id": "e6f37488-f28e-42b0-af2f-b91ea2d38d53",
+  "solution_name": "subscription_box",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T05:48:28.534210+00:00",
+  "updated_at": "2026-03-22T05:51:59.298126+00:00",
+  "product_description": "Subscription box ecommerce with product curation, recurring billing, skip/pause/cancel flow, referral program, and inventory management.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze subscription box market landscape, competitor pricing tiers, customer acquisition channels, churn benchmarks, and go-to-market positioning for the subscription_box solution.",
+      "payload": {
+        "competitors": [
+          "Cratejoy",
+          "FabFitFun",
+          "Ipsy",
+          "BirchBox"
+        ],
+        "focus_areas": [
+          "pricing_tiers",
+          "churn_rates",
+          "referral_mechanics",
+          "curation_models"
+        ],
+        "deliverables": [
+          "competitive_matrix.md",
+          "positioning_doc.md",
+          "gtm_strategy.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive matrix covers \u22655 direct competitors with pricing, feature, and churn data",
+        "GTM strategy includes at least 3 acquisition channels with CAC estimates",
+        "Positioning doc identifies differentiators and target customer segment clearly"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "FINANCIAL",
+      "description": "Build financial model covering subscription tier pricing, COGS per box, LTV, CAC, referral credit costs, refund reserve, and 18-month P&L projection.",
+      "payload": {
+        "pricing_tiers": [
+          "monthly",
+          "quarterly",
+          "annual"
+        ],
+        "model_outputs": [
+          "unit_economics.xlsx",
+          "pricing_strategy.md",
+          "referral_credit_model.md"
+        ],
+        "assumptions": [
+          "avg_box_cost",
+          "churn_rate_by_tier",
+          "referral_conversion_rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit economics sheet shows gross margin per tier at \u22653 COGS scenarios",
+        "Referral credit cost modeled against conversion rate sensitivity",
+        "18-month P&L covers revenue, COGS, fulfillment, and platform costs",
+        "Break-even subscriber count identified per tier"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes for subscriber onboarding, box curation quiz, subscription management dashboard (skip/pause/cancel), referral program UI, and admin inventory panel.",
+      "payload": {
+        "screens": [
+          "landing_page",
+          "curation_quiz",
+          "checkout_subscription",
+          "subscriber_dashboard",
+          "skip_pause_cancel_flow",
+          "referral_share_page",
+          "admin_inventory_dashboard"
+        ],
+        "deliverables": [
+          "ux_research_report.md",
+          "wireframes.figma",
+          "accessibility_audit.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all 7 listed screens at mid-fidelity",
+        "Skip/pause/cancel flow has \u22643 taps to complete any action",
+        "Accessibility audit references WCAG 2.1 AA for each screen",
+        "Curation quiz flow validated with \u22655 user interviews or usability sessions"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, subscription cancellation policy, referral program T&Cs, and data retention policy compliant with GDPR/CCPA and PCI DSS data minimization requirements.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "cancellation_policy.md",
+          "referral_terms.md",
+          "data_retention_policy.md"
+        ],
+        "jurisdictions": [
+          "US",
+          "EU"
+        ],
+        "standards": [
+          "PCI_DSS",
+          "GDPR",
+          "CCPA"
+        ]
+      },
+      "acceptance_criteria": [
+        "ToS includes subscription auto-renewal disclosure per FTC guidelines",
+        "Privacy Policy explicitly covers cardholder data handling per PCI DSS Req 3",
+        "Cancellation policy specifies notice period and effective date rules",
+        "Referral T&Cs define credit expiry, non-transferability, and fraud clauses",
+        "Data retention policy maps each data class to a retention period",
+        "Return/refund policy drafted",
+        "Consumer protection compliance checked"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 5,
+      "task_type": "SECURITY",
+      "description": "Produce PCI DSS threat model, SBOM, penetration test plan, and security architecture review covering payment tokenization, API authentication, referral code abuse prevention, and admin access controls.",
+      "payload": {
+        "pci_dss_scope": "SAQ_A_EP",
+        "threat_model_scope": [
+          "checkout_flow",
+          "subscription_billing",
+          "referral_system",
+          "admin_panel"
+        ],
+        "deliverables": [
+          "threat_model.md",
+          "sbom.json",
+          "pentest_plan.md",
+          "security_architecture.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Threat model covers STRIDE categories for all 4 scoped areas",
+        "SBOM lists all third-party dependencies with license and CVE status",
+        "Pentest plan includes test cases for SQL injection, IDOR on subscription endpoints, and referral code brute-force",
+        "Payment flow uses tokenization \u2014 no raw PANs stored (PCI DSS Req 3.4 compliance)",
+        "Admin panel requires MFA per PCI DSS Req 8.4",
+        "Payment flow PCI compliant",
+        "Fraud detection rules defined"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "COMPLIANCE",
+      "description": "Produce PCI DSS SAQ A-EP compliance evidence package: network segmentation diagram, cardholder data flow diagram, responsibility matrix (shared with payment processor), and quarterly review checklist.",
+      "payload": {
+        "standard": "PCI_DSS_v4",
+        "saq_type": "SAQ_A_EP",
+        "deliverables": [
+          "cardholder_data_flow_diagram.pdf",
+          "network_segmentation_diagram.pdf",
+          "shared_responsibility_matrix.md",
+          "pci_quarterly_review_checklist.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Data flow diagram shows all cardholder data touchpoints and confirms none stored in application DB",
+        "Network segmentation diagram shows payment iframe/redirect isolation",
+        "Shared responsibility matrix maps each PCI DSS req to platform vs. payment processor",
+        "Quarterly review checklist covers 12 PCI DSS requirement domains"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design and implement database schema for subscribers, subscriptions, billing cycles, boxes/products, inventory, referral codes, and audit log. Include migrations and seed data.",
+      "payload": {
+        "tables": [
+          "users",
+          "subscriptions",
+          "billing_cycles",
+          "subscription_events",
+          "products",
+          "curated_boxes",
+          "box_products",
+          "inventory",
+          "inventory_adjustments",
+          "referral_codes",
+          "referral_conversions",
+          "referral_credits",
+          "audit_log"
+        ],
+        "engine": "PostgreSQL 15",
+        "migration_tool": "Alembic",
+        "deliverables": [
+          "schema.sql",
+          "migrations/",
+          "seed_data.sql",
+          "erd.png"
+        ]
+      },
+      "acceptance_criteria": [
+        "ERD covers all 13 tables with FK relationships",
+        "subscription_events table records all skip/pause/cancel/resume with timestamps and actor",
+        "inventory table supports per-SKU stock levels with reservation for pending orders",
+        "Referral credits have expiry date and redeemed_at fields",
+        "No raw payment card data fields exist in any table",
+        "All migrations run forward and rollback cleanly on a fresh PostgreSQL instance"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "CONFIG",
+      "description": "Configure project scaffolding: monorepo structure, Docker Compose (app, db, redis, worker), environment variable schema, pre-commit hooks, and agentic pattern setup for coordinator pattern to manage curation and billing sub-agents.",
+      "payload": {
+        "stack": {
+          "backend": "FastAPI + Python 3.12",
+          "frontend": "Next.js 14 + TypeScript",
+          "queue": "Celery + Redis",
+          "db": "PostgreSQL 15",
+          "payment": "Stripe Billing"
+        },
+        "agentic_pattern": "coordinator",
+        "pattern_components": [
+          "coordinator_agent",
+          "curation_specialist_agent",
+          "billing_specialist_agent",
+          "inventory_specialist_agent"
+        ],
+        "deliverables": [
+          "docker-compose.yml",
+          ".env.example",
+          "Makefile",
+          "pre-commit config"
+        ]
+      },
+      "acceptance_criteria": [
+        "docker-compose up brings all services healthy within 60 seconds",
+        ".env.example documents every required variable with type and example value",
+        "Coordinator agent routes tasks to curation, billing, and inventory specialist agents",
+        "Pre-commit hooks enforce lint, type-check, and secret scanning",
+        "Makefile targets: dev, test, migrate, seed"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Implement subscriber authentication and account management: registration, email verification, login (JWT + refresh tokens), password reset, and profile management endpoints.",
+      "payload": {
+        "endpoints": [
+          "POST /auth/register",
+          "POST /auth/verify-email",
+          "POST /auth/login",
+          "POST /auth/refresh",
+          "POST /auth/password-reset",
+          "GET /account/profile",
+          "PATCH /account/profile"
+        ],
+        "security": [
+          "bcrypt",
+          "JWT_RS256",
+          "rate_limiting",
+          "MFA_optional"
+        ]
+      },
+      "acceptance_criteria": [
+        "Passwords hashed with bcrypt cost factor \u226512",
+        "JWT access tokens expire in 15 minutes; refresh tokens in 30 days",
+        "Email verification token expires in 24 hours",
+        "Rate limit: \u22645 failed logins per 15 min per IP before lockout",
+        "All endpoints return RFC 7807 problem+json on errors"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement product catalog and curation engine: product CRUD, curation quiz submission, personalized box assembly algorithm, and box preview endpoint.",
+      "payload": {
+        "endpoints": [
+          "GET /products",
+          "POST /admin/products",
+          "PUT /admin/products/{id}",
+          "POST /curation/quiz",
+          "GET /curation/preview",
+          "POST /admin/boxes",
+          "GET /boxes/{id}"
+        ],
+        "curation_logic": "preference_scoring_v1",
+        "agentic_pattern": "coordinator",
+        "coordinator_delegates_to": "curation_specialist_agent"
+      },
+      "acceptance_criteria": [
+        "Quiz endpoint stores preferences and returns box preview in \u2264500ms at p95",
+        "Curation algorithm scores \u22653 preference dimensions and selects products by score",
+        "Box assembly respects inventory availability \u2014 never assigns out-of-stock items",
+        "Admin product CRUD requires admin role JWT claim",
+        "Box preview is deterministic given same quiz input and inventory snapshot"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement Stripe Billing integration: subscription creation (monthly/quarterly/annual tiers), webhook handler for payment events, and tokenized payment method management. No raw card data touches the application.",
+      "payload": {
+        "stripe_features": [
+          "subscriptions",
+          "payment_intents",
+          "payment_methods_vault",
+          "webhooks",
+          "customer_portal"
+        ],
+        "webhooks_handled": [
+          "invoice.payment_succeeded",
+          "invoice.payment_failed",
+          "customer.subscription.deleted",
+          "customer.subscription.updated"
+        ],
+        "endpoints": [
+          "POST /billing/subscribe",
+          "GET /billing/payment-methods",
+          "POST /billing/payment-methods",
+          "DELETE /billing/payment-methods/{id}",
+          "POST /webhooks/stripe"
+        ]
+      },
+      "acceptance_criteria": [
+        "Stripe webhook endpoint validates signature (Stripe-Signature header) before processing",
+        "No card numbers, CVVs, or expiry dates stored in application database",
+        "Failed payment triggers retry logic via Stripe dunning config + internal notification",
+        "Subscription creation returns Stripe customer_id and subscription_id stored in DB",
+        "All Stripe calls wrapped in idempotency keys to prevent double-charge"
+      ],
+      "depends_on": [
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement subscription lifecycle management: skip cycle, pause subscription (up to 3 months), resume, cancel (immediate or end-of-period), and subscription event audit trail.",
+      "payload": {
+        "endpoints": [
+          "POST /subscriptions/{id}/skip",
+          "POST /subscriptions/{id}/pause",
+          "POST /subscriptions/{id}/resume",
+          "POST /subscriptions/{id}/cancel",
+          "GET /subscriptions/{id}/history"
+        ],
+        "business_rules": {
+          "skip_deadline_hours": 72,
+          "max_pause_months": 3,
+          "cancel_modes": [
+            "immediate",
+            "end_of_period"
+          ]
+        }
+      },
+      "acceptance_criteria": [
+        "Skip is rejected if billing cycle is within 72-hour cutoff window",
+        "Pause beyond 3 months auto-cancels and sends notification",
+        "Cancel end-of-period marks subscription but continues access until period end",
+        "Every state change written to subscription_events with actor, timestamp, and reason",
+        "History endpoint returns chronological event log for compliance auditing"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement referral program: referral code generation per subscriber, referral link tracking, conversion credit awarding, fraud detection (same-IP / same-card abuse prevention), and referral dashboard data endpoints.",
+      "payload": {
+        "endpoints": [
+          "GET /referrals/code",
+          "POST /referrals/validate",
+          "GET /referrals/dashboard",
+          "GET /admin/referrals"
+        ],
+        "credit_rules": {
+          "referrer_credit_usd": 10,
+          "referee_discount_percent": 20,
+          "credit_expiry_days": 180
+        },
+        "fraud_signals": [
+          "same_ip",
+          "same_device_fingerprint",
+          "same_payment_method"
+        ]
+      },
+      "acceptance_criteria": [
+        "Each subscriber gets exactly one unique referral code; codes are URL-safe 8-char tokens",
+        "Referrer credit awarded only after referee's first successful payment clears",
+        "Fraud check flags same-IP + same-card conversions for manual review before credit",
+        "Referral credits applied as Stripe coupon at next billing cycle",
+        "Expired credits excluded from balance calculation"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement inventory management: stock intake, per-SKU reservation during box assembly, fulfillment confirmation, low-stock alerts, and inventory adjustment audit log.",
+      "payload": {
+        "endpoints": [
+          "GET /admin/inventory",
+          "POST /admin/inventory/intake",
+          "POST /admin/inventory/adjust",
+          "GET /admin/inventory/alerts",
+          "POST /fulfillment/confirm"
+        ],
+        "agentic_pattern": "coordinator",
+        "coordinator_delegates_to": "inventory_specialist_agent",
+        "alert_threshold": "10_units_remaining"
+      },
+      "acceptance_criteria": [
+        "Stock reservation atomic \u2014 concurrent box assembly never over-commits inventory",
+        "Low-stock alert fires when available (not reserved) units drop below threshold",
+        "Every adjustment logged with quantity delta, reason, and admin actor",
+        "Fulfillment confirmation releases reservation and decrements physical stock",
+        "Inventory endpoint returns available, reserved, and total breakdown per SKU"
+      ],
+      "depends_on": [
+        10,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions), staging and production environments, database migration automation, secret management (AWS Secrets Manager or Vault), and monitoring/alerting stack.",
+      "payload": {
+        "ci_stages": [
+          "lint",
+          "type-check",
+          "unit-tests",
+          "integration-tests",
+          "docker-build",
+          "deploy-staging"
+        ],
+        "monitoring": [
+          "Sentry",
+          "Prometheus + Grafana",
+          "PagerDuty"
+        ],
+        "secret_manager": "AWS Secrets Manager",
+        "deployment": "AWS ECS Fargate"
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs on every PR; blocking on lint, type-check, and test failures",
+        "Staging deploy auto-triggers on merge to main; production requires manual approval gate",
+        "Database migrations run automatically pre-deploy with rollback on failure",
+        "No secrets in environment variables \u2014 all loaded from AWS Secrets Manager at runtime",
+        "Sentry captures uncaught exceptions with release tagging",
+        "Grafana dashboard covers: API p95 latency, billing webhook failure rate, inventory alert count"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build subscriber-facing Next.js frontend: landing page, curation quiz, subscription checkout (Stripe Elements), subscriber dashboard, and skip/pause/cancel flows.",
+      "payload": {
+        "pages": [
+          "/",
+          "/quiz",
+          "/checkout",
+          "/dashboard",
+          "/dashboard/subscription",
+          "/dashboard/referral",
+          "/dashboard/billing"
+        ],
+        "ui_library": "shadcn/ui + Tailwind CSS",
+        "payment_ui": "Stripe Elements (no raw card data in React state)"
+      },
+      "acceptance_criteria": [
+        "Curation quiz collects \u22653 preference dimensions before showing box preview",
+        "Checkout uses Stripe Elements \u2014 card data never touches application JavaScript",
+        "Skip/pause/cancel each complete in \u22643 user interactions from dashboard",
+        "Referral page shows code, shareable link, pending/paid credit balance, and conversion count",
+        "All pages pass Lighthouse accessibility score \u226590",
+        "Responsive layout verified on 375px, 768px, and 1280px viewports"
+      ],
+      "depends_on": [
+        3,
+        12,
+        13
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build admin panel: product catalog management, box curation editor, inventory dashboard, referral analytics, subscriber management table with subscription status, and order fulfillment workflow.",
+      "payload": {
+        "pages": [
+          "/admin/products",
+          "/admin/boxes",
+          "/admin/inventory",
+          "/admin/subscribers",
+          "/admin/referrals",
+          "/admin/fulfillment"
+        ],
+        "access_control": "admin_jwt_claim_required",
+        "data_tables": "TanStack Table v8"
+      },
+      "acceptance_criteria": [
+        "Product table supports search, filter by category, and inline edit",
+        "Inventory dashboard shows available/reserved/total per SKU with low-stock highlight",
+        "Subscriber table filterable by status: active, paused, cancelled, payment_failed",
+        "Referral analytics shows conversion funnel: codes shared \u2192 sign-ups \u2192 first payment",
+        "Fulfillment workflow allows bulk confirm with inventory decrement preview",
+        "Admin routes return 401 for non-admin JWT claims"
+      ],
+      "depends_on": [
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all backend services: billing lifecycle, skip/pause/cancel state machine, referral fraud detection, inventory reservation concurrency, and Stripe webhook handling.",
+      "payload": {
+        "framework": "pytest + pytest-asyncio",
+        "coverage_target": "\u226585%",
+        "test_suites": [
+          "test_auth.py",
+          "test_subscription_lifecycle.py",
+          "test_billing_stripe.py",
+          "test_referral_fraud.py",
+          "test_inventory_concurrency.py",
+          "test_curation_algorithm.py"
+        ],
+        "stripe_testing": "Stripe test mode + stripe-mock"
+      },
+      "acceptance_criteria": [
+        "State machine tests cover all valid transitions: active\u2192skipped, active\u2192paused, paused\u2192active, active\u2192cancelled",
+        "Stripe webhook tests cover all 4 handled event types with valid and invalid signatures",
+        "Inventory concurrency test spawns \u226510 simultaneous reservations and verifies no over-commit",
+        "Referral fraud test covers same-IP, same-card, and self-referral scenarios",
+        "Overall backend coverage \u226585% reported by pytest-cov",
+        "All tests pass in CI in \u22643 minutes"
+      ],
+      "depends_on": [
+        12,
+        13,
+        14
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "QA",
+      "description": "Produce QA test plan covering subscription e2e flows, referral conversion, billing failure recovery, skip/pause cutoff enforcement, and PCI DSS card-data isolation verification.",
+      "payload": {
+        "test_categories": [
+          "subscription_happy_path",
+          "skip_pause_cancel_flows",
+          "billing_failure_recovery",
+          "referral_conversion_e2e",
+          "inventory_depletion",
+          "pci_card_data_isolation"
+        ],
+        "deliverables": [
+          "qa_test_plan.md",
+          "test_case_registry.xlsx",
+          "defect_severity_matrix.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Test plan covers \u226550 named test cases across all 6 categories",
+        "PCI card-data isolation test confirms no PAN appears in network logs, DB, or application logs",
+        "Billing failure recovery test validates dunning email sequence and account lockout timing",
+        "Each test case has pass/fail criteria, preconditions, and expected result defined",
+        "Severity matrix defines P0\u2013P3 with SLA for fix turnaround"
+      ],
+      "depends_on": [
+        16,
+        17
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system tests against staging: full subscriber journey from signup through curation, checkout, first billing, skip, referral conversion, cancel, and admin fulfillment workflow.",
+      "payload": {
+        "tool": "Playwright",
+        "test_scenarios": [
+          "new_subscriber_full_journey",
+          "referral_signup_with_discount",
+          "skip_then_resume_flow",
+          "pause_auto_cancel_after_3_months",
+          "payment_failure_then_recovery",
+          "admin_fulfillment_bulk_confirm"
+        ],
+        "environments": [
+          "staging"
+        ],
+        "stripe_mode": "test"
+      },
+      "acceptance_criteria": [
+        "All 6 Playwright scenarios pass on staging environment",
+        "Full subscriber journey completes in \u22642 minutes wall time",
+        "Referral discount applied correctly at Stripe checkout",
+        "Pause auto-cancel fires at exactly 90 days (verified with time-travel in test mode)",
+        "Admin bulk fulfillment confirms \u226510 orders atomically with correct inventory decrement",
+        "Zero console errors on any page during test runs"
+      ],
+      "depends_on": [
+        18,
+        19
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 21,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: subscriber billing failure incident response, inventory stockout handling, Stripe webhook retry procedure, referral fraud investigation playbook, and SLA definitions.",
+      "payload": {
+        "runbooks": [
+          "billing_failure_incident_response.md",
+          "inventory_stockout_runbook.md",
+          "stripe_webhook_retry_procedure.md",
+          "referral_fraud_investigation.md",
+          "capacity_planning.md"
+        ],
+        "sla_targets": {
+          "api_uptime": "99.9%",
+          "billing_webhook_processing": "<30s p95",
+          "fulfillment_confirmation": "<24h"
+        }
+      },
+      "acceptance_criteria": [
+        "Billing failure runbook covers detection, subscriber notification, retry scheduling, and escalation path",
+        "Inventory stockout runbook includes supplier contact template and temporary box substitution procedure",
+        "Webhook retry procedure covers Stripe retry schedule and manual re-delivery steps",
+        "Fraud investigation playbook defines evidence collection, credit hold, and dispute resolution steps",
+        "SLA doc signed off with defined measurement methodology for each target"
+      ],
+      "depends_on": [
+        20
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 22,
+      "task_type": "DOCS",
+      "description": "Produce developer documentation: API reference (OpenAPI 3.1), architecture decision records (ADRs) for billing tokenization and referral fraud model, and subscriber-facing help center articles.",
+      "payload": {
+        "deliverables": [
+          "openapi.yaml",
+          "adr/001-stripe-tokenization.md",
+          "adr/002-referral-fraud-detection.md",
+          "help_center/skip-pause-cancel.md",
+          "help_center/referral-program.md",
+          "README.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec covers 100% of public endpoints with request/response schemas and error codes",
+        "ADR for billing tokenization documents why raw PAN storage was rejected",
+        "ADR for referral fraud documents the fraud signals chosen and false-positive tradeoffs",
+        "Help center articles are <500 words each with step-by-step instructions",
+        "README includes quickstart, environment setup, and make targets"
+      ],
+      "depends_on": [
+        20
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 22,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "PCI DSS SAQ A-EP misclassification: using Stripe Elements (hosted iframe) qualifies for SAQ A, not SAQ A-EP. SAQ A-EP applies when the merchant serves their own payment page that calls a third-party tokenizer directly. Misclassifying adds ~40 additional PCI controls that don't apply, wasting compliance effort and obscuring actual scope.",
+            "Pause auto-cancel mechanism is tested (Step 20) but never built. Step 12 specifies 'pause beyond 3 months auto-cancels' as a business rule, but no step defines the Celery periodic task or cron job that enforces it. The time-travel test in Step 20 will fail because there's nothing to travel.",
+            "Step 16 (Frontend) is missing a dependency on Step 11 (Stripe Billing). The billing dashboard, checkout with Stripe Elements, and subscription management UI all require the billing backend API. Without this dependency, Step 16 can start before billing endpoints exist, causing integration blockers mid-sprint.",
+            "Stripe webhook deduplication never specified. Stripe retries webhooks on 5xx or timeout. No step defines a 'processed_webhook_events' table or equivalent idempotency check. A retry on 'invoice.payment_succeeded' will award duplicate referral credits and double-trigger fulfillment.",
+            "Curation algorithm 'preference_scoring_v1' is entirely undefined. No step specifies the scoring dimensions, weighting model, cold-start behavior for new products, or what happens when all high-scoring items are out of stock. Step 10's acceptance criteria reference it but nobody can implement a spec that doesn't exist.",
+            "Admin MFA is required by PCI DSS Req 8.4 and listed in Step 5's acceptance criteria, but Step 9 (auth implementation) only marks MFA as 'optional'. No step explicitly builds admin MFA. This is a compliance gap that will fail a PCI assessment.",
+            "Celery task registry is never defined. Step 8 installs Celery + Redis, but no step specifies what tasks run asynchronously: billing retry scheduling, pause expiry enforcement, low-stock alert dispatch, dunning email triggers, referral credit application. These are critical business logic paths with no implementation owner.",
+            "No transactional email service is configured in any step. Email verification (Step 9), billing failure notifications (Step 12), dunning sequences (Step 11), and pause/cancel confirmations (Step 12) are all referenced in acceptance criteria but the SMTP/SES/SendGrid/Postmark integration is never set up.",
+            "Dependency chain Step 4\u21925\u21926\u21928 creates a compliance bottleneck on the critical path. Security architecture (Step 5) doesn't actually depend on finalized legal documents (Step 4). This forces 3+ weeks of compliance work to complete before infrastructure scaffolding (Step 8) can begin, which is unnecessary.",
+            "Referral fraud device fingerprinting has no client-side implementation. Step 13 lists 'same_device_fingerprint' as a fraud signal but no frontend step installs FingerprintJS, DataDome, or equivalent. Without a fingerprinting SDK, this signal degrades to IP-only detection, which is trivially bypassed with a VPN.",
+            "Inventory reservation locking strategy is unspecified. Step 14 requires 'atomic' reservation but never defines the mechanism: SELECT FOR UPDATE, advisory locks, or optimistic locking with version counters. The Step 18 concurrency test will expose this, but there's no implementation spec to pass it."
+          ],
+          "suggestions": [
+            "Replace SAQ A-EP with SAQ A in Steps 5 and 6, or explicitly justify why the payment flow is not iframe-based. If using Stripe Elements (recommended), SAQ A applies and cuts compliance scope significantly.",
+            "Add an explicit Step 8.5 or expand Step 8 to define all Celery tasks with their schedules, retry policies, and failure handling: pause_expiry_checker (daily), billing_retry_scheduler (post-webhook), low_stock_alerter (post-reservation), referral_credit_applicator (post-payment).",
+            "Add transactional email setup as a discrete deliverable in Step 8 or 9. Define the email service, template structure, and which events trigger which emails. This unblocks Steps 11, 12, and 19.",
+            "Add a 'processed_webhook_events' table to the Step 7 schema with (event_id, event_type, processed_at) and a unique constraint on event_id. Reference it in Step 11's webhook handler acceptance criteria.",
+            "Define 'preference_scoring_v1' in Step 10: specify the preference dimensions (e.g., category affinity, price sensitivity, brand preference), the scoring formula, the minimum product match threshold, and the fallback when inventory constraints eliminate all scored matches.",
+            "Parallelize Steps 4 and 5 \u2014 security architecture can proceed concurrently with legal drafting. Move Step 8's dependency to Step 7 only, unblocking infrastructure setup by ~1-2 weeks.",
+            "Add a GDPR/CCPA data deletion endpoint (DELETE /account) to Step 9 or a dedicated step. The policy in Step 4 creates legal obligation; without the implementation, the obligation exists but cannot be fulfilled.",
+            "Add Stripe Tax or TaxJar integration to Step 11. Subscription boxes shipping physical goods are subject to sales tax in most US states (economic nexus). Missing tax collection creates retroactive liability.",
+            "Specify Redis AUTH + TLS in Step 8's Docker Compose. Celery task payloads may contain subscriber IDs and order data; unauthenticated Redis exposes this to any container on the network.",
+            "Add a load test scenario to Step 20 using k6 or Locust targeting the curation quiz + checkout flow at 10x expected launch day traffic. Subscription boxes often spike on launch; no performance baseline means the first real load event is also the first failure."
+          ],
+          "missing": [
+            "Transactional email service configuration (SES, SendGrid, or Postmark) \u2014 blocks auth verification, billing failure notifications, and dunning sequences",
+            "Shipping/fulfillment carrier integration (EasyPost, ShipStation, or ShipBob) \u2014 Step 14 tracks inventory but no step generates shipping labels or tracks packages",
+            "Tax calculation integration (Stripe Tax or TaxJar) \u2014 required for US physical goods sales",
+            "GDPR/CCPA data deletion endpoint (Art. 17 right to erasure) \u2014 policy written in Step 4 but implementation absent",
+            "Admin user provisioning flow \u2014 no step defines how admin JWT claims are assigned, how admins are created, or how admin roles are managed",
+            "Webhook event deduplication table \u2014 critical for Stripe retry safety",
+            "Redis security configuration (AUTH + TLS) \u2014 Celery queue exposed on internal network without auth",
+            "Database backup and recovery strategy (RTO/RPO targets, automated snapshots, point-in-time recovery setup)",
+            "CDN configuration for Next.js static assets (CloudFront or similar) \u2014 ECS Fargate serving static assets directly is expensive and slow",
+            "Refund processing endpoint \u2014 Step 4 drafts refund policy, but no backend step implements POST /billing/refunds via Stripe Refunds API",
+            "Feature flag system for staged rollout (LaunchDarkly or home-grown) \u2014 no rollout safety net for billing changes going to all subscribers simultaneously",
+            "Analytics/conversion tracking \u2014 no step integrates GA4, Segment, or PostHog for funnel measurement, which was a stated deliverable in Step 1's GTM strategy"
+          ],
+          "security_risks": [
+            "JWT RS256 private key storage and rotation: Step 9 specifies RS256 but no step defines where the private key lives, how it's rotated, or how revocation works if compromised. If stored in .env it will end up in ECS task definition environment variables \u2014 a known AWS audit finding.",
+            "Referral code endpoint rate limiting: Step 13 defines fraud signals but no rate limit is specified on POST /referrals/validate. An attacker can enumerate referral codes (8-char URL-safe = ~47 bits entropy) without throttling, especially if the fraud check only fires on conversion not validation.",
+            "Stripe webhook endpoint has no rate limit or IP allowlist: Stripe publishes its webhook source IPs. Without an allowlist, any actor can send forged webhook payloads to /webhooks/stripe. Signature validation (Step 11) mitigates this, but forged-signature flooding can still exhaust worker threads.",
+            "Admin privilege escalation path undefined: No step specifies how admin JWT claims are initially granted. If admin role is self-claimable at registration (even briefly), it's a critical auth bypass. The admin provisioning process needs an explicit security boundary.",
+            "SBOM CVE remediation process missing: Step 5 produces an SBOM with CVE status but no step defines a patching SLA or automated dependency scanning in CI. A static SBOM at launch will be outdated within weeks.",
+            "Redis Celery queue unauthenticated: Task payloads containing subscriber_id and billing metadata flow through Redis without AUTH. Any container breakout on the ECS cluster has full queue read/write access.",
+            "Curation quiz input not validated against injection: Step 10 stores quiz preferences to DB and uses them in the scoring algorithm. If preference dimension values are not strictly enumerated, they become an injection surface into the scoring query."
+          ],
+          "summary": "This is a well-structured, comprehensive plan with strong domain coverage \u2014 the PCI DSS scope, Stripe tokenization approach, subscription lifecycle state machine, and referral fraud signals are all correctly identified. However, several concrete failure modes exist that would block production shipping: (1) the pause auto-cancel business rule is tested but never implemented (Celery task missing), (2) transactional email is referenced throughout but never set up, (3) Stripe webhook deduplication is absent making double-charge/double-credit scenarios live in production, (4) admin MFA is a PCI requirement listed but not implemented, and (5) the SAQ A-EP classification is almost certainly wrong for a Stripe Elements integration, adding unnecessary compliance overhead. The dependency chain also serializes compliance work ahead of infrastructure scaffolding with no technical justification. The score reflects a plan that would ship a functional MVP with visible gaps rather than a production-hardened system \u2014 fix the Celery task definitions, email infrastructure, webhook deduplication, and SAQ classification before development begins.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "PCI DSS SAQ A-EP misclassification: using Stripe Elements (hosted iframe) qualifies for SAQ A, not SAQ A-EP. SAQ A-EP applies when the merchant serves their own payment page that calls a third-party tokenizer directly. Misclassifying adds ~40 additional PCI controls that don't apply, wasting compliance effort and obscuring actual scope.",
+              "Pause auto-cancel mechanism is tested (Step 20) but never built. Step 12 specifies 'pause beyond 3 months auto-cancels' as a business rule, but no step defines the Celery periodic task or cron job that enforces it. The time-travel test in Step 20 will fail because there's nothing to travel.",
+              "Step 16 (Frontend) is missing a dependency on Step 11 (Stripe Billing). The billing dashboard, checkout with Stripe Elements, and subscription management UI all require the billing backend API. Without this dependency, Step 16 can start before billing endpoints exist, causing integration blockers mid-sprint.",
+              "Stripe webhook deduplication never specified. Stripe retries webhooks on 5xx or timeout. No step defines a 'processed_webhook_events' table or equivalent idempotency check. A retry on 'invoice.payment_succeeded' will award duplicate referral credits and double-trigger fulfillment.",
+              "Curation algorithm 'preference_scoring_v1' is entirely undefined. No step specifies the scoring dimensions, weighting model, cold-start behavior for new products, or what happens when all high-scoring items are out of stock. Step 10's acceptance criteria reference it but nobody can implement a spec that doesn't exist.",
+              "Admin MFA is required by PCI DSS Req 8.4 and listed in Step 5's acceptance criteria, but Step 9 (auth implementation) only marks MFA as 'optional'. No step explicitly builds admin MFA. This is a compliance gap that will fail a PCI assessment.",
+              "Celery task registry is never defined. Step 8 installs Celery + Redis, but no step specifies what tasks run asynchronously: billing retry scheduling, pause expiry enforcement, low-stock alert dispatch, dunning email triggers, referral credit application. These are critical business logic paths with no implementation owner.",
+              "No transactional email service is configured in any step. Email verification (Step 9), billing failure notifications (Step 12), dunning sequences (Step 11), and pause/cancel confirmations (Step 12) are all referenced in acceptance criteria but the SMTP/SES/SendGrid/Postmark integration is never set up.",
+              "Dependency chain Step 4\u21925\u21926\u21928 creates a compliance bottleneck on the critical path. Security architecture (Step 5) doesn't actually depend on finalized legal documents (Step 4). This forces 3+ weeks of compliance work to complete before infrastructure scaffolding (Step 8) can begin, which is unnecessary.",
+              "Referral fraud device fingerprinting has no client-side implementation. Step 13 lists 'same_device_fingerprint' as a fraud signal but no frontend step installs FingerprintJS, DataDome, or equivalent. Without a fingerprinting SDK, this signal degrades to IP-only detection, which is trivially bypassed with a VPN.",
+              "Inventory reservation locking strategy is unspecified. Step 14 requires 'atomic' reservation but never defines the mechanism: SELECT FOR UPDATE, advisory locks, or optimistic locking with version counters. The Step 18 concurrency test will expose this, but there's no implementation spec to pass it."
+            ],
+            "suggestions": [
+              "Replace SAQ A-EP with SAQ A in Steps 5 and 6, or explicitly justify why the payment flow is not iframe-based. If using Stripe Elements (recommended), SAQ A applies and cuts compliance scope significantly.",
+              "Add an explicit Step 8.5 or expand Step 8 to define all Celery tasks with their schedules, retry policies, and failure handling: pause_expiry_checker (daily), billing_retry_scheduler (post-webhook), low_stock_alerter (post-reservation), referral_credit_applicator (post-payment).",
+              "Add transactional email setup as a discrete deliverable in Step 8 or 9. Define the email service, template structure, and which events trigger which emails. This unblocks Steps 11, 12, and 19.",
+              "Add a 'processed_webhook_events' table to the Step 7 schema with (event_id, event_type, processed_at) and a unique constraint on event_id. Reference it in Step 11's webhook handler acceptance criteria.",
+              "Define 'preference_scoring_v1' in Step 10: specify the preference dimensions (e.g., category affinity, price sensitivity, brand preference), the scoring formula, the minimum product match threshold, and the fallback when inventory constraints eliminate all scored matches.",
+              "Parallelize Steps 4 and 5 \u2014 security architecture can proceed concurrently with legal drafting. Move Step 8's dependency to Step 7 only, unblocking infrastructure setup by ~1-2 weeks.",
+              "Add a GDPR/CCPA data deletion endpoint (DELETE /account) to Step 9 or a dedicated step. The policy in Step 4 creates legal obligation; without the implementation, the obligation exists but cannot be fulfilled.",
+              "Add Stripe Tax or TaxJar integration to Step 11. Subscription boxes shipping physical goods are subject to sales tax in most US states (economic nexus). Missing tax collection creates retroactive liability.",
+              "Specify Redis AUTH + TLS in Step 8's Docker Compose. Celery task payloads may contain subscriber IDs and order data; unauthenticated Redis exposes this to any container on the network.",
+              "Add a load test scenario to Step 20 using k6 or Locust targeting the curation quiz + checkout flow at 10x expected launch day traffic. Subscription boxes often spike on launch; no performance baseline means the first real load event is also the first failure."
+            ],
+            "missing": [
+              "Transactional email service configuration (SES, SendGrid, or Postmark) \u2014 blocks auth verification, billing failure notifications, and dunning sequences",
+              "Shipping/fulfillment carrier integration (EasyPost, ShipStation, or ShipBob) \u2014 Step 14 tracks inventory but no step generates shipping labels or tracks packages",
+              "Tax calculation integration (Stripe Tax or TaxJar) \u2014 required for US physical goods sales",
+              "GDPR/CCPA data deletion endpoint (Art. 17 right to erasure) \u2014 policy written in Step 4 but implementation absent",
+              "Admin user provisioning flow \u2014 no step defines how admin JWT claims are assigned, how admins are created, or how admin roles are managed",
+              "Webhook event deduplication table \u2014 critical for Stripe retry safety",
+              "Redis security configuration (AUTH + TLS) \u2014 Celery queue exposed on internal network without auth",
+              "Database backup and recovery strategy (RTO/RPO targets, automated snapshots, point-in-time recovery setup)",
+              "CDN configuration for Next.js static assets (CloudFront or similar) \u2014 ECS Fargate serving static assets directly is expensive and slow",
+              "Refund processing endpoint \u2014 Step 4 drafts refund policy, but no backend step implements POST /billing/refunds via Stripe Refunds API",
+              "Feature flag system for staged rollout (LaunchDarkly or home-grown) \u2014 no rollout safety net for billing changes going to all subscribers simultaneously",
+              "Analytics/conversion tracking \u2014 no step integrates GA4, Segment, or PostHog for funnel measurement, which was a stated deliverable in Step 1's GTM strategy"
+            ],
+            "security_risks": [
+              "JWT RS256 private key storage and rotation: Step 9 specifies RS256 but no step defines where the private key lives, how it's rotated, or how revocation works if compromised. If stored in .env it will end up in ECS task definition environment variables \u2014 a known AWS audit finding.",
+              "Referral code endpoint rate limiting: Step 13 defines fraud signals but no rate limit is specified on POST /referrals/validate. An attacker can enumerate referral codes (8-char URL-safe = ~47 bits entropy) without throttling, especially if the fraud check only fires on conversion not validation.",
+              "Stripe webhook endpoint has no rate limit or IP allowlist: Stripe publishes its webhook source IPs. Without an allowlist, any actor can send forged webhook payloads to /webhooks/stripe. Signature validation (Step 11) mitigates this, but forged-signature flooding can still exhaust worker threads.",
+              "Admin privilege escalation path undefined: No step specifies how admin JWT claims are initially granted. If admin role is self-claimable at registration (even briefly), it's a critical auth bypass. The admin provisioning process needs an explicit security boundary.",
+              "SBOM CVE remediation process missing: Step 5 produces an SBOM with CVE status but no step defines a patching SLA or automated dependency scanning in CI. A static SBOM at launch will be outdated within weeks.",
+              "Redis Celery queue unauthenticated: Task payloads containing subscriber_id and billing metadata flow through Redis without AUTH. Any container breakout on the ECS cluster has full queue read/write access.",
+              "Curation quiz input not validated against injection: Step 10 stores quiz preferences to DB and uses them in the scoring algorithm. If preference dimension values are not strictly enumerated, they become an injection surface into the scoring query."
+            ],
+            "summary": "This is a well-structured, comprehensive plan with strong domain coverage \u2014 the PCI DSS scope, Stripe tokenization approach, subscription lifecycle state machine, and referral fraud signals are all correctly identified. However, several concrete failure modes exist that would block production shipping: (1) the pause auto-cancel business rule is tested but never implemented (Celery task missing), (2) transactional email is referenced throughout but never set up, (3) Stripe webhook deduplication is absent making double-charge/double-credit scenarios live in production, (4) admin MFA is a PCI requirement listed but not implemented, and (5) the SAQ A-EP classification is almost certainly wrong for a Stripe Elements integration, adding unnecessary compliance overhead. The dependency chain also serializes compliance work ahead of infrastructure scaffolding with no technical justification. The score reflects a plan that would ship a functional MVP with visible gaps rather than a production-hardened system \u2014 fix the Celery task definitions, email infrastructure, webhook deduplication, and SAQ classification before development begins.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T05:51:59.298113+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 110.06,
+    "critic_plan": 100.7
+  }
+}

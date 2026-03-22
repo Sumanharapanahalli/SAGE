@@ -1,0 +1,1042 @@
+{
+  "run_id": "698cff53-67ee-4b1f-a950-5567671bf8ec",
+  "status": {
+    "run_id": "698cff53-67ee-4b1f-a950-5567671bf8ec",
+    "solution_name": "internal_comms",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T11:25:19.328350+00:00",
+    "updated_at": "2026-03-22T11:29:30.958860+00:00",
+    "product_description": "Enterprise internal communications platform with channels, threads, file sharing, video conferencing, employee directory, and IT admin controls.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user personas, and process flows for the internal communications platform covering channels, threads, file sharing, video, directory, and admin controls.",
+        "payload": {
+          "deliverables": [
+            "BRD",
+            "user_personas",
+            "process_flow_diagrams",
+            "ROI_analysis"
+          ],
+          "stakeholders": [
+            "IT admin",
+            "end employees",
+            "HR",
+            "executive sponsors"
+          ],
+          "scope": "internal_comms"
+        },
+        "acceptance_criteria": [
+          "BRD approved by at least 2 stakeholders",
+          "User personas defined for: end user, IT admin, HR manager",
+          "Process flows cover all 6 feature areas",
+          "ROI model shows payback period with assumptions documented",
+          "Integration points with existing systems mapped",
+          "Migration plan drafted"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce product requirements document (PRD), feature roadmap, prioritization matrix, and success metrics for the internal_comms platform.",
+        "payload": {
+          "deliverables": [
+            "PRD",
+            "roadmap_v1",
+            "OKRs",
+            "success_metrics"
+          ],
+          "prioritization_framework": "MoSCoW",
+          "initial_release_scope": [
+            "channels",
+            "threads",
+            "file_sharing",
+            "employee_directory",
+            "IT_admin_controls"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all 6 feature areas with acceptance criteria per feature",
+          "Roadmap defines MVP vs post-MVP scope",
+          "Success metrics include DAU, message latency P95, uptime SLA, and adoption rate",
+          "Prioritization matrix signed off by product and engineering leads"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "LEGAL",
+        "description": "Draft terms of service, privacy policy, data retention policy, and IP/licensing review for the internal communications platform.",
+        "payload": {
+          "deliverables": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "data_retention_policy.md",
+            "oss_license_review.md"
+          ],
+          "standards": [
+            "ISO 27001",
+            "SOC 2",
+            "GDPR consideration"
+          ],
+          "data_residency": "configurable per deployment"
+        },
+        "acceptance_criteria": [
+          "Privacy policy covers data collected, retention periods, and employee rights",
+          "Terms of service reviewed by legal counsel",
+          "OSS license inventory completed with no copyleft conflicts",
+          "Data retention policy defines TTLs for messages, files, and audit logs"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 4,
+        "task_type": "COMPLIANCE",
+        "description": "Create compliance framework mapping platform controls to ISO 27001 Annex A and SOC 2 Trust Service Criteria. Produce initial risk matrix and control evidence templates.",
+        "payload": {
+          "standards": [
+            "ISO 27001",
+            "SOC 2 Type II"
+          ],
+          "deliverables": [
+            "control_mapping_matrix.xlsx",
+            "risk_register.xlsx",
+            "evidence_collection_plan.md"
+          ],
+          "control_domains": [
+            "access_control",
+            "encryption",
+            "audit_logging",
+            "incident_response",
+            "change_management"
+          ]
+        },
+        "acceptance_criteria": [
+          "Every ISO 27001 Annex A control has an owner and implementation status",
+          "SOC 2 CC1-CC9 criteria mapped to platform features",
+          "Risk register contains likelihood, impact, and mitigation per risk",
+          "Evidence collection plan defines artifact type, owner, and cadence per control"
+        ],
+        "depends_on": [
+          1,
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes and interaction designs for channels, threads, file sharing, video conferencing, employee directory, and IT admin console.",
+        "payload": {
+          "deliverables": [
+            "user_research_report.md",
+            "wireframes_figma",
+            "accessibility_audit.md"
+          ],
+          "research_methods": [
+            "stakeholder interviews",
+            "survey",
+            "competitive analysis"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes cover all 6 feature areas and mobile-responsive layouts",
+          "User research conducted with minimum 5 representative users",
+          "Accessibility audit shows WCAG 2.1 AA compliance plan",
+          "Interaction design reviewed and approved by product manager"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "SECURITY",
+        "description": "Produce threat model, security architecture design, and penetration test plan for the internal communications platform. Define encryption-at-rest and in-transit requirements.",
+        "payload": {
+          "deliverables": [
+            "threat_model_STRIDE.md",
+            "security_architecture.md",
+            "pentest_plan.md",
+            "SBOM.json"
+          ],
+          "encryption": {
+            "at_rest": "AES-256",
+            "in_transit": "TLS 1.3"
+          },
+          "auth": [
+            "SSO/SAML 2.0",
+            "MFA",
+            "SCIM provisioning"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all external-facing surfaces",
+          "Security architecture defines auth, authz, encryption, and secrets management",
+          "Pentest plan covers OWASP Top 10, API security, and privilege escalation",
+          "SBOM generated and no critical CVEs in direct dependencies"
+        ],
+        "depends_on": [
+          2,
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specifications for all platform APIs: messaging, channels, threads, file management, video signaling, employee directory, and IT admin endpoints.",
+        "payload": {
+          "deliverables": [
+            "openapi_messaging.yaml",
+            "openapi_files.yaml",
+            "openapi_video.yaml",
+            "openapi_directory.yaml",
+            "openapi_admin.yaml"
+          ],
+          "auth_scheme": "Bearer JWT + API key for service-to-service",
+          "versioning": "URI versioning /v1/"
+        },
+        "acceptance_criteria": [
+          "All endpoints have request/response schemas with examples",
+          "Error responses follow RFC 7807 Problem Details format",
+          "All APIs pass OpenAPI linting with zero errors",
+          "Auth requirements documented per endpoint"
+        ],
+        "depends_on": [
+          2,
+          5,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema for users, channels, messages, threads, attachments, reactions, employee directory, and audit logs. Include migrations and seed data.",
+        "payload": {
+          "primary_db": "PostgreSQL 16",
+          "cache": "Redis 7",
+          "search": "Elasticsearch 8",
+          "deliverables": [
+            "schema.sql",
+            "migrations/",
+            "seed_data.sql",
+            "index_strategy.md"
+          ],
+          "tables": [
+            "users",
+            "channels",
+            "messages",
+            "threads",
+            "attachments",
+            "reactions",
+            "directory_profiles",
+            "audit_events",
+            "admin_policies"
+          ]
+        },
+        "acceptance_criteria": [
+          "Schema supports soft deletes and message edit history",
+          "All foreign keys and indexes documented",
+          "Migrations are idempotent and reversible",
+          "Audit_events table captures actor, action, resource, and timestamp for SOC 2"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up the agentic AI pattern (multi_agent_coordinator) configuration for the internal_comms platform. Configure coordinator agent for smart notifications, content moderation suggestions, and meeting summarization.",
+        "payload": {
+          "pattern": "multi_agent_coordinator",
+          "components": {
+            "coordinator": "routes tasks to specialist agents",
+            "notification_agent": "intelligent notification batching and priority scoring",
+            "moderation_agent": "flags policy-violating content for IT admin review",
+            "summary_agent": "generates meeting and thread summaries"
+          },
+          "solution_name": "internal_comms",
+          "config_files": [
+            "project.yaml",
+            "prompts.yaml",
+            "tasks.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "project.yaml defines all active modules and agent roles",
+          "prompts.yaml contains system prompts for coordinator, notification, moderation, and summary agents",
+          "tasks.yaml registers task types: summarize_thread, flag_content, batch_notifications, summarize_meeting",
+          "Config validated by SAGE framework loader without errors"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build the core messaging backend: real-time WebSocket server, channel management, threaded messaging, message persistence, reactions, and @mentions with notification fanout.",
+        "payload": {
+          "stack": "Python FastAPI + WebSockets / Node.js + Socket.IO",
+          "features": [
+            "channel CRUD",
+            "message send/edit/delete",
+            "thread replies",
+            "reactions",
+            "mentions",
+            "read receipts",
+            "message search via Elasticsearch"
+          ],
+          "real_time": "WebSocket with Redis Pub/Sub fanout",
+          "deliverables": [
+            "src/messaging/",
+            "src/channels/",
+            "src/notifications/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Message delivery latency P95 < 200ms under 1000 concurrent users",
+          "WebSocket reconnects automatically with message catch-up on disconnect",
+          "Edit and delete history retained for audit compliance",
+          "Mentions trigger push notification within 1 second"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build file sharing service: upload, download, virus scanning, preview generation, access control, storage quota enforcement, and file search.",
+        "payload": {
+          "storage": "S3-compatible object storage (MinIO for on-prem, S3 for cloud)",
+          "features": [
+            "multipart upload",
+            "virus_scan_hook",
+            "thumbnail_generation",
+            "per-channel access control",
+            "quota_enforcement",
+            "full-text search on filenames"
+          ],
+          "max_file_size": "500MB",
+          "deliverables": [
+            "src/files/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Files encrypted at rest with AES-256 and served over TLS 1.3",
+          "Virus scan runs before file is marked available (ClamAV integration)",
+          "Upload progress reported via SSE",
+          "File access restricted to channel members"
+        ],
+        "depends_on": [
+          7,
+          8,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Build employee directory service: profile management, org chart hierarchy, search, SCIM 2.0 provisioning from IdP, and presence/status indicators.",
+        "payload": {
+          "features": [
+            "profile_CRUD",
+            "org_chart_traversal",
+            "fuzzy_search",
+            "SCIM_2.0_sync",
+            "presence_status",
+            "custom_fields"
+          ],
+          "identity_integration": [
+            "SAML 2.0 SSO",
+            "SCIM 2.0"
+          ],
+          "deliverables": [
+            "src/directory/",
+            "src/presence/"
+          ]
+        },
+        "acceptance_criteria": [
+          "SCIM 2.0 endpoint passes Azure AD and Okta provisioning tests",
+          "Org chart API returns hierarchy up to 10 levels deep",
+          "Directory search returns results in < 100ms for 10,000 employee orgs",
+          "Presence status updates propagate to all connected clients within 2 seconds"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build IT admin controls backend: user provisioning/deprovisioning, role-based access control (RBAC), data retention policy enforcement, audit log export, content policy management, and SSO configuration.",
+        "payload": {
+          "features": [
+            "user_lifecycle_management",
+            "RBAC_engine",
+            "retention_policy_executor",
+            "audit_export_CSV_JSON",
+            "content_moderation_policy",
+            "SSO_config_UI",
+            "MFA_enforcement"
+          ],
+          "deliverables": [
+            "src/admin/"
+          ],
+          "compliance_hooks": [
+            "ISO 27001 A.9 access control",
+            "SOC 2 CC6"
+          ]
+        },
+        "acceptance_criteria": [
+          "Deprovisioning revokes all sessions and channel access within 60 seconds",
+          "RBAC supports custom roles with permission inheritance",
+          "Audit log export covers 90-day window with filtering by actor/action/resource",
+          "Retention policy automatically purges messages and files per configured TTL"
+        ],
+        "depends_on": [
+          7,
+          8,
+          4,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Build video conferencing signaling server using WebRTC: room management, SFU (Selective Forwarding Unit) integration, recording, and calendar integration hooks.",
+        "payload": {
+          "stack": "mediasoup SFU + WebRTC",
+          "features": [
+            "room_create_join_leave",
+            "screen_sharing",
+            "recording_to_s3",
+            "participant_controls",
+            "virtual_backgrounds",
+            "calendar_invite_links"
+          ],
+          "max_participants_per_room": 200,
+          "deliverables": [
+            "src/video/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Video call latency < 150ms under normal network conditions",
+          "Supports up to 50 simultaneous video feeds in a room",
+          "Recording saved to object storage with access restricted to room organizer and IT admin",
+          "Room creation API returns join link usable without account for guests (configurable)"
+        ],
+        "depends_on": [
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "FRONTEND",
+        "description": "Build the main messaging UI: channel sidebar, message feed, threaded replies panel, rich text composer with attachments, emoji reactions, and search interface.",
+        "payload": {
+          "stack": "React 18 + TypeScript + Vite",
+          "state_management": "Zustand + React Query",
+          "real_time": "WebSocket client with reconnection logic",
+          "features": [
+            "channel_list",
+            "message_feed",
+            "thread_panel",
+            "rich_text_editor",
+            "file_picker",
+            "emoji_picker",
+            "search_modal",
+            "mention_autocomplete"
+          ],
+          "deliverables": [
+            "web/src/pages/Channels.tsx",
+            "web/src/components/messaging/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Message feed renders 1000 messages with virtual scrolling without frame drops",
+          "File uploads show progress bar and preview on completion",
+          "Search results highlight matched terms and filter by channel, date, and author",
+          "UI matches approved wireframes at mobile (375px), tablet (768px), and desktop (1280px)"
+        ],
+        "depends_on": [
+          5,
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build employee directory UI: searchable org chart, profile pages, presence indicators, and directory admin panel for custom field management.",
+        "payload": {
+          "features": [
+            "searchable_directory_list",
+            "interactive_org_chart",
+            "profile_page",
+            "presence_badge",
+            "admin_custom_fields"
+          ],
+          "deliverables": [
+            "web/src/pages/Directory.tsx",
+            "web/src/components/directory/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Org chart renders up to 500 nodes with pan/zoom",
+          "Profile page loads in < 500ms including avatar",
+          "Presence status updates live without page refresh",
+          "Directory search debounced at 300ms, results appear within 200ms"
+        ],
+        "depends_on": [
+          5,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build video conferencing UI: in-call layout with grid/speaker view, screen share, chat sidebar, participant controls, and pre-call device check.",
+        "payload": {
+          "features": [
+            "pre_call_device_check",
+            "grid_layout",
+            "speaker_view",
+            "screen_share_tile",
+            "in_call_chat",
+            "mute_controls",
+            "recording_indicator",
+            "leave_end_controls"
+          ],
+          "deliverables": [
+            "web/src/pages/Video.tsx",
+            "web/src/components/video/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Pre-call device check validates camera, mic, and speaker with live preview",
+          "Layout switches between grid and speaker view without call interruption",
+          "Screen share tile renders at full available resolution",
+          "Recording indicator visible to all participants within 2 seconds of recording start"
+        ],
+        "depends_on": [
+          5,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build IT admin console UI: user management table, RBAC editor, audit log viewer with export, retention policy configurator, SSO/SCIM setup wizard, and content policy editor.",
+        "payload": {
+          "features": [
+            "user_management_table",
+            "role_editor",
+            "audit_log_table_with_export",
+            "retention_policy_form",
+            "SSO_setup_wizard",
+            "content_policy_editor",
+            "quota_dashboard"
+          ],
+          "deliverables": [
+            "web/src/pages/Admin.tsx",
+            "web/src/components/admin/"
+          ]
+        },
+        "acceptance_criteria": [
+          "User management table supports bulk actions (suspend, deprovision, role change)",
+          "Audit log viewer handles 1M+ records with server-side pagination and filtering",
+          "SSO setup wizard validates SAML metadata before saving",
+          "Retention policy UI shows countdown to next execution"
+        ],
+        "depends_on": [
+          5,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend services: messaging, file sharing, directory, admin controls, and video signaling.",
+        "payload": {
+          "frameworks": [
+            "pytest",
+            "pytest-asyncio",
+            "factory_boy"
+          ],
+          "coverage_target": 80,
+          "test_types": [
+            "unit",
+            "integration",
+            "contract"
+          ],
+          "deliverables": [
+            "tests/unit/",
+            "tests/integration/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Overall code coverage >= 80% across all backend services",
+          "All API endpoints have at least one happy-path and one error-path test",
+          "Integration tests run against real Postgres and Redis (no mocks for persistence layer)",
+          "Tests pass in CI in under 5 minutes"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "QA",
+        "description": "Develop QA test plan, test case suite, and exploratory testing charters covering all 6 feature areas. Include regression, usability, and security acceptance tests.",
+        "payload": {
+          "deliverables": [
+            "test_plan.md",
+            "test_cases.xlsx",
+            "exploratory_charters.md"
+          ],
+          "feature_areas": [
+            "channels_threads",
+            "file_sharing",
+            "video_conferencing",
+            "employee_directory",
+            "IT_admin",
+            "notifications"
+          ],
+          "test_types": [
+            "functional",
+            "regression",
+            "usability",
+            "security_acceptance"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test plan reviewed and approved by product manager",
+          "Test cases cover all PRD acceptance criteria",
+          "Security acceptance tests include MFA bypass attempt, privilege escalation, and file access control",
+          "Exploratory charters defined for each feature area with session time-boxes"
+        ],
+        "depends_on": [
+          2,
+          5,
+          6
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "INFRA",
+        "description": "Set up infrastructure as code for the internal_comms platform: Kubernetes manifests, Helm charts, PostgreSQL HA cluster, Redis cluster, Elasticsearch, MinIO, and mediasoup node pool.",
+        "payload": {
+          "iac_tool": "Terraform + Helm",
+          "orchestration": "Kubernetes 1.29",
+          "services": [
+            "postgres_ha",
+            "redis_cluster",
+            "elasticsearch",
+            "minio",
+            "mediasoup_node_pool",
+            "nginx_ingress",
+            "cert_manager"
+          ],
+          "environments": [
+            "dev",
+            "staging",
+            "production"
+          ],
+          "deliverables": [
+            "infra/terraform/",
+            "infra/helm/",
+            "infra/k8s/"
+          ]
+        },
+        "acceptance_criteria": [
+          "All infra is reproducible from code with a single `terraform apply`",
+          "PostgreSQL HA with automatic failover < 30 seconds",
+          "Secrets stored in Vault or K8s Secrets with RBAC access controls",
+          "Staging environment mirrors production topology"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipelines, monitoring (Prometheus + Grafana), alerting, log aggregation, and SRE runbooks for the internal_comms platform.",
+        "payload": {
+          "ci_cd": "GitHub Actions / GitLab CI",
+          "monitoring": "Prometheus + Grafana",
+          "logging": "ELK stack (Elasticsearch + Logstash + Kibana)",
+          "alerting": "PagerDuty integration",
+          "deliverables": [
+            ".github/workflows/",
+            "infra/monitoring/",
+            "runbooks/"
+          ],
+          "slo_targets": {
+            "availability": "99.9%",
+            "message_latency_p95": "200ms",
+            "video_setup_time": "3s"
+          }
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs lint, tests, and security scan on every PR",
+          "CD pipeline deploys to staging automatically on main merge, production requires manual approval",
+          "SLO dashboards display error budget burn rate with 7-day and 30-day windows",
+          "Alerting fires within 2 minutes of SLO breach"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute system-level end-to-end tests covering cross-service flows: user onboarding via SCIM \u2192 channel join \u2192 message send with attachment \u2192 video call \u2192 admin audit log verification.",
+        "payload": {
+          "frameworks": [
+            "Playwright (E2E UI)",
+            "k6 (load testing)"
+          ],
+          "deliverables": [
+            "tests/e2e/",
+            "tests/load/",
+            "test_execution_report.md"
+          ],
+          "load_targets": {
+            "concurrent_users": 5000,
+            "messages_per_second": 1000,
+            "file_uploads_per_minute": 200
+          }
+        },
+        "acceptance_criteria": [
+          "All critical user journeys pass E2E without manual intervention",
+          "Load test at 5000 concurrent users keeps message latency P95 < 200ms",
+          "Video conferencing load test with 50 active rooms (20 participants each) shows CPU < 80%",
+          "Audit log captures every action in the E2E run with correct actor attribution",
+          "Load test simulates expected concurrent users",
+          "Failover scenario tested"
+        ],
+        "depends_on": [
+          19,
+          20,
+          15,
+          16,
+          17,
+          18
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 24,
+        "task_type": "OPERATIONS",
+        "description": "Define SLA agreements, operational runbooks for incident response, on-call rotation, capacity planning model, and disaster recovery procedures.",
+        "payload": {
+          "deliverables": [
+            "SLA_definition.md",
+            "runbooks/incident_response.md",
+            "runbooks/capacity_planning.md",
+            "runbooks/disaster_recovery.md"
+          ],
+          "rto": "4 hours",
+          "rpo": "1 hour",
+          "on_call_tool": "PagerDuty"
+        },
+        "acceptance_criteria": [
+          "SLA document defines uptime targets, measurement methodology, and credit schedule",
+          "Incident response runbook covers P1-P4 severity with escalation paths and communication templates",
+          "Disaster recovery runbook tested with a tabletop exercise",
+          "Capacity planning model forecasts storage and compute for 12 months at 3 growth scenarios"
+        ],
+        "depends_on": [
+          22
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 25,
+        "task_type": "COMPLIANCE",
+        "description": "Collect and organize evidence artifacts for ISO 27001 and SOC 2 Type II readiness: access control logs, encryption certificates, vulnerability scan reports, and change management records.",
+        "payload": {
+          "deliverables": [
+            "evidence_package/ISO27001/",
+            "evidence_package/SOC2/",
+            "readiness_assessment.md"
+          ],
+          "evidence_types": [
+            "access_logs",
+            "encryption_cert",
+            "vuln_scan_report",
+            "pentest_report",
+            "change_management_records",
+            "security_training_records"
+          ],
+          "target_audit_date": "6 months post-launch"
+        },
+        "acceptance_criteria": [
+          "Evidence mapped to each ISO 27001 Annex A control and SOC 2 criterion",
+          "No critical gaps in evidence for CC6 (Logical Access) or CC7 (System Operations)",
+          "Readiness assessment scores >= 80% for both frameworks",
+          "Gap remediation plan created for any control below threshold"
+        ],
+        "depends_on": [
+          4,
+          13,
+          22,
+          23
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 26,
+        "task_type": "TRAINING",
+        "description": "Produce end-user onboarding guide, IT admin configuration guide, video tutorial scripts, and quick-reference cards for the internal_comms platform.",
+        "payload": {
+          "deliverables": [
+            "docs/user_guide.md",
+            "docs/admin_guide.md",
+            "docs/video_scripts/",
+            "docs/quick_reference.pdf"
+          ],
+          "formats": [
+            "web",
+            "PDF",
+            "video script"
+          ],
+          "audiences": [
+            "end_user",
+            "IT_admin",
+            "channel_owner"
+          ]
+        },
+        "acceptance_criteria": [
+          "User guide covers account setup, channel navigation, messaging, file sharing, and video calls",
+          "Admin guide covers SSO setup, user provisioning, RBAC, audit log export, and retention policies",
+          "Video scripts for top 5 user journeys reviewed and approved by UX designer",
+          "Quick reference card fits on one A4 page and covers daily use cases",
+          "Admin guide separate from end-user guide",
+          "Role-based training paths defined"
+        ],
+        "depends_on": [
+          15,
+          16,
+          17,
+          18
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 27,
+        "task_type": "DOCS",
+        "description": "Write developer API documentation, architecture decision records (ADRs), deployment runbook, and internal engineering wiki pages.",
+        "payload": {
+          "deliverables": [
+            "docs/api/",
+            "docs/ADRs/",
+            "docs/deployment_runbook.md",
+            "docs/architecture.md"
+          ],
+          "api_doc_tool": "Redoc from OpenAPI specs",
+          "adr_topics": [
+            "WebRTC SFU choice",
+            "database choice",
+            "real-time transport choice",
+            "storage backend"
+          ]
+        },
+        "acceptance_criteria": [
+          "API docs auto-generated from OpenAPI specs and hosted at /docs",
+          "At least 4 ADRs covering major architectural decisions with alternatives considered",
+          "Deployment runbook validated by a junior engineer doing a dry-run deployment",
+          "Architecture diagram reviewed by tech lead"
+        ],
+        "depends_on": [
+          7,
+          21,
+          22
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 27,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 58,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 58,
+          "final_review": {
+            "score": 58,
+            "flaws": [
+              "Step 10 leaves the backend stack as 'Python FastAPI + WebSockets / Node.js + Socket.IO' \u2014 an unresolved either/or. Mixing two runtimes for the same service layer creates split codebases, dual dependency trees, inconsistent error handling, and doubles the CI complexity. This must be decided before a line is written.",
+              "Step 14 has no TURN/STUN server design. WebRTC in enterprise environments fails silently for users behind symmetric NAT (common on corporate networks). Without coturn or a managed TURN service deployed in-region, video calls will not work for a material subset of enterprise users. This is not optional infrastructure.",
+              "The plan targets SOC 2 Type II and ISO 27001 (Steps 4, 25) but has no end-to-end encryption for messages. The threat model (Step 6) must explicitly evaluate E2E encryption and produce a signed-off decision record. Absence of that record means the compliance auditor will flag it.",
+              "GDPR right-to-erasure (Step 3 notes 'GDPR consideration') directly conflicts with the immutable audit log requirement for SOC 2/ISO 27001. Deleting a user must pseudonymize actor fields in audit records, cascade across PostgreSQL, Redis, Elasticsearch, and object storage, and coordinate with the compliance record. This contradiction is not designed around anywhere in the plan.",
+              "Step 14 sets 'max_participants_per_room: 200' but acceptance criteria only validates 50 simultaneous video feeds. At 50 rooms \u00d7 20 participants (Step 23 load target), that is 1000 concurrent video participants. The mediasoup node pool sizing and autoscaling policy are absent \u2014 this will underspecify the compute budget by an order of magnitude.",
+              "Step 19 tests messaging, files, directory, admin, and video signaling, but Step 14 (video) is not in its dependency list. Video signaling has no unit or integration test coverage in the plan.",
+              "Step 23 (system/load tests) depends on Steps 15-20 but not on Step 21 (infrastructure) or Step 22 (CI/CD). Load testing 5000 concurrent users requires production-topology infrastructure to be up. Running load tests against a developer laptop is not a valid acceptance gate.",
+              "The Elasticsearch indexing pipeline from PostgreSQL at 1000 messages/second (Step 23 load target) is not designed. Without a CDC pipeline (Debezium or equivalent), writes to Postgres and writes to Elasticsearch will drift under load, producing stale or missing search results. This is a known production failure mode.",
+              "No mobile applications are in scope. Enterprise internal comms platforms (Slack, Teams, Webex) derive majority adoption from iOS and Android native apps. A responsive web app is not a substitute for push notifications via APNs/FCM, background sync, or camera/microphone access on mobile. This is a business-level gap that should be in the PRD or explicitly out-of-scope.",
+              "Step 11 uses ClamAV for virus scanning of files up to 500MB. ClamAV scans synchronously and can take 30-120 seconds on a large file. The acceptance criteria says 'virus scan runs before file is marked available' with no timeout or async queue design. Under concurrent uploads, this blocks the file service completely.",
+              "Virtual backgrounds (Step 14) require WebAssembly/TensorFlow.js ML segmentation models (tens of MB per client) or server-side processing. This is not a trivial checkbox \u2014 it needs a dedicated design decision on client-vs-server processing, model size budgets, and CPU impact during calls.",
+              "Step 9 injects SAGE framework YAML configuration (project.yaml, prompts.yaml, tasks.yaml) into the product build critical path at dependency position [2]. This is a meta-framework concern, not a product delivery milestone. Blocking backend work (Step 10 depends on 7+8; Step 9 depends on 2 independently) is fine structurally, but the acceptance criteria reference SAGE framework internals, not product outcomes.",
+              "Rate limiting is absent from the API design (Step 7), backend implementation (Steps 10-14), and security architecture (Step 6). A messaging platform without per-user/per-channel rate limits is trivially abusable for spam flooding and DoS within the tenant."
+            ],
+            "suggestions": [
+              "Decide Python FastAPI vs Node.js in Step 2 (PRD) or add an explicit Architecture Decision Record step before Step 7. The ADRs in Step 27 are too late \u2014 they document decisions already made, not inform them.",
+              "Add a dedicated WebRTC infrastructure step (TURN/STUN cluster with coturn or Cloudflare Calls/Twilio) as a dependency for Step 14 and Step 23. Place it alongside Step 21.",
+              "Add a GDPR compliance design task after Step 3 that produces a 'User Data Deletion Runbook' \u2014 specifying which fields get pseudonymized in audit logs vs hard-deleted in transactional tables, with code-level implementation in Step 13.",
+              "Split Step 14 into two tasks: (a) WebRTC signaling server + room management, and (b) SFU capacity design + TURN infrastructure. Virtual backgrounds should be explicitly MVP-excluded or given its own task with ML model selection and client perf benchmarks.",
+              "Add a CDC/search indexing pipeline task (Debezium \u2192 Kafka \u2192 Elasticsearch consumer) between Steps 8 and 10. Define index mapping, update cadence, and lag SLO in the acceptance criteria.",
+              "Move Step 9 (SAGE config) to after Step 27 or make it a parallel non-blocking task. It should never block infrastructure (Step 21) or backend implementation.",
+              "Add a push notification service design to Step 10 \u2014 specify the broker (Firebase FCM, APNs for future mobile, web push via VAPID) and the notification fanout architecture explicitly.",
+              "Step 6 assigns STRIDE threat modeling and pentest planning to 'regulatory_specialist'. This work requires a security engineer or AppSec architect. Reassign the role and add a penetration test execution step (not just a plan) before Step 25.",
+              "Add key management design to Step 6: specify KMS (AWS KMS, HashiCorp Vault Transit, or GCP Cloud KMS), key rotation cadence, per-tenant key isolation strategy, and which services hold keys vs envelopes.",
+              "For Step 11 (virus scanning), define async scan queue architecture: file uploaded \u2192 marked 'pending_scan' \u2192 scan worker pulls from queue \u2192 marks available/quarantined. Set a scan timeout SLO and quarantine behavior."
+            ],
+            "missing": [
+              "TURN/STUN server provisioning and geographic placement strategy \u2014 without this, WebRTC video fails in enterprise NAT environments.",
+              "Mobile application scope decision \u2014 iOS and Android are absent. Even a 'mobile web PWA' decision needs to be made explicit in the PRD.",
+              "CDC pipeline design for Postgres \u2192 Elasticsearch real-time indexing at scale.",
+              "Encryption key management architecture (KMS selection, rotation policy, envelope encryption per tenant).",
+              "Data migration tooling for organizations migrating from Slack, Teams, or existing tools \u2014 Step 1 mentions a migration plan but there is no implementation step.",
+              "Video recording consent notification \u2014 recording to S3 without explicit consent flow violates GDPR in EU jurisdictions and several US state laws.",
+              "Rate limiting specification (per-user, per-channel, per-IP) in both API design and backend implementation.",
+              "Database partitioning and archival strategy for the messages table \u2014 at 1000 msg/sec sustained, a flat PostgreSQL table will hit query performance walls within months without partition-by-date design.",
+              "Pentest execution (not just plan) \u2014 Step 6 produces a pentest plan but no step executes it and feeds findings back into Step 25 evidence.",
+              "Staging environment smoke test gate \u2014 there is no step between Step 21 (infra) and Step 23 (load test) that validates staging is functional before expensive load tests run."
+            ],
+            "security_risks": [
+              "No TURN credential rotation mechanism. Static TURN credentials embedded in WebRTC offers can be harvested by any authenticated user and used to relay arbitrary traffic through your TURN servers \u2014 a bandwidth-abuse vector. Use time-limited TURN credentials (RFC 8489 Section 9.2).",
+              "File access control relies on 'per-channel access control' (Step 11) but the S3/MinIO presigned URL pattern is not specified. If presigned URLs are generated with long TTLs (common default is 7 days), a deprovisioned user retains file access until URL expiry \u2014 bypassing the 60-second deprovisioning SLA in Step 13.",
+              "SSO/SAML assertion replay is not addressed in the threat model scope. SAML 2.0 requires assertion ID tracking to prevent replay attacks. This is commonly missed in SAML implementations and must be in the pentest scope.",
+              "Elasticsearch is listed as storing message content for search. If Elasticsearch cluster is compromised, all message history is exposed in plaintext. Elasticsearch encryption at rest and field-level encryption for message bodies must be in Step 6.",
+              "The moderation agent (Step 9) reads message content to flag policy violations \u2014 this creates a trust boundary where an AI agent has access to all private channel messages. The access control model for this agent (service account scope, audit logging of agent reads) is not designed.",
+              "Step 13 'retention_policy_executor' automatically purges messages. If an attacker can manipulate retention policy configuration (via RBAC misconfiguration), they could trigger premature deletion of evidence during a security incident. The retention executor needs a 'legal hold' override that locks records against policy-based deletion.",
+              "Guest access for video rooms ('join link usable without account for guests \u2014 configurable', Step 14) creates an unauthenticated surface. Guest join links must be scoped to single-use or time-limited tokens, not permanent room IDs. This is not specified and defaults in many WebRTC implementations are insecure."
+            ],
+            "summary": "This is an ambitious and structurally sound plan that covers the right domains \u2014 compliance, security, UX, backend, frontend, infra, and ops \u2014 with reasonable dependency ordering and specific acceptance criteria. However, it has two production-breaking gaps that alone justify the score: the complete absence of TURN/STUN infrastructure (video will fail for a significant fraction of enterprise users behind corporate NAT) and the unresolved GDPR-vs-audit-log immutability contradiction (which will surface as a compliance finding within the first audit cycle). The backend stack ambiguity (FastAPI vs Socket.IO) must be resolved before implementation begins or you get two codebases and double the maintenance cost. The search indexing pipeline gap means message search will produce stale results under production load. The plan also systematically underestimates WebRTC complexity \u2014 virtual backgrounds, 200-participant rooms, and 50-room load targets are each non-trivial engineering efforts treated as line items. At 58/100, the plan is a solid foundation that needs approximately 4-6 additional tasks (TURN infra, GDPR deletion design, CDC pipeline, pentest execution, mobile scope decision, KMS design) and the stack decision resolved before it is safe to begin implementation.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 58,
+              "flaws": [
+                "Step 10 leaves the backend stack as 'Python FastAPI + WebSockets / Node.js + Socket.IO' \u2014 an unresolved either/or. Mixing two runtimes for the same service layer creates split codebases, dual dependency trees, inconsistent error handling, and doubles the CI complexity. This must be decided before a line is written.",
+                "Step 14 has no TURN/STUN server design. WebRTC in enterprise environments fails silently for users behind symmetric NAT (common on corporate networks). Without coturn or a managed TURN service deployed in-region, video calls will not work for a material subset of enterprise users. This is not optional infrastructure.",
+                "The plan targets SOC 2 Type II and ISO 27001 (Steps 4, 25) but has no end-to-end encryption for messages. The threat model (Step 6) must explicitly evaluate E2E encryption and produce a signed-off decision record. Absence of that record means the compliance auditor will flag it.",
+                "GDPR right-to-erasure (Step 3 notes 'GDPR consideration') directly conflicts with the immutable audit log requirement for SOC 2/ISO 27001. Deleting a user must pseudonymize actor fields in audit records, cascade across PostgreSQL, Redis, Elasticsearch, and object storage, and coordinate with the compliance record. This contradiction is not designed around anywhere in the plan.",
+                "Step 14 sets 'max_participants_per_room: 200' but acceptance criteria only validates 50 simultaneous video feeds. At 50 rooms \u00d7 20 participants (Step 23 load target), that is 1000 concurrent video participants. The mediasoup node pool sizing and autoscaling policy are absent \u2014 this will underspecify the compute budget by an order of magnitude.",
+                "Step 19 tests messaging, files, directory, admin, and video signaling, but Step 14 (video) is not in its dependency list. Video signaling has no unit or integration test coverage in the plan.",
+                "Step 23 (system/load tests) depends on Steps 15-20 but not on Step 21 (infrastructure) or Step 22 (CI/CD). Load testing 5000 concurrent users requires production-topology infrastructure to be up. Running load tests against a developer laptop is not a valid acceptance gate.",
+                "The Elasticsearch indexing pipeline from PostgreSQL at 1000 messages/second (Step 23 load target) is not designed. Without a CDC pipeline (Debezium or equivalent), writes to Postgres and writes to Elasticsearch will drift under load, producing stale or missing search results. This is a known production failure mode.",
+                "No mobile applications are in scope. Enterprise internal comms platforms (Slack, Teams, Webex) derive majority adoption from iOS and Android native apps. A responsive web app is not a substitute for push notifications via APNs/FCM, background sync, or camera/microphone access on mobile. This is a business-level gap that should be in the PRD or explicitly out-of-scope.",
+                "Step 11 uses ClamAV for virus scanning of files up to 500MB. ClamAV scans synchronously and can take 30-120 seconds on a large file. The acceptance criteria says 'virus scan runs before file is marked available' with no timeout or async queue design. Under concurrent uploads, this blocks the file service completely.",
+                "Virtual backgrounds (Step 14) require WebAssembly/TensorFlow.js ML segmentation models (tens of MB per client) or server-side processing. This is not a trivial checkbox \u2014 it needs a dedicated design decision on client-vs-server processing, model size budgets, and CPU impact during calls.",
+                "Step 9 injects SAGE framework YAML configuration (project.yaml, prompts.yaml, tasks.yaml) into the product build critical path at dependency position [2]. This is a meta-framework concern, not a product delivery milestone. Blocking backend work (Step 10 depends on 7+8; Step 9 depends on 2 independently) is fine structurally, but the acceptance criteria reference SAGE framework internals, not product outcomes.",
+                "Rate limiting is absent from the API design (Step 7), backend implementation (Steps 10-14), and security architecture (Step 6). A messaging platform without per-user/per-channel rate limits is trivially abusable for spam flooding and DoS within the tenant."
+              ],
+              "suggestions": [
+                "Decide Python FastAPI vs Node.js in Step 2 (PRD) or add an explicit Architecture Decision Record step before Step 7. The ADRs in Step 27 are too late \u2014 they document decisions already made, not inform them.",
+                "Add a dedicated WebRTC infrastructure step (TURN/STUN cluster with coturn or Cloudflare Calls/Twilio) as a dependency for Step 14 and Step 23. Place it alongside Step 21.",
+                "Add a GDPR compliance design task after Step 3 that produces a 'User Data Deletion Runbook' \u2014 specifying which fields get pseudonymized in audit logs vs hard-deleted in transactional tables, with code-level implementation in Step 13.",
+                "Split Step 14 into two tasks: (a) WebRTC signaling server + room management, and (b) SFU capacity design + TURN infrastructure. Virtual backgrounds should be explicitly MVP-excluded or given its own task with ML model selection and client perf benchmarks.",
+                "Add a CDC/search indexing pipeline task (Debezium \u2192 Kafka \u2192 Elasticsearch consumer) between Steps 8 and 10. Define index mapping, update cadence, and lag SLO in the acceptance criteria.",
+                "Move Step 9 (SAGE config) to after Step 27 or make it a parallel non-blocking task. It should never block infrastructure (Step 21) or backend implementation.",
+                "Add a push notification service design to Step 10 \u2014 specify the broker (Firebase FCM, APNs for future mobile, web push via VAPID) and the notification fanout architecture explicitly.",
+                "Step 6 assigns STRIDE threat modeling and pentest planning to 'regulatory_specialist'. This work requires a security engineer or AppSec architect. Reassign the role and add a penetration test execution step (not just a plan) before Step 25.",
+                "Add key management design to Step 6: specify KMS (AWS KMS, HashiCorp Vault Transit, or GCP Cloud KMS), key rotation cadence, per-tenant key isolation strategy, and which services hold keys vs envelopes.",
+                "For Step 11 (virus scanning), define async scan queue architecture: file uploaded \u2192 marked 'pending_scan' \u2192 scan worker pulls from queue \u2192 marks available/quarantined. Set a scan timeout SLO and quarantine behavior."
+              ],
+              "missing": [
+                "TURN/STUN server provisioning and geographic placement strategy \u2014 without this, WebRTC video fails in enterprise NAT environments.",
+                "Mobile application scope decision \u2014 iOS and Android are absent. Even a 'mobile web PWA' decision needs to be made explicit in the PRD.",
+                "CDC pipeline design for Postgres \u2192 Elasticsearch real-time indexing at scale.",
+                "Encryption key management architecture (KMS selection, rotation policy, envelope encryption per tenant).",
+                "Data migration tooling for organizations migrating from Slack, Teams, or existing tools \u2014 Step 1 mentions a migration plan but there is no implementation step.",
+                "Video recording consent notification \u2014 recording to S3 without explicit consent flow violates GDPR in EU jurisdictions and several US state laws.",
+                "Rate limiting specification (per-user, per-channel, per-IP) in both API design and backend implementation.",
+                "Database partitioning and archival strategy for the messages table \u2014 at 1000 msg/sec sustained, a flat PostgreSQL table will hit query performance walls within months without partition-by-date design.",
+                "Pentest execution (not just plan) \u2014 Step 6 produces a pentest plan but no step executes it and feeds findings back into Step 25 evidence.",
+                "Staging environment smoke test gate \u2014 there is no step between Step 21 (infra) and Step 23 (load test) that validates staging is functional before expensive load tests run."
+              ],
+              "security_risks": [
+                "No TURN credential rotation mechanism. Static TURN credentials embedded in WebRTC offers can be harvested by any authenticated user and used to relay arbitrary traffic through your TURN servers \u2014 a bandwidth-abuse vector. Use time-limited TURN credentials (RFC 8489 Section 9.2).",
+                "File access control relies on 'per-channel access control' (Step 11) but the S3/MinIO presigned URL pattern is not specified. If presigned URLs are generated with long TTLs (common default is 7 days), a deprovisioned user retains file access until URL expiry \u2014 bypassing the 60-second deprovisioning SLA in Step 13.",
+                "SSO/SAML assertion replay is not addressed in the threat model scope. SAML 2.0 requires assertion ID tracking to prevent replay attacks. This is commonly missed in SAML implementations and must be in the pentest scope.",
+                "Elasticsearch is listed as storing message content for search. If Elasticsearch cluster is compromised, all message history is exposed in plaintext. Elasticsearch encryption at rest and field-level encryption for message bodies must be in Step 6.",
+                "The moderation agent (Step 9) reads message content to flag policy violations \u2014 this creates a trust boundary where an AI agent has access to all private channel messages. The access control model for this agent (service account scope, audit logging of agent reads) is not designed.",
+                "Step 13 'retention_policy_executor' automatically purges messages. If an attacker can manipulate retention policy configuration (via RBAC misconfiguration), they could trigger premature deletion of evidence during a security incident. The retention executor needs a 'legal hold' override that locks records against policy-based deletion.",
+                "Guest access for video rooms ('join link usable without account for guests \u2014 configurable', Step 14) creates an unauthenticated surface. Guest join links must be scoped to single-use or time-limited tokens, not permanent room IDs. This is not specified and defaults in many WebRTC implementations are insecure."
+              ],
+              "summary": "This is an ambitious and structurally sound plan that covers the right domains \u2014 compliance, security, UX, backend, frontend, infra, and ops \u2014 with reasonable dependency ordering and specific acceptance criteria. However, it has two production-breaking gaps that alone justify the score: the complete absence of TURN/STUN infrastructure (video will fail for a significant fraction of enterprise users behind corporate NAT) and the unresolved GDPR-vs-audit-log immutability contradiction (which will surface as a compliance finding within the first audit cycle). The backend stack ambiguity (FastAPI vs Socket.IO) must be resolved before implementation begins or you get two codebases and double the maintenance cost. The search indexing pipeline gap means message search will produce stale results under production load. The plan also systematically underestimates WebRTC complexity \u2014 virtual backgrounds, 200-participant rooms, and 50-room load targets are each non-trivial engineering efforts treated as line items. At 58/100, the plan is a solid foundation that needs approximately 4-6 additional tasks (TURN infra, GDPR deletion design, CDC pipeline, pentest execution, mobile scope decision, KMS design) and the stack decision resolved before it is safe to begin implementation.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T11:29:30.958834+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 119.12,
+      "critic_plan": 132.51
+    }
+  }
+}

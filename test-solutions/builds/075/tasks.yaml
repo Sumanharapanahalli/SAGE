@@ -1,0 +1,289 @@
+task_types:
+  BUSINESS_ANALYSIS:
+    description: Define business requirements, user personas (students, proctors,
+      admins, institutions), process flows for exam lifecycle, and ROI analysis for
+      institutions replacing in-person proctoring.
+    agent_role: business_analyst
+    acceptance_criteria:
+    - All user personas documented with goals, pain points, and technical constraints
+    - Exam lifecycle flow covers scheduling → identity check → live session → AI analysis
+      → results
+    - ROI model quantifies cost savings vs in-person proctoring with break-even analysis
+    - Requirements distinguish COPPA-applicable users (under 13) from general users
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Write the product requirements document (PRD) covering all platform
+      modules: webcam monitoring, screen recording, AI cheating detection, identity
+      verification, and analytics. Define MVP scope, roadmap, and success metrics.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD covers all five core modules with feature-level requirements
+    - MVP vs v2 scope explicitly defined with rationale
+    - Success metrics are measurable and have baseline targets (e.g., false positive
+      rate < 5%)
+    - Roadmap includes milestone dates and dependencies between modules
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research and produce wireframes for all platform roles:
+      student exam flow, proctor dashboard, admin institution management, and results/analytics
+      views. Include WCAG 2.1 AA accessibility audit.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all screens for all three user roles
+    - Student exam flow shows clear consent and privacy notice before webcam/screen
+      access
+    - WCAG 2.1 AA audit checklist completed with no critical violations
+    - Design system tokens defined for color, typography, spacing (supports theming)
+    - Proctor dashboard displays live feeds, AI flags, and incident controls in single
+      view
+    - Accessibility for learners with disabilities
+    - Mobile-responsive for student devices
+    depends_on:
+    - 2
+  COMPLIANCE:
+    description: Produce compliance artifacts for COPPA, FERPA, and WCAG 2.1. Document
+      data retention policies, parental consent flows for under-13 users, student
+      education record protections, and accessibility conformance statement.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - FERPA policy defines which data is an 'education record' and who may access
+      it
+    - COPPA checklist confirms age verification mechanism and parental consent workflow
+    - Data retention matrix specifies retention period for each data type (recordings,
+      flags, identity docs)
+    - WCAG conformance statement lists level, scope, and known exceptions
+    - Consent flow spec is implemented as a mandatory pre-exam step
+    depends_on:
+    - 2
+  SECURITY:
+    description: Threat model the platform covering webcam/screen data streams, identity
+      document handling, AI model inputs, and exam result integrity. Produce SBOM
+      and penetration test plan.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE threat model completed for all five platform modules
+    - SBOM generated with all third-party dependencies and known CVEs documented
+    - Penetration test plan covers authentication, stream security, and admin endpoints
+    - Encryption spec defines key management, rotation policy, and identity document
+      vault design
+    - Session token security (short-lived JWTs, refresh rotation) specified
+    depends_on:
+    - 4
+  DATABASE:
+    description: Design the database schema for users, institutions, exams, sessions,
+      identity verifications, AI incidents, and analytics events. Define FERPA-compliant
+      access control at the data layer.
+    agent_role: developer
+    acceptance_criteria:
+    - All entities have UUID primary keys and created_at/updated_at timestamps
+    - Session recordings stored as references (S3 object keys) not blobs
+    - Row-level security policies prevent cross-institution data leakage
+    - Soft-delete pattern used for FERPA records (no hard deletes without retention
+      policy trigger)
+    - Audit log table captures all reads of student education records with accessor
+      identity
+    - Migrations are idempotent and reversible
+    depends_on:
+    - 4
+  INFRA:
+    description: 'Set up cloud infrastructure: object storage for recordings, CDN,
+      WebRTC media servers, AI inference endpoints, and CI/CD pipelines. Define environment
+      separation (dev/staging/prod).'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Terraform plan applies without errors for all three environments
+    - S3 bucket has server-side encryption (AES-256), versioning enabled, and lifecycle
+      rules matching data retention policy
+    - Coturn TURN server deployed and reachable for WebRTC fallback
+    - CI/CD pipeline runs lint → test → build → deploy on PR merge
+    - Secrets managed via AWS Secrets Manager (no hardcoded credentials)
+    - CloudFront distribution configured with HTTPS-only and HSTS headers
+    depends_on:
+    - 5
+    - 6
+  BACKEND:
+    description: 'Build the core backend API: authentication (institution SSO + student
+      login), exam management CRUD, session lifecycle management, multi-tenant institution
+      isolation, and FERPA audit logging middleware.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints return correct HTTP status codes and typed responses per OpenAPI
+      spec
+    - 'Multi-tenant isolation verified: institution A cannot read institution B data'
+    - FERPA audit logger records every read of student records with user_id, timestamp,
+      and endpoint
+    - JWT access tokens expire in 15 minutes; refresh tokens in 24 hours
+    - SAML SSO integration tested against mock IdP
+    - Rate limiting applied to auth endpoints (max 10 req/min per IP)
+    depends_on:
+    - 6
+    - 7
+  ML_MODEL:
+    description: 'Train and deploy the AI cheating detection model: multiple-person
+      detection, gaze tracking (off-screen detection), audio anomaly detection, and
+      suspicious object detection from webcam frames.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Multiple-person detection achieves >= 95% precision on test set
+    - Gaze tracker flags off-screen look sustained > 5 seconds with < 10% false positive
+      rate
+    - Audio classifier achieves >= 90% accuracy distinguishing ambient noise from
+      speech
+    - Inference latency < 500ms per frame at SageMaker endpoint
+    - Model card documents training data sources, known biases, and demographic fairness
+      metrics
+    - Evaluation report includes confusion matrix and ROC curves for each detector
+    depends_on:
+    - 7
+  DATA:
+    description: 'Build the analytics data pipeline: session event ingestion, metrics
+      aggregation (per-exam, per-institution, per-student cohort), and analytics API
+      endpoints for dashboard consumption.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Materialized views refresh every 5 minutes
+    - Analytics API returns institution-scoped data only (enforced by tenant middleware)
+    - All metrics queryable by date range
+    - Cohort analytics anonymize data with k-anonymity (k >= 5) before returning aggregates
+    - Analytics endpoints respond in < 500ms for institution-level queries
+    depends_on:
+    - 8
+    - 12
+  AGENTIC:
+    description: 'Implement a Human-in-the-Loop (human_in_the_loop) pattern for proctor
+      incident review: AI flags incidents, proctor reviews evidence (frame + context),
+      approves or dismisses, and feedback is stored to improve future model thresholds.'
+    agent_role: developer
+    acceptance_criteria:
+    - 'Proctor review interface shows: incident frame, incident type, AI confidence,
+      surrounding 30s video clip'
+    - Proctor can approve (confirm cheating), dismiss (false positive), or escalate
+      (to institution admin)
+    - Each decision stored with proctor_id, timestamp, and optional note
+    - After 50 decisions per incident type per institution, confidence thresholds
+      auto-adjust using stored feedback
+    - Feedback loop does not retrain model; adjusts display threshold only
+    - All proctor decisions written to FERPA audit log
+    depends_on:
+    - 12
+  FRONTEND:
+    description: 'Build the student exam interface: pre-exam system check (webcam/mic/screen
+      permissions), identity verification flow, exam room with webcam/screen sharing,
+      consent modal, and post-exam confirmation.'
+    agent_role: developer
+    acceptance_criteria:
+    - System check validates webcam, microphone, screen share, and bandwidth before
+      allowing exam entry
+    - Consent modal displays in student's locale language and requires explicit accept
+      before proceeding
+    - Identity verification step captures live selfie and document photo with clear
+      guidance text
+    - Exam room shows active recording indicators (webcam dot, screen share indicator)
+      at all times
+    - Student cannot dismiss webcam or screen share without triggering proctor alert
+    - All interactive elements pass WCAG 2.1 AA keyboard navigation and screen reader
+      tests
+    depends_on:
+    - 3
+    - 9
+    - 10
+  LOCALIZATION:
+    description: Set up i18n infrastructure and produce initial translations for English,
+      Spanish, French, and Mandarin. Localize all consent modals, FERPA/COPPA notices,
+      and error messages.
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All UI strings externalized to locale JSON files (no hardcoded English in components)
+    - Consent modal and COPPA/FERPA notices professionally translated (not machine-translated)
+      for all four locales
+    - Language selector available on login and pre-exam pages
+    - react-i18next configured with locale detection (browser language → fallback
+      to en)
+    - No missing translation keys in build output (CI check enforced)
+    depends_on:
+    - 15
+    - 16
+    - 17
+  TESTS:
+    description: 'Write unit and integration tests for all backend services: authentication,
+      identity verification, session management, AI detection pipeline, analytics,
+      and FERPA audit middleware.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Unit tests cover all service methods with mocked external dependencies
+    - Integration tests verify tenant isolation (cross-institution data access returns
+      403)
+    - FERPA audit logger test verifies every student record read produces an audit
+      entry
+    - 'Identity verification tests cover: pass, fail (low confidence), and manual
+      review paths'
+    - 'Session lifecycle tests cover: start, disconnect/reconnect, and clean end scenarios'
+    - Overall test coverage >= 80%; critical paths >= 95%
+    depends_on:
+    - 12
+    - 13
+    - 14
+  QA:
+    description: Produce the QA test plan, test case suite, and execute test runs
+      for all platform modules. Include bias testing for AI detection across demographic
+      groups.
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test plan covers all five core modules with pass/fail criteria defined
+    - Bias testing report documents false positive rates across demographic groups
+      (max 2x variance allowed)
+    - All COPPA consent flow test cases pass including age gate and parental consent
+      path
+    - 'FERPA data access control cases verified: student cannot access other student''s
+      data'
+    - Proctor alert latency test confirms < 2 seconds for 95th percentile
+    - Test execution report signed off before production release
+    depends_on:
+    - 19
+  SYSTEM_TEST:
+    description: 'End-to-end system test suite: full exam lifecycle from scheduling
+      through identity verification, live monitoring, AI flag generation, proctor
+      review, and analytics reporting. Load test for 500 concurrent sessions.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full exam lifecycle E2E test passes for all three user roles (student, proctor,
+      admin)
+    - Load test confirms 500 concurrent sessions with all SLA targets met
+    - No session recording gaps detected under load
+    - TURN server fallback path tested and verified under NAT conditions
+    - Load test report documents resource utilization and identifies scaling thresholds
+    depends_on:
+    - 18
+    - 20
+  DEVOPS:
+    description: 'Set up production monitoring, alerting, and SRE runbooks: stream
+      health monitoring, AI inference latency alerts, FERPA audit log integrity checks,
+      and incident response playbooks.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - All five alert rules configured and tested with synthetic failures
+    - FERPA breach response runbook reviewed by legal/compliance team
+    - 'Grafana dashboard shows: active sessions, incident rate, stream health, AI
+      latency, and storage usage'
+    - On-call rotation configured with escalation path
+    - Audit log integrity check runs every 24 hours and alerts on tampering
+    depends_on:
+    - 21
+  TRAINING:
+    description: 'Produce training materials for all user roles: student quick-start
+      guide, proctor operating manual, institution admin guide, and onboarding video
+      scripts. Include FERPA/COPPA compliance awareness materials.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Student guide covers system check, identity verification, and exam room controls
+      in under 5 minutes reading time
+    - Proctor manual covers incident review workflow, escalation procedures, and bias
+      awareness
+    - Admin guide covers exam creation, user management, analytics interpretation,
+      and compliance report generation
+    - Video scripts reviewed by UX team for clarity and accessibility (captions required)
+    - FERPA training document reviewed and approved by legal advisor
+    depends_on:
+    - 17
+    - 22

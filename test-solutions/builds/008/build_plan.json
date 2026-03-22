@@ -1,0 +1,1054 @@
+{
+  "run_id": "71b3cdf7-bc24-4c89-b135-4e0cf2bb8285",
+  "status": {
+    "run_id": "71b3cdf7-bc24-4c89-b135-4e0cf2bb8285",
+    "solution_name": "medical_imaging_ai",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-21T23:02:20.651639+00:00",
+    "updated_at": "2026-03-21T23:07:11.324292+00:00",
+    "product_description": "AI-powered medical imaging analysis for chest X-rays detecting pneumonia, tuberculosis, and lung nodules. DICOM integration, FDA 510(k) pathway, De Novo classification for ML/AI SaMD.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document for AI-powered chest X-ray analysis SaMD covering pneumonia, tuberculosis, and lung nodule detection. Document intended use, indications for use, target user population (radiologists, clinicians), operating environment, and success metrics. Establish FDA 510(k) predicate device strategy and De Novo classification rationale.",
+        "payload": {
+          "output_artifacts": [
+            "PRD.md",
+            "intended_use_statement.md",
+            "indications_for_use.md",
+            "predicate_device_analysis.md"
+          ],
+          "regulatory_pathway": "FDA 510(k) / De Novo for ML/AI SaMD",
+          "target_conditions": [
+            "pneumonia",
+            "tuberculosis",
+            "lung_nodules"
+          ],
+          "user_roles": [
+            "radiologist",
+            "ordering_clinician",
+            "hospital_admin"
+          ]
+        },
+        "acceptance_criteria": [
+          "Intended use statement approved by regulatory_specialist",
+          "Three predicate devices identified for 510(k) with K-number references",
+          "De Novo classification request rationale documented for novel ML algorithm",
+          "Success metrics defined: sensitivity \u2265 90%, specificity \u2265 85% per condition",
+          "User population and use environment fully described"
+        ],
+        "depends_on": [],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Document clinical workflow integration requirements, user stories for radiologist worklist, PACS/RIS integration needs, escalation workflows for AI-flagged findings, and system failure mode behaviors. Define ALARP risk tolerance and clinician override requirements.",
+        "payload": {
+          "workflows": [
+            "worklist_review",
+            "ai_assisted_read",
+            "discrepancy_flagging",
+            "report_generation"
+          ],
+          "integrations": [
+            "PACS",
+            "RIS",
+            "HL7_FHIR",
+            "DICOM_WADO"
+          ],
+          "user_stories_count": 25
+        },
+        "acceptance_criteria": [
+          "25+ user stories written in BDD format with acceptance criteria",
+          "Clinical workflow diagrams showing AI touchpoints and human override paths",
+          "PACS integration requirements documented with DICOM conformance needs",
+          "System failure behavior defined: graceful degradation, no blocking of normal reads",
+          "Clinician override mechanism designed: AI suggestions never mandatory"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "Design DICOM viewer interface with AI overlay, confidence score visualization, heatmap/saliency map display for detected findings, annotation tools for radiologist corrections, and audit trail UI. Ensure accessibility (WCAG 2.1 AA) and radiologist-optimized dark-mode layout.",
+        "payload": {
+          "screens": [
+            "dicom_viewer",
+            "ai_findings_overlay",
+            "worklist",
+            "report_editor",
+            "admin_dashboard",
+            "audit_log_viewer"
+          ],
+          "ai_visualization": [
+            "bounding_boxes",
+            "heatmaps",
+            "confidence_scores",
+            "differential_ranking"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "Wireframes for all 6 screens reviewed and approved by clinical user representative",
+          "AI findings overlay mockup shows confidence scores, condition labels, and saliency heatmap",
+          "Radiologist correction/annotation flow designed with undo/redo and audit capture",
+          "Dark-mode DICOM-optimized color palette validated for diagnostic accuracy",
+          "Accessibility audit passed for keyboard navigation and screen reader support"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "SAFETY",
+        "description": "Perform ISO 14971 hazard analysis and risk assessment for the AI SaMD. Identify hazardous situations (false negatives, false positives, DICOM parsing errors, model drift), estimate probability and severity, define risk control measures, and produce risk management file. Include FMEA for software failure modes per IEC 62304.",
+        "payload": {
+          "standards": [
+            "ISO 14971:2019",
+            "IEC 62304:2015+A1:2015",
+            "FDA_AI_ML_SaMD_guidance"
+          ],
+          "hazard_categories": [
+            "false_negative_pneumonia",
+            "false_negative_tb",
+            "missed_nodule",
+            "false_positive_overdiagnosis",
+            "dicom_corruption",
+            "model_drift",
+            "latency_failure"
+          ],
+          "risk_matrix": "5x5_probability_severity"
+        },
+        "acceptance_criteria": [
+          "Hazard identification table with \u2265 20 hazardous situations documented",
+          "Risk matrix completed for all hazards with initial risk estimates",
+          "Risk control measures defined for all unacceptable risks (RPN > threshold)",
+          "Residual risk evaluation completed post-control",
+          "FMEA spreadsheet covering all software modules with failure modes, effects, and mitigations",
+          "Risk management plan approved by safety_engineer and regulatory_specialist",
+          "ISO 14971 risk management file complete",
+          "Residual risk acceptable"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "safety_engineer"
+      },
+      {
+        "step": 5,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specification for medical imaging AI services: DICOM upload endpoints, inference request/response contracts, findings retrieval, radiologist feedback capture, audit log API, and admin configuration endpoints. Define FHIR R4 DiagnosticReport mapping for findings export.",
+        "payload": {
+          "endpoints": [
+            "POST /studies/{studyUID}/analyze",
+            "GET /studies/{studyUID}/findings",
+            "POST /studies/{studyUID}/findings/{findingId}/feedback",
+            "POST /dicom/upload",
+            "GET /audit/events",
+            "GET /models/status",
+            "POST /admin/config"
+          ],
+          "fhir_resources": [
+            "DiagnosticReport",
+            "ImagingStudy",
+            "Observation"
+          ],
+          "auth": "OAuth2 + SMART on FHIR"
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 spec validated with no schema errors",
+          "All endpoints documented with request/response examples and error codes",
+          "FHIR R4 DiagnosticReport schema defined for AI findings export",
+          "SMART on FHIR OAuth2 scopes documented for each endpoint",
+          "Rate limiting and payload size limits specified",
+          "API versioning strategy defined (URI versioning v1/)"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 6,
+        "task_type": "DATABASE",
+        "description": "Design database schema for studies, DICOM metadata, AI inference results, findings, radiologist corrections, audit events, model versions, and performance metrics. Include PostgreSQL schema with HIPAA-compliant PHI separation, row-level security, and time-series partitioning for audit logs.",
+        "payload": {
+          "tables": [
+            "studies",
+            "dicom_series",
+            "inference_runs",
+            "findings",
+            "radiologist_feedback",
+            "audit_events",
+            "model_versions",
+            "performance_metrics",
+            "users",
+            "roles"
+          ],
+          "database": "PostgreSQL 15+",
+          "compliance": [
+            "HIPAA_PHI_isolation",
+            "row_level_security",
+            "audit_triggers"
+          ],
+          "migrations_tool": "Alembic"
+        },
+        "acceptance_criteria": [
+          "ERD diagram reviewed and approved with all relationships documented",
+          "PHI fields identified and isolated in separate schema with RLS policies",
+          "Audit trigger on all PHI-touching tables capturing user, timestamp, operation",
+          "Alembic migration scripts for all tables with rollback support",
+          "Database indexes defined for worklist query patterns (study date, status, urgency)",
+          "Data retention policy schema support for 7-year HIPAA requirement"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "DATA",
+        "description": "Build DICOM ingestion and preprocessing pipeline: C-STORE SCP listener, DICOM validation, metadata extraction, pixel data normalization (CLAHE, window/level), lung segmentation preprocessing, dataset versioning with DVC, and train/val/test split management. Support DICOM SR for structured reporting output.",
+        "payload": {
+          "dicom_protocols": [
+            "C-STORE_SCP",
+            "WADO-RS",
+            "STOW-RS",
+            "QIDO-RS"
+          ],
+          "preprocessing_steps": [
+            "DICOM_validation",
+            "pixel_normalization",
+            "CLAHE_enhancement",
+            "lung_segmentation",
+            "artifact_removal",
+            "resize_512x512"
+          ],
+          "dataset_management": "DVC",
+          "input_modalities": [
+            "CR",
+            "DX"
+          ],
+          "output_formats": [
+            "PNG_preprocessed",
+            "DICOM_SR",
+            "FHIR_ImagingStudy"
+          ]
+        },
+        "acceptance_criteria": [
+          "C-STORE SCP listener accepts and validates DICOM CR/DX images",
+          "Preprocessing pipeline produces normalized 512x512 images with CLAHE enhancement",
+          "Lung segmentation mask generated for each study with QC check",
+          "DVC pipeline tracks dataset versions with reproducible train/val/test splits",
+          "DICOM metadata extracted to database with all required DICOM tags",
+          "Pipeline processes 100 studies/hour at minimum on reference hardware",
+          "Corrupt or non-conformant DICOM files quarantined with error logging"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 8,
+        "task_type": "ML_MODEL",
+        "description": "Train and validate multi-label CNN ensemble for pneumonia, tuberculosis, and lung nodule detection. Use DenseNet-121/EfficientNet-B4 architectures with Grad-CAM saliency maps. Implement separate calibrated classifiers per condition, uncertainty quantification, and model card documentation. Establish OOD detection for unsupported image types.",
+        "payload": {
+          "architectures": [
+            "DenseNet-121",
+            "EfficientNet-B4"
+          ],
+          "conditions": {
+            "pneumonia": {
+              "dataset": "CheXpert+NIH_ChestXray14",
+              "min_auc": 0.92
+            },
+            "tuberculosis": {
+              "dataset": "TBX11K+Shenzhen",
+              "min_auc": 0.94
+            },
+            "lung_nodules": {
+              "dataset": "LUNA16+LIDC-IDRI",
+              "min_sensitivity": 0.9
+            }
+          },
+          "explainability": [
+            "GradCAM",
+            "GradCAM++",
+            "SHAP"
+          ],
+          "uncertainty": "Monte_Carlo_Dropout",
+          "calibration": "Platt_scaling",
+          "training_framework": "PyTorch + PyTorch Lightning",
+          "experiment_tracking": "MLflow"
+        },
+        "acceptance_criteria": [
+          "Pneumonia detection AUC \u2265 0.92 on held-out test set",
+          "TB detection AUC \u2265 0.94 on held-out test set",
+          "Lung nodule sensitivity \u2265 0.90 at specificity \u2265 0.85 on LUNA16",
+          "Grad-CAM saliency maps visually validated by radiologist on 50 cases",
+          "Calibration curves within \u00b15% expected calibration error",
+          "OOD detector flags non-chest or non-CR/DX images with > 95% accuracy",
+          "Model card completed with training data, performance metrics, known limitations",
+          "MLflow experiment runs reproducible from logged artifacts",
+          "Bias evaluation performed",
+          "Model card generated"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Configure Human-in-the-Loop (HITL) agentic pattern for AI finding proposals. Every AI-generated finding is a proposal requiring radiologist approval before inclusion in the diagnostic report. Integrate review_and_critique pattern for AI quality scoring. Set up SAGE proposal store, approval queue, and feedback ingestion pipeline for continuous model improvement.",
+        "payload": {
+          "agentic_pattern": "human_in_the_loop",
+          "secondary_pattern": "review_and_critique",
+          "hitl_gates": [
+            "ai_finding_proposal",
+            "report_finalization",
+            "model_drift_alert"
+          ],
+          "proposal_types": [
+            "finding_positive",
+            "finding_negative",
+            "urgency_escalation"
+          ],
+          "feedback_loop": "radiologist_correction -> vector_store -> model_retraining_signal",
+          "solution_name": "medical_imaging_ai"
+        },
+        "acceptance_criteria": [
+          "HITL approval gate configured: AI findings enter proposal queue, never auto-published",
+          "Radiologist approval/rejection captured with structured feedback per finding",
+          "Critic agent reviews AI finding quality against acceptance criteria before proposal",
+          "Feedback pipeline ingests corrections into vector store for retrieval context",
+          "Escalation proposal auto-generated for high-confidence TB/nodule findings",
+          "Audit trail captures every proposal state transition with timestamp and user"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build FastAPI backend services: DICOM study management, ML inference orchestration, findings CRUD, radiologist feedback processing, SMART on FHIR authentication, HL7 FHIR R4 export, HIPAA audit logging middleware, and async inference queue with Celery/Redis. Implement model versioning and A/B testing capability.",
+        "payload": {
+          "framework": "FastAPI + Celery + Redis",
+          "auth": "SMART_on_FHIR + OAuth2",
+          "services": [
+            "study_service",
+            "inference_service",
+            "findings_service",
+            "feedback_service",
+            "fhir_export_service",
+            "audit_service",
+            "model_registry_service"
+          ],
+          "async_queue": "Celery + Redis",
+          "hipaa_middleware": [
+            "audit_logging",
+            "PHI_access_control",
+            "TLS_enforcement",
+            "session_management"
+          ]
+        },
+        "acceptance_criteria": [
+          "All OpenAPI endpoints implemented and returning correct HTTP status codes",
+          "SMART on FHIR token validation working with test FHIR authorization server",
+          "Inference job queued asynchronously, status polled via GET /studies/{id}/status",
+          "FHIR R4 DiagnosticReport generated correctly for approved findings",
+          "HIPAA audit log records every PHI access with user, action, timestamp, IP",
+          "All PHI transmitted only over TLS 1.3+",
+          "Model registry tracks deployed versions with rollback capability",
+          "Load test: 50 concurrent inference requests handled without timeout"
+        ],
+        "depends_on": [
+          6,
+          8,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "FRONTEND",
+        "description": "Build React 18 + TypeScript DICOM viewer with AI findings overlay, Cornerstone.js DICOM rendering, confidence score badges, Grad-CAM heatmap toggle, radiologist annotation tools, worklist with AI urgency sorting, approval queue UI, and FHIR-integrated report editor.",
+        "payload": {
+          "framework": "React 18 + TypeScript + Vite",
+          "dicom_renderer": "Cornerstone3D",
+          "components": [
+            "DicomViewer",
+            "FindingsOverlay",
+            "HeatmapToggle",
+            "ConfidenceScore",
+            "WorklistTable",
+            "ApprovalQueue",
+            "AnnotationTools",
+            "ReportEditor",
+            "AuditLogViewer",
+            "AdminDashboard"
+          ],
+          "state_management": "Zustand",
+          "styling": "Tailwind CSS (dark mode)"
+        },
+        "acceptance_criteria": [
+          "DICOM images rendered correctly in Cornerstone3D with window/level controls",
+          "AI bounding boxes and confidence scores overlaid on correct anatomical regions",
+          "Grad-CAM heatmap toggleable per finding without page reload",
+          "Radiologist can approve, reject, or modify each AI finding with one-click actions",
+          "Worklist sorted by AI urgency score with color-coded risk indicators",
+          "Approval queue shows pending proposals with diff view before accepting",
+          "Report editor pre-populated with approved findings in structured format",
+          "All UI interactions captured in audit log via backend API calls"
+        ],
+        "depends_on": [
+          3,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "COMPLIANCE",
+        "description": "Produce IEC 62304 software lifecycle artifacts: Software Development Plan, Software Requirements Specification, Software Architecture Document, traceability matrix (requirements \u2192 design \u2192 code \u2192 tests), Software Verification and Validation Plan, and anomaly resolution records. Map all artifacts to FDA 510(k) Special Controls and Software Documentation guidance.",
+        "payload": {
+          "standards": [
+            "IEC 62304:2015+A1",
+            "FDA_SW_docs_guidance_2005",
+            "FDA_AI_ML_action_plan"
+          ],
+          "artifacts": [
+            "Software_Development_Plan.md",
+            "Software_Requirements_Specification.md",
+            "Software_Architecture_Document.md",
+            "Traceability_Matrix.xlsx",
+            "SV_V_Plan.md",
+            "Anomaly_Resolution_Record_template.md"
+          ],
+          "software_safety_class": "Class C (IEC 62304)",
+          "risk_classification": "Class II SaMD"
+        },
+        "acceptance_criteria": [
+          "Software classified as IEC 62304 Class C with justification documented",
+          "SRS covers all functional and non-functional requirements traceable to PRD",
+          "SAD includes architecture diagrams, module decomposition, and interface specs",
+          "Traceability matrix links every requirement to design element, code module, and test case",
+          "SVV Plan defines test levels (unit, integration, system, UAT) with entry/exit criteria",
+          "All artifacts reviewed and signed by regulatory_specialist",
+          "Document control: version numbers, change history, approval signatures",
+          "DHF (Design History File) structure created",
+          "V&V protocol drafted"
+        ],
+        "depends_on": [
+          4,
+          8,
+          10
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 13,
+        "task_type": "INFRA",
+        "description": "Build HIPAA-compliant containerized infrastructure: Docker Compose for development, Kubernetes manifests for production, GPU node pools for inference, encrypted storage for DICOM data, VPC network isolation, secrets management with Vault/AWS Secrets Manager, and DICOM DICOMweb proxy.",
+        "payload": {
+          "containerization": "Docker + Kubernetes",
+          "gpu_support": "NVIDIA T4/A100 via k8s device plugins",
+          "storage": [
+            "S3_encrypted_DICOM",
+            "PostgreSQL_RDS_encrypted",
+            "Redis_ElastiCache"
+          ],
+          "network": [
+            "VPC_isolation",
+            "private_subnets",
+            "WAF",
+            "DDoS_protection"
+          ],
+          "secrets": "HashiCorp Vault",
+          "dicom_proxy": "Orthanc DICOM server",
+          "hipaa_controls": [
+            "encryption_at_rest_AES256",
+            "encryption_in_transit_TLS13",
+            "VPC_endpoints",
+            "CloudTrail_logging"
+          ]
+        },
+        "acceptance_criteria": [
+          "Docker Compose starts all services (backend, frontend, Orthanc, Redis, Postgres) with single command",
+          "Kubernetes manifests deploy to staging cluster with GPU inference pods",
+          "All DICOM data encrypted at rest with AES-256, in transit with TLS 1.3",
+          "VPC with private subnets: backend and database not publicly reachable",
+          "Vault integration working: no secrets in environment variables or config files",
+          "Orthanc DICOM server operational with DICOMweb (WADO-RS/STOW-RS/QIDO-RS)",
+          "Infrastructure-as-code with Terraform: all resources reproducible"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 14,
+        "task_type": "DEVOPS",
+        "description": "Configure CI/CD pipeline with automated quality gates: GitHub Actions for build/test/scan, container image signing, SAST/DAST security scans, ML model regression testing gate, DICOM conformance test suite, staging deployment, and production promotion workflow with approval gate.",
+        "payload": {
+          "ci_platform": "GitHub Actions",
+          "quality_gates": [
+            "unit_tests_100%_pass",
+            "ML_model_AUC_regression_check",
+            "SAST_zero_critical",
+            "DICOM_conformance_pass",
+            "container_signing"
+          ],
+          "security_scanning": [
+            "Trivy",
+            "Bandit",
+            "OWASP_ZAP"
+          ],
+          "model_ci": "MLflow model registry promotion: Staging \u2192 Production",
+          "deployment_strategy": "blue_green",
+          "environments": [
+            "dev",
+            "staging",
+            "production"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs on every PR: build, test, scan in < 15 minutes",
+          "ML model regression check blocks deploy if AUC drops > 2% from baseline",
+          "SAST scan (Bandit) blocks merge on critical findings",
+          "Container images signed with cosign, verified at deploy time",
+          "Blue-green deployment with automated rollback on health check failure",
+          "DICOM conformance suite runs against staging Orthanc instance",
+          "Production deploys require explicit approval in GitHub Actions environment"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 15,
+        "task_type": "SECURITY",
+        "description": "Conduct security threat modeling (STRIDE), PHI data flow analysis, HIPAA Technical Safeguard controls implementation review, OAuth2/SMART on FHIR penetration test plan, API security review (OWASP API Top 10), and produce SBOM for all dependencies. Address medical device cybersecurity per FDA premarket guidance.",
+        "payload": {
+          "threat_model": "STRIDE",
+          "standards": [
+            "HIPAA_Technical_Safeguards_45_CFR_164.312",
+            "FDA_cybersecurity_premarket_guidance_2023",
+            "NIST_CSF"
+          ],
+          "scope": [
+            "API_endpoints",
+            "DICOM_interface",
+            "ML_model_adversarial",
+            "PHI_data_flows",
+            "authentication",
+            "audit_logging"
+          ],
+          "sbom_format": "SPDX 2.3",
+          "pen_test": "OWASP_API_Top10"
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model completed for all system components with mitigations mapped",
+          "PHI data flow diagram reviewed: all PHI stores and transmissions identified",
+          "HIPAA Technical Safeguards controls checklist: 100% addressed",
+          "OWASP API Top 10 pen test report with all High/Critical findings remediated",
+          "Adversarial robustness test: model behavior documented under pixel perturbation attacks",
+          "SBOM generated in SPDX 2.3 for all backend and ML dependencies",
+          "FDA cybersecurity premarket checklist completed for SaMD submission",
+          "Zero known CVEs with CVSS \u2265 7.0 in production dependencies"
+        ],
+        "depends_on": [
+          10,
+          13
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 16,
+        "task_type": "TESTS",
+        "description": "Write comprehensive unit and integration test suites: DICOM parsing unit tests, ML inference service tests, FHIR export tests, HIPAA audit middleware tests, SMART on FHIR auth tests, findings CRUD tests, feedback ingestion tests, and API contract tests with Dredd/Schemathesis.",
+        "payload": {
+          "test_framework": "pytest + pytest-asyncio",
+          "coverage_target": "\u2265 90% line coverage on src/",
+          "test_types": [
+            "unit",
+            "integration",
+            "contract",
+            "security_regression"
+          ],
+          "contract_testing": "Schemathesis (OpenAPI fuzzing)",
+          "mocking": "pytest-mock + respx for FHIR server",
+          "test_data": "synthetic DICOM test images (no real PHI)"
+        },
+        "acceptance_criteria": [
+          "\u2265 90% line coverage on all backend modules",
+          "DICOM parsing tests cover valid, corrupt, and non-standard edge cases",
+          "ML inference service tests mock model and validate response schema",
+          "HIPAA audit middleware: every PHI-touching endpoint verified to produce audit event",
+          "Schemathesis contract tests pass with no unhandled exceptions on all endpoints",
+          "SMART on FHIR auth tests: invalid token returns 401, expired token returns 401",
+          "All tests run in CI under 5 minutes using parallel execution"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 17,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Build ML model validation harness: clinical performance evaluation on independent test sets, subgroup analysis (age, sex, disease severity), reader study comparison protocol (AI vs radiologist alone vs AI-assisted), confusion matrix per condition, ROC/PRC curves, and performance degradation detection for model drift monitoring.",
+        "payload": {
+          "test_datasets": {
+            "pneumonia": "CheXpert_test_set (independent, N\u2265500)",
+            "tuberculosis": "TBX11K_test (N\u2265300)",
+            "lung_nodules": "LUNA16_test (N\u2265200)"
+          },
+          "subgroup_analysis": [
+            "sex",
+            "age_group",
+            "disease_severity",
+            "imaging_equipment_manufacturer"
+          ],
+          "reader_study": "AI-assisted vs unassisted radiologist reads (N=100 cases)",
+          "drift_detection": "PSI (Population Stability Index) on inference score distributions",
+          "reporting_format": "FDA_AI_algorithm_performance_summary"
+        },
+        "acceptance_criteria": [
+          "Independent test set performance: all AUC/sensitivity targets met per step 8",
+          "Subgroup analysis: performance disparity across sex/age groups < 5% AUC gap",
+          "Reader study: AI-assisted reads show statistically significant improvement over unassisted (p < 0.05)",
+          "Confusion matrices and ROC/PRC curves generated for all three conditions",
+          "PSI drift detector tested: triggers alert when distribution shift PSI > 0.2",
+          "FDA Algorithm Performance Summary document completed per guidance",
+          "All validation results reproducible from logged MLflow artifacts"
+        ],
+        "depends_on": [
+          8,
+          7
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 18,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute end-to-end system test plan: DICOM upload to finding approval workflow, PACS integration test with Orthanc, FHIR export validation, high-volume load test (500 studies/day), failover testing, HIPAA audit completeness test, and user acceptance testing with simulated radiologist sessions.",
+        "payload": {
+          "test_scenarios": [
+            "end_to_end_dicom_to_approved_finding",
+            "PACS_C-STORE_integration",
+            "FHIR_DiagnosticReport_export_validation",
+            "concurrent_500_studies_load_test",
+            "database_failover_recovery",
+            "model_service_unavailability_graceful_degradation",
+            "HIPAA_audit_completeness",
+            "radiologist_UAT_10_sessions"
+          ],
+          "performance_targets": {
+            "inference_latency_p95": "< 10 seconds per study",
+            "system_availability": "99.9% uptime",
+            "dicom_throughput": "500 studies/day"
+          }
+        },
+        "acceptance_criteria": [
+          "End-to-end workflow: DICOM received \u2192 AI analysis \u2192 proposal created \u2192 radiologist approved \u2192 FHIR report exported in < 15 minutes",
+          "PACS C-STORE integration: 100 test studies transferred and processed without error",
+          "FHIR DiagnosticReport validated against FHIR R4 validator with zero errors",
+          "Load test: 500 concurrent studies processed, P95 inference latency < 10s",
+          "Failover test: database failover completes in < 30s with zero data loss",
+          "Model unavailable: system serves cached results and alerts, does not block radiologist reads",
+          "HIPAA audit: every PHI access has corresponding audit event (100% coverage verified)",
+          "UAT: 10 radiologist sessions completed, \u2265 85% task completion rate"
+        ],
+        "depends_on": [
+          11,
+          14,
+          16,
+          17
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 19,
+        "task_type": "QA",
+        "description": "Execute Design History File (DHF) review, software quality audit per ISO 13485, defect tracking review, test traceability completeness check, and produce Software Verification and Validation Report. Conduct final QA sign-off against all acceptance criteria.",
+        "payload": {
+          "standard": "ISO 13485:2016",
+          "artifacts_reviewed": [
+            "DHF",
+            "SRS",
+            "SAD",
+            "test_reports",
+            "traceability_matrix",
+            "anomaly_records"
+          ],
+          "deliverables": [
+            "SVV_Report.md",
+            "DHF_completeness_checklist.md",
+            "ISO_13485_audit_report.md"
+          ],
+          "defect_classification": "FDA_anomaly_severity_classification"
+        },
+        "acceptance_criteria": [
+          "DHF completeness checklist: 100% of required documents present and approved",
+          "Traceability matrix: every SRS requirement covered by \u2265 1 passing test case",
+          "Zero open Critical or Major defects at QA sign-off",
+          "SVV Report signed: all planned tests executed, all pass criteria met",
+          "ISO 13485 audit: no major nonconformities identified",
+          "All anomaly records closed or risk-accepted with documented rationale"
+        ],
+        "depends_on": [
+          12,
+          18
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "COMPLIANCE",
+        "description": "Compile complete Design History File (DHF) per 21 CFR Part 820.30: design inputs, design outputs, design reviews, design verification, design validation, design transfer, and design changes. Produce ISO 13485 Quality Management System evidence package and risk management report per ISO 14971.",
+        "payload": {
+          "standards": [
+            "21_CFR_Part_820.30",
+            "ISO_13485:2016",
+            "ISO_14971:2019"
+          ],
+          "dhf_sections": [
+            "design_and_development_plan",
+            "design_inputs",
+            "design_outputs",
+            "design_review_records",
+            "design_verification_records",
+            "design_validation_records",
+            "design_transfer_records",
+            "design_change_records"
+          ],
+          "risk_management_report": "ISO_14971_risk_management_report.md"
+        },
+        "acceptance_criteria": [
+          "DHF structured per 21 CFR 820.30 with all 8 sections populated",
+          "Design inputs traceable to user needs and intended use",
+          "Design verification records link each output to a verification test with pass result",
+          "Design validation records include clinical performance evaluation and reader study",
+          "Risk Management Report summarizes all hazards, controls, and residual risk acceptability",
+          "ISO 13485 QMS evidence package reviewable by third-party auditor",
+          "All records signed by appropriate role (engineer, regulatory_specialist, QA)",
+          "DHF (Design History File) structure created",
+          "V&V protocol drafted"
+        ],
+        "depends_on": [
+          19,
+          4
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 21,
+        "task_type": "REGULATORY",
+        "description": "Prepare FDA 510(k) premarket notification submission package and De Novo classification request for the ML/AI SaMD component. Include device description, substantial equivalence argument, performance data summary, software documentation summary, cybersecurity documentation, and labeling. Address FDA AI/ML-Based SaMD Action Plan requirements.",
+        "payload": {
+          "submission_type": "Traditional_510k + De_Novo_for_ML_algorithm",
+          "sections": [
+            "cover_letter",
+            "indications_for_use",
+            "device_description",
+            "substantial_equivalence_comparison",
+            "performance_testing_summary",
+            "software_documentation_summary_IEC62304",
+            "cybersecurity_documentation",
+            "labeling_draft",
+            "risk_management_summary",
+            "AI_ML_predetermined_change_control_plan"
+          ],
+          "fda_guidance_refs": [
+            "FDA_SW_docs_guidance_2005",
+            "FDA_AI_ML_SaMD_action_plan_2021",
+            "FDA_cybersecurity_premarket_2023",
+            "FDA_De_Novo_guidance_2021"
+          ]
+        },
+        "acceptance_criteria": [
+          "510(k) cover letter formatted per FDA eCopy guidance",
+          "Substantial equivalence argument identifies predicate device(s) with K-numbers",
+          "Performance testing summary includes sensitivity/specificity tables per condition with confidence intervals",
+          "Software documentation summary maps to IEC 62304 software safety class C evidence",
+          "AI/ML Predetermined Change Control Plan addresses model retraining triggers and resubmission criteria",
+          "Cybersecurity documentation references FDA 2023 premarket guidance controls",
+          "Labeling includes intended use, contraindications, and 'for assistive use only, not for standalone diagnosis' statement",
+          "Full submission package reviewed by regulatory_specialist and legal_advisor"
+        ],
+        "depends_on": [
+          20,
+          15,
+          17
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "LEGAL",
+        "description": "Review software licensing for all ML dependencies, DICOM libraries, and open-source components. Draft HIPAA Business Associate Agreement template, data use agreements for training datasets, terms of service, and privacy policy. Review IP ownership of trained model weights.",
+        "payload": {
+          "license_audit_scope": [
+            "PyTorch",
+            "Cornerstone3D",
+            "pydicom",
+            "dcm4che",
+            "all_ML_dependencies"
+          ],
+          "agreements_needed": [
+            "BAA_template",
+            "data_use_agreement",
+            "TOS",
+            "privacy_policy"
+          ],
+          "ip_review": [
+            "model_weights_ownership",
+            "training_data_provenance",
+            "patent_landscape"
+          ]
+        },
+        "acceptance_criteria": [
+          "License audit: no GPL licenses in production code without explicit approval",
+          "BAA template compliant with HIPAA 45 CFR Part 164",
+          "Training dataset data use agreements reviewed: all datasets used within permitted terms",
+          "Privacy policy compliant with HIPAA, CCPA, and GDPR (EU users)",
+          "IP ownership of model weights clearly attributed and documented",
+          "Patent landscape search completed for AI-based chest X-ray diagnosis"
+        ],
+        "depends_on": [
+          1,
+          8
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 23,
+        "task_type": "DOCS",
+        "description": "Produce complete documentation suite: system architecture README, API reference (generated from OpenAPI spec), radiologist user guide, hospital IT integration guide (PACS/DICOM setup), administrator operations guide, model card, and developer onboarding guide.",
+        "payload": {
+          "docs": [
+            "README.md (system overview, quickstart)",
+            "API_Reference.md (generated from OpenAPI 3.1 spec)",
+            "Radiologist_User_Guide.pdf",
+            "PACS_Integration_Guide.md",
+            "Admin_Operations_Guide.md",
+            "Model_Card.md",
+            "Developer_Onboarding.md",
+            "HIPAA_Compliance_Summary.md"
+          ],
+          "doc_tool": "MkDocs + mkdocstrings"
+        },
+        "acceptance_criteria": [
+          "README includes architecture diagram, prerequisites, and 5-minute quickstart",
+          "API reference generated directly from OpenAPI spec with zero manual sync",
+          "Radiologist user guide covers worklist, viewer, AI overlay, and approval workflow with screenshots",
+          "PACS integration guide covers DICOM C-STORE configuration for 3 major PACS vendors",
+          "Model card includes training data sources, performance metrics, known failure modes, and update cadence",
+          "All docs reviewed by a non-developer (QA or clinical user) for clarity",
+          "Docs published to internal documentation site via CI pipeline"
+        ],
+        "depends_on": [
+          18,
+          21
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 24,
+        "task_type": "TRAINING",
+        "description": "Develop clinical training program for radiologist and clinical staff users: onboarding curriculum, AI limitations awareness module, case-based training scenarios, competency assessment, and train-the-trainer materials. Required for FDA-cleared SaMD deployment and liability management.",
+        "payload": {
+          "modules": [
+            "AI_system_overview_and_intended_use",
+            "AI_limitations_and_failure_modes",
+            "worklist_and_viewer_hands_on",
+            "approving_and_rejecting_AI_findings",
+            "when_to_override_AI",
+            "adverse_event_reporting_procedure"
+          ],
+          "delivery": [
+            "LMS_SCORM_package",
+            "PDF_quick_reference_card"
+          ],
+          "competency_assessment": "10_question_quiz_with_80%_pass_threshold",
+          "audience": [
+            "radiologists",
+            "technologists",
+            "department_admins"
+          ]
+        },
+        "acceptance_criteria": [
+          "Training curriculum covers all FDA-required labeling statements and intended use scope",
+          "AI limitations module includes documented failure modes from safety analysis",
+          "Competency assessment validated: \u2265 85% of pilot users achieve \u2265 80% score",
+          "SCORM package compatible with major LMS platforms (Cornerstone, Docebo, Moodle)",
+          "Adverse event reporting procedure documented with FDA MedWatch reference",
+          "Training completion tracked and reportable for compliance audits"
+        ],
+        "depends_on": [
+          23
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 24,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 61,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 61,
+          "final_review": {
+            "score": 61,
+            "flaws": [
+              "CRITICAL: Step 8 and Step 7 use LUNA16 and LIDC-IDRI for lung nodule training data \u2014 these are CT datasets, not chest X-ray (CR/DX). CXR nodule detection is a fundamentally different task. LUNA16 test set cited in Step 17 acceptance criteria is also CT. The entire nodule detection pipeline is built on the wrong modality. Achieving sensitivity \u226590% on CXR nodules is also an unrealistic target; state-of-the-art CXR nodule detection AUC is typically 0.82\u20130.87.",
+              "Regulatory pathway is internally contradictory. 510(k) requires a substantially equivalent predicate; De Novo is for novel devices without a predicate. Running both simultaneously for the same device is not how FDA pathways work. A 3-condition AI algorithm covering pneumonia + TB + lung nodules simultaneously almost certainly has no single 510(k) predicate covering all three \u2014 De Novo is the likely correct path, and the substantial equivalence argument in Step 21 may be unbuildable.",
+              "Step 18 acceptance criteria state '500 concurrent studies processed' \u2014 but Step 13 payload targets '500 studies/day' throughput. These are orders of magnitude apart. 500/day \u2248 0.3 studies/minute; 500 concurrent is a crushing GPU load test. This inconsistency will cause the load test to either trivially pass or catastrophically fail depending on which number engineering implements.",
+              "No dedicated step for Post-Market Surveillance (PMS) plan. FDA 21 CFR 522 and EU MDR Article 83 both require formal PMS for Class II devices. The plan's drift detection in Step 17 is analytical validation tooling, not a PMS plan. Missing: complaint handling, MDR/vigilance reporting timelines, PMSR/PSUR schedules.",
+              "No step or acceptance criteria addressing FDA Medical Device Reporting (MDR) under 21 CFR Part 803 \u2014 adverse event reporting procedures, reportability criteria, and 30-day/5-day reporting timelines. This is a legal requirement for cleared Class II devices.",
+              "Step 9 HITL configuration depends only on Step 5 (API design) but not Step 8 (ML model). The HITL proposal structure (finding_positive, finding_negative, urgency_escalation) must be defined by what the model actually outputs \u2014 confidence scores, bounding box formats, uncertainty estimates. This dependency gap means Step 9 will be built against abstract API contracts, then likely need rework when the actual model outputs differ.",
+              "Multi-label vs separate classifier inconsistency in Step 8: 'multi-label CNN ensemble' and 'separate calibrated classifiers per condition' are different architectures with different training objectives, loss functions, and calibration approaches. A multi-label model trained with BCE per label is not the same as N independent binary classifiers. The architecture decision is unresolved and will create downstream model card, FMEA, and regulatory documentation conflicts.",
+              "No dedicated Software Architecture Document (SAD) design step. The SAD is an artifact produced in Step 12 (compliance), but no preceding step actually designs the architecture. Critical architectural decisions \u2014 monolith vs microservices, sync vs async inference, DICOM storage strategy \u2014 are scattered across Step 10 (backend) and Step 13 (infra) without a preceding design gate. This inverts the design-then-implement sequence that IEC 62304 Class C requires.",
+              "Step 7 preprocessing resizes all images to 512x512. For CXR with modern DR panels producing 3000x3000+ pixel images, this aggressive downsampling may eliminate sub-centimeter nodules \u2014 the very finding the model is supposed to detect. No clinical validation that 512x512 preserves diagnostic quality for all three target conditions.",
+              "IRB approval process is entirely absent. Using CheXpert, NIH ChestXray14, TBX11K, and Shenzhen datasets requires compliance with each dataset's Data Use Agreement. CheXpert (Stanford) requires registration. Reader study in Step 17 (N=100 cases with radiologists) requires IRB approval before execution. No step accounts for IRB submission, review timeline (typically 4\u201312 weeks), or DUA execution."
+            ],
+            "suggestions": [
+              "Replace LUNA16/LIDC-IDRI with CXR-specific nodule datasets: VinDr-CXR (18,000 CXRs with nodule annotations), PadChest (subset), or Indiana University Chest X-rays. Accept that CXR nodule sensitivity targets must be calibrated to CXR state-of-the-art (~0.85 AUC), not CT benchmarks.",
+              "Resolve the 510(k)/De Novo conflict in Step 1 before any other regulatory work. Recommend a pre-submission meeting (Q-Sub) with FDA under the Q-Submission Program to get agency agreement on pathway before committing to the 510(k) predicate strategy. This single meeting could save 12+ months of rework.",
+              "Add a dedicated Step 0 or Step 1a for IRB submission and DUA execution covering all training datasets and the reader study protocol. This is on the critical path because IRB approval commonly takes 8\u201312 weeks and blocks Steps 8 and 17.",
+              "Add a dedicated Post-Market Surveillance step between Steps 21 and 22 covering: PMS plan, complaint handling SOP, MDR reportability matrix, PSUR schedule, and real-world performance monitoring dashboard with clinical KPIs.",
+              "Add Unique Device Identification (UDI) assignment to Step 20 or 21. FDA requires UDI for Class II devices under 21 CFR Part 830. UDI labeler account registration at GUDID must be completed before market clearance.",
+              "Separate the Predetermined Change Control Plan (PCCP) into its own dedicated step rather than burying it as a line item in Step 21. The PCCP for an ML/AI SaMD defines what model updates require a new submission vs. can be deployed under the cleared PCCP \u2014 this is the document that determines your entire post-market model update strategy.",
+              "Add explicit GPU autoscaling to Step 13. Chest X-ray studies arrive in bursts (overnight batch, morning rounds), and always-on GPU instances for a hospital deployment are cost-prohibitive. Define horizontal pod autoscaler thresholds and scale-from-zero behavior for inference pods.",
+              "Step 17 reader study (N=100) is underpowered for demonstrating statistically significant AI-assisted improvement (p<0.05) if the expected effect size is modest. Run a power calculation before committing to N=100. For AUC differences of 0.03\u20130.05, you likely need N=200\u2013400 cases.",
+              "Add explicit de-identification verification step for any real patient data used in development. DICOM metadata removal is notoriously incomplete \u2014 burnt-in PHI in pixel data, private DICOM tags, and facility-specific extensions are common sources of de-identification failures that constitute HIPAA breaches."
+            ],
+            "missing": [
+              "Post-Market Surveillance (PMS) plan and PSUR/PMSR schedule \u2014 required for Class II FDA clearance and EU MDR",
+              "Unique Device Identification (UDI) registration and labeling per 21 CFR Part 830",
+              "FDA Medical Device Reporting (MDR) / adverse event handling procedures per 21 CFR Part 803",
+              "Pre-Submission (Q-Sub) meeting with FDA to agree on regulatory pathway before any 510(k)/De Novo work",
+              "IRB approval process and timeline for reader study (Step 17) and any retrospective clinical data use",
+              "Data Use Agreement execution steps for CheXpert (Stanford), TBX11K, Shenzhen, and any other licensed dataset",
+              "Predetermined Change Control Plan (PCCP) as a standalone deliverable with resubmission trigger criteria",
+              "Production monitoring and observability stack \u2014 Grafana/Prometheus dashboards for inference latency, model score distributions, DICOM ingestion rates, and system health",
+              "Disaster recovery and business continuity plan \u2014 RTO/RPO targets for a clinical system that radiologists depend on",
+              "Model governance policy \u2014 who can approve model updates to production, what evidence is required, review board composition",
+              "DICOM conformance statement \u2014 required for PACS integration certification; hospitals' PACS vendors will demand this before allowing C-STORE connections",
+              "HL7 v2 integration for worklist (HL7 ORM/ORU messages) \u2014 most hospital RIS systems still use HL7 v2, not FHIR, for worklist management; FHIR-only assumption will block many hospital integrations",
+              "EU MDR pathway if any EU market is anticipated \u2014 CE marking, Notified Body engagement, EUDAMED registration are entirely absent",
+              "Software bill of materials (SBOM) process for ongoing maintenance \u2014 Step 15 generates initial SBOM but no process for keeping it current as dependencies update",
+              "Clinical site pilot/beta program plan \u2014 structured limited market release (LMR) or controlled deployment before full commercial launch"
+            ],
+            "security_risks": [
+              "DICOM C-STORE SCP listener (Step 7) is a network service accepting binary data from untrusted hospital networks. DICOM has a long history of CVEs in parsing libraries (pydicom, dcm4che). The plan has no mention of DICOM input validation beyond 'corrupt file quarantine' \u2014 malicious DICOM files (pixel data buffer overflows, tag injection) are a realistic attack vector in a hospital network context. Require fuzz testing of the DICOM ingestion path specifically.",
+              "ML model adversarial robustness is listed as a security acceptance criterion but the test is superficial ('pixel perturbation attacks'). For a clinical AI, the more realistic adversarial threat is subtle image manipulation that causes false negatives on specific patient populations \u2014 not academic FGSM attacks. The adversarial testing plan needs to include clinically-motivated perturbation scenarios (compression artifacts, vendor-specific DICOM rendering differences).",
+              "OAuth2 SMART on FHIR token validation (Step 10) against a 'test FHIR authorization server' \u2014 acceptance criteria don't require testing against a production-grade authorization server. Token replay attacks, JWT algorithm confusion attacks (alg:none), and scope escalation are not explicitly tested. The SMART on FHIR security profile has specific requirements around token binding and audience validation that need explicit test cases.",
+              "Vault integration (Step 13) with 'no secrets in environment variables' \u2014 correct intent, but Kubernetes service account tokens used for Vault authentication are themselves secrets that can be compromised via SSRF attacks on the metadata endpoint. The secret zero problem for Vault in Kubernetes requires explicit mitigation (Vault Agent injector or CSI driver with proper RBAC).",
+              "DICOM data in S3 encrypted at rest, but DICOM metadata extraction to PostgreSQL (Step 7) copies PHI from encrypted S3 to the database. The database encryption key management and backup encryption are not explicitly addressed. PostgreSQL RDS encryption at rest is enabled by default but backup snapshots and read replicas require separate key management verification.",
+              "Step 15 SBOM covers production dependencies at a point in time, but the ML training pipeline has its own dependency tree (PyTorch, torchvision, albumentations, etc.) that may include high-CVE packages. Supply chain attacks targeting ML training environments (malicious PyPI packages) are an emerging threat not addressed in the security plan.",
+              "No mention of network egress controls for the inference service. A compromised inference pod that exfiltrates DICOM studies would be high-severity. Kubernetes NetworkPolicy restricting egress from inference pods to only required services (database, Redis, internal APIs) should be an explicit infrastructure requirement."
+            ],
+            "summary": "This plan demonstrates sophisticated domain knowledge across medical AI, regulatory affairs, and clinical workflow \u2014 it is clearly not a naive first attempt. The IEC 62304 Class C framing, ISO 14971 hazard analysis, SMART on FHIR auth, and HITL proposal gate are all correctly scoped. However, it has one critical technical error that invalidates a third of the ML work (LUNA16/LIDC-IDRI are CT datasets, not chest X-ray), a fundamental regulatory pathway contradiction (simultaneous 510(k) + De Novo without resolution), and three compliance gaps that would block FDA clearance outright (no PMS plan, no UDI, no MDR procedures). The load test target inconsistency (500/day vs 500 concurrent) will cause a costly misunderstanding. For a regulated Class II SaMD requiring 85+ to ship, this plan scores 61 \u2014 the architecture is solid but the regulatory and ML data gaps require dedicated rework before implementation begins, not post-hoc patching. Priority fixes in order: (1) resolve the CT/CXR dataset error and recalibrate nodule performance targets, (2) schedule FDA pre-submission meeting before any 510(k) documents are written, (3) add IRB submission to the critical path immediately, (4) add PMS/MDR/UDI steps before Step 21.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 61,
+              "flaws": [
+                "CRITICAL: Step 8 and Step 7 use LUNA16 and LIDC-IDRI for lung nodule training data \u2014 these are CT datasets, not chest X-ray (CR/DX). CXR nodule detection is a fundamentally different task. LUNA16 test set cited in Step 17 acceptance criteria is also CT. The entire nodule detection pipeline is built on the wrong modality. Achieving sensitivity \u226590% on CXR nodules is also an unrealistic target; state-of-the-art CXR nodule detection AUC is typically 0.82\u20130.87.",
+                "Regulatory pathway is internally contradictory. 510(k) requires a substantially equivalent predicate; De Novo is for novel devices without a predicate. Running both simultaneously for the same device is not how FDA pathways work. A 3-condition AI algorithm covering pneumonia + TB + lung nodules simultaneously almost certainly has no single 510(k) predicate covering all three \u2014 De Novo is the likely correct path, and the substantial equivalence argument in Step 21 may be unbuildable.",
+                "Step 18 acceptance criteria state '500 concurrent studies processed' \u2014 but Step 13 payload targets '500 studies/day' throughput. These are orders of magnitude apart. 500/day \u2248 0.3 studies/minute; 500 concurrent is a crushing GPU load test. This inconsistency will cause the load test to either trivially pass or catastrophically fail depending on which number engineering implements.",
+                "No dedicated step for Post-Market Surveillance (PMS) plan. FDA 21 CFR 522 and EU MDR Article 83 both require formal PMS for Class II devices. The plan's drift detection in Step 17 is analytical validation tooling, not a PMS plan. Missing: complaint handling, MDR/vigilance reporting timelines, PMSR/PSUR schedules.",
+                "No step or acceptance criteria addressing FDA Medical Device Reporting (MDR) under 21 CFR Part 803 \u2014 adverse event reporting procedures, reportability criteria, and 30-day/5-day reporting timelines. This is a legal requirement for cleared Class II devices.",
+                "Step 9 HITL configuration depends only on Step 5 (API design) but not Step 8 (ML model). The HITL proposal structure (finding_positive, finding_negative, urgency_escalation) must be defined by what the model actually outputs \u2014 confidence scores, bounding box formats, uncertainty estimates. This dependency gap means Step 9 will be built against abstract API contracts, then likely need rework when the actual model outputs differ.",
+                "Multi-label vs separate classifier inconsistency in Step 8: 'multi-label CNN ensemble' and 'separate calibrated classifiers per condition' are different architectures with different training objectives, loss functions, and calibration approaches. A multi-label model trained with BCE per label is not the same as N independent binary classifiers. The architecture decision is unresolved and will create downstream model card, FMEA, and regulatory documentation conflicts.",
+                "No dedicated Software Architecture Document (SAD) design step. The SAD is an artifact produced in Step 12 (compliance), but no preceding step actually designs the architecture. Critical architectural decisions \u2014 monolith vs microservices, sync vs async inference, DICOM storage strategy \u2014 are scattered across Step 10 (backend) and Step 13 (infra) without a preceding design gate. This inverts the design-then-implement sequence that IEC 62304 Class C requires.",
+                "Step 7 preprocessing resizes all images to 512x512. For CXR with modern DR panels producing 3000x3000+ pixel images, this aggressive downsampling may eliminate sub-centimeter nodules \u2014 the very finding the model is supposed to detect. No clinical validation that 512x512 preserves diagnostic quality for all three target conditions.",
+                "IRB approval process is entirely absent. Using CheXpert, NIH ChestXray14, TBX11K, and Shenzhen datasets requires compliance with each dataset's Data Use Agreement. CheXpert (Stanford) requires registration. Reader study in Step 17 (N=100 cases with radiologists) requires IRB approval before execution. No step accounts for IRB submission, review timeline (typically 4\u201312 weeks), or DUA execution."
+              ],
+              "suggestions": [
+                "Replace LUNA16/LIDC-IDRI with CXR-specific nodule datasets: VinDr-CXR (18,000 CXRs with nodule annotations), PadChest (subset), or Indiana University Chest X-rays. Accept that CXR nodule sensitivity targets must be calibrated to CXR state-of-the-art (~0.85 AUC), not CT benchmarks.",
+                "Resolve the 510(k)/De Novo conflict in Step 1 before any other regulatory work. Recommend a pre-submission meeting (Q-Sub) with FDA under the Q-Submission Program to get agency agreement on pathway before committing to the 510(k) predicate strategy. This single meeting could save 12+ months of rework.",
+                "Add a dedicated Step 0 or Step 1a for IRB submission and DUA execution covering all training datasets and the reader study protocol. This is on the critical path because IRB approval commonly takes 8\u201312 weeks and blocks Steps 8 and 17.",
+                "Add a dedicated Post-Market Surveillance step between Steps 21 and 22 covering: PMS plan, complaint handling SOP, MDR reportability matrix, PSUR schedule, and real-world performance monitoring dashboard with clinical KPIs.",
+                "Add Unique Device Identification (UDI) assignment to Step 20 or 21. FDA requires UDI for Class II devices under 21 CFR Part 830. UDI labeler account registration at GUDID must be completed before market clearance.",
+                "Separate the Predetermined Change Control Plan (PCCP) into its own dedicated step rather than burying it as a line item in Step 21. The PCCP for an ML/AI SaMD defines what model updates require a new submission vs. can be deployed under the cleared PCCP \u2014 this is the document that determines your entire post-market model update strategy.",
+                "Add explicit GPU autoscaling to Step 13. Chest X-ray studies arrive in bursts (overnight batch, morning rounds), and always-on GPU instances for a hospital deployment are cost-prohibitive. Define horizontal pod autoscaler thresholds and scale-from-zero behavior for inference pods.",
+                "Step 17 reader study (N=100) is underpowered for demonstrating statistically significant AI-assisted improvement (p<0.05) if the expected effect size is modest. Run a power calculation before committing to N=100. For AUC differences of 0.03\u20130.05, you likely need N=200\u2013400 cases.",
+                "Add explicit de-identification verification step for any real patient data used in development. DICOM metadata removal is notoriously incomplete \u2014 burnt-in PHI in pixel data, private DICOM tags, and facility-specific extensions are common sources of de-identification failures that constitute HIPAA breaches."
+              ],
+              "missing": [
+                "Post-Market Surveillance (PMS) plan and PSUR/PMSR schedule \u2014 required for Class II FDA clearance and EU MDR",
+                "Unique Device Identification (UDI) registration and labeling per 21 CFR Part 830",
+                "FDA Medical Device Reporting (MDR) / adverse event handling procedures per 21 CFR Part 803",
+                "Pre-Submission (Q-Sub) meeting with FDA to agree on regulatory pathway before any 510(k)/De Novo work",
+                "IRB approval process and timeline for reader study (Step 17) and any retrospective clinical data use",
+                "Data Use Agreement execution steps for CheXpert (Stanford), TBX11K, Shenzhen, and any other licensed dataset",
+                "Predetermined Change Control Plan (PCCP) as a standalone deliverable with resubmission trigger criteria",
+                "Production monitoring and observability stack \u2014 Grafana/Prometheus dashboards for inference latency, model score distributions, DICOM ingestion rates, and system health",
+                "Disaster recovery and business continuity plan \u2014 RTO/RPO targets for a clinical system that radiologists depend on",
+                "Model governance policy \u2014 who can approve model updates to production, what evidence is required, review board composition",
+                "DICOM conformance statement \u2014 required for PACS integration certification; hospitals' PACS vendors will demand this before allowing C-STORE connections",
+                "HL7 v2 integration for worklist (HL7 ORM/ORU messages) \u2014 most hospital RIS systems still use HL7 v2, not FHIR, for worklist management; FHIR-only assumption will block many hospital integrations",
+                "EU MDR pathway if any EU market is anticipated \u2014 CE marking, Notified Body engagement, EUDAMED registration are entirely absent",
+                "Software bill of materials (SBOM) process for ongoing maintenance \u2014 Step 15 generates initial SBOM but no process for keeping it current as dependencies update",
+                "Clinical site pilot/beta program plan \u2014 structured limited market release (LMR) or controlled deployment before full commercial launch"
+              ],
+              "security_risks": [
+                "DICOM C-STORE SCP listener (Step 7) is a network service accepting binary data from untrusted hospital networks. DICOM has a long history of CVEs in parsing libraries (pydicom, dcm4che). The plan has no mention of DICOM input validation beyond 'corrupt file quarantine' \u2014 malicious DICOM files (pixel data buffer overflows, tag injection) are a realistic attack vector in a hospital network context. Require fuzz testing of the DICOM ingestion path specifically.",
+                "ML model adversarial robustness is listed as a security acceptance criterion but the test is superficial ('pixel perturbation attacks'). For a clinical AI, the more realistic adversarial threat is subtle image manipulation that causes false negatives on specific patient populations \u2014 not academic FGSM attacks. The adversarial testing plan needs to include clinically-motivated perturbation scenarios (compression artifacts, vendor-specific DICOM rendering differences).",
+                "OAuth2 SMART on FHIR token validation (Step 10) against a 'test FHIR authorization server' \u2014 acceptance criteria don't require testing against a production-grade authorization server. Token replay attacks, JWT algorithm confusion attacks (alg:none), and scope escalation are not explicitly tested. The SMART on FHIR security profile has specific requirements around token binding and audience validation that need explicit test cases.",
+                "Vault integration (Step 13) with 'no secrets in environment variables' \u2014 correct intent, but Kubernetes service account tokens used for Vault authentication are themselves secrets that can be compromised via SSRF attacks on the metadata endpoint. The secret zero problem for Vault in Kubernetes requires explicit mitigation (Vault Agent injector or CSI driver with proper RBAC).",
+                "DICOM data in S3 encrypted at rest, but DICOM metadata extraction to PostgreSQL (Step 7) copies PHI from encrypted S3 to the database. The database encryption key management and backup encryption are not explicitly addressed. PostgreSQL RDS encryption at rest is enabled by default but backup snapshots and read replicas require separate key management verification.",
+                "Step 15 SBOM covers production dependencies at a point in time, but the ML training pipeline has its own dependency tree (PyTorch, torchvision, albumentations, etc.) that may include high-CVE packages. Supply chain attacks targeting ML training environments (malicious PyPI packages) are an emerging threat not addressed in the security plan.",
+                "No mention of network egress controls for the inference service. A compromised inference pod that exfiltrates DICOM studies would be high-severity. Kubernetes NetworkPolicy restricting egress from inference pods to only required services (database, Redis, internal APIs) should be an explicit infrastructure requirement."
+              ],
+              "summary": "This plan demonstrates sophisticated domain knowledge across medical AI, regulatory affairs, and clinical workflow \u2014 it is clearly not a naive first attempt. The IEC 62304 Class C framing, ISO 14971 hazard analysis, SMART on FHIR auth, and HITL proposal gate are all correctly scoped. However, it has one critical technical error that invalidates a third of the ML work (LUNA16/LIDC-IDRI are CT datasets, not chest X-ray), a fundamental regulatory pathway contradiction (simultaneous 510(k) + De Novo without resolution), and three compliance gaps that would block FDA clearance outright (no PMS plan, no UDI, no MDR procedures). The load test target inconsistency (500/day vs 500 concurrent) will cause a costly misunderstanding. For a regulated Class II SaMD requiring 85+ to ship, this plan scores 61 \u2014 the architecture is solid but the regulatory and ML data gaps require dedicated rework before implementation begins, not post-hoc patching. Priority fixes in order: (1) resolve the CT/CXR dataset error and recalibrate nodule performance targets, (2) schedule FDA pre-submission meeting before any 510(k) documents are written, (3) add IRB submission to the critical path immediately, (4) add PMS/MDR/UDI steps before Step 21.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-21T23:07:11.324278+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 177.59,
+      "critic_plan": 113.08
+    }
+  }
+}

@@ -1,0 +1,1190 @@
+{
+  "run_id": "11f2d1e7-e95f-4eb8-b119-2abffd441038",
+  "status": {
+    "run_id": "11f2d1e7-e95f-4eb8-b119-2abffd441038",
+    "solution_name": "accounting_automation",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T00:01:14.590711+00:00",
+    "updated_at": "2026-03-22T00:06:11.460265+00:00",
+    "product_description": "AI accounting automation that categorizes transactions, reconciles bank statements, generates financial reports, and prepares tax filings for small businesses.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements, user stories, and process flows for AI accounting automation covering transaction categorization, bank reconciliation, financial reporting, and tax filing preparation for small businesses.",
+        "payload": {
+          "deliverables": [
+            "business_requirements_doc.md",
+            "user_stories.md",
+            "process_flow_diagrams.md",
+            "ROI_analysis.md"
+          ],
+          "scope": [
+            "transaction_categorization",
+            "bank_reconciliation",
+            "financial_reports",
+            "tax_filing_prep"
+          ],
+          "target_users": "small_business_owners_and_bookkeepers"
+        },
+        "acceptance_criteria": [
+          "Business requirements document covers all four core features with measurable success metrics",
+          "User stories written for at least 3 persona types (owner, bookkeeper, accountant) with acceptance criteria per story",
+          "Process flow diagrams show end-to-end flows for each major feature",
+          "ROI analysis includes cost savings estimate vs manual bookkeeping"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document (PRD), feature roadmap, and success metrics for accounting_automation. Prioritize MVP feature set and phased rollout plan.",
+        "payload": {
+          "deliverables": [
+            "PRD.md",
+            "roadmap.md",
+            "success_metrics.md"
+          ],
+          "mvp_features": [
+            "transaction_categorization",
+            "bank_reconciliation"
+          ],
+          "phase2_features": [
+            "financial_reports",
+            "tax_filing_prep"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD documents all features with priority, effort estimate, and acceptance criteria",
+          "Roadmap defines at least 3 milestone phases with release dates",
+          "Success metrics include quantitative KPIs (categorization accuracy >= 95%, reconciliation time reduction >= 80%)"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "SECURITY",
+        "description": "Conduct threat modeling, define security architecture, and produce a threat model document, penetration test plan, and Software Bill of Materials (SBOM) for the accounting automation system handling sensitive financial data under PCI DSS, SOC 2, and SOX.",
+        "payload": {
+          "standards": [
+            "PCI_DSS_v4",
+            "SOC_2_Type_II",
+            "SOX"
+          ],
+          "threat_model_methodology": "STRIDE",
+          "deliverables": [
+            "threat_model.md",
+            "pentest_plan.md",
+            "SBOM.json",
+            "data_classification_policy.md"
+          ],
+          "sensitive_data_types": [
+            "bank_credentials",
+            "transaction_records",
+            "tax_identifiers",
+            "financial_statements"
+          ]
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model covers all system components and data flows with mitigations documented",
+          "Penetration test plan covers OWASP Top 10, authentication bypass, and financial data exfiltration scenarios",
+          "SBOM lists all third-party dependencies with known CVE status",
+          "Data classification policy defines handling rules for PII, financial data, and tax identifiers",
+          "Security architecture mandates encryption at rest (AES-256) and in transit (TLS 1.3)",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 4,
+        "task_type": "COMPLIANCE",
+        "description": "Produce compliance artifacts for PCI DSS, SOC 2, and SOX. Define risk matrix, traceability matrix, V&V protocols, and control framework mapping for the accounting automation system.",
+        "payload": {
+          "standards": [
+            "PCI_DSS_v4",
+            "SOC_2_Type_II",
+            "SOX_Section_404"
+          ],
+          "deliverables": [
+            "risk_matrix.xlsx",
+            "traceability_matrix.xlsx",
+            "VV_protocols.md",
+            "SOC2_control_mapping.md",
+            "PCI_DSS_SAQ.md",
+            "SOX_IT_controls.md",
+            "data_retention_policy.md",
+            "audit_trail_spec.md"
+          ],
+          "control_categories": [
+            "access_control",
+            "encryption",
+            "audit_logging",
+            "change_management",
+            "incident_response"
+          ]
+        },
+        "acceptance_criteria": [
+          "Risk matrix identifies all risks with likelihood, impact, and mitigation owner assigned",
+          "Traceability matrix maps every requirement to at least one test case and one control",
+          "SOC 2 Type II control mapping covers all 5 trust service criteria (Security, Availability, Processing Integrity, Confidentiality, Privacy)",
+          "PCI DSS SAQ-D completed with all applicable controls documented",
+          "Audit trail spec defines immutable log structure for all financial data mutations",
+          "Data retention policy specifies retention periods per data type compliant with IRS 7-year rule and SOX"
+        ],
+        "depends_on": [
+          3
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 5,
+        "task_type": "LEGAL",
+        "description": "Draft terms of service, privacy policy, data processing agreements (DPA), and licensing documentation. Review IP considerations for AI-generated financial advice and tax preparation.",
+        "payload": {
+          "deliverables": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "DPA_template.md",
+            "IP_review.md"
+          ],
+          "jurisdictions": [
+            "US_federal",
+            "US_state_tax_authorities"
+          ],
+          "considerations": [
+            "AI_financial_advice_disclaimers",
+            "tax_preparer_liability",
+            "GLBA_compliance",
+            "CCPA_compliance"
+          ]
+        },
+        "acceptance_criteria": [
+          "Terms of service include AI limitation disclaimers and no-liability clause for tax filing errors",
+          "Privacy policy complies with CCPA and GLBA financial data protection requirements",
+          "DPA template covers GDPR Article 28 requirements for EU business customers",
+          "IP review confirms no unlicensed use of tax code databases or financial classification systems"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 6,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes, interaction designs, and accessibility audit for the accounting automation dashboard. Design flows for transaction review, reconciliation workspace, report generation, and tax filing wizard.",
+        "payload": {
+          "deliverables": [
+            "user_research_report.md",
+            "wireframes/",
+            "interaction_design_spec.md",
+            "accessibility_audit.md"
+          ],
+          "key_screens": [
+            "dashboard_overview",
+            "transaction_categorization_review",
+            "bank_reconciliation_workspace",
+            "financial_report_builder",
+            "tax_filing_wizard",
+            "bank_connection_manager",
+            "approval_queue"
+          ],
+          "accessibility_standard": "WCAG_2.1_AA"
+        },
+        "acceptance_criteria": [
+          "User research includes at least 5 small business owner interviews with synthesized findings",
+          "Wireframes cover all 7 key screens with annotated interaction states",
+          "Transaction categorization UI shows AI confidence score and one-click correction workflow",
+          "Tax filing wizard has step-by-step flow with progress indicator and review-before-submit gate",
+          "Accessibility audit confirms WCAG 2.1 AA compliance on all screens"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 7,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 specification for all accounting_automation endpoints: bank connection (OAuth/Plaid), transaction ingestion, categorization, reconciliation, report generation, and tax filing export. Define request/response schemas, error codes, and rate limits.",
+        "payload": {
+          "spec_file": "openapi.yaml",
+          "endpoint_groups": [
+            "/auth \u2014 OAuth2 + MFA flows",
+            "/banks \u2014 connect, sync, disconnect bank accounts",
+            "/transactions \u2014 ingest, list, categorize, correct",
+            "/reconciliation \u2014 match, flag, approve",
+            "/reports \u2014 generate P&L, balance sheet, cash flow",
+            "/tax \u2014 compute, review, export IRS forms",
+            "/audit \u2014 immutable event log queries"
+          ],
+          "auth_scheme": "OAuth2_PKCE",
+          "versioning": "URI_v1"
+        },
+        "acceptance_criteria": [
+          "OpenAPI 3.1 spec passes validation with no errors",
+          "All endpoints have defined request schemas, response schemas, and error codes (400, 401, 403, 404, 422, 500)",
+          "Bank connection endpoints use OAuth 2.0 PKCE flow with token refresh documented",
+          "Rate limits defined per endpoint group (e.g., 100 req/min for transaction sync)",
+          "Audit log endpoints return paginated, immutable records with cursor-based pagination"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design and implement database schema for transactions, accounts, categorization rules, reconciliation records, financial reports, tax filings, audit log, and user/tenant data. Create migrations and seed data for development.",
+        "payload": {
+          "database": "PostgreSQL_16",
+          "orm": "SQLAlchemy_2",
+          "migrations": "Alembic",
+          "key_tables": [
+            "tenants",
+            "users",
+            "bank_accounts",
+            "transactions",
+            "categories",
+            "categorization_rules",
+            "ml_predictions",
+            "reconciliation_sessions",
+            "reconciliation_matches",
+            "financial_reports",
+            "report_line_items",
+            "tax_filings",
+            "tax_form_data",
+            "audit_events",
+            "approval_queue"
+          ],
+          "security_requirements": [
+            "row_level_security",
+            "encrypted_columns_for_PII",
+            "append_only_audit_table"
+          ]
+        },
+        "acceptance_criteria": [
+          "Schema ERD documents all tables with relationships, indexes, and constraints",
+          "All migrations run cleanly from scratch with `alembic upgrade head`",
+          "Row-level security policies enforce tenant isolation on all financial tables",
+          "PII columns (SSN, EIN, bank account numbers) use pgcrypto or application-level AES-256 encryption",
+          "audit_events table is append-only (INSERT only, no UPDATE/DELETE permissions)",
+          "Seed data includes 3 sample small businesses with 6 months of transaction history for testing",
+          "Transaction isolation level documented",
+          "Audit trail on all writes"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Set up the multi-agent coordinator pattern for accounting_automation. Configure coordinator agent that routes to specialist agents: TransactionCategorizerAgent, ReconciliationAgent, ReportGeneratorAgent, and TaxFilingAgent. Configure HITL approval gates for tax filings and financial report finalization.",
+        "payload": {
+          "agentic_pattern": "coordinator",
+          "coordinator_config": {
+            "pattern": "multi_agent_coordinator",
+            "specialist_agents": [
+              "TransactionCategorizerAgent",
+              "ReconciliationAgent",
+              "ReportGeneratorAgent",
+              "TaxFilingAgent"
+            ],
+            "hitl_gates": [
+              "tax_filing_submission",
+              "financial_report_finalization",
+              "bulk_recategorization"
+            ],
+            "critic_enabled": true,
+            "review_and_critique_pattern": "review_and_critique"
+          },
+          "files": [
+            "solutions/accounting_automation/project.yaml",
+            "solutions/accounting_automation/prompts.yaml",
+            "solutions/accounting_automation/tasks.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "project.yaml defines solution name, active_modules, and HITL level as strict",
+          "prompts.yaml defines system prompts for all 4 specialist agents with domain-specific accounting context",
+          "tasks.yaml registers all task types with routing rules to correct specialist agent",
+          "Coordinator routes transaction tasks to TransactionCategorizerAgent and tax tasks to TaxFilingAgent",
+          "HITL gates trigger approval queue entries for tax_filing_submission and report_finalization",
+          "Critic agent configured to review categorization accuracy and tax computation correctness"
+        ],
+        "depends_on": [
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "ML_MODEL",
+        "description": "Build and train the transaction categorization ML model. Implement multi-label classifier using fine-tuned transformer (FinBERT or similar) on transaction descriptions mapped to IRS Schedule C / chart-of-accounts categories. Include confidence scoring and active learning pipeline for user corrections.",
+        "payload": {
+          "model_type": "fine_tuned_transformer",
+          "base_model": "FinBERT_or_BERT_base",
+          "categories": "IRS_Schedule_C_and_standard_COA",
+          "training_data": "synthetic_transactions_plus_public_datasets",
+          "pipeline_components": [
+            "data_preprocessing",
+            "feature_extraction",
+            "model_training",
+            "evaluation_harness",
+            "confidence_scorer",
+            "active_learning_feedback_loop"
+          ],
+          "target_accuracy": 0.95,
+          "deliverables": [
+            "model_card.md",
+            "training_pipeline/",
+            "evaluation_report.md",
+            "model_artifacts/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Model achieves >= 95% top-1 accuracy on held-out test set of 10,000 transactions",
+          "Confidence scores are calibrated (ECE < 0.05 on test set)",
+          "Model card documents training data, known biases, performance by category, and limitations",
+          "Active learning pipeline ingests user corrections and triggers fine-tuning job",
+          "Inference latency < 100ms per transaction at p95",
+          "Model supports at least 50 IRS Schedule C / COA categories"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement bank connection and transaction ingestion service. Integrate with Plaid API for bank account linking, transaction sync, and balance retrieval. Implement webhook handlers for real-time transaction updates with idempotent processing.",
+        "payload": {
+          "framework": "FastAPI",
+          "bank_integration": "Plaid_API",
+          "features": [
+            "OAuth_bank_linking_flow",
+            "initial_transaction_sync_up_to_24_months",
+            "incremental_transaction_sync_via_webhooks",
+            "balance_retrieval",
+            "account_metadata_normalization",
+            "idempotent_transaction_upsert"
+          ],
+          "files": [
+            "src/services/bank_service.py",
+            "src/integrations/plaid_client.py",
+            "src/workers/transaction_sync_worker.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Bank linking OAuth flow completes successfully with Plaid Sandbox credentials",
+          "Initial sync imports up to 24 months of transactions with deduplication",
+          "Webhook handler processes TRANSACTIONS_SYNC events idempotently (duplicate webhooks do not create duplicate records)",
+          "Bank credentials (access tokens) stored encrypted, never logged",
+          "Error handling covers Plaid API rate limits with exponential backoff and alerting"
+        ],
+        "depends_on": [
+          8,
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement transaction categorization service using the trained ML model. Build ReAct-pattern agentic categorizer that classifies transactions, applies rule-based overrides, surfaces low-confidence items for human review, and learns from corrections via feedback loop.",
+        "payload": {
+          "agentic_pattern": "react",
+          "service_file": "src/agents/transaction_categorizer_agent.py",
+          "features": [
+            "batch_categorization_on_sync",
+            "real_time_categorization_on_ingest",
+            "rule_based_override_engine",
+            "confidence_threshold_routing_to_human_review",
+            "correction_ingestion_and_rule_learning",
+            "category_hierarchy_support"
+          ],
+          "confidence_threshold": 0.85
+        },
+        "acceptance_criteria": [
+          "Categorizer processes 1,000 transactions in < 10 seconds in batch mode",
+          "Transactions below 0.85 confidence threshold are routed to the human review approval queue",
+          "Rule-based overrides take priority over ML predictions with full audit trail",
+          "User corrections update categorization rules and trigger model feedback loop",
+          "All categorization decisions written to audit_events table with trace_id and confidence score"
+        ],
+        "depends_on": [
+          10,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement bank reconciliation service. Build ReconciliationAgent that matches imported bank transactions against ledger entries, detects discrepancies, flags unmatched items, and generates reconciliation reports. Implement iterative-refinement pattern for automated matching.",
+        "payload": {
+          "agentic_pattern": "iterative_refinement",
+          "service_file": "src/agents/reconciliation_agent.py",
+          "features": [
+            "fuzzy_transaction_matching_by_amount_date_description",
+            "multi_pass_reconciliation_with_tolerance_rules",
+            "discrepancy_flagging_and_classification",
+            "unmatched_item_queue_for_human_review",
+            "reconciliation_report_generation",
+            "period_lock_after_approval"
+          ],
+          "matching_algorithm": "Hungarian_algorithm_with_fuzzy_string_matching"
+        },
+        "acceptance_criteria": [
+          "Reconciliation agent matches >= 90% of transactions automatically on a clean test dataset",
+          "Unmatched items appear in human review queue with suggested resolutions",
+          "Tolerance rules configurable per account (e.g., \u00b1$0.01 for rounding)",
+          "Reconciliation report shows matched, unmatched, and discrepancy counts with totals",
+          "Period lock prevents modifications to reconciled transactions without supervisor approval",
+          "All reconciliation sessions and matches stored with full audit trail"
+        ],
+        "depends_on": [
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement financial report generation service. Build ReportGeneratorAgent that produces P&L statements, balance sheets, cash flow statements, and custom reports from categorized transaction data. Support period comparisons and export to PDF/Excel.",
+        "payload": {
+          "agentic_pattern": "review_and_critique",
+          "service_file": "src/agents/report_generator_agent.py",
+          "report_types": [
+            "profit_and_loss_statement",
+            "balance_sheet",
+            "cash_flow_statement",
+            "accounts_receivable_aging",
+            "accounts_payable_aging",
+            "custom_date_range_reports"
+          ],
+          "export_formats": [
+            "PDF",
+            "Excel_XLSX",
+            "CSV",
+            "JSON"
+          ],
+          "features": [
+            "period_comparison",
+            "year_over_year",
+            "budget_vs_actual",
+            "GAAP_compliant_formatting"
+          ]
+        },
+        "acceptance_criteria": [
+          "P&L, balance sheet, and cash flow statements generate correctly for test dataset with known expected values",
+          "GAAP-compliant formatting verified against reference reports",
+          "PDF export renders correctly with company branding placeholder",
+          "Excel export uses correct number formats, formulas, and locked header rows",
+          "Period comparison highlights variances with percentage change",
+          "Report generation HITL gate creates approval queue entry before report is marked final"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement tax filing preparation service. Build TaxFilingAgent that maps categorized transactions to IRS form fields (Schedule C, Form 1120-S, 1065), computes tax liability estimates, flags deductible expenses, and prepares export-ready tax packages. Mandatory HITL approval before any submission.",
+        "payload": {
+          "agentic_pattern": "human_in_the_loop",
+          "service_file": "src/agents/tax_filing_agent.py",
+          "supported_forms": [
+            "Schedule_C",
+            "Form_1120S",
+            "Form_1065",
+            "Form_1099_NEC"
+          ],
+          "features": [
+            "transaction_to_tax_category_mapping",
+            "deduction_identification_and_flagging",
+            "tax_liability_estimation",
+            "quarterly_estimated_tax_calculation",
+            "IRS_form_field_population",
+            "tax_package_PDF_export",
+            "mandatory_human_review_gate_before_finalization"
+          ],
+          "disclaimer": "Preparation only \u2014 no direct IRS e-file submission in MVP"
+        },
+        "acceptance_criteria": [
+          "Schedule C line items map correctly to IRS categories for test business with known tax outcome",
+          "Deduction flagging identifies at least 15 common small business deduction categories",
+          "Tax liability estimate matches IRS calculation within 1% for test cases",
+          "HITL gate blocks tax package finalization until human approval in approval queue",
+          "Tax packages exported as password-protected PDFs with watermark 'PREPARED BY AI \u2014 REVIEW REQUIRED'",
+          "All tax computations stored with full audit trail traceable to source transactions"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Implement authentication, authorization, and multi-tenant isolation backend services. Build OAuth2 + MFA authentication, role-based access control (RBAC), and tenant data isolation middleware compliant with SOC 2 and PCI DSS.",
+        "payload": {
+          "auth_framework": "FastAPI_oauth2_with_JWT",
+          "mfa": "TOTP_via_pyotp",
+          "rbac_roles": [
+            "owner",
+            "bookkeeper",
+            "accountant",
+            "read_only"
+          ],
+          "files": [
+            "src/auth/auth_service.py",
+            "src/middleware/tenant_middleware.py",
+            "src/auth/rbac.py"
+          ],
+          "security_controls": [
+            "JWT_with_15min_expiry_and_refresh_token_rotation",
+            "MFA_mandatory_for_tax_filing_approval",
+            "failed_login_lockout_after_5_attempts",
+            "session_audit_logging",
+            "tenant_row_level_security_enforcement"
+          ]
+        },
+        "acceptance_criteria": [
+          "OAuth2 PKCE flow completes with access token, refresh token, and MFA challenge",
+          "RBAC enforces that bookkeeper cannot approve tax filings (owner/accountant only)",
+          "Tenant middleware rejects cross-tenant data access with 403 and audit event",
+          "Failed login lockout triggers after 5 attempts with 15-minute lockout period",
+          "All authentication events (login, logout, MFA, failed attempts) written to audit_events",
+          "JWT tokens expire in 15 minutes; refresh token rotation invalidates previous token"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build the React frontend application for accounting_automation. Implement dashboard, transaction review UI, bank connection manager, reconciliation workspace, financial report viewer, and tax filing wizard following the approved wireframes.",
+        "payload": {
+          "framework": "React_18_TypeScript",
+          "state_management": "Zustand",
+          "ui_library": "shadcn_ui_with_Tailwind",
+          "key_pages": [
+            "DashboardPage \u2014 KPI tiles, recent activity, action items",
+            "TransactionsPage \u2014 table with AI category, confidence badge, bulk approve/correct",
+            "ReconciliationPage \u2014 side-by-side bank vs ledger workspace",
+            "ReportsPage \u2014 report builder with period picker and export",
+            "TaxFilingPage \u2014 step wizard with review gate",
+            "BankConnectionPage \u2014 Plaid Link integration",
+            "ApprovalQueuePage \u2014 pending HITL items",
+            "AuditLogPage \u2014 immutable event log viewer"
+          ],
+          "accessibility": "WCAG_2.1_AA"
+        },
+        "acceptance_criteria": [
+          "All 8 pages render without errors and match approved wireframes",
+          "Transaction table displays AI confidence score with color-coded badge (green >= 0.85, amber >= 0.70, red < 0.70)",
+          "Bulk categorization correction UI allows selecting multiple transactions and applying category",
+          "Reconciliation workspace shows matched pairs with diff highlighting and one-click approve",
+          "Tax filing wizard enforces step-by-step progression with review-before-submit gate",
+          "All pages pass WCAG 2.1 AA automated accessibility checks (axe-core)",
+          "Lighthouse performance score >= 85 on dashboard page"
+        ],
+        "depends_on": [
+          6,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "INFRA",
+        "description": "Set up Docker containerization, CI/CD pipeline, and deployment infrastructure. Configure PostgreSQL, Redis (task queue), and the FastAPI backend in Docker Compose for development. Set up GitHub Actions CI/CD with security scanning and compliance checks.",
+        "payload": {
+          "containers": [
+            "fastapi_backend",
+            "postgresql_16",
+            "redis_7",
+            "celery_worker",
+            "nginx"
+          ],
+          "ci_cd": "GitHub_Actions",
+          "pipeline_stages": [
+            "lint_and_type_check",
+            "unit_tests",
+            "integration_tests",
+            "SAST_via_bandit_and_semgrep",
+            "dependency_vulnerability_scan_via_safety",
+            "docker_build_and_push",
+            "staging_deploy",
+            "smoke_tests"
+          ],
+          "secrets_management": "HashiCorp_Vault_or_AWS_Secrets_Manager",
+          "files": [
+            "docker-compose.yml",
+            "docker-compose.prod.yml",
+            ".github/workflows/ci.yml",
+            "Dockerfile"
+          ]
+        },
+        "acceptance_criteria": [
+          "`docker-compose up` starts all services and health checks pass within 60 seconds",
+          "GitHub Actions CI pipeline runs and passes on main branch within 10 minutes",
+          "SAST scan (bandit + semgrep) runs on every PR with blocking on HIGH severity findings",
+          "Dependency vulnerability scan blocks merge on CRITICAL CVEs",
+          "Secrets are never hardcoded \u2014 all pulled from environment or secrets manager",
+          "Production Docker image uses non-root user and passes Trivy image scan with no CRITICAL vulnerabilities"
+        ],
+        "depends_on": [
+          8,
+          16
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "DEVOPS",
+        "description": "Set up monitoring, alerting, SRE runbooks, and observability stack. Configure Prometheus metrics, Grafana dashboards, structured logging, and PagerDuty alerting for the accounting automation platform. Define SLAs and incident response procedures.",
+        "payload": {
+          "observability_stack": [
+            "Prometheus",
+            "Grafana",
+            "Loki",
+            "OpenTelemetry"
+          ],
+          "alerting": "PagerDuty_or_OpsGenie",
+          "key_metrics": [
+            "transaction_categorization_accuracy",
+            "bank_sync_latency",
+            "reconciliation_completion_rate",
+            "api_error_rate_by_endpoint",
+            "audit_log_write_success_rate",
+            "failed_login_attempts"
+          ],
+          "deliverables": [
+            "runbooks/",
+            "SLA_definition.md",
+            "incident_response_playbook.md",
+            "grafana_dashboards/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Grafana dashboard shows all 6 key metrics with historical data",
+          "Alert fires within 2 minutes when API error rate exceeds 1% over 5-minute window",
+          "Alert fires immediately when audit_log_write_success_rate drops below 100%",
+          "SLA document defines 99.9% uptime, < 2s API p95 latency, and RPO/RTO targets",
+          "Incident response playbook covers at least 5 failure scenarios with step-by-step resolution",
+          "All logs structured as JSON with trace_id, tenant_id, and severity fields"
+        ],
+        "depends_on": [
+          18
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "TESTS",
+        "description": "Write comprehensive unit tests, integration tests, and end-to-end tests for all backend services: bank sync, transaction categorization, reconciliation, report generation, tax filing, auth, and RBAC. Target >= 85% code coverage.",
+        "payload": {
+          "test_framework": "pytest",
+          "coverage_target": 0.85,
+          "test_types": {
+            "unit": [
+              "categorization_model_inference",
+              "reconciliation_matching_algorithm",
+              "tax_form_field_mapping",
+              "RBAC_permission_checks",
+              "JWT_token_lifecycle"
+            ],
+            "integration": [
+              "bank_sync_plaid_sandbox",
+              "transaction_categorization_pipeline",
+              "reconciliation_end_to_end",
+              "report_generation_with_real_db",
+              "tax_filing_approval_workflow"
+            ],
+            "e2e": [
+              "new_user_onboarding_to_first_report",
+              "full_reconciliation_cycle",
+              "tax_filing_wizard_with_hitl_gate"
+            ]
+          },
+          "mocking": "pytest_mock_for_Plaid_and_external_APIs",
+          "fixtures": "factory_boy_for_db_fixtures"
+        },
+        "acceptance_criteria": [
+          "pytest runs with >= 85% line coverage across all src/ modules",
+          "All unit tests for tax form field mapping verified against IRS known-answer test cases",
+          "Integration tests use Plaid Sandbox environment (no live bank credentials)",
+          "E2E test for tax filing wizard verifies HITL gate blocks submission until approval",
+          "CI pipeline fails if coverage drops below 85%",
+          "Zero flaky tests \u2014 all tests deterministic with fixed random seeds and frozen time"
+        ],
+        "depends_on": [
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "SECURITY",
+        "description": "Execute security review and penetration testing against the deployed staging environment. Test for OWASP Top 10, PCI DSS-specific vulnerabilities, authentication bypass, SQL injection, tenant isolation breakout, and financial data exfiltration paths.",
+        "payload": {
+          "scope": "staging_environment",
+          "test_categories": [
+            "OWASP_Top_10",
+            "authentication_bypass_and_MFA_bypass",
+            "SQL_injection_on_all_query_params",
+            "tenant_isolation_breakout",
+            "JWT_manipulation_and_privilege_escalation",
+            "PCI_DSS_cardholder_data_exposure",
+            "audit_log_tampering",
+            "HITL_gate_bypass"
+          ],
+          "deliverables": [
+            "pentest_report.md",
+            "vulnerability_remediation_tracker.xlsx",
+            "PCI_DSS_compliance_scan_report.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "Penetration test report documents all findings with CVSS scores and remediation steps",
+          "Zero CRITICAL or HIGH vulnerabilities unresolved before production deployment",
+          "Tenant isolation test confirms no cross-tenant data leakage across 10 test scenarios",
+          "HITL gate bypass test confirms tax filing cannot be finalized without human approval under any tested path",
+          "Audit log tamper test confirms append-only enforcement at database level",
+          "PCI DSS compliance scan shows no cardholder data stored in plaintext",
+          "PCI DSS SAQ completed",
+          "Encryption at rest and in transit"
+        ],
+        "depends_on": [
+          18,
+          20
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "QA",
+        "description": "Develop and execute QA test plan covering functional, regression, performance, and usability testing. Validate transaction categorization accuracy against labeled dataset, reconciliation correctness, and report financial accuracy.",
+        "payload": {
+          "test_plan_deliverables": [
+            "QA_test_plan.md",
+            "test_case_library.xlsx",
+            "test_execution_report.md",
+            "defect_log.xlsx"
+          ],
+          "test_categories": [
+            "functional_all_features",
+            "regression_suite_automated",
+            "performance_load_test_1000_concurrent_users",
+            "categorization_accuracy_on_labeled_dataset",
+            "financial_report_accuracy_vs_reference_data",
+            "usability_testing_with_5_small_business_users"
+          ],
+          "performance_targets": {
+            "api_p95_latency_ms": 2000,
+            "batch_categorization_1000_tx_sec": 10,
+            "concurrent_users": 1000
+          }
+        },
+        "acceptance_criteria": [
+          "QA test plan covers 100% of PRD requirements with at least one test case per requirement",
+          "Regression suite runs automatically on every release candidate",
+          "Load test confirms system handles 1,000 concurrent users with p95 latency < 2 seconds",
+          "Categorization accuracy validated at >= 95% on 10,000-transaction labeled test set",
+          "Financial report accuracy validated \u2014 P&L totals match reference data to the cent",
+          "Usability testing with 5 users shows task completion rate >= 80% for core flows with no external help"
+        ],
+        "depends_on": [
+          17,
+          20
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "SYSTEM_TEST",
+        "description": "Execute system-level integration and end-to-end tests covering the full lifecycle: bank connection \u2192 transaction sync \u2192 AI categorization \u2192 reconciliation \u2192 financial report \u2192 tax filing preparation with HITL approval. Test multi-tenant isolation at system level.",
+        "payload": {
+          "test_scenarios": [
+            "full_lifecycle_sole_proprietor_Schedule_C",
+            "full_lifecycle_S_Corp_Form_1120S",
+            "multi_tenant_isolation_two_concurrent_businesses",
+            "annual_reconciliation_and_year_end_close",
+            "disaster_recovery_restore_from_backup",
+            "bank_credential_rotation_without_data_loss"
+          ],
+          "environment": "staging_with_Plaid_Sandbox",
+          "deliverables": [
+            "system_test_report.md",
+            "test_evidence_artifacts/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Full lifecycle test for sole proprietor completes end-to-end without manual intervention except required HITL gates",
+          "Multi-tenant isolation test confirms zero data leakage between two simultaneously active tenants",
+          "Disaster recovery test achieves RTO < 4 hours and RPO < 1 hour from backup",
+          "All system test results documented with pass/fail evidence (screenshots, logs) for SOC 2 audit",
+          "System test report signed off by QA lead before production release"
+        ],
+        "depends_on": [
+          21,
+          22
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 24,
+        "task_type": "COMPLIANCE",
+        "description": "Finalize compliance evidence package for SOC 2 Type II readiness, PCI DSS SAQ-D completion, and SOX IT general controls. Compile test results, audit logs, and control evidence into audit-ready documentation.",
+        "payload": {
+          "deliverables": [
+            "SOC2_readiness_assessment.md",
+            "PCI_DSS_SAQ_D_completed.pdf",
+            "SOX_ITGC_evidence_package/",
+            "control_testing_results.xlsx",
+            "vendor_risk_assessments/Plaid_risk_assessment.md",
+            "business_continuity_plan.md"
+          ],
+          "evidence_sources": [
+            "system_test_report",
+            "pentest_report",
+            "audit_log_samples",
+            "access_control_review"
+          ]
+        },
+        "acceptance_criteria": [
+          "SOC 2 readiness assessment maps all 5 trust service criteria to implemented controls with evidence references",
+          "PCI DSS SAQ-D completed with all applicable controls marked 'In Place' with supporting evidence",
+          "SOX ITGC evidence package covers change management, access control, and backup/recovery controls",
+          "Vendor risk assessment for Plaid documents data sharing scope and contractual controls",
+          "Business continuity plan tested and validated by system test disaster recovery scenario",
+          "Compliance package reviewed and approved by regulatory_specialist and legal_advisor"
+        ],
+        "depends_on": [
+          23
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 25,
+        "task_type": "DOCS",
+        "description": "Produce developer documentation, API reference, architecture document, and runbooks. Generate OpenAPI-based API docs, deployment guide, and integration guide for third-party accountants.",
+        "payload": {
+          "deliverables": [
+            "README.md",
+            "docs/architecture.md",
+            "docs/api_reference/ \u2014 auto-generated from OpenAPI spec",
+            "docs/deployment_guide.md",
+            "docs/integration_guide_for_accountants.md",
+            "docs/data_model.md",
+            "docs/security_controls.md"
+          ],
+          "doc_tool": "MkDocs_with_Material_theme"
+        },
+        "acceptance_criteria": [
+          "README covers quick start, prerequisites, and local development setup in < 10 steps",
+          "API reference auto-generated from OpenAPI spec with all endpoints documented and examples",
+          "Architecture document includes component diagram, data flow diagram, and security boundary diagram",
+          "Deployment guide covers Docker Compose, environment variables, and first-run setup",
+          "All docs render correctly in MkDocs with no broken links"
+        ],
+        "depends_on": [
+          23
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 26,
+        "task_type": "TRAINING",
+        "description": "Produce user onboarding guide, in-app help content, and training materials for small business owners and bookkeepers. Create video script outlines for key workflows.",
+        "payload": {
+          "deliverables": [
+            "user_onboarding_guide.md",
+            "in_app_help_content.json",
+            "bookkeeper_quick_reference.pdf",
+            "video_scripts/bank_connection_walkthrough.md",
+            "video_scripts/tax_filing_review_walkthrough.md",
+            "FAQ.md"
+          ],
+          "target_audiences": [
+            "small_business_owner",
+            "bookkeeper",
+            "external_accountant"
+          ]
+        },
+        "acceptance_criteria": [
+          "Onboarding guide covers bank connection, first categorization review, and first reconciliation in < 20 steps",
+          "In-app help content covers all 8 major UI pages with contextual tooltips",
+          "FAQ addresses at least 20 common questions including 'Can I trust the AI for taxes?' with appropriate disclaimer",
+          "Video scripts reviewed and approved by legal_advisor for accuracy of financial and tax claims"
+        ],
+        "depends_on": [
+          17,
+          25
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 27,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Conduct competitive analysis and go-to-market strategy for accounting_automation. Analyze QuickBooks, Xero, FreshBooks, and AI-native competitors. Define positioning, pricing strategy, and GTM channels for small business market.",
+        "payload": {
+          "deliverables": [
+            "competitive_analysis.md",
+            "positioning_doc.md",
+            "GTM_strategy.md"
+          ],
+          "competitors": [
+            "QuickBooks",
+            "Xero",
+            "FreshBooks",
+            "Bench",
+            "Pilot",
+            "Botkeeper"
+          ],
+          "target_segment": "US_small_businesses_1_to_50_employees"
+        },
+        "acceptance_criteria": [
+          "Competitive analysis covers at least 6 competitors with feature comparison matrix and pricing",
+          "Positioning doc defines unique value proposition differentiating AI-native accuracy and compliance focus",
+          "GTM strategy identifies top 3 acquisition channels with estimated CAC per channel",
+          "Pricing strategy recommendation includes SaaS tier structure with feature gating"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 28,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model for accounting_automation business. Model SaaS unit economics, pricing tiers, CAC, LTV, churn assumptions, and 3-year revenue projection.",
+        "payload": {
+          "deliverables": [
+            "financial_model.xlsx",
+            "pricing_strategy.md",
+            "unit_economics_analysis.md"
+          ],
+          "model_inputs": [
+            "pricing_tiers",
+            "CAC_by_channel",
+            "monthly_churn_rate",
+            "expansion_revenue",
+            "COGS"
+          ],
+          "scenarios": [
+            "conservative",
+            "base",
+            "optimistic"
+          ]
+        },
+        "acceptance_criteria": [
+          "Financial model covers 36-month projection with monthly granularity",
+          "Unit economics analysis shows LTV/CAC ratio >= 3x in base scenario by month 18",
+          "Three pricing tiers modeled with different feature sets and target customer profiles",
+          "Model includes sensitivity analysis on churn rate and CAC assumptions",
+          "Break-even analysis shows path to profitability in base scenario"
+        ],
+        "depends_on": [
+          27
+        ],
+        "agent_role": "financial_analyst"
+      }
+    ],
+    "task_count": 28,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "Double-entry bookkeeping is entirely absent. The database schema has a 'transactions' table but no journal_entries, general_ledger, or debit/credit structure. Without double-entry, GAAP-compliant P&L and balance sheets (Step 14) are mathematically impossible \u2014 you cannot derive a correct balance sheet from single-entry imported bank transactions alone.",
+              "ML model accuracy target of 95% on synthetic training data is unrealistic. Synthetic transactions do not replicate real-world bank description noise (e.g., 'SQ *COFFEE 1234', 'ACH DEBIT 0042891 VENDOR'). Published benchmarks on real bank transaction classification with FinBERT show 80-88% accuracy. The plan promises 95% without a real labeled training corpus.",
+              "Fine-tuning a transformer (Step 10) requires GPU infrastructure that is never provisioned. The infra step (18) only specifies FastAPI, PostgreSQL, Redis, Celery, and Nginx containers. No mention of GPU nodes, SageMaker, Vertex AI, or any model serving infrastructure. The active learning re-training pipeline has no compute to run on.",
+              "State tax obligations are completely absent. The vast majority of US small businesses have state income tax, franchise tax, and sales tax obligations. Supporting only Schedule C, 1120-S, 1065, and 1099-NEC covers federal only. This is a major feature gap that affects the credibility of the entire tax module.",
+              "PCI DSS SAQ-D scope is likely wrong. SAQ-D applies to merchants storing cardholder data (PANs). Plaid access tokens are not PANs. The plan conflates 'bank credentials' with 'cardholder data.' A QSA assessment is needed to determine actual PCI DSS scope \u2014 getting this wrong means either over-engineering controls or a compliance violation.",
+              "SOX Section 404 compliance requires external auditor attestation of internal controls, not just internal documentation. The plan treats SOX as a document production exercise (Step 24). A private company providing accounting software is not itself a SOX-reporting entity \u2014 SOX IT General Controls apply to the customer's audit, not the vendor's. The regulatory scope definition is fundamentally confused.",
+              "Step 16 (auth/RBAC) has no inbound dependency from Steps 11-15. This means five backend services are designed and built without authentication. Auth must be designed before any service API is finalized, or every API contract must be renegotiated post-hoc.",
+              "Tax liability estimation 'within 1%' (Step 15) is an unrealistic acceptance criterion. Tax liability involves depreciation schedules, carryforwards, AMT, Section 199A QBI deduction, basis tracking, and entity-specific rules that vary by state. A 1% tolerance requires a full tax calculation engine equivalent to TurboTax's core \u2014 not a mapper from categorized transactions.",
+              "Hungarian algorithm for reconciliation (Step 13) is O(n\u00b3). For a business with 3,000 monthly transactions, this is 27 billion operations per reconciliation run. No performance budget is defined for the reconciliation step, and the 10-second budget cited is only for the categorization step.",
+              "Plaid as the sole bank connection method creates a hard dependency with no fallback. ~15% of US financial institutions have limited or no Plaid support. No CSV/OFX/QFX manual import path is specified. A small business with a credit union or community bank is entirely blocked.",
+              "No Chart of Accounts management feature exists in the plan. Different businesses use different COAs (retail vs. service vs. manufacturing). The ML model maps to IRS Schedule C categories, but actual bookkeeping requires a configurable COA with account codes. The gap between IRS categories and accounting COA is never bridged.",
+              "The financial model (Step 28) is built last and never feeds back into product scoping. CAC and LTV assumptions should inform which features are in MVP. Building a 28-step pipeline and then discovering the unit economics don't work is a critical sequencing failure.",
+              "No database backup or restore implementation exists. Step 23 tests disaster recovery (RTO < 4 hours, RPO < 1 hour) but no step in the plan actually implements the backup infrastructure, backup schedules, or restore procedures being tested.",
+              "Audit log append-only enforcement relies only on database-level INSERT permissions (Step 8). This does not prevent a compromised DB admin or application superuser from deleting rows. For SOC 2 and PCI DSS, immutability requires write-once storage (S3 Object Lock, WORM storage) or cryptographic chaining, not just permission restrictions.",
+              "GLBA applicability determination is treated as a documentation task (Step 5) rather than a threshold legal question. If the product qualifies as a 'financial institution' under GLBA, it triggers the Safeguards Rule with specific technical controls. If it does not qualify, several compliance requirements are unnecessary. This must be resolved before architecture decisions are finalized."
+            ],
+            "suggestions": [
+              "Add a double-entry bookkeeping engine as a separate step between Step 8 (database) and Step 14 (reports). Define journal_entries and general_ledger tables. All financial report generation must derive from the general ledger, not raw transaction imports.",
+              "Replace 'synthetic training data' with a real labeled dataset acquisition strategy. Use publicly available labeled datasets (e.g., bank transaction datasets from Kaggle/HuggingFace) supplemented by a human labeling sprint on 5,000 real transactions. Revise accuracy target to 88% for MVP, with 95% as a post-launch improvement target with real user data.",
+              "Add GPU/model serving infrastructure to Step 18. Specify whether inference runs via a cloud API (AWS SageMaker, Google Vertex), a self-hosted GPU container, or a CPU-optimized ONNX export. Define model artifact storage (S3/GCS) and versioning strategy (MLflow or DVC).",
+              "Add Step 8b: Chart of Accounts management service \u2014 configurable COA with account codes, account types (asset/liability/equity/income/expense), and mapping rules from bank transaction categories to COA entries.",
+              "Engage a QSA (Qualified Security Assessor) in Step 3 to determine actual PCI DSS scope before designing security controls. This decision changes the entire compliance architecture.",
+              "Move Step 16 (auth) dependency to be a prerequisite for Steps 11-15. All backend services must have the auth contract defined before API implementation begins.",
+              "Add a CSV/OFX/QFX manual import fallback in Step 11. Define the file format parsing pipeline alongside the Plaid integration.",
+              "Add Step 8c: Database backup infrastructure \u2014 pg_dump schedules, WAL archiving to S3, PITR configuration, and restore runbooks \u2014 before Step 23 tests it.",
+              "Replace append-only audit log with cryptographic chaining (each event includes hash of previous event) and periodic export to write-once storage. Document this in the audit_trail_spec.",
+              "Add state tax forms as a Phase 2 explicit scope item in Step 2 (PRD). At minimum, acknowledge the gap in Step 15 acceptance criteria rather than implying federal-only is complete tax filing preparation.",
+              "Move Step 28 (financial model) to immediately after Step 1, and use its output to constrain Step 2 MVP scope. Unit economics should drive feature prioritization, not follow product completion.",
+              "For the reconciliation algorithm, replace Hungarian algorithm with a tiered approach: exact match (amount + date \u00b1 1 day) first, fuzzy match second, Hungarian only for the residual unmatched set. Cap the fuzzy match input at 500 items or implement batching."
+            ],
+            "missing": [
+              "Double-entry bookkeeping engine and general ledger \u2014 foundational to all accounting, entirely absent",
+              "Chart of Accounts management \u2014 configuration, account codes, account types, COA mapping",
+              "State tax forms and obligations \u2014 all US small businesses have state-level requirements",
+              "GPU/ML inference infrastructure \u2014 FinBERT cannot run on the specified container stack",
+              "Model versioning, A/B testing, and rollback strategy for the ML model",
+              "Database backup and PITR infrastructure \u2014 tested in Step 23 but never built",
+              "QSA engagement for PCI DSS scope determination",
+              "Plaid cost model and API pricing \u2014 Plaid charges per connected account; at scale this is a significant COGS line item not in the financial model",
+              "Split transaction handling in reconciliation",
+              "Foreign currency transaction support",
+              "Historical data import / migration from QuickBooks/Xero \u2014 critical for adoption",
+              "Celery task queue design and dead letter queue handling \u2014 referenced in infra but never designed",
+              "Plaid token refresh and re-authentication flows when access tokens expire",
+              "Multi-year tax carryforward tracking (NOLs, capital loss carryforwards)",
+              "Tax year update mechanism \u2014 IRS form fields and limits change annually",
+              "Accounts payable and accounts receivable management \u2014 referenced in reports but no input mechanism",
+              "GLBA applicability legal determination",
+              "Vendor risk assessment for all third-party dependencies, not just Plaid (ML model providers, cloud infrastructure)",
+              "Customer support and error reporting infrastructure",
+              "Data residency and state-level privacy law compliance (VCDPA, CPA, etc. beyond CCPA)"
+            ],
+            "security_risks": [
+              "Plaid access tokens stored 'encrypted' with no specification of key management. If the application-level AES-256 key is stored in the same database or the same environment, encryption provides no protection against a full system compromise. Key management (HSM, AWS KMS, HashiCorp Vault Transit) must be specified.",
+              "JWT refresh token rotation (Step 16) with no mention of refresh token storage security. If refresh tokens are stored client-side in localStorage (common React pattern), XSS completely bypasses the 15-minute access token expiry.",
+              "Tax package PDFs exported as 'password-protected' (Step 15) with no specification of password delivery mechanism. If the password is transmitted in the same channel as the PDF, it provides no security.",
+              "Multi-tenant RLS relies entirely on application-layer tenant_id injection. A single SQL injection vulnerability or ORM misconfiguration bypasses all tenant isolation. Defense-in-depth requires PostgreSQL RLS policies that enforce tenant_id from the session variable, not just application query parameters.",
+              "HITL gate bypass via direct database writes is not addressed. The penetration test plan mentions testing this, but the architecture does not describe how the system prevents an attacker with DB access from directly setting approval status, bypassing the API-level gate.",
+              "Celery workers processing tax and financial data need their own auth context. Workers that run as a privileged application user and accept tasks from Redis (which has no auth in the default Docker Compose config) are a significant lateral movement risk if Redis is exposed.",
+              "OpenAPI spec exposes all endpoint schemas publicly. For a financial system, the API spec should not be publicly accessible without authentication, as it provides a detailed attack surface map.",
+              "Dependency vulnerability scan blocks on CRITICAL CVEs (Step 18) but no process defined for CVE remediation timeline or exceptions. A zero-day in a core dependency (e.g., cryptography library) could block all deployments indefinitely without a defined exception process."
+            ],
+            "summary": "This plan is thorough in process and compliance documentation but contains a fundamental domain modeling error that invalidates the entire financial reporting and tax preparation stack: there is no double-entry bookkeeping engine. Bank transaction imports are single-entry records; GAAP-compliant financial statements require a general ledger with balanced journal entries. Without this foundation, the P&L, balance sheet, and tax preparation modules cannot produce correct output regardless of how well they are implemented. Additionally, the ML model makes a 95% accuracy promise on synthetic training data without GPU infrastructure to train or serve it \u2014 this alone is a blocking gap. The compliance scope is confused: PCI DSS SAQ-D scope needs QSA determination, and SOX is misapplied to a SaaS vendor. These are not polish issues; they require architectural rework before implementation begins. The plan would score in the high 60s if the bookkeeping engine and ML infrastructure gaps were addressed, but in its current state, fundamental rework of Steps 8, 10, 14, 15, and 18 is required before this is production-ready.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "Double-entry bookkeeping is entirely absent. The database schema has a 'transactions' table but no journal_entries, general_ledger, or debit/credit structure. Without double-entry, GAAP-compliant P&L and balance sheets (Step 14) are mathematically impossible \u2014 you cannot derive a correct balance sheet from single-entry imported bank transactions alone.",
+                "ML model accuracy target of 95% on synthetic training data is unrealistic. Synthetic transactions do not replicate real-world bank description noise (e.g., 'SQ *COFFEE 1234', 'ACH DEBIT 0042891 VENDOR'). Published benchmarks on real bank transaction classification with FinBERT show 80-88% accuracy. The plan promises 95% without a real labeled training corpus.",
+                "Fine-tuning a transformer (Step 10) requires GPU infrastructure that is never provisioned. The infra step (18) only specifies FastAPI, PostgreSQL, Redis, Celery, and Nginx containers. No mention of GPU nodes, SageMaker, Vertex AI, or any model serving infrastructure. The active learning re-training pipeline has no compute to run on.",
+                "State tax obligations are completely absent. The vast majority of US small businesses have state income tax, franchise tax, and sales tax obligations. Supporting only Schedule C, 1120-S, 1065, and 1099-NEC covers federal only. This is a major feature gap that affects the credibility of the entire tax module.",
+                "PCI DSS SAQ-D scope is likely wrong. SAQ-D applies to merchants storing cardholder data (PANs). Plaid access tokens are not PANs. The plan conflates 'bank credentials' with 'cardholder data.' A QSA assessment is needed to determine actual PCI DSS scope \u2014 getting this wrong means either over-engineering controls or a compliance violation.",
+                "SOX Section 404 compliance requires external auditor attestation of internal controls, not just internal documentation. The plan treats SOX as a document production exercise (Step 24). A private company providing accounting software is not itself a SOX-reporting entity \u2014 SOX IT General Controls apply to the customer's audit, not the vendor's. The regulatory scope definition is fundamentally confused.",
+                "Step 16 (auth/RBAC) has no inbound dependency from Steps 11-15. This means five backend services are designed and built without authentication. Auth must be designed before any service API is finalized, or every API contract must be renegotiated post-hoc.",
+                "Tax liability estimation 'within 1%' (Step 15) is an unrealistic acceptance criterion. Tax liability involves depreciation schedules, carryforwards, AMT, Section 199A QBI deduction, basis tracking, and entity-specific rules that vary by state. A 1% tolerance requires a full tax calculation engine equivalent to TurboTax's core \u2014 not a mapper from categorized transactions.",
+                "Hungarian algorithm for reconciliation (Step 13) is O(n\u00b3). For a business with 3,000 monthly transactions, this is 27 billion operations per reconciliation run. No performance budget is defined for the reconciliation step, and the 10-second budget cited is only for the categorization step.",
+                "Plaid as the sole bank connection method creates a hard dependency with no fallback. ~15% of US financial institutions have limited or no Plaid support. No CSV/OFX/QFX manual import path is specified. A small business with a credit union or community bank is entirely blocked.",
+                "No Chart of Accounts management feature exists in the plan. Different businesses use different COAs (retail vs. service vs. manufacturing). The ML model maps to IRS Schedule C categories, but actual bookkeeping requires a configurable COA with account codes. The gap between IRS categories and accounting COA is never bridged.",
+                "The financial model (Step 28) is built last and never feeds back into product scoping. CAC and LTV assumptions should inform which features are in MVP. Building a 28-step pipeline and then discovering the unit economics don't work is a critical sequencing failure.",
+                "No database backup or restore implementation exists. Step 23 tests disaster recovery (RTO < 4 hours, RPO < 1 hour) but no step in the plan actually implements the backup infrastructure, backup schedules, or restore procedures being tested.",
+                "Audit log append-only enforcement relies only on database-level INSERT permissions (Step 8). This does not prevent a compromised DB admin or application superuser from deleting rows. For SOC 2 and PCI DSS, immutability requires write-once storage (S3 Object Lock, WORM storage) or cryptographic chaining, not just permission restrictions.",
+                "GLBA applicability determination is treated as a documentation task (Step 5) rather than a threshold legal question. If the product qualifies as a 'financial institution' under GLBA, it triggers the Safeguards Rule with specific technical controls. If it does not qualify, several compliance requirements are unnecessary. This must be resolved before architecture decisions are finalized."
+              ],
+              "suggestions": [
+                "Add a double-entry bookkeeping engine as a separate step between Step 8 (database) and Step 14 (reports). Define journal_entries and general_ledger tables. All financial report generation must derive from the general ledger, not raw transaction imports.",
+                "Replace 'synthetic training data' with a real labeled dataset acquisition strategy. Use publicly available labeled datasets (e.g., bank transaction datasets from Kaggle/HuggingFace) supplemented by a human labeling sprint on 5,000 real transactions. Revise accuracy target to 88% for MVP, with 95% as a post-launch improvement target with real user data.",
+                "Add GPU/model serving infrastructure to Step 18. Specify whether inference runs via a cloud API (AWS SageMaker, Google Vertex), a self-hosted GPU container, or a CPU-optimized ONNX export. Define model artifact storage (S3/GCS) and versioning strategy (MLflow or DVC).",
+                "Add Step 8b: Chart of Accounts management service \u2014 configurable COA with account codes, account types (asset/liability/equity/income/expense), and mapping rules from bank transaction categories to COA entries.",
+                "Engage a QSA (Qualified Security Assessor) in Step 3 to determine actual PCI DSS scope before designing security controls. This decision changes the entire compliance architecture.",
+                "Move Step 16 (auth) dependency to be a prerequisite for Steps 11-15. All backend services must have the auth contract defined before API implementation begins.",
+                "Add a CSV/OFX/QFX manual import fallback in Step 11. Define the file format parsing pipeline alongside the Plaid integration.",
+                "Add Step 8c: Database backup infrastructure \u2014 pg_dump schedules, WAL archiving to S3, PITR configuration, and restore runbooks \u2014 before Step 23 tests it.",
+                "Replace append-only audit log with cryptographic chaining (each event includes hash of previous event) and periodic export to write-once storage. Document this in the audit_trail_spec.",
+                "Add state tax forms as a Phase 2 explicit scope item in Step 2 (PRD). At minimum, acknowledge the gap in Step 15 acceptance criteria rather than implying federal-only is complete tax filing preparation.",
+                "Move Step 28 (financial model) to immediately after Step 1, and use its output to constrain Step 2 MVP scope. Unit economics should drive feature prioritization, not follow product completion.",
+                "For the reconciliation algorithm, replace Hungarian algorithm with a tiered approach: exact match (amount + date \u00b1 1 day) first, fuzzy match second, Hungarian only for the residual unmatched set. Cap the fuzzy match input at 500 items or implement batching."
+              ],
+              "missing": [
+                "Double-entry bookkeeping engine and general ledger \u2014 foundational to all accounting, entirely absent",
+                "Chart of Accounts management \u2014 configuration, account codes, account types, COA mapping",
+                "State tax forms and obligations \u2014 all US small businesses have state-level requirements",
+                "GPU/ML inference infrastructure \u2014 FinBERT cannot run on the specified container stack",
+                "Model versioning, A/B testing, and rollback strategy for the ML model",
+                "Database backup and PITR infrastructure \u2014 tested in Step 23 but never built",
+                "QSA engagement for PCI DSS scope determination",
+                "Plaid cost model and API pricing \u2014 Plaid charges per connected account; at scale this is a significant COGS line item not in the financial model",
+                "Split transaction handling in reconciliation",
+                "Foreign currency transaction support",
+                "Historical data import / migration from QuickBooks/Xero \u2014 critical for adoption",
+                "Celery task queue design and dead letter queue handling \u2014 referenced in infra but never designed",
+                "Plaid token refresh and re-authentication flows when access tokens expire",
+                "Multi-year tax carryforward tracking (NOLs, capital loss carryforwards)",
+                "Tax year update mechanism \u2014 IRS form fields and limits change annually",
+                "Accounts payable and accounts receivable management \u2014 referenced in reports but no input mechanism",
+                "GLBA applicability legal determination",
+                "Vendor risk assessment for all third-party dependencies, not just Plaid (ML model providers, cloud infrastructure)",
+                "Customer support and error reporting infrastructure",
+                "Data residency and state-level privacy law compliance (VCDPA, CPA, etc. beyond CCPA)"
+              ],
+              "security_risks": [
+                "Plaid access tokens stored 'encrypted' with no specification of key management. If the application-level AES-256 key is stored in the same database or the same environment, encryption provides no protection against a full system compromise. Key management (HSM, AWS KMS, HashiCorp Vault Transit) must be specified.",
+                "JWT refresh token rotation (Step 16) with no mention of refresh token storage security. If refresh tokens are stored client-side in localStorage (common React pattern), XSS completely bypasses the 15-minute access token expiry.",
+                "Tax package PDFs exported as 'password-protected' (Step 15) with no specification of password delivery mechanism. If the password is transmitted in the same channel as the PDF, it provides no security.",
+                "Multi-tenant RLS relies entirely on application-layer tenant_id injection. A single SQL injection vulnerability or ORM misconfiguration bypasses all tenant isolation. Defense-in-depth requires PostgreSQL RLS policies that enforce tenant_id from the session variable, not just application query parameters.",
+                "HITL gate bypass via direct database writes is not addressed. The penetration test plan mentions testing this, but the architecture does not describe how the system prevents an attacker with DB access from directly setting approval status, bypassing the API-level gate.",
+                "Celery workers processing tax and financial data need their own auth context. Workers that run as a privileged application user and accept tasks from Redis (which has no auth in the default Docker Compose config) are a significant lateral movement risk if Redis is exposed.",
+                "OpenAPI spec exposes all endpoint schemas publicly. For a financial system, the API spec should not be publicly accessible without authentication, as it provides a detailed attack surface map.",
+                "Dependency vulnerability scan blocks on CRITICAL CVEs (Step 18) but no process defined for CVE remediation timeline or exceptions. A zero-day in a core dependency (e.g., cryptography library) could block all deployments indefinitely without a defined exception process."
+              ],
+              "summary": "This plan is thorough in process and compliance documentation but contains a fundamental domain modeling error that invalidates the entire financial reporting and tax preparation stack: there is no double-entry bookkeeping engine. Bank transaction imports are single-entry records; GAAP-compliant financial statements require a general ledger with balanced journal entries. Without this foundation, the P&L, balance sheet, and tax preparation modules cannot produce correct output regardless of how well they are implemented. Additionally, the ML model makes a 95% accuracy promise on synthetic training data without GPU infrastructure to train or serve it \u2014 this alone is a blocking gap. The compliance scope is confused: PCI DSS SAQ-D scope needs QSA determination, and SOX is misapplied to a SaaS vendor. These are not polish issues; they require architectural rework before implementation begins. The plan would score in the high 60s if the bookkeeping engine and ML infrastructure gaps were addressed, but in its current state, fundamental rework of Steps 8, 10, 14, 15, and 18 is required before this is production-ready.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T00:06:11.460238+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 177.52,
+      "critic_plan": 119.34
+    }
+  }
+}

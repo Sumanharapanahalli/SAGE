@@ -1,0 +1,1381 @@
+{
+  "run_id": "21dc22af-c16f-4088-b04d-2663ee624baf",
+  "status": {
+    "run_id": "21dc22af-c16f-4088-b04d-2663ee624baf",
+    "solution_name": "podcast_platform",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T10:54:25.137746+00:00",
+    "updated_at": "2026-03-22T11:01:09.663349+00:00",
+    "product_description": "Podcast hosting and listening platform with RSS import, analytics, monetization (ads, subscriptions), transcription, clip sharing, and discovery algorithm.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze podcast platform market: Spotify, Apple Podcasts, Buzzsprout, Anchor, Podbean. Map competitor features, pricing tiers, creator economics, listener demographics, and whitespace opportunities.",
+        "payload": {
+          "competitors": [
+            "Spotify",
+            "Apple Podcasts",
+            "Buzzsprout",
+            "Anchor",
+            "Podbean",
+            "Transistor"
+          ],
+          "dimensions": [
+            "pricing",
+            "monetization_models",
+            "analytics_depth",
+            "transcription_quality",
+            "discovery_algorithms",
+            "creator_tools"
+          ],
+          "deliverables": [
+            "competitor_matrix.md",
+            "market_sizing.md",
+            "positioning_map.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitor matrix covers at least 6 platforms across 8+ feature dimensions",
+          "TAM/SAM/SOM estimates with cited sources",
+          "Positioning map identifies at least 2 defensible whitespace opportunities",
+          "Creator economics breakdown (average revenue per creator per platform)"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements: creator personas, listener personas, monetization flows (host-read ads, dynamic ad insertion, subscriptions, tip jars), RSS import journeys, and key ROI metrics.",
+        "payload": {
+          "personas": [
+            "indie_creator",
+            "network_publisher",
+            "casual_listener",
+            "power_listener",
+            "advertiser"
+          ],
+          "process_flows": [
+            "rss_import",
+            "episode_upload",
+            "ad_campaign_setup",
+            "subscription_purchase",
+            "clip_creation"
+          ],
+          "deliverables": [
+            "business_requirements.md",
+            "user_stories.md",
+            "process_flow_diagrams.md",
+            "roi_analysis.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "At least 5 distinct user personas with jobs-to-be-done",
+          "40+ user stories in Given/When/Then format covering all major flows",
+          "Process flow diagrams for RSS import, ad insertion, and subscription purchase",
+          "ROI model showing break-even at projected creator and listener counts",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "FINANCIAL",
+        "description": "Build financial model: revenue streams (subscription tiers, ad revenue share, transaction fees), COGS (storage, CDN, transcription API costs), pricing strategy, and 3-year P&L projection.",
+        "payload": {
+          "revenue_streams": [
+            "creator_subscriptions",
+            "listener_premium",
+            "ad_revenue_share_15pct",
+            "transaction_fee_2pct"
+          ],
+          "cogs_drivers": [
+            "s3_storage_per_gb",
+            "cloudfront_egress_per_gb",
+            "whisper_api_per_minute",
+            "stripe_fees"
+          ],
+          "pricing_tiers": [
+            "free_creator_5gb",
+            "starter_20_usd_50gb",
+            "pro_49_usd_unlimited",
+            "network_199_usd"
+          ],
+          "deliverables": [
+            "financial_model.xlsx",
+            "pricing_strategy.md",
+            "unit_economics.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "3-year P&L with monthly granularity in year 1",
+          "LTV/CAC ratio modeled per creator tier",
+          "Break-even analysis for each pricing tier",
+          "Sensitivity analysis on CDN and transcription cost assumptions",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          1,
+          2
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 4,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document, phased roadmap (MVP \u2192 v1 \u2192 v2), success metrics (OKRs), and MoSCoW prioritization for all features including RSS import, analytics dashboard, transcription, clip sharing, and discovery.",
+        "payload": {
+          "mvp_scope": [
+            "rss_import",
+            "episode_hosting",
+            "basic_analytics",
+            "embeddable_player",
+            "rss_feed_output"
+          ],
+          "v1_scope": [
+            "transcription",
+            "clip_sharing",
+            "dynamic_ad_insertion",
+            "subscription_payments"
+          ],
+          "v2_scope": [
+            "discovery_algorithm",
+            "cross_promotion",
+            "network_analytics",
+            "programmatic_ads"
+          ],
+          "deliverables": [
+            "prd.md",
+            "roadmap.md",
+            "okrs.md",
+            "moscow_matrix.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD covers all 6 platform pillars: hosting, analytics, monetization, transcription, clips, discovery",
+          "Each feature has acceptance criteria and success metric",
+          "OKRs defined for first 3 quarters with measurable key results",
+          "MoSCoW matrix reviewed against financial model constraints"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "User research, information architecture, and wireframes for: creator dashboard (upload, analytics, monetization), listener app (discovery feed, player, subscriptions), clip editor, and RSS import wizard.",
+        "payload": {
+          "research_methods": [
+            "creator_interviews_n10",
+            "listener_diary_study_n20",
+            "competitor_ux_audit"
+          ],
+          "deliverables": [
+            "ia_map.fig",
+            "wireframes_creator_dashboard.fig",
+            "wireframes_listener_app.fig",
+            "wireframes_clip_editor.fig",
+            "accessibility_audit.md"
+          ],
+          "accessibility_standard": "WCAG 2.1 AA"
+        },
+        "acceptance_criteria": [
+          "Information architecture covers all routes with max 3-click depth to any feature",
+          "Wireframes cover at least 30 distinct screens across creator and listener flows",
+          "Clip editor wireframe includes waveform trimming, caption overlay, and share sheet",
+          "Accessibility audit documents contrast ratios, keyboard nav, and screen reader support",
+          "Usability test with 5+ participants validates RSS import wizard flow",
+          "App store screenshot mockups prepared",
+          "Onboarding flow under 3 steps"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), Creator Content License, Advertiser Agreement, DMCA takedown process, and podcast RSS feed content policy.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "creator_content_license.md",
+            "advertiser_agreement.md",
+            "dmca_policy.md",
+            "content_policy.md"
+          ],
+          "jurisdictions": [
+            "US",
+            "EU",
+            "UK"
+          ],
+          "compliance_frameworks": [
+            "GDPR",
+            "CCPA",
+            "COPPA_exclusion_clause"
+          ]
+        },
+        "acceptance_criteria": [
+          "Privacy Policy covers all data categories collected including audio files, listening history, payment data",
+          "Creator Content License grants platform rights to transcode, clip, and index content",
+          "DMCA process includes counter-notice procedure and repeat infringer policy",
+          "GDPR data subject rights (access, erasure, portability) enumerated with fulfillment process",
+          "Content policy prohibits explicit adult content and hate speech with enforcement mechanism",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 7,
+        "task_type": "COMPLIANCE",
+        "description": "SOC 2 Type I readiness: define trust service criteria scope (Security, Availability, Confidentiality), map controls to platform components, produce control matrix, and initiate evidence collection procedures.",
+        "payload": {
+          "trust_criteria": [
+            "CC6_logical_access",
+            "CC7_system_operations",
+            "CC8_change_management",
+            "A1_availability",
+            "C1_confidentiality"
+          ],
+          "deliverables": [
+            "soc2_control_matrix.xlsx",
+            "evidence_collection_procedures.md",
+            "vendor_risk_assessments.md",
+            "incident_response_plan.md"
+          ],
+          "audit_scope": [
+            "audio_storage",
+            "user_data_processing",
+            "payment_handling",
+            "api_access_controls"
+          ]
+        },
+        "acceptance_criteria": [
+          "Control matrix maps all CC6\u2013CC8, A1, C1 criteria to specific platform controls",
+          "At least 40 controls defined with owner, frequency, and evidence artifact type",
+          "Vendor risk assessments completed for AWS, Stripe, transcription provider, and CDN",
+          "Incident response plan includes <1hr detection, <4hr containment SLOs",
+          "Evidence collection procedures automated via AWS Config, CloudTrail, and audit log exports"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 8,
+        "task_type": "CONFIG",
+        "description": "Scaffold monorepo structure: backend (FastAPI), frontend (Next.js 14 App Router), worker services (transcription, analytics, discovery). Configure toolchain: pnpm workspaces, ESLint, Prettier, Ruff, pre-commit hooks, environment variable management.",
+        "payload": {
+          "monorepo_layout": {
+            "apps/api": "FastAPI backend",
+            "apps/web": "Next.js 14 creator dashboard + listener app",
+            "apps/worker": "Celery workers: transcription, analytics, ad-insertion",
+            "packages/ui": "Shared React component library",
+            "packages/types": "Shared TypeScript types",
+            "infra/": "Terraform + Docker configs"
+          },
+          "toolchain": [
+            "pnpm@9",
+            "python3.12",
+            "ruff",
+            "mypy",
+            "eslint",
+            "prettier",
+            "pre-commit",
+            "commitlint"
+          ]
+        },
+        "acceptance_criteria": [
+          "pnpm install --frozen-lockfile succeeds from repo root",
+          "pre-commit hooks run ruff, mypy, eslint, and prettier on staged files",
+          "Environment variable validation fails fast on missing required vars",
+          "All apps start with a single `make dev` command via docker-compose",
+          "commitlint enforces conventional commits"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "DATABASE",
+        "description": "Design PostgreSQL schema: users, podcasts, episodes, rss_imports, transcripts, clips, ad_campaigns, ad_insertions, subscriptions, payments, analytics_events, discovery_scores. Write Alembic migrations and seed scripts.",
+        "payload": {
+          "core_tables": [
+            "users",
+            "podcasts",
+            "episodes",
+            "rss_feed_imports",
+            "audio_files",
+            "transcripts",
+            "transcript_segments",
+            "clips",
+            "clip_shares"
+          ],
+          "monetization_tables": [
+            "subscription_plans",
+            "subscriptions",
+            "ad_campaigns",
+            "ad_creatives",
+            "ad_insertions",
+            "payment_transactions"
+          ],
+          "analytics_tables": [
+            "listen_events",
+            "episode_analytics_rollup",
+            "podcast_analytics_rollup",
+            "discovery_scores"
+          ],
+          "indexes": [
+            "episodes(podcast_id, published_at)",
+            "listen_events(episode_id, created_at)",
+            "discovery_scores(podcast_id, score DESC)"
+          ],
+          "deliverables": [
+            "schema.sql",
+            "migrations/",
+            "seed_data.sql",
+            "erd.png"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD reviewed and covers all 20+ tables with foreign keys and cardinality",
+          "All migrations run clean on fresh Postgres 16 instance",
+          "Indexes defined for all foreign keys and high-cardinality query patterns",
+          "Row-level security policies on user data tables",
+          "listen_events table uses TimescaleDB hypertable for time-series performance",
+          "Seed script populates 3 test podcasts with 10 episodes each including transcripts"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "BACKEND",
+        "description": "Build core FastAPI backend: authentication (JWT + OAuth2 social login), podcast CRUD, episode upload with S3 presigned URLs, RSS feed parser (feedparser), RSS feed generator, user management, and admin endpoints.",
+        "payload": {
+          "auth": [
+            "jwt_access_refresh",
+            "oauth2_google_spotify",
+            "email_verification",
+            "password_reset"
+          ],
+          "podcast_endpoints": [
+            "POST /podcasts",
+            "GET /podcasts/{id}",
+            "PATCH /podcasts/{id}",
+            "DELETE /podcasts/{id}"
+          ],
+          "episode_endpoints": [
+            "POST /episodes/upload-url",
+            "POST /episodes",
+            "GET /episodes/{id}",
+            "PATCH /episodes/{id}"
+          ],
+          "rss_endpoints": [
+            "POST /podcasts/{id}/import-rss",
+            "GET /podcasts/{id}/feed.xml"
+          ],
+          "libraries": [
+            "fastapi",
+            "sqlalchemy2",
+            "alembic",
+            "boto3",
+            "feedparser",
+            "python-feedgen",
+            "python-jose",
+            "passlib"
+          ]
+        },
+        "acceptance_criteria": [
+          "JWT access token expires in 15 minutes; refresh token in 30 days with rotation",
+          "RSS import parses episode metadata, cover art, and enclosure URLs; enqueues audio download jobs",
+          "Generated RSS feed validates against podcast:namespace and iTunes namespace specs",
+          "S3 presigned upload URL expires in 10 minutes; backend validates upload completion via S3 event",
+          "All endpoints return OpenAPI-documented responses; /docs renders complete spec",
+          "Rate limiting: 100 req/min per authenticated user, 20 req/min unauthenticated"
+        ],
+        "depends_on": [
+          9
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Build transcription worker: consume episode-uploaded events from SQS, download audio from S3, call OpenAI Whisper API (with Replicate fallback), store segments with timestamps in transcript_segments table, emit transcription-complete event.",
+        "payload": {
+          "queue": "AWS SQS FIFO",
+          "transcription_provider": "openai_whisper_large_v3",
+          "fallback_provider": "replicate_whisper",
+          "output_formats": [
+            "json_segments",
+            "srt",
+            "vtt",
+            "plain_text"
+          ],
+          "worker_framework": "celery_with_redis_broker",
+          "cost_guard": "max_audio_hours_per_episode=10"
+        },
+        "acceptance_criteria": [
+          "Worker processes a 60-minute episode in under 5 minutes",
+          "Transcript segments include start_time, end_time, text, confidence_score",
+          "SRT and VTT outputs generated and stored to S3 alongside audio",
+          "Retry with exponential backoff on API failures; dead-letter queue after 3 attempts",
+          "Cost guard rejects episodes >10 hours with creator notification",
+          "Transcription accuracy >90% WER on English speech benchmark"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Build monetization backend: Stripe integration for creator subscriptions and listener premium tiers, dynamic ad insertion engine (VAST 4.0 compliant), ad campaign management, revenue split calculation, and payout scheduling.",
+        "payload": {
+          "stripe_features": [
+            "subscriptions",
+            "payment_intents",
+            "connect_accounts",
+            "webhooks",
+            "invoices"
+          ],
+          "ad_insertion": [
+            "pre_roll",
+            "mid_roll_markers",
+            "post_roll",
+            "host_read_markers"
+          ],
+          "vast_version": "4.0",
+          "revenue_split": {
+            "platform_cut": 0.15,
+            "creator_share": 0.85
+          },
+          "payout_schedule": "monthly_net30",
+          "endpoints": [
+            "POST /ads/campaigns",
+            "POST /ads/creatives",
+            "GET /ads/campaigns/{id}/stats",
+            "POST /subscriptions/checkout",
+            "GET /creator/earnings"
+          ]
+        },
+        "acceptance_criteria": [
+          "Stripe webhook validates signature before processing; idempotency keys prevent double charges",
+          "Dynamic ad insertion selects ads based on CPM bid, category targeting, and frequency caps",
+          "VAST 4.0 XML response validated against IAB spec",
+          "Revenue split calculated per play with centavo precision using Decimal type",
+          "Creator Stripe Connect onboarding completes in <5 steps; payouts processed on schedule",
+          "Ad campaign impression and completion tracking persisted within 500ms"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Build clip creation and sharing backend: extract audio segment from episode using FFmpeg, generate waveform visualization (audiowaveform), create shareable clip page with OG metadata, and clip analytics tracking.",
+        "payload": {
+          "clip_processing": [
+            "ffmpeg_segment_extract",
+            "mp3_normalize",
+            "waveform_json_generation"
+          ],
+          "share_targets": [
+            "twitter_card",
+            "linkedin",
+            "instagram_story",
+            "embed_widget"
+          ],
+          "endpoints": [
+            "POST /episodes/{id}/clips",
+            "GET /clips/{clip_id}",
+            "GET /clips/{clip_id}/embed",
+            "GET /clips/{clip_id}/analytics"
+          ],
+          "og_metadata": [
+            "og:audio",
+            "og:title",
+            "og:description",
+            "og:image_waveform_preview"
+          ],
+          "max_clip_duration_seconds": 300
+        },
+        "acceptance_criteria": [
+          "Clip extraction completes in <30 seconds for a 5-minute segment",
+          "Waveform JSON generated with 1000 data points normalized to [-1, 1]",
+          "Shareable URL resolves to SSR page with correct OG tags within 500ms",
+          "Embed widget renders in an iframe without external JS dependencies",
+          "Clips limited to 5 minutes; validation error with guidance if exceeded",
+          "Clip play events tracked separately from episode play events in analytics"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Build analytics pipeline: ingest listen events (episode starts, progress checkpoints, completions, drops) via high-throughput endpoint, aggregate into hourly/daily rollups via Celery beat, expose analytics API for creator dashboard.",
+        "payload": {
+          "ingest_endpoint": "POST /analytics/events (batch, max 100 events)",
+          "event_types": [
+            "episode_start",
+            "progress_25",
+            "progress_50",
+            "progress_75",
+            "episode_complete",
+            "episode_drop",
+            "clip_play",
+            "ad_impression",
+            "ad_complete"
+          ],
+          "rollup_dimensions": [
+            "episode",
+            "podcast",
+            "date",
+            "geography",
+            "device_type",
+            "referrer"
+          ],
+          "analytics_endpoints": [
+            "GET /podcasts/{id}/analytics",
+            "GET /episodes/{id}/analytics",
+            "GET /creator/analytics/overview"
+          ],
+          "retention_policy": "raw_events_90d_rollups_forever"
+        },
+        "acceptance_criteria": [
+          "Ingest endpoint handles 10,000 events/second with p99 <100ms",
+          "Hourly rollups complete within 5 minutes of the hour",
+          "Analytics API returns completion rate, average listen duration, unique listeners, geography breakdown",
+          "Drop-off curve data available at 1-minute granularity per episode",
+          "GDPR-compliant: IP addresses hashed before storage; user_id optional for anonymous listeners",
+          "Dashboard data lag <1 hour for aggregate metrics"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "AGENTIC",
+        "description": "Implement discovery algorithm using Multi-Agent Coordinator pattern: coordinator decomposes discovery into specialist agents (content-based filtering, collaborative filtering, trending scorer, freshness booster). Scores updated nightly via Celery beat.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": {
+            "content_agent": "TF-IDF on transcript text + category/tag similarity",
+            "collaborative_agent": "Matrix factorization on listen history (implicit ALS)",
+            "trending_agent": "Velocity-weighted plays in last 7 days",
+            "freshness_agent": "Exponential decay score by publish_date"
+          },
+          "coordinator_role": "Weighted ensemble: 0.35*collaborative + 0.30*content + 0.25*trending + 0.10*freshness",
+          "output": "discovery_scores table updated nightly; /discover endpoint returns ranked podcasts",
+          "cold_start_strategy": "Category preference quiz for new users; popularity fallback"
+        },
+        "acceptance_criteria": [
+          "Discovery score computed for all active podcasts nightly in <30 minutes",
+          "Cold-start flow (new user) returns diverse, high-quality recommendations without listen history",
+          "Collaborative filtering uses implicit feedback (plays, completions) not explicit ratings",
+          "A/B test framework in place to measure click-through and listen-through rate of recommendations",
+          "Coordinator logs reasoning trace for each score component to audit log",
+          "Human-in-the-loop gate: significant algorithm weight changes require product manager approval"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 16,
+        "task_type": "FRONTEND",
+        "description": "Build creator dashboard in Next.js 14: podcast setup wizard, episode manager with upload progress, RSS import flow with conflict resolution UI, analytics charts (Recharts), monetization setup (ad campaigns, subscription config), and earnings overview.",
+        "payload": {
+          "framework": "Next.js 14 App Router",
+          "ui_library": "shadcn/ui + Tailwind CSS",
+          "charts": "Recharts",
+          "upload": "TUS resumable upload protocol via tus-js-client",
+          "key_pages": [
+            "/dashboard",
+            "/podcasts/new",
+            "/podcasts/{id}/episodes",
+            "/podcasts/{id}/analytics",
+            "/monetization",
+            "/earnings",
+            "/settings"
+          ],
+          "rss_import_wizard": [
+            "enter_url",
+            "preview_parsed_metadata",
+            "resolve_conflicts",
+            "confirm_import",
+            "monitor_progress"
+          ]
+        },
+        "acceptance_criteria": [
+          "RSS import wizard validates URL, shows parsed episodes preview before committing",
+          "Upload progress bar shows percentage with resumable recovery on network drop",
+          "Analytics page renders completion rate chart, listener geography map, and episode leaderboard",
+          "Earnings page shows current period total, pending payout, and per-episode revenue breakdown",
+          "All pages render in <2s LCP on 4G throttled connection",
+          "Lighthouse accessibility score \u226590 on all creator pages"
+        ],
+        "depends_on": [
+          5,
+          10,
+          12,
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build listener-facing app: discovery feed, search with transcript full-text search, episode player (with waveform scrubber, speed control, sleep timer, chapter markers), subscription purchase flow, and clip sharing page with embed widget.",
+        "payload": {
+          "player_features": [
+            "waveform_scrubber",
+            "1x_1.25x_1.5x_2x_speed",
+            "sleep_timer_15_30_45_60",
+            "chapter_markers",
+            "transcript_scroll_sync"
+          ],
+          "discovery_ui": [
+            "personalized_feed",
+            "trending",
+            "new_releases",
+            "category_browse",
+            "search_transcripts"
+          ],
+          "audio_engine": "Howler.js with Media Session API for lock screen controls",
+          "offline": "Service Worker caches last 3 played episodes for offline playback",
+          "key_pages": [
+            "/",
+            "/discover",
+            "/search",
+            "/episodes/{id}",
+            "/clips/{id}",
+            "/premium"
+          ]
+        },
+        "acceptance_criteria": [
+          "Player controls work on lock screen via Media Session API on iOS and Android (PWA)",
+          "Transcript auto-scrolls in sync with audio playback position",
+          "Search returns results within 500ms including transcript snippet highlights",
+          "Subscription purchase completes in Stripe checkout and unlocks premium content immediately",
+          "Clip share page renders correct OG preview in Twitter Card validator",
+          "Service Worker caches episodes for offline; badge indicates offline availability"
+        ],
+        "depends_on": [
+          5,
+          13,
+          15,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "LOCALIZATION",
+        "description": "Implement i18n for creator dashboard and listener app: next-intl setup, extraction of all UI strings, initial translations for EN, ES, PT-BR, FR, DE. RTL layout support. Locale-aware date, number, and currency formatting.",
+        "payload": {
+          "i18n_library": "next-intl",
+          "initial_locales": [
+            "en",
+            "es",
+            "pt-BR",
+            "fr",
+            "de"
+          ],
+          "rtl_support": true,
+          "string_categories": [
+            "navigation",
+            "player_controls",
+            "analytics_labels",
+            "error_messages",
+            "legal_consents",
+            "monetization_copy"
+          ],
+          "format_types": [
+            "dates_relative",
+            "episode_duration_hms",
+            "currency_usd_eur_brl",
+            "listener_count_compact"
+          ]
+        },
+        "acceptance_criteria": [
+          "All UI strings externalized to locale JSON files; zero hardcoded user-facing strings in components",
+          "Language switcher available in app settings; preference persisted in user profile",
+          "Date and number formatting uses Intl APIs respecting locale conventions",
+          "RTL layout renders correctly for future Arabic/Hebrew support (flex-direction, text-align reversed)",
+          "Translation completeness CI check blocks merge if any locale <95% translated",
+          "Currency displays in user's local currency for subscription pricing",
+          "Top 5 target locales identified",
+          "Store listing translated"
+        ],
+        "depends_on": [
+          16,
+          17
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "SECURITY",
+        "description": "Security review and threat model: OWASP Top 10 assessment, audio file access control (signed URLs with expiry), payment data handling review, XSS/CSRF protection, dependency vulnerability scan, and penetration test plan.",
+        "payload": {
+          "threat_model_scope": [
+            "audio_file_access",
+            "payment_flows",
+            "admin_endpoints",
+            "rss_import_ssrf",
+            "clip_sharing_idor",
+            "analytics_ingest_abuse"
+          ],
+          "controls": [
+            "s3_presigned_url_expiry_1h",
+            "csp_headers",
+            "rate_limiting",
+            "input_validation",
+            "sql_injection_via_orm",
+            "ssrf_allowlist_for_rss"
+          ],
+          "scanning": [
+            "bandit_python",
+            "npm_audit",
+            "snyk_sca",
+            "trivy_containers"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "pentest_plan.md",
+            "security_checklist.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "RSS import URL allowlist prevents SSRF to internal network ranges (169.254.x.x, 10.x.x.x, 172.16.x.x)",
+          "Audio S3 URLs are signed with 1-hour expiry; no public bucket access",
+          "IDOR check: clip and episode IDs are UUIDs; ownership verified on every mutation",
+          "CSP headers block inline scripts; no eval() usage in frontend",
+          "All Python deps scanned with bandit; zero HIGH severity findings unmitigated",
+          "Penetration test plan covers top 5 threat scenarios with success criteria"
+        ],
+        "depends_on": [
+          10,
+          12,
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "INFRA",
+        "description": "Provision AWS infrastructure with Terraform: VPC, ECS Fargate clusters (API, workers), RDS PostgreSQL with TimescaleDB extension, ElastiCache Redis, S3 buckets (audio, clips, images), CloudFront CDN, SQS queues, and secrets via AWS Secrets Manager.",
+        "payload": {
+          "cloud": "AWS",
+          "iac_tool": "Terraform 1.7",
+          "environments": [
+            "dev",
+            "staging",
+            "production"
+          ],
+          "compute": [
+            "ecs_fargate_api_2vcpu_4gb",
+            "ecs_fargate_worker_4vcpu_8gb"
+          ],
+          "database": "rds_postgres16_multi_az_db_r6g_xlarge",
+          "cache": "elasticache_redis7_r7g_large",
+          "storage": "s3_audio_files_intelligent_tiering",
+          "cdn": "cloudfront_with_signed_urls",
+          "estimated_monthly_cost": "$2,400_production"
+        },
+        "acceptance_criteria": [
+          "terraform plan produces zero errors on fresh AWS account",
+          "RDS Multi-AZ failover tested: <30s switchover, no data loss",
+          "S3 lifecycle policy moves audio >90 days to Glacier Instant Retrieval",
+          "CloudFront serves audio with Cache-Control: public, max-age=86400",
+          "All secrets in Secrets Manager; zero plaintext credentials in Terraform state",
+          "VPC has private subnets for ECS and RDS; public subnet only for ALB"
+        ],
+        "depends_on": [
+          8
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 21,
+        "task_type": "DEVOPS",
+        "description": "CI/CD pipelines in GitHub Actions: lint\u2192test\u2192build\u2192push\u2192deploy pipeline for API and worker, Vercel deployment for Next.js frontend, database migration job, canary deployment strategy for production, and Dependabot auto-merge for patch updates.",
+        "payload": {
+          "pipelines": {
+            "api_worker": "lint \u2192 unit_tests \u2192 integration_tests \u2192 docker_build \u2192 push_ecr \u2192 deploy_ecs_canary",
+            "frontend": "lint \u2192 type_check \u2192 unit_tests \u2192 vercel_deploy",
+            "db_migrations": "alembic_check_heads \u2192 alembic_upgrade \u2192 smoke_test"
+          },
+          "deployment_strategy": "canary_10pct_30min_before_full_rollout",
+          "secrets_management": "github_actions_oidc_with_aws_assume_role",
+          "monitoring_integration": "deploy_annotation_to_datadog_on_production_deploy"
+        },
+        "acceptance_criteria": [
+          "Full pipeline (lint to production deploy) completes in <12 minutes",
+          "Canary deployment automatically rolls back if error rate >1% in 30-minute window",
+          "Migration job runs in a separate pipeline step with explicit approval gate for production",
+          "OIDC token used for AWS auth; no static access keys in GitHub secrets",
+          "Dependabot PRs for patch versions auto-merged if CI passes",
+          "Build artifacts pinned by SHA digest, not mutable tags"
+        ],
+        "depends_on": [
+          20
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 22,
+        "task_type": "DEVOPS",
+        "description": "Observability stack: Datadog APM for API traces, CloudWatch metrics for ECS and RDS, custom metrics (transcription job latency, ad fill rate, discovery score freshness), PagerDuty alerting with SLO burn rate alerts, and Grafana dashboards.",
+        "payload": {
+          "apm": "datadog_apm_with_distributed_tracing",
+          "metrics": [
+            "api_p99_latency",
+            "transcription_job_duration_p95",
+            "ad_fill_rate",
+            "discovery_score_age_hours",
+            "s3_upload_success_rate",
+            "stripe_webhook_processing_lag"
+          ],
+          "slos": [
+            {
+              "name": "api_availability",
+              "target": 0.999,
+              "window": "30d"
+            },
+            {
+              "name": "transcription_latency_p95_under_10min",
+              "target": 0.95,
+              "window": "7d"
+            }
+          ],
+          "alerting": "pagerduty_with_burn_rate_1x_and_6x_windows",
+          "dashboards": [
+            "platform_health",
+            "creator_metrics",
+            "ad_operations",
+            "discovery_performance"
+          ]
+        },
+        "acceptance_criteria": [
+          "Every API request has a trace_id propagated from frontend through all backend services",
+          "PagerDuty fires within 2 minutes of SLO burn rate exceeding 1x threshold",
+          "Dashboard 'platform_health' shows error rate, p99 latency, and throughput on one screen",
+          "Transcription worker emits duration and cost metrics per job",
+          "Ad fill rate alert triggers if <70% fill rate sustained for 15 minutes",
+          "All metrics retained for 13 months for SOC 2 evidence"
+        ],
+        "depends_on": [
+          21
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "OPERATIONS",
+        "description": "Operational runbooks: content moderation workflow (DMCA response SLA, abuse report queue), creator support escalation, payment dispute handling, audio transcoding failure recovery, and capacity planning model for CDN egress.",
+        "payload": {
+          "runbooks": [
+            "dmca_takedown_response.md",
+            "abuse_report_handling.md",
+            "payment_dispute_resolution.md",
+            "transcoding_failure_recovery.md",
+            "db_failover_procedure.md",
+            "cdn_cost_spike_response.md"
+          ],
+          "sla_targets": {
+            "dmca_response": "24h",
+            "abuse_report_triage": "48h",
+            "payment_dispute": "72h",
+            "p1_incident_response": "15min"
+          },
+          "capacity_model": "cdn_egress_per_listener_per_hour_projection"
+        },
+        "acceptance_criteria": [
+          "DMCA runbook includes legal review step before takedown; counter-notice process documented",
+          "Abuse report queue routes to content moderation tool; escalation path to legal for >P2",
+          "CDN capacity model projects costs at 10K, 100K, 1M daily active listeners",
+          "DB failover runbook tested in staging; RTO documented as <5 minutes",
+          "All runbooks reviewed by a second team member and stored in wiki",
+          "Incident response runbook includes communications template for creator-facing outages"
+        ],
+        "depends_on": [
+          22,
+          6
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 24,
+        "task_type": "TESTS",
+        "description": "Unit and integration tests for all backend services: auth flows, RSS parser edge cases (malformed feeds, encoding issues), transcription worker retry logic, Stripe webhook idempotency, ad insertion logic, analytics ingest, and discovery score calculation.",
+        "payload": {
+          "test_framework": "pytest + pytest-asyncio + pytest-cov",
+          "coverage_target": "85%",
+          "mocked_services": [
+            "stripe (stripe-mock)",
+            "s3 (moto)",
+            "sqs (moto)",
+            "openai_whisper (fixture)"
+          ],
+          "key_test_suites": [
+            "test_rss_parser: 20 cases including malformed XML, encoding, duplicate GUIDs",
+            "test_stripe_webhooks: idempotency, signature validation, retry",
+            "test_ad_insertion: targeting logic, frequency cap, VAST XML output",
+            "test_analytics_ingest: batch validation, duplicate event dedup",
+            "test_discovery_scoring: cold start, known user, trending boost"
+          ]
+        },
+        "acceptance_criteria": [
+          "pytest --cov reports \u226585% line coverage across apps/api and apps/worker",
+          "RSS parser tests cover malformed XML, ISO-8859-1 encoding, duplicate episode GUIDs, and missing enclosures",
+          "Stripe webhook tests verify idempotency key prevents double credit on replay",
+          "All tests pass in <3 minutes in CI",
+          "Integration tests use real Postgres (via docker-compose) not mocks for DB layer",
+          "Zero flaky tests: each test run produces same result in isolation"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "QA",
+        "description": "QA test plan: functional test cases for all user journeys (creator onboarding, RSS import, episode publish, listener subscribe, clip share), regression suite, exploratory testing charter, and bug severity classification matrix.",
+        "payload": {
+          "test_suites": [
+            "creator_onboarding_e2e",
+            "rss_import_journeys",
+            "episode_publish_flow",
+            "monetization_flows",
+            "listener_discovery_and_play",
+            "clip_creation_and_share",
+            "analytics_accuracy_validation"
+          ],
+          "tools": [
+            "playwright_e2e",
+            "k6_load_testing",
+            "axe_accessibility"
+          ],
+          "environments": [
+            "staging"
+          ],
+          "bug_severity_matrix": {
+            "P0": "data_loss_or_payment_error",
+            "P1": "feature_completely_broken",
+            "P2": "significant_degradation",
+            "P3": "minor_ux_issue"
+          }
+        },
+        "acceptance_criteria": [
+          "Test plan covers all 40+ user stories from business requirements step",
+          "Playwright E2E tests cover the 5 critical creator journeys end-to-end in staging",
+          "Load test: 10,000 concurrent listeners playing audio with p99 <200ms on player API",
+          "Axe accessibility scan on all key pages; zero WCAG 2.1 AA violations at P0/P1",
+          "Regression suite runs nightly against staging; failures block production deploy",
+          "Exploratory charter covers monetization edge cases: failed payments, expired trials, upgrade/downgrade"
+        ],
+        "depends_on": [
+          16,
+          17,
+          24
+        ],
+        "agent_role": "system_tester"
+      },
+      {
+        "step": 26,
+        "task_type": "DATA",
+        "description": "Build analytics data pipeline: Firehose delivery of listen events to S3 data lake, Glue catalog, Athena queries for ad-hoc analysis, dbt models for creator-facing analytics, and a Metabase dashboard for internal business metrics.",
+        "payload": {
+          "pipeline": "api \u2192 kinesis_firehose \u2192 s3_data_lake \u2192 glue_catalog \u2192 athena",
+          "dbt_models": [
+            "fact_listen_events",
+            "dim_episodes",
+            "dim_podcasts",
+            "mart_creator_analytics",
+            "mart_ad_performance"
+          ],
+          "internal_dashboards": [
+            "daily_active_creators",
+            "daily_active_listeners",
+            "ad_revenue_by_day",
+            "top_podcasts_by_completion_rate",
+            "transcription_cost_by_episode"
+          ],
+          "retention": "raw_s3_2years_then_glacier"
+        },
+        "acceptance_criteria": [
+          "Kinesis Firehose delivers events to S3 with <60 second latency",
+          "dbt models tested with dbt-expectations: not_null, unique, relationships",
+          "Athena query for 90-day creator analytics completes in <30 seconds",
+          "Metabase dashboard auto-refreshes daily; shows MoM growth for key metrics",
+          "Data lake partitioned by year/month/day/hour for cost-efficient Athena scans",
+          "PII fields (user_email, ip_address) excluded from data lake; only hashed identifiers"
+        ],
+        "depends_on": [
+          14,
+          20
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 27,
+        "task_type": "TRAINING",
+        "description": "Create creator onboarding and help documentation: getting started guide, video script for RSS import walkthrough, monetization setup guide, analytics interpretation guide, and in-app onboarding tooltips copy.",
+        "payload": {
+          "deliverables": [
+            "getting_started_guide.md",
+            "rss_import_video_script.md",
+            "monetization_setup_guide.md",
+            "analytics_guide.md",
+            "creator_faq.md",
+            "in_app_tooltip_copy.json"
+          ],
+          "formats": [
+            "written_guide",
+            "video_script",
+            "in_app_tooltip"
+          ],
+          "audiences": [
+            "brand_new_podcaster",
+            "migrating_from_competitor",
+            "network_admin"
+          ],
+          "locales": [
+            "en",
+            "es",
+            "pt-BR"
+          ]
+        },
+        "acceptance_criteria": [
+          "Getting started guide covers account creation \u2192 first episode published in \u226410 steps",
+          "RSS import video script is <5 minutes; covers conflict resolution and progress monitoring",
+          "Monetization guide explains ad types, CPM ranges, payout schedule, and tax requirements",
+          "Analytics guide defines every metric with example interpretation",
+          "In-app tooltips written for all 15 dashboard KPI tiles",
+          "All docs reviewed for reading level \u2264 Grade 8 (Flesch-Kincaid)"
+        ],
+        "depends_on": [
+          16,
+          17
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 28,
+        "task_type": "COMPLIANCE",
+        "description": "SOC 2 evidence collection automation: AWS Config rules for access control, CloudTrail export to S3 with integrity hashing, automated access review exports, encryption-at-rest verification, and vendor sub-processor register.",
+        "payload": {
+          "evidence_artifacts": [
+            "cloudtrail_logs_90d",
+            "aws_config_compliance_report",
+            "iam_access_review_quarterly",
+            "encryption_at_rest_report",
+            "penetration_test_results",
+            "change_management_log"
+          ],
+          "automation": [
+            "aws_config_rules_cis_benchmark",
+            "access_review_lambda_monthly",
+            "encryption_audit_scheduled_report"
+          ],
+          "sub_processors": [
+            "aws",
+            "stripe",
+            "openai",
+            "datadog",
+            "cloudfront",
+            "pagerduty"
+          ],
+          "deliverables": [
+            "soc2_evidence_package/",
+            "sub_processor_register.md",
+            "access_review_report.pdf"
+          ]
+        },
+        "acceptance_criteria": [
+          "AWS Config evaluates all 38 CIS Benchmark Level 1 rules; zero non-compliant critical findings",
+          "CloudTrail logs stored with SHA-256 integrity hashing; tampering detection alert configured",
+          "Quarterly access review Lambda exports IAM users and roles with last-used dates",
+          "Encryption-at-rest confirmed for RDS, S3, ElastiCache, and Secrets Manager",
+          "Sub-processor register includes DPA status for each vendor",
+          "Evidence package organized per trust criteria ready for auditor hand-off"
+        ],
+        "depends_on": [
+          7,
+          19,
+          22
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 29,
+        "task_type": "QA",
+        "description": "Final pre-launch quality gate: cross-browser testing (Chrome, Firefox, Safari, Edge), mobile PWA testing (iOS Safari, Android Chrome), audio player compatibility matrix, payment flow smoke test in Stripe test mode, and performance budget validation.",
+        "payload": {
+          "browsers": [
+            "chrome_latest",
+            "firefox_latest",
+            "safari_17",
+            "edge_latest"
+          ],
+          "mobile": [
+            "ios_safari_17",
+            "android_chrome_latest",
+            "samsung_internet"
+          ],
+          "performance_budgets": {
+            "lcp": "2.5s",
+            "fid": "100ms",
+            "cls": "0.1",
+            "ttfb_api": "200ms"
+          },
+          "smoke_tests": [
+            "rss_import",
+            "episode_upload",
+            "payment_checkout",
+            "transcription_trigger",
+            "clip_creation",
+            "discovery_feed_load"
+          ]
+        },
+        "acceptance_criteria": [
+          "Audio player plays, pauses, seeks, and changes speed correctly in all 7 browser/OS targets",
+          "PWA installs and plays audio offline on iOS Safari 17 and Android Chrome",
+          "Core Web Vitals meet budget on all pages tested with WebPageTest from 4 geographic regions",
+          "Payment smoke test completes subscription purchase and immediate premium content access in <30s",
+          "Zero P0 or P1 bugs outstanding at launch gate review",
+          "Performance regression test blocks deploy if any page's LCP degrades by >500ms vs baseline"
+        ],
+        "depends_on": [
+          25
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 30,
+        "task_type": "DOCS",
+        "description": "Technical documentation: API reference (OpenAPI rendered via Redoc), architecture decision records (ADRs) for discovery algorithm, ad insertion engine, and transcription provider choice; infrastructure runbook; and developer onboarding guide.",
+        "payload": {
+          "deliverables": [
+            "api_reference (auto from OpenAPI)",
+            "adr_001_discovery_algorithm.md",
+            "adr_002_ad_insertion_vast.md",
+            "adr_003_transcription_provider.md",
+            "infra_runbook.md",
+            "developer_onboarding.md"
+          ],
+          "api_docs_tool": "Redoc from FastAPI /openapi.json",
+          "hosted_at": "/docs for API, /docs/architecture for ADRs"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec covers 100% of public endpoints with request/response schemas and example values",
+          "Each ADR documents: context, options considered, decision, and consequences",
+          "Developer onboarding guide: new engineer runs full stack locally in <30 minutes",
+          "Infrastructure runbook covers scale-up, scale-down, and incident recovery procedures",
+          "ADRs committed to /docs/adr/ directory and linked from README",
+          "API reference deployed and searchable at /api/docs"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          20
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 30,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 54,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 54,
+          "final_review": {
+            "score": 54,
+            "flaws": [
+              "TimescaleDB on standard AWS RDS is not supported. RDS does not offer the TimescaleDB extension. This requires Timescale Cloud, RDS Custom, or a self-managed EC2 Postgres instance. Step 9 specifies TimescaleDB hypertable and Step 20 specifies RDS PostgreSQL \u2014 these are mutually exclusive in AWS managed services. This is a hard infrastructure blocker.",
+              "WER metric is inverted in Step 11 acceptance criteria. '90% WER on English speech benchmark' means 90% of words are WRONG \u2014 that is catastrophically bad transcription. Whisper large-v3 achieves roughly 3-8% WER on clean English. The criterion should read '<10% WER' or '>90% word accuracy'. Shipping with this acceptance criterion means QA will pass a broken transcription service.",
+              "Step 5 includes 'creator_interviews_n10' and 'listener_diary_study_n20' as research methods with acceptance criteria requiring usability tests with 5+ participants. An AI agent cannot conduct real user interviews or diary studies. It will fabricate results. These personas, flows, and usability findings will be fictional, making the entire UX design phase built on hallucinated user data.",
+              "Step 6 treats AI-generated legal documents as production-ready artifacts. Terms of Service, Privacy Policy, and Creator Content License generated by an LLM are not legally defensible. In the EU (GDPR), a DPA must be reviewed and signed by actual lawyers. Shipping AI-drafted legal documents to real paying creators and advertisers creates significant liability exposure.",
+              "TUS resumable upload protocol in the frontend (Step 16) conflicts with S3 presigned URLs in the backend (Step 10). These are different upload mechanisms. TUS requires a TUS-compatible server endpoint, not a simple S3 presigned URL. The backend step never implements a TUS server. This breaks the upload flow entirely.",
+              "Analytics ingest SLA of 10,000 events/second at p99 <100ms on a FastAPI endpoint (Step 14) is unrealistic on ECS Fargate 2vCPU/4GB. Even with batching (100 events/batch = 100 req/s), sustaining p99 <100ms under load with PostgreSQL writes requires either a dedicated high-throughput ingest service (Kinesis, Kafka) or horizontal autoscaling that is not specified. The acceptance criterion will not survive a k6 load test.",
+              "OAuth2 with Spotify listed in Step 10 auth providers. Spotify does not offer a general-purpose social login OAuth flow for third-party authentication. This will fail at the API integration stage. Should be Google + Apple Sign-In (Apple is required for iOS App Store apps offering social login).",
+              "VAST 4.0 is a video ad standard. The podcast industry uses DAAST (Digital Audio Ad Serving Template) or simply custom audio ad insertion. Implementing VAST 4.0 for audio ads means advertisers using podcast-native DSPs (Spotify Audience Network, Podscribe, etc.) will not be able to use your ad inventory. This breaks the monetization integration.",
+              "Step 15 discovery algorithm uses implicit ALS collaborative filtering from day one. With zero listen history at launch, collaborative filtering produces noise. The cold-start fallback exists but the plan has no defined minimum data threshold before collaborative filtering is weighted into the ensemble. Day-1 recommendations will be dominated by a broken collaborative signal.",
+              "The $2,400/month production cost estimate in Step 20 is materially understated. RDS Multi-AZ db.r6g.xlarge alone costs ~$700/month. ElastiCache r7g.large is ~$380/month. CloudFront egress at scale, ECS Fargate for multiple services, SQS, Secrets Manager, and CloudWatch push the real baseline above $4,000/month before any audio storage or CDN egress for actual listeners.",
+              "Step 28 lists OpenAI as a sub-processor for transcription. Under GDPR, sending creator audio (which may contain personal data of guests, interview subjects, etc.) to OpenAI requires a Data Processing Agreement with OpenAI AND disclosure in the Privacy Policy AND explicit consent or legitimate interest basis from creators. The plan treats this as a checkbox item but it is a potential GDPR enforcement risk, especially for EU creators.",
+              "RSS import audio download (Step 10) creates a second SSRF vector beyond the feed URL itself. The enclosure URLs in RSS episodes can point to internal services. The plan only allowlists the feed URL fetch (Step 19) but not the subsequent audio file downloads. A malicious RSS feed can point episode enclosures to 169.254.169.254 or internal VPC endpoints.",
+              "Step 9 specifies Row-Level Security on user data tables, but RLS in PostgreSQL is incompatible with PgBouncer in transaction pooling mode (the default for high-connection-count FastAPI apps). The plan does not address connection pooling strategy, creating a silent RLS bypass risk in production under load.",
+              "Step 23 DMCA runbook includes a 'legal review step before takedown.' DMCA safe harbor (17 USC 512) requires expeditious removal upon receipt of a valid takedown notice. Adding a legal review step before acting risks losing safe harbor protection. The 24-hour SLA target may already be borderline; adding internal legal review to that window makes it worse."
+            ],
+            "suggestions": [
+              "Replace TimescaleDB on RDS with either: (a) Timescale Cloud managed service, (b) a dedicated analytics store using ClickHouse on EC2 for listen_events (better fit for append-heavy analytics), or (c) skip TimescaleDB entirely and use native Postgres partitioning by month on listen_events for the MVP.",
+              "Fix WER metric in Step 11 acceptance criteria to '<10% WER (word error rate) on English speech benchmark using a held-out test set of 100 podcast minutes.' Add a Spanish WER benchmark since PT-BR and ES are target locales.",
+              "Replace Steps 5's user research acceptance criteria with: 'Competitor UX audit completed across 6 platforms, wireframes validated via internal stakeholder review, and 5 recorded usability sessions conducted by a human UX researcher before frontend development begins.' Flag to the product team that AI cannot conduct real user research.",
+              "Add a mandatory legal review gate: 'All legal documents in Step 6 are AI-generated drafts only. Acceptance criteria must include: reviewed and signed off by licensed attorney in US, EU, and UK jurisdictions before any creator or advertiser agreement is presented to users.'",
+              "Resolve the TUS vs presigned URL conflict: Either (a) implement a TUS server endpoint in FastAPI using tus-py-server and use multipart S3 uploads under the hood, or (b) remove TUS from the frontend and use chunked S3 multipart uploads directly with a progress tracking endpoint. Pick one and make both steps consistent.",
+              "Replace the analytics ingest FastAPI endpoint for 10K events/second with Amazon Kinesis Data Streams as the ingest layer. The FastAPI endpoint becomes a thin proxy that writes to Kinesis. Workers read from Kinesis and batch-insert to PostgreSQL and Firehose. This decouples ingest throughput from database write latency.",
+              "Add an audio transcoding pipeline step between upload (Step 10) and transcription (Step 11): normalize audio to MP3 320kbps or AAC 192kbps, validate file integrity, extract duration and bit depth metadata, and reject non-audio files. FFmpeg worker should be a prerequisite, not assumed to exist in the transcription worker.",
+              "Add transactional email service (SES or SendGrid) as a step. Currently there is no mechanism for: subscription confirmation, episode publish notification, payout notification, DMCA takedown notice to creator, failed payment dunning, or password reset delivery. This is referenced implicitly in multiple steps but never built.",
+              "Define a minimum data threshold for the collaborative filtering agent in Step 15: 'Collaborative filtering signal only enters the ensemble weighting after 1,000 unique users with at least 3 completed episodes each. Below this threshold, ensemble weights shift to 0.50 content + 0.40 trending + 0.10 freshness.'",
+              "Add a content moderation step before Step 10 goes live: automated audio and title/description scanning for CSAM and known terrorist content (using AWS Rekognition for cover art, and keyword scanning on transcript segments) with a human review queue. The content policy in Step 6 needs an enforcement mechanism at ingest time, not just takedown.",
+              "Add Apple Podcasts RSS validation to Step 10 acceptance criteria: 'Generated RSS feed validates against Apple Podcasts namespace requirements including proper itunes:image dimensions (3000x3000), itunes:category taxonomy, and itunes:explicit tag. Feed passes Apple Podcast Connect validator with zero errors.'",
+              "Separate the SOC 2 readiness timeline: Step 7 (SOC 2 control matrix definition) is appropriate pre-build. Step 28 (evidence collection) requires the system to be running. Add a note that SOC 2 Type I observation window begins at production launch, not at build time. Type II (which most enterprise buyers require) requires a minimum 6-month observation period."
+            ],
+            "missing": [
+              "Audio transcoding pipeline: uploaded files need format normalization, bitrate standardization, duration extraction, and format validation before publishing or transcription. No step covers this.",
+              "Transactional email service: no step provisions SES/SendGrid or defines email templates for subscription confirmation, DMCA notifications, payout alerts, or dunning emails.",
+              "Apple Sign-In integration: required by Apple App Store guidelines if any social login is offered. Google OAuth alone is insufficient for iOS apps.",
+              "Account deletion and data export (GDPR Article 17 and 20): no step defines how to delete a creator account including cascading audio file deletion from S3, transcript deletion, removal from analytics, and handling of active subscriber relationships.",
+              "Mobile native app strategy: the plan builds a PWA but 80%+ of podcast listening occurs in native apps (Apple Podcasts, Spotify, Overcast, etc.) consuming RSS. The UX and go-to-market strategy for native app listeners via RSS is absent.",
+              "RSS polling rate limiting and crawler budget: podcast apps poll RSS feeds every 15 minutes to several hours. With thousands of podcasts, the /podcasts/{id}/feed.xml endpoint will receive continuous polling load. No caching strategy (ETag, Last-Modified headers, conditional GET) or rate limiting for feed crawlers is specified.",
+              "Abuse and spam detection for RSS import: a bad actor can import thousands of spam podcast feeds programmatically. No rate limiting, captcha, or fraud detection on the RSS import endpoint is specified beyond the global 100 req/min auth limit.",
+              "Stripe tax reporting (1099-K/1099-NEC): US creators earning over $600/year require 1099 filing. Stripe Tax or manual 1099 generation is needed. Not mentioned in Step 12 or Step 3.",
+              "Database connection pooling strategy: PgBouncer or RDS Proxy configuration is absent. FastAPI with async SQLAlchemy under high load will exhaust RDS connection limits (default 87 for db.r6g.xlarge) without pooling.",
+              "Creator content content dispute resolution: beyond DMCA, podcasts frequently have disputes between co-hosts about ownership. No process for ownership transfer or co-creator disputes.",
+              "Analytics event authentication: Step 14's anonymous listener analytics ingest has no mechanism to prevent fake play count inflation (which directly affects ad CPM payouts). No bot detection or play validation is specified."
+            ],
+            "security_risks": [
+              "SSRF via RSS enclosure URLs: Step 19 allowlists the RSS feed URL fetch but the subsequent audio file downloads from episode enclosure URLs are a second SSRF vector. An attacker can point enclosure URLs to cloud metadata endpoints (http://169.254.169.254/latest/meta-data/) to extract IAM credentials. The allowlist must cover all HTTP requests originating from the RSS import worker.",
+              "Fake play count inflation affecting ad revenue: Step 14's analytics ingest accepts events for 'anonymous listeners' with no bot detection. Advertisers pay CPM based on play counts. A competitor or fraudulent creator can POST fake episode_complete events at scale to inflate play counts and trigger fraudulent ad payouts. No fingerprinting, rate limiting per IP, or statistical anomaly detection is specified.",
+              "Content injection via transcript rendering: transcripts from the Whisper API are stored as text and rendered in the listener UI. If transcripts are rendered as HTML (for bold/italic styling or hyperlinks), malicious audio content could be crafted to inject XSS payloads via transcript text. The plan requires CSP headers but does not specify HTML sanitization on transcript display.",
+              "Stripe Connect KYC insufficient for fraud: Step 12 defers to Stripe Connect for creator identity verification, but Stripe Connect standard accounts do not perform deep KYC. The platform can be used to launder money by creating fake podcasts, running fake subscriptions, and extracting the creator share. A minimum payout threshold ($50-100) and manual review for large first payouts should be specified.",
+              "OpenAI data processing without adequate consent chain: audio files containing guest PII (voice, name, personal disclosures) are sent to OpenAI Whisper API. Creators may not have consent from guests to send their voice recordings to a third-party AI service. The Privacy Policy and Creator Content License must explicitly disclose this and require creators to obtain consent from all audio participants.",
+              "RLS bypass via connection pooler: if PgBouncer is deployed in transaction mode (necessary for FastAPI connection pooling at scale), PostgreSQL Row-Level Security policies are bypassed because session-level settings (SET LOCAL) are not preserved across pooled connections. Data from one tenant could leak to another.",
+              "Clip IDOR via sequential IDs: Step 13 specifies UUIDs for clip IDs (addressed in Step 19 IDOR check) but the acceptance criteria in Step 13 do not explicitly require authentication checks on clip analytics endpoints. GET /clips/{clip_id}/analytics could expose listener count and geographic data for private/unlisted clips without ownership verification.",
+              "Terraform state plaintext secrets: Step 20 notes 'zero plaintext credentials in Terraform state' but Terraform remote state in S3 must be encrypted and access-controlled independently. RDS passwords managed by Terraform are stored in state regardless of Secrets Manager usage unless using aws_secretsmanager_secret_version data sources exclusively. State encryption and access control must be explicitly configured."
+            ],
+            "summary": "This is an ambitious, well-structured plan that covers the full breadth of a production podcast platform \u2014 from market research through SOC 2 compliance. The step sequencing is mostly logical and the acceptance criteria show genuine technical awareness. However, the plan contains multiple hard blockers that would cause production failures: TimescaleDB cannot run on standard AWS RDS (infrastructure rebuild required); the TUS protocol and S3 presigned URL approaches in frontend and backend are mutually incompatible (upload flow is broken); the WER acceptance criterion is inverted (QA would pass catastrophically broken transcription); and the 10K events/second ingest SLA on a single FastAPI endpoint will not survive load testing without a Kinesis-class ingest layer. Beyond the hard technical blockers, the plan has three systemic risks: AI-generated user research producing fictional personas that cascade into UX decisions, AI-drafted legal documents shipped as production contracts without attorney review, and OpenAI as a GDPR sub-processor for creator audio without an adequate consent chain. The cost model is also materially underestimated by 40-60%, which will cause financial model divergence within the first quarter. The discovery algorithm, analytics pipeline, and CI/CD design are well-considered. With fixes to the five hardest blockers (TimescaleDB, TUS/S3 mismatch, WER metric, analytics ingest throughput, RSS SSRF completeness) and mandatory human gates on legal review and user research, this plan could reach production-readiness. In its current form it scores 54 \u2014 significant rework needed before build begins.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 54,
+              "flaws": [
+                "TimescaleDB on standard AWS RDS is not supported. RDS does not offer the TimescaleDB extension. This requires Timescale Cloud, RDS Custom, or a self-managed EC2 Postgres instance. Step 9 specifies TimescaleDB hypertable and Step 20 specifies RDS PostgreSQL \u2014 these are mutually exclusive in AWS managed services. This is a hard infrastructure blocker.",
+                "WER metric is inverted in Step 11 acceptance criteria. '90% WER on English speech benchmark' means 90% of words are WRONG \u2014 that is catastrophically bad transcription. Whisper large-v3 achieves roughly 3-8% WER on clean English. The criterion should read '<10% WER' or '>90% word accuracy'. Shipping with this acceptance criterion means QA will pass a broken transcription service.",
+                "Step 5 includes 'creator_interviews_n10' and 'listener_diary_study_n20' as research methods with acceptance criteria requiring usability tests with 5+ participants. An AI agent cannot conduct real user interviews or diary studies. It will fabricate results. These personas, flows, and usability findings will be fictional, making the entire UX design phase built on hallucinated user data.",
+                "Step 6 treats AI-generated legal documents as production-ready artifacts. Terms of Service, Privacy Policy, and Creator Content License generated by an LLM are not legally defensible. In the EU (GDPR), a DPA must be reviewed and signed by actual lawyers. Shipping AI-drafted legal documents to real paying creators and advertisers creates significant liability exposure.",
+                "TUS resumable upload protocol in the frontend (Step 16) conflicts with S3 presigned URLs in the backend (Step 10). These are different upload mechanisms. TUS requires a TUS-compatible server endpoint, not a simple S3 presigned URL. The backend step never implements a TUS server. This breaks the upload flow entirely.",
+                "Analytics ingest SLA of 10,000 events/second at p99 <100ms on a FastAPI endpoint (Step 14) is unrealistic on ECS Fargate 2vCPU/4GB. Even with batching (100 events/batch = 100 req/s), sustaining p99 <100ms under load with PostgreSQL writes requires either a dedicated high-throughput ingest service (Kinesis, Kafka) or horizontal autoscaling that is not specified. The acceptance criterion will not survive a k6 load test.",
+                "OAuth2 with Spotify listed in Step 10 auth providers. Spotify does not offer a general-purpose social login OAuth flow for third-party authentication. This will fail at the API integration stage. Should be Google + Apple Sign-In (Apple is required for iOS App Store apps offering social login).",
+                "VAST 4.0 is a video ad standard. The podcast industry uses DAAST (Digital Audio Ad Serving Template) or simply custom audio ad insertion. Implementing VAST 4.0 for audio ads means advertisers using podcast-native DSPs (Spotify Audience Network, Podscribe, etc.) will not be able to use your ad inventory. This breaks the monetization integration.",
+                "Step 15 discovery algorithm uses implicit ALS collaborative filtering from day one. With zero listen history at launch, collaborative filtering produces noise. The cold-start fallback exists but the plan has no defined minimum data threshold before collaborative filtering is weighted into the ensemble. Day-1 recommendations will be dominated by a broken collaborative signal.",
+                "The $2,400/month production cost estimate in Step 20 is materially understated. RDS Multi-AZ db.r6g.xlarge alone costs ~$700/month. ElastiCache r7g.large is ~$380/month. CloudFront egress at scale, ECS Fargate for multiple services, SQS, Secrets Manager, and CloudWatch push the real baseline above $4,000/month before any audio storage or CDN egress for actual listeners.",
+                "Step 28 lists OpenAI as a sub-processor for transcription. Under GDPR, sending creator audio (which may contain personal data of guests, interview subjects, etc.) to OpenAI requires a Data Processing Agreement with OpenAI AND disclosure in the Privacy Policy AND explicit consent or legitimate interest basis from creators. The plan treats this as a checkbox item but it is a potential GDPR enforcement risk, especially for EU creators.",
+                "RSS import audio download (Step 10) creates a second SSRF vector beyond the feed URL itself. The enclosure URLs in RSS episodes can point to internal services. The plan only allowlists the feed URL fetch (Step 19) but not the subsequent audio file downloads. A malicious RSS feed can point episode enclosures to 169.254.169.254 or internal VPC endpoints.",
+                "Step 9 specifies Row-Level Security on user data tables, but RLS in PostgreSQL is incompatible with PgBouncer in transaction pooling mode (the default for high-connection-count FastAPI apps). The plan does not address connection pooling strategy, creating a silent RLS bypass risk in production under load.",
+                "Step 23 DMCA runbook includes a 'legal review step before takedown.' DMCA safe harbor (17 USC 512) requires expeditious removal upon receipt of a valid takedown notice. Adding a legal review step before acting risks losing safe harbor protection. The 24-hour SLA target may already be borderline; adding internal legal review to that window makes it worse."
+              ],
+              "suggestions": [
+                "Replace TimescaleDB on RDS with either: (a) Timescale Cloud managed service, (b) a dedicated analytics store using ClickHouse on EC2 for listen_events (better fit for append-heavy analytics), or (c) skip TimescaleDB entirely and use native Postgres partitioning by month on listen_events for the MVP.",
+                "Fix WER metric in Step 11 acceptance criteria to '<10% WER (word error rate) on English speech benchmark using a held-out test set of 100 podcast minutes.' Add a Spanish WER benchmark since PT-BR and ES are target locales.",
+                "Replace Steps 5's user research acceptance criteria with: 'Competitor UX audit completed across 6 platforms, wireframes validated via internal stakeholder review, and 5 recorded usability sessions conducted by a human UX researcher before frontend development begins.' Flag to the product team that AI cannot conduct real user research.",
+                "Add a mandatory legal review gate: 'All legal documents in Step 6 are AI-generated drafts only. Acceptance criteria must include: reviewed and signed off by licensed attorney in US, EU, and UK jurisdictions before any creator or advertiser agreement is presented to users.'",
+                "Resolve the TUS vs presigned URL conflict: Either (a) implement a TUS server endpoint in FastAPI using tus-py-server and use multipart S3 uploads under the hood, or (b) remove TUS from the frontend and use chunked S3 multipart uploads directly with a progress tracking endpoint. Pick one and make both steps consistent.",
+                "Replace the analytics ingest FastAPI endpoint for 10K events/second with Amazon Kinesis Data Streams as the ingest layer. The FastAPI endpoint becomes a thin proxy that writes to Kinesis. Workers read from Kinesis and batch-insert to PostgreSQL and Firehose. This decouples ingest throughput from database write latency.",
+                "Add an audio transcoding pipeline step between upload (Step 10) and transcription (Step 11): normalize audio to MP3 320kbps or AAC 192kbps, validate file integrity, extract duration and bit depth metadata, and reject non-audio files. FFmpeg worker should be a prerequisite, not assumed to exist in the transcription worker.",
+                "Add transactional email service (SES or SendGrid) as a step. Currently there is no mechanism for: subscription confirmation, episode publish notification, payout notification, DMCA takedown notice to creator, failed payment dunning, or password reset delivery. This is referenced implicitly in multiple steps but never built.",
+                "Define a minimum data threshold for the collaborative filtering agent in Step 15: 'Collaborative filtering signal only enters the ensemble weighting after 1,000 unique users with at least 3 completed episodes each. Below this threshold, ensemble weights shift to 0.50 content + 0.40 trending + 0.10 freshness.'",
+                "Add a content moderation step before Step 10 goes live: automated audio and title/description scanning for CSAM and known terrorist content (using AWS Rekognition for cover art, and keyword scanning on transcript segments) with a human review queue. The content policy in Step 6 needs an enforcement mechanism at ingest time, not just takedown.",
+                "Add Apple Podcasts RSS validation to Step 10 acceptance criteria: 'Generated RSS feed validates against Apple Podcasts namespace requirements including proper itunes:image dimensions (3000x3000), itunes:category taxonomy, and itunes:explicit tag. Feed passes Apple Podcast Connect validator with zero errors.'",
+                "Separate the SOC 2 readiness timeline: Step 7 (SOC 2 control matrix definition) is appropriate pre-build. Step 28 (evidence collection) requires the system to be running. Add a note that SOC 2 Type I observation window begins at production launch, not at build time. Type II (which most enterprise buyers require) requires a minimum 6-month observation period."
+              ],
+              "missing": [
+                "Audio transcoding pipeline: uploaded files need format normalization, bitrate standardization, duration extraction, and format validation before publishing or transcription. No step covers this.",
+                "Transactional email service: no step provisions SES/SendGrid or defines email templates for subscription confirmation, DMCA notifications, payout alerts, or dunning emails.",
+                "Apple Sign-In integration: required by Apple App Store guidelines if any social login is offered. Google OAuth alone is insufficient for iOS apps.",
+                "Account deletion and data export (GDPR Article 17 and 20): no step defines how to delete a creator account including cascading audio file deletion from S3, transcript deletion, removal from analytics, and handling of active subscriber relationships.",
+                "Mobile native app strategy: the plan builds a PWA but 80%+ of podcast listening occurs in native apps (Apple Podcasts, Spotify, Overcast, etc.) consuming RSS. The UX and go-to-market strategy for native app listeners via RSS is absent.",
+                "RSS polling rate limiting and crawler budget: podcast apps poll RSS feeds every 15 minutes to several hours. With thousands of podcasts, the /podcasts/{id}/feed.xml endpoint will receive continuous polling load. No caching strategy (ETag, Last-Modified headers, conditional GET) or rate limiting for feed crawlers is specified.",
+                "Abuse and spam detection for RSS import: a bad actor can import thousands of spam podcast feeds programmatically. No rate limiting, captcha, or fraud detection on the RSS import endpoint is specified beyond the global 100 req/min auth limit.",
+                "Stripe tax reporting (1099-K/1099-NEC): US creators earning over $600/year require 1099 filing. Stripe Tax or manual 1099 generation is needed. Not mentioned in Step 12 or Step 3.",
+                "Database connection pooling strategy: PgBouncer or RDS Proxy configuration is absent. FastAPI with async SQLAlchemy under high load will exhaust RDS connection limits (default 87 for db.r6g.xlarge) without pooling.",
+                "Creator content content dispute resolution: beyond DMCA, podcasts frequently have disputes between co-hosts about ownership. No process for ownership transfer or co-creator disputes.",
+                "Analytics event authentication: Step 14's anonymous listener analytics ingest has no mechanism to prevent fake play count inflation (which directly affects ad CPM payouts). No bot detection or play validation is specified."
+              ],
+              "security_risks": [
+                "SSRF via RSS enclosure URLs: Step 19 allowlists the RSS feed URL fetch but the subsequent audio file downloads from episode enclosure URLs are a second SSRF vector. An attacker can point enclosure URLs to cloud metadata endpoints (http://169.254.169.254/latest/meta-data/) to extract IAM credentials. The allowlist must cover all HTTP requests originating from the RSS import worker.",
+                "Fake play count inflation affecting ad revenue: Step 14's analytics ingest accepts events for 'anonymous listeners' with no bot detection. Advertisers pay CPM based on play counts. A competitor or fraudulent creator can POST fake episode_complete events at scale to inflate play counts and trigger fraudulent ad payouts. No fingerprinting, rate limiting per IP, or statistical anomaly detection is specified.",
+                "Content injection via transcript rendering: transcripts from the Whisper API are stored as text and rendered in the listener UI. If transcripts are rendered as HTML (for bold/italic styling or hyperlinks), malicious audio content could be crafted to inject XSS payloads via transcript text. The plan requires CSP headers but does not specify HTML sanitization on transcript display.",
+                "Stripe Connect KYC insufficient for fraud: Step 12 defers to Stripe Connect for creator identity verification, but Stripe Connect standard accounts do not perform deep KYC. The platform can be used to launder money by creating fake podcasts, running fake subscriptions, and extracting the creator share. A minimum payout threshold ($50-100) and manual review for large first payouts should be specified.",
+                "OpenAI data processing without adequate consent chain: audio files containing guest PII (voice, name, personal disclosures) are sent to OpenAI Whisper API. Creators may not have consent from guests to send their voice recordings to a third-party AI service. The Privacy Policy and Creator Content License must explicitly disclose this and require creators to obtain consent from all audio participants.",
+                "RLS bypass via connection pooler: if PgBouncer is deployed in transaction mode (necessary for FastAPI connection pooling at scale), PostgreSQL Row-Level Security policies are bypassed because session-level settings (SET LOCAL) are not preserved across pooled connections. Data from one tenant could leak to another.",
+                "Clip IDOR via sequential IDs: Step 13 specifies UUIDs for clip IDs (addressed in Step 19 IDOR check) but the acceptance criteria in Step 13 do not explicitly require authentication checks on clip analytics endpoints. GET /clips/{clip_id}/analytics could expose listener count and geographic data for private/unlisted clips without ownership verification.",
+                "Terraform state plaintext secrets: Step 20 notes 'zero plaintext credentials in Terraform state' but Terraform remote state in S3 must be encrypted and access-controlled independently. RDS passwords managed by Terraform are stored in state regardless of Secrets Manager usage unless using aws_secretsmanager_secret_version data sources exclusively. State encryption and access control must be explicitly configured."
+              ],
+              "summary": "This is an ambitious, well-structured plan that covers the full breadth of a production podcast platform \u2014 from market research through SOC 2 compliance. The step sequencing is mostly logical and the acceptance criteria show genuine technical awareness. However, the plan contains multiple hard blockers that would cause production failures: TimescaleDB cannot run on standard AWS RDS (infrastructure rebuild required); the TUS protocol and S3 presigned URL approaches in frontend and backend are mutually incompatible (upload flow is broken); the WER acceptance criterion is inverted (QA would pass catastrophically broken transcription); and the 10K events/second ingest SLA on a single FastAPI endpoint will not survive load testing without a Kinesis-class ingest layer. Beyond the hard technical blockers, the plan has three systemic risks: AI-generated user research producing fictional personas that cascade into UX decisions, AI-drafted legal documents shipped as production contracts without attorney review, and OpenAI as a GDPR sub-processor for creator audio without an adequate consent chain. The cost model is also materially underestimated by 40-60%, which will cause financial model divergence within the first quarter. The discovery algorithm, analytics pipeline, and CI/CD design are well-considered. With fixes to the five hardest blockers (TimescaleDB, TUS/S3 mismatch, WER metric, analytics ingest throughput, RSS SSRF completeness) and mandatory human gates on legal review and user research, this plan could reach production-readiness. In its current form it scores 54 \u2014 significant rework needed before build begins.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T11:01:09.663333+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 219.0,
+      "critic_plan": 185.52
+    }
+  }
+}

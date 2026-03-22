@@ -1,0 +1,997 @@
+{
+  "run_id": "082e7cbf-c265-4dad-aa04-9d94c3afb28d",
+  "solution_name": "skill_assessment",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T09:55:47.343736+00:00",
+  "updated_at": "2026-03-22T10:00:17.028646+00:00",
+  "product_description": "Skill assessment platform for hiring with adaptive testing, coding challenges, video interviews, anti-cheating measures, and candidate ranking with bias detection.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user stories, and process flows for the skill assessment platform covering hiring managers, candidates, and admins. Include ROI analysis for adaptive testing vs. static assessments.",
+      "payload": {
+        "personas": [
+          "hiring_manager",
+          "candidate",
+          "recruiter",
+          "platform_admin"
+        ],
+        "core_flows": [
+          "assessment_creation",
+          "candidate_invitation",
+          "test_taking",
+          "video_interview",
+          "scoring_and_ranking",
+          "bias_review"
+        ],
+        "roi_model": "time-to-hire reduction, quality-of-hire improvement, bias litigation risk reduction"
+      },
+      "acceptance_criteria": [
+        "All user stories follow INVEST criteria and are prioritized by MoSCoW",
+        "Process flow diagrams exist for all 6 core flows",
+        "ROI model includes measurable KPIs and baseline assumptions",
+        "Stakeholder sign-off document produced"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze competitors (HackerRank, Codility, HireVue, Vervoe) and identify differentiation opportunities around bias detection and adaptive testing accuracy.",
+      "payload": {
+        "competitors": [
+          "HackerRank",
+          "Codility",
+          "HireVue",
+          "Vervoe",
+          "TestGorilla"
+        ],
+        "focus_areas": [
+          "adaptive_engine",
+          "bias_detection",
+          "anti_cheating",
+          "pricing"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitive matrix covering at least 5 competitors across 10+ dimensions",
+        "Differentiation opportunities ranked by feasibility and market impact",
+        "Pricing benchmark report with 3 recommended pricing tiers"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 3,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the product requirements document (PRD), feature roadmap (MVP vs. v1.1+), and success metrics (completion rate, pass rate calibration, bias score delta, candidate NPS).",
+      "payload": {
+        "mvp_scope": [
+          "adaptive_mcq",
+          "coding_challenges",
+          "video_interviews",
+          "basic_anti_cheat",
+          "candidate_ranking"
+        ],
+        "v1_1_scope": [
+          "bias_detection_dashboard",
+          "advanced_proctoring",
+          "ats_integrations"
+        ],
+        "metrics": [
+          "assessment_completion_rate",
+          "time_to_hire",
+          "bias_score_delta",
+          "false_positive_rate"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD approved by business_analyst and ux_designer",
+        "Roadmap has clear MVP cutline with rationale for deferred features",
+        "Each success metric has a target value, measurement method, and review cadence",
+        "Feature prioritization matrix documented"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 4,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes for all candidate-facing and recruiter-facing flows: assessment UI, coding sandbox, video interview room, results dashboard, and bias detection panel. Accessibility audit per WCAG 2.1 AA.",
+      "payload": {
+        "research_methods": [
+          "user_interviews",
+          "usability_testing",
+          "heuristic_evaluation"
+        ],
+        "deliverables": [
+          "information_architecture",
+          "wireframes",
+          "interactive_prototype",
+          "wcag_audit_report"
+        ],
+        "wcag_level": "AA",
+        "screens": [
+          "landing",
+          "assessment_lobby",
+          "mcq_adaptive",
+          "coding_sandbox",
+          "video_interview",
+          "recruiter_dashboard",
+          "bias_panel",
+          "candidate_report"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all 8 defined screen types",
+        "Interactive prototype validated with at least 5 user sessions",
+        "WCAG 2.1 AA audit report with zero P0 violations",
+        "Keyboard-navigation and screen-reader flows documented",
+        "Accessibility for learners with disabilities",
+        "Mobile-responsive for student devices"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 5,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreements, and candidate consent forms. Review FERPA (candidate education records) and COPPA (under-13 safeguards) compliance obligations.",
+      "payload": {
+        "documents": [
+          "terms_of_service",
+          "privacy_policy",
+          "dpa_template",
+          "candidate_consent_form",
+          "bias_disclosure_notice"
+        ],
+        "regulations": [
+          "FERPA",
+          "COPPA",
+          "GDPR",
+          "CCPA"
+        ],
+        "data_retention_policy": "candidate data retention schedule with deletion workflows"
+      },
+      "acceptance_criteria": [
+        "All 5 legal documents drafted and reviewed by legal_advisor",
+        "FERPA obligations mapped to specific data handling procedures",
+        "COPPA age-gate mechanism specified in candidate consent flow",
+        "DPA template approved for use with enterprise customers",
+        "FERPA/COPPA compliance if minors involved"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 6,
+      "task_type": "COMPLIANCE",
+      "description": "Produce compliance evidence artifacts for COPPA, FERPA, and WCAG 2.1. Build a requirements traceability matrix linking legal obligations to implemented controls. Define V&V protocols for bias detection.",
+      "payload": {
+        "standards": [
+          "COPPA",
+          "FERPA",
+          "WCAG_2.1_AA"
+        ],
+        "artifacts": [
+          "requirements_traceability_matrix",
+          "risk_register",
+          "privacy_impact_assessment",
+          "bias_vv_protocol"
+        ],
+        "controls": [
+          "data_minimization",
+          "consent_management",
+          "access_control",
+          "audit_logging"
+        ]
+      },
+      "acceptance_criteria": [
+        "Traceability matrix maps every legal obligation to an implemented control",
+        "Privacy Impact Assessment completed and filed",
+        "WCAG 2.1 AA conformance statement template produced",
+        "Bias V&V protocol specifies statistical thresholds and test dataset requirements"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 7,
+      "task_type": "SECURITY",
+      "description": "Threat model the platform covering proctoring data, video streams, coding sandbox execution, and candidate PII. Define OWASP Top 10 mitigations, SBOM, and penetration test plan.",
+      "payload": {
+        "threat_model_scope": [
+          "auth_and_session",
+          "code_execution_sandbox",
+          "video_stream_storage",
+          "pii_at_rest_and_transit",
+          "anti_cheat_bypass"
+        ],
+        "frameworks": [
+          "STRIDE",
+          "OWASP_Top10"
+        ],
+        "deliverables": [
+          "threat_model_doc",
+          "sbom",
+          "pentest_plan",
+          "security_controls_checklist"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis covers all 5 threat model scope areas",
+        "SBOM generated for all runtime dependencies",
+        "Penetration test plan approved with defined scope, methodology, and success criteria",
+        "Code execution sandbox isolation requirements specified (gVisor or Firecracker)"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "DATABASE",
+      "description": "Design the database schema for candidates, assessments, questions (IRT parameters), responses, video sessions, anti-cheat events, scores, and bias metrics. Define migrations and seed data strategy.",
+      "payload": {
+        "tables": [
+          "organizations",
+          "candidates",
+          "assessments",
+          "questions",
+          "question_bank",
+          "irt_parameters",
+          "responses",
+          "coding_submissions",
+          "video_sessions",
+          "proctoring_events",
+          "scores",
+          "rankings",
+          "bias_metrics",
+          "audit_log"
+        ],
+        "db_engine": "PostgreSQL 16",
+        "irt_support": "3PL model parameters (a, b, c) per question",
+        "encryption": "column-level encryption for PII fields"
+      },
+      "acceptance_criteria": [
+        "ERD reviewed and approved by developer lead",
+        "All PII columns flagged and encrypted at rest",
+        "IRT parameter schema supports 3PL model with discrimination, difficulty, and guessing fields",
+        "Migration scripts idempotent and tested on fresh schema",
+        "Seed data covers 50+ sample questions across 5 skill categories"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "CONFIG",
+      "description": "Set up the agentic AI pattern for adaptive testing: Multi-Agent Coordinator (coordinator) with specialist agents for IRT scoring, bias detection, and question selection. Configure SAGE solution YAML for skill_assessment domain.",
+      "payload": {
+        "agentic_pattern": "coordinator",
+        "specialist_agents": [
+          "irt_scoring_agent",
+          "bias_detector_agent",
+          "question_selector_agent",
+          "anti_cheat_monitor_agent"
+        ],
+        "sage_solution": "skill_assessment",
+        "files": [
+          "project.yaml",
+          "prompts.yaml",
+          "tasks.yaml"
+        ],
+        "llm_provider": "claude-code",
+        "hitl_gates": [
+          "bias_flag_review",
+          "candidate_disqualification"
+        ]
+      },
+      "acceptance_criteria": [
+        "skill_assessment solution directory scaffolded from starter template",
+        "All 4 specialist agent roles defined in prompts.yaml with system prompts",
+        "Coordinator routing logic defined in tasks.yaml",
+        "HITL gates configured for bias_flag_review and candidate_disqualification",
+        "make run PROJECT=skill_assessment starts without errors"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Build the adaptive testing engine using Item Response Theory (3PL model). Implement question selection algorithm (maximum information), ability estimation (EAP), and stopping criteria (SE threshold or max items).",
+      "payload": {
+        "algorithm": "computerized_adaptive_testing_3pl",
+        "ability_estimation": "expected_a_posteriori",
+        "question_selection": "maximum_fisher_information",
+        "stopping_criteria": {
+          "se_threshold": 0.3,
+          "max_items": 40,
+          "min_items": 10
+        },
+        "tech_stack": "Python, FastAPI, NumPy/SciPy for IRT"
+      },
+      "acceptance_criteria": [
+        "IRT 3PL likelihood function implemented and unit-tested against known parameters",
+        "Ability estimation converges within 5 iterations for simulated response vectors",
+        "Question selection selects item maximizing Fisher information at current theta",
+        "Stopping criteria halt test when SE < 0.3 or item count bounds reached",
+        "CAT engine processes 1000 simulated sessions/minute without degradation"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build the coding challenge service: sandboxed code execution (gVisor isolation), multi-language support (Python, JS, Java, Go, C++), test case runner, and plagiarism fingerprinting via AST similarity.",
+      "payload": {
+        "sandbox": "gVisor or Firecracker microVM",
+        "languages": [
+          "python3",
+          "javascript",
+          "java17",
+          "go",
+          "cpp17"
+        ],
+        "execution_limits": {
+          "cpu_ms": 5000,
+          "memory_mb": 256,
+          "disk_mb": 64
+        },
+        "plagiarism": "AST normalization + Moss-style fingerprinting",
+        "test_runner": "hidden + visible test cases with partial scoring"
+      },
+      "acceptance_criteria": [
+        "Code execution isolated in sandbox \u2014 no host filesystem or network access",
+        "All 5 languages execute hello-world and algorithmic challenges correctly",
+        "CPU/memory limits enforced and return TLE/MLE verdicts within 100ms of limit breach",
+        "AST fingerprint similarity score produced for every submission pair",
+        "Plagiarism detection flags pairs with similarity > 0.85"
+      ],
+      "depends_on": [
+        8,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build the video interview service: WebRTC signaling server, recording pipeline (S3/GCS), transcription (Whisper), and structured interview question delivery with per-question time limits.",
+      "payload": {
+        "signaling": "mediasoup or LiveKit",
+        "recording": "server-side recording \u2192 object storage",
+        "transcription": "OpenAI Whisper or AWS Transcribe",
+        "interview_types": [
+          "one_way_async",
+          "live_with_interviewer"
+        ],
+        "storage_encryption": "AES-256 at rest, TLS 1.3 in transit"
+      },
+      "acceptance_criteria": [
+        "WebRTC connection established in < 3 seconds on 10 Mbps link",
+        "Recording upload to object storage within 30 seconds of session end",
+        "Transcription accuracy >= 90% WER on benchmark interview dataset",
+        "One-way async interviews deliver questions on timer and block early skip",
+        "Videos encrypted at rest with customer-managed keys support documented"
+      ],
+      "depends_on": [
+        8,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Build the anti-cheating service: tab-switch detection, copy-paste blocking, screen share proctoring events, gaze tracking (MediaPipe), multiple-face detection, and environment audio anomaly flagging.",
+      "payload": {
+        "client_signals": [
+          "tab_visibility_change",
+          "clipboard_events",
+          "fullscreen_exit",
+          "devtools_open"
+        ],
+        "ml_signals": [
+          "gaze_deviation",
+          "multiple_faces",
+          "audio_anomaly"
+        ],
+        "proctoring_model": "MediaPipe FaceMesh for gaze, YOLOv8-nano for face count",
+        "risk_scoring": "weighted event scoring \u2192 LOW/MEDIUM/HIGH/CRITICAL",
+        "storage": "proctoring_events table with timestamp, type, severity, screenshot_url"
+      },
+      "acceptance_criteria": [
+        "Tab-switch and clipboard events captured and timestamped within 200ms",
+        "Gaze deviation model runs at >= 15 FPS on candidate browser without GPU",
+        "Multiple-face detection triggers MEDIUM flag within 2 seconds of second face appearing",
+        "Risk score recalculated after every event with correct weight application",
+        "Anti-cheat events linked to assessment session and visible in recruiter review UI"
+      ],
+      "depends_on": [
+        8,
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "ML_MODEL",
+      "description": "Build the bias detection pipeline: demographic parity and equalized odds analysis across protected attributes (gender, race, age proxy), adverse impact ratio computation, and flagging assessments that violate 4/5ths rule.",
+      "payload": {
+        "fairness_metrics": [
+          "demographic_parity_difference",
+          "equalized_odds",
+          "adverse_impact_ratio"
+        ],
+        "protected_attributes": [
+          "gender",
+          "race_ethnicity",
+          "age_bracket"
+        ],
+        "threshold": "4/5ths rule (adverse_impact_ratio < 0.8 triggers flag)",
+        "pipeline": "score ingestion \u2192 group aggregation \u2192 metric computation \u2192 flag generation",
+        "explainability": "SHAP values for top contributing features"
+      },
+      "acceptance_criteria": [
+        "Pipeline computes all 3 fairness metrics for each protected attribute group",
+        "4/5ths rule violation triggers HITL flag routed to recruiter approval queue",
+        "SHAP explainability report generated per flagged assessment",
+        "Bias metrics stored with assessment_id and versioned for audit trail",
+        "Pipeline processes 10,000 candidate scores in < 60 seconds"
+      ],
+      "depends_on": [
+        10,
+        8
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Build candidate ranking and scoring service: composite score aggregation (adaptive test + coding + video rubric), percentile ranking within cohort, and ranked shortlist generation with bias-adjusted scores.",
+      "payload": {
+        "score_components": [
+          "irt_theta",
+          "coding_score",
+          "video_rubric_score"
+        ],
+        "weighting": "configurable per assessment template",
+        "ranking": "cohort percentile with bias-adjusted variant",
+        "output": "ranked_candidates API response with score breakdown and flags"
+      },
+      "acceptance_criteria": [
+        "Composite score correctly aggregates all 3 components with configured weights",
+        "Percentile rank computed relative to same-assessment cohort",
+        "Bias-adjusted ranking variant produced when bias flags exist",
+        "Ranking API responds in < 500ms for cohorts up to 10,000 candidates",
+        "Score breakdown audit trail written to audit_log table"
+      ],
+      "depends_on": [
+        10,
+        11,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "API",
+      "description": "Design and implement the REST + WebSocket API surface: OpenAPI spec for all endpoints covering assessments, coding submissions, video sessions, proctoring events, scores, rankings, and bias reports.",
+      "payload": {
+        "spec_format": "OpenAPI 3.1",
+        "auth": "JWT + org-scoped API keys",
+        "endpoints": [
+          "POST /assessments",
+          "GET /assessments/{id}",
+          "POST /assessments/{id}/invite",
+          "POST /sessions/{id}/responses",
+          "POST /sessions/{id}/code/submit",
+          "POST /sessions/{id}/video/start",
+          "POST /sessions/{id}/video/stop",
+          "GET /sessions/{id}/proctoring-events",
+          "GET /assessments/{id}/rankings",
+          "GET /assessments/{id}/bias-report",
+          "POST /admin/question-bank/import"
+        ],
+        "websocket": "ws://\u2026/sessions/{id}/stream \u2014 real-time proctoring events"
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 spec validates with no errors via spectral lint",
+        "All endpoints documented with request/response schemas and error codes",
+        "JWT auth enforced on all protected endpoints \u2014 unauthenticated requests return 401",
+        "WebSocket endpoint streams proctoring events with < 500ms latency",
+        "API versioning strategy documented (v1 prefix)"
+      ],
+      "depends_on": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build the candidate assessment UI: adaptive MCQ test runner, coding sandbox (Monaco editor, multi-language, run/submit), video interview room (WebRTC), and anti-cheat enforcement layer (fullscreen lock, tab monitoring).",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "code_editor": "Monaco Editor",
+        "video": "LiveKit React SDK or mediasoup client",
+        "anti_cheat_client": "Visibility API, Clipboard API intercept, fullscreen enforcement",
+        "accessibility": "WCAG 2.1 AA \u2014 keyboard nav, ARIA roles, screen reader tested"
+      },
+      "acceptance_criteria": [
+        "MCQ adaptive test renders questions, records responses, and submits on completion",
+        "Monaco editor supports all 5 languages with syntax highlighting and run output panel",
+        "Video interview room shows candidate camera, question prompt, and countdown timer",
+        "Fullscreen enforced on test start \u2014 exit attempt logs event and shows warning modal",
+        "All interactive elements pass WCAG 2.1 AA automated scan (axe-core zero violations)"
+      ],
+      "depends_on": [
+        4,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the recruiter/hiring manager dashboard: assessment creation wizard, candidate list with ranking table, proctoring event review, bias detection panel, and shortlist export.",
+      "payload": {
+        "pages": [
+          "assessment_builder",
+          "candidate_pipeline",
+          "session_review",
+          "bias_dashboard",
+          "shortlist_export"
+        ],
+        "charts": "Recharts for score distributions and bias metrics",
+        "data_tables": "TanStack Table with sort/filter/pagination",
+        "bias_panel": "visual demographic parity chart + 4/5ths rule indicator"
+      },
+      "acceptance_criteria": [
+        "Assessment builder creates assessment with question selection, weights, and invite link",
+        "Candidate pipeline table shows ranked list with score breakdown and flags",
+        "Proctoring review shows timeline of events with severity badges and screenshot thumbnails",
+        "Bias dashboard displays demographic parity difference per protected attribute with threshold indicator",
+        "Shortlist export produces CSV and PDF with configurable fields"
+      ],
+      "depends_on": [
+        4,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "INFRA",
+      "description": "Set up Kubernetes deployment manifests, Docker images for all services (API, sandbox executor, video signaling, ML bias pipeline), CI/CD pipeline (GitHub Actions), and environment configs for dev/staging/prod.",
+      "payload": {
+        "container_runtime": "Docker",
+        "orchestration": "Kubernetes (EKS or GKE)",
+        "sandbox_isolation": "gVisor RuntimeClass for code execution pods",
+        "ci_cd": "GitHub Actions \u2014 lint, test, build, push, deploy",
+        "environments": [
+          "dev",
+          "staging",
+          "prod"
+        ],
+        "secrets": "AWS Secrets Manager or HashiCorp Vault",
+        "cdn": "CloudFront for static assets and video delivery"
+      },
+      "acceptance_criteria": [
+        "All services containerized with minimal base images (distroless where possible)",
+        "gVisor RuntimeClass applied to sandbox executor pods \u2014 verified via runsc audit",
+        "CI/CD pipeline runs lint + tests on every PR and deploys to staging on merge to main",
+        "Secrets never in environment variables \u2014 all injected via secrets manager",
+        "Staging environment mirrors prod topology with < 5% cost difference"
+      ],
+      "depends_on": [
+        16
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "DEVOPS",
+      "description": "Configure observability stack: structured logging (ELK), metrics (Prometheus + Grafana), distributed tracing (OpenTelemetry), alerting for SLA breaches, and SIEM integration for security events.",
+      "payload": {
+        "logging": "ELK Stack with structured JSON logs",
+        "metrics": "Prometheus scrape + Grafana dashboards",
+        "tracing": "OpenTelemetry SDK \u2014 trace_id propagated through all services",
+        "alerts": [
+          "p99_latency > 2s",
+          "bias_flag_backlog > 50",
+          "sandbox_escape_attempt",
+          "failed_login_rate > 10/min"
+        ],
+        "siem": "forward security events to Splunk or Datadog SIEM"
+      },
+      "acceptance_criteria": [
+        "Every API request emits structured log with trace_id, tenant_id, latency, status",
+        "Grafana dashboard covers API latency, error rate, active sessions, bias flag backlog",
+        "OpenTelemetry traces visible end-to-end from API gateway to ML pipeline",
+        "All 4 defined alerts fire in staging when thresholds are breached",
+        "Security events forwarded to SIEM within 30 seconds of occurrence"
+      ],
+      "depends_on": [
+        19
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 21,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure (react-i18next + i18next-http-backend) and produce initial locale configs for en-US, es-ES, fr-FR, de-DE, ja-JP. Localize all candidate-facing UI strings and assessment instructions.",
+      "payload": {
+        "framework": "react-i18next",
+        "initial_locales": [
+          "en-US",
+          "es-ES",
+          "fr-FR",
+          "de-DE",
+          "ja-JP"
+        ],
+        "scope": "candidate-facing UI, assessment instructions, error messages, consent forms",
+        "rtl_support": "infrastructure ready for ar-SA future addition",
+        "translation_workflow": "POEditor or Phrase integration for translator collaboration"
+      },
+      "acceptance_criteria": [
+        "i18next configured with namespace separation (common, assessment, video, legal)",
+        "All candidate-facing strings externalized \u2014 zero hardcoded English in JSX",
+        "es-ES, fr-FR, de-DE translations complete for MVP scope",
+        "ja-JP translation complete with CJK font fallback verified",
+        "RTL layout toggles correctly in LTR/RTL test harness",
+        "Missing translation keys flagged in CI with non-zero exit code"
+      ],
+      "depends_on": [
+        17
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 22,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for: IRT scoring engine, bias detection pipeline, code sandbox execution, anti-cheat event scoring, ranking aggregation, and all API endpoints.",
+      "payload": {
+        "framework": "pytest (backend), Vitest (frontend)",
+        "coverage_target": "80% line coverage minimum",
+        "test_categories": [
+          "irt_unit",
+          "bias_pipeline_unit",
+          "sandbox_integration",
+          "api_contract",
+          "ranking_unit",
+          "anti_cheat_unit"
+        ],
+        "property_testing": "Hypothesis for IRT parameter edge cases",
+        "mock_strategy": "sandbox uses Docker-in-Docker; video uses mediasoup test server"
+      },
+      "acceptance_criteria": [
+        "IRT 3PL scoring correct for 20 parameterized test vectors against reference implementation",
+        "Bias pipeline correctly flags 4/5ths violations in 10 synthetic datasets",
+        "Sandbox execution tests cover TLE, MLE, correct, wrong answer, and compile error verdicts",
+        "API contract tests cover all endpoints with valid and invalid inputs",
+        "Overall backend coverage >= 80%, frontend coverage >= 75%",
+        "All tests pass in CI in < 10 minutes"
+      ],
+      "depends_on": [
+        10,
+        11,
+        13,
+        14,
+        15,
+        16
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "QA",
+      "description": "Develop QA test plan covering manual test cases for adaptive testing accuracy, video interview flows, anti-cheat UX, bias dashboard, and accessibility. Define test execution reports and defect severity matrix.",
+      "payload": {
+        "test_plan_scope": [
+          "adaptive_accuracy",
+          "video_e2e",
+          "anti_cheat_ux",
+          "bias_dashboard",
+          "wcag_manual",
+          "cross_browser"
+        ],
+        "browsers": [
+          "Chrome 120+",
+          "Firefox 121+",
+          "Safari 17+",
+          "Edge 120+"
+        ],
+        "devices": [
+          "desktop_1080p",
+          "laptop_768p",
+          "tablet_ipad"
+        ],
+        "defect_matrix": {
+          "P0": "data_loss_or_security",
+          "P1": "core_flow_broken",
+          "P2": "degraded_experience",
+          "P3": "cosmetic"
+        }
+      },
+      "acceptance_criteria": [
+        "Test plan covers all 6 scope areas with at least 10 test cases each",
+        "Cross-browser matrix executed on all 4 browsers x 3 device types",
+        "WCAG 2.1 AA manual test checklist completed with zero P0/P1 findings",
+        "Defect severity matrix agreed with product_manager before test execution",
+        "Test execution report produced with pass/fail counts and open defects"
+      ],
+      "depends_on": [
+        17,
+        18,
+        22
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "SYSTEM_TEST",
+      "description": "End-to-end system test suite: full candidate journey (invite \u2192 adaptive test \u2192 coding \u2192 video \u2192 ranking), recruiter review journey, and bias flag HITL approval flow. Load test with 500 concurrent candidates.",
+      "payload": {
+        "e2e_framework": "Playwright",
+        "scenarios": [
+          "candidate_full_journey",
+          "recruiter_review_journey",
+          "bias_flag_hitl",
+          "anti_cheat_escalation",
+          "admin_question_import"
+        ],
+        "load_test": "k6 \u2014 500 concurrent candidates, 30-minute soak, p99 < 2s",
+        "chaos": "simulate sandbox pod crash, video server disconnect, ML pipeline timeout"
+      },
+      "acceptance_criteria": [
+        "All 5 E2E scenarios pass on staging environment",
+        "Load test sustains 500 concurrent candidates with p99 latency < 2 seconds",
+        "p99 latency for code submission verdict < 6 seconds under load",
+        "Chaos scenarios recover gracefully \u2014 candidate session resumable after pod crash",
+        "No data loss or score corruption observed across 1000 simulated sessions"
+      ],
+      "depends_on": [
+        22,
+        23,
+        19
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 25,
+      "task_type": "TRAINING",
+      "description": "Produce user guides, recruiter onboarding docs, candidate help center, admin runbooks, and video walkthrough scripts. Cover bias dashboard interpretation and anti-cheat review workflows.",
+      "payload": {
+        "deliverables": [
+          "candidate_help_center",
+          "recruiter_getting_started_guide",
+          "bias_dashboard_interpretation_guide",
+          "admin_runbook",
+          "video_walkthrough_scripts"
+        ],
+        "formats": [
+          "Markdown/HTML",
+          "PDF",
+          "video_script"
+        ],
+        "localization_ready": true
+      },
+      "acceptance_criteria": [
+        "Candidate help center covers test-taking, technical requirements, and anti-cheat policy",
+        "Recruiter guide covers assessment creation, review, bias panel, and shortlist export",
+        "Bias dashboard guide explains each metric with worked examples and action recommendations",
+        "Admin runbook covers question bank import, user management, and audit log access",
+        "Video walkthrough scripts reviewed and approved before recording"
+      ],
+      "depends_on": [
+        18,
+        14
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 26,
+      "task_type": "DOCS",
+      "description": "Write API reference documentation (auto-generated from OpenAPI spec), architecture decision records (ADRs) for IRT engine, sandbox isolation, and bias detection, and developer onboarding README.",
+      "payload": {
+        "api_docs": "Swagger UI + Redoc hosted at /api/docs",
+        "adrs": [
+          "ADR-001-irt-3pl-selection",
+          "ADR-002-sandbox-gvisor",
+          "ADR-003-bias-4-5ths-rule",
+          "ADR-004-video-webrtc-vs-sfu"
+        ],
+        "readme": "local dev setup, env vars, make targets, architecture overview"
+      },
+      "acceptance_criteria": [
+        "Swagger UI renders all API endpoints with try-it-out functional in dev environment",
+        "All 4 ADRs include context, decision, consequences, and rejected alternatives",
+        "README enables a new developer to run the full stack locally in < 30 minutes",
+        "API docs auto-regenerate in CI on spec change"
+      ],
+      "depends_on": [
+        16,
+        19
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 26,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 55,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 55,
+        "final_review": {
+          "score": 55,
+          "flaws": [
+            "IRT 3PL cold-start problem is fatal and unaddressed: calibrated item parameters (a, b, c) require hundreds of real candidate responses per question. The plan seeds 50 questions across 5 categories with no calibration strategy. On day one, the adaptive engine has zero valid IRT parameters and cannot function as specified.",
+            "Video rubric score is a phantom component: step 15 aggregates 'irt_theta + coding_score + video_rubric_score' but no step anywhere defines how video_rubric_score is produced. Is it human-scored? LLM-analyzed? Sentiment analysis? This is a core input to the final ranking with no implementation plan.",
+            "Bias detection requires protected attribute data that is never collected: steps 14 and 6 assume gender, race_ethnicity, and age_bracket exist per candidate. No step defines how this data is gathered, from whom, when, or under what consent. EEOC best practices actually recommend NOT collecting this data during assessment \u2014 creating an architectural contradiction.",
+            "Demographic data for bias analysis is architecturally irreconcilable with GDPR data minimization: you cannot simultaneously minimize PII collection (GDPR Art. 5) and collect sensitive protected-class data for bias auditing without a specific legal basis. The plan never resolves this tension.",
+            "WebRTC without TURN/STUN infrastructure will fail for enterprise candidates: corporate firewalls and symmetric NAT \u2014 the default in most enterprise environments \u2014 block direct WebRTC peer connections. Neither step 12 (video service) nor step 19 (infra) mentions TURN server deployment (coturn or commercial). Connection failure rates in enterprise environments without TURN can exceed 20-30%.",
+            "MediaPipe FaceMesh at 15 FPS CPU-only in a browser is unrealistic: on mid-range laptops running a full-screen coding assessment with Monaco editor and WebRTC simultaneously, sustained 15 FPS CPU-side inference will peg one core, cause thermal throttling, and may crash the tab \u2014 disqualifying candidates due to hardware limitations, not cheating.",
+            "Item exposure control is completely absent: selecting questions by maximum Fisher information causes popular items to be seen by nearly every candidate in a cohort. Without a control algorithm (Sympson-Hetter, randomesque, or maximum priority index), the question bank is compromised within weeks by candidate sharing. This is a known CAT failure mode.",
+            "SE < 0.3 stopping criterion assumes well-calibrated, high-discrimination items that don't exist at launch: with a 50-question seed bank lacking calibrated parameters, many sessions will hit max_items=40 without converging, producing ability estimates with confidence intervals so wide they are meaningless for ranking.",
+            "EEOC AI hiring regulations and state laws are entirely absent: NYC Local Law 144 (mandatory annual bias audit before deployment, candidate notification), Illinois AI Video Interview Act (requires candidate consent for AI video analysis, provides deletion rights), and Maryland's similar law create immediate legal exposure. Step 5 and 6 cover FERPA/COPPA/GDPR/CCPA but omit the most directly applicable US AI hiring regulations.",
+            "Session resumption architecture is undefined but required by step 24 acceptance criteria: 'candidate session resumable after pod crash' requires explicit CAT state persistence (current theta, standard error, items administered, responses). No schema field, no API contract, and no design for this exists anywhere in the 26 steps.",
+            "50-question seed bank is insufficient for operational CAT: avoiding item overexposure requires 5-10x the number of target test items per ability range. A 40-item max test needs 200-400 calibrated items per skill domain for acceptable exposure rates. With 50 total questions across 5 categories (10/domain), every candidate will see nearly identical tests \u2014 making the 'adaptive' claim false.",
+            "SHAP explainability applied to IRT psychometric scores is technically inappropriate: SHAP explains feature contributions in ML models. The IRT composite score is a psychometric likelihood-based estimate, not a feature-weight model. Applying SHAP here produces outputs that look like explanations but have no valid psychometric interpretation."
+          ],
+          "suggestions": [
+            "Add a calibration study phase before launch: recruit 300-500 participants to take a static pretest with all seed questions. Use response data to estimate IRT parameters. Gate CAT launch on having >= 100 questions with calibrated parameters per domain. This likely takes 6-8 weeks and must be planned as a separate workstream.",
+            "Define video rubric scoring explicitly in a new step between step 12 and step 15: decide between (a) structured human rubric scored by interviewer, (b) LLM-based transcript scoring against rubric dimensions, or (c) no video score in v1 \u2014 only transcript keyword matching. Each choice has different accuracy, cost, and bias implications.",
+            "Resolve the demographic data contradiction before step 14 is built: three viable paths are (1) collect voluntary self-reported demographics post-hire with separate consent for audit-only purposes, (2) use proxy inference (which has its own legal risk), or (3) implement 'potential bias' monitoring using cohort score distributions without protected attributes. Document the legal basis for whichever path is chosen.",
+            "Add TURN server provisioning to step 12 or 19: deploy coturn or purchase Twilio TURN credits. Set ICE server configuration in the LiveKit/mediasoup client. Define TURN traffic cost estimates (TURN relay adds ~1 Mbps per session routed). Without this, enterprise customer POCs will fail at the demo stage.",
+            "Add Sympson-Hetter exposure control to the CAT engine in step 10: each item gets a target exposure rate (typically 0.20-0.33). The selection algorithm draws from top-N maximum-information items rather than always selecting the single best item. This is a 50-line addition to the selection logic but prevents question bank compromise.",
+            "Add NYC Local Law 144 and Illinois AI Video Interview Act compliance to step 5 and step 6: specifically, annual bias audit by independent third party, candidate notification that AI is used in evaluation, and right-to-request-deletion for video AI data. These are not optional for US hiring deployments.",
+            "Add a minimum cohort size gate to the bias detection pipeline: refuse to compute adverse impact ratios for cohorts < 30 per protected group (the standard statistical threshold from EEOC's Uniform Guidelines). Below this threshold, emit a 'INSUFFICIENT_DATA' status rather than a potentially misleading ratio.",
+            "Define session state persistence schema in step 8 and step 10: add a cat_sessions table with columns for current_theta, current_se, items_administered (array), responses (array), status (active/suspended/completed). This schema is the precondition for step 24's resumption requirement.",
+            "Reduce MediaPipe to server-side processing or use WASM SIMD with a capability check: run FaceMesh inference server-side on captured frame snapshots (1 frame/sec is sufficient for proctoring) rather than demanding real-time client-side inference. This eliminates the performance cliff on low-end devices.",
+            "Add at least one ATS integration (Greenhouse or Lever webhooks) to the MVP scope: without this, enterprise buyers cannot create a trial without manual CSV workflows. A webhook-based integration (not full OAuth) can be built in 2-3 days and removes a common deal-blocker."
+          ],
+          "missing": [
+            "TURN/STUN server infrastructure and ICE server configuration for WebRTC",
+            "IRT parameter calibration study \u2014 a prerequisite workstream, not a day-one deliverable",
+            "Video rubric scoring definition and implementation plan",
+            "Demographic data collection mechanism with legal basis justification",
+            "Minimum cohort size thresholds for valid bias analysis",
+            "Item exposure control algorithm in the CAT engine",
+            "NYC Local Law 144, Illinois AI Video Interview Act, and EEOC AI guidance compliance",
+            "GDPR Article 22 candidate notification rights (automated decision-making disclosure)",
+            "CAT session state persistence schema for resumption",
+            "Video storage cost model and retention/deletion schedule with cost projections",
+            "Question bank size requirements per domain for functional adaptive testing",
+            "Key rotation and JWT expiry/revocation policy",
+            "Candidate device requirements check (browser compatibility, camera/mic, bandwidth) before test start",
+            "Age verification mechanism implementation for COPPA (not just 'specified in consent flow')",
+            "Disaster recovery plan and RTO/RPO targets"
+          ],
+          "security_risks": [
+            "gVisor has documented CVEs and syscall compatibility gaps that can cause Java runtime crashes inside the sandbox \u2014 an attacker who knows the runtime version may trigger a controlled crash to escape the time limit without a TLE verdict. No CVE monitoring or syscall allowlist is specified.",
+            "Anti-cheat screenshots stored with candidate PII create a high-value exfiltration target: a breach exposes biometric-adjacent data (face images) linked to identity and assessment scores. The plan specifies encryption at rest but no access control policy, key rotation, or breach notification procedure specific to biometric data (BIPA in Illinois applies to face images).",
+            "WebRTC media encrypted in transit (DTLS/SRTP) but the recording pipeline breaks this: server-side recording decrypts the stream, re-encrypts for storage. The decryption point is an attack surface that is not addressed in the threat model.",
+            "JWT tokens with org-scoped API keys: no mention of token expiry enforcement, refresh token rotation, or revocation on recruiter offboarding. A leaked API key with no rotation policy provides indefinite access to all candidate data in that org.",
+            "Bias flag data in the audit trail identifies protected-class group membership indirectly: if a flag records 'demographic_parity_violation for group: gender=female', the audit log becomes a de facto record of gender per candidate ID, creating a sensitive data category that may not be covered by the existing privacy controls.",
+            "AST fingerprinting for plagiarism detection stores normalized ASTs per submission pair: if the comparison corpus is accessible via API, it enables reconstruction of proprietary coding challenge solutions through differential queries \u2014 a form of test content leakage.",
+            "No rate limiting or anti-automation controls specified on POST /sessions/{id}/responses: an automated script could submit thousands of MCQ responses per second, polluting score distributions and calibration data."
+          ],
+          "summary": "This is a thorough, well-structured plan that correctly identifies the major components of a hiring assessment platform and sequences them logically. The technical choices are generally sound \u2014 3PL IRT, gVisor sandboxing, MediaPipe proctoring, and demographic parity metrics are all industry-appropriate. However, the plan has several fundamental production blockers that are not cosmetic gaps but architectural contradictions: the adaptive engine cannot function without pre-calibrated IRT parameters, which require a separate multi-month data collection study that is absent from the plan entirely; the composite ranking score includes a video rubric component that is never defined anywhere; the bias detection pipeline requires protected demographic data that the plan never specifies how to collect, under what legal basis, or how to reconcile with GDPR data minimization; and the system test requires session resumption that no step actually designs. Beyond these core gaps, the compliance coverage misses the most directly applicable US AI hiring regulations (NYC LL144, Illinois AI Video Interview Act), WebRTC will fail silently for enterprise candidates without TURN infrastructure, and client-side ML proctoring at 15 FPS CPU-only will cause device performance failures that falsely escalate cheating flags. The plan scores 55 \u2014 above 50 because the domain coverage is comprehensive and the technical direction is correct, but below 65 because the IRT bootstrapping gap alone makes the adaptive testing feature non-functional on launch day, and two other core features (video rubric, bias detection) have undefined or legally contradictory inputs.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 55,
+            "flaws": [
+              "IRT 3PL cold-start problem is fatal and unaddressed: calibrated item parameters (a, b, c) require hundreds of real candidate responses per question. The plan seeds 50 questions across 5 categories with no calibration strategy. On day one, the adaptive engine has zero valid IRT parameters and cannot function as specified.",
+              "Video rubric score is a phantom component: step 15 aggregates 'irt_theta + coding_score + video_rubric_score' but no step anywhere defines how video_rubric_score is produced. Is it human-scored? LLM-analyzed? Sentiment analysis? This is a core input to the final ranking with no implementation plan.",
+              "Bias detection requires protected attribute data that is never collected: steps 14 and 6 assume gender, race_ethnicity, and age_bracket exist per candidate. No step defines how this data is gathered, from whom, when, or under what consent. EEOC best practices actually recommend NOT collecting this data during assessment \u2014 creating an architectural contradiction.",
+              "Demographic data for bias analysis is architecturally irreconcilable with GDPR data minimization: you cannot simultaneously minimize PII collection (GDPR Art. 5) and collect sensitive protected-class data for bias auditing without a specific legal basis. The plan never resolves this tension.",
+              "WebRTC without TURN/STUN infrastructure will fail for enterprise candidates: corporate firewalls and symmetric NAT \u2014 the default in most enterprise environments \u2014 block direct WebRTC peer connections. Neither step 12 (video service) nor step 19 (infra) mentions TURN server deployment (coturn or commercial). Connection failure rates in enterprise environments without TURN can exceed 20-30%.",
+              "MediaPipe FaceMesh at 15 FPS CPU-only in a browser is unrealistic: on mid-range laptops running a full-screen coding assessment with Monaco editor and WebRTC simultaneously, sustained 15 FPS CPU-side inference will peg one core, cause thermal throttling, and may crash the tab \u2014 disqualifying candidates due to hardware limitations, not cheating.",
+              "Item exposure control is completely absent: selecting questions by maximum Fisher information causes popular items to be seen by nearly every candidate in a cohort. Without a control algorithm (Sympson-Hetter, randomesque, or maximum priority index), the question bank is compromised within weeks by candidate sharing. This is a known CAT failure mode.",
+              "SE < 0.3 stopping criterion assumes well-calibrated, high-discrimination items that don't exist at launch: with a 50-question seed bank lacking calibrated parameters, many sessions will hit max_items=40 without converging, producing ability estimates with confidence intervals so wide they are meaningless for ranking.",
+              "EEOC AI hiring regulations and state laws are entirely absent: NYC Local Law 144 (mandatory annual bias audit before deployment, candidate notification), Illinois AI Video Interview Act (requires candidate consent for AI video analysis, provides deletion rights), and Maryland's similar law create immediate legal exposure. Step 5 and 6 cover FERPA/COPPA/GDPR/CCPA but omit the most directly applicable US AI hiring regulations.",
+              "Session resumption architecture is undefined but required by step 24 acceptance criteria: 'candidate session resumable after pod crash' requires explicit CAT state persistence (current theta, standard error, items administered, responses). No schema field, no API contract, and no design for this exists anywhere in the 26 steps.",
+              "50-question seed bank is insufficient for operational CAT: avoiding item overexposure requires 5-10x the number of target test items per ability range. A 40-item max test needs 200-400 calibrated items per skill domain for acceptable exposure rates. With 50 total questions across 5 categories (10/domain), every candidate will see nearly identical tests \u2014 making the 'adaptive' claim false.",
+              "SHAP explainability applied to IRT psychometric scores is technically inappropriate: SHAP explains feature contributions in ML models. The IRT composite score is a psychometric likelihood-based estimate, not a feature-weight model. Applying SHAP here produces outputs that look like explanations but have no valid psychometric interpretation."
+            ],
+            "suggestions": [
+              "Add a calibration study phase before launch: recruit 300-500 participants to take a static pretest with all seed questions. Use response data to estimate IRT parameters. Gate CAT launch on having >= 100 questions with calibrated parameters per domain. This likely takes 6-8 weeks and must be planned as a separate workstream.",
+              "Define video rubric scoring explicitly in a new step between step 12 and step 15: decide between (a) structured human rubric scored by interviewer, (b) LLM-based transcript scoring against rubric dimensions, or (c) no video score in v1 \u2014 only transcript keyword matching. Each choice has different accuracy, cost, and bias implications.",
+              "Resolve the demographic data contradiction before step 14 is built: three viable paths are (1) collect voluntary self-reported demographics post-hire with separate consent for audit-only purposes, (2) use proxy inference (which has its own legal risk), or (3) implement 'potential bias' monitoring using cohort score distributions without protected attributes. Document the legal basis for whichever path is chosen.",
+              "Add TURN server provisioning to step 12 or 19: deploy coturn or purchase Twilio TURN credits. Set ICE server configuration in the LiveKit/mediasoup client. Define TURN traffic cost estimates (TURN relay adds ~1 Mbps per session routed). Without this, enterprise customer POCs will fail at the demo stage.",
+              "Add Sympson-Hetter exposure control to the CAT engine in step 10: each item gets a target exposure rate (typically 0.20-0.33). The selection algorithm draws from top-N maximum-information items rather than always selecting the single best item. This is a 50-line addition to the selection logic but prevents question bank compromise.",
+              "Add NYC Local Law 144 and Illinois AI Video Interview Act compliance to step 5 and step 6: specifically, annual bias audit by independent third party, candidate notification that AI is used in evaluation, and right-to-request-deletion for video AI data. These are not optional for US hiring deployments.",
+              "Add a minimum cohort size gate to the bias detection pipeline: refuse to compute adverse impact ratios for cohorts < 30 per protected group (the standard statistical threshold from EEOC's Uniform Guidelines). Below this threshold, emit a 'INSUFFICIENT_DATA' status rather than a potentially misleading ratio.",
+              "Define session state persistence schema in step 8 and step 10: add a cat_sessions table with columns for current_theta, current_se, items_administered (array), responses (array), status (active/suspended/completed). This schema is the precondition for step 24's resumption requirement.",
+              "Reduce MediaPipe to server-side processing or use WASM SIMD with a capability check: run FaceMesh inference server-side on captured frame snapshots (1 frame/sec is sufficient for proctoring) rather than demanding real-time client-side inference. This eliminates the performance cliff on low-end devices.",
+              "Add at least one ATS integration (Greenhouse or Lever webhooks) to the MVP scope: without this, enterprise buyers cannot create a trial without manual CSV workflows. A webhook-based integration (not full OAuth) can be built in 2-3 days and removes a common deal-blocker."
+            ],
+            "missing": [
+              "TURN/STUN server infrastructure and ICE server configuration for WebRTC",
+              "IRT parameter calibration study \u2014 a prerequisite workstream, not a day-one deliverable",
+              "Video rubric scoring definition and implementation plan",
+              "Demographic data collection mechanism with legal basis justification",
+              "Minimum cohort size thresholds for valid bias analysis",
+              "Item exposure control algorithm in the CAT engine",
+              "NYC Local Law 144, Illinois AI Video Interview Act, and EEOC AI guidance compliance",
+              "GDPR Article 22 candidate notification rights (automated decision-making disclosure)",
+              "CAT session state persistence schema for resumption",
+              "Video storage cost model and retention/deletion schedule with cost projections",
+              "Question bank size requirements per domain for functional adaptive testing",
+              "Key rotation and JWT expiry/revocation policy",
+              "Candidate device requirements check (browser compatibility, camera/mic, bandwidth) before test start",
+              "Age verification mechanism implementation for COPPA (not just 'specified in consent flow')",
+              "Disaster recovery plan and RTO/RPO targets"
+            ],
+            "security_risks": [
+              "gVisor has documented CVEs and syscall compatibility gaps that can cause Java runtime crashes inside the sandbox \u2014 an attacker who knows the runtime version may trigger a controlled crash to escape the time limit without a TLE verdict. No CVE monitoring or syscall allowlist is specified.",
+              "Anti-cheat screenshots stored with candidate PII create a high-value exfiltration target: a breach exposes biometric-adjacent data (face images) linked to identity and assessment scores. The plan specifies encryption at rest but no access control policy, key rotation, or breach notification procedure specific to biometric data (BIPA in Illinois applies to face images).",
+              "WebRTC media encrypted in transit (DTLS/SRTP) but the recording pipeline breaks this: server-side recording decrypts the stream, re-encrypts for storage. The decryption point is an attack surface that is not addressed in the threat model.",
+              "JWT tokens with org-scoped API keys: no mention of token expiry enforcement, refresh token rotation, or revocation on recruiter offboarding. A leaked API key with no rotation policy provides indefinite access to all candidate data in that org.",
+              "Bias flag data in the audit trail identifies protected-class group membership indirectly: if a flag records 'demographic_parity_violation for group: gender=female', the audit log becomes a de facto record of gender per candidate ID, creating a sensitive data category that may not be covered by the existing privacy controls.",
+              "AST fingerprinting for plagiarism detection stores normalized ASTs per submission pair: if the comparison corpus is accessible via API, it enables reconstruction of proprietary coding challenge solutions through differential queries \u2014 a form of test content leakage.",
+              "No rate limiting or anti-automation controls specified on POST /sessions/{id}/responses: an automated script could submit thousands of MCQ responses per second, polluting score distributions and calibration data."
+            ],
+            "summary": "This is a thorough, well-structured plan that correctly identifies the major components of a hiring assessment platform and sequences them logically. The technical choices are generally sound \u2014 3PL IRT, gVisor sandboxing, MediaPipe proctoring, and demographic parity metrics are all industry-appropriate. However, the plan has several fundamental production blockers that are not cosmetic gaps but architectural contradictions: the adaptive engine cannot function without pre-calibrated IRT parameters, which require a separate multi-month data collection study that is absent from the plan entirely; the composite ranking score includes a video rubric component that is never defined anywhere; the bias detection pipeline requires protected demographic data that the plan never specifies how to collect, under what legal basis, or how to reconcile with GDPR data minimization; and the system test requires session resumption that no step actually designs. Beyond these core gaps, the compliance coverage misses the most directly applicable US AI hiring regulations (NYC LL144, Illinois AI Video Interview Act), WebRTC will fail silently for enterprise candidates without TURN infrastructure, and client-side ML proctoring at 15 FPS CPU-only will cause device performance failures that falsely escalate cheating flags. The plan scores 55 \u2014 above 50 because the domain coverage is comprehensive and the technical direction is correct, but below 65 because the IRT bootstrapping gap alone makes the adaptive testing feature non-functional on launch day, and two other core features (video rubric, bias detection) have undefined or legally contradictory inputs.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T10:00:17.028634+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 143.68,
+    "critic_plan": 126.0
+  }
+}

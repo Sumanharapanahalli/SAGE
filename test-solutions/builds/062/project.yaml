@@ -1,0 +1,50 @@
+project_name: voice_assistant
+display_name: Voice Assistant
+version: 1.0.0
+domain: ml_ai
+description: Custom voice assistant with wake word detection, ASR (speech-to-text),
+  NLU intent classification, dialog management, and TTS response generation.
+detected_domains: []
+compliance_standards:
+- GDPR
+- CCPA
+- Biometric Privacy Laws
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- CONFIG
+- DATA
+- DOCS
+- FRONTEND
+- INFRA
+- ML_MODEL
+- SECURITY
+- TESTS
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- qa_engineer
+- system_tester
+- technical_writer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

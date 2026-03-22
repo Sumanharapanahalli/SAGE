@@ -1,0 +1,1420 @@
+{
+  "run_id": "3e357622-6efe-45f8-a7cd-fc8eaf5a610f",
+  "solution_name": "project_management",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T04:49:56.602049+00:00",
+  "updated_at": "2026-03-22T04:54:42.704769+00:00",
+  "product_description": "Project management SaaS with Kanban boards, Gantt charts, time tracking, resource allocation, sprint planning, and Slack/Jira integration.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the project management SaaS market: competitors (Asana, Monday.com, Linear, Jira, ClickUp), pricing models, feature gaps, and target segments (SMB vs enterprise). Identify positioning opportunities.",
+      "payload": {
+        "competitors": [
+          "Asana",
+          "Monday.com",
+          "Linear",
+          "Jira",
+          "ClickUp",
+          "Notion"
+        ],
+        "segments": [
+          "SMB",
+          "mid-market",
+          "enterprise"
+        ],
+        "focus_areas": [
+          "pricing",
+          "feature_gaps",
+          "integrations",
+          "UX_weaknesses"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix with feature comparison across 6+ tools",
+        "Pricing benchmark for 3 tiers (free, pro, enterprise)",
+        "Identified top 3 positioning differentiators",
+        "Target ICP (Ideal Customer Profile) defined"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements and user stories for all core modules: Kanban boards, Gantt charts, time tracking, resource allocation, sprint planning, Slack integration, and Jira integration. Produce prioritized user story map.",
+      "payload": {
+        "modules": [
+          "kanban",
+          "gantt",
+          "time_tracking",
+          "resource_allocation",
+          "sprint_planning",
+          "slack_integration",
+          "jira_integration"
+        ],
+        "personas": [
+          "project_manager",
+          "developer",
+          "team_lead",
+          "executive_stakeholder"
+        ],
+        "deliverables": [
+          "user_story_map",
+          "process_flows",
+          "acceptance_criteria_per_story"
+        ]
+      },
+      "acceptance_criteria": [
+        "User stories written for all 7 modules with acceptance criteria",
+        "Process flow diagrams for core workflows (project creation, sprint cycle, time log)",
+        "MoSCoW prioritization applied to all stories",
+        "ROI analysis document with projected time-savings per user persona",
+        "Pricing tiers defined",
+        "Churn risk factors identified"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Produce the Product Requirements Document (PRD), feature roadmap (v1 MVP, v2, v3), success metrics (activation, retention, NPS, MRR), and go/no-go criteria for each milestone.",
+      "payload": {
+        "mvp_scope": [
+          "kanban",
+          "time_tracking",
+          "sprint_planning",
+          "slack_integration"
+        ],
+        "v2_scope": [
+          "gantt",
+          "resource_allocation"
+        ],
+        "v3_scope": [
+          "jira_integration",
+          "advanced_reporting",
+          "ai_suggestions"
+        ],
+        "kpis": [
+          "DAU",
+          "task_completion_rate",
+          "sprint_velocity",
+          "MRR",
+          "churn"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD document with feature specs for all MVP modules",
+        "Roadmap with milestones, owners, and dates",
+        "Success metrics defined with baseline and target values",
+        "Go/no-go criteria documented for each release"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 4,
+      "task_type": "FINANCIAL",
+      "description": "Build a financial model covering SaaS pricing tiers, COGS (compute, storage, third-party APIs), CAC, LTV, burn rate, and 3-year P&L projection. Include Slack and Jira API cost modeling.",
+      "payload": {
+        "pricing_tiers": [
+          "free (limited seats)",
+          "pro ($12/seat/mo)",
+          "enterprise (custom)"
+        ],
+        "cost_components": [
+          "AWS_infra",
+          "Slack_API",
+          "Jira_API",
+          "support",
+          "headcount"
+        ],
+        "projections_years": 3
+      },
+      "acceptance_criteria": [
+        "3-tier pricing model with feature gates defined",
+        "COGS breakdown per active user per month",
+        "3-year P&L model with sensitivity analysis",
+        "Break-even analysis and runway calculation",
+        "MRR/ARR projections modeled",
+        "CAC and LTV estimated"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 5,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, DPA (Data Processing Agreement), and SLA. Review Slack and Jira API terms for redistribution and data residency constraints.",
+      "payload": {
+        "documents": [
+          "terms_of_service",
+          "privacy_policy",
+          "DPA",
+          "SLA"
+        ],
+        "api_review": [
+          "Slack_API_terms",
+          "Jira_API_terms"
+        ],
+        "compliance_flags": [
+          "GDPR",
+          "CCPA",
+          "data_residency"
+        ]
+      },
+      "acceptance_criteria": [
+        "ToS and Privacy Policy drafted and reviewed",
+        "DPA template covering GDPR Article 28 obligations",
+        "SLA with uptime commitments (99.9%) and credit structure",
+        "Legal risk assessment for Slack/Jira API usage documented",
+        "Subscription terms cover cancellation and refunds",
+        "Data processing agreement drafted"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 6,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research interviews with 10 target users. Produce information architecture, wireframes for all major views (board, Gantt, sprint, resource grid, time log, dashboard), and an accessibility audit checklist (WCAG 2.1 AA).",
+      "payload": {
+        "research_methods": [
+          "user_interviews",
+          "competitive_UX_audit",
+          "card_sorting"
+        ],
+        "deliverables": [
+          "information_architecture",
+          "low_fi_wireframes",
+          "hi_fi_mockups",
+          "design_system_tokens"
+        ],
+        "views": [
+          "kanban_board",
+          "gantt_chart",
+          "sprint_board",
+          "resource_grid",
+          "time_log",
+          "analytics_dashboard",
+          "settings",
+          "integrations_page"
+        ],
+        "accessibility_standard": "WCAG_2.1_AA"
+      },
+      "acceptance_criteria": [
+        "User research synthesis report with 5+ validated pain points",
+        "Complete wireframes for all 8 views reviewed by 3 stakeholders",
+        "High-fidelity Figma mockups with design tokens (color, spacing, typography)",
+        "Accessibility checklist with all critical items passing",
+        "Mobile-responsive layouts defined"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 7,
+      "task_type": "COMPLIANCE",
+      "description": "Produce SOC 2 Type II readiness artifacts: control mapping, trust service criteria matrix (Security, Availability, Confidentiality), evidence collection plan, and vendor risk register for Slack and Jira integrations.",
+      "payload": {
+        "standard": "SOC_2_Type_II",
+        "trust_service_criteria": [
+          "CC6",
+          "CC7",
+          "A1",
+          "C1"
+        ],
+        "evidence_types": [
+          "access_logs",
+          "change_management",
+          "incident_response",
+          "vendor_assessments"
+        ],
+        "third_party_vendors": [
+          "Slack",
+          "Atlassian_Jira",
+          "AWS"
+        ]
+      },
+      "acceptance_criteria": [
+        "SOC 2 control matrix mapped to all trust service criteria",
+        "Evidence collection plan with owner and frequency per control",
+        "Vendor risk register for all third-party integrations",
+        "Gap analysis identifying controls not yet implemented"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design the full OpenAPI 3.1 specification for all backend endpoints: projects, tasks, boards, sprints, time entries, resources, users, workspaces, webhooks, and integration connectors (Slack, Jira). Define versioning strategy (v1) and rate limiting contracts.",
+      "payload": {
+        "resource_groups": [
+          "workspaces",
+          "projects",
+          "boards",
+          "tasks",
+          "sprints",
+          "time_entries",
+          "resources",
+          "users",
+          "integrations",
+          "webhooks"
+        ],
+        "auth": "OAuth2_JWT",
+        "versioning": "URI_v1",
+        "rate_limiting": "1000_req_per_min_per_tenant"
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 spec covering all resource endpoints with request/response schemas",
+        "Authentication flows documented (OAuth2 + API key)",
+        "Webhook event catalog defined (task.created, sprint.started, etc.)",
+        "Rate limiting and pagination contracts specified",
+        "Integration endpoint contracts for Slack and Jira defined"
+      ],
+      "depends_on": [
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "DATABASE",
+      "description": "Design the multi-tenant PostgreSQL schema: workspaces, users, projects, boards, columns, tasks, subtasks, sprints, time_entries, resource_allocations, comments, attachments, integrations, audit_log. Include migration scripts and seed data.",
+      "payload": {
+        "engine": "PostgreSQL_15",
+        "tenancy_model": "schema_per_tenant",
+        "key_tables": [
+          "workspaces",
+          "users",
+          "memberships",
+          "projects",
+          "boards",
+          "columns",
+          "tasks",
+          "subtasks",
+          "sprints",
+          "sprint_tasks",
+          "time_entries",
+          "resource_allocations",
+          "comments",
+          "attachments",
+          "integrations",
+          "audit_log"
+        ],
+        "indexes": [
+          "task_status",
+          "assignee_id",
+          "sprint_id",
+          "project_id",
+          "created_at"
+        ],
+        "migrations_tool": "Alembic"
+      },
+      "acceptance_criteria": [
+        "ERD diagram with all tables and relationships",
+        "Migration scripts for all tables with up/down",
+        "Multi-tenant isolation verified (schema-per-tenant pattern)",
+        "Seed data scripts for demo workspace",
+        "Index strategy documented for high-query paths"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "CONFIG",
+      "description": "Set up the monorepo structure (Turborepo), environment configuration, Docker Compose for local development (PostgreSQL, Redis, API, worker, frontend), pre-commit hooks, ESLint/Prettier/Ruff configs, and secret management via dotenv vault.",
+      "payload": {
+        "monorepo_tool": "Turborepo",
+        "packages": [
+          "apps/api",
+          "apps/web",
+          "apps/worker",
+          "packages/db",
+          "packages/types",
+          "packages/ui"
+        ],
+        "local_stack": [
+          "postgres:15",
+          "redis:7",
+          "minio (S3-compatible)"
+        ],
+        "secret_management": "dotenv-vault",
+        "lint_tools": [
+          "ESLint",
+          "Prettier",
+          "Ruff",
+          "mypy"
+        ]
+      },
+      "acceptance_criteria": [
+        "Monorepo bootstraps with single `pnpm install` command",
+        "Docker Compose `up` starts full local stack in under 60 seconds",
+        "Pre-commit hooks run lint and type-check on changed files",
+        "Environment variable schema validated at startup",
+        "README with 5-minute local setup instructions"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Build the core FastAPI backend: workspace and project CRUD, user auth (JWT + OAuth2), multi-tenant middleware, task management (create/update/delete/reorder), board column management, comments, file attachments (S3), and audit logging.",
+      "payload": {
+        "framework": "FastAPI",
+        "auth": [
+          "JWT",
+          "OAuth2_Google",
+          "OAuth2_GitHub"
+        ],
+        "features": [
+          "workspace_management",
+          "project_CRUD",
+          "task_CRUD",
+          "board_management",
+          "comments",
+          "file_attachments",
+          "audit_log",
+          "role_based_access_control"
+        ],
+        "background_tasks": "Celery_Redis",
+        "storage": "S3_compatible"
+      },
+      "acceptance_criteria": [
+        "All CRUD endpoints pass integration tests",
+        "JWT auth with refresh token rotation working",
+        "RBAC enforced (owner, admin, member, viewer roles)",
+        "File upload to S3 with presigned URL pattern",
+        "Audit log entries written for all write operations",
+        "Multi-tenant isolation verified in all queries"
+      ],
+      "depends_on": [
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build the Kanban board engine: column ordering, task drag-and-drop position persistence (fractional indexing), WIP limits, swimlanes, board filters, and board templates. Implement real-time updates via WebSocket.",
+      "payload": {
+        "position_algorithm": "fractional_indexing",
+        "realtime": "WebSocket_via_Redis_pub_sub",
+        "features": [
+          "column_CRUD",
+          "task_reorder",
+          "wip_limits",
+          "swimlanes",
+          "board_filters",
+          "board_templates",
+          "bulk_move"
+        ],
+        "conflict_resolution": "last_write_wins_with_optimistic_locking"
+      },
+      "acceptance_criteria": [
+        "Task reorder persists correct fractional index positions",
+        "WIP limit enforced with blocking UI feedback",
+        "WebSocket broadcasts task moves to all connected board users in < 100ms",
+        "Board filter (by assignee, label, due date) returns correct results",
+        "3 built-in templates (Scrum, Kanban, Bug Tracker) available"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Build the Gantt chart engine: task dependency graph (FS/SS/FF/SF), critical path calculation, date constraint handling, baseline snapshots, and milestone tracking. Expose timeline data endpoint optimized for large projects (1000+ tasks).",
+      "payload": {
+        "dependency_types": [
+          "finish_to_start",
+          "start_to_start",
+          "finish_to_finish",
+          "start_to_finish"
+        ],
+        "algorithms": [
+          "critical_path_method",
+          "topological_sort_DAG"
+        ],
+        "features": [
+          "baselines",
+          "milestones",
+          "date_constraints",
+          "resource_leveling_basic"
+        ],
+        "performance_target": "< 200ms for 1000 task timeline query"
+      },
+      "acceptance_criteria": [
+        "Critical path calculated correctly for projects with 100+ tasks",
+        "All 4 dependency types enforced with cycle detection",
+        "Baseline snapshot creation and diff comparison working",
+        "Timeline endpoint returns in < 200ms for 1000 tasks",
+        "Milestone markers render with correct date alignment"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Build the time tracking module: manual time entry, timer start/stop, time log per task/user/project, weekly timesheets, approval workflow, and billable hours flagging. Include reporting aggregations.",
+      "payload": {
+        "entry_modes": [
+          "manual",
+          "timer"
+        ],
+        "features": [
+          "time_log",
+          "weekly_timesheet",
+          "approval_workflow",
+          "billable_flag",
+          "time_reports"
+        ],
+        "aggregations": [
+          "by_user",
+          "by_project",
+          "by_task",
+          "by_date_range"
+        ],
+        "export_formats": [
+          "CSV",
+          "PDF"
+        ]
+      },
+      "acceptance_criteria": [
+        "Timer start/stop records accurate duration to the second",
+        "Manual entry with date/duration/description validation",
+        "Timesheet approval workflow with manager notification",
+        "Billable hours report exportable as CSV and PDF",
+        "Time logged reflected in task progress percentage"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Build the sprint planning module: sprint creation/archival, backlog management, story point estimation, velocity tracking, sprint capacity calculation, and burndown/burnup chart data endpoints.",
+      "payload": {
+        "features": [
+          "sprint_CRUD",
+          "backlog_ordering",
+          "story_points",
+          "velocity_tracking",
+          "capacity_planning",
+          "burndown_data",
+          "burnup_data",
+          "sprint_retrospective_notes"
+        ],
+        "velocity_window": "last_3_sprints"
+      },
+      "acceptance_criteria": [
+        "Sprint creation with start/end date and capacity in story points",
+        "Backlog drag-to-sprint assignment working",
+        "Velocity calculated from last 3 completed sprints",
+        "Burndown chart data endpoint returns daily remaining points",
+        "Sprint archive preserves all historical data"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "BACKEND",
+      "description": "Build the resource allocation module: team member availability calendar, capacity heatmap, allocation per project/sprint, over-allocation detection, and workload balancing suggestions.",
+      "payload": {
+        "features": [
+          "availability_calendar",
+          "allocation_CRUD",
+          "capacity_heatmap",
+          "over_allocation_alerts",
+          "workload_summary"
+        ],
+        "allocation_unit": "hours_per_day",
+        "overallocation_threshold": 1.0
+      },
+      "acceptance_criteria": [
+        "Availability calendar reflects holidays and time-off correctly",
+        "Allocation CRUD stores hours per person per project per date range",
+        "Over-allocation alert fires when utilization > 100%",
+        "Capacity heatmap endpoint returns per-user utilization by week",
+        "Workload summary report lists all over-allocated members"
+      ],
+      "depends_on": [
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "BACKEND",
+      "description": "Build the Slack integration: OAuth2 app installation, slash commands (/task, /sprint, /time), incoming webhooks for notifications (task assigned, sprint started, deadline approaching), and interactive Block Kit approval for task creation.",
+      "payload": {
+        "oauth_scopes": [
+          "chat:write",
+          "commands",
+          "users:read",
+          "channels:read"
+        ],
+        "slash_commands": [
+          "/task create",
+          "/task view",
+          "/sprint status",
+          "/time log"
+        ],
+        "notifications": [
+          "task_assigned",
+          "task_due_soon",
+          "sprint_started",
+          "sprint_ended",
+          "mention"
+        ],
+        "interactive_components": [
+          "task_creation_modal",
+          "quick_complete_button"
+        ]
+      },
+      "acceptance_criteria": [
+        "Slack OAuth2 install flow completes and stores workspace token",
+        "All 4 slash commands return correct responses < 3s",
+        "Notification webhooks fire within 5s of triggering event",
+        "Block Kit modal creates task and reflects in board immediately",
+        "Uninstall clears all stored tokens and stops notifications"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "BACKEND",
+      "description": "Build the Jira integration: OAuth2 connection, bi-directional sync (import Jira issues as tasks, push status updates back), field mapping configuration, webhook listener for Jira events, and conflict resolution strategy.",
+      "payload": {
+        "jira_api_version": "v3",
+        "sync_direction": "bidirectional",
+        "synced_fields": [
+          "summary",
+          "description",
+          "status",
+          "assignee",
+          "priority",
+          "labels",
+          "story_points"
+        ],
+        "conflict_strategy": "last_write_wins_with_audit",
+        "webhook_events": [
+          "jira:issue_updated",
+          "jira:issue_created",
+          "jira:issue_deleted"
+        ]
+      },
+      "acceptance_criteria": [
+        "Jira OAuth2 connection established and token refreshed automatically",
+        "Import of Jira project creates matching tasks in correct board columns",
+        "Status change in app pushes to Jira within 10s",
+        "Field mapping UI allows custom mapping configuration",
+        "Sync conflicts logged to audit trail with resolution recorded"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "AGENTIC",
+      "description": "Implement the AI assistant using the coordinator agentic pattern: a central coordinator routes to specialist agents (task decomposer, sprint planner, workload balancer) to provide suggestions. The system surfaces smart recommendations (task prioritization, sprint capacity warnings, bottleneck detection) but requires user approval before applying changes \u2014 human_in_the_loop pattern at the action layer.",
+      "payload": {
+        "pattern": "coordinator",
+        "action_gate": "human_in_the_loop",
+        "specialist_agents": [
+          "task_decomposer",
+          "sprint_capacity_advisor",
+          "workload_balancer",
+          "deadline_risk_detector"
+        ],
+        "trigger_events": [
+          "sprint_planning_opened",
+          "over_allocation_detected",
+          "deadline_at_risk"
+        ],
+        "llm_provider": "claude-sonnet-4-6",
+        "output_types": [
+          "suggestions",
+          "warnings",
+          "auto_decomposed_tasks"
+        ]
+      },
+      "acceptance_criteria": [
+        "Coordinator routes sprint planning queries to sprint_capacity_advisor",
+        "Over-allocation event triggers workload_balancer suggestion within 5s",
+        "All AI-suggested changes presented for user approval before applying",
+        "Suggestion acceptance/rejection logged to audit trail",
+        "AI suggestion accuracy tracked and reported in analytics"
+      ],
+      "depends_on": [
+        15,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the React 18 + TypeScript frontend shell: routing (React Router v6), global state (Zustand), API client (TanStack Query), design system (Radix UI + Tailwind), auth flows (login, OAuth, invite), workspace switcher, and responsive layout.",
+      "payload": {
+        "framework": "React_18_TypeScript",
+        "routing": "React_Router_v6",
+        "state": "Zustand",
+        "data_fetching": "TanStack_Query_v5",
+        "ui_primitives": "Radix_UI",
+        "styling": "Tailwind_CSS_v4",
+        "auth_pages": [
+          "login",
+          "signup",
+          "oauth_callback",
+          "invite_accept",
+          "forgot_password"
+        ]
+      },
+      "acceptance_criteria": [
+        "Auth flow (signup \u2192 email verify \u2192 workspace create) completes end-to-end",
+        "OAuth login with Google and GitHub working",
+        "Workspace switcher renders all workspaces and switches without full reload",
+        "Responsive layout adapts correctly on 320px, 768px, 1280px, 1920px breakpoints",
+        "Design system tokens match Figma spec (colors, spacing, typography)"
+      ],
+      "depends_on": [
+        6,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "FRONTEND",
+      "description": "Build the Kanban board UI: drag-and-drop columns and cards (dnd-kit), task card component with assignee avatar, labels, due date, story points, WIP limit indicators, inline card editing, board filters sidebar, and real-time update integration via WebSocket.",
+      "payload": {
+        "dnd_library": "dnd-kit",
+        "features": [
+          "column_drag",
+          "card_drag",
+          "multi_card_select",
+          "inline_edit",
+          "card_detail_drawer",
+          "board_filters",
+          "wip_indicators",
+          "swimlane_toggle"
+        ],
+        "realtime": "WebSocket_with_optimistic_updates"
+      },
+      "acceptance_criteria": [
+        "Card drag between columns updates position optimistically and confirms via WebSocket",
+        "Inline card title edit saves on blur without modal",
+        "Card detail drawer shows all fields, comments, and time log",
+        "WIP limit exceeded shows red column header and blocks drop",
+        "Board filter by assignee, label, and due date works in < 50ms"
+      ],
+      "depends_on": [
+        12,
+        20
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "FRONTEND",
+      "description": "Build the Gantt chart UI: interactive timeline (DHTMLX Gantt or custom Canvas renderer), task bars with drag-to-resize and drag-to-move, dependency arrows, critical path highlighting, zoom levels (day/week/month/quarter), and baseline overlay.",
+      "payload": {
+        "renderer": "Canvas_based_custom_or_DHTMLX",
+        "zoom_levels": [
+          "day",
+          "week",
+          "month",
+          "quarter"
+        ],
+        "interactions": [
+          "drag_to_move",
+          "drag_to_resize",
+          "dependency_draw",
+          "baseline_overlay"
+        ],
+        "performance_target": "60fps_for_500_tasks"
+      },
+      "acceptance_criteria": [
+        "Timeline renders 500 tasks at 60fps on mid-range hardware",
+        "Drag-to-move updates task dates and cascades dependent tasks",
+        "Dependency arrows render between linked tasks at all zoom levels",
+        "Critical path highlighted in red",
+        "Baseline overlay toggle shows original vs current schedule"
+      ],
+      "depends_on": [
+        13,
+        20
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 23,
+      "task_type": "FRONTEND",
+      "description": "Build the sprint planning UI: sprint board with backlog panel, story point badges, velocity widget, capacity bar, burndown/burnup charts (Recharts), sprint creation wizard, and retrospective notes editor.",
+      "payload": {
+        "chart_library": "Recharts",
+        "features": [
+          "backlog_panel",
+          "sprint_board",
+          "drag_to_sprint",
+          "capacity_bar",
+          "velocity_widget",
+          "burndown_chart",
+          "burnup_chart",
+          "sprint_wizard",
+          "retro_editor"
+        ]
+      },
+      "acceptance_criteria": [
+        "Drag from backlog to sprint updates capacity bar in real time",
+        "Burndown chart updates daily with actual vs ideal line",
+        "Velocity widget shows last 3 sprint averages",
+        "Sprint creation wizard validates dates and capacity before save",
+        "Retrospective notes auto-save on blur"
+      ],
+      "depends_on": [
+        15,
+        20
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 24,
+      "task_type": "FRONTEND",
+      "description": "Build the time tracking UI: floating timer widget (global, persists across navigation), time log list view per task and per user, weekly timesheet grid, approval inbox for managers, and billable hours report with date range picker.",
+      "payload": {
+        "features": [
+          "floating_timer",
+          "time_log_per_task",
+          "weekly_timesheet_grid",
+          "manager_approval_inbox",
+          "billable_report",
+          "CSV_export"
+        ],
+        "timer_persistence": "localStorage_plus_server_sync"
+      },
+      "acceptance_criteria": [
+        "Floating timer persists across route navigation",
+        "Timer resumes correctly after page refresh (synced from server)",
+        "Weekly timesheet grid allows inline duration editing",
+        "Manager approval inbox shows pending entries with one-click approve/reject",
+        "CSV export downloads correctly filtered time data"
+      ],
+      "depends_on": [
+        14,
+        20
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 25,
+      "task_type": "FRONTEND",
+      "description": "Build the resource allocation UI: team capacity heatmap grid (member \u00d7 week), allocation drag-to-assign, over-allocation highlight (red cells), availability calendar modal, and workload summary dashboard widget.",
+      "payload": {
+        "features": [
+          "capacity_heatmap_grid",
+          "drag_to_allocate",
+          "over_allocation_highlight",
+          "availability_calendar",
+          "workload_summary_widget"
+        ],
+        "color_scale": "green_yellow_red_utilization"
+      },
+      "acceptance_criteria": [
+        "Heatmap renders 20 team members \u00d7 12 weeks grid without performance issues",
+        "Over-allocated cells shown in red with tooltip showing breakdown",
+        "Drag allocation from project card to team member cell updates correctly",
+        "Availability calendar shows holidays and approved time-off in grey",
+        "Workload summary widget embeds on project dashboard"
+      ],
+      "depends_on": [
+        16,
+        20
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 26,
+      "task_type": "FRONTEND",
+      "description": "Build the integrations settings page: Slack connect flow (OAuth button \u2192 success state \u2192 channel configuration), Jira connect flow (OAuth \u2192 project selector \u2192 field mapping UI), integration status badges, and disconnect/re-authorize flows.",
+      "payload": {
+        "integrations": [
+          "Slack",
+          "Jira"
+        ],
+        "features": [
+          "oauth_connect_button",
+          "success_state",
+          "channel_config_for_slack",
+          "project_selector_for_jira",
+          "field_mapping_UI",
+          "status_badge",
+          "disconnect_flow"
+        ]
+      },
+      "acceptance_criteria": [
+        "Slack OAuth flow completes in app without external redirect issues",
+        "Jira project selector lists all accessible Jira projects",
+        "Field mapping UI saves custom mappings and persists on reload",
+        "Integration status badge shows last sync time and error state",
+        "Disconnect clears integration and shows reconnect option"
+      ],
+      "depends_on": [
+        17,
+        18,
+        20
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 27,
+      "task_type": "FRONTEND",
+      "description": "Build the analytics dashboard: project health overview, task completion trends (line chart), team velocity over time, time tracking summary, open blockers count, and exportable project status report (PDF).",
+      "payload": {
+        "charts": [
+          "task_completion_trend",
+          "velocity_over_time",
+          "time_by_project",
+          "overdue_tasks_count",
+          "team_workload_donut"
+        ],
+        "export": [
+          "PDF_project_status_report"
+        ],
+        "refresh_interval": "5_minutes"
+      },
+      "acceptance_criteria": [
+        "Dashboard loads within 2 seconds with all chart data",
+        "All charts correctly reflect current database state",
+        "PDF export generates a readable project status report",
+        "Date range filter applies to all dashboard widgets simultaneously",
+        "Dashboard widgets configurable (show/hide per user preference)"
+      ],
+      "depends_on": [
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 28,
+      "task_type": "SECURITY",
+      "description": "Conduct security review: threat model for multi-tenant data isolation, OWASP Top 10 assessment, OAuth token storage and rotation audit, SQL injection / IDOR review, rate limiting verification, and SBOM generation.",
+      "payload": {
+        "threat_model_scope": [
+          "multi_tenant_isolation",
+          "auth_flows",
+          "file_uploads",
+          "webhook_endpoints"
+        ],
+        "owasp_categories": [
+          "A01_broken_access_control",
+          "A02_cryptographic_failures",
+          "A03_injection",
+          "A07_auth_failures"
+        ],
+        "tools": [
+          "Bandit",
+          "npm_audit",
+          "Snyk",
+          "SBOM_via_syft"
+        ]
+      },
+      "acceptance_criteria": [
+        "Threat model document covering all 4 scope areas",
+        "OWASP Top 10 assessment with no Critical findings unmitigated",
+        "OAuth token stored encrypted at rest, never in localStorage",
+        "All API endpoints tested for IDOR vulnerabilities",
+        "SBOM generated in SPDX format",
+        "Rate limiting verified under load test (1000 req/min per tenant)"
+      ],
+      "depends_on": [
+        11,
+        17,
+        18
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 29,
+      "task_type": "DEVOPS",
+      "description": "Build CI/CD pipelines (GitHub Actions): lint \u2192 test \u2192 build \u2192 docker \u2192 deploy. Set up staging and production environments on AWS (ECS Fargate, RDS Aurora PostgreSQL, ElastiCache Redis, S3, CloudFront). Configure monitoring (Datadog), alerting, and SRE runbooks.",
+      "payload": {
+        "ci_platform": "GitHub_Actions",
+        "pipeline_stages": [
+          "lint",
+          "test",
+          "build",
+          "docker_push",
+          "deploy_staging",
+          "smoke_test",
+          "promote_to_prod"
+        ],
+        "infra": [
+          "ECS_Fargate",
+          "RDS_Aurora_PostgreSQL",
+          "ElastiCache_Redis",
+          "S3",
+          "CloudFront",
+          "Route53"
+        ],
+        "iac": "Terraform",
+        "monitoring": "Datadog",
+        "alerting_channels": [
+          "PagerDuty",
+          "Slack"
+        ]
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs on every PR and blocks merge on failure",
+        "Staging deploy automated on merge to main",
+        "Production deploy requires manual approval gate in GitHub Actions",
+        "Datadog dashboards for API latency p99, error rate, and DB connections",
+        "PagerDuty alert fires when error rate > 1% for 5 minutes",
+        "Terraform plan/apply tested in CI with state stored in S3"
+      ],
+      "depends_on": [
+        10,
+        11
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 30,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: incident response playbook (P0/P1/P2 classification), database failover procedure, Slack/Jira integration outage handling, backup and restore verification, capacity scaling triggers, and on-call rotation setup.",
+      "payload": {
+        "runbooks": [
+          "incident_response_P0_P1_P2",
+          "db_failover",
+          "integration_outage_slack",
+          "integration_outage_jira",
+          "backup_restore",
+          "capacity_scaling"
+        ],
+        "sla_targets": {
+          "uptime": "99.9%",
+          "p99_latency_ms": 500,
+          "rto_minutes": 30,
+          "rpo_minutes": 5
+        }
+      },
+      "acceptance_criteria": [
+        "Incident classification matrix defined for P0/P1/P2 with response SLAs",
+        "DB failover runbook tested in staging with RTO < 30 minutes",
+        "Backup restore tested and RTO/RPO targets verified",
+        "Capacity scaling triggers documented with CloudWatch metric thresholds",
+        "On-call rotation configured in PagerDuty"
+      ],
+      "depends_on": [
+        29
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 31,
+      "task_type": "TESTS",
+      "description": "Write the full test suite: unit tests for business logic (Pytest, Vitest), integration tests for all API endpoints (httpx + TestClient), WebSocket connection tests, database migration tests, and contract tests for Slack/Jira API integrations (Pact).",
+      "payload": {
+        "unit_test_framework": [
+          "Pytest",
+          "Vitest"
+        ],
+        "integration_test_framework": "httpx_TestClient",
+        "contract_testing": "Pact",
+        "coverage_target": "80%",
+        "test_categories": [
+          "unit",
+          "integration",
+          "contract",
+          "migration",
+          "websocket"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test coverage >= 80% for all backend business logic",
+        "All API endpoint integration tests pass against real test DB",
+        "WebSocket broadcast tests verify message delivery to all subscribers",
+        "Pact consumer contracts defined for Slack and Jira API calls",
+        "DB migration tests run up/down on clean schema",
+        "Frontend component tests cover Kanban drag-and-drop scenarios"
+      ],
+      "depends_on": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 32,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system tests: full sprint lifecycle (create \u2192 plan \u2192 execute \u2192 complete), Slack-triggered task creation flowing to board, Jira sync round-trip, time tracking approval workflow, and load test (500 concurrent users, 10k tasks per workspace).",
+      "payload": {
+        "e2e_tool": "Playwright",
+        "load_test_tool": "k6",
+        "scenarios": [
+          "full_sprint_lifecycle",
+          "slack_task_creation_e2e",
+          "jira_sync_roundtrip",
+          "time_approval_workflow",
+          "gantt_dependency_cascade"
+        ],
+        "load_targets": {
+          "concurrent_users": 500,
+          "tasks_per_workspace": 10000,
+          "api_p99_ms": 500
+        }
+      },
+      "acceptance_criteria": [
+        "Full sprint lifecycle E2E test passes in < 2 minutes",
+        "Slack slash command creates task visible on board within 5 seconds",
+        "Jira status update propagates back within 10 seconds",
+        "Load test: p99 API latency < 500ms under 500 concurrent users",
+        "No data leakage between tenants under load test",
+        "All Playwright E2E tests pass in CI against staging environment"
+      ],
+      "depends_on": [
+        27,
+        29,
+        31
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 33,
+      "task_type": "QA",
+      "description": "Execute QA test plan: exploratory testing of Kanban, Gantt, sprint, and time tracking modules; accessibility audit (axe-core automated + manual screen reader); cross-browser testing (Chrome, Firefox, Safari, Edge); and mobile browser testing (iOS Safari, Android Chrome).",
+      "payload": {
+        "test_types": [
+          "exploratory",
+          "accessibility",
+          "cross_browser",
+          "mobile_browser"
+        ],
+        "accessibility_tools": [
+          "axe-core",
+          "manual_VoiceOver",
+          "manual_NVDA"
+        ],
+        "browsers": [
+          "Chrome_latest",
+          "Firefox_latest",
+          "Safari_17",
+          "Edge_latest"
+        ],
+        "mobile": [
+          "iOS_Safari_17",
+          "Android_Chrome_latest"
+        ]
+      },
+      "acceptance_criteria": [
+        "Exploratory test sessions covering all 7 modules documented",
+        "Zero WCAG 2.1 AA critical violations in axe-core scan",
+        "Screen reader can navigate Kanban board and create tasks",
+        "All core flows pass in Chrome, Firefox, Safari, Edge",
+        "Mobile: Kanban board usable on 375px viewport",
+        "Bug report with severity classification for all findings"
+      ],
+      "depends_on": [
+        27,
+        31
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 34,
+      "task_type": "COMPLIANCE",
+      "description": "Collect and organize SOC 2 Type II evidence artifacts: access control logs, change management records, encryption-at-rest and in-transit proof, incident response test records, vendor assessment reports, and employee security training records.",
+      "payload": {
+        "evidence_categories": [
+          "access_control",
+          "change_management",
+          "encryption",
+          "incident_response",
+          "vendor_management",
+          "security_training"
+        ],
+        "artifact_format": "GRC_tool_or_structured_folder",
+        "audit_readiness_target": "SOC_2_Type_II_pass"
+      },
+      "acceptance_criteria": [
+        "Evidence folder organized by SOC 2 trust service criteria",
+        "Access control matrix showing RBAC implementation documented",
+        "Encryption-at-rest (AES-256 RDS) and in-transit (TLS 1.3) verified and documented",
+        "Incident response tabletop exercise completed and recorded",
+        "All third-party vendor risk assessments completed",
+        "Readiness assessment completed with no high-severity gaps"
+      ],
+      "depends_on": [
+        28,
+        29,
+        30
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 35,
+      "task_type": "DOCS",
+      "description": "Write developer documentation: API reference (auto-generated from OpenAPI + manually enhanced), integration guides (Slack setup, Jira setup), self-hosting guide, architecture decision records (ADRs), and contributing guide.",
+      "payload": {
+        "docs_platform": "Mintlify_or_Docusaurus",
+        "documents": [
+          "API_reference",
+          "Slack_integration_guide",
+          "Jira_integration_guide",
+          "self_hosting_guide",
+          "ADRs",
+          "contributing_guide",
+          "changelog"
+        ]
+      },
+      "acceptance_criteria": [
+        "API reference auto-generated from OpenAPI spec with example payloads",
+        "Slack integration guide walkthrough tested by non-developer",
+        "Jira integration guide walkthrough tested by non-developer",
+        "Self-hosting guide: user can deploy from scratch following docs in < 2 hours",
+        "5 ADRs written for key architectural decisions (DB tenancy, auth, realtime, Gantt renderer, AI pattern)"
+      ],
+      "depends_on": [
+        32,
+        33
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 36,
+      "task_type": "TRAINING",
+      "description": "Produce user onboarding materials: in-app interactive onboarding checklist (7 steps), help center articles for each module, video script outlines for Kanban, Gantt, and sprint planning tutorials, and admin setup guide.",
+      "payload": {
+        "in_app_onboarding": "7_step_checklist_with_tooltips",
+        "help_center_articles": [
+          "kanban_guide",
+          "gantt_guide",
+          "sprint_planning_guide",
+          "time_tracking_guide",
+          "resource_allocation_guide",
+          "slack_setup",
+          "jira_setup"
+        ],
+        "video_scripts": [
+          "kanban_basics",
+          "gantt_basics",
+          "sprint_planning_basics"
+        ],
+        "admin_guide": [
+          "workspace_setup",
+          "user_management",
+          "billing",
+          "integration_setup"
+        ]
+      },
+      "acceptance_criteria": [
+        "In-app onboarding checklist implemented and dismissable",
+        "7 help center articles published and searchable",
+        "Video script outlines approved by product manager",
+        "Admin setup guide covers workspace creation to first sprint in < 15 minutes",
+        "Onboarding completion rate measurable via analytics event tracking"
+      ],
+      "depends_on": [
+        27,
+        35
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 36,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "Schema-per-tenant PostgreSQL hits pg_class and connection bloat at ~500-1000 tenants. For SMB SaaS targeting hundreds of customers, this ceiling will be reached in year 1. Row-level security (RLS) is the correct pattern for this scale, and there is no migration path defined from schema-per-tenant to RLS.",
+            "Step 22 defers the Gantt renderer decision to 'DHTMLX or custom Canvas' \u2014 this is a 2-4 month wildcard. DHTMLX Gantt commercial license costs $800+/dev and has redistribution restrictions. A custom Canvas Gantt with correct dependency arrow routing, zoom levels, and 60fps for 500 tasks is one of the hardest UI problems in this stack. Treating it as a parenthetical is a critical planning failure.",
+            "Fractional indexing (step 12) without a rebalancing strategy will cause floating-point precision exhaustion after thousands of inserts between the same two positions. The acceptance criteria don't require a rebalancing procedure, so this technical debt ships to production.",
+            "Step 31 (write tests) depends on steps 12\u201318 \u2014 tests are authored AFTER all backend modules are complete. This is pure waterfall. No TDD, no integration tests written alongside feature code, no early regression signal. By the time tests are written, architectural mistakes in steps 12\u201318 are fully baked in.",
+            "Jira bidirectional sync (step 18) is severely underspecified. Jira Cloud webhooks miss events under load, field mappings between Jira and custom schemas drift silently, and Atlassian's OAuth 2.0 (3LO) token refresh behavior differs by plan. No retry queue, no sync-state reconciliation job, no backfill strategy for missed events. 'Last-write-wins with audit' is not a conflict strategy \u2014 it is conflict acknowledgment after the fact.",
+            "SOC 2 Type II requires a 6\u201312 month observation period of implemented controls. Step 34 treats evidence collection as a post-build artifact gathering exercise. Controls must be live and auditable from day one of the observation window. The plan has no start-of-observation trigger, meaning the SOC 2 audit readiness target cannot be met on this linear timeline regardless of how well the other steps execute.",
+            "No billing/subscription implementation step exists anywhere in 36 steps. Pricing tiers are defined (steps 2\u20134), financial models built (step 4), but there is no Stripe integration, no seat counting, no subscription lifecycle management, no dunning logic, and no usage metering. A SaaS product without a billing system cannot collect revenue.",
+            "Step 17 specifies Slack notification delivery but does not account for Slack API rate limits: Tier 1 is 1 req/min, Tier 2 is 20 req/min. A workspace with 50 users and active sprint activity will hit these limits immediately. No message queuing, batching, or backpressure strategy is defined.",
+            "The WebSocket conflict resolution strategy ('last-write-wins with optimistic locking') is inadequate for collaborative board editing. Two users reordering cards simultaneously will silently discard one user's changes. No CRDT or operational transform approach is considered, and the acceptance criteria don't test concurrent edit scenarios.",
+            "Step 19 hardcodes 'claude-sonnet-4-6' as the LLM provider with no fallback, no per-tenant cost controls, no rate limiting on AI inference calls, and no context window management for workspaces with 1000+ tasks. A single large project's task list can exceed the model's context window, causing silent truncation or errors with no graceful degradation.",
+            "Timer persistence (step 24) uses 'localStorage + server sync' with no defined conflict resolution. If the server timer and localStorage timer diverge (browser crash, offline usage, multi-tab), the plan provides no tiebreaker. Time tracking errors in a billing-adjacent feature are a support and trust liability.",
+            "Steps 1\u20137 are pure research and documentation before a single line of production code is written. In a market with Asana, Linear, Monday.com, and ClickUp all shipping weekly, this waterfall front-load means 3\u20134 months of zero validated learning. Critical assumptions about positioning and ICP remain untested until the product ships."
+          ],
+          "suggestions": [
+            "Replace schema-per-tenant with row-level security (RLS) on a shared schema. Use a `workspace_id` column on all tables with `CREATE POLICY` statements. This scales to millions of tenants without connection pool exhaustion and is supported natively by Supabase if you want managed RLS.",
+            "Make a hard architectural decision on the Gantt renderer in step 3 (PRD), not step 22. Evaluate react-gantt-chart, Bryntum Gantt (commercial, production-grade), or DHTMLX with a legal review of redistribution terms. Spike the renderer before committing to Canvas-from-scratch.",
+            "Add a step between 10 and 11 for fractional indexing implementation and rebalancing strategy. Use the Lexorank algorithm (Jira's own approach) or the `fractional-indexing` npm package, and schedule a background rebalancing job that fires when gap density drops below a threshold.",
+            "Flip steps 31 and 11\u201318: write integration test scaffolding in step 10 alongside config setup, and require each backend step (12\u201318) to ship with its own tests. Gate step 32 on passing tests, not on test authorship.",
+            "Add a step 10.5: Billing Integration (Stripe). Implement subscription creation, seat-based metering, webhook handlers for payment failures, and a customer portal link. This is critical path for revenue and should precede any marketing spend.",
+            "Add a step 10.6: Transactional Email System. Integrate SES or SendGrid for task assignment notifications, sprint reminders, timesheet approval requests, and password reset. Slack notifications (step 17) are a secondary channel, not a replacement.",
+            "Add a GDPR/CCPA implementation step (not just document drafting). Right-to-erasure requires a `DELETE /users/{id}/data` endpoint that cascades deletion across all tenant schemas while preserving anonymized audit log entries. Data portability requires a `GET /export` endpoint. These are legal obligations, not documentation tasks.",
+            "For the Slack integration, implement a notification queue (Redis-backed with Celery) that batches and rate-limits outbound messages per workspace, with exponential backoff on 429 responses and a dead-letter queue for undeliverable notifications.",
+            "Add Celery Flower or Grafana + Prometheus worker metrics to step 29. Background job failure visibility is not optional when time tracking, Jira sync, and AI suggestions all run async \u2014 silent job failures will surface as user complaints, not alerts.",
+            "Start the SOC 2 Type II observation period on day one of staging deployment (step 29), not after step 34. Hire a compliance consultant or use Vanta/Drata to instrument controls automatically from the first deployment. Document this explicitly in step 7.",
+            "Add a feature flag system (step 10.5 or as part of step 10). LaunchDarkly or a simple database-backed flag table. Step 19 (AI features) and step 18 (Jira sync) are high-risk \u2014 they need kill switches without a redeploy.",
+            "Step 9 should document a connection pooling strategy: PgBouncer in transaction mode for the API tier, with a separate long-lived connection pool for Celery workers. Without this, schema-per-tenant search_path switching will cause connection exhaustion under load."
+          ],
+          "missing": [
+            "Billing and subscription management: Stripe integration, seat counting, upgrade/downgrade flows, dunning, invoice generation. Zero coverage in 36 steps.",
+            "Email notification system: no transactional email provider, no email templates, no delivery tracking. Slack is a secondary channel \u2014 email is the primary async notification channel for most business users.",
+            "GDPR/CCPA implementation (not just documents): right-to-erasure endpoint, data portability export, consent management, data retention policies enforced in code.",
+            "Data import/migration tooling: no step for importing from Asana, Jira, Monday.com, or CSV. This is a top-3 adoption blocker for SMB customers switching tools.",
+            "Audit log partitioning and archival strategy: the audit_log table will grow at O(write_operations) indefinitely. No time-based partitioning, no archival job, no retention policy.",
+            "File upload security controls: no virus scanning (ClamAV or third-party), no MIME type validation beyond extension, no per-workspace storage quota enforcement.",
+            "PgBouncer or equivalent connection pooling configuration: missing from both step 9 (schema design) and step 10 (infra config).",
+            "Webhook signature verification implementation: Slack signs payloads with HMAC-SHA256, Jira uses a secret token header. Steps 17 and 18 define the webhook receiver but the acceptance criteria don't require signature verification to be tested.",
+            "Multi-region or data residency strategy: step 5 flags GDPR data residency as a compliance concern, but no infrastructure step addresses EU vs US data placement for enterprise customers.",
+            "Soft-delete and data recovery: no mention of soft-delete (`deleted_at` column) for tasks, projects, or workspaces. Accidental deletion with no recovery path is a support and churn risk.",
+            "AI cost guardrails: no per-workspace monthly AI call budget, no token usage tracking, no circuit breaker when LLM provider is down. Step 19 can run unbounded inference costs against a single LLM provider."
+          ],
+          "security_risks": [
+            "Schema-per-tenant with dynamic `SET search_path = {tenant_name}` is vulnerable to search_path injection if tenant names are not strictly sanitized (alphanumeric + underscore only). A tenant named `public; DROP SCHEMA public` would be catastrophic. No sanitization requirement is stated in step 9.",
+            "Zustand global state store (step 20): if the store is configured with persistence middleware (common pattern), OAuth access tokens may be written to localStorage, directly contradicting the step 28 requirement that tokens never live in localStorage. This is an implementation gap that will likely be introduced by a developer following standard Zustand patterns.",
+            "Jira OAuth 2.0 tokens stored in the database need field-level encryption, not just encryption-at-rest on the RDS volume. An application-level SQL injection that dumps the integrations table would expose all Jira tokens in plaintext. No field-level encryption requirement exists in step 9 or 18.",
+            "S3 file attachments (step 11): presigned URLs with long expiry times (>1 hour) combined with no file type validation create a stored XSS vector if SVG or HTML files are uploaded and served with permissive Content-Type headers. CloudFront distribution must set `Content-Disposition: attachment` for all non-image types.",
+            "AI assistant (step 19) ingests task titles, descriptions, and comments as LLM context. A malicious user can embed prompt injection payloads in task descriptions that alter the AI's suggestions for other users in the same workspace. No input sanitization or prompt injection defense is specified.",
+            "Webhook endpoints for Slack and Jira are unauthenticated HTTP receivers. Without HMAC signature verification enforced at the middleware level (not just recommended in docs), these endpoints are open to spoofed event injection \u2014 an attacker can fake a Jira issue_deleted event to remove tasks from boards.",
+            "Redis pub/sub for WebSocket broadcasts (step 12): if channel naming uses workspace/tenant ID without cryptographic validation, a client that guesses another tenant's channel name could subscribe and receive cross-tenant real-time updates. Channel names must be unguessable (UUID-based), not sequential integers.",
+            "Rate limiting is specified at 1000 req/min per tenant (step 8) but no step implements it. Step 28 only verifies it. If the implementation step is missing, the verification step tests a control that was never built."
+          ],
+          "summary": "This is an ambitious, well-structured plan with thoughtful dependency ordering and appropriate technology choices for most components. However, it has three critical-path failures that would prevent a viable SaaS business from operating: (1) there is no billing implementation \u2014 the product cannot charge customers; (2) SOC 2 Type II is fundamentally misunderstood as an artifact collection exercise rather than a 6-12 month control observation period, making the compliance target unachievable on this timeline; and (3) the schema-per-tenant PostgreSQL approach will hit a hard scaling ceiling well within the first year of SMB customer growth. Beyond these blockers, the Gantt renderer ambiguity is a months-long wildcard, the test-after-build waterfall structure bakes in architectural debt, and the absence of email notifications, GDPR implementation, data import tooling, and feature flags represent significant gaps for a production SaaS. The security posture is adequate in intent but has concrete implementation gaps \u2014 particularly around prompt injection, search_path sanitization, and token storage \u2014 that will be introduced by developers following standard framework patterns. Score of 54 reflects a plan that would produce a functional demo but not a shippable, revenue-generating, compliance-ready SaaS product without substantial rework in the billing, compliance, and data architecture layers.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "Schema-per-tenant PostgreSQL hits pg_class and connection bloat at ~500-1000 tenants. For SMB SaaS targeting hundreds of customers, this ceiling will be reached in year 1. Row-level security (RLS) is the correct pattern for this scale, and there is no migration path defined from schema-per-tenant to RLS.",
+              "Step 22 defers the Gantt renderer decision to 'DHTMLX or custom Canvas' \u2014 this is a 2-4 month wildcard. DHTMLX Gantt commercial license costs $800+/dev and has redistribution restrictions. A custom Canvas Gantt with correct dependency arrow routing, zoom levels, and 60fps for 500 tasks is one of the hardest UI problems in this stack. Treating it as a parenthetical is a critical planning failure.",
+              "Fractional indexing (step 12) without a rebalancing strategy will cause floating-point precision exhaustion after thousands of inserts between the same two positions. The acceptance criteria don't require a rebalancing procedure, so this technical debt ships to production.",
+              "Step 31 (write tests) depends on steps 12\u201318 \u2014 tests are authored AFTER all backend modules are complete. This is pure waterfall. No TDD, no integration tests written alongside feature code, no early regression signal. By the time tests are written, architectural mistakes in steps 12\u201318 are fully baked in.",
+              "Jira bidirectional sync (step 18) is severely underspecified. Jira Cloud webhooks miss events under load, field mappings between Jira and custom schemas drift silently, and Atlassian's OAuth 2.0 (3LO) token refresh behavior differs by plan. No retry queue, no sync-state reconciliation job, no backfill strategy for missed events. 'Last-write-wins with audit' is not a conflict strategy \u2014 it is conflict acknowledgment after the fact.",
+              "SOC 2 Type II requires a 6\u201312 month observation period of implemented controls. Step 34 treats evidence collection as a post-build artifact gathering exercise. Controls must be live and auditable from day one of the observation window. The plan has no start-of-observation trigger, meaning the SOC 2 audit readiness target cannot be met on this linear timeline regardless of how well the other steps execute.",
+              "No billing/subscription implementation step exists anywhere in 36 steps. Pricing tiers are defined (steps 2\u20134), financial models built (step 4), but there is no Stripe integration, no seat counting, no subscription lifecycle management, no dunning logic, and no usage metering. A SaaS product without a billing system cannot collect revenue.",
+              "Step 17 specifies Slack notification delivery but does not account for Slack API rate limits: Tier 1 is 1 req/min, Tier 2 is 20 req/min. A workspace with 50 users and active sprint activity will hit these limits immediately. No message queuing, batching, or backpressure strategy is defined.",
+              "The WebSocket conflict resolution strategy ('last-write-wins with optimistic locking') is inadequate for collaborative board editing. Two users reordering cards simultaneously will silently discard one user's changes. No CRDT or operational transform approach is considered, and the acceptance criteria don't test concurrent edit scenarios.",
+              "Step 19 hardcodes 'claude-sonnet-4-6' as the LLM provider with no fallback, no per-tenant cost controls, no rate limiting on AI inference calls, and no context window management for workspaces with 1000+ tasks. A single large project's task list can exceed the model's context window, causing silent truncation or errors with no graceful degradation.",
+              "Timer persistence (step 24) uses 'localStorage + server sync' with no defined conflict resolution. If the server timer and localStorage timer diverge (browser crash, offline usage, multi-tab), the plan provides no tiebreaker. Time tracking errors in a billing-adjacent feature are a support and trust liability.",
+              "Steps 1\u20137 are pure research and documentation before a single line of production code is written. In a market with Asana, Linear, Monday.com, and ClickUp all shipping weekly, this waterfall front-load means 3\u20134 months of zero validated learning. Critical assumptions about positioning and ICP remain untested until the product ships."
+            ],
+            "suggestions": [
+              "Replace schema-per-tenant with row-level security (RLS) on a shared schema. Use a `workspace_id` column on all tables with `CREATE POLICY` statements. This scales to millions of tenants without connection pool exhaustion and is supported natively by Supabase if you want managed RLS.",
+              "Make a hard architectural decision on the Gantt renderer in step 3 (PRD), not step 22. Evaluate react-gantt-chart, Bryntum Gantt (commercial, production-grade), or DHTMLX with a legal review of redistribution terms. Spike the renderer before committing to Canvas-from-scratch.",
+              "Add a step between 10 and 11 for fractional indexing implementation and rebalancing strategy. Use the Lexorank algorithm (Jira's own approach) or the `fractional-indexing` npm package, and schedule a background rebalancing job that fires when gap density drops below a threshold.",
+              "Flip steps 31 and 11\u201318: write integration test scaffolding in step 10 alongside config setup, and require each backend step (12\u201318) to ship with its own tests. Gate step 32 on passing tests, not on test authorship.",
+              "Add a step 10.5: Billing Integration (Stripe). Implement subscription creation, seat-based metering, webhook handlers for payment failures, and a customer portal link. This is critical path for revenue and should precede any marketing spend.",
+              "Add a step 10.6: Transactional Email System. Integrate SES or SendGrid for task assignment notifications, sprint reminders, timesheet approval requests, and password reset. Slack notifications (step 17) are a secondary channel, not a replacement.",
+              "Add a GDPR/CCPA implementation step (not just document drafting). Right-to-erasure requires a `DELETE /users/{id}/data` endpoint that cascades deletion across all tenant schemas while preserving anonymized audit log entries. Data portability requires a `GET /export` endpoint. These are legal obligations, not documentation tasks.",
+              "For the Slack integration, implement a notification queue (Redis-backed with Celery) that batches and rate-limits outbound messages per workspace, with exponential backoff on 429 responses and a dead-letter queue for undeliverable notifications.",
+              "Add Celery Flower or Grafana + Prometheus worker metrics to step 29. Background job failure visibility is not optional when time tracking, Jira sync, and AI suggestions all run async \u2014 silent job failures will surface as user complaints, not alerts.",
+              "Start the SOC 2 Type II observation period on day one of staging deployment (step 29), not after step 34. Hire a compliance consultant or use Vanta/Drata to instrument controls automatically from the first deployment. Document this explicitly in step 7.",
+              "Add a feature flag system (step 10.5 or as part of step 10). LaunchDarkly or a simple database-backed flag table. Step 19 (AI features) and step 18 (Jira sync) are high-risk \u2014 they need kill switches without a redeploy.",
+              "Step 9 should document a connection pooling strategy: PgBouncer in transaction mode for the API tier, with a separate long-lived connection pool for Celery workers. Without this, schema-per-tenant search_path switching will cause connection exhaustion under load."
+            ],
+            "missing": [
+              "Billing and subscription management: Stripe integration, seat counting, upgrade/downgrade flows, dunning, invoice generation. Zero coverage in 36 steps.",
+              "Email notification system: no transactional email provider, no email templates, no delivery tracking. Slack is a secondary channel \u2014 email is the primary async notification channel for most business users.",
+              "GDPR/CCPA implementation (not just documents): right-to-erasure endpoint, data portability export, consent management, data retention policies enforced in code.",
+              "Data import/migration tooling: no step for importing from Asana, Jira, Monday.com, or CSV. This is a top-3 adoption blocker for SMB customers switching tools.",
+              "Audit log partitioning and archival strategy: the audit_log table will grow at O(write_operations) indefinitely. No time-based partitioning, no archival job, no retention policy.",
+              "File upload security controls: no virus scanning (ClamAV or third-party), no MIME type validation beyond extension, no per-workspace storage quota enforcement.",
+              "PgBouncer or equivalent connection pooling configuration: missing from both step 9 (schema design) and step 10 (infra config).",
+              "Webhook signature verification implementation: Slack signs payloads with HMAC-SHA256, Jira uses a secret token header. Steps 17 and 18 define the webhook receiver but the acceptance criteria don't require signature verification to be tested.",
+              "Multi-region or data residency strategy: step 5 flags GDPR data residency as a compliance concern, but no infrastructure step addresses EU vs US data placement for enterprise customers.",
+              "Soft-delete and data recovery: no mention of soft-delete (`deleted_at` column) for tasks, projects, or workspaces. Accidental deletion with no recovery path is a support and churn risk.",
+              "AI cost guardrails: no per-workspace monthly AI call budget, no token usage tracking, no circuit breaker when LLM provider is down. Step 19 can run unbounded inference costs against a single LLM provider."
+            ],
+            "security_risks": [
+              "Schema-per-tenant with dynamic `SET search_path = {tenant_name}` is vulnerable to search_path injection if tenant names are not strictly sanitized (alphanumeric + underscore only). A tenant named `public; DROP SCHEMA public` would be catastrophic. No sanitization requirement is stated in step 9.",
+              "Zustand global state store (step 20): if the store is configured with persistence middleware (common pattern), OAuth access tokens may be written to localStorage, directly contradicting the step 28 requirement that tokens never live in localStorage. This is an implementation gap that will likely be introduced by a developer following standard Zustand patterns.",
+              "Jira OAuth 2.0 tokens stored in the database need field-level encryption, not just encryption-at-rest on the RDS volume. An application-level SQL injection that dumps the integrations table would expose all Jira tokens in plaintext. No field-level encryption requirement exists in step 9 or 18.",
+              "S3 file attachments (step 11): presigned URLs with long expiry times (>1 hour) combined with no file type validation create a stored XSS vector if SVG or HTML files are uploaded and served with permissive Content-Type headers. CloudFront distribution must set `Content-Disposition: attachment` for all non-image types.",
+              "AI assistant (step 19) ingests task titles, descriptions, and comments as LLM context. A malicious user can embed prompt injection payloads in task descriptions that alter the AI's suggestions for other users in the same workspace. No input sanitization or prompt injection defense is specified.",
+              "Webhook endpoints for Slack and Jira are unauthenticated HTTP receivers. Without HMAC signature verification enforced at the middleware level (not just recommended in docs), these endpoints are open to spoofed event injection \u2014 an attacker can fake a Jira issue_deleted event to remove tasks from boards.",
+              "Redis pub/sub for WebSocket broadcasts (step 12): if channel naming uses workspace/tenant ID without cryptographic validation, a client that guesses another tenant's channel name could subscribe and receive cross-tenant real-time updates. Channel names must be unguessable (UUID-based), not sequential integers.",
+              "Rate limiting is specified at 1000 req/min per tenant (step 8) but no step implements it. Step 28 only verifies it. If the implementation step is missing, the verification step tests a control that was never built."
+            ],
+            "summary": "This is an ambitious, well-structured plan with thoughtful dependency ordering and appropriate technology choices for most components. However, it has three critical-path failures that would prevent a viable SaaS business from operating: (1) there is no billing implementation \u2014 the product cannot charge customers; (2) SOC 2 Type II is fundamentally misunderstood as an artifact collection exercise rather than a 6-12 month control observation period, making the compliance target unachievable on this timeline; and (3) the schema-per-tenant PostgreSQL approach will hit a hard scaling ceiling well within the first year of SMB customer growth. Beyond these blockers, the Gantt renderer ambiguity is a months-long wildcard, the test-after-build waterfall structure bakes in architectural debt, and the absence of email notifications, GDPR implementation, data import tooling, and feature flags represent significant gaps for a production SaaS. The security posture is adequate in intent but has concrete implementation gaps \u2014 particularly around prompt injection, search_path sanitization, and token storage \u2014 that will be introduced by developers following standard framework patterns. Score of 54 reflects a plan that would produce a functional demo but not a shippable, revenue-generating, compliance-ready SaaS product without substantial rework in the billing, compliance, and data architecture layers.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T04:54:42.704760+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 165.07,
+    "critic_plan": 121.03
+  }
+}

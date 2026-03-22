@@ -1,0 +1,374 @@
+task_types:
+  MARKET_RESEARCH:
+    description: 'Analyze the social fitness app market: competitor audit (Strava,
+      MyFitnessPal, Peloton, Nike Run Club), user segments, monetization benchmarks,
+      trainer marketplace comps, and wearable integration adoption rates.'
+    agent_role: marketing_strategist
+    acceptance_criteria:
+    - Competitor feature matrix covering all 6 core features is complete
+    - Pricing benchmarks for trainer marketplace (commission %, subscription tiers)
+      documented
+    - Wearable API adoption stats (Apple Health vs Google Fit) included
+    - Top 3 differentiation opportunities identified with supporting data
+    depends_on: []
+  PRODUCT_MGMT:
+    description: 'Author the Product Requirements Document (PRD) covering all six
+      product pillars: workout sharing, challenges, leaderboards, trainer marketplace,
+      nutrition tracking, and health platform integration. Define MVP scope, success
+      metrics (DAU, retention, GMV), and phased roadmap.'
+    agent_role: product_manager
+    acceptance_criteria:
+    - All 6 pillars have defined user stories with acceptance criteria
+    - MVP feature set is scoped and justified against market research
+    - Success metrics have baseline targets and measurement plans
+    - Phased roadmap (MVP → Phase 2 → Phase 3) is documented
+    - HITL approval gates identified for trainer onboarding and payment flows
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Conduct user research (5 interviews, survey), define personas (casual
+      exerciser, competitive athlete, certified trainer), and produce wireframes for
+      all core flows: onboarding, feed, workout logging, challenge join, trainer browsing,
+      nutrition dashboard, and health sync consent.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - At least 3 distinct user personas documented with goals and pain points
+    - Wireframes cover all 7 core flows at mid-fidelity
+    - Health sync consent flow meets Apple HIG and Google Material guidelines
+    - Accessibility audit checklist completed against WCAG 2.1 AA
+    - Usability test with 3 participants shows task completion > 80% on critical paths
+    - App store screenshot mockups prepared
+    - Onboarding flow under 3 steps
+    depends_on:
+    - 2
+  DATABASE:
+    description: 'Design the full database schema: users, profiles, workouts, exercises,
+      sets/reps, social graph (follows), challenges, leaderboard entries, trainer
+      profiles, bookings, nutrition logs, food items, health sync records. Include
+      indexes, partitioning strategy, and migration files.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all 6 product pillars with no orphaned tables
+    - Leaderboard queries return top-100 in < 50ms with 1M rows (explain plan documented)
+    - Nutrition log supports both custom entries and USDA food database lookups
+    - Health sync records store raw Apple Health / Google Fit payloads with idempotency
+      keys
+    - All migration files are reversible (up + down)
+    - 'GDPR-compliant: PII fields identified and documented for deletion cascade'
+    depends_on:
+    - 2
+  API:
+    description: 'Design the full OpenAPI 3.1 spec for the social_fitness backend:
+      auth (OAuth2 + JWT), user profile, workout CRUD, social graph, challenge lifecycle,
+      leaderboard reads, trainer marketplace (listings, bookings, payouts), nutrition
+      (log + food search), and health platform webhook receivers.'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoint groups have request/response schemas with example payloads
+    - Rate limiting headers documented per endpoint group
+    - Trainer payout endpoint includes webhook signature verification spec
+    - Health sync endpoints support both Apple Health and Google Fit payload formats
+    - OpenAPI spec validates with no errors via `openapi-generator validate`
+    - Breaking change policy documented in spec header
+    depends_on:
+    - 4
+  CONFIG:
+    description: Set up the project monorepo structure, environment configuration,
+      secrets management, and agentic AI pattern configuration. Initialize multi-agent
+      coordinator pattern for trainer-matching and workout-recommendation agents.
+      Configure Stripe Connect for marketplace payouts.
+    agent_role: developer
+    acceptance_criteria:
+    - Monorepo runs with a single `make dev` command
+    - All secrets loaded from environment — zero hardcoded credentials
+    - Multi-agent coordinator routes tasks to correct specialist agent based on intent
+    - Stripe Connect onboarding flow configured for trainer payout accounts
+    - HealthKit and Health Connect SDK versions pinned and documented
+    - Pre-commit hooks enforce lint + type checks on all workspaces
+    depends_on:
+    - 2
+  HARDWARE_SIM:
+    description: Build a wearable sensor data simulator to generate synthetic Apple
+      Watch and Fitbit/Garmin streams (heart rate, steps, calories, GPS tracks, HRV,
+      sleep) for development and test environments. Used to validate health sync pipelines
+      without physical devices.
+    agent_role: developer
+    acceptance_criteria:
+    - Simulator generates valid HealthKit HKWorkout and HKQuantitySample JSON payloads
+    - Google Fit DataPoint responses pass schema validation against official spec
+    - GPS tracks are realistic (no teleportation, reasonable pace ranges)
+    - Simulator runs as a Docker service, discoverable via `HEALTH_API_BASE_URL` env
+      var
+    - Produces 1 hour of sensor data in < 2 seconds
+    - 'Edge cases covered: zero-step rest periods, device disconnect gaps, duplicate
+      sync attempts'
+    depends_on:
+    - 6
+  FIRMWARE:
+    description: Implement the BLE (Bluetooth Low Energy) communication layer and
+      HealthKit/Health Connect bridge SDK that runs on the mobile client side — the
+      embedded firmware equivalent for wearable data ingestion. Includes GATT profile
+      parsing, data buffering, and conflict-resolution for concurrent device syncs.
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - BLE GATT Heart Rate Service parsed correctly for heart rate and RR intervals
+    - iOS HealthKit background delivery enabled and tested for workout sessions
+    - Android Health Connect permission request flow handles all denial scenarios
+      gracefully
+    - Local SQLite buffer prevents data loss on network interruption
+    - 'Sync conflict resolution: device data wins over manual entry for the same timestamp'
+    - BLE connection drops trigger automatic reconnect with exponential backoff
+    depends_on:
+    - 6
+    - 7
+  BACKEND:
+    description: 'Build core backend services: authentication (social login + email/password),
+      user profile management, workout CRUD (exercises, sets, reps, media uploads),
+      and social graph (follow/unfollow, activity feed with pagination). Deploy as
+      FastAPI services with async SQLAlchemy.'
+    agent_role: developer
+    acceptance_criteria:
+    - Auth endpoints issue access + refresh tokens; refresh rotation implemented
+    - Workout creation validates exercise library references and rejects unknown exercise
+      IDs
+    - Media upload pre-signed S3 URLs generated client-side; backend validates on
+      completion
+    - Feed endpoint returns paginated results (cursor-based) in < 200ms for users
+      with 1000 follows
+    - Social follow creates bidirectional notification; unfollow cleans up feed cache
+    - All endpoints require authenticated user; public workout sharing uses signed
+      read URLs
+    depends_on:
+    - 5
+    - 4
+  FRONTEND:
+    description: 'Build the React Native mobile app: onboarding + health permissions,
+      social feed with workout cards, workout logger (exercise picker, set/rep tracker,
+      timer, media capture), challenge browser and live leaderboard, trainer marketplace
+      browse/book, nutrition dashboard with barcode scanner, and settings.'
+    agent_role: developer
+    acceptance_criteria:
+    - Onboarding requests HealthKit / Health Connect permissions with clear rationale
+      strings
+    - Feed loads in < 2s on 4G; skeleton screens shown during load
+    - Workout logger supports superset grouping and rest timer with background notifications
+    - Live leaderboard updates via SSE without full page reload
+    - Trainer booking checkout completes using Stripe Payment Sheet (no raw card fields
+      in app)
+    - Barcode scanner opens in < 1s and resolves food item in < 3s
+    - App passes Expo build for both iOS and Android without warnings
+    depends_on:
+    - 5
+    - 3
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+  PCB_DESIGN:
+    description: 'Design the schematic and BOM for a companion IoT fitness badge device:
+      low-power BLE beacon (nRF52840), step counter (ADXL362 accelerometer), LED challenge
+      progress indicator, coin cell battery with 6-month life target. Intended as
+      optional branded hardware add-on for challenges.'
+    agent_role: developer
+    acceptance_criteria:
+    - KiCad schematic passes ERC with zero errors
+    - BOM includes all passives, connectors, and ICs with LCSC part numbers and unit
+      costs
+    - Power budget analysis shows > 6 months battery life at 10Hz BLE advertising
+    - Decoupling capacitors placed per nRF52840 reference design guidelines
+    - ADXL362 SPI wiring verified against datasheet pinout
+    - Schematic reviewed against nRF52840 hardware design guide checklist
+    depends_on:
+    - 6
+  EMBEDDED_TEST:
+    description: 'Write HIL (Hardware-in-the-Loop) test specs for the BLE health bridge
+      firmware and optional badge device: BLE pairing, data fidelity (heart rate ±
+      2 BPM vs reference), sync latency, battery drain measurement, and stress test
+      (1000 concurrent BLE events).'
+    agent_role: developer
+    acceptance_criteria:
+    - BLE pairing succeeds in < 3 seconds for 95th percentile across 100 trials
+    - Heart rate readings within ± 2 BPM of Polar H10 reference during 30-min run
+    - Sync latency from workout end to backend confirmation < 60 seconds
+    - Badge average current draw measured < 15µA in advertising mode (6-month battery
+      validated)
+    - 1000 concurrent BLE events processed without buffer overflow or data loss
+    - All HIL tests runnable in CI with hardware abstraction layer mock mode
+    depends_on:
+    - 8
+    - 15
+  SECURITY:
+    description: 'Perform a security review covering: threat model (STRIDE), OWASP
+      Mobile Top 10 audit, Stripe webhook signature validation, trainer payout fraud
+      controls, health data encryption at rest and in transit, and PII data handling
+      compliance review.'
+    agent_role: developer
+    acceptance_criteria:
+    - STRIDE threat model completed for all 6 backend service boundaries
+    - OWASP Mobile Top 10 checklist completed with findings and mitigations
+    - Stripe webhook `Stripe-Signature` header validated on every payout callback
+    - Health data encrypted at rest (AES-256) and in transit (TLS 1.3 minimum)
+    - PII fields enumerated; data retention policy matches privacy policy
+    - Trainer payout velocity limits configured (max payout per 24h period)
+    - All critical and high severity findings have documented remediation owners
+    depends_on:
+    - 9
+    - 11
+    - 13
+  LOCALIZATION:
+    description: 'Set up i18n infrastructure for the mobile app and web admin: string
+      extraction, translation config for English, Spanish, Portuguese, and French
+      (primary fitness app markets), locale-aware number/unit formatting (metric vs
+      imperial), and RTL layout preparation.'
+    agent_role: localization_engineer
+    acceptance_criteria:
+    - All user-visible strings extracted to locale JSON files (zero hardcoded UI strings)
+    - Unit system toggles between metric and imperial; all workout stats and food
+      macros adapt
+    - Spanish, Portuguese, and French translations complete for all MVP screens
+    - Date/time formatting uses locale-appropriate formats (DD/MM vs MM/DD)
+    - RTL layout verified with pseudo-RTL locale; no element overflow detected
+    - 'Missing translation key fallback chain: locale → en-US → key name'
+    - Top 5 target locales identified
+    - Store listing translated
+    depends_on:
+    - 14
+  QA:
+    description: 'Design the QA test plan: test case library covering workout logging,
+      challenge mechanics, leaderboard correctness, trainer booking happy and error
+      paths, nutrition macro accuracy, and health sync data fidelity. Define test
+      environments, regression suite, and release criteria.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Test case library covers all 5 priority flows with positive, negative, and boundary
+      cases
+    - Leaderboard test cases verify ordering correctness with tie-breaking rules
+    - 'Trainer booking test cases cover: success, payment failure, cancellation, refund'
+    - Nutrition macro accuracy test cases verify USDA reference values ± 1%
+    - Release criteria gate documented and signed off by product_manager
+    - Regression suite tagged and runnable in < 30 minutes
+    depends_on:
+    - 14
+    - 10
+    - 11
+    - 12
+    - 13
+  TESTS:
+    description: 'Implement unit and integration tests for all backend services and
+      mobile app core logic: auth token lifecycle, workout CRUD, leaderboard sorted
+      set operations, trainer payout split calculation, nutrition macro aggregation,
+      health sync deduplication, and BLE bridge data parsing.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Backend test suite achieves ≥ 80% line coverage on all service modules
+    - Trainer payout split test verifies platform fee calculation for 10 currency/amount
+      combinations
+    - Leaderboard tests verify Redis sorted set ordering with tied scores (secondary
+      sort by timestamp)
+    - Health sync deduplication test confirms idempotency key prevents double-insert
+    - BLE data parsing tests cover all GATT Heart Rate Service encoding variants (uint8
+      vs uint16)
+    - All tests pass in CI without network calls (external services mocked)
+    depends_on:
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 8
+  DEVOPS:
+    description: Set up CI/CD pipelines (GitHub Actions), containerised services (Docker
+      Compose for dev, ECS Fargate for prod), environment promotion (dev → staging
+      → prod), database migration runner, Celery worker deployment, health sync scheduler
+      deployment, and observability stack (Datadog APM + Sentry).
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs lint, type check, unit tests, and builds Docker image on every
+      PR
+    - Alembic migrations run automatically in staging/prod deployment pipeline before
+      service start
+    - Zero-downtime deployment uses ECS rolling update with health check grace period
+    - Celery worker and beat scheduler deployed as separate ECS task definitions
+    - Datadog APM traces correlate across API → service → database for trainer booking
+      flow
+    - Sentry alerts on error rate > 1% for any service within 5-minute window
+    - CloudFront distribution serves workout media with signed URLs (60-minute expiry)
+    depends_on:
+    - 20
+    - 17
+  SYSTEM_TEST:
+    description: 'Execute full end-to-end system tests across the integrated stack:
+      user onboarding → health connect → workout log → challenge join → leaderboard
+      update → trainer booking → payment → nutrition log → summary. Include load test
+      (500 concurrent users) and chaos test (service restart during active leaderboard
+      update).'
+    agent_role: system_tester
+    acceptance_criteria:
+    - Full onboarding → leaderboard E2E test completes in < 5 minutes with no failures
+    - 'Load test: p95 API response < 500ms at 500 concurrent users'
+    - 'Load test: zero 5xx errors during sustained 30-minute run'
+    - 'Chaos: DB failover — RDS Multi-AZ promotion completes; no data lost; service
+      recovers in < 30s'
+    - 'Chaos: Stripe webhook delayed 60s — booking remains in ''pending'' state; resolves
+      correctly on retry'
+    - Leaderboard reads remain consistent during Redis restart (fallback to PostgreSQL
+      confirmed)
+    depends_on:
+    - 21
+    - 19
+  LEGAL:
+    description: Draft Terms of Service, Privacy Policy (GDPR + CCPA compliant), trainer
+      marketplace terms (independent contractor classification, commission agreement),
+      health data handling addendum, and cookie/tracking policy. Review App Store
+      and Google Play data safety section requirements.
+    agent_role: legal_advisor
+    acceptance_criteria:
+    - Privacy policy covers all data categories collected (health, location, payment,
+      biometric)
+    - GDPR data subject rights (access, deletion, portability) mapped to API endpoints
+    - Trainer terms classify trainers as independent contractors with commission schedule
+    - Health data addendum specifies retention period and deletion procedure
+    - Apple Privacy Nutrition Label data types completed for App Store submission
+    - Google Play Data Safety form answers align with actual data flows documented
+      in security review
+    depends_on:
+    - 17
+  TRAINING:
+    description: Produce user-facing onboarding guides, trainer onboarding documentation
+      (how to set up profile, pricing, manage bookings, understand payouts), in-app
+      tooltip copy, app store description copy, and a video script for the 60-second
+      product demo video.
+    agent_role: technical_writer
+    acceptance_criteria:
+    - 'Trainer onboarding guide covers: profile setup, service listing, availability
+      calendar, payout setup, and first booking walkthrough'
+    - In-app tooltip copy written for 12 key UI elements (health sync, challenge creation,
+      trainer booking)
+    - App Store description ≤ 4000 characters; highlights all 6 core features; includes
+      keywords
+    - Demo video script runs 55-65 seconds at natural pace; covers onboarding → workout
+      → challenge → trainer
+    - All training materials localized into all 4 supported locales
+    - Help center articles reviewed for reading level ≤ grade 8 (Flesch-Kincaid)
+    depends_on:
+    - 14
+    - 11
+    - 18
+  DOCS:
+    description: 'Write the full technical documentation suite: API reference (auto-generated
+      from OpenAPI spec + hand-written examples), architecture decision records (ADRs)
+      for leaderboard tech choice, health sync deduplication strategy, and trainer
+      payout model, developer setup guide, and runbook for on-call engineers.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - Redocly API reference renders all endpoints with request/response examples
+    - 'Each ADR has: context, decision, consequences, and alternatives considered'
+    - Developer setup guide tested on clean machine (macOS + Linux) — app runs in
+      < 20 minutes
+    - Runbook covers all 4 sections with step-by-step diagnosis and escalation path
+    - README includes architecture diagram, quick-start, and link to full docs
+    - All docs reviewed for accuracy against final deployed system
+    depends_on:
+    - 22
+    - 21

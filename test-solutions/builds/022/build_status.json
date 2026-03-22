@@ -1,0 +1,1126 @@
+{
+  "run_id": "449ef4f3-ceb6-49ed-ad4b-06d987ba2714",
+  "solution_name": "ev_battery_management",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T00:15:49.519314+00:00",
+  "updated_at": "2026-03-22T00:21:05.675415+00:00",
+  "product_description": "Electric vehicle battery management system (BMS) with cell balancing, state-of-charge estimation, thermal management, and degradation prediction. ISO 26262 ASIL C.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "SAFETY",
+      "description": "Hazard Analysis and Risk Assessment (HARA) per ISO 26262 Part 3. Identify hazardous events (thermal runaway, overcharge, deep discharge, cell reversal, cooling failure), assign ASIL levels using severity/exposure/controllability, and determine safety goals for ASIL C classification.",
+      "payload": {
+        "standard": "ISO 26262:2018 Part 3",
+        "asil_target": "ASIL C",
+        "hazard_categories": [
+          "thermal_runaway",
+          "overcharge",
+          "over_discharge",
+          "cell_reversal",
+          "coolant_failure",
+          "isolation_fault",
+          "communication_fault"
+        ],
+        "output_artifacts": [
+          "HARA_report.xlsx",
+          "safety_goals.md",
+          "ASIL_decomposition_matrix.xlsx"
+        ],
+        "tool": "HARA worksheet"
+      },
+      "acceptance_criteria": [
+        "All hazardous events enumerated with S/E/C ratings and resulting ASIL",
+        "At least one ASIL C safety goal derived covering thermal runaway prevention",
+        "ASIL decomposition documented where ASIL C is split across redundant channels",
+        "Safety goals are technology-independent and traceable to system requirements",
+        "Document signed off by certified functional safety engineer",
+        "ASIL level determined for each function",
+        "Fault tree analysis complete"
+      ],
+      "depends_on": [],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define system-level requirements for the EV BMS: cell chemistry constraints (NMC/LFP), pack topology (series/parallel strings), operating voltage/current envelope, communication interfaces (CAN FD, LIN, Ethernet), OEM integration requirements, and non-functional requirements (latency, availability, diagnostics).",
+      "payload": {
+        "output_artifacts": [
+          "system_requirements_spec.md",
+          "stakeholder_requirements.md",
+          "interface_control_document.md"
+        ],
+        "interfaces": [
+          "CAN FD (ISO 11898)",
+          "LIN 2.2A",
+          "Automotive Ethernet (100BASE-T1)",
+          "JTAG/SWD debug"
+        ],
+        "cell_chemistries": [
+          "NMC",
+          "LFP"
+        ],
+        "operating_envelope": {
+          "voltage_per_cell": "2.5V-4.2V",
+          "max_current": "500A",
+          "temp_range": "-40C to 85C"
+        }
+      },
+      "acceptance_criteria": [
+        "All functional requirements have unique IDs and are testable",
+        "Interface Control Document covers all external electrical and software interfaces",
+        "Non-functional requirements specify latency (<10ms for protection), MTBF (>50,000 hr), and diagnostic coverage (>90% per ISO 26262 ASIL C)",
+        "Requirements reviewed and approved by product manager and safety engineer"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "HARDWARE_SIM",
+      "description": "Build electrochemical cell simulation model using equivalent-circuit model (ECM) in SPICE/Modelica. Model includes R0 (ohmic resistance), RC branches (diffusion), OCV-SOC curve, thermal coupling, and degradation effects. Parameterize for NMC and LFP chemistries from published datasets.",
+      "payload": {
+        "simulator": "LTspice XVII / OpenModelica",
+        "model_type": "Second-order RC equivalent circuit model",
+        "parameters": [
+          "OCV-SOC lookup table",
+          "R0",
+          "R1/C1",
+          "R2/C2",
+          "thermal_resistance",
+          "capacity_fade_coefficient"
+        ],
+        "chemistries": [
+          "NMC_21700",
+          "LFP_prismatic"
+        ],
+        "output_artifacts": [
+          "cell_ecm_model.asc",
+          "cell_ecm_model.mo",
+          "parameterization_report.pdf"
+        ]
+      },
+      "acceptance_criteria": [
+        "Model reproduces HPPC (Hybrid Pulse Power Characterization) test data within 2% voltage error",
+        "Thermal model tracks temperature within 1\u00b0C under 1C discharge profile",
+        "SOC estimation error <2% over full SOC range at room temperature",
+        "Model simulates 1000 cycles of capacity fade to validate degradation curve shape",
+        "Testbench produces cell voltage, current, temperature outputs at 1ms resolution"
+      ],
+      "depends_on": [],
+      "agent_role": "developer"
+    },
+    {
+      "step": 4,
+      "task_type": "COMPLIANCE",
+      "description": "Create the Design History File (DHF) skeleton and traceability matrix. Establish document control system linking safety goals \u2192 system requirements \u2192 design \u2192 verification \u2192 validation. Set up AUTOSAR adaptive platform configuration baseline and UNECE R155 cybersecurity management system (CSMS) registration.",
+      "payload": {
+        "standards": [
+          "ISO 26262:2018",
+          "AUTOSAR R22-11",
+          "UNECE R155",
+          "UNECE R156"
+        ],
+        "output_artifacts": [
+          "DHF_index.md",
+          "traceability_matrix.xlsx",
+          "CSMS_policy.md",
+          "document_control_procedure.md"
+        ],
+        "traceability_levels": [
+          "SG \u2192 FSR \u2192 TSR \u2192 SW_REQ \u2192 SW_DESIGN \u2192 TEST_CASE"
+        ],
+        "tool": "Polarion ALM / Jama Connect (or equivalent)"
+      },
+      "acceptance_criteria": [
+        "DHF index contains all mandatory ISO 26262 work products for ASIL C",
+        "Traceability matrix populated with safety goals and system requirements from steps 1-2",
+        "Every safety requirement has at least one verification test case assigned",
+        "CSMS policy document covers vehicle-type approval requirements per UNECE R155",
+        "Document version control system established with change request workflow"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "PCB_DESIGN",
+      "description": "Design BMS main controller PCB schematic: cell monitoring ICs (e.g., LTC6813 or BQ76952 stack), isolated gate drivers for balancing MOSFETs, current measurement (shunt + Hall sensor redundancy), thermistor network, CAN FD transceiver, isolated SPI, watchdog hardware, and power supply with ASIL C-compliant isolation barriers.",
+      "payload": {
+        "EDA_tool": "Altium Designer / KiCad",
+        "monitoring_ic": [
+          "LTC6813-1",
+          "BQ76952 (backup)"
+        ],
+        "isolation_standard": "IEC 60664-1 (1500V reinforced isolation)",
+        "diagnostic_features": [
+          "plausibility_cross_check",
+          "stuck_at_fault_detection",
+          "CRC_on_measurements"
+        ],
+        "output_artifacts": [
+          "BMS_controller_schematic.pdf",
+          "BMS_controller_BOM.xlsx",
+          "DRC_report.pdf",
+          "stack_isolation_analysis.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Schematic passes Electrical Rules Check (ERC) with zero errors",
+        "Dual-channel redundant voltage measurement paths documented for safety critical signals",
+        "Isolation voltage ratings \u22651500V between HV and LV domains",
+        "BOM references automotive-grade (AEC-Q100) components only",
+        "Hardware watchdog timer enforces ASIL C response time requirement (<10ms shutdown)"
+      ],
+      "depends_on": [
+        2,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "FIRMWARE",
+      "description": "Set up RTOS foundation and Hardware Abstraction Layer (HAL). Initialize FreeRTOS with ASIL C-compatible configuration (stack overflow detection, heap partitioning), implement HAL for SPI (cell monitoring ICs), CAN FD driver (ISO 11898-1), I2C (thermal sensors), GPIO (contactor control), and watchdog service. Target: ARM Cortex-M7 (e.g., STM32H7).",
+      "payload": {
+        "rtos": "FreeRTOS v10.5+ (ASIL D capable configuration)",
+        "target_mcu": "STM32H753ZI (Cortex-M7, 480MHz)",
+        "toolchain": "ARM GCC 12 + CMake + STM32CubeMX",
+        "hal_modules": [
+          "spi_hal.c",
+          "canfd_hal.c",
+          "i2c_hal.c",
+          "gpio_hal.c",
+          "watchdog_hal.c",
+          "nvme_hal.c"
+        ],
+        "output_artifacts": [
+          "hal/",
+          "rtos_config/FreeRTOSConfig.h",
+          "linker_script.ld",
+          "CMakeLists.txt"
+        ]
+      },
+      "acceptance_criteria": [
+        "All HAL modules compile without warnings with -Wall -Wextra -Werror",
+        "CAN FD driver achieves 5Mbit/s data phase with <1% frame error rate on bench",
+        "SPI communication with LTC6813 stack reads cell voltages within 1ms per 12-cell group",
+        "FreeRTOS idle hook triggers watchdog kick; failure to kick causes reset within 10ms",
+        "Stack usage analysis shows all tasks operate within 80% of allocated stack",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        2,
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design time-series database schema for BMS telemetry: cell voltages (per cell, 100ms cadence), pack current, temperatures (per thermistor), SOC/SOH, fault events, balancing state, and diagnostic codes. Include retention policy, compression, and partition strategy for automotive edge deployment.",
+      "payload": {
+        "database": "TimescaleDB (PostgreSQL extension) + InfluxDB (edge)",
+        "tables": [
+          "cell_measurements",
+          "pack_state",
+          "thermal_readings",
+          "fault_events",
+          "degradation_estimates",
+          "balancing_log"
+        ],
+        "retention": {
+          "raw": "90 days",
+          "downsampled_1min": "2 years",
+          "fault_events": "vehicle_lifetime"
+        },
+        "output_artifacts": [
+          "schema.sql",
+          "migration_001_initial.sql",
+          "seed_data.sql",
+          "retention_policy.sql"
+        ]
+      },
+      "acceptance_criteria": [
+        "Schema supports 96-cell pack at 100ms resolution ingesting >10,000 rows/second",
+        "Cell voltage and temperature tables include cell_id, timestamp, value, quality_flag columns",
+        "Fault events table links to ISO 14229 UDS DTC codes",
+        "Query for SOC trend over last 24h executes in <100ms on 1M row dataset",
+        "Migration scripts idempotent and reversible"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "UX_DESIGN",
+      "description": "Design operator and fleet-manager dashboard wireframes: real-time cell voltage heat map, SOC/SOH gauge, thermal map, fault panel with severity indicators, historical trend charts, degradation prediction timeline, and maintenance scheduling interface. Accessibility and automotive HMI standards compliance.",
+      "payload": {
+        "tool": "Figma",
+        "screens": [
+          "live_pack_overview",
+          "cell_detail_drill_down",
+          "thermal_map",
+          "fault_panel",
+          "degradation_forecast",
+          "fleet_summary",
+          "maintenance_scheduler"
+        ],
+        "standards": [
+          "WCAG 2.1 AA",
+          "ISO 15008 (visual ergonomics in vehicles)"
+        ],
+        "output_artifacts": [
+          "wireframes.fig",
+          "design_system.fig",
+          "interaction_spec.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 7 screens wireframed with interactive prototype in Figma",
+        "Cell heat map visualizes 96 cells with color-coded voltage deviation",
+        "Critical fault alerts follow automotive red/amber/green severity convention",
+        "Usability test with 3 EV technicians produces SUS score \u226575",
+        "Responsive layout supports 1920\u00d71080 control room and 1280\u00d7800 tablet"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 9,
+      "task_type": "SAFETY",
+      "description": "Perform FMEA (Failure Mode and Effects Analysis) and Fault Tree Analysis (FTA) on cell balancing, SOC estimation, thermal management, and contactor control subsystems. Classify failure modes against ASIL C safety goals. Derive diagnostic coverage requirements and safe-state definitions.",
+      "payload": {
+        "method": [
+          "DFMEA",
+          "FTA",
+          "DRBFM"
+        ],
+        "subsystems": [
+          "cell_balancing",
+          "SOC_estimation",
+          "thermal_controller",
+          "contactor_driver",
+          "communication_stack",
+          "power_supply"
+        ],
+        "output_artifacts": [
+          "FMEA_BMS.xlsx",
+          "FTA_thermal_runaway.pdf",
+          "FTA_overcharge.pdf",
+          "diagnostic_coverage_analysis.md",
+          "safe_state_catalog.md"
+        ],
+        "tool": "Item Software xFMEA / Isograph FaultTree+"
+      },
+      "acceptance_criteria": [
+        "FMEA covers all subsystems from step 5 schematic with RPN calculated",
+        "FTA for thermal runaway shows cut sets and quantified probability <10^-8 /hour (ASIL C)",
+        "Diagnostic coverage \u226597% for ASIL C safety-relevant functions (per ISO 26262-5)",
+        "Each failure mode linked to detection mechanism and safe-state action",
+        "FMEA peer-reviewed by independent safety engineer",
+        "ASIL level determined for each function",
+        "Fault tree analysis complete"
+      ],
+      "depends_on": [
+        1,
+        5
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 10,
+      "task_type": "FIRMWARE",
+      "description": "Implement cell acquisition firmware: periodic voltage measurement from LTC6813 stack via SPI with CRC validation, dual-path redundant measurement for ASIL C, thermistor ADC readings, current measurement fusion (shunt + Hall), plausibility cross-checks, and raw measurement publication to RTOS message queues.",
+      "payload": {
+        "sampling_rates": {
+          "voltage": "100ms",
+          "temperature": "500ms",
+          "current": "1ms"
+        },
+        "diagnostics": [
+          "CRC_check_per_reading",
+          "voltage_plausibility_vs_OCV",
+          "sensor_stuck_at_detection",
+          "measurement_timeout_watchdog"
+        ],
+        "output_artifacts": [
+          "src/acquisition/cell_monitor.c",
+          "src/acquisition/cell_monitor.h",
+          "src/acquisition/current_sensor.c"
+        ],
+        "asil_measures": [
+          "dual_channel_voltage_read",
+          "independent_ADC_cross_check"
+        ]
+      },
+      "acceptance_criteria": [
+        "Voltage measurement latency from trigger to queue post <2ms for 96-cell pack",
+        "CRC failure triggers immediate safe-state (open contactors) within 10ms",
+        "Plausibility check detects stuck sensor within 3 measurement cycles",
+        "Dual-channel measurement divergence >5mV raises ASIL C diagnostic fault",
+        "Unit tests achieve 100% branch coverage on fault injection paths",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        6,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "FIRMWARE",
+      "description": "Implement passive and active cell balancing algorithm. Passive: bleed resistor activation for cells above mean+threshold. Active: inductor-based charge shuttling between adjacent cells. Implement balancing state machine, thermal de-rating during balancing, and minimum/maximum SOC guard rails.",
+      "payload": {
+        "balancing_modes": [
+          "passive_dissipative",
+          "active_inductive"
+        ],
+        "algorithm": "Delta-SOC balancing with thermal de-rating",
+        "state_machine_states": [
+          "IDLE",
+          "ASSESSING",
+          "BALANCING_PASSIVE",
+          "BALANCING_ACTIVE",
+          "THERMAL_DERATE",
+          "FAULT"
+        ],
+        "output_artifacts": [
+          "src/balancing/cell_balancer.c",
+          "src/balancing/cell_balancer.h",
+          "src/balancing/balance_state_machine.c"
+        ]
+      },
+      "acceptance_criteria": [
+        "Passive balancing reduces max cell voltage spread from 50mV to <5mV within one charge cycle in simulation",
+        "Active balancing efficiency >85% charge transfer verified in HIL",
+        "Balancing disabled automatically when any cell temperature >45\u00b0C",
+        "State machine handles all 6 states with documented transitions and no orphan states",
+        "Balancing activation/deactivation logged to audit trail with timestamp and cell IDs",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        10,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "FIRMWARE",
+      "description": "Implement State-of-Charge (SOC) estimation using Extended Kalman Filter (EKF) fused with Coulomb counting. Incorporate OCV-SOC lookup table, temperature compensation, current integration with drift correction, and ASIL C dual-EKF cross-check for redundancy. Publish SOC estimate with confidence interval.",
+      "payload": {
+        "algorithm": "Extended Kalman Filter + Coulomb Counting fusion",
+        "state_vector": [
+          "SOC",
+          "R1_voltage",
+          "R2_voltage"
+        ],
+        "noise_tuning": "Offline tuning from cell model (step 3) + HPPC validation",
+        "asil_measure": "Dual independent EKF instances; divergence >3% triggers fault",
+        "output_artifacts": [
+          "src/estimation/soc_ekf.c",
+          "src/estimation/soc_ekf.h",
+          "src/estimation/ocv_soc_table.c"
+        ]
+      },
+      "acceptance_criteria": [
+        "SOC RMSE <2% across full SOC range at 25\u00b0C validated against cell simulation model",
+        "SOC error <4% at -20\u00b0C and +50\u00b0C operating extremes",
+        "EKF converges from 50% SOC initialization error within 5 minutes of driving",
+        "Dual-EKF divergence detection triggers fault and switches to Coulomb counting fallback",
+        "Processing time per EKF update <500\u00b5s on STM32H7 at 480MHz",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        10,
+        3
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "FIRMWARE",
+      "description": "Implement thermal management controller: multi-zone temperature monitoring, PID-controlled coolant pump and valve actuation, fan control for auxiliary cooling, pre-conditioning logic for fast charging and cold weather, and thermal runaway detection with safe-state escalation.",
+      "payload": {
+        "zones": [
+          "module_top",
+          "module_bottom",
+          "coolant_inlet",
+          "coolant_outlet",
+          "ambient"
+        ],
+        "actuators": [
+          "coolant_pump_pwm",
+          "bypass_valve",
+          "fan_array",
+          "heater_element"
+        ],
+        "algorithms": [
+          "PID_thermal_loop",
+          "thermal_runaway_detection",
+          "preconditioning_scheduler"
+        ],
+        "safety_thresholds": {
+          "warn": 45,
+          "derate": 55,
+          "shutdown": 60,
+          "runaway_rate": "2\u00b0C/s sustained"
+        },
+        "output_artifacts": [
+          "src/thermal/thermal_manager.c",
+          "src/thermal/pid_controller.c",
+          "src/thermal/runaway_detector.c"
+        ]
+      },
+      "acceptance_criteria": [
+        "PID controller maintains pack temperature within \u00b12\u00b0C of 25\u00b0C setpoint under 1C discharge",
+        "Thermal runaway detection triggers within 500ms of 2\u00b0C/s rate-of-rise sustained event",
+        "Safe-state escalation: warn\u2192derate\u2192shutdown\u2192contactor_open in documented time bounds",
+        "Pre-conditioning brings pack from -20\u00b0C to 15\u00b0C within 10 minutes",
+        "Coolant pump PWM control achieves <1\u00b0C gradient across pack under worst-case load",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        10,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "ML_MODEL",
+      "description": "Train battery degradation prediction model (State-of-Health estimation and remaining useful life). Use capacity fade data from cell simulation (step 3) augmented with published aging datasets (NASA, CALCE, Oxford). Implement Gaussian Process Regression for uncertainty-aware SOH prediction and RUL estimation.",
+      "payload": {
+        "model_type": "Gaussian Process Regression + LSTM ensemble",
+        "input_features": [
+          "cycle_count",
+          "avg_discharge_rate",
+          "avg_temperature",
+          "depth_of_discharge_histogram",
+          "internal_resistance_trend"
+        ],
+        "output": [
+          "SOH_percent",
+          "RUL_cycles",
+          "confidence_interval_95"
+        ],
+        "datasets": [
+          "NASA_randomized_battery_dataset",
+          "CALCE_CS2_dataset",
+          "Oxford_battery_degradation"
+        ],
+        "deployment": "ONNX export for embedded inference on Cortex-M7",
+        "output_artifacts": [
+          "models/degradation_gpr.pkl",
+          "models/degradation_lstm.h5",
+          "models/degradation_ensemble.onnx",
+          "notebooks/training_analysis.ipynb"
+        ]
+      },
+      "acceptance_criteria": [
+        "SOH estimation MAPE <3% on held-out test set across all three datasets",
+        "RUL prediction within \u00b150 cycles at 80% SOH threshold",
+        "95% confidence intervals are calibrated (coverage matches nominal on test set)",
+        "ONNX model inference time <5ms on STM32H7 with CMSIS-NN acceleration",
+        "Model card documents training data, known limitations, and refresh cadence"
+      ],
+      "depends_on": [
+        3,
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 15,
+      "task_type": "FIRMWARE",
+      "description": "Integrate degradation prediction ONNX model into firmware. Implement feature extraction pipeline from historical measurements stored in NVM, run periodic SOH/RUL inference, publish predictions via CAN FD and to telemetry queue, and trigger maintenance alerts at configurable SOH thresholds.",
+      "payload": {
+        "inference_engine": "CMSIS-NN ONNX runtime (ARM optimized)",
+        "feature_extraction": "Rolling statistics from NVM circular buffer (last 200 cycles)",
+        "inference_cadence": "Every charge cycle completion",
+        "alert_thresholds": {
+          "SOH_warn": 80,
+          "SOH_critical": 70,
+          "RUL_warn_cycles": 100
+        },
+        "output_artifacts": [
+          "src/estimation/soh_predictor.c",
+          "src/estimation/feature_extractor.c",
+          "src/estimation/onnx_runner.c"
+        ]
+      },
+      "acceptance_criteria": [
+        "SOH estimate updated and CAN message broadcast within 60 seconds of charge cycle end",
+        "Feature extraction reads NVM circular buffer without blocking acquisition tasks",
+        "Maintenance alert CAN message conforms to DBC signal definition",
+        "ONNX inference completes within 10ms measured on target hardware",
+        "SOH history persists across power cycles in NVM with CRC integrity check",
+        "AUTOSAR compliance checked",
+        "MISRA C violations zero"
+      ],
+      "depends_on": [
+        12,
+        14
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "SECURITY",
+      "description": "Threat analysis and risk assessment (TARA) per UNECE R155/ISO 21434 covering firmware update attack surface, CAN bus injection, diagnostic interface exploitation, cloud telemetry man-in-the-middle, and physical tamper. Derive cybersecurity goals and implement countermeasures.",
+      "payload": {
+        "standard": [
+          "UNECE R155",
+          "ISO/SAE 21434:2021"
+        ],
+        "attack_surfaces": [
+          "OBD2_diagnostic_port",
+          "CAN_FD_bus",
+          "OTA_firmware_update",
+          "cloud_telemetry_API",
+          "physical_JTAG"
+        ],
+        "countermeasures": [
+          "secure_boot_chain",
+          "firmware_signing_ed25519",
+          "CAN_MAC_authentication",
+          "TLS_1.3_for_telemetry",
+          "JTAG_disable_in_production"
+        ],
+        "output_artifacts": [
+          "TARA_report.xlsx",
+          "cybersecurity_goals.md",
+          "security_architecture.md",
+          "SBOM.json"
+        ]
+      },
+      "acceptance_criteria": [
+        "TARA identifies all attack paths with damage/feasibility ratings per ISO 21434",
+        "Secure boot chain verified: ROM \u2192 bootloader \u2192 application with ed25519 signature validation",
+        "CAN FD messages carrying safety-critical commands protected by CMAC-AES-128",
+        "OTA update accepts only firmware signed by production key; rollback attack prevented",
+        "SBOM generated in SPDX 2.3 format covering all firmware dependencies"
+      ],
+      "depends_on": [
+        5,
+        6
+      ],
+      "agent_role": "safety_engineer"
+    },
+    {
+      "step": 17,
+      "task_type": "BACKEND",
+      "description": "Build telemetry ingestion and fleet management backend: REST + MQTT API for BMS data ingestion, real-time alerting pipeline, diagnostic trouble code (DTC) processing per ISO 14229 UDS, OTA firmware update distribution service, and fleet aggregation analytics endpoints.",
+      "payload": {
+        "framework": "FastAPI (Python 3.12) + Celery workers",
+        "protocols": [
+          "MQTT 5.0 (telemetry)",
+          "REST/HTTPS (management)",
+          "UDS over DoIP (diagnostics)"
+        ],
+        "services": [
+          "telemetry_ingestor",
+          "alert_engine",
+          "dtc_processor",
+          "ota_distributor",
+          "fleet_analytics"
+        ],
+        "output_artifacts": [
+          "backend/api/",
+          "backend/workers/",
+          "backend/models/",
+          "backend/tests/",
+          "openapi.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "Telemetry ingestor handles 10,000 vehicles \u00d7 100ms cadence without message loss under load test",
+        "Alert engine fires PagerDuty/webhook within 5 seconds of thermal runaway fault event",
+        "DTC processor maps ISO 14229 DTCs to human-readable descriptions and severity",
+        "OTA distributor serves delta firmware packages with CDN caching and vehicle targeting",
+        "All endpoints documented in OpenAPI 3.1 spec with example requests and responses"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Write firmware unit tests for all safety-critical modules: SOC EKF (step 12), cell balancing state machine (step 11), thermal runaway detector (step 13), acquisition plausibility checks (step 10), and degradation predictor (step 15). Use Unity test framework with fault injection harness.",
+      "payload": {
+        "framework": "Unity + CMock (C unit testing)",
+        "coverage_target": "100% branch coverage on safety-critical paths (MC/DC per ISO 26262 ASIL C)",
+        "fault_injection": [
+          "sensor_CRC_error",
+          "stuck_value",
+          "measurement_timeout",
+          "EKF_divergence",
+          "NVM_corruption"
+        ],
+        "output_artifacts": [
+          "tests/unit/test_soc_ekf.c",
+          "tests/unit/test_cell_balancer.c",
+          "tests/unit/test_thermal_manager.c",
+          "tests/unit/test_acquisition.c",
+          "coverage_report.html"
+        ]
+      },
+      "acceptance_criteria": [
+        "MC/DC (Modified Condition/Decision Coverage) \u2265100% on all ASIL C classified functions",
+        "All fault injection scenarios produce correct safe-state transitions",
+        "Test suite runs in <60 seconds on CI (host-based with mocked HAL)",
+        "Zero memory leaks detected by AddressSanitizer on host-based test build",
+        "Coverage report traceable to FMEA failure modes from step 9"
+      ],
+      "depends_on": [
+        11,
+        12,
+        13,
+        15
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "HARDWARE_SIM",
+      "description": "Build Hardware-in-the-Loop (HIL) test bench: battery pack emulator (96-cell with programmable voltage/resistance per cell), current source/sink for load simulation, thermal chamber interface, CAN FD bus analyzer, and automated test harness connecting to BMS controller under test.",
+      "payload": {
+        "emulator": "National Instruments PXI battery cell emulator or dSpace SCALEXIO",
+        "channels": 96,
+        "automation": "Python-based HIL test scripts via VISA/NI-DAQMX",
+        "scenarios": [
+          "standard_drive_cycle_WLTP",
+          "fast_charge_400kW",
+          "thermal_runaway_injection",
+          "cell_imbalance_sweep",
+          "sensor_failure_injection"
+        ],
+        "output_artifacts": [
+          "hil/bench_config.yaml",
+          "hil/scenarios/",
+          "hil/test_runner.py",
+          "hil/HIL_bench_setup_manual.pdf"
+        ]
+      },
+      "acceptance_criteria": [
+        "HIL bench emulates 96 cells independently with \u00b11mV voltage accuracy",
+        "WLTP drive cycle replay completes without CAN timeout or BMS fault assertion",
+        "Thermal runaway injection (2\u00b0C/s on cell #48) triggers BMS safe-state within 500ms",
+        "Cell imbalance sweep of 0\u2013100mV spread demonstrates balancing activation",
+        "Automated test harness produces pass/fail report with CAN signal logs as evidence"
+      ],
+      "depends_on": [
+        5,
+        3
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Implement the fleet operator web dashboard per UX design (step 8): real-time cell voltage heat map using WebSocket streaming, SOC/SOH gauges with trend history, interactive thermal map, fault management panel with DTC lookup, degradation forecast timeline, and fleet summary with vehicle search.",
+      "payload": {
+        "framework": "React 18 + TypeScript + Recharts + Mapbox GL",
+        "real_time": "WebSocket (MQTT over WebSocket bridge)",
+        "state_management": "Zustand",
+        "components": [
+          "CellHeatMap",
+          "SOCGauge",
+          "ThermalMap",
+          "FaultPanel",
+          "DegradationChart",
+          "FleetTable",
+          "VehicleSearch"
+        ],
+        "output_artifacts": [
+          "web/src/pages/",
+          "web/src/components/bms/",
+          "web/src/api/bmsClient.ts"
+        ]
+      },
+      "acceptance_criteria": [
+        "Cell heat map renders 96 cells at 100ms update rate without frame drops (60fps target)",
+        "Fault panel displays ISO 14229 DTC code, description, severity, and timestamp",
+        "Degradation chart shows SOH history and 6-month forecast with confidence band",
+        "Fleet table supports search, filter by fault status, and sort by SOH descending",
+        "Lighthouse performance score \u226585 on fleet summary page"
+      ],
+      "depends_on": [
+        8,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system integration test suite: firmware on target + HIL bench + backend + dashboard. Cover nominal operation, all fault modes, OTA update flow, multi-vehicle fleet simulation, SOC accuracy over full drive cycle, and cybersecurity penetration test scenarios.",
+      "payload": {
+        "test_categories": [
+          "functional_nominal",
+          "fault_injection",
+          "OTA_update",
+          "fleet_scale_load",
+          "SOC_accuracy_drive_cycle",
+          "cybersecurity_pen_test"
+        ],
+        "tools": [
+          "pytest (backend)",
+          "Playwright (UI)",
+          "CANalyzer (CAN validation)",
+          "Burp Suite (API security)",
+          "HIL_runner (firmware)"
+        ],
+        "pass_criteria": "Zero P1/P2 defects; all safety-critical tests pass; SOC error <2%",
+        "output_artifacts": [
+          "test_reports/system_test_report.pdf",
+          "defect_log.xlsx",
+          "pen_test_report.pdf"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 47 system test cases executed with pass/fail status recorded",
+        "SOC accuracy over WLTP cycle: RMSE <2% against reference ground truth",
+        "OTA firmware update completes successfully with rollback test passing",
+        "Penetration test finds no critical (CVSS\u22659) or high (CVSS\u22657) unmitigated vulnerabilities",
+        "System test report reviewed and signed by QA lead and safety engineer"
+      ],
+      "depends_on": [
+        18,
+        19,
+        20
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 22,
+      "task_type": "COMPLIANCE",
+      "description": "Produce ISO 26262 ASIL C verification and validation evidence package: software unit test reports (MC/DC coverage), integration test reports, system test reports, code review records (two-person review), static analysis results (MISRA C:2012), and formal software qualification report.",
+      "payload": {
+        "standards": [
+          "ISO 26262-6 (SW development)",
+          "ISO 26262-4 (system design)",
+          "MISRA C:2012"
+        ],
+        "static_analysis_tool": "PC-lint Plus / Polyspace Bug Finder",
+        "code_review": "Two-person mandatory review for all ASIL C classified functions",
+        "output_artifacts": [
+          "VV_plan.md",
+          "unit_test_evidence.zip",
+          "integration_test_evidence.zip",
+          "MISRA_compliance_report.pdf",
+          "code_review_records/",
+          "SW_qualification_report.pdf"
+        ]
+      },
+      "acceptance_criteria": [
+        "MISRA C:2012 mandatory rules: zero violations; advisory rules: all documented deviations approved",
+        "Static analysis: no unresolved Polyspace red findings in ASIL C functions",
+        "Code review records show two reviewers per ASIL C module with sign-off",
+        "V&V plan fully executed with every test case result recorded",
+        "Software qualification report declares ASIL C compliance achievable based on evidence"
+      ],
+      "depends_on": [
+        21,
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "REGULATORY",
+      "description": "Compile ISO 26262 functional safety case for ASIL C BMS. Structure arguments using Goal Structuring Notation (GSN): safety goals \u2192 functional safety requirements \u2192 technical safety requirements \u2192 implementation evidence \u2192 V&V evidence. Prepare for third-party functional safety assessment.",
+      "payload": {
+        "notation": "Goal Structuring Notation (GSN) per GSN Community Standard v2",
+        "tool": "Adelard ASCE / Astah GSN",
+        "safety_case_arguments": [
+          "thermal_runaway_prevention",
+          "overcharge_protection",
+          "SOC_accuracy",
+          "cell_balancing_safety",
+          "communication_integrity"
+        ],
+        "assessment_body": "T\u00dcV S\u00dcD / Exida (independent FSA)",
+        "output_artifacts": [
+          "safety_case.gsn",
+          "safety_case_report.pdf",
+          "FSA_readiness_checklist.md",
+          "open_points_register.xlsx"
+        ]
+      },
+      "acceptance_criteria": [
+        "GSN argument tree is complete with no undischarged goals or unresolved assumptions",
+        "Every safety goal has traceable chain from hazard \u2192 requirement \u2192 implementation \u2192 test evidence",
+        "Open points register is empty or all items have accepted mitigations",
+        "Mock functional safety assessment completed internally with <10 findings",
+        "Safety case document accepted by designated third-party FSA assessor for formal review"
+      ],
+      "depends_on": [
+        22,
+        9
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 24,
+      "task_type": "QA",
+      "description": "AUTOSAR adaptive platform compliance audit and software process quality gate. Verify software development process compliance: configuration management, change management, problem resolution process, verification process, and documentation completeness per ISO 26262 Part 8 (supporting processes).",
+      "payload": {
+        "standard": [
+          "AUTOSAR R22-11 Adaptive Platform",
+          "ISO 26262-8 (supporting processes)"
+        ],
+        "audit_areas": [
+          "configuration_management",
+          "change_management",
+          "problem_resolution",
+          "verification_process",
+          "documentation_completeness",
+          "tool_qualification"
+        ],
+        "tool_qualification": [
+          "GCC_compiler_TCL",
+          "FreeRTOS_qualification_kit",
+          "Unity_TQL4"
+        ],
+        "output_artifacts": [
+          "process_audit_report.pdf",
+          "tool_qualification_records/",
+          "CM_audit_evidence.zip"
+        ]
+      },
+      "acceptance_criteria": [
+        "Configuration management audit finds all firmware artifacts under version control with baseline tags",
+        "Change management: all post-baseline changes have impact analysis and re-verification records",
+        "Tool qualification certificates in place for safety-critical tool chain components",
+        "Problem resolution process: all P1/P2 defects from system test closed or accepted with rationale",
+        "Audit report issues \u22645 minor findings; zero major/critical findings"
+      ],
+      "depends_on": [
+        6,
+        16,
+        21
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline for firmware and backend: Git-triggered build, cross-compile for STM32H7, MISRA static analysis gate, unit test execution with coverage enforcement, HIL smoke test trigger, Docker-based backend deployment, and automated release packaging with changelog generation.",
+      "payload": {
+        "ci_platform": "GitHub Actions / GitLab CI",
+        "firmware_pipeline": [
+          "cmake_build",
+          "misra_lint",
+          "unit_tests_coverage_gate",
+          "binary_signing",
+          "HIL_smoke_trigger"
+        ],
+        "backend_pipeline": [
+          "pytest_unit",
+          "pytest_integration",
+          "docker_build",
+          "trivy_scan",
+          "k8s_deploy_staging"
+        ],
+        "release": "Semantic versioning + auto-changelog from conventional commits",
+        "output_artifacts": [
+          ".github/workflows/firmware_ci.yml",
+          ".github/workflows/backend_ci.yml",
+          "Dockerfile",
+          "k8s/deployment.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "Firmware CI pipeline runs in <15 minutes including static analysis and unit tests",
+        "Coverage gate blocks merge if MC/DC coverage drops below 100% on ASIL C functions",
+        "Backend Docker image passes Trivy vulnerability scan with zero critical CVEs",
+        "Release pipeline generates signed firmware binary and uploads to OTA distribution service",
+        "Pipeline status visible on team dashboard; failures send Slack alert within 2 minutes"
+      ],
+      "depends_on": [
+        18
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 26,
+      "task_type": "DOCS",
+      "description": "Produce complete technical documentation suite: software architecture document (SAD), software detailed design document (SDD), API reference (OpenAPI + doxygen), operator manual, maintenance manual, and safety manual. All documents cross-referenced to safety case.",
+      "payload": {
+        "documents": [
+          "software_architecture_document.pdf",
+          "software_detailed_design.pdf",
+          "API_reference/",
+          "operator_manual.pdf",
+          "maintenance_manual.pdf",
+          "functional_safety_manual.pdf"
+        ],
+        "toolchain": "Doxygen (code), MkDocs (user docs), PlantUML (architecture diagrams)",
+        "audience": [
+          "system_integrators",
+          "OEM_engineers",
+          "fleet_operators",
+          "service_technicians",
+          "regulatory_assessors"
+        ]
+      },
+      "acceptance_criteria": [
+        "SAD documents all software components, interfaces, and ASIL decomposition decisions",
+        "SDD covers all modules with function descriptions, data flows, and ASIL C justifications",
+        "Doxygen generated for all public APIs with parameter descriptions and preconditions",
+        "Operator manual includes all fault codes with corrective actions in tabular format",
+        "Functional safety manual published for OEM integration per ISO 26262-2 clause 6.4.8"
+      ],
+      "depends_on": [
+        22
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 26,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 62,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 62,
+        "final_review": {
+          "score": 62,
+          "flaws": [
+            "Step 6 claims 'FreeRTOS v10.5+ (ASIL D capable configuration)' \u2014 FreeRTOS is NOT ASIL D certified. SAFERTOS (derived product) is. Qualifying vanilla FreeRTOS to TQL1 for ASIL C is a multi-month effort not captured in the plan. This acceptance criterion will be challenged in any FSA.",
+            "Steps 4, 6, 24 reference 'AUTOSAR Adaptive Platform' for a Cortex-M7 (STM32H753). AUTOSAR Adaptive requires a POSIX OS and is designed for high-compute SoCs (A-core). A BMS microcontroller on M-core uses AUTOSAR Classic. This is a fundamental architecture error that invalidates the AUTOSAR compliance artifacts.",
+            "Step 14/15: Gaussian Process Regression does NOT export to ONNX in a form CMSIS-NN can accelerate. GPR inference on 200 training points requires O(n\u00b2) matrix operations. STM32H753 has ~1MB SRAM. The claim of <5ms inference on Cortex-M7 for a GPR+LSTM ensemble is almost certainly false \u2014 no memory budget or FLOP analysis is provided.",
+            "Step 6 lists 'nvme_hal.c' \u2014 NVMe is an enterprise SSD interface. The intent is clearly EEPROM/flash NVM. This naming confusion suggests the payload was not reviewed by an embedded engineer.",
+            "Steps 1 and 2 are listed as parallel (no depends_on). HARA safety goals MUST feed system requirements \u2014 ASIL classification of individual functions in Step 2 is impossible without Step 1 output. Running them truly in parallel produces incompatible documents requiring rework.",
+            "No ISO 26262 Part 5 hardware safety metrics. For ASIL C hardware, SPFM \u2265 97% and LFM \u2265 80% must be demonstrated. No Hardware FMEA separate from DFMEA, no hardware architectural metrics analysis, no hardware safety requirements (HSR) derivation step exists in this plan.",
+            "Step 16 assigns TARA (ISO 21434 cybersecurity) to 'safety_engineer'. ISO 21434 is a separate discipline from ISO 26262. Conflating them risks an inadequate TARA reviewed by someone lacking cybersecurity expertise and fails the UNECE R155 requirement for a qualified cybersecurity engineer.",
+            "Step 17: FastAPI + Celery at 10,000 vehicles \u00d7 10Hz = 100,000 messages/second. No message broker (Kafka, Pulsar) is specified in the ingestion pipeline. FastAPI workers cannot horizontally scale to this throughput without a buffered queue in front. The acceptance criterion will fail load test.",
+            "ISO 26262 confirmation measures (Part 2: functional safety audit, functional safety assessment, confirmation reviews at each phase) are largely absent. Step 23 addresses FSA at the end but confirmation reviews must occur at system, hardware, and software phase completions \u2014 not just at the final safety case.",
+            "LTC6813 + BQ76952 listed as primary/backup without specifying electrical independence. For ASIL C dual-channel redundancy (ISO 26262-9), the channels must be on independent power domains, independent SPI buses, and connected to independent MCU peripherals. 'Backup IC' on the same SPI bus violates independence requirements."
+          ],
+          "suggestions": [
+            "Replace 'FreeRTOS ASIL D capable configuration' with SAFERTOS, or add a dedicated FreeRTOS Tool Qualification step using the FreeRTOS Safety Qualification Kit with explicit TQL1 evidence generation before Step 6 begins.",
+            "Correct all AUTOSAR references from Adaptive to Classic Platform (AUTOSAR R22-11 CP). If Adaptive is genuinely intended for a gateway SoC, split the architecture into M-core BMS controller (Classic) + A-core telemetry gateway (Adaptive) and document the interface.",
+            "Replace Gaussian Process Regression with a quantile neural network or Bayesian-approximated NN (MC-Dropout) that exports cleanly to ONNX and maps to CMSIS-NN ops. Perform an explicit SRAM/flash budget analysis before committing to the ONNX deployment approach.",
+            "Insert an explicit hardware safety requirements (HSR) step between Steps 5 and 9, deriving quantitative targets (SPFM/LFM) for each safety mechanism and assigning them to hardware elements. This is mandatory for Part 5 compliance.",
+            "Add a key management infrastructure task (certificate authority, HSM provisioning station, key injection at EOL manufacturing test) as a dependency before Steps 16 and 25. Without this, the CAN CMAC and OTA signing acceptance criteria cannot be met.",
+            "Add Kafka or MQTT broker (EMQX/HiveMQ) as an explicit component in Step 17 architecture. Separate the ingest pipeline (Kafka consumer \u2192 TimescaleDB) from the alert engine. Restate throughput acceptance criteria against broker-level metrics, not FastAPI worker count.",
+            "Reorder Step 2 to depend on Step 1 (or at minimum create a synchronization gate after both complete before Step 4 begins). The traceability matrix in Step 4 cannot be populated until both HARA and requirements are final.",
+            "Add a production calibration step: per-cell-lot OCV-SOC and parameter characterization procedure. Cell model parameters from Step 3 derived from published datasets will have \u00b15\u201315% error for a specific production cell lot. Without per-lot calibration, the SOC <2% RMSE acceptance criterion cannot be met in production."
+          ],
+          "missing": [
+            "ISO 26262 Part 5 hardware architectural metrics analysis (SPFM/LFM calculation worksheet per safety mechanism)",
+            "Hardware Safety Requirements (HSR) document \u2014 the bridge between system-level TSRs and hardware implementation",
+            "Key management system design: HSM-backed CA, key injection station, vehicle key provisioning process, key rotation policy",
+            "EMC/ESD test plan: CISPR 25 radiated/conducted emissions, ISO 11452 immunity, IEC 61000-4-x for the PCB design \u2014 mandatory for EU type approval",
+            "ISO 26262 confirmation reviews at each development phase (system, HW, SW) \u2014 not just final FSA in Step 23",
+            "Software Component Qualification (SCQ) plan for reused COTS components: CMSIS-DSP, ONNX runtime, FreeRTOS/SAFERTOS",
+            "Production flashing, provisioning, and end-of-line (EOL) test specification: how is each BMS unit programmed, calibrated, and validated before leaving the factory",
+            "Cell lot characterization / incoming inspection procedure to parameterize the ECM model for the actual production cells",
+            "Battery pack integration test plan using real cells (not HIL) \u2014 required for validation evidence at vehicle level",
+            "ISO 26262 Part 9 independence verification: explicit evidence that ASIL-decomposed channels have no shared cause failures (common-cause failure analysis)"
+          ],
+          "security_risks": [
+            "No Secure Element or Hardware Security Module (HSM) specified for key storage on the BMS MCU. AES-128 keys for CAN CMAC stored in MCU flash are extractable via SWD if JTAG disable is not hardware-enforced via OTP fuses \u2014 the plan says 'JTAG disable in production' without specifying fuse-based irreversible disable.",
+            "OTA rollback prevention requires a monotonic counter in secure (tamper-evident) NVM. The plan mentions rollback prevention as an acceptance criterion but specifies no hardware mechanism \u2014 a software counter in regular flash is bypassable by reflashing an older image.",
+            "CAN CMAC key distribution to 10,000 vehicles has no defined protocol. If a single vehicle's key is extracted, and all vehicles share the same fleet key, the entire fleet's CAN bus is compromised. The plan does not address per-vehicle keys vs. fleet keys or key derivation hierarchy.",
+            "Cloud telemetry API authentication is unspecified in Step 17. TLS 1.3 for transport is listed in Step 16 but there is no mutual TLS (mTLS) or vehicle identity certificate provisioning described. A vehicle can be spoofed or a man-in-the-middle can inject false telemetry.",
+            "Step 16 TARA lists 'physical_JTAG' as an attack surface but does not address debug authentication (DAP authentication via SWD) or the risk of debug port re-enabling via fault injection on the fuse-read path \u2014 a known attack against MCU secure boot chains."
+          ],
+          "summary": "This plan demonstrates genuine domain breadth and correctly structures the ISO 26262 V-model lifecycle with meaningful acceptance criteria throughout. However, it cannot score above 62 for ASIL C certification readiness because it contains three category-breaking technical errors: (1) the AUTOSAR Adaptive/Classic confusion invalidates every AUTOSAR compliance artifact in the plan; (2) the FreeRTOS qualification claim is incorrect in a way that will fail any independent FSA review without a full tool qualification programme not present in the plan; and (3) the Gaussian Process Regression embedded deployment on Cortex-M7 via CMSIS-NN is not technically feasible as specified. Beyond these, the plan has significant gaps in hardware safety metrics (no SPFM/LFM step, no HSR derivation), key management infrastructure for the security architecture, and ISO 26262 confirmation reviews that are not optional for ASIL C. The dependency graph also has a logical ordering flaw between HARA and system requirements. Addressing these would require rework in roughly 8 of the 26 steps before this plan is credible as an ASIL C programme plan.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 62,
+            "flaws": [
+              "Step 6 claims 'FreeRTOS v10.5+ (ASIL D capable configuration)' \u2014 FreeRTOS is NOT ASIL D certified. SAFERTOS (derived product) is. Qualifying vanilla FreeRTOS to TQL1 for ASIL C is a multi-month effort not captured in the plan. This acceptance criterion will be challenged in any FSA.",
+              "Steps 4, 6, 24 reference 'AUTOSAR Adaptive Platform' for a Cortex-M7 (STM32H753). AUTOSAR Adaptive requires a POSIX OS and is designed for high-compute SoCs (A-core). A BMS microcontroller on M-core uses AUTOSAR Classic. This is a fundamental architecture error that invalidates the AUTOSAR compliance artifacts.",
+              "Step 14/15: Gaussian Process Regression does NOT export to ONNX in a form CMSIS-NN can accelerate. GPR inference on 200 training points requires O(n\u00b2) matrix operations. STM32H753 has ~1MB SRAM. The claim of <5ms inference on Cortex-M7 for a GPR+LSTM ensemble is almost certainly false \u2014 no memory budget or FLOP analysis is provided.",
+              "Step 6 lists 'nvme_hal.c' \u2014 NVMe is an enterprise SSD interface. The intent is clearly EEPROM/flash NVM. This naming confusion suggests the payload was not reviewed by an embedded engineer.",
+              "Steps 1 and 2 are listed as parallel (no depends_on). HARA safety goals MUST feed system requirements \u2014 ASIL classification of individual functions in Step 2 is impossible without Step 1 output. Running them truly in parallel produces incompatible documents requiring rework.",
+              "No ISO 26262 Part 5 hardware safety metrics. For ASIL C hardware, SPFM \u2265 97% and LFM \u2265 80% must be demonstrated. No Hardware FMEA separate from DFMEA, no hardware architectural metrics analysis, no hardware safety requirements (HSR) derivation step exists in this plan.",
+              "Step 16 assigns TARA (ISO 21434 cybersecurity) to 'safety_engineer'. ISO 21434 is a separate discipline from ISO 26262. Conflating them risks an inadequate TARA reviewed by someone lacking cybersecurity expertise and fails the UNECE R155 requirement for a qualified cybersecurity engineer.",
+              "Step 17: FastAPI + Celery at 10,000 vehicles \u00d7 10Hz = 100,000 messages/second. No message broker (Kafka, Pulsar) is specified in the ingestion pipeline. FastAPI workers cannot horizontally scale to this throughput without a buffered queue in front. The acceptance criterion will fail load test.",
+              "ISO 26262 confirmation measures (Part 2: functional safety audit, functional safety assessment, confirmation reviews at each phase) are largely absent. Step 23 addresses FSA at the end but confirmation reviews must occur at system, hardware, and software phase completions \u2014 not just at the final safety case.",
+              "LTC6813 + BQ76952 listed as primary/backup without specifying electrical independence. For ASIL C dual-channel redundancy (ISO 26262-9), the channels must be on independent power domains, independent SPI buses, and connected to independent MCU peripherals. 'Backup IC' on the same SPI bus violates independence requirements."
+            ],
+            "suggestions": [
+              "Replace 'FreeRTOS ASIL D capable configuration' with SAFERTOS, or add a dedicated FreeRTOS Tool Qualification step using the FreeRTOS Safety Qualification Kit with explicit TQL1 evidence generation before Step 6 begins.",
+              "Correct all AUTOSAR references from Adaptive to Classic Platform (AUTOSAR R22-11 CP). If Adaptive is genuinely intended for a gateway SoC, split the architecture into M-core BMS controller (Classic) + A-core telemetry gateway (Adaptive) and document the interface.",
+              "Replace Gaussian Process Regression with a quantile neural network or Bayesian-approximated NN (MC-Dropout) that exports cleanly to ONNX and maps to CMSIS-NN ops. Perform an explicit SRAM/flash budget analysis before committing to the ONNX deployment approach.",
+              "Insert an explicit hardware safety requirements (HSR) step between Steps 5 and 9, deriving quantitative targets (SPFM/LFM) for each safety mechanism and assigning them to hardware elements. This is mandatory for Part 5 compliance.",
+              "Add a key management infrastructure task (certificate authority, HSM provisioning station, key injection at EOL manufacturing test) as a dependency before Steps 16 and 25. Without this, the CAN CMAC and OTA signing acceptance criteria cannot be met.",
+              "Add Kafka or MQTT broker (EMQX/HiveMQ) as an explicit component in Step 17 architecture. Separate the ingest pipeline (Kafka consumer \u2192 TimescaleDB) from the alert engine. Restate throughput acceptance criteria against broker-level metrics, not FastAPI worker count.",
+              "Reorder Step 2 to depend on Step 1 (or at minimum create a synchronization gate after both complete before Step 4 begins). The traceability matrix in Step 4 cannot be populated until both HARA and requirements are final.",
+              "Add a production calibration step: per-cell-lot OCV-SOC and parameter characterization procedure. Cell model parameters from Step 3 derived from published datasets will have \u00b15\u201315% error for a specific production cell lot. Without per-lot calibration, the SOC <2% RMSE acceptance criterion cannot be met in production."
+            ],
+            "missing": [
+              "ISO 26262 Part 5 hardware architectural metrics analysis (SPFM/LFM calculation worksheet per safety mechanism)",
+              "Hardware Safety Requirements (HSR) document \u2014 the bridge between system-level TSRs and hardware implementation",
+              "Key management system design: HSM-backed CA, key injection station, vehicle key provisioning process, key rotation policy",
+              "EMC/ESD test plan: CISPR 25 radiated/conducted emissions, ISO 11452 immunity, IEC 61000-4-x for the PCB design \u2014 mandatory for EU type approval",
+              "ISO 26262 confirmation reviews at each development phase (system, HW, SW) \u2014 not just final FSA in Step 23",
+              "Software Component Qualification (SCQ) plan for reused COTS components: CMSIS-DSP, ONNX runtime, FreeRTOS/SAFERTOS",
+              "Production flashing, provisioning, and end-of-line (EOL) test specification: how is each BMS unit programmed, calibrated, and validated before leaving the factory",
+              "Cell lot characterization / incoming inspection procedure to parameterize the ECM model for the actual production cells",
+              "Battery pack integration test plan using real cells (not HIL) \u2014 required for validation evidence at vehicle level",
+              "ISO 26262 Part 9 independence verification: explicit evidence that ASIL-decomposed channels have no shared cause failures (common-cause failure analysis)"
+            ],
+            "security_risks": [
+              "No Secure Element or Hardware Security Module (HSM) specified for key storage on the BMS MCU. AES-128 keys for CAN CMAC stored in MCU flash are extractable via SWD if JTAG disable is not hardware-enforced via OTP fuses \u2014 the plan says 'JTAG disable in production' without specifying fuse-based irreversible disable.",
+              "OTA rollback prevention requires a monotonic counter in secure (tamper-evident) NVM. The plan mentions rollback prevention as an acceptance criterion but specifies no hardware mechanism \u2014 a software counter in regular flash is bypassable by reflashing an older image.",
+              "CAN CMAC key distribution to 10,000 vehicles has no defined protocol. If a single vehicle's key is extracted, and all vehicles share the same fleet key, the entire fleet's CAN bus is compromised. The plan does not address per-vehicle keys vs. fleet keys or key derivation hierarchy.",
+              "Cloud telemetry API authentication is unspecified in Step 17. TLS 1.3 for transport is listed in Step 16 but there is no mutual TLS (mTLS) or vehicle identity certificate provisioning described. A vehicle can be spoofed or a man-in-the-middle can inject false telemetry.",
+              "Step 16 TARA lists 'physical_JTAG' as an attack surface but does not address debug authentication (DAP authentication via SWD) or the risk of debug port re-enabling via fault injection on the fuse-read path \u2014 a known attack against MCU secure boot chains."
+            ],
+            "summary": "This plan demonstrates genuine domain breadth and correctly structures the ISO 26262 V-model lifecycle with meaningful acceptance criteria throughout. However, it cannot score above 62 for ASIL C certification readiness because it contains three category-breaking technical errors: (1) the AUTOSAR Adaptive/Classic confusion invalidates every AUTOSAR compliance artifact in the plan; (2) the FreeRTOS qualification claim is incorrect in a way that will fail any independent FSA review without a full tool qualification programme not present in the plan; and (3) the Gaussian Process Regression embedded deployment on Cortex-M7 via CMSIS-NN is not technically feasible as specified. Beyond these, the plan has significant gaps in hardware safety metrics (no SPFM/LFM step, no HSR derivation), key management infrastructure for the security architecture, and ISO 26262 confirmation reviews that are not optional for ASIL C. The dependency graph also has a logical ordering flaw between HARA and system requirements. Addressing these would require rework in roughly 8 of the 26 steps before this plan is credible as an ASIL C programme plan.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T00:21:05.675383+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 215.79,
+    "critic_plan": 100.36
+  }
+}

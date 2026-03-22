@@ -1,0 +1,775 @@
+{
+  "run_id": "91a478bd-8d61-4ace-b163-840a37bc45c6",
+  "solution_name": "energy_management",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T07:57:42.955766+00:00",
+  "updated_at": "2026-03-22T08:01:48.405030+00:00",
+  "product_description": "Building energy management system with smart meter integration, HVAC optimization, solar panel monitoring, demand response, and carbon footprint tracking.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "CONFIG",
+      "description": "Bootstrap monorepo structure for energy_management solution: Python backend, React frontend, firmware workspace, Docker Compose for local stack (PostgreSQL, InfluxDB time-series, MQTT broker, Redis). Configure .env templates, pre-commit hooks, and linting.",
+      "payload": {
+        "solution_name": "energy_management",
+        "services": [
+          "postgres",
+          "influxdb",
+          "mosquitto",
+          "redis"
+        ],
+        "tooling": [
+          "pre-commit",
+          "ruff",
+          "eslint",
+          "prettier"
+        ],
+        "env_vars": [
+          "INFLUX_TOKEN",
+          "MQTT_BROKER_URL",
+          "SMART_METER_API_KEY",
+          "SOLAR_API_KEY",
+          "DEMAND_RESPONSE_ENDPOINT"
+        ]
+      },
+      "acceptance_criteria": [
+        "docker compose up --build starts all services without errors",
+        ".env.example documents every required environment variable",
+        "pre-commit hooks pass on a clean commit",
+        "Directory structure matches agreed monorepo layout: /backend, /firmware, /web, /infra, /compliance"
+      ],
+      "depends_on": [],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product requirements document (PRD) covering smart meter integration protocols (DLMS/COSEM, ANSI C12), HVAC optimization algorithms, solar panel monitoring via Modbus/SunSpec, demand response (OpenADR 2.0), and carbon footprint calculation methodology (GHG Protocol Scope 2).",
+      "payload": {
+        "protocols": [
+          "DLMS/COSEM",
+          "ANSI C12.19",
+          "Modbus RTU/TCP",
+          "SunSpec",
+          "OpenADR 2.0"
+        ],
+        "standards": [
+          "IEC 62443",
+          "GHG Protocol Scope 2",
+          "IEEE 1547"
+        ],
+        "stakeholders": [
+          "facility_manager",
+          "energy_auditor",
+          "grid_operator"
+        ],
+        "success_metrics": [
+          "15% energy reduction target",
+          "carbon footprint accuracy \u00b15%",
+          "HVAC setpoint response < 2 min"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all five feature areas with measurable KPIs",
+        "Protocol choices are justified against target hardware",
+        "Carbon calculation methodology cites GHG Protocol Scope 2",
+        "Stakeholder sign-off recorded"
+      ],
+      "depends_on": [],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "SECURITY",
+      "description": "Produce IEC 62443 Security Level 2 threat model for the energy management system: asset inventory (meters, sensors, gateways, cloud), attack surface analysis, STRIDE per component, security requirements baseline, and SBOM template. Define network segmentation zones (OT/IT DMZ).",
+      "payload": {
+        "standard": "IEC 62443-3-3 SL2",
+        "methodology": "STRIDE",
+        "zones": [
+          "enterprise_zone",
+          "supervisory_zone",
+          "control_zone",
+          "field_zone"
+        ],
+        "outputs": [
+          "threat_model.md",
+          "security_requirements.csv",
+          "sbom_template.json",
+          "network_segmentation_diagram.png"
+        ]
+      },
+      "acceptance_criteria": [
+        "All assets in the asset inventory are assigned to a Purdue model zone",
+        "STRIDE table covers every zone boundary crossing",
+        "Security requirements are traceable to IEC 62443-3-3 FRs",
+        "SBOM template includes fields: component, version, license, CVE-scan status",
+        "Network segmentation diagram reviewed and approved by security_engineer",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 4,
+      "task_type": "DATABASE",
+      "description": "Design and migrate dual-database schema: PostgreSQL for relational data (devices, buildings, users, tariffs, demand response events, carbon entries) and InfluxDB measurement schema for time-series telemetry (energy_reading, hvac_state, solar_output, grid_signal). Include retention policies and downsampling tasks.",
+      "payload": {
+        "relational_tables": [
+          "buildings",
+          "devices",
+          "smart_meters",
+          "hvac_units",
+          "solar_arrays",
+          "demand_response_events",
+          "carbon_entries",
+          "tariffs",
+          "users",
+          "alerts"
+        ],
+        "influx_measurements": [
+          "energy_reading",
+          "hvac_state",
+          "solar_output",
+          "grid_signal",
+          "carbon_intensity"
+        ],
+        "retention_policies": {
+          "raw": "30d",
+          "1h_downsample": "1y",
+          "1d_downsample": "10y"
+        },
+        "migration_tool": "alembic"
+      },
+      "acceptance_criteria": [
+        "Alembic migrations run cleanly from empty schema to current version",
+        "InfluxDB retention policies and continuous queries are applied via IaC",
+        "All foreign keys have indexes; no N+1 query paths in schema design",
+        "Time-series writes sustain 10,000 points/sec in load test",
+        "Schema ERD is committed to /docs/database_erd.png"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 5,
+      "task_type": "API",
+      "description": "Define OpenAPI 3.1 specification for all REST and WebSocket endpoints: device registration, telemetry ingestion, HVAC command dispatch, solar monitoring, demand response subscription/notification, carbon report generation, and dashboard aggregation queries.",
+      "payload": {
+        "endpoint_groups": [
+          "POST /devices, GET /devices/{id}",
+          "POST /telemetry/ingest (bulk), GET /telemetry/{device_id}",
+          "POST /hvac/{unit_id}/setpoint, GET /hvac/{unit_id}/schedule",
+          "GET /solar/{array_id}/output, GET /solar/{array_id}/forecast",
+          "POST /demand-response/subscribe, POST /demand-response/acknowledge",
+          "GET /carbon/report?period=month",
+          "WS /live-feed/{building_id}"
+        ],
+        "auth": "JWT + API key for device tier",
+        "versioning": "URI prefix /v1/"
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates with no errors via swagger-cli validate",
+        "All endpoints have request/response schemas with examples",
+        "Authentication schemes are documented for both JWT and device API key",
+        "WebSocket message envelopes are documented in the spec",
+        "Contract reviewed and approved before backend implementation begins"
+      ],
+      "depends_on": [
+        2,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "FIRMWARE",
+      "description": "Implement FreeRTOS-based firmware for the energy gateway device (ESP32-S3 or equivalent): DLMS/COSEM smart meter polling over RS-485, Modbus TCP polling for solar inverters, SunSpec model parsing, MQTT publish to cloud broker with TLS 1.3, OTA update task, watchdog, and hardware abstraction layer (HAL) for UART, GPIO, and NVS.",
+      "payload": {
+        "rtos": "FreeRTOS",
+        "mcu": "ESP32-S3",
+        "protocols": [
+          "DLMS/COSEM over RS-485",
+          "Modbus TCP",
+          "MQTT over TLS 1.3"
+        ],
+        "tasks": [
+          "meter_poll_task (1Hz)",
+          "solar_poll_task (1Hz)",
+          "mqtt_publish_task",
+          "ota_update_task",
+          "watchdog_task"
+        ],
+        "hal_modules": [
+          "uart_hal.c",
+          "gpio_hal.c",
+          "nvs_hal.c",
+          "tls_hal.c"
+        ],
+        "toolchain": "ESP-IDF 5.x",
+        "security_features": [
+          "secure_boot",
+          "flash_encryption",
+          "certificate_provisioning"
+        ]
+      },
+      "acceptance_criteria": [
+        "Firmware compiles without warnings with -Wall -Werror",
+        "meter_poll_task reads DLMS obis codes 1.0.1.8.0.255 and 1.0.2.8.0.255 (import/export kWh)",
+        "MQTT publishes telemetry within 2 seconds of poll completion",
+        "OTA update verified on physical device: firmware upgrades and rolls back on hash mismatch",
+        "Secure boot and flash encryption enabled in sdkconfig.defaults",
+        "Watchdog resets device within 10 s of task stall",
+        "OTA update mechanism implemented",
+        "Watchdog timer configured"
+      ],
+      "depends_on": [
+        1,
+        3
+      ],
+      "agent_role": "firmware_engineer"
+    },
+    {
+      "step": 7,
+      "task_type": "BACKEND",
+      "description": "Implement FastAPI backend services: MQTT ingestion worker (subscribes to device telemetry, writes to InfluxDB + PostgreSQL), smart meter REST adapter (DLMS/COSEM REST bridge), HVAC optimization engine (rule-based + ML setpoint scheduler), demand response OpenADR 2.0 VEN client, solar output aggregator, and carbon intensity calculator using grid emission factor API.",
+      "payload": {
+        "framework": "FastAPI",
+        "async_workers": [
+          "mqtt_ingestion_worker.py",
+          "demand_response_ven.py"
+        ],
+        "services": [
+          "meter_service.py (DLMS REST bridge)",
+          "hvac_service.py (optimization engine)",
+          "solar_service.py (SunSpec aggregator)",
+          "carbon_service.py (GHG Scope 2 calculator)",
+          "demand_response_service.py (OpenADR 2.0 VEN)"
+        ],
+        "ml_component": "HVAC setpoint predictor (scikit-learn GradientBoostingRegressor, features: outdoor_temp, occupancy, time_of_day, tariff_period)",
+        "carbon_data_source": "ElectricityMaps API or static regional emission factor table"
+      },
+      "acceptance_criteria": [
+        "MQTT ingestion handles 1,000 msg/s without message loss (measured with paho-mqtt load test)",
+        "HVAC optimization endpoint returns setpoint recommendation within 500 ms",
+        "OpenADR 2.0 VEN registers with test VTN and processes oadrDistributeEvent correctly",
+        "Carbon report endpoint returns kg CO2e per kWh using current grid emission factor",
+        "All endpoints match the OpenAPI spec from step 5",
+        "100% of DB writes go through async SQLAlchemy sessions (no blocking I/O in event loop)"
+      ],
+      "depends_on": [
+        4,
+        5,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "ML_MODEL",
+      "description": "Train and validate the HVAC setpoint optimization model: feature engineering pipeline (weather API, occupancy sensors, historical energy data), gradient boosting model training, cross-validation, hyperparameter tuning, model serialization to ONNX for edge inference, and model card documentation.",
+      "payload": {
+        "algorithm": "GradientBoostingRegressor (scikit-learn)",
+        "features": [
+          "outdoor_temp",
+          "indoor_temp",
+          "occupancy_count",
+          "hour_of_day",
+          "day_of_week",
+          "tariff_period",
+          "solar_generation_kw"
+        ],
+        "target": "optimal_hvac_setpoint_celsius",
+        "validation": "TimeSeriesSplit 5-fold",
+        "export_format": "ONNX",
+        "training_data": "12 months historical building telemetry (synthetic seed + real augmentation)"
+      },
+      "acceptance_criteria": [
+        "Model RMSE < 1.5\u00b0C on held-out 30-day test set",
+        "ONNX model runs inference in < 50 ms on Raspberry Pi 4 (edge target)",
+        "Model card documents: training data sources, feature list, evaluation metrics, known limitations",
+        "Retraining pipeline is reproducible via single make train command",
+        "Model version is tracked in MLflow or equivalent experiment tracker"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 9,
+      "task_type": "AGENTIC",
+      "description": "Implement a Multi-Agent Coordinator pattern for autonomous energy optimization: coordinator agent decomposes building optimization goal into specialist sub-tasks (HVAC agent, solar agent, demand-response agent), collects outputs, and synthesizes a unified energy action plan with human-in-the-loop approval gate before dispatch.",
+      "payload": {
+        "pattern": "coordinator",
+        "coordinator_prompt": "You are an energy optimization coordinator. Given building telemetry and utility signals, decompose the current optimization opportunity and route to specialist agents.",
+        "specialist_agents": [
+          "hvac_optimizer_agent (setpoint recommendations)",
+          "solar_dispatch_agent (export/store/consume decisions)",
+          "demand_response_agent (load shed scheduling)",
+          "carbon_tracker_agent (real-time carbon budget)"
+        ],
+        "hitl_gate": "action_plan_approval",
+        "approval_threshold": "standard",
+        "orchestration_framework": "SAGE LangGraph runner"
+      },
+      "acceptance_criteria": [
+        "Coordinator decomposes a building telemetry payload into \u22653 specialist sub-tasks",
+        "Each specialist agent returns a structured JSON action proposal",
+        "Synthesized action plan is queued in SAGE proposal store before any dispatch",
+        "Human approval triggers actual HVAC/solar/DR dispatch; rejection logs feedback to vector store",
+        "End-to-end latency from telemetry event to proposal ready < 10 s"
+      ],
+      "depends_on": [
+        7,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "FRONTEND",
+      "description": "Build React 18 + TypeScript dashboard: real-time energy consumption charts (Recharts), HVAC control panel, solar generation gauge, demand response event timeline, carbon footprint tracker with trend lines, building floor-plan heatmap overlay, and alert notification drawer. Implement WebSocket live feed from /live-feed endpoint.",
+      "payload": {
+        "framework": "React 18 + TypeScript + Vite",
+        "charts": [
+          "Recharts LineChart (energy trend)",
+          "Recharts AreaChart (solar vs consumption)",
+          "RadialBarChart (carbon budget)"
+        ],
+        "pages": [
+          "/dashboard (building overview)",
+          "/meters (smart meter readings)",
+          "/hvac (HVAC control + schedule)",
+          "/solar (PV monitoring + forecast)",
+          "/demand-response (DR events + acknowledgement)",
+          "/carbon (footprint report + export)"
+        ],
+        "real_time": "WebSocket /live-feed/{building_id}",
+        "state_management": "Zustand"
+      },
+      "acceptance_criteria": [
+        "Dashboard renders live energy data within 3 s of page load",
+        "HVAC setpoint control dispatches to backend and shows optimistic UI update",
+        "Carbon tracker updates in real-time when new telemetry arrives via WebSocket",
+        "All pages pass WCAG 2.1 AA accessibility audit (axe-core)",
+        "Lighthouse performance score \u2265 85 on production build",
+        "Demand response acknowledgement flow matches OpenADR UI workflow"
+      ],
+      "depends_on": [
+        5,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "EMBEDDED_TEST",
+      "description": "Design and implement hardware-in-the-loop (HIL) test suite for the energy gateway firmware: DLMS meter simulator (software RS-485 loopback), Modbus solar inverter stub, MQTT broker health assertions, OTA update regression harness, and fault injection tests (meter disconnect, TLS failure, watchdog trigger).",
+      "payload": {
+        "test_framework": "Unity (C) + pytest-embedded (host-side orchestration)",
+        "simulators": [
+          "dlms_meter_sim.py (DLMS/COSEM obis code responder over serial loopback)",
+          "modbus_inverter_stub.py (SunSpec model 101 stub)",
+          "mqtt_broker_spy (Mosquitto + test client asserting publish payloads)"
+        ],
+        "fault_injection": [
+          "meter_disconnect",
+          "tls_cert_expired",
+          "watchdog_timeout_simulation",
+          "ota_corrupt_image"
+        ],
+        "ci_runner": "GitHub Actions with QEMU ESP32 emulation or physical device farm"
+      },
+      "acceptance_criteria": [
+        "All Unity firmware unit tests pass: \u2265 90% statement coverage on HAL modules",
+        "HIL suite runs end-to-end in CI: dlms_poll \u2192 mqtt_publish verified within 5 s",
+        "Fault injection: meter disconnect triggers alert MQTT message within 30 s",
+        "OTA corrupt image: firmware rejects update and logs rollback event",
+        "TLS cert expiry: device refuses connection and raises certificate_error alert",
+        "Test report committed to /compliance/embedded_test_report.md"
+      ],
+      "depends_on": [
+        6
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 12,
+      "task_type": "TESTS",
+      "description": "Write backend unit and integration tests: pytest suite covering meter service, HVAC optimizer, solar aggregator, carbon calculator, and demand response VEN. Mock InfluxDB and PostgreSQL for unit tests; use Docker Compose test stack for integration. Target \u2265 85% coverage.",
+      "payload": {
+        "test_framework": "pytest + httpx (async) + pytest-cov",
+        "unit_test_targets": [
+          "meter_service",
+          "hvac_service",
+          "solar_service",
+          "carbon_service",
+          "demand_response_service"
+        ],
+        "integration_tests": [
+          "telemetry_ingest_flow",
+          "hvac_dispatch_flow",
+          "carbon_report_generation",
+          "openADR_event_cycle"
+        ],
+        "mocking": "pytest-mock for external APIs; testcontainers for DB",
+        "coverage_target": 85
+      },
+      "acceptance_criteria": [
+        "pytest -q exits 0 with \u2265 85% combined coverage",
+        "Integration tests run against real Postgres + InfluxDB containers via testcontainers",
+        "OpenADR VEN test replays a real oadrDistributeEvent XML fixture",
+        "Carbon calculator tested against known reference: 1000 kWh \u00d7 0.233 kg/kWh = 233 kg CO2e",
+        "All tests run in < 3 minutes in CI"
+      ],
+      "depends_on": [
+        7,
+        8
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 13,
+      "task_type": "DEVOPS",
+      "description": "Build CI/CD pipeline: GitHub Actions workflows for firmware build + HIL test, backend test + Docker image push, frontend build + Lighthouse CI. Kubernetes Helm chart for cloud deployment (backend, workers, Grafana dashboards for InfluxDB). Prometheus metrics exposition from FastAPI.",
+      "payload": {
+        "ci_workflows": [
+          "firmware-ci.yml (ESP-IDF build + Unity tests + QEMU HIL)",
+          "backend-ci.yml (pytest + docker build + push to GHCR)",
+          "frontend-ci.yml (vite build + lighthouse-ci + docker push)"
+        ],
+        "cd_target": "Kubernetes (Helm chart: energy-management-chart/)",
+        "monitoring": "Prometheus metrics via /metrics + pre-built Grafana dashboard JSON for energy KPIs",
+        "alerting": "AlertManager rules: meter_offline > 5 min, hvac_setpoint_deviation > 3\u00b0C, carbon_budget_exceeded"
+      },
+      "acceptance_criteria": [
+        "All three CI workflows pass on a clean main branch merge",
+        "Helm chart deploys cleanly to a local Kind cluster with helm install",
+        "Prometheus /metrics exposes: active_meters_total, hvac_setpoint_lag_seconds, solar_output_kw, carbon_kg_co2e_total",
+        "Grafana dashboard JSON imports without errors and displays live data",
+        "Rollback procedure documented in /infra/runbooks/rollback.md"
+      ],
+      "depends_on": [
+        7,
+        11,
+        12
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 14,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system test: simulate a full 24-hour building operation cycle \u2014 meter data ingestion, HVAC optimization decisions, solar generation event, demand response signal from utility, and carbon report generation. Validate data integrity across PostgreSQL and InfluxDB.",
+      "payload": {
+        "test_scenario": "24h building simulation",
+        "data_generators": [
+          "synthetic_meter_publisher.py (MQTT, 1Hz, 24h replay)",
+          "openADR_event_injector.py",
+          "solar_irradiance_replay.py"
+        ],
+        "assertions": [
+          "0 message drops in 86,400 MQTT publishes",
+          "HVAC optimizer fires \u2265 3 setpoint changes in 24h",
+          "Demand response event acknowledged within 60 s",
+          "Carbon report for the simulated day matches manual calculation \u00b1 5%"
+        ]
+      },
+      "acceptance_criteria": [
+        "System test suite passes without manual intervention",
+        "InfluxDB contains exactly 86,400 energy_reading points for the simulated building",
+        "HVAC setpoint history shows \u2265 3 optimizer-driven changes",
+        "Demand response acknowledgement latency \u2264 60 s recorded in test log",
+        "Carbon report value within \u00b1 5% of reference calculation",
+        "System test report committed to /compliance/system_test_report.md"
+      ],
+      "depends_on": [
+        9,
+        10,
+        12
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 15,
+      "task_type": "COMPLIANCE",
+      "description": "Produce IEC 62443 compliance artifacts: Security Level 2 requirement traceability matrix (SRS \u2192 IEC 62443-3-3 FRs), zone and conduit model diagram, security risk assessment, patch management policy, and incident response plan. Map implemented controls to each FR.",
+      "payload": {
+        "standard": "IEC 62443-3-3 SL2",
+        "artifacts": [
+          "iec62443_traceability_matrix.xlsx (FR1\u2013FR7 mapped to implemented controls)",
+          "zone_conduit_model.png",
+          "security_risk_assessment.md",
+          "patch_management_policy.md",
+          "incident_response_plan.md"
+        ],
+        "controls_to_map": [
+          "TLS 1.3 on all conduits",
+          "device certificate provisioning",
+          "role-based access control",
+          "audit logging",
+          "secure OTA"
+        ]
+      },
+      "acceptance_criteria": [
+        "Every IEC 62443-3-3 FR1\u2013FR7 requirement has \u2265 1 implemented control mapped",
+        "Zone and conduit model diagram reviewed by security_engineer",
+        "Traceability matrix has no empty rows in the 'implementation evidence' column",
+        "Patch management policy defines maximum exposure window \u2264 30 days for critical CVEs",
+        "All artifacts stored in /compliance/ and referenced in SBOM"
+      ],
+      "depends_on": [
+        3,
+        13
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 16,
+      "task_type": "SECURITY",
+      "description": "Execute penetration test plan against the deployed system: MQTT broker authentication bypass attempts, REST API JWT forgery tests, firmware binary extraction attempt, OTA image substitution test, and network segmentation validation. Produce findings report with CVSS scores.",
+      "payload": {
+        "scope": [
+          "MQTT broker on port 8883",
+          "FastAPI REST on port 443",
+          "WebSocket endpoint",
+          "OTA update endpoint",
+          "firmware binary"
+        ],
+        "tools": [
+          "mosquitto_pub (unauthenticated publish attempt)",
+          "OWASP ZAP (REST API)",
+          "binwalk (firmware extraction)",
+          "Wireshark (TLS inspection)"
+        ],
+        "pass_criteria": "No Critical (CVSS \u2265 9.0) or High (CVSS 7.0\u20138.9) open findings at release"
+      },
+      "acceptance_criteria": [
+        "Unauthenticated MQTT publish is rejected with CONNACK return code 5",
+        "JWT forgery attempt returns HTTP 401 on all protected endpoints",
+        "Firmware binary is encrypted; binwalk finds no plaintext credentials",
+        "OTA substitution with unsigned image is rejected by secure boot",
+        "Pentest report committed to /compliance/pentest_report.md with all findings and remediations",
+        "Device identity provisioned",
+        "Firmware signing enabled"
+      ],
+      "depends_on": [
+        13,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct usability review of the dashboard: heuristic evaluation against Nielsen's 10 principles, accessibility audit (WCAG 2.1 AA), and user journey walkthrough for facility manager persona (daily energy review, demand response acknowledgement, carbon report export). Produce prioritized UX findings and implement critical fixes.",
+      "payload": {
+        "personas": [
+          "facility_manager",
+          "energy_auditor"
+        ],
+        "journeys": [
+          "daily_energy_review",
+          "demand_response_acknowledgement",
+          "carbon_report_export",
+          "hvac_setpoint_override"
+        ],
+        "audit_tools": [
+          "axe-core",
+          "Lighthouse accessibility",
+          "manual keyboard navigation"
+        ],
+        "deliverables": [
+          "ux_findings.md",
+          "accessibility_report.md",
+          "implemented_fixes (PR)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Zero WCAG 2.1 AA violations reported by axe-core on all 6 dashboard pages",
+        "All interactive elements reachable and operable via keyboard alone",
+        "Demand response acknowledgement flow completable in \u2264 4 clicks",
+        "Carbon report exportable as PDF and CSV from the UI",
+        "UX findings report prioritizes issues by severity; all Critical and High issues resolved"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 18,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: system architecture overview (C4 diagrams), API reference (auto-generated from OpenAPI spec), firmware developer guide (toolchain setup, flash procedure, DLMS obis code reference), operator runbook (startup, shutdown, meter provisioning, alert triage), and carbon methodology white paper.",
+      "payload": {
+        "docs_site": "MkDocs Material",
+        "sections": [
+          "architecture/ (C4 context, container, component diagrams)",
+          "api/ (ReDoc from OpenAPI spec)",
+          "firmware/ (toolchain, flashing, DLMS reference)",
+          "operations/ (runbooks, alert triage)",
+          "carbon-methodology/ (GHG Protocol Scope 2 white paper)"
+        ],
+        "diagrams": "PlantUML + C4-PlantUML macros"
+      },
+      "acceptance_criteria": [
+        "mkdocs build exits 0 with no broken links",
+        "API reference auto-generates from the OpenAPI spec committed in step 5",
+        "Firmware guide includes step-by-step flash procedure verified on physical device",
+        "Carbon methodology white paper cites GHG Protocol Scope 2 and local grid emission factor source",
+        "Operator runbook covers: meter provisioning, demand response subscription, alert escalation"
+      ],
+      "depends_on": [
+        14,
+        16
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 18,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 54,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 54,
+        "final_review": {
+          "score": 54,
+          "flaws": [
+            "Step 7 (backend) depends on step 6 (firmware) completing before backend development begins. This serializes two workstreams that should be parallel. The backend needs only an MQTT message contract, not working firmware.",
+            "Step 8 (ML model) requires 12 months of historical building telemetry, but the system doesn't exist yet. 'Synthetic seed + real augmentation' is not a training methodology \u2014 it is a placeholder that will produce a model that fails on real deployment. RMSE < 1.5\u00b0C on synthetic-trained data means nothing.",
+            "HVAC integration has no protocol specified. Real HVAC systems use BACnet IP or BACnet MSTP (ASHRAE 135) \u2014 not mentioned anywhere in 18 steps. hvac_service.py cannot command real HVAC units without a BACnet stack. This is a critical domain omission.",
+            "DLMS/COSEM on ESP32-S3 is understated. DLMS/COSEM over HDLC/RS-485 requires a licensed stack (Gurux, DLMS.net) or months of open-source implementation work. Neither is mentioned. The step treats it as a configuration detail.",
+            "ONNX edge inference target (Raspberry Pi 4, step 8) is inconsistent with the firmware target (ESP32-S3, step 6). ESP32-S3 cannot run ONNX Runtime \u2014 it has 512KB SRAM. The architecture has two different edge devices that are never reconciled.",
+            "Step 14 system test acceptance criterion '0 message drops in 86,400 MQTT publishes' specifies no QoS level. QoS 0 guarantees nothing; QoS 2 at 1Hz sustained for 24h against a single Mosquitto node will expose broker backpressure. This criterion is untestable as written.",
+            "IEC 62443 SL2 compliance (step 15) is treated as a self-assessment documentation exercise. SL2 in any credible regulated deployment requires third-party verification or at minimum an independent internal security review. The traceability matrix cannot be self-certified.",
+            "Step 16 (penetration testing) has agent_role: 'developer'. The developer who built the system cannot credibly pentest it. This is a conflict of interest and will not satisfy any auditor.",
+            "Redis is declared in step 1 services but is never referenced in any subsequent step \u2014 no caching strategy, no pub/sub use case, no session store. It is dead infrastructure.",
+            "OpenADR 2.0 interoperability: the plan tests against a 'test VTN' but OpenADR 2.0 certification requires testing against OpenADR Alliance's certification test harness. A passing test against a stub VTN does not guarantee interoperability with utility VTNs."
+          ],
+          "suggestions": [
+            "Remove the step 7 dependency on step 6. Define the MQTT message schema in step 5 (API spec) and use a software MQTT simulator in step 7. Firmware and backend should develop in parallel against the same schema contract.",
+            "Resolve the ML training data problem before step 8 is scheduled. Either (a) source a public building energy dataset (ASHRAE Great Energy Predictor III, OpenEI), (b) run the system for 30 days in data-collection-only mode before training, or (c) scope step 8 as a rule-based baseline first with ML as a later iteration.",
+            "Add BACnet IP/MSTP as a required protocol in step 2 PRD and implement a BACnet adapter in step 7 hvac_service.py. Without this, the HVAC optimization engine can compute setpoints but cannot dispatch them.",
+            "Specify DLMS library selection in step 6. Gurux.DLMS is open-source and has ESP-IDF examples. This decision should be in the acceptance criteria, not discovered during implementation.",
+            "Resolve the edge inference architecture: if HVAC optimization runs on Raspberry Pi (gateway tier), say so explicitly and remove the ESP32-S3 as the inference target. If it runs in the cloud, remove the ONNX/RPi4 acceptance criterion from step 8.",
+            "Add QoS level specification to all MQTT acceptance criteria. Recommend QoS 1 for telemetry (at-least-once) with idempotent InfluxDB writes using line protocol timestamps as deduplication keys.",
+            "Replace Redis placeholder with a concrete use case or remove it from step 1. Candidates: rate limiting for the REST API, WebSocket session state, or HVAC command deduplication buffer.",
+            "Add a device fleet management design step covering: certificate authority setup, factory provisioning workflow, device registry, remote configuration, and revocation. None of this is covered and it blocks any real deployment.",
+            "Add a tariff data integration design. The 'tariffs' table exists in the DB schema but no external tariff API or utility data feed is specified. HVAC optimization using tariff_period as a feature requires this data to exist.",
+            "Add GDPR/privacy impact assessment. Building occupancy patterns derived from energy telemetry are personally identifiable in many jurisdictions. This is missing entirely."
+          ],
+          "missing": [
+            "BACnet IP/MSTP protocol adapter for HVAC command dispatch \u2014 the single largest functional gap in the plan",
+            "Device fleet management: certificate authority design, factory provisioning workflow, device registry service, revocation mechanism",
+            "Tariff data ingestion: no external utility API or tariff feed specified despite tariffs being a feature input for ML and demand response",
+            "Solar irradiance/weather forecast API integration for GET /solar/{array_id}/forecast \u2014 the endpoint is in the API spec but the data source is unspecified in the backend",
+            "Secrets management strategy: INFLUX_TOKEN, SMART_METER_API_KEY, SOLAR_API_KEY in .env files is inadequate for any deployment. HashiCorp Vault, AWS Secrets Manager, or Kubernetes external-secrets needed",
+            "Data retention and backup policy: InfluxDB at 10,000 pts/sec generates ~86GB/day raw. No backup strategy, storage budget, or disaster recovery plan is defined",
+            "InfluxDB OSS write throughput reality check: 10,000 pts/sec sustained requires InfluxDB Clustered or InfluxDB Cloud. OSS single-node will OOM or fall behind under sustained load. Infrastructure sizing is absent",
+            "Network gateway architecture between OT field zone and cloud MQTT: step 3 defines zone boundaries but the firmware publishes directly to cloud MQTT \u2014 no zone-crossing proxy, industrial firewall rule set, or data diode design",
+            "ANSI C12.19 implementation: listed in PRD protocols (step 2) but completely absent from firmware (step 6) and backend (step 7)",
+            "Rollback and blue/green deployment strategy for firmware OTA at scale: the plan tests single-device OTA rollback but not fleet-wide staged rollout with automatic rollback triggers",
+            "Load testing for the REST API: only MQTT ingestion is load tested. No mention of API gateway capacity, rate limiting, or REST endpoint performance under concurrent dashboard users",
+            "Step 14 (system test) does not depend on step 11 (HIL tests) or step 13 (CI/CD), meaning the system test could run before firmware tests complete or before the deployment pipeline exists"
+          ],
+          "security_risks": [
+            "Device certificate provisioning (step 6) is listed as a security feature but no PKI design exists. Who is the CA? What is the certificate lifetime? How are compromised device certificates revoked? Without answers, 'certificate provisioning' is a checkbox, not a control.",
+            "MQTT broker authentication: step 16 tests unauthenticated publish rejection, but the plan never specifies the broker's authentication mechanism (mTLS, username/password, ACL per topic). Mosquitto with default config allows unauthenticated connections.",
+            "JWT + API key for device tier (step 5): long-lived device API keys stored in ESP32 NVS are a significant risk if NVS encryption is not enabled alongside flash encryption. Key rotation mechanism is absent.",
+            "ElectricityMaps API key in backend environment: if the API key is compromised, an attacker can exhaust carbon data quota or inject false emission factors, corrupting carbon reports used for compliance reporting.",
+            "The WebSocket endpoint /live-feed/{building_id} has no specified authorization model. An authenticated user could potentially subscribe to any building's live feed by incrementing the building_id \u2014 IDOR risk not addressed in the spec.",
+            "OTA update endpoint (REST API tier): step 16 tests OTA image substitution on the device, but the server-side OTA image hosting and signing verification workflow is not designed. Where are firmware images stored? Who can push a new image? No access control specified.",
+            "SBOM is a template (step 3) not a live artifact. By step 16 (pentest), the actual SBOM should exist and be scanned against CVE databases. No automated SBOM generation in CI/CD pipeline is specified.",
+            "Penetration test scope excludes internal network: Wireshark TLS inspection is listed as a tool but TLS 1.3 with forward secrecy cannot be passively decrypted. This pentest item is either a placeholder or demonstrates a misunderstanding of TLS 1.3 capabilities."
+          ],
+          "summary": "This plan is architecturally ambitious and covers the right surface area for a building energy management system, but it has a cluster of fundamental gaps that would cause expensive rework in production. The most serious: BACnet is entirely absent despite being the universal HVAC protocol \u2014 the HVAC optimization engine can compute setpoints but cannot dispatch them to any real system. The ML training data problem (step 8 requires 12 months of telemetry from a system that doesn't exist) is papered over with 'synthetic seed' language that will not survive contact with a real building. The firmware/backend dependency inversion will serialize two parallel workstreams unnecessarily. At the infrastructure layer, InfluxDB OSS cannot sustain 10,000 pts/sec on a single node without significant tuning or an enterprise license, and Redis is declared but never used. The IEC 62443 compliance treatment as a self-assessment and the developer doing their own pentest are process failures that would fail any real security audit. For an MVP proof-of-concept, the score would be higher \u2014 but this plan explicitly targets IEC 62443 SL2 compliance and production deployment, which demands 85+. As written, it requires BACnet integration, ML data strategy resolution, infrastructure right-sizing, PKI design, and independent security review before it is credible for a regulated energy management deployment.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 54,
+            "flaws": [
+              "Step 7 (backend) depends on step 6 (firmware) completing before backend development begins. This serializes two workstreams that should be parallel. The backend needs only an MQTT message contract, not working firmware.",
+              "Step 8 (ML model) requires 12 months of historical building telemetry, but the system doesn't exist yet. 'Synthetic seed + real augmentation' is not a training methodology \u2014 it is a placeholder that will produce a model that fails on real deployment. RMSE < 1.5\u00b0C on synthetic-trained data means nothing.",
+              "HVAC integration has no protocol specified. Real HVAC systems use BACnet IP or BACnet MSTP (ASHRAE 135) \u2014 not mentioned anywhere in 18 steps. hvac_service.py cannot command real HVAC units without a BACnet stack. This is a critical domain omission.",
+              "DLMS/COSEM on ESP32-S3 is understated. DLMS/COSEM over HDLC/RS-485 requires a licensed stack (Gurux, DLMS.net) or months of open-source implementation work. Neither is mentioned. The step treats it as a configuration detail.",
+              "ONNX edge inference target (Raspberry Pi 4, step 8) is inconsistent with the firmware target (ESP32-S3, step 6). ESP32-S3 cannot run ONNX Runtime \u2014 it has 512KB SRAM. The architecture has two different edge devices that are never reconciled.",
+              "Step 14 system test acceptance criterion '0 message drops in 86,400 MQTT publishes' specifies no QoS level. QoS 0 guarantees nothing; QoS 2 at 1Hz sustained for 24h against a single Mosquitto node will expose broker backpressure. This criterion is untestable as written.",
+              "IEC 62443 SL2 compliance (step 15) is treated as a self-assessment documentation exercise. SL2 in any credible regulated deployment requires third-party verification or at minimum an independent internal security review. The traceability matrix cannot be self-certified.",
+              "Step 16 (penetration testing) has agent_role: 'developer'. The developer who built the system cannot credibly pentest it. This is a conflict of interest and will not satisfy any auditor.",
+              "Redis is declared in step 1 services but is never referenced in any subsequent step \u2014 no caching strategy, no pub/sub use case, no session store. It is dead infrastructure.",
+              "OpenADR 2.0 interoperability: the plan tests against a 'test VTN' but OpenADR 2.0 certification requires testing against OpenADR Alliance's certification test harness. A passing test against a stub VTN does not guarantee interoperability with utility VTNs."
+            ],
+            "suggestions": [
+              "Remove the step 7 dependency on step 6. Define the MQTT message schema in step 5 (API spec) and use a software MQTT simulator in step 7. Firmware and backend should develop in parallel against the same schema contract.",
+              "Resolve the ML training data problem before step 8 is scheduled. Either (a) source a public building energy dataset (ASHRAE Great Energy Predictor III, OpenEI), (b) run the system for 30 days in data-collection-only mode before training, or (c) scope step 8 as a rule-based baseline first with ML as a later iteration.",
+              "Add BACnet IP/MSTP as a required protocol in step 2 PRD and implement a BACnet adapter in step 7 hvac_service.py. Without this, the HVAC optimization engine can compute setpoints but cannot dispatch them.",
+              "Specify DLMS library selection in step 6. Gurux.DLMS is open-source and has ESP-IDF examples. This decision should be in the acceptance criteria, not discovered during implementation.",
+              "Resolve the edge inference architecture: if HVAC optimization runs on Raspberry Pi (gateway tier), say so explicitly and remove the ESP32-S3 as the inference target. If it runs in the cloud, remove the ONNX/RPi4 acceptance criterion from step 8.",
+              "Add QoS level specification to all MQTT acceptance criteria. Recommend QoS 1 for telemetry (at-least-once) with idempotent InfluxDB writes using line protocol timestamps as deduplication keys.",
+              "Replace Redis placeholder with a concrete use case or remove it from step 1. Candidates: rate limiting for the REST API, WebSocket session state, or HVAC command deduplication buffer.",
+              "Add a device fleet management design step covering: certificate authority setup, factory provisioning workflow, device registry, remote configuration, and revocation. None of this is covered and it blocks any real deployment.",
+              "Add a tariff data integration design. The 'tariffs' table exists in the DB schema but no external tariff API or utility data feed is specified. HVAC optimization using tariff_period as a feature requires this data to exist.",
+              "Add GDPR/privacy impact assessment. Building occupancy patterns derived from energy telemetry are personally identifiable in many jurisdictions. This is missing entirely."
+            ],
+            "missing": [
+              "BACnet IP/MSTP protocol adapter for HVAC command dispatch \u2014 the single largest functional gap in the plan",
+              "Device fleet management: certificate authority design, factory provisioning workflow, device registry service, revocation mechanism",
+              "Tariff data ingestion: no external utility API or tariff feed specified despite tariffs being a feature input for ML and demand response",
+              "Solar irradiance/weather forecast API integration for GET /solar/{array_id}/forecast \u2014 the endpoint is in the API spec but the data source is unspecified in the backend",
+              "Secrets management strategy: INFLUX_TOKEN, SMART_METER_API_KEY, SOLAR_API_KEY in .env files is inadequate for any deployment. HashiCorp Vault, AWS Secrets Manager, or Kubernetes external-secrets needed",
+              "Data retention and backup policy: InfluxDB at 10,000 pts/sec generates ~86GB/day raw. No backup strategy, storage budget, or disaster recovery plan is defined",
+              "InfluxDB OSS write throughput reality check: 10,000 pts/sec sustained requires InfluxDB Clustered or InfluxDB Cloud. OSS single-node will OOM or fall behind under sustained load. Infrastructure sizing is absent",
+              "Network gateway architecture between OT field zone and cloud MQTT: step 3 defines zone boundaries but the firmware publishes directly to cloud MQTT \u2014 no zone-crossing proxy, industrial firewall rule set, or data diode design",
+              "ANSI C12.19 implementation: listed in PRD protocols (step 2) but completely absent from firmware (step 6) and backend (step 7)",
+              "Rollback and blue/green deployment strategy for firmware OTA at scale: the plan tests single-device OTA rollback but not fleet-wide staged rollout with automatic rollback triggers",
+              "Load testing for the REST API: only MQTT ingestion is load tested. No mention of API gateway capacity, rate limiting, or REST endpoint performance under concurrent dashboard users",
+              "Step 14 (system test) does not depend on step 11 (HIL tests) or step 13 (CI/CD), meaning the system test could run before firmware tests complete or before the deployment pipeline exists"
+            ],
+            "security_risks": [
+              "Device certificate provisioning (step 6) is listed as a security feature but no PKI design exists. Who is the CA? What is the certificate lifetime? How are compromised device certificates revoked? Without answers, 'certificate provisioning' is a checkbox, not a control.",
+              "MQTT broker authentication: step 16 tests unauthenticated publish rejection, but the plan never specifies the broker's authentication mechanism (mTLS, username/password, ACL per topic). Mosquitto with default config allows unauthenticated connections.",
+              "JWT + API key for device tier (step 5): long-lived device API keys stored in ESP32 NVS are a significant risk if NVS encryption is not enabled alongside flash encryption. Key rotation mechanism is absent.",
+              "ElectricityMaps API key in backend environment: if the API key is compromised, an attacker can exhaust carbon data quota or inject false emission factors, corrupting carbon reports used for compliance reporting.",
+              "The WebSocket endpoint /live-feed/{building_id} has no specified authorization model. An authenticated user could potentially subscribe to any building's live feed by incrementing the building_id \u2014 IDOR risk not addressed in the spec.",
+              "OTA update endpoint (REST API tier): step 16 tests OTA image substitution on the device, but the server-side OTA image hosting and signing verification workflow is not designed. Where are firmware images stored? Who can push a new image? No access control specified.",
+              "SBOM is a template (step 3) not a live artifact. By step 16 (pentest), the actual SBOM should exist and be scanned against CVE databases. No automated SBOM generation in CI/CD pipeline is specified.",
+              "Penetration test scope excludes internal network: Wireshark TLS inspection is listed as a tool but TLS 1.3 with forward secrecy cannot be passively decrypted. This pentest item is either a placeholder or demonstrates a misunderstanding of TLS 1.3 capabilities."
+            ],
+            "summary": "This plan is architecturally ambitious and covers the right surface area for a building energy management system, but it has a cluster of fundamental gaps that would cause expensive rework in production. The most serious: BACnet is entirely absent despite being the universal HVAC protocol \u2014 the HVAC optimization engine can compute setpoints but cannot dispatch them to any real system. The ML training data problem (step 8 requires 12 months of telemetry from a system that doesn't exist) is papered over with 'synthetic seed' language that will not survive contact with a real building. The firmware/backend dependency inversion will serialize two parallel workstreams unnecessarily. At the infrastructure layer, InfluxDB OSS cannot sustain 10,000 pts/sec on a single node without significant tuning or an enterprise license, and Redis is declared but never used. The IEC 62443 compliance treatment as a self-assessment and the developer doing their own pentest are process failures that would fail any real security audit. For an MVP proof-of-concept, the score would be higher \u2014 but this plan explicitly targets IEC 62443 SL2 compliance and production deployment, which demands 85+. As written, it requires BACnet integration, ML data strategy resolution, infrastructure right-sizing, PKI design, and independent security review before it is credible for a regulated energy management deployment.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T08:01:48.405020+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 124.7,
+    "critic_plan": 120.74
+  }
+}

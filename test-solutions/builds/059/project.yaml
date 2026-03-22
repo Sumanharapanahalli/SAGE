@@ -1,0 +1,67 @@
+project_name: smart_parking
+display_name: Smart Parking
+version: 1.0.0
+domain: iot
+description: Smart parking IoT system with occupancy sensors, mobile app guidance,
+  payment integration, reservation system, and city parking analytics.
+detected_domains: []
+compliance_standards:
+- IEC 62443
+- PCI DSS
+- ADA Compliance
+- FCC Part 15
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- INFRA
+- LEGAL
+- ML_MODEL
+- OPERATIONS
+- PRODUCT_MGMT
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- UX_DESIGN
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- firmware_engineer
+- legal_advisor
+- operations_manager
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

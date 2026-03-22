@@ -1,0 +1,1028 @@
+{
+  "run_id": "6acc8f47-59c5-4895-89b6-0cf9c306cd8b",
+  "solution_name": "exam_proctoring",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T09:32:19.558199+00:00",
+  "updated_at": "2026-03-22T09:36:29.008854+00:00",
+  "product_description": "Online exam proctoring platform with webcam monitoring, screen recording, AI cheating detection, identity verification, and exam analytics.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements, user personas (students, proctors, admins, institutions), process flows for exam lifecycle, and ROI analysis for institutions replacing in-person proctoring.",
+      "payload": {
+        "deliverables": [
+          "business_requirements_doc.md",
+          "user_personas.md",
+          "exam_lifecycle_process_flow.md",
+          "roi_analysis.md"
+        ],
+        "stakeholders": [
+          "institutions",
+          "students",
+          "proctors",
+          "IT_admins"
+        ],
+        "key_flows": [
+          "exam_scheduling",
+          "identity_verification",
+          "live_monitoring",
+          "incident_flagging",
+          "result_reporting"
+        ]
+      },
+      "acceptance_criteria": [
+        "All user personas documented with goals, pain points, and technical constraints",
+        "Exam lifecycle flow covers scheduling \u2192 identity check \u2192 live session \u2192 AI analysis \u2192 results",
+        "ROI model quantifies cost savings vs in-person proctoring with break-even analysis",
+        "Requirements distinguish COPPA-applicable users (under 13) from general users"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 2,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Write the product requirements document (PRD) covering all platform modules: webcam monitoring, screen recording, AI cheating detection, identity verification, and analytics. Define MVP scope, roadmap, and success metrics.",
+      "payload": {
+        "deliverables": [
+          "prd.md",
+          "roadmap.md",
+          "success_metrics.md"
+        ],
+        "mvp_modules": [
+          "identity_verification",
+          "webcam_monitoring",
+          "screen_recording",
+          "basic_analytics"
+        ],
+        "v2_modules": [
+          "ai_cheating_detection",
+          "advanced_analytics",
+          "lms_integrations"
+        ],
+        "kpis": [
+          "exam_integrity_rate",
+          "false_positive_rate",
+          "session_completion_rate",
+          "time_to_verify_identity"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all five core modules with feature-level requirements",
+        "MVP vs v2 scope explicitly defined with rationale",
+        "Success metrics are measurable and have baseline targets (e.g., false positive rate < 5%)",
+        "Roadmap includes milestone dates and dependencies between modules"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 3,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research and produce wireframes for all platform roles: student exam flow, proctor dashboard, admin institution management, and results/analytics views. Include WCAG 2.1 AA accessibility audit.",
+      "payload": {
+        "deliverables": [
+          "ux_research_report.md",
+          "wireframes/",
+          "accessibility_audit.md",
+          "design_system_tokens.json"
+        ],
+        "screens": [
+          "student_onboarding",
+          "identity_check",
+          "exam_room",
+          "proctor_live_view",
+          "incident_panel",
+          "analytics_dashboard",
+          "admin_console"
+        ],
+        "accessibility_standard": "WCAG 2.1 AA",
+        "tools": [
+          "figma"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all screens for all three user roles",
+        "Student exam flow shows clear consent and privacy notice before webcam/screen access",
+        "WCAG 2.1 AA audit checklist completed with no critical violations",
+        "Design system tokens defined for color, typography, spacing (supports theming)",
+        "Proctor dashboard displays live feeds, AI flags, and incident controls in single view",
+        "Accessibility for learners with disabilities",
+        "Mobile-responsive for student devices"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 4,
+      "task_type": "COMPLIANCE",
+      "description": "Produce compliance artifacts for COPPA, FERPA, and WCAG 2.1. Document data retention policies, parental consent flows for under-13 users, student education record protections, and accessibility conformance statement.",
+      "payload": {
+        "standards": [
+          "COPPA",
+          "FERPA",
+          "WCAG_2.1"
+        ],
+        "deliverables": [
+          "coppa_compliance_checklist.md",
+          "ferpa_data_handling_policy.md",
+          "wcag_conformance_statement.md",
+          "data_retention_matrix.md",
+          "consent_flow_spec.md"
+        ],
+        "ferpa_scope": [
+          "exam_recordings",
+          "identity_verification_data",
+          "cheating_flags",
+          "analytics"
+        ],
+        "coppa_scope": [
+          "age_gate_mechanism",
+          "parental_consent_workflow",
+          "data_minimization_for_minors"
+        ]
+      },
+      "acceptance_criteria": [
+        "FERPA policy defines which data is an 'education record' and who may access it",
+        "COPPA checklist confirms age verification mechanism and parental consent workflow",
+        "Data retention matrix specifies retention period for each data type (recordings, flags, identity docs)",
+        "WCAG conformance statement lists level, scope, and known exceptions",
+        "Consent flow spec is implemented as a mandatory pre-exam step"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 5,
+      "task_type": "SECURITY",
+      "description": "Threat model the platform covering webcam/screen data streams, identity document handling, AI model inputs, and exam result integrity. Produce SBOM and penetration test plan.",
+      "payload": {
+        "deliverables": [
+          "threat_model.md",
+          "sbom.json",
+          "pentest_plan.md",
+          "encryption_spec.md"
+        ],
+        "threat_vectors": [
+          "stream_interception",
+          "identity_spoofing",
+          "session_hijacking",
+          "exam_content_leakage",
+          "ai_model_poisoning",
+          "privilege_escalation"
+        ],
+        "encryption_requirements": [
+          "AES-256 at rest for recordings",
+          "TLS 1.3 in transit",
+          "encrypted identity document storage with key rotation"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE threat model completed for all five platform modules",
+        "SBOM generated with all third-party dependencies and known CVEs documented",
+        "Penetration test plan covers authentication, stream security, and admin endpoints",
+        "Encryption spec defines key management, rotation policy, and identity document vault design",
+        "Session token security (short-lived JWTs, refresh rotation) specified"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 6,
+      "task_type": "DATABASE",
+      "description": "Design the database schema for users, institutions, exams, sessions, identity verifications, AI incidents, and analytics events. Define FERPA-compliant access control at the data layer.",
+      "payload": {
+        "deliverables": [
+          "schema.sql",
+          "migrations/",
+          "erd.md",
+          "row_level_security_policy.md"
+        ],
+        "entities": [
+          "institutions",
+          "users",
+          "exams",
+          "exam_sessions",
+          "identity_verifications",
+          "session_recordings",
+          "ai_incidents",
+          "analytics_events",
+          "audit_logs"
+        ],
+        "database": "PostgreSQL",
+        "rls": "Row-level security per institution_id (tenant isolation)"
+      },
+      "acceptance_criteria": [
+        "All entities have UUID primary keys and created_at/updated_at timestamps",
+        "Session recordings stored as references (S3 object keys) not blobs",
+        "Row-level security policies prevent cross-institution data leakage",
+        "Soft-delete pattern used for FERPA records (no hard deletes without retention policy trigger)",
+        "Audit log table captures all reads of student education records with accessor identity",
+        "Migrations are idempotent and reversible"
+      ],
+      "depends_on": [
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "INFRA",
+      "description": "Set up cloud infrastructure: object storage for recordings, CDN, WebRTC media servers, AI inference endpoints, and CI/CD pipelines. Define environment separation (dev/staging/prod).",
+      "payload": {
+        "deliverables": [
+          "terraform/",
+          "docker-compose.yml",
+          ".github/workflows/ci.yml",
+          "infra_architecture.md"
+        ],
+        "cloud": "AWS",
+        "components": [
+          "S3 (recordings)",
+          "CloudFront (CDN)",
+          "Coturn (STUN/TURN for WebRTC)",
+          "ECS Fargate (API)",
+          "RDS PostgreSQL",
+          "ElastiCache Redis (session state)",
+          "SageMaker (AI inference)"
+        ],
+        "environments": [
+          "dev",
+          "staging",
+          "prod"
+        ]
+      },
+      "acceptance_criteria": [
+        "Terraform plan applies without errors for all three environments",
+        "S3 bucket has server-side encryption (AES-256), versioning enabled, and lifecycle rules matching data retention policy",
+        "Coturn TURN server deployed and reachable for WebRTC fallback",
+        "CI/CD pipeline runs lint \u2192 test \u2192 build \u2192 deploy on PR merge",
+        "Secrets managed via AWS Secrets Manager (no hardcoded credentials)",
+        "CloudFront distribution configured with HTTPS-only and HSTS headers"
+      ],
+      "depends_on": [
+        5,
+        6
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 8,
+      "task_type": "BACKEND",
+      "description": "Build the core backend API: authentication (institution SSO + student login), exam management CRUD, session lifecycle management, multi-tenant institution isolation, and FERPA audit logging middleware.",
+      "payload": {
+        "deliverables": [
+          "src/api/",
+          "src/middleware/",
+          "src/models/",
+          "openapi.yaml"
+        ],
+        "framework": "FastAPI",
+        "auth": [
+          "institution_SSO_SAML",
+          "student_JWT",
+          "proctor_JWT",
+          "admin_JWT"
+        ],
+        "endpoints": [
+          "POST /auth/login",
+          "GET /exams",
+          "POST /exams",
+          "GET /exams/{id}",
+          "POST /sessions/start",
+          "POST /sessions/end",
+          "GET /sessions/{id}",
+          "GET /institutions/{id}/analytics"
+        ],
+        "middleware": [
+          "tenant_isolation",
+          "ferpa_audit_logger",
+          "rate_limiter"
+        ]
+      },
+      "acceptance_criteria": [
+        "All endpoints return correct HTTP status codes and typed responses per OpenAPI spec",
+        "Multi-tenant isolation verified: institution A cannot read institution B data",
+        "FERPA audit logger records every read of student records with user_id, timestamp, and endpoint",
+        "JWT access tokens expire in 15 minutes; refresh tokens in 24 hours",
+        "SAML SSO integration tested against mock IdP",
+        "Rate limiting applied to auth endpoints (max 10 req/min per IP)"
+      ],
+      "depends_on": [
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "BACKEND",
+      "description": "Build the identity verification service: government ID document upload, face liveness detection (WebRTC selfie), document OCR, and face-to-document matching with confidence scoring.",
+      "payload": {
+        "deliverables": [
+          "src/services/identity_verification/",
+          "src/services/identity_verification/tests/"
+        ],
+        "workflow": [
+          "upload_id_document",
+          "capture_live_selfie",
+          "ocr_document",
+          "liveness_check",
+          "face_match",
+          "store_result_with_confidence_score"
+        ],
+        "integrations": [
+          "AWS Rekognition (face match + liveness)",
+          "Textract (document OCR)"
+        ],
+        "storage": "Encrypted S3 vault with separate KMS key for identity documents"
+      },
+      "acceptance_criteria": [
+        "Identity document stored encrypted in isolated S3 prefix with restricted IAM policy",
+        "Liveness check rejects static photos (anti-spoofing)",
+        "Face match confidence score stored with threshold (>= 90% passes, < 90% flags for manual review)",
+        "OCR extracts name and ID number; mismatch triggers flag",
+        "Service returns structured result: {status, confidence_score, flags[], timestamp}",
+        "Identity documents deleted after configurable retention period (default 30 days)"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Build the WebRTC session management service: webcam stream ingestion, screen capture stream ingestion, signaling server, chunked recording to S3, and real-time proctor broadcast.",
+      "payload": {
+        "deliverables": [
+          "src/services/session_manager/",
+          "src/websocket/signaling.py"
+        ],
+        "stack": [
+          "WebRTC",
+          "WebSocket (FastAPI)",
+          "Coturn TURN",
+          "FFmpeg (recording chunks)"
+        ],
+        "flows": [
+          "student_join",
+          "proctor_join",
+          "stream_to_s3_chunks",
+          "proctor_live_view",
+          "session_end_merge_chunks"
+        ],
+        "recording": "HLS chunks to S3, merged to MP4 on session end"
+      },
+      "acceptance_criteria": [
+        "Student webcam and screen streams established within 5 seconds of exam start",
+        "Proctor can view up to 30 simultaneous student streams on dashboard",
+        "Recording chunks uploaded to S3 every 30 seconds with no gaps",
+        "Session end triggers async merge of HLS chunks into single MP4",
+        "TURN server fallback activates automatically when direct P2P fails",
+        "Disconnection event triggers alert to proctor and auto-resumes on reconnect"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "ML_MODEL",
+      "description": "Train and deploy the AI cheating detection model: multiple-person detection, gaze tracking (off-screen detection), audio anomaly detection, and suspicious object detection from webcam frames.",
+      "payload": {
+        "deliverables": [
+          "ml/models/cheating_detector/",
+          "ml/training_pipeline/",
+          "ml/evaluation_report.md"
+        ],
+        "models": [
+          "YOLOv8 (multiple person detection, suspicious objects)",
+          "MediaPipe (gaze/head pose estimation)",
+          "Audio classifier (speech detection during silent exam)"
+        ],
+        "training_data": "synthetic + licensed proctoring datasets",
+        "deployment": "SageMaker real-time endpoint",
+        "output": "incident event: {type, confidence, timestamp, frame_ref, session_id}"
+      },
+      "acceptance_criteria": [
+        "Multiple-person detection achieves >= 95% precision on test set",
+        "Gaze tracker flags off-screen look sustained > 5 seconds with < 10% false positive rate",
+        "Audio classifier achieves >= 90% accuracy distinguishing ambient noise from speech",
+        "Inference latency < 500ms per frame at SageMaker endpoint",
+        "Model card documents training data sources, known biases, and demographic fairness metrics",
+        "Evaluation report includes confusion matrix and ROC curves for each detector"
+      ],
+      "depends_on": [
+        7
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Build the AI cheating detection pipeline: frame extraction from live stream, batched inference via SageMaker, incident event generation, real-time alert push to proctor, and incident storage.",
+      "payload": {
+        "deliverables": [
+          "src/services/ai_detection/",
+          "src/services/ai_detection/incident_publisher.py"
+        ],
+        "pattern": "multi_agent_sequential",
+        "flow": [
+          "extract_frames (1fps)",
+          "batch_inference_sagemaker",
+          "threshold_filter",
+          "publish_incident_event",
+          "store_incident",
+          "push_alert_websocket"
+        ],
+        "alert_channels": [
+          "proctor_dashboard_websocket",
+          "email_if_unreviewed_after_5min"
+        ]
+      },
+      "acceptance_criteria": [
+        "Pipeline processes frames at 1fps with < 1 second end-to-end latency (frame to proctor alert)",
+        "Incidents stored with: session_id, student_id, type, confidence, frame_s3_key, timestamp",
+        "Proctor receives WebSocket push notification within 2 seconds of incident detection",
+        "Incidents below configurable confidence threshold (default 0.75) suppressed from proctor view",
+        "High-confidence incidents (>= 0.95) trigger immediate proctor escalation alert",
+        "All incidents logged to audit trail regardless of confidence"
+      ],
+      "depends_on": [
+        10,
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "DATA",
+      "description": "Build the analytics data pipeline: session event ingestion, metrics aggregation (per-exam, per-institution, per-student cohort), and analytics API endpoints for dashboard consumption.",
+      "payload": {
+        "deliverables": [
+          "src/services/analytics/",
+          "src/services/analytics/aggregations.py",
+          "src/api/analytics_routes.py"
+        ],
+        "metrics": [
+          "exam_completion_rate",
+          "identity_verification_pass_rate",
+          "incident_rate_by_exam",
+          "incident_type_distribution",
+          "average_session_duration",
+          "technical_failure_rate"
+        ],
+        "storage": "PostgreSQL materialized views + TimescaleDB for time-series events",
+        "api_endpoints": [
+          "GET /analytics/exams/{id}",
+          "GET /analytics/institutions/{id}",
+          "GET /analytics/cohort"
+        ]
+      },
+      "acceptance_criteria": [
+        "Materialized views refresh every 5 minutes",
+        "Analytics API returns institution-scoped data only (enforced by tenant middleware)",
+        "All metrics queryable by date range",
+        "Cohort analytics anonymize data with k-anonymity (k >= 5) before returning aggregates",
+        "Analytics endpoints respond in < 500ms for institution-level queries"
+      ],
+      "depends_on": [
+        8,
+        12
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 14,
+      "task_type": "AGENTIC",
+      "description": "Implement a Human-in-the-Loop (human_in_the_loop) pattern for proctor incident review: AI flags incidents, proctor reviews evidence (frame + context), approves or dismisses, and feedback is stored to improve future model thresholds.",
+      "payload": {
+        "pattern": "human_in_the_loop",
+        "components": [
+          "incident_queue",
+          "proctor_review_interface",
+          "approval_store",
+          "feedback_loop_to_model_thresholds"
+        ],
+        "deliverables": [
+          "src/services/proctor_hitl/",
+          "src/services/proctor_hitl/feedback_store.py"
+        ],
+        "feedback_signal": "Proctor approve/dismiss decisions stored per incident type to auto-tune confidence thresholds per institution"
+      },
+      "acceptance_criteria": [
+        "Proctor review interface shows: incident frame, incident type, AI confidence, surrounding 30s video clip",
+        "Proctor can approve (confirm cheating), dismiss (false positive), or escalate (to institution admin)",
+        "Each decision stored with proctor_id, timestamp, and optional note",
+        "After 50 decisions per incident type per institution, confidence thresholds auto-adjust using stored feedback",
+        "Feedback loop does not retrain model; adjusts display threshold only",
+        "All proctor decisions written to FERPA audit log"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "FRONTEND",
+      "description": "Build the student exam interface: pre-exam system check (webcam/mic/screen permissions), identity verification flow, exam room with webcam/screen sharing, consent modal, and post-exam confirmation.",
+      "payload": {
+        "deliverables": [
+          "web/src/pages/student/",
+          "web/src/components/exam-room/"
+        ],
+        "framework": "React 18 + TypeScript",
+        "screens": [
+          "SystemCheck",
+          "ConsentModal",
+          "IdentityVerification",
+          "ExamRoom",
+          "ExamComplete"
+        ],
+        "webrtc": "WebRTC API for webcam + screen capture",
+        "accessibility": "WCAG 2.1 AA \u2014 all controls keyboard navigable, ARIA labels on all media elements"
+      },
+      "acceptance_criteria": [
+        "System check validates webcam, microphone, screen share, and bandwidth before allowing exam entry",
+        "Consent modal displays in student's locale language and requires explicit accept before proceeding",
+        "Identity verification step captures live selfie and document photo with clear guidance text",
+        "Exam room shows active recording indicators (webcam dot, screen share indicator) at all times",
+        "Student cannot dismiss webcam or screen share without triggering proctor alert",
+        "All interactive elements pass WCAG 2.1 AA keyboard navigation and screen reader tests"
+      ],
+      "depends_on": [
+        3,
+        9,
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build the proctor dashboard: live multi-student grid view, incident alert panel, individual student detail view with recording playback, and incident review/decision interface.",
+      "payload": {
+        "deliverables": [
+          "web/src/pages/proctor/",
+          "web/src/components/proctor-dashboard/"
+        ],
+        "screens": [
+          "LiveGrid",
+          "StudentDetail",
+          "IncidentQueue",
+          "SessionPlayback"
+        ],
+        "realtime": "WebSocket for live feeds and incident alerts",
+        "grid_capacity": "Up to 30 student tiles simultaneously"
+      },
+      "acceptance_criteria": [
+        "Live grid renders up to 30 student tiles with webcam thumbnails updating at 1fps",
+        "Incident alert panel shows new flags in real-time with sound + visual notification",
+        "Student detail view shows full webcam feed, screen share, and timeline of incidents",
+        "Proctor can approve/dismiss incident directly from incident queue with one click",
+        "Session playback allows seeking to incident timestamp with \u00b130s context",
+        "Dashboard remains responsive under 30 simultaneous streams (< 3s render time)"
+      ],
+      "depends_on": [
+        14,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build the institution admin console: exam management, user management, analytics dashboard, institution settings, LMS integration configuration, and compliance report exports.",
+      "payload": {
+        "deliverables": [
+          "web/src/pages/admin/",
+          "web/src/components/analytics/"
+        ],
+        "screens": [
+          "ExamList",
+          "ExamCreate",
+          "UserManagement",
+          "AnalyticsDashboard",
+          "ComplianceReports",
+          "IntegrationSettings"
+        ],
+        "charts": [
+          "ChartJS \u2014 completion rates, incident trends, verification pass rates"
+        ]
+      },
+      "acceptance_criteria": [
+        "Analytics dashboard renders all key metrics with date range filter",
+        "Exam creation flow supports scheduling, allowed duration, AI sensitivity settings, and proctor assignment",
+        "Compliance report export generates PDF with FERPA-compliant data scope",
+        "User management enforces institution scoping (admin cannot see users from other institutions)",
+        "LMS integration settings UI supports Canvas and Moodle webhook configuration"
+      ],
+      "depends_on": [
+        13,
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "LOCALIZATION",
+      "description": "Set up i18n infrastructure and produce initial translations for English, Spanish, French, and Mandarin. Localize all consent modals, FERPA/COPPA notices, and error messages.",
+      "payload": {
+        "deliverables": [
+          "web/src/i18n/",
+          "web/src/i18n/en.json",
+          "web/src/i18n/es.json",
+          "web/src/i18n/fr.json",
+          "web/src/i18n/zh.json"
+        ],
+        "library": "react-i18next",
+        "priority_strings": [
+          "consent_modal",
+          "coppa_notice",
+          "ferpa_notice",
+          "system_check_instructions",
+          "incident_notifications",
+          "error_messages"
+        ],
+        "rtl_support": false
+      },
+      "acceptance_criteria": [
+        "All UI strings externalized to locale JSON files (no hardcoded English in components)",
+        "Consent modal and COPPA/FERPA notices professionally translated (not machine-translated) for all four locales",
+        "Language selector available on login and pre-exam pages",
+        "react-i18next configured with locale detection (browser language \u2192 fallback to en)",
+        "No missing translation keys in build output (CI check enforced)"
+      ],
+      "depends_on": [
+        15,
+        16,
+        17
+      ],
+      "agent_role": "localization_engineer"
+    },
+    {
+      "step": 19,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for all backend services: authentication, identity verification, session management, AI detection pipeline, analytics, and FERPA audit middleware.",
+      "payload": {
+        "deliverables": [
+          "tests/unit/",
+          "tests/integration/"
+        ],
+        "framework": "pytest + pytest-asyncio",
+        "coverage_target": "80% line coverage",
+        "critical_paths": [
+          "tenant_isolation",
+          "ferpa_audit_log",
+          "identity_verification_flow",
+          "incident_storage",
+          "session_lifecycle"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit tests cover all service methods with mocked external dependencies",
+        "Integration tests verify tenant isolation (cross-institution data access returns 403)",
+        "FERPA audit logger test verifies every student record read produces an audit entry",
+        "Identity verification tests cover: pass, fail (low confidence), and manual review paths",
+        "Session lifecycle tests cover: start, disconnect/reconnect, and clean end scenarios",
+        "Overall test coverage >= 80%; critical paths >= 95%"
+      ],
+      "depends_on": [
+        12,
+        13,
+        14
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 20,
+      "task_type": "QA",
+      "description": "Produce the QA test plan, test case suite, and execute test runs for all platform modules. Include bias testing for AI detection across demographic groups.",
+      "payload": {
+        "deliverables": [
+          "qa/test_plan.md",
+          "qa/test_cases/",
+          "qa/bias_testing_report.md",
+          "qa/test_execution_report.md"
+        ],
+        "test_areas": [
+          "identity_verification_accuracy",
+          "ai_detection_fairness",
+          "stream_reliability",
+          "proctor_alert_latency",
+          "admin_analytics_correctness",
+          "coppa_consent_flow",
+          "ferpa_data_access_controls"
+        ],
+        "bias_testing": "AI cheating detection tested across gender, skin tone, and lighting conditions"
+      },
+      "acceptance_criteria": [
+        "Test plan covers all five core modules with pass/fail criteria defined",
+        "Bias testing report documents false positive rates across demographic groups (max 2x variance allowed)",
+        "All COPPA consent flow test cases pass including age gate and parental consent path",
+        "FERPA data access control cases verified: student cannot access other student's data",
+        "Proctor alert latency test confirms < 2 seconds for 95th percentile",
+        "Test execution report signed off before production release"
+      ],
+      "depends_on": [
+        19
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 21,
+      "task_type": "SYSTEM_TEST",
+      "description": "End-to-end system test suite: full exam lifecycle from scheduling through identity verification, live monitoring, AI flag generation, proctor review, and analytics reporting. Load test for 500 concurrent sessions.",
+      "payload": {
+        "deliverables": [
+          "tests/e2e/",
+          "tests/load/locustfile.py",
+          "tests/load/load_test_report.md"
+        ],
+        "e2e_framework": "Playwright",
+        "load_tool": "Locust",
+        "load_target": "500 concurrent exam sessions",
+        "sla": {
+          "session_start_latency_p95": "5s",
+          "incident_alert_latency_p95": "2s",
+          "recording_upload_gap": "0s",
+          "api_response_p95": "500ms"
+        }
+      },
+      "acceptance_criteria": [
+        "Full exam lifecycle E2E test passes for all three user roles (student, proctor, admin)",
+        "Load test confirms 500 concurrent sessions with all SLA targets met",
+        "No session recording gaps detected under load",
+        "TURN server fallback path tested and verified under NAT conditions",
+        "Load test report documents resource utilization and identifies scaling thresholds"
+      ],
+      "depends_on": [
+        18,
+        20
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 22,
+      "task_type": "DEVOPS",
+      "description": "Set up production monitoring, alerting, and SRE runbooks: stream health monitoring, AI inference latency alerts, FERPA audit log integrity checks, and incident response playbooks.",
+      "payload": {
+        "deliverables": [
+          "monitoring/dashboards/",
+          "monitoring/alerts/",
+          "runbooks/"
+        ],
+        "stack": "AWS CloudWatch + Grafana",
+        "alerts": [
+          "stream_drop_rate > 1%",
+          "ai_inference_latency_p95 > 1s",
+          "audit_log_write_failure",
+          "identity_verification_error_rate > 5%",
+          "session_recording_gap_detected"
+        ],
+        "runbooks": [
+          "stream_outage",
+          "ai_model_degradation",
+          "ferpa_breach_response",
+          "identity_service_failure"
+        ]
+      },
+      "acceptance_criteria": [
+        "All five alert rules configured and tested with synthetic failures",
+        "FERPA breach response runbook reviewed by legal/compliance team",
+        "Grafana dashboard shows: active sessions, incident rate, stream health, AI latency, and storage usage",
+        "On-call rotation configured with escalation path",
+        "Audit log integrity check runs every 24 hours and alerts on tampering"
+      ],
+      "depends_on": [
+        21
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 23,
+      "task_type": "TRAINING",
+      "description": "Produce training materials for all user roles: student quick-start guide, proctor operating manual, institution admin guide, and onboarding video scripts. Include FERPA/COPPA compliance awareness materials.",
+      "payload": {
+        "deliverables": [
+          "docs/student_guide.md",
+          "docs/proctor_manual.md",
+          "docs/admin_guide.md",
+          "docs/video_scripts/",
+          "docs/ferpa_training.md"
+        ],
+        "formats": [
+          "written guides",
+          "video scripts",
+          "in-app tooltips copy"
+        ],
+        "compliance_awareness": [
+          "FERPA obligations for proctors handling student records",
+          "COPPA data handling for under-13 users"
+        ]
+      },
+      "acceptance_criteria": [
+        "Student guide covers system check, identity verification, and exam room controls in under 5 minutes reading time",
+        "Proctor manual covers incident review workflow, escalation procedures, and bias awareness",
+        "Admin guide covers exam creation, user management, analytics interpretation, and compliance report generation",
+        "Video scripts reviewed by UX team for clarity and accessibility (captions required)",
+        "FERPA training document reviewed and approved by legal advisor"
+      ],
+      "depends_on": [
+        17,
+        22
+      ],
+      "agent_role": "technical_writer"
+    },
+    {
+      "step": 24,
+      "task_type": "COMPLIANCE",
+      "description": "Final compliance package: compile COPPA verifiable parental consent records, FERPA data handling attestation, WCAG 2.1 conformance certification, and penetration test sign-off for production launch.",
+      "payload": {
+        "deliverables": [
+          "compliance/coppa_final_attestation.md",
+          "compliance/ferpa_attestation.md",
+          "compliance/wcag_conformance_cert.md",
+          "compliance/pentest_signoff.md",
+          "compliance/launch_readiness_checklist.md"
+        ],
+        "gate": "All four attestations required before production go-live"
+      },
+      "acceptance_criteria": [
+        "COPPA attestation confirms: age gate implemented, parental consent flow tested, data minimization verified for minors",
+        "FERPA attestation confirms: audit logging active, access controls tested, data retention policies enforced",
+        "WCAG conformance cert documents: scope, conformance level (AA), testing methodology, and known exceptions",
+        "Penetration test sign-off confirms no unresolved critical or high vulnerabilities",
+        "Launch readiness checklist completed and signed by product, engineering, and legal leads"
+      ],
+      "depends_on": [
+        20,
+        21,
+        23
+      ],
+      "agent_role": "regulatory_specialist"
+    }
+  ],
+  "task_count": 24,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 58,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 58,
+        "final_review": {
+          "score": 58,
+          "flaws": [
+            "GDPR is entirely absent. Any institution with EU students \u2014 or processing data of EU residents \u2014 triggers GDPR obligations (lawful basis for processing biometric data, data subject rights, DPAs with AWS). Biometric data (face matching) is 'special category' under Article 9 and requires explicit consent + DPA. This is not a minor gap; it blocks EU market entry entirely.",
+            "WebRTC at 500 concurrent sessions is severely underestimated. Each exam generates 2 streams (webcam + screen share) at ~1-2 Mbps each. That's 1-2 Gbps of media throughput minimum. A single Coturn TURN server will saturate and become the single point of failure. Coturn horizontal scaling, bandwidth limits, and TURN server cost are never addressed.",
+            "The proctor dashboard requirement of 30 simultaneous live WebRTC streams in a single browser tab is not achievable with standard WebRTC. Browsers cap concurrent RTCPeerConnection instances (practical limit ~10-15 before degradation). This requires a media server (Janus, mediasoup, LiveKit) to transcode/fan-out streams \u2014 none of which appear in the infra step.",
+            "Step 11 AI model acceptance criteria are aspirational, not engineered. Training YOLOv8 from scratch on 'synthetic + licensed proctoring datasets' to achieve >=95% precision is months of ML work. No dataset is named, no licensing is verified, and no baseline model is specified. In practice, teams fine-tune a pre-trained YOLO checkpoint \u2014 but that's not what's described.",
+            "AWS Rekognition has documented demographic bias in face recognition, particularly for darker skin tones (MIT Media Lab, NIST FRVT data). Using it as the identity verification backbone without independent bias validation creates disparate impact liability \u2014 especially for a FERPA-regulated product. Step 20 audits the cheating model for bias but not the identity verification service.",
+            "TimescaleDB in step 13 conflicts with the RDS PostgreSQL in step 7. TimescaleDB is not available as a managed RDS extension \u2014 you need a self-managed EC2 instance or Timescale Cloud. This is an architectural inconsistency that will break the infra plan.",
+            "HLS chunk merge failure on session end has no recovery path. Step 10 says 'async merge of HLS chunks into single MP4' but doesn't address: what if FFmpeg OOM-kills during merge? What if chunks are partially uploaded? These recordings are legal evidence in academic integrity cases. Data loss here is catastrophic.",
+            "No browser lockdown mechanism. A student can trivially have a second device, a phone propped up beside the monitor, or use a VM. The entire plan assumes the threat model is 'detected via webcam analysis' but doesn't address physical second-device cheating or VM/virtual webcam spoofing (e.g., OBS virtual camera defeating liveness checks).",
+            "Exam content leakage via screen recording is unaddressed. The platform records the student's screen \u2014 which contains exam questions. Step 5 lists 'exam_content_leakage' as a threat vector but the encryption spec only covers recordings at rest. There's no watermarking, no mechanism to prevent a recording from being extracted and exam questions distributed.",
+            "SAML SSO tested against 'mock IdP' only. Real institutional IdPs (Shibboleth, ADFS, Okta, Azure AD) have attribute mapping differences, certificate rotation schedules, and session timeout behaviors that mock IdPs never replicate. This will cause SSO integration failures with institutions post-launch.",
+            "Data residency is never addressed. Many EU institutions require data stored in EU regions. HIPAA-adjacent institutions (nursing programs, medical schools) may have additional requirements. The plan hardcodes AWS without region strategy.",
+            "Step 12 requires '< 1 second end-to-end latency (frame to proctor alert)' through a chain of: frame extraction \u2192 SageMaker endpoint \u2192 threshold filter \u2192 incident store \u2192 WebSocket push. SageMaker real-time endpoint warm inference is ~50-200ms, but the full pipeline under load has never been benchmarked. The acceptance criterion has no load qualification.",
+            "Audio recording in student homes creates untested legal exposure. Recording ambient audio may capture family members (including minors under COPPA), medical conversations, or legally protected communications. The compliance step covers COPPA for the student but not for third-party audio capture."
+          ],
+          "suggestions": [
+            "Add a GDPR/CCPA compliance step parallel to step 4. Specifically: Article 9 explicit consent for biometric processing, DPIA (Data Protection Impact Assessment) for webcam/face data, DPA templates for EU institutions, and right-to-erasure workflow for recordings.",
+            "Replace the single Coturn server with a media server architecture (LiveKit, mediasoup, or Janus). This solves both the TURN scale problem and the 30-stream proctor dashboard problem \u2014 the media server handles fan-out, thumbnail generation, and recording, which simplifies steps 10 and 16 significantly.",
+            "Replace 'train from scratch' in step 11 with 'fine-tune pre-trained models.' Specify exact base models (YOLOv8n pretrained on COCO for object detection, MediaPipe FaceMesh for gaze \u2014 both are already production-quality). Reduce timeline expectation accordingly. Training data sourcing should be a separate step with IRB/licensing verification.",
+            "Add an independent bias audit of AWS Rekognition for the specific identity document types and demographic distribution of your target student population, using NIST FRVT as the benchmark reference. If Rekognition fails the audit, specify a fallback vendor (e.g., FaceIO, Veriff, Onfido).",
+            "Add exam content watermarking to step 5/10. Each student session should receive a unique steganographic watermark embedded in exam content delivery so that leaked questions can be traced to the source session.",
+            "Clarify the TimescaleDB deployment model in step 7's Terraform: either use Aurora PostgreSQL with pg_timeseries extension (RDS-compatible) or add a separate TimescaleDB EC2 instance to the infra architecture. Don't leave this as an implicit assumption.",
+            "Add chunk recovery and integrity verification to step 10. HLS segments should be checksummed on upload; a session-end reconciliation job should verify all expected chunks are present before triggering merge, with an alert to proctor if gaps are detected.",
+            "Separate the 'TURN server scale' concern from signaling in step 7: deploy Coturn behind an NLB with auto-scaling group, and add bandwidth cost estimate to the ROI analysis in step 1. TURN relay at scale is expensive (~$0.03/GB) and will surprise institutions.",
+            "Add virtual camera / VM detection to step 11's threat model. AWS Rekognition liveness detection does not catch OBS virtual camera. Add a WebRTC media fingerprinting check (codec negotiation, timing analysis) or a dedicated anti-spoofing vendor.",
+            "Add geographic data routing in step 7: EU traffic should stay in eu-west-1 or eu-central-1. Implement CloudFront origin routing by geography and RDS read replicas in relevant regions."
+          ],
+          "missing": [
+            "GDPR compliance artifacts (DPIA, Article 9 consent mechanism for biometric data, DPA templates, right-to-erasure workflow for recordings, data subject access request handling)",
+            "Media server architecture for fan-out streaming (LiveKit/mediasoup) \u2014 critical for both 30-stream proctor view and TURN scale",
+            "LMS integration implementation \u2014 Canvas and Moodle are mentioned in step 17 UI settings but there's no backend step for LTI 1.3 / OAuth 2.0 integration, which is how institutions actually launch exams from their LMS",
+            "Exam content watermarking and anti-leakage controls",
+            "Virtual webcam / VM spoofing detection in threat model and AI pipeline",
+            "Browser compatibility matrix \u2014 which browsers support getDisplayMedia, and what's the fallback for unsupported environments",
+            "SageMaker endpoint auto-scaling policy \u2014 at 500 concurrent sessions extracting 1 frame/sec, that's 500 inference requests/sec, which requires a provisioned concurrency plan",
+            "Data residency and geographic routing strategy (EU data sovereignty, country-specific storage requirements)",
+            "Third-party audio consent mechanism for household members captured incidentally",
+            "Incident appeals workflow \u2014 students who believe they were falsely flagged need a formal appeal process, which has FERPA implications",
+            "Exam content delivery security (how questions are sent to the student browser and protected from extraction)",
+            "Independent Rekognition bias audit for identity verification demographic fairness",
+            "FERPA breach notification procedure with timeline (institutions must be notified within specific windows)"
+          ],
+          "security_risks": [
+            "Virtual camera injection bypasses liveness detection: OBS Studio and similar tools present as a legitimate webcam device. AWS Rekognition FaceMovementAndLightChallenge detects some spoofing but not all virtual camera attacks. No compensating control is specified.",
+            "JWT refresh token theft via XSS: 24-hour refresh tokens stored in a browser context are high-value targets. The plan specifies 'session token security' but doesn't specify httpOnly/Secure cookie storage vs localStorage. localStorage refresh tokens are trivially exfiltrated by any XSS.",
+            "TURN credential exposure: Coturn uses time-limited HMAC credentials. If the TURN secret leaks (e.g., via misconfigured environment variable in ECS), an attacker can relay arbitrary WebRTC traffic through your TURN server at your bandwidth cost. Secrets Manager is specified but TURN credential rotation cadence is not.",
+            "SageMaker endpoint enumeration: if the SageMaker endpoint URL is embedded in frontend or API responses, an adversary could probe it directly to map model behavior and calibrate cheating techniques to stay below detection thresholds.",
+            "Insecure direct object reference on recordings: S3 object keys for recordings are stored in the database. If presigned URL generation doesn't enforce institution_id scoping in the IAM condition, a student with a valid JWT could construct requests for another institution's recordings.",
+            "AI model poisoning via feedback loop: Step 14's threshold auto-adjustment based on proctor decisions could be systematically gamed. A proctor (or compromised proctor account) dismissing all incidents of type X for 50 sessions lowers the threshold for that institution, effectively disabling detection for that incident type.",
+            "WebRTC signaling server as DoS vector: the WebSocket signaling endpoint (step 10) is unauthenticated at the protocol level until the JWT is validated. A bot that opens thousands of WebSocket connections before authenticating can exhaust connection limits. No connection-level rate limiting is specified for WebSocket upgrade requests.",
+            "Screen recording captures sensitive non-exam content: the student's screen recording may capture passwords autofilled by a password manager, banking sites in other tabs, or medical portals. This data is stored in S3 indefinitely per the retention policy. The threat model doesn't classify this as a risk."
+          ],
+          "summary": "This is a well-structured plan that correctly identifies FERPA/COPPA compliance as a first-class concern and sequences dependencies logically. However, it has several production-blocking gaps that prevent a score above 60. The most critical: GDPR is entirely absent (blocking EU market entry), the WebRTC media architecture is insufficient for 30-stream proctor views and 500-session scale (a media server is required, not just TURN), and the AI model training plan is aspirational rather than grounded in real datasets and timelines. The identity verification layer has an unaddressed demographic bias risk by relying solely on AWS Rekognition without independent audit. The exam content itself has no leak protection despite screen recording being central to the product. For a regulated EdTech platform handling student biometric data and academic records, these aren't polish issues \u2014 they are fundamental architectural and compliance failures that will surface within the first institutional pilot. The plan needs a GDPR step, a media server architecture decision, realistic ML scope reduction, and a screen-content security model before it's production-ready.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 58,
+            "flaws": [
+              "GDPR is entirely absent. Any institution with EU students \u2014 or processing data of EU residents \u2014 triggers GDPR obligations (lawful basis for processing biometric data, data subject rights, DPAs with AWS). Biometric data (face matching) is 'special category' under Article 9 and requires explicit consent + DPA. This is not a minor gap; it blocks EU market entry entirely.",
+              "WebRTC at 500 concurrent sessions is severely underestimated. Each exam generates 2 streams (webcam + screen share) at ~1-2 Mbps each. That's 1-2 Gbps of media throughput minimum. A single Coturn TURN server will saturate and become the single point of failure. Coturn horizontal scaling, bandwidth limits, and TURN server cost are never addressed.",
+              "The proctor dashboard requirement of 30 simultaneous live WebRTC streams in a single browser tab is not achievable with standard WebRTC. Browsers cap concurrent RTCPeerConnection instances (practical limit ~10-15 before degradation). This requires a media server (Janus, mediasoup, LiveKit) to transcode/fan-out streams \u2014 none of which appear in the infra step.",
+              "Step 11 AI model acceptance criteria are aspirational, not engineered. Training YOLOv8 from scratch on 'synthetic + licensed proctoring datasets' to achieve >=95% precision is months of ML work. No dataset is named, no licensing is verified, and no baseline model is specified. In practice, teams fine-tune a pre-trained YOLO checkpoint \u2014 but that's not what's described.",
+              "AWS Rekognition has documented demographic bias in face recognition, particularly for darker skin tones (MIT Media Lab, NIST FRVT data). Using it as the identity verification backbone without independent bias validation creates disparate impact liability \u2014 especially for a FERPA-regulated product. Step 20 audits the cheating model for bias but not the identity verification service.",
+              "TimescaleDB in step 13 conflicts with the RDS PostgreSQL in step 7. TimescaleDB is not available as a managed RDS extension \u2014 you need a self-managed EC2 instance or Timescale Cloud. This is an architectural inconsistency that will break the infra plan.",
+              "HLS chunk merge failure on session end has no recovery path. Step 10 says 'async merge of HLS chunks into single MP4' but doesn't address: what if FFmpeg OOM-kills during merge? What if chunks are partially uploaded? These recordings are legal evidence in academic integrity cases. Data loss here is catastrophic.",
+              "No browser lockdown mechanism. A student can trivially have a second device, a phone propped up beside the monitor, or use a VM. The entire plan assumes the threat model is 'detected via webcam analysis' but doesn't address physical second-device cheating or VM/virtual webcam spoofing (e.g., OBS virtual camera defeating liveness checks).",
+              "Exam content leakage via screen recording is unaddressed. The platform records the student's screen \u2014 which contains exam questions. Step 5 lists 'exam_content_leakage' as a threat vector but the encryption spec only covers recordings at rest. There's no watermarking, no mechanism to prevent a recording from being extracted and exam questions distributed.",
+              "SAML SSO tested against 'mock IdP' only. Real institutional IdPs (Shibboleth, ADFS, Okta, Azure AD) have attribute mapping differences, certificate rotation schedules, and session timeout behaviors that mock IdPs never replicate. This will cause SSO integration failures with institutions post-launch.",
+              "Data residency is never addressed. Many EU institutions require data stored in EU regions. HIPAA-adjacent institutions (nursing programs, medical schools) may have additional requirements. The plan hardcodes AWS without region strategy.",
+              "Step 12 requires '< 1 second end-to-end latency (frame to proctor alert)' through a chain of: frame extraction \u2192 SageMaker endpoint \u2192 threshold filter \u2192 incident store \u2192 WebSocket push. SageMaker real-time endpoint warm inference is ~50-200ms, but the full pipeline under load has never been benchmarked. The acceptance criterion has no load qualification.",
+              "Audio recording in student homes creates untested legal exposure. Recording ambient audio may capture family members (including minors under COPPA), medical conversations, or legally protected communications. The compliance step covers COPPA for the student but not for third-party audio capture."
+            ],
+            "suggestions": [
+              "Add a GDPR/CCPA compliance step parallel to step 4. Specifically: Article 9 explicit consent for biometric processing, DPIA (Data Protection Impact Assessment) for webcam/face data, DPA templates for EU institutions, and right-to-erasure workflow for recordings.",
+              "Replace the single Coturn server with a media server architecture (LiveKit, mediasoup, or Janus). This solves both the TURN scale problem and the 30-stream proctor dashboard problem \u2014 the media server handles fan-out, thumbnail generation, and recording, which simplifies steps 10 and 16 significantly.",
+              "Replace 'train from scratch' in step 11 with 'fine-tune pre-trained models.' Specify exact base models (YOLOv8n pretrained on COCO for object detection, MediaPipe FaceMesh for gaze \u2014 both are already production-quality). Reduce timeline expectation accordingly. Training data sourcing should be a separate step with IRB/licensing verification.",
+              "Add an independent bias audit of AWS Rekognition for the specific identity document types and demographic distribution of your target student population, using NIST FRVT as the benchmark reference. If Rekognition fails the audit, specify a fallback vendor (e.g., FaceIO, Veriff, Onfido).",
+              "Add exam content watermarking to step 5/10. Each student session should receive a unique steganographic watermark embedded in exam content delivery so that leaked questions can be traced to the source session.",
+              "Clarify the TimescaleDB deployment model in step 7's Terraform: either use Aurora PostgreSQL with pg_timeseries extension (RDS-compatible) or add a separate TimescaleDB EC2 instance to the infra architecture. Don't leave this as an implicit assumption.",
+              "Add chunk recovery and integrity verification to step 10. HLS segments should be checksummed on upload; a session-end reconciliation job should verify all expected chunks are present before triggering merge, with an alert to proctor if gaps are detected.",
+              "Separate the 'TURN server scale' concern from signaling in step 7: deploy Coturn behind an NLB with auto-scaling group, and add bandwidth cost estimate to the ROI analysis in step 1. TURN relay at scale is expensive (~$0.03/GB) and will surprise institutions.",
+              "Add virtual camera / VM detection to step 11's threat model. AWS Rekognition liveness detection does not catch OBS virtual camera. Add a WebRTC media fingerprinting check (codec negotiation, timing analysis) or a dedicated anti-spoofing vendor.",
+              "Add geographic data routing in step 7: EU traffic should stay in eu-west-1 or eu-central-1. Implement CloudFront origin routing by geography and RDS read replicas in relevant regions."
+            ],
+            "missing": [
+              "GDPR compliance artifacts (DPIA, Article 9 consent mechanism for biometric data, DPA templates, right-to-erasure workflow for recordings, data subject access request handling)",
+              "Media server architecture for fan-out streaming (LiveKit/mediasoup) \u2014 critical for both 30-stream proctor view and TURN scale",
+              "LMS integration implementation \u2014 Canvas and Moodle are mentioned in step 17 UI settings but there's no backend step for LTI 1.3 / OAuth 2.0 integration, which is how institutions actually launch exams from their LMS",
+              "Exam content watermarking and anti-leakage controls",
+              "Virtual webcam / VM spoofing detection in threat model and AI pipeline",
+              "Browser compatibility matrix \u2014 which browsers support getDisplayMedia, and what's the fallback for unsupported environments",
+              "SageMaker endpoint auto-scaling policy \u2014 at 500 concurrent sessions extracting 1 frame/sec, that's 500 inference requests/sec, which requires a provisioned concurrency plan",
+              "Data residency and geographic routing strategy (EU data sovereignty, country-specific storage requirements)",
+              "Third-party audio consent mechanism for household members captured incidentally",
+              "Incident appeals workflow \u2014 students who believe they were falsely flagged need a formal appeal process, which has FERPA implications",
+              "Exam content delivery security (how questions are sent to the student browser and protected from extraction)",
+              "Independent Rekognition bias audit for identity verification demographic fairness",
+              "FERPA breach notification procedure with timeline (institutions must be notified within specific windows)"
+            ],
+            "security_risks": [
+              "Virtual camera injection bypasses liveness detection: OBS Studio and similar tools present as a legitimate webcam device. AWS Rekognition FaceMovementAndLightChallenge detects some spoofing but not all virtual camera attacks. No compensating control is specified.",
+              "JWT refresh token theft via XSS: 24-hour refresh tokens stored in a browser context are high-value targets. The plan specifies 'session token security' but doesn't specify httpOnly/Secure cookie storage vs localStorage. localStorage refresh tokens are trivially exfiltrated by any XSS.",
+              "TURN credential exposure: Coturn uses time-limited HMAC credentials. If the TURN secret leaks (e.g., via misconfigured environment variable in ECS), an attacker can relay arbitrary WebRTC traffic through your TURN server at your bandwidth cost. Secrets Manager is specified but TURN credential rotation cadence is not.",
+              "SageMaker endpoint enumeration: if the SageMaker endpoint URL is embedded in frontend or API responses, an adversary could probe it directly to map model behavior and calibrate cheating techniques to stay below detection thresholds.",
+              "Insecure direct object reference on recordings: S3 object keys for recordings are stored in the database. If presigned URL generation doesn't enforce institution_id scoping in the IAM condition, a student with a valid JWT could construct requests for another institution's recordings.",
+              "AI model poisoning via feedback loop: Step 14's threshold auto-adjustment based on proctor decisions could be systematically gamed. A proctor (or compromised proctor account) dismissing all incidents of type X for 50 sessions lowers the threshold for that institution, effectively disabling detection for that incident type.",
+              "WebRTC signaling server as DoS vector: the WebSocket signaling endpoint (step 10) is unauthenticated at the protocol level until the JWT is validated. A bot that opens thousands of WebSocket connections before authenticating can exhaust connection limits. No connection-level rate limiting is specified for WebSocket upgrade requests.",
+              "Screen recording captures sensitive non-exam content: the student's screen recording may capture passwords autofilled by a password manager, banking sites in other tabs, or medical portals. This data is stored in S3 indefinitely per the retention policy. The threat model doesn't classify this as a risk."
+            ],
+            "summary": "This is a well-structured plan that correctly identifies FERPA/COPPA compliance as a first-class concern and sequences dependencies logically. However, it has several production-blocking gaps that prevent a score above 60. The most critical: GDPR is entirely absent (blocking EU market entry), the WebRTC media architecture is insufficient for 30-stream proctor views and 500-session scale (a media server is required, not just TURN), and the AI model training plan is aspirational rather than grounded in real datasets and timelines. The identity verification layer has an unaddressed demographic bias risk by relying solely on AWS Rekognition without independent audit. The exam content itself has no leak protection despite screen recording being central to the product. For a regulated EdTech platform handling student biometric data and academic records, these aren't polish issues \u2014 they are fundamental architectural and compliance failures that will surface within the first institutional pilot. The plan needs a GDPR step, a media server architecture decision, realistic ML scope reduction, and a screen-content security model before it's production-ready.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T09:36:29.008844+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 132.61,
+    "critic_plan": 116.83
+  }
+}

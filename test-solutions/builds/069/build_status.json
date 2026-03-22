@@ -1,0 +1,708 @@
+{
+  "run_id": "5f100e83-82b5-43e4-bbf2-58b2f7e9344e",
+  "solution_name": "search_engine",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T08:57:53.034292+00:00",
+  "updated_at": "2026-03-22T09:01:22.998858+00:00",
+  "product_description": "Semantic search engine with vector embeddings, hybrid search (BM25 + vector), query understanding, auto-complete, faceted filtering, and relevance tuning console.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Define product requirements, success metrics, and scope for the semantic search engine including vector embeddings, hybrid search, query understanding, auto-complete, faceted filtering, and relevance tuning console.",
+      "payload": {
+        "solution_name": "search_engine",
+        "deliverables": [
+          "PRD",
+          "feature_list",
+          "success_metrics",
+          "scope_definition"
+        ],
+        "key_decisions": [
+          "embedding_model_selection",
+          "vector_db_choice",
+          "BM25_library",
+          "index_schema"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD document lists all features with acceptance criteria",
+        "Success metrics defined (latency p99 < 200ms, recall@10 > 0.85)",
+        "Embedding model candidates shortlisted with trade-off matrix",
+        "Vector DB options evaluated (Qdrant vs Weaviate vs Pinecone)"
+      ],
+      "depends_on": [],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 2,
+      "task_type": "DATA",
+      "description": "Design the data model and document ingestion pipeline: chunking strategy, metadata schema, embedding generation pipeline, BM25 index construction, and incremental update support.",
+      "payload": {
+        "components": [
+          "document_schema",
+          "chunking_pipeline",
+          "embedding_pipeline",
+          "bm25_index_builder",
+          "metadata_store"
+        ],
+        "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+        "chunk_strategy": "sliding_window_512_overlap_64",
+        "bm25_library": "rank_bm25"
+      },
+      "acceptance_criteria": [
+        "Document schema defined with fields: id, content, chunks, metadata, embeddings, facet_fields",
+        "Chunking pipeline handles PDF, HTML, plain text inputs",
+        "Embedding pipeline generates 384-dim vectors for each chunk",
+        "BM25 inverted index built and serializable to disk",
+        "Incremental index update adds documents without full rebuild",
+        "Pipeline processes 1000 docs/min on standard hardware"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 3,
+      "task_type": "ML_MODEL",
+      "description": "Set up the embedding model pipeline: select and fine-tune sentence transformer, build query encoder, implement query understanding module (intent classification, query expansion, spell correction), and design relevance scoring.",
+      "payload": {
+        "base_model": "sentence-transformers/all-MiniLM-L6-v2",
+        "query_understanding": [
+          "intent_classifier",
+          "query_expansion",
+          "spell_correction"
+        ],
+        "scoring": "hybrid_rrf",
+        "pattern": "iterative_refinement"
+      },
+      "acceptance_criteria": [
+        "Embedding model loads and encodes query in < 50ms",
+        "Query expansion generates 3-5 semantically related terms",
+        "Spell correction handles common typos with > 90% accuracy",
+        "Intent classifier distinguishes navigational/informational/transactional queries",
+        "Hybrid RRF score combines BM25 + vector scores with configurable alpha weight",
+        "Model evaluation script outputs NDCG@10 and MRR metrics",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 4,
+      "task_type": "DATABASE",
+      "description": "Provision and configure the vector database (Qdrant), BM25 index store, metadata/facets store (PostgreSQL), and auto-complete trie/prefix index.",
+      "payload": {
+        "vector_db": "qdrant",
+        "collection_config": {
+          "vectors": {
+            "size": 384,
+            "distance": "Cosine"
+          }
+        },
+        "metadata_db": "postgresql",
+        "autocomplete_store": "redis_sorted_set",
+        "facets_schema": "jsonb_with_gin_index"
+      },
+      "acceptance_criteria": [
+        "Qdrant collection created with correct vector dimensions and HNSW params",
+        "PostgreSQL schema includes documents, facets, and query_logs tables with migrations",
+        "Redis sorted set populated for prefix-based auto-complete lookups",
+        "GIN index on facets JSONB column enables sub-10ms facet aggregation",
+        "All DB schemas version-controlled as migration files"
+      ],
+      "depends_on": [
+        2
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 5,
+      "task_type": "BACKEND",
+      "description": "Build the core search backend service: hybrid search orchestrator (BM25 + vector fusion), query processing pipeline, faceted filtering engine, and indexing API.",
+      "payload": {
+        "framework": "fastapi",
+        "modules": [
+          "hybrid_search_orchestrator",
+          "bm25_retriever",
+          "vector_retriever",
+          "rrf_fusion",
+          "facet_filter_engine",
+          "indexing_service"
+        ],
+        "pattern": "multi_agent_sequential"
+      },
+      "acceptance_criteria": [
+        "POST /index accepts documents, chunks, embeds, and stores in Qdrant + BM25",
+        "POST /search returns hybrid-ranked results with scores and metadata",
+        "Facet filters applied as pre-filter to vector search and BM25 simultaneously",
+        "RRF fusion configurable via alpha weight parameter",
+        "Search latency p95 < 150ms for corpus of 100k documents",
+        "Indexing throughput > 500 docs/min end-to-end"
+      ],
+      "depends_on": [
+        3,
+        4
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 6,
+      "task_type": "BACKEND",
+      "description": "Implement auto-complete service with prefix matching, semantic suggestion ranking, and personalization hooks. Implement query understanding middleware that runs spell correction and query expansion before search.",
+      "payload": {
+        "autocomplete_backend": "redis_prefix_scan + semantic_rerank",
+        "query_pipeline": [
+          "normalize",
+          "spell_correct",
+          "expand",
+          "embed",
+          "route"
+        ],
+        "endpoints": [
+          "GET /autocomplete",
+          "POST /query/understand"
+        ]
+      },
+      "acceptance_criteria": [
+        "GET /autocomplete?q=prefix returns top-10 suggestions in < 20ms",
+        "Suggestions ranked by query frequency and semantic similarity to partial query",
+        "POST /query/understand returns corrected query, expanded terms, and detected intent",
+        "Query pipeline adds < 30ms overhead to total search latency",
+        "Auto-complete index updated incrementally as new queries arrive"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 7,
+      "task_type": "BACKEND",
+      "description": "Build the relevance tuning engine: configurable boosting rules, field weights, A/B testing framework for ranking experiments, and query-level override storage.",
+      "payload": {
+        "tuning_features": [
+          "field_weight_config",
+          "boost_rules_engine",
+          "ab_experiment_router",
+          "query_override_store",
+          "feedback_signal_collector"
+        ],
+        "storage": "postgresql_jsonb",
+        "pattern": "human_in_the_loop"
+      },
+      "acceptance_criteria": [
+        "Boost rules support field-level, recency, and popularity signals",
+        "A/B experiment router splits traffic by configurable percentage",
+        "Query overrides (pin, exclude, boost specific doc) stored and applied at query time",
+        "Relevance config changes hot-reload without service restart",
+        "Click-through and dwell-time feedback events logged for offline evaluation"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design and document the full OpenAPI spec for all search_engine endpoints: /index, /search, /autocomplete, /query/understand, /facets, /relevance/config, /relevance/experiment, /analytics.",
+      "payload": {
+        "spec_format": "openapi_3.1",
+        "endpoints": [
+          "POST /index",
+          "DELETE /index/{doc_id}",
+          "POST /search",
+          "GET /autocomplete",
+          "POST /query/understand",
+          "GET /facets",
+          "GET /relevance/config",
+          "PUT /relevance/config",
+          "POST /relevance/experiment",
+          "GET /analytics/queries"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI 3.1 spec covers all endpoints with request/response schemas",
+        "All query parameters, filters, and pagination fields documented",
+        "Error response codes and formats specified for each endpoint",
+        "Spec validates with openapi-validator with zero errors",
+        "Example requests/responses included for every endpoint"
+      ],
+      "depends_on": [
+        5,
+        6,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "UX_DESIGN",
+      "description": "Design the search UI (search bar with auto-complete, results page with facets) and the relevance tuning console (boost rules editor, experiment dashboard, query analytics).",
+      "payload": {
+        "pages": [
+          "search_home",
+          "results_page_with_facets",
+          "relevance_tuning_console",
+          "experiment_dashboard",
+          "analytics_dashboard"
+        ],
+        "components": [
+          "autocomplete_dropdown",
+          "facet_sidebar",
+          "result_card",
+          "boost_rule_editor",
+          "ab_test_wizard"
+        ]
+      },
+      "acceptance_criteria": [
+        "Wireframes for all 5 pages reviewed and approved",
+        "Auto-complete dropdown shows suggestions with keyboard navigation",
+        "Facet sidebar supports multi-select, range filters, and result counts",
+        "Boost rule editor supports drag-and-drop field weight sliders",
+        "Experiment dashboard shows side-by-side NDCG comparison for A/B variants",
+        "WCAG 2.1 AA accessibility checklist passed for all components"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 10,
+      "task_type": "FRONTEND",
+      "description": "Build the search frontend: search bar with live auto-complete, results page with highlighted snippets, faceted filter sidebar, pagination, and result card components.",
+      "payload": {
+        "framework": "react_18_typescript",
+        "key_components": [
+          "SearchBar with debounced autocomplete",
+          "ResultsList with snippet highlighting",
+          "FacetSidebar with multi-select filters",
+          "ResultCard with score debug overlay",
+          "Pagination"
+        ],
+        "state_management": "zustand",
+        "api_client": "typed_fetch"
+      },
+      "acceptance_criteria": [
+        "SearchBar fires autocomplete requests with 150ms debounce",
+        "Auto-complete dropdown renders top-10 suggestions with keyboard nav (arrow keys + enter)",
+        "Results page displays highlighted matched terms in snippets",
+        "Facet sidebar updates result count on each filter selection without full page reload",
+        "Pagination supports cursor-based navigation",
+        "Search results render in < 300ms from API response"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "FRONTEND",
+      "description": "Build the relevance tuning console: boost rules editor, field weight sliders, query override manager, A/B experiment wizard, and real-time analytics dashboard.",
+      "payload": {
+        "pages": [
+          "RelevanceTuningConsole",
+          "ExperimentDashboard",
+          "QueryAnalytics"
+        ],
+        "components": [
+          "BoostRuleEditor",
+          "FieldWeightSliders",
+          "QueryOverrideTable",
+          "ABExperimentWizard",
+          "QueryVolumeChart",
+          "ZeroResultsReport"
+        ]
+      },
+      "acceptance_criteria": [
+        "Boost rules CRUD UI calls PUT /relevance/config and reflects changes immediately",
+        "Field weight sliders show live preview of ranking change on sample query",
+        "Query override table supports pin/exclude/boost actions per document",
+        "A/B wizard creates experiment with traffic split, name, and variant config",
+        "Analytics dashboard shows top queries, zero-result queries, and CTR over time",
+        "All console actions require confirmation dialog before applying to production"
+      ],
+      "depends_on": [
+        8,
+        9
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "INFRA",
+      "description": "Containerize all services with Docker Compose for local development and Kubernetes manifests for production: search API, Qdrant, PostgreSQL, Redis, and frontend. Set up CI/CD pipeline.",
+      "payload": {
+        "local_stack": "docker_compose",
+        "prod_stack": "kubernetes_helm",
+        "services": [
+          "search_api",
+          "qdrant",
+          "postgresql",
+          "redis",
+          "frontend_nginx"
+        ],
+        "ci_cd": "github_actions",
+        "pipeline_stages": [
+          "lint",
+          "unit_tests",
+          "integration_tests",
+          "build_image",
+          "push_to_registry",
+          "deploy_staging"
+        ]
+      },
+      "acceptance_criteria": [
+        "docker compose up --build starts full stack with zero manual steps",
+        "All services pass health checks within 60s of startup",
+        "Kubernetes manifests include resource limits, liveness/readiness probes",
+        "CI pipeline runs on every PR: lint \u2192 test \u2192 build in < 10 min",
+        "Staging deployment automatically triggered on merge to main",
+        "Secrets managed via Kubernetes secrets, not hardcoded in manifests"
+      ],
+      "depends_on": [
+        5,
+        6,
+        7,
+        10,
+        11
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 13,
+      "task_type": "TESTS",
+      "description": "Write unit tests for all backend modules: hybrid search orchestrator, BM25 retriever, vector retriever, RRF fusion, facet filter engine, query understanding pipeline, and relevance tuning engine.",
+      "payload": {
+        "test_framework": "pytest",
+        "coverage_target": 85,
+        "modules_under_test": [
+          "hybrid_search_orchestrator",
+          "bm25_retriever",
+          "vector_retriever",
+          "rrf_fusion",
+          "facet_filter_engine",
+          "query_understanding",
+          "relevance_tuning",
+          "autocomplete_service"
+        ],
+        "fixtures": [
+          "mock_qdrant",
+          "mock_bm25_index",
+          "sample_document_corpus"
+        ]
+      },
+      "acceptance_criteria": [
+        "Unit test coverage >= 85% across all backend modules",
+        "RRF fusion tested with known score inputs and expected rank outputs",
+        "Facet filter tests verify correct AND/OR filter logic across multiple facets",
+        "Query understanding tests cover spell correction, expansion, and intent cases",
+        "All tests run in < 60s with mocked external dependencies",
+        "CI pipeline fails on any test regression"
+      ],
+      "depends_on": [
+        5,
+        6,
+        7
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 14,
+      "task_type": "TESTS",
+      "description": "Write integration and end-to-end tests: full index-then-search flow, hybrid ranking correctness, auto-complete accuracy, facet filter accuracy, and relevance config hot-reload.",
+      "payload": {
+        "test_corpus": "beir_scifact_subset_1000_docs",
+        "e2e_framework": "playwright",
+        "integration_tests": [
+          "index_and_retrieve_round_trip",
+          "hybrid_vs_bm25_only_ranking",
+          "facet_filter_reduces_result_set",
+          "autocomplete_prefix_match",
+          "relevance_config_change_affects_ranking"
+        ]
+      },
+      "acceptance_criteria": [
+        "Index 1000-doc corpus and retrieve top-10 for 50 benchmark queries",
+        "Hybrid search NDCG@10 >= BM25-only NDCG@10 on test corpus",
+        "Facet filter integration test confirms filtered results all match filter criteria",
+        "Auto-complete test verifies prefix 'sea' returns results containing 'search' in top-5",
+        "Relevance config change reflected in search ranking within 1 request after hot-reload",
+        "Playwright E2E test covers: type query \u2192 see autocomplete \u2192 select \u2192 see results \u2192 apply facet"
+      ],
+      "depends_on": [
+        12,
+        13
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 15,
+      "task_type": "ML_MODEL",
+      "description": "Build offline evaluation harness: NDCG, MRR, Recall@K metrics computation, relevance judgment dataset creation tooling, and regression benchmarks for ranking quality.",
+      "payload": {
+        "eval_framework": "ranx",
+        "benchmark_datasets": [
+          "beir_scifact",
+          "ms_marco_small"
+        ],
+        "metrics": [
+          "ndcg@10",
+          "mrr@10",
+          "recall@100",
+          "map@10"
+        ],
+        "reporting": "html_report_with_per_query_breakdown"
+      },
+      "acceptance_criteria": [
+        "Evaluation script accepts run file (query\u2192ranked_docs) and qrel file, outputs all metrics",
+        "Baseline BM25-only, vector-only, and hybrid runs all benchmarked and compared",
+        "Regression test fails CI if NDCG@10 drops > 2% from baseline",
+        "Per-query breakdown identifies top-20 hardest queries for debugging",
+        "Evaluation report auto-generated as HTML artifact on each CI run",
+        "Bias evaluation performed",
+        "Model card generated"
+      ],
+      "depends_on": [
+        3,
+        5
+      ],
+      "agent_role": "data_scientist"
+    },
+    {
+      "step": 16,
+      "task_type": "SECURITY",
+      "description": "Security review: input sanitization for search queries and index payloads, rate limiting, authentication for tuning console, and threat model for the search API.",
+      "payload": {
+        "review_areas": [
+          "query_injection_prevention",
+          "payload_size_limits",
+          "rate_limiting_per_client",
+          "tuning_console_auth",
+          "vector_poisoning_threat"
+        ],
+        "auth_mechanism": "jwt_for_admin_console",
+        "rate_limiter": "redis_sliding_window"
+      },
+      "acceptance_criteria": [
+        "Search query inputs sanitized against injection patterns before processing",
+        "Rate limiting enforced: 100 req/min per IP for search, 10 req/min for index",
+        "Relevance tuning console requires JWT authentication",
+        "Payload size limit of 10MB enforced on /index endpoint",
+        "Threat model document covers vector poisoning, data exfiltration, and DoS vectors",
+        "OWASP Top 10 checklist completed with findings addressed"
+      ],
+      "depends_on": [
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "DEVOPS",
+      "description": "Set up monitoring and observability: search latency histograms, index throughput metrics, zero-result query rate, Qdrant health metrics, and alerting rules.",
+      "payload": {
+        "observability_stack": "prometheus_grafana",
+        "metrics": [
+          "search_latency_p50_p95_p99",
+          "index_throughput_docs_per_sec",
+          "zero_result_query_rate",
+          "autocomplete_latency",
+          "qdrant_collection_size",
+          "hybrid_score_distribution"
+        ],
+        "alerts": [
+          "p99_latency > 500ms",
+          "zero_result_rate > 15%",
+          "qdrant_disk_usage > 80%"
+        ]
+      },
+      "acceptance_criteria": [
+        "Grafana dashboard shows all key metrics with 15s refresh",
+        "Prometheus scrapes search API metrics endpoint",
+        "Alert fires within 2 minutes of p99 latency exceeding 500ms",
+        "Zero-result query rate alert enables proactive tuning interventions",
+        "Runbook linked from each alert with investigation steps",
+        "Dashboard exported as JSON and committed to repo"
+      ],
+      "depends_on": [
+        12
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 18,
+      "task_type": "DOCS",
+      "description": "Write technical documentation: architecture overview, API reference, indexing guide, relevance tuning guide, and operator runbook.",
+      "payload": {
+        "docs": [
+          "architecture_overview.md",
+          "api_reference.md",
+          "indexing_guide.md",
+          "relevance_tuning_guide.md",
+          "operator_runbook.md",
+          "local_development_quickstart.md"
+        ],
+        "format": "markdown_in_docs_folder"
+      },
+      "acceptance_criteria": [
+        "Architecture doc includes system diagram showing all components and data flows",
+        "API reference auto-generated from OpenAPI spec with examples",
+        "Indexing guide covers document schema, chunking config, and incremental updates",
+        "Relevance tuning guide explains boost rules, field weights, and A/B experiments with examples",
+        "Operator runbook covers scaling Qdrant, reindexing, and backup/restore procedures",
+        "Quickstart gets a developer to first search result in < 15 minutes"
+      ],
+      "depends_on": [
+        14,
+        15,
+        17
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 18,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "Step 8 (OpenAPI spec) depends on steps 5\u20137 (implementation) \u2014 this is design-after-code, not design-first. API contracts should be agreed before implementation to prevent schema drift and undocumented edge cases. The entire dependency chain is inverted here.",
+            "Step 6 autocomplete uses 'redis_prefix_scan + semantic_rerank' but targets < 20ms. Redis SCAN is O(N) and semantic reranking adds 30\u201380ms per call. These two constraints are physically incompatible unless reranking is fully pre-computed and cached \u2014 which is not specified.",
+            "Step 5 states facet filters are 'applied as pre-filter to vector search and BM25 simultaneously.' Qdrant pre-filtering degrades HNSW recall severely when selectivity is high (< 5% of corpus matches filter). Post-filtering or filtered HNSW (payload-indexed) trade-offs are not addressed \u2014 this will silently return poor results for selective filters.",
+            "Step 7 A/B experiment router has no statistical rigor: no minimum sample size, no significance threshold (p-value or Bayesian), no mechanism to determine when an experiment is conclusive. Traffic split percentage alone does not constitute a valid A/B framework. Shipping ranking changes based on inconclusive experiments is worse than no experiments.",
+            "Index consistency between Qdrant (vector) and BM25 (disk-serialized inverted index) is never addressed. A partial write failure leaves them diverged with no detection mechanism, no compensating transaction, and no reconciliation process. For hybrid search this is a correctness failure, not a latency issue.",
+            "Step 3 intent classifier (navigational/informational/transactional) has no training data source specified, no labeling process, no fallback behavior when confidence is low, and no acceptance criterion for the training set size. This is described as a deliverable but has no implementation path.",
+            "Step 2 claims '1000 docs/min on standard hardware' without specifying hardware. all-MiniLM-L6-v2 encoding on CPU achieves approximately 100\u2013300 docs/min per core depending on chunk size. This target is probably unachievable without GPU or multi-worker parallelism, neither of which is planned.",
+            "Step 9 (UX design) only depends on step 1, but the relevance tuning console design should also depend on step 7. Technical constraints discovered in step 7 (e.g., hot-reload mechanics, boost rule schema) will force redesign of the console UI, discovered after wireframes are already approved.",
+            "Cursor-based pagination (step 10) is incompatible with dynamic relevance configs. If a relevance config changes between pages, cursor positions become invalid \u2014 documents can be duplicated or skipped across pages. No invalidation strategy is defined.",
+            "Step 15 regression test 'fails CI if NDCG@10 drops > 2%' requires a stable stored baseline. No mechanism for versioning, storing, or updating the baseline is specified. If the baseline is recomputed each run, the regression gate is meaningless."
+          ],
+          "suggestions": [
+            "Flip step 8 (OpenAPI spec) to be step 1.5 \u2014 define the API contract as a design artifact before any backend implementation. Use contract-first development with mock servers so frontend can develop in parallel against real schemas.",
+            "Replace 'redis_prefix_scan + semantic_rerank' with ZRANGEBYLEX on pre-built prefix keys or a dedicated trie (e.g., pyahocorasick, datrie). Pre-compute semantic scores offline and store ranked candidates per prefix key. Do not rerank at query time.",
+            "Add explicit HNSW parameter specification to step 4: ef_construct (128\u2013256 for high recall), m (16\u201332), and ef at query time (64\u2013128). Run a recall-vs-latency sweep on your corpus before setting these. Add acceptance criterion: 'HNSW params produce > 0.95 recall@10 vs brute-force at p95 < 100ms.'",
+            "Add a Qdrant payload index for every facet field (step 4) and benchmark both pre-filter and post-filter strategies against your expected filter selectivity distribution. Document the crossover point where post-filtering is preferred.",
+            "Replace the A/B framework in step 7 with a statistically rigorous design: define minimum detectable effect (e.g., 3% NDCG improvement), compute required sample size, implement sequential testing or fixed-horizon test with Bonferroni correction. Add acceptance criterion: 'experiment results include 95% confidence interval and required sample size.'",
+            "Add a write-coordinator service (or at minimum a saga pattern) to step 5 that ensures Qdrant upsert and BM25 index update are treated as a single logical operation with rollback or retry on partial failure. Log all index operations to the query_logs table for reconciliation.",
+            "Step 3 query expansion: specify the mechanism explicitly. LLM-based expansion adds 50\u2013200ms and should be async/cached. Synonym dictionary (WordNet + domain-specific) is faster and more predictable. Decide which before implementation.",
+            "Add data retention and PII handling to step 16. Query logs (step 7) contain user search terms \u2014 define retention period, anonymization strategy, and GDPR deletion path before shipping.",
+            "Step 15 baseline versioning: store baseline run files in git-LFS or an artifact store (S3/GCS) keyed by a hash of the corpus + model version. CI fetches the appropriate baseline by key and stores new baselines only on explicit promotion.",
+            "Add a warm-up/seed strategy for autocomplete cold start. On first deploy, populate Redis prefix keys from the document corpus (titles, key phrases) so the autocomplete is useful before any query logs exist."
+          ],
+          "missing": [
+            "Multi-language support: all-MiniLM-L6-v2 is trained primarily on English. No language detection, no multilingual model fallback (e.g., paraphrase-multilingual-MiniLM-L12-v2), no acceptance criterion about language coverage.",
+            "Qdrant authentication and API key management. Qdrant defaults to unauthenticated access. The security review (step 16) mentions JWT for the admin console but never addresses Qdrant's own API key or TLS configuration.",
+            "Backup and restore testing with acceptance criteria. Step 18 mentions a runbook but no step validates that a backup can actually be restored, or that Qdrant snapshots and BM25 index backups are taken at consistent points in time.",
+            "Scalability boundary documentation. The plan targets 100k documents but specifies no memory or storage estimates for Qdrant at that scale (384-dim float32 = ~150MB for 100k vectors plus HNSW graph overhead ~2\u20134x). No guidance on when horizontal sharding is needed.",
+            "Rate limiting on /autocomplete endpoint. Step 16 specifies limits for /search (100 req/min) and /index (10 req/min) but omits /autocomplete, which fires on every keypress and is the highest-volume endpoint by far.",
+            "HTTPS/TLS enforcement. No step configures TLS termination. A JWT-protected admin console served over HTTP is trivially compromised.",
+            "Dwell-time measurement implementation in the frontend. Step 7 lists dwell-time as a feedback signal but no frontend component or beacon API is planned in steps 10\u201311 to capture it.",
+            "Definition of 'bias evaluation' in step 3 and step 15. The term appears twice as an acceptance criterion with no methodology: what demographic or query-type bias is being measured, against what ground truth, with what pass/fail threshold?",
+            "Query deduplication and normalization for autocomplete index. As new queries arrive, misspellings and variations of the same intent will pollute the autocomplete index. No deduplication or normalization pipeline is specified.",
+            "Qdrant collection migration strategy. If the embedding model is upgraded (step 3 mentions fine-tuning), all 384-dim vectors become invalid and the entire collection must be reindexed. No zero-downtime reindexing strategy or dual-collection approach is defined."
+          ],
+          "security_risks": [
+            "Qdrant runs unauthenticated by default. If the Qdrant port is reachable (even internally), any service can read, modify, or delete the entire vector collection. No authentication is specified in step 4 or step 16.",
+            "Redis sorted set for autocomplete has no authentication specified. Default Redis deployments have no password. Exposed Redis allows arbitrary key injection, autocomplete poisoning, and cache poisoning attacks.",
+            "Vector poisoning via the /index endpoint. Step 16 lists this as a review area but provides no mitigation. An attacker with index access (or a compromised upstream system) can inject adversarial documents with crafted embeddings that rank for sensitive queries. Input validation on document content does not prevent this.",
+            "JWT secret management is unaddressed. The plan specifies JWT for the admin console but does not define where the signing secret lives, how it is rotated, or how tokens are revoked. A hardcoded secret in an env file is a common failure mode.",
+            "Query logs store raw user search terms in PostgreSQL. If query_logs are not access-controlled separately from the main application DB credentials, any read access to the database exposes the full search history of all users.",
+            "Payload size limit (10MB on /index) is stated but chunking pipeline in step 2 processes PDFs and HTML. A compressed PDF can expand to 50\u2013100x in text. The limit should apply post-decompression, not to the raw request body, or decompression bombs are possible.",
+            "No mention of output encoding for snippet highlighting in the frontend (step 10). Search result snippets render matched terms from user query input into the DOM. Without strict output encoding, a stored document containing HTML/JS can trigger XSS when highlighted."
+          ],
+          "summary": "This is a well-structured, comprehensive plan with appropriate tech choices and measurable acceptance criteria across most steps. For an MVP semantic search engine it is above average in completeness. However, several architectural decisions will cause production failures rather than just technical debt: the inverted API design dependency (spec after implementation) guarantees schema drift; the autocomplete latency target is physically incompatible with semantic reranking at query time; the A/B framework lacks statistical validity and will produce misleading results; and index consistency between Qdrant and BM25 has no failure handling, making hybrid search correctness non-deterministic under load. The security posture has gaps that are easy to exploit (unauthenticated Qdrant, unauthenticated Redis, XSS in snippet rendering). The plan needs targeted fixes on these six issues before implementation begins \u2014 fixing them mid-build is significantly more expensive. Addressing these would bring the score to approximately 75\u201378 for MVP scope.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "Step 8 (OpenAPI spec) depends on steps 5\u20137 (implementation) \u2014 this is design-after-code, not design-first. API contracts should be agreed before implementation to prevent schema drift and undocumented edge cases. The entire dependency chain is inverted here.",
+              "Step 6 autocomplete uses 'redis_prefix_scan + semantic_rerank' but targets < 20ms. Redis SCAN is O(N) and semantic reranking adds 30\u201380ms per call. These two constraints are physically incompatible unless reranking is fully pre-computed and cached \u2014 which is not specified.",
+              "Step 5 states facet filters are 'applied as pre-filter to vector search and BM25 simultaneously.' Qdrant pre-filtering degrades HNSW recall severely when selectivity is high (< 5% of corpus matches filter). Post-filtering or filtered HNSW (payload-indexed) trade-offs are not addressed \u2014 this will silently return poor results for selective filters.",
+              "Step 7 A/B experiment router has no statistical rigor: no minimum sample size, no significance threshold (p-value or Bayesian), no mechanism to determine when an experiment is conclusive. Traffic split percentage alone does not constitute a valid A/B framework. Shipping ranking changes based on inconclusive experiments is worse than no experiments.",
+              "Index consistency between Qdrant (vector) and BM25 (disk-serialized inverted index) is never addressed. A partial write failure leaves them diverged with no detection mechanism, no compensating transaction, and no reconciliation process. For hybrid search this is a correctness failure, not a latency issue.",
+              "Step 3 intent classifier (navigational/informational/transactional) has no training data source specified, no labeling process, no fallback behavior when confidence is low, and no acceptance criterion for the training set size. This is described as a deliverable but has no implementation path.",
+              "Step 2 claims '1000 docs/min on standard hardware' without specifying hardware. all-MiniLM-L6-v2 encoding on CPU achieves approximately 100\u2013300 docs/min per core depending on chunk size. This target is probably unachievable without GPU or multi-worker parallelism, neither of which is planned.",
+              "Step 9 (UX design) only depends on step 1, but the relevance tuning console design should also depend on step 7. Technical constraints discovered in step 7 (e.g., hot-reload mechanics, boost rule schema) will force redesign of the console UI, discovered after wireframes are already approved.",
+              "Cursor-based pagination (step 10) is incompatible with dynamic relevance configs. If a relevance config changes between pages, cursor positions become invalid \u2014 documents can be duplicated or skipped across pages. No invalidation strategy is defined.",
+              "Step 15 regression test 'fails CI if NDCG@10 drops > 2%' requires a stable stored baseline. No mechanism for versioning, storing, or updating the baseline is specified. If the baseline is recomputed each run, the regression gate is meaningless."
+            ],
+            "suggestions": [
+              "Flip step 8 (OpenAPI spec) to be step 1.5 \u2014 define the API contract as a design artifact before any backend implementation. Use contract-first development with mock servers so frontend can develop in parallel against real schemas.",
+              "Replace 'redis_prefix_scan + semantic_rerank' with ZRANGEBYLEX on pre-built prefix keys or a dedicated trie (e.g., pyahocorasick, datrie). Pre-compute semantic scores offline and store ranked candidates per prefix key. Do not rerank at query time.",
+              "Add explicit HNSW parameter specification to step 4: ef_construct (128\u2013256 for high recall), m (16\u201332), and ef at query time (64\u2013128). Run a recall-vs-latency sweep on your corpus before setting these. Add acceptance criterion: 'HNSW params produce > 0.95 recall@10 vs brute-force at p95 < 100ms.'",
+              "Add a Qdrant payload index for every facet field (step 4) and benchmark both pre-filter and post-filter strategies against your expected filter selectivity distribution. Document the crossover point where post-filtering is preferred.",
+              "Replace the A/B framework in step 7 with a statistically rigorous design: define minimum detectable effect (e.g., 3% NDCG improvement), compute required sample size, implement sequential testing or fixed-horizon test with Bonferroni correction. Add acceptance criterion: 'experiment results include 95% confidence interval and required sample size.'",
+              "Add a write-coordinator service (or at minimum a saga pattern) to step 5 that ensures Qdrant upsert and BM25 index update are treated as a single logical operation with rollback or retry on partial failure. Log all index operations to the query_logs table for reconciliation.",
+              "Step 3 query expansion: specify the mechanism explicitly. LLM-based expansion adds 50\u2013200ms and should be async/cached. Synonym dictionary (WordNet + domain-specific) is faster and more predictable. Decide which before implementation.",
+              "Add data retention and PII handling to step 16. Query logs (step 7) contain user search terms \u2014 define retention period, anonymization strategy, and GDPR deletion path before shipping.",
+              "Step 15 baseline versioning: store baseline run files in git-LFS or an artifact store (S3/GCS) keyed by a hash of the corpus + model version. CI fetches the appropriate baseline by key and stores new baselines only on explicit promotion.",
+              "Add a warm-up/seed strategy for autocomplete cold start. On first deploy, populate Redis prefix keys from the document corpus (titles, key phrases) so the autocomplete is useful before any query logs exist."
+            ],
+            "missing": [
+              "Multi-language support: all-MiniLM-L6-v2 is trained primarily on English. No language detection, no multilingual model fallback (e.g., paraphrase-multilingual-MiniLM-L12-v2), no acceptance criterion about language coverage.",
+              "Qdrant authentication and API key management. Qdrant defaults to unauthenticated access. The security review (step 16) mentions JWT for the admin console but never addresses Qdrant's own API key or TLS configuration.",
+              "Backup and restore testing with acceptance criteria. Step 18 mentions a runbook but no step validates that a backup can actually be restored, or that Qdrant snapshots and BM25 index backups are taken at consistent points in time.",
+              "Scalability boundary documentation. The plan targets 100k documents but specifies no memory or storage estimates for Qdrant at that scale (384-dim float32 = ~150MB for 100k vectors plus HNSW graph overhead ~2\u20134x). No guidance on when horizontal sharding is needed.",
+              "Rate limiting on /autocomplete endpoint. Step 16 specifies limits for /search (100 req/min) and /index (10 req/min) but omits /autocomplete, which fires on every keypress and is the highest-volume endpoint by far.",
+              "HTTPS/TLS enforcement. No step configures TLS termination. A JWT-protected admin console served over HTTP is trivially compromised.",
+              "Dwell-time measurement implementation in the frontend. Step 7 lists dwell-time as a feedback signal but no frontend component or beacon API is planned in steps 10\u201311 to capture it.",
+              "Definition of 'bias evaluation' in step 3 and step 15. The term appears twice as an acceptance criterion with no methodology: what demographic or query-type bias is being measured, against what ground truth, with what pass/fail threshold?",
+              "Query deduplication and normalization for autocomplete index. As new queries arrive, misspellings and variations of the same intent will pollute the autocomplete index. No deduplication or normalization pipeline is specified.",
+              "Qdrant collection migration strategy. If the embedding model is upgraded (step 3 mentions fine-tuning), all 384-dim vectors become invalid and the entire collection must be reindexed. No zero-downtime reindexing strategy or dual-collection approach is defined."
+            ],
+            "security_risks": [
+              "Qdrant runs unauthenticated by default. If the Qdrant port is reachable (even internally), any service can read, modify, or delete the entire vector collection. No authentication is specified in step 4 or step 16.",
+              "Redis sorted set for autocomplete has no authentication specified. Default Redis deployments have no password. Exposed Redis allows arbitrary key injection, autocomplete poisoning, and cache poisoning attacks.",
+              "Vector poisoning via the /index endpoint. Step 16 lists this as a review area but provides no mitigation. An attacker with index access (or a compromised upstream system) can inject adversarial documents with crafted embeddings that rank for sensitive queries. Input validation on document content does not prevent this.",
+              "JWT secret management is unaddressed. The plan specifies JWT for the admin console but does not define where the signing secret lives, how it is rotated, or how tokens are revoked. A hardcoded secret in an env file is a common failure mode.",
+              "Query logs store raw user search terms in PostgreSQL. If query_logs are not access-controlled separately from the main application DB credentials, any read access to the database exposes the full search history of all users.",
+              "Payload size limit (10MB on /index) is stated but chunking pipeline in step 2 processes PDFs and HTML. A compressed PDF can expand to 50\u2013100x in text. The limit should apply post-decompression, not to the raw request body, or decompression bombs are possible.",
+              "No mention of output encoding for snippet highlighting in the frontend (step 10). Search result snippets render matched terms from user query input into the DOM. Without strict output encoding, a stored document containing HTML/JS can trigger XSS when highlighted."
+            ],
+            "summary": "This is a well-structured, comprehensive plan with appropriate tech choices and measurable acceptance criteria across most steps. For an MVP semantic search engine it is above average in completeness. However, several architectural decisions will cause production failures rather than just technical debt: the inverted API design dependency (spec after implementation) guarantees schema drift; the autocomplete latency target is physically incompatible with semantic reranking at query time; the A/B framework lacks statistical validity and will produce misleading results; and index consistency between Qdrant and BM25 has no failure handling, making hybrid search correctness non-deterministic under load. The security posture has gaps that are easy to exploit (unauthenticated Qdrant, unauthenticated Redis, XSS in snippet rendering). The plan needs targeted fixes on these six issues before implementation begins \u2014 fixing them mid-build is significantly more expensive. Addressing these would bring the score to approximately 75\u201378 for MVP scope.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T09:01:22.998847+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 93.2,
+    "critic_plan": 116.76
+  }
+}

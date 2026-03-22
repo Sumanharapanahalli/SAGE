@@ -1,0 +1,940 @@
+{
+  "run_id": "4090f0ee-f821-4e80-8de0-8c843b0775ab",
+  "status": {
+    "run_id": "4090f0ee-f821-4e80-8de0-8c843b0775ab",
+    "solution_name": "recipe_app",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T10:29:09.169675+00:00",
+    "updated_at": "2026-03-22T10:35:46.538199+00:00",
+    "product_description": "Recipe and meal planning app with ingredient-based search, nutritional info, grocery list generation, step-by-step cooking mode, and social sharing.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the recipe and meal planning app market: identify top competitors (Yummly, Mealime, Paprika, MyFitnessPal), user segments, pricing models, and differentiation opportunities for ingredient-based search and social features.",
+        "payload": {
+          "competitors": [
+            "Yummly",
+            "Mealime",
+            "Paprika",
+            "MyFitnessPal",
+            "Whisk"
+          ],
+          "focus_areas": [
+            "ingredient_search_ux",
+            "nutritional_data_sources",
+            "social_sharing_mechanics",
+            "monetization"
+          ],
+          "deliverables": [
+            "competitive_matrix",
+            "user_persona_set",
+            "positioning_statement",
+            "go_to_market_brief"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitive matrix covers at least 5 direct competitors with feature scoring",
+          "At least 3 distinct user personas defined with goals and pain points",
+          "Clear differentiation statement for ingredient-based search USP",
+          "GTM brief includes pricing recommendation and launch channel strategy"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Define product requirements document (PRD) for recipe_app: feature list, prioritized roadmap (MoSCoW), success metrics (DAU, recipe saves, grocery list exports, social shares), and v1 scope boundary.",
+        "payload": {
+          "features": [
+            "ingredient_based_search",
+            "nutritional_info_display",
+            "grocery_list_generation",
+            "step_by_step_cooking_mode",
+            "social_sharing"
+          ],
+          "roadmap_horizons": [
+            "v1_core",
+            "v2_social",
+            "v3_smart_appliance"
+          ],
+          "success_metrics": [
+            "DAU",
+            "recipe_saves_per_session",
+            "grocery_export_rate",
+            "share_rate",
+            "D7_retention"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD approved with full MoSCoW feature list",
+          "v1 scope explicitly bounded with out-of-scope items listed",
+          "Success metrics defined with baseline targets and measurement method",
+          "Roadmap covers 3 horizons with dependency mapping"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 3,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research and produce wireframes for all key flows: ingredient search, recipe detail and nutritional panel, grocery list builder, step-by-step cooking mode (voice-friendly), and social share sheet. Include WCAG 2.1 AA accessibility audit.",
+        "payload": {
+          "research_methods": [
+            "user_interviews",
+            "card_sorting_for_ingredient_taxonomy"
+          ],
+          "wireframe_flows": [
+            "onboarding_and_dietary_prefs",
+            "ingredient_pantry_input",
+            "recipe_search_results",
+            "recipe_detail_with_nutrition",
+            "grocery_list_editor",
+            "cooking_mode_step_by_step",
+            "social_share_and_profile"
+          ],
+          "accessibility_target": "WCAG_2.1_AA",
+          "tool": "Figma"
+        },
+        "acceptance_criteria": [
+          "At least 5 user interviews completed and synthesized into design insights",
+          "All 7 wireframe flows delivered in Figma with annotations",
+          "Cooking mode supports large-text and voice-activation affordances",
+          "Accessibility audit checklist passes for all screens",
+          "Design tokens (colors, typography, spacing) documented",
+          "App store screenshot mockups prepared",
+          "Onboarding flow under 3 steps"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 4,
+        "task_type": "DATABASE",
+        "description": "Design and implement PostgreSQL schema: recipes, ingredients, nutritional_facts, user_pantry, grocery_lists, grocery_items, social_posts, follows, and likes tables. Write Alembic migrations. Seed with 500 sample recipes with full nutritional data.",
+        "payload": {
+          "engine": "PostgreSQL 15",
+          "migration_tool": "Alembic",
+          "tables": [
+            "recipes",
+            "ingredients",
+            "recipe_ingredients",
+            "nutritional_facts",
+            "user_pantry",
+            "grocery_lists",
+            "grocery_list_items",
+            "social_posts",
+            "user_follows",
+            "post_likes",
+            "users",
+            "dietary_preferences"
+          ],
+          "seed_data": "500_recipes_with_nutrition",
+          "indexes": [
+            "ingredient FTS trigram index",
+            "recipe full-text search",
+            "user_pantry user_id lookup"
+          ]
+        },
+        "acceptance_criteria": [
+          "All migrations run cleanly from scratch with alembic upgrade head",
+          "Full-text search index on recipe title and ingredient names functional",
+          "Seed script populates 500 recipes with complete nutritional data",
+          "Foreign key constraints and cascade rules validated",
+          "Schema ER diagram exported and committed to /docs"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 5,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 contract for all recipe_app endpoints: ingredient search, recipe CRUD, nutritional info retrieval, grocery list CRUD, cooking session state machine, social posts/follows/likes, and user profile. Define request/response schemas and RFC 7807 error envelopes.",
+        "payload": {
+          "spec_format": "OpenAPI 3.1",
+          "endpoint_groups": [
+            "/recipes",
+            "/ingredients",
+            "/nutrition",
+            "/grocery-lists",
+            "/cooking-sessions",
+            "/social",
+            "/users"
+          ],
+          "auth": "JWT Bearer with refresh token rotation",
+          "error_schema": "RFC 7807 Problem Details"
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with zero errors via openapi-spec-validator",
+          "All endpoints have complete request and response examples",
+          "Authentication and authorization scopes documented per endpoint",
+          "Error responses follow RFC 7807 Problem Details format",
+          "Spec committed to /docs/api/openapi.yaml"
+        ],
+        "depends_on": [
+          4
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 6,
+        "task_type": "BACKEND",
+        "description": "Implement core FastAPI backend: ingredient-based recipe search (PostgreSQL FTS plus fuzzy trigram matching), nutritional info aggregation from USDA FoodData Central API with Redis caching, user pantry management, and dietary preference filtering (vegan, gluten-free, keto, halal).",
+        "payload": {
+          "framework": "FastAPI",
+          "search_strategy": "PostgreSQL FTS with pg_trgm for fuzzy ingredient matching",
+          "nutrition_source": "USDA_FoodData_Central_API",
+          "caching": "Redis 24h TTL for nutritional lookups",
+          "dietary_filters": [
+            "vegan",
+            "vegetarian",
+            "gluten_free",
+            "dairy_free",
+            "keto",
+            "halal"
+          ],
+          "agentic_pattern": "multi_agent_sequential: search -> filter -> rank -> return"
+        },
+        "acceptance_criteria": [
+          "Ingredient search returns results in under 200ms for single-ingredient queries",
+          "Multi-ingredient pantry search ranks recipes by ingredient match percentage",
+          "Nutritional info returns macros and micros with USDA source attribution",
+          "Dietary filters correctly exclude non-compliant recipes validated against known dataset",
+          "Redis cache hit rate above 80% on repeated nutritional lookups"
+        ],
+        "depends_on": [
+          5
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 7,
+        "task_type": "BACKEND",
+        "description": "Implement grocery list generation service: aggregate missing ingredients from selected recipes, deduplicate and consolidate quantities with unit normalization (metric/imperial), export to PDF and JSON, and integrate single-agent LLM pattern for ingredient substitution suggestions.",
+        "payload": {
+          "aggregation_logic": "cross-recipe dedup with unit normalization",
+          "unit_systems": [
+            "metric",
+            "imperial"
+          ],
+          "export_formats": [
+            "PDF",
+            "JSON",
+            "plain_text"
+          ],
+          "substitution_agent": "single_agent ReAct pattern via SAGE llm_gateway",
+          "llm_provider": "configured via SAGE llm_gateway"
+        },
+        "acceptance_criteria": [
+          "Grocery list correctly deduplicates identical ingredients across 3 or more recipes",
+          "Unit conversion accurate to within 2% for all common cooking units",
+          "PDF export renders in under 1 second and includes recipe attribution per item",
+          "Substitution suggestions returned for at least 90% of common allergen ingredients",
+          "JSON export schema matches OpenAPI contract"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 8,
+        "task_type": "BACKEND",
+        "description": "Implement social sharing service: recipe posts with photos, follow/unfollow, like/unlike, personalized social feed (chronological with followed-user boost), rate limiting, and deep-link generation for external share targets (Twitter, Instagram, WhatsApp, copy link).",
+        "payload": {
+          "feed_algorithm": "chronological with boost for followed-user posts",
+          "media_storage": "S3-compatible object store with 3 size variants",
+          "deep_link_provider": "Firebase Dynamic Links",
+          "share_targets": [
+            "Twitter",
+            "Instagram",
+            "WhatsApp",
+            "copy_link"
+          ],
+          "rate_limiting": "100 posts/day per user, 1000 likes/day per user"
+        },
+        "acceptance_criteria": [
+          "Social feed loads 50 paginated posts in under 300ms",
+          "Follow/unfollow reflected in feed within one request cycle",
+          "Deep links correctly open recipe in-app on iOS and Android",
+          "Photo upload accepts JPEG and PNG up to 10MB and generates 3 size variants",
+          "Rate limiting returns HTTP 429 with Retry-After header when exceeded"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "CONFIG",
+        "description": "Configure the multi_agent_coordinator agentic pattern for recipe_app: wire nutrition_analyst, substitution_advisor, and meal_planner specialist agents to SAGE llm_gateway. Register roles in prompts.yaml and tasks.yaml. Configure HITL approval gate for weekly meal plan proposals.",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": [
+            {
+              "role": "nutrition_analyst",
+              "capability": "analyze nutritional balance of selected recipes"
+            },
+            {
+              "role": "substitution_advisor",
+              "capability": "suggest ingredient swaps for dietary constraints"
+            },
+            {
+              "role": "meal_planner",
+              "capability": "generate weekly meal plan from pantry and preferences"
+            }
+          ],
+          "hitl_gates": [
+            "weekly_meal_plan approval before grocery list generation"
+          ],
+          "solution_name": "recipe_app"
+        },
+        "acceptance_criteria": [
+          "All 3 agent roles defined in solutions/recipe_app/prompts.yaml with system prompts",
+          "Task types registered in solutions/recipe_app/tasks.yaml for each role",
+          "Coordinator correctly routes to specialist agents based on request type",
+          "HITL gate creates pending proposal for meal plan \u2014 does not auto-execute",
+          "SAGE /analyze endpoint invokes coordinator for recipe_app solution"
+        ],
+        "depends_on": [
+          6,
+          7
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "FRONTEND",
+        "description": "Build React 18 + TypeScript app shell: routing, ingredient pantry chip input with autocomplete, recipe search results grid with filter sidebar, and recipe detail page with nutritional breakdown panel and macro donut chart.",
+        "payload": {
+          "framework": "React 18 + TypeScript",
+          "state_management": "Zustand",
+          "ui_library": "shadcn/ui + Tailwind CSS",
+          "routing": "React Router v6",
+          "key_components": [
+            "IngredientChipInput",
+            "RecipeGrid",
+            "FilterSidebar",
+            "RecipeDetail",
+            "NutritionChart (Recharts)"
+          ]
+        },
+        "acceptance_criteria": [
+          "Ingredient autocomplete returns suggestions within 150ms of keystroke",
+          "Recipe grid renders 24 items with lazy-loaded images and no layout shift",
+          "Filter sidebar applies dietary filters without full page reload",
+          "Nutrition panel displays macros and top 5 micros with RDA percentage bars",
+          "Lighthouse performance score at least 85 on recipe search page"
+        ],
+        "depends_on": [
+          3,
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "FRONTEND",
+        "description": "Build step-by-step cooking mode UI: fullscreen immersive view with large-text step display, per-step countdown timer with audio alert, progress indicator, Web Speech API voice navigation (next/previous/repeat/set timer), and grocery ingredient checklist bottom sheet.",
+        "payload": {
+          "mode": "fullscreen_immersive",
+          "features": [
+            "StepCard",
+            "StepTimer",
+            "CookingProgressBar",
+            "VoiceNav via Web Speech API",
+            "GroceryCart bottom sheet"
+          ],
+          "session_persistence": "backend /cooking-sessions endpoint for resume support",
+          "min_font_size_px": 32
+        },
+        "acceptance_criteria": [
+          "Cooking mode activates in under 200ms from recipe detail tap",
+          "Timer alerts fire on time within 1 second and work with screen backgrounded",
+          "Voice navigation correctly handles next, previous, repeat, and set timer commands",
+          "Cooking session survives app backgrounding and resumes correctly on reopen",
+          "Step text font is at least 32px \u2014 passes accessibility arm-length readability check"
+        ],
+        "depends_on": [
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "FRONTEND",
+        "description": "Build social features UI: user profile page, recipe post composer with client-side photo compression and S3 presigned upload, social feed with infinite scroll and optimistic like updates, and native share sheet for deep-link distribution.",
+        "payload": {
+          "components": [
+            "SocialFeed",
+            "PostComposer",
+            "UserProfile",
+            "LikeButton with heart animation",
+            "ShareSheet"
+          ],
+          "optimistic_updates": true,
+          "image_upload": "client-side compression to under 500KB before S3 presigned URL upload"
+        },
+        "acceptance_criteria": [
+          "Social feed infinite scroll loads next page within 50px of bottom threshold",
+          "Like action reflects optimistically in under 50ms before server confirmation",
+          "Photo upload compresses to under 500KB client-side before transmission",
+          "Share sheet opens correct platform deep-link for all 4 share targets",
+          "Profile page loads all posts in under 500ms on 3G throttled connection"
+        ],
+        "depends_on": [
+          8,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "FIRMWARE",
+        "description": "Develop embedded firmware for smart kitchen display companion device (Raspberry Pi Zero 2W + 7.5-inch e-ink display): recipe step rendering daemon, BLE 5.0 pairing with mobile app, deep sleep with PIR motion wake, and OTA firmware update via recipe_app backend.",
+        "payload": {
+          "target": "Raspberry Pi Zero 2W",
+          "display": "Waveshare 7.5-inch EPD",
+          "connectivity": "BLE 5.0",
+          "ota_channel": "recipe_app backend /ota/firmware endpoint",
+          "power_mode": "deep_sleep between steps, PIR motion wake",
+          "language": "C with Python display rendering wrapper",
+          "static_analysis": "cppcheck"
+        },
+        "acceptance_criteria": [
+          "Recipe step renders on e-ink display within 2 seconds of mobile app next-step command",
+          "BLE pairing completes in under 5 seconds from app-initiated discovery",
+          "Deep sleep current draw below 0.5mA between step updates",
+          "OTA update applies and reboots without manual intervention",
+          "Firmware passes cppcheck static analysis with zero critical findings"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "firmware_engineer"
+      },
+      {
+        "step": 14,
+        "task_type": "HARDWARE_SIM",
+        "description": "Build SystemC simulation model for the kitchen display power subsystem: LiPo charging circuit, BLE radio duty-cycle power draw, e-ink refresh power spikes, and PIR sensor standby. Validate 7-day standby battery life target.",
+        "payload": {
+          "tool": "SystemC 2.3",
+          "battery": "LiPo 1500mAh model",
+          "subsystems": [
+            "USB-C TP4056 charger",
+            "BLE advertising 1s interval",
+            "e-ink refresh 26mA x 2s per frame",
+            "PIR standby 0.01mA"
+          ],
+          "target_metric": "7-day standby at 10 recipe steps per day",
+          "output": "power_profile.csv and annotated waveform"
+        },
+        "acceptance_criteria": [
+          "SystemC model compiles and runs a 30-day simulation in under 60 seconds",
+          "Simulated battery life at least 7 days at 10 recipe steps per day usage",
+          "Power spike model within 10% of datasheet values for e-ink refresh",
+          "Simulation outputs CSV with per-component power breakdown",
+          "Model includes parameterized light, medium, and heavy usage scenarios"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "PCB_DESIGN",
+        "description": "Design PCB for the smart kitchen display companion module using KiCad 7: Raspberry Pi Zero 2W carrier board with e-ink FFC connector, TP4056 LiPo charging circuit, USB-C power, PIR sensor header, and 2.4GHz BLE antenna keep-out zone. Generate Gerbers and BOM.",
+        "payload": {
+          "eda_tool": "KiCad 7",
+          "board_size": "85mm x 55mm",
+          "layers": 2,
+          "finish": "ENIG",
+          "key_components": [
+            "Pi Zero 2W 40-pin header",
+            "Waveshare EPD FFC connector",
+            "TP4056 LiPo charger",
+            "USB-C receptacle",
+            "HC-SR505 PIR header",
+            "2.4GHz BLE antenna keep-out"
+          ],
+          "manufacturing_target": "JLCPCB 2-layer",
+          "deliverables": [
+            "schematic PDF",
+            "gerbers",
+            "BOM CSV",
+            "DRC report"
+          ]
+        },
+        "acceptance_criteria": [
+          "Schematic ERC passes with zero errors",
+          "PCB DRC passes with zero errors using JLCPCB design rules",
+          "BOM CSV includes manufacturer part numbers for all components",
+          "Gerber set verified with online Gerber viewer before export",
+          "BLE antenna keep-out area has at least 3mm clearance from copper pours"
+        ],
+        "depends_on": [
+          14
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "EMBEDDED_TEST",
+        "description": "Write HIL test harness and firmware unit tests: BLE pairing sequence tests with mock BLE stack, e-ink display driver unit tests (frame buffer diff logic), OTA update integrity tests (hash verification and rollback), and power state machine transition tests.",
+        "payload": {
+          "framework": "Unity for C unit tests + pytest for HIL integration",
+          "mocks": [
+            "BLE stack mock",
+            "e-ink SPI driver mock",
+            "PIR GPIO mock"
+          ],
+          "hil_tests": [
+            "BLE pairing happy path and timeout recovery",
+            "OTA valid image + corrupted image hash mismatch + rollback",
+            "Power state: active to step_update to deep_sleep to wake"
+          ],
+          "unit_tests": [
+            "frame_buffer_diff identical frames skip refresh",
+            "step_parser malformed JSON safe error state",
+            "ota_verify_hash known-good and corrupted payloads"
+          ],
+          "coverage_target": "80% line coverage on firmware C modules"
+        },
+        "acceptance_criteria": [
+          "All Unity unit tests pass on x86 host build with no failures",
+          "HIL BLE pairing sequence test completes successfully on real hardware",
+          "OTA corrupted-image test correctly halts and retains current firmware",
+          "Power state machine test covers all 4 transitions with correct current assertions",
+          "Coverage report shows at least 80% line coverage across firmware modules"
+        ],
+        "depends_on": [
+          13
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "LOCALIZATION",
+        "description": "Set up i18n for recipe_app using react-i18next (frontend) and Python Babel (backend): extract all UI strings to en.json, add es, fr, ja, pt-BR locale files, implement browser-preference locale detection, and configure locale-appropriate unit systems (metric vs imperial).",
+        "payload": {
+          "library_frontend": "react-i18next",
+          "library_backend": "Python Babel",
+          "initial_locales": [
+            "en",
+            "es",
+            "fr",
+            "ja",
+            "pt-BR"
+          ],
+          "unit_locale_rules": {
+            "en": "imperial",
+            "es": "metric",
+            "fr": "metric",
+            "ja": "metric",
+            "pt-BR": "metric"
+          },
+          "ci_check": "fail build on missing locale keys"
+        },
+        "acceptance_criteria": [
+          "Zero hardcoded UI strings remain in React components",
+          "All 5 locale files complete with no missing keys verified by CI script",
+          "Locale auto-detects from browser Accept-Language header on first load",
+          "Ingredient quantities render in correct unit system per locale",
+          "CI check fails the build when new strings are added without locale entries",
+          "Top 5 target locales identified",
+          "Store listing translated"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12
+        ],
+        "agent_role": "localization_engineer"
+      },
+      {
+        "step": 18,
+        "task_type": "QA",
+        "description": "Develop QA test plan: define test scope, risk-based test prioritization for nutritional data accuracy and ingredient fuzzy-match false positives, 120+ test cases in TestRail, regression matrix, and UAT acceptance criteria. Define exploratory charter for cooking mode edge cases.",
+        "payload": {
+          "test_scope": [
+            "ingredient_search",
+            "nutritional_info",
+            "grocery_list",
+            "cooking_mode",
+            "social_sharing"
+          ],
+          "risk_areas": [
+            "nutritional_data_accuracy",
+            "ingredient_fuzzy_match_false_positives",
+            "cooking_timer_reliability"
+          ],
+          "test_types": [
+            "functional",
+            "regression",
+            "exploratory",
+            "UAT"
+          ],
+          "test_case_count_target": 120,
+          "tools": [
+            "TestRail",
+            "BrowserStack"
+          ]
+        },
+        "acceptance_criteria": [
+          "Test plan document approved with full scope definition",
+          "At least 120 test cases written and loaded into TestRail",
+          "Risk matrix identifies top 10 risks with mitigation per item",
+          "Regression suite tagged and executable in CI via Playwright",
+          "UAT acceptance criteria signed off by product_manager"
+        ],
+        "depends_on": [
+          2,
+          3
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 19,
+        "task_type": "TESTS",
+        "description": "Implement automated test suite: FastAPI pytest unit and integration tests (85% coverage, testcontainers PostgreSQL), Playwright E2E tests for ingredient search to grocery export, cooking mode full flow, and social post and share journeys across 3 browsers. Locust load test for /recipes/search at 500 RPS.",
+        "payload": {
+          "backend_tests": {
+            "framework": "pytest + httpx",
+            "coverage_target": "85%",
+            "test_db": "testcontainers-python PostgreSQL"
+          },
+          "e2e_tests": {
+            "framework": "Playwright",
+            "browsers": [
+              "chromium",
+              "webkit",
+              "firefox"
+            ],
+            "journeys": [
+              "ingredient_search_to_grocery_export",
+              "cooking_mode_full_flow",
+              "social_post_and_share"
+            ]
+          },
+          "load_tests": {
+            "framework": "Locust",
+            "target_rps": 500,
+            "p99_target_ms": 500
+          }
+        },
+        "acceptance_criteria": [
+          "Backend test suite achieves at least 85% line coverage",
+          "All 3 Playwright journeys pass across 3 browsers with no flakes in 3 consecutive runs",
+          "Load test sustains 500 RPS with p99 under 500ms and zero 5xx errors",
+          "CI pipeline runs full test suite on every PR and blocks merge on failure",
+          "Test results artifact published to CI dashboard"
+        ],
+        "depends_on": [
+          6,
+          7,
+          8,
+          11,
+          12
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 20,
+        "task_type": "SECURITY",
+        "description": "Perform security review: STRIDE threat model for auth, ingredient data ingestion, social content, and photo uploads. Implement OWASP Top 10 mitigations (parameterized queries, JWT rotation, HTML sanitization, file type validation, auth rate limiting). Generate SBOM with syft.",
+        "payload": {
+          "threat_model": "STRIDE on auth flow, ingredient search input, photo upload, social post content",
+          "owasp_focus": [
+            "SQL injection",
+            "broken auth",
+            "XSS in social posts",
+            "IDOR in grocery lists",
+            "insecure file upload"
+          ],
+          "mitigations": [
+            "SQLAlchemy ORM parameterized queries",
+            "JWT 15min expiry + refresh rotation",
+            "bleach HTML sanitization on recipe content",
+            "MIME type validation + size limit on uploads",
+            "rate limiting on auth endpoints"
+          ],
+          "sbom_tool": "syft"
+        },
+        "acceptance_criteria": [
+          "STRIDE threat model document covers all 4 surfaces",
+          "OWASP Top 10 checklist completed with PASS or MITIGATED or ACCEPTED per item",
+          "Bandit and manual review find zero SQL injection vulnerabilities",
+          "Photo upload rejects non-image MIME types and files over 10MB",
+          "SBOM generated with syft and committed to /docs/security/sbom.json"
+        ],
+        "depends_on": [
+          6,
+          7,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 21,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy, data retention policy, and cookie policy for recipe_app: cover UGC licensing for recipe posts, USDA data attribution, GDPR and CCPA data subject rights (erasure and portability), photo upload rights, and third-party share platform compliance.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "data_retention_policy.md",
+            "cookie_policy.md"
+          ],
+          "compliance_frameworks": [
+            "GDPR",
+            "CCPA"
+          ],
+          "specific_clauses": [
+            "UGC license grant for recipe posts",
+            "USDA FoodData Central attribution",
+            "right to erasure mapped to DELETE /users endpoint",
+            "data portability endpoint for grocery lists and saved recipes",
+            "third-party share platform compliance"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 4 legal documents drafted and reviewed",
+          "GDPR right-to-erasure flow mapped to backend DELETE /users/{id} endpoint",
+          "Data portability endpoint documented in OpenAPI spec",
+          "USDA attribution text included in nutritional info display",
+          "Cookie consent banner wired to analytics opt-in"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 22,
+        "task_type": "TRAINING",
+        "description": "Create user onboarding and training materials: 5-stop in-app tooltip tour (Shepherd.js) covering pantry input, recipe search, grocery list, cooking mode, and social feed. Help center articles for all 5 features. 90-second app overview video script. Community recipe submission guidelines.",
+        "payload": {
+          "onboarding_tour": {
+            "stops": [
+              "pantry_input",
+              "recipe_search",
+              "grocery_list",
+              "cooking_mode",
+              "social_feed"
+            ],
+            "implementation": "Shepherd.js triggered on first login"
+          },
+          "help_articles": [
+            "How to search by ingredients",
+            "Understanding nutritional info",
+            "Building and exporting a grocery list",
+            "Using cooking mode with voice tips",
+            "Sharing recipes and following other cooks"
+          ],
+          "video_script": "90-second app overview voiceover and screen recording",
+          "community_guidelines": "recipe submission quality standards and content moderation policy"
+        },
+        "acceptance_criteria": [
+          "In-app tour implemented with Shepherd.js and triggers on first login",
+          "All 5 help articles published to /help with search indexing",
+          "Video script reviewed and approved reading at 90 seconds plus or minus 10 seconds",
+          "Community guidelines include moderation criteria and reporting flow",
+          "Help center search returns relevant results for top 20 anticipated support queries"
+        ],
+        "depends_on": [
+          10,
+          11,
+          12
+        ],
+        "agent_role": "technical_writer"
+      },
+      {
+        "step": 23,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD with GitHub Actions, Docker multi-stage builds, Kubernetes deployment manifests (recipe-app namespace), Helm charts for PostgreSQL and Redis, database migration Kubernetes Job, and Prometheus/Grafana/Loki/Tempo observability stack with SLO alerting.",
+        "payload": {
+          "ci_cd": "GitHub Actions",
+          "containerization": "Docker multi-stage: python:3.12-slim for backend, node:20-alpine to nginx:alpine for frontend",
+          "orchestration": "Kubernetes 1.29 + Helm",
+          "charts": [
+            "bitnami/postgresql",
+            "bitnami/redis"
+          ],
+          "observability": {
+            "metrics": "Prometheus + Grafana",
+            "logs": "Loki",
+            "traces": "OpenTelemetry to Tempo"
+          },
+          "slos": {
+            "recipe_search_p99_ms": 500,
+            "api_error_rate_pct": 0.1,
+            "availability_pct": 99.9
+          },
+          "environments": [
+            "dev",
+            "staging",
+            "production"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs lint, test, build on every PR and blocks merge on failure",
+          "CD pipeline auto-deploys to staging on main branch merge",
+          "Production deploy requires manual approval gate in GitHub Actions",
+          "Database migration runs as Kubernetes Job before deployment rollout",
+          "Grafana dashboard shows recipe_search_p99 and api_error_rate SLO panels",
+          "Alert fires within 2 minutes of p99 exceeding 500ms for more than 5 minutes"
+        ],
+        "depends_on": [
+          19,
+          20
+        ],
+        "agent_role": "devops_engineer"
+      }
+    ],
+    "task_count": 23,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 47,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 47,
+          "final_review": {
+            "score": 47,
+            "flaws": [
+              "Firebase Dynamic Links (step 8) was deprecated August 2023 and shut down August 2025. Any deep-link implementation using it will fail at runtime. No replacement (Branch.io, App Links, Universal Links) is named.",
+              "No dedicated authentication implementation step exists anywhere in the 23-step plan. JWT is mentioned in the API design step as a contract detail, but registration, login, OAuth social sign-in, password reset, and session invalidation have no implementation owner or acceptance criteria.",
+              "Steps 13\u201316 (firmware, SystemC power simulation, PCB design, HIL test harness) are a completely separate hardware product embedded inside a recipe app MVP. This quadruples scope and introduces a 6\u201312 month hardware procurement and fab cycle that has no dependency on any user-facing software milestone.",
+              "API design (step 5) depends on database schema (step 4), but the correct dependency is the reverse \u2014 the API contract should drive schema decisions. Reversing this order means you will discover schema incompatibilities only after the DB migration tooling is already in place, forcing costly rework.",
+              "Web Speech API (step 11) is not available on iOS Safari in any reliable form and requires network access in Chrome. Cooking mode voice navigation will silently not work for a significant portion of mobile users. No fallback (button-only mode, native speech SDK for a native app) is specified.",
+              "Background timer reliability in a web app (step 11 acceptance criteria: 'works with screen backgrounded') is not achievable without a Service Worker + Push Notification or a native app wrapper. Browser tabs are throttled or suspended by every major mobile OS. This acceptance criterion cannot pass in a pure web context.",
+              "PCB design (step 15) is assigned to the 'developer' agent role. PCB layout, antenna keep-out zone tuning, and DRC rule compliance require EE-specific skills that a software developer agent cannot supply. This is a role mismatch that will produce unmanufacturable boards.",
+              "The hardware dependency chain is inverted: step 14 (SystemC simulation) and step 15 (PCB design) both depend on step 13 (firmware). In practice, PCB design must precede firmware bring-up, not follow it \u2014 you cannot write BLE drivers before you have a board with a BLE radio on it.",
+              "500 recipes with 'full nutritional data' in the seed script (step 4) \u2014 no source is named. LLM-generated nutritional data would be legally and medically dangerous (incorrect calorie/macro values). USDA-sourced seed data requires bulk download and transformation tooling that is never planned.",
+              "Ingredient unit normalization (step 7, 2% accuracy target) ignores the long tail of non-SI cooking units: 'a pinch', 'to taste', 'one bunch', 'a handful', 'a can'. No handling strategy is defined, and real recipes use these constantly. The deduplication logic will silently drop or miscount these items."
+            ],
+            "suggestions": [
+              "Replace Firebase Dynamic Links with Android App Links (Digital Asset Links JSON) + Apple Universal Links. Both are free, standards-based, and not deprecated. Wire them in step 8 with a /.well-known/ static file served from the FastAPI app.",
+              "Add a dedicated AUTH step between steps 5 and 6: implement JWT issuance, httpOnly refresh token cookie (not localStorage \u2014 XSS safe), /auth/register, /auth/login, /auth/logout, /auth/refresh, and optional OAuth2 (Google) for social login. This is the most critical missing step.",
+              "Scope-gate the hardware work (steps 13\u201316) as a v3 milestone, not a dependency of cooking mode. The mobile cooking mode (step 11) and e-ink companion device are independent products. The app ships without the device. Build the BLE integration as an optional progressive enhancement post-launch.",
+              "Reverse the step 4/5 dependency: design the OpenAPI contract first (step 4), then derive the PostgreSQL schema (step 5). Use the contract as the source of truth and generate Pydantic models from it. This catches impedance mismatches before migrations are written.",
+              "Replace Web Speech API with a graceful-degradation strategy: use the API where available (Chrome desktop, Chrome Android) and fall back to visible tap targets. Document this explicitly in the cooking mode acceptance criteria. For a production app, evaluate Capacitor or React Native for reliable native speech access.",
+              "Add a USDA bulk nutritional data import step. Download the USDA FoodData Central SR Legacy JSON dump (public domain, ~350MB), write an ETL into the nutritional_facts table, and use the live API only for lookup of items not in the local cache. This eliminates rate limit exposure and makes nutritional data available offline.",
+              "Add an ingredient ontology or synonym table to the database schema. 'Scallion', 'green onion', and 'spring onion' are the same ingredient. pg_trgm trigram search will not unify these without explicit synonym expansion. Model this in the schema and wire it into the search layer in step 6.",
+              "Add image content moderation to the photo upload pipeline (step 8). S3 presigned URL uploads bypass your server entirely \u2014 add an S3 event trigger to invoke AWS Rekognition (or equivalent) for NSFW/CSAM detection before the image is made publicly visible. This is a legal requirement for any UGC platform.",
+              "Define the mobile delivery target explicitly before step 10: PWA, React Native, Capacitor, or separate iOS/Android codebases. This decision affects steps 10, 11, 12, 17, and 22. A PWA cannot reliably receive background push notifications on iOS, cannot run background timers, and cannot access native share sheets without polyfills."
+            ],
+            "missing": [
+              "Authentication and session management implementation \u2014 JWT issuance, refresh rotation, logout/revocation, and social OAuth are completely absent as a buildable step.",
+              "USDA FoodData Central API rate limit strategy \u2014 the free tier is 3,600 requests/hour. At 500 RPS load test volume, the live API will be exhausted in seconds. No bulk import, quota management, or fallback nutrition database (Open Food Facts) is planned.",
+              "Content moderation pipeline for UGC \u2014 recipe posts, user-submitted photos, and community recipe submissions have no moderation layer (automated or human). Launching without this exposes the platform to CSAM, spam, and brand risk.",
+              "Mobile app delivery decision \u2014 the plan builds a React web app but references iOS/Android deep links, app store screenshots, and backgrounded session resume. The gap between 'web app' and 'app store app' is never resolved.",
+              "Token storage security decision \u2014 JWT tokens stored in localStorage are XSS-vulnerable. httpOnly cookie strategy vs localStorage is a security-critical choice that must be made before step 6, not discovered during the security review in step 20.",
+              "Right-to-erasure cascade \u2014 step 21 maps GDPR erasure to DELETE /users/{id} but does not address cascading deletion of social posts, likes, follows, saved recipes, pantry entries, and grocery list history. Partial erasure is an Article 17 GDPR violation.",
+              "Offline support strategy for cooking mode \u2014 a user mid-recipe in a kitchen with poor Wi-Fi cannot have cooking mode fail. Service Worker caching for the active recipe is never mentioned.",
+              "Ingredient taxonomy / synonym normalization data model \u2014 'tomato', 'roma tomato', 'cherry tomato', 'tinned tomatoes' are distinct ingredients in some recipes and interchangeable in others. No ontology or synonym resolution layer is planned.",
+              "Recipe content attribution and copyright \u2014 the 500 seed recipes need a clear license (user-submitted, CC-licensed, USDA, public domain). Seeding with scraped or LLM-generated recipes creates copyright and accuracy liability.",
+              "Social feed scalability model \u2014 no fan-out strategy (write-time fan-out vs read-time fan-out) is specified. For users with 10,000 followers, write-time fan-out will cause post creation to block. This needs a design decision before step 8 is implemented."
+            ],
+            "security_risks": [
+              "Photo uploads via S3 presigned URLs (step 8/12) bypass all server-side validation. A malicious actor can upload arbitrary file types by forging the Content-Type header. MIME type sniffing must happen server-side on S3 via Lambda trigger or post-upload validation \u2014 not just in the browser client.",
+              "JWT tokens stored implicitly (localStorage assumed) are exfiltrable via XSS. The social content injection surface (recipe posts, step 20 mitigates with bleach) means a successful stored XSS attack would harvest all auth tokens. Require httpOnly cookies for refresh tokens and short-lived memory-only access tokens.",
+              "IDOR on grocery lists \u2014 step 20 lists this as a known risk but the mitigation is not specified beyond 'OWASP Top 10 checklist'. Grocery list endpoints must enforce that the authenticated user owns the list on every read/write/delete operation. This must be a first-class implementation requirement in step 6, not an afterthought in step 20.",
+              "Ingredient search input is a PostgreSQL FTS query path. Even with SQLAlchemy ORM, complex tsvector/tsquery construction with user input requires explicit sanitization. FTS injection (crafting tsquery syntax to cause query plan denial of service) is not covered by standard parameterized query protection.",
+              "LLM-generated ingredient substitution suggestions (step 7) could recommend allergen substitutions that are medically dangerous (e.g., suggesting almond flour as a 'gluten-free' substitute for someone with tree nut allergy). No disclaimer, no allergen cross-check, and no liability boundary is defined.",
+              "OTA firmware update endpoint (step 13) has no authentication model defined. An unauthenticated or weakly authenticated /ota/firmware endpoint on a public backend is a remote code execution surface for the companion device. Firmware signing (Ed25519 or similar) must be in the acceptance criteria, not just hash verification of an unsigned payload.",
+              "Social sharing deep links contain recipe content. An attacker who crafts a malicious deep link URL could exploit open redirect vulnerabilities in the link resolution layer if URL parsing is not strict. Firebase Dynamic Links (now dead) had this mitigated \u2014 the replacement must explicitly address open redirect.",
+              "The SBOM (step 20, syft) is generated but there is no vulnerability scanning step (Trivy, Grype, or Dependabot). Generating a SBOM without acting on it provides compliance theater, not actual supply chain security. Add a CI gate that fails on critical CVEs in the SBOM."
+            ],
+            "summary": "This plan is structurally coherent for a web-based recipe app but contains two categories of problems that push the score well below acceptable for a production launch. First, a critical missing piece: there is no authentication implementation step anywhere in 23 steps \u2014 JWT appears in the API design as a contract annotation and in the security review as a checklist item, but the actual auth system (registration, login, session management, token lifecycle) has no owner, no step, and no acceptance criteria. Shipping without this is not an MVP gap, it is a non-starter. Second, the plan buries a fully separate hardware product (e-ink display, BLE firmware, SystemC simulation, PCB fabrication) inside a recipe app roadmap. This is not scope creep \u2014 it is a different project entirely, with a 6\u201312 month hardware lifecycle that has no relationship to the web app's delivery timeline. Remove steps 13\u201316 entirely or isolate them as a post-v1 hardware initiative. The remaining flaws \u2014 dead Firebase dependency, background timer impossibility in mobile web, inverted API/DB dependency, missing ingredient ontology, missing content moderation, and UGC copyright exposure \u2014 are individually fixable, but collectively they represent a plan that has not been walked through from a shipping perspective. Fundamental rework on auth, hardware scoping, and the Firebase replacement is required before this plan should be executed.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 47,
+              "flaws": [
+                "Firebase Dynamic Links (step 8) was deprecated August 2023 and shut down August 2025. Any deep-link implementation using it will fail at runtime. No replacement (Branch.io, App Links, Universal Links) is named.",
+                "No dedicated authentication implementation step exists anywhere in the 23-step plan. JWT is mentioned in the API design step as a contract detail, but registration, login, OAuth social sign-in, password reset, and session invalidation have no implementation owner or acceptance criteria.",
+                "Steps 13\u201316 (firmware, SystemC power simulation, PCB design, HIL test harness) are a completely separate hardware product embedded inside a recipe app MVP. This quadruples scope and introduces a 6\u201312 month hardware procurement and fab cycle that has no dependency on any user-facing software milestone.",
+                "API design (step 5) depends on database schema (step 4), but the correct dependency is the reverse \u2014 the API contract should drive schema decisions. Reversing this order means you will discover schema incompatibilities only after the DB migration tooling is already in place, forcing costly rework.",
+                "Web Speech API (step 11) is not available on iOS Safari in any reliable form and requires network access in Chrome. Cooking mode voice navigation will silently not work for a significant portion of mobile users. No fallback (button-only mode, native speech SDK for a native app) is specified.",
+                "Background timer reliability in a web app (step 11 acceptance criteria: 'works with screen backgrounded') is not achievable without a Service Worker + Push Notification or a native app wrapper. Browser tabs are throttled or suspended by every major mobile OS. This acceptance criterion cannot pass in a pure web context.",
+                "PCB design (step 15) is assigned to the 'developer' agent role. PCB layout, antenna keep-out zone tuning, and DRC rule compliance require EE-specific skills that a software developer agent cannot supply. This is a role mismatch that will produce unmanufacturable boards.",
+                "The hardware dependency chain is inverted: step 14 (SystemC simulation) and step 15 (PCB design) both depend on step 13 (firmware). In practice, PCB design must precede firmware bring-up, not follow it \u2014 you cannot write BLE drivers before you have a board with a BLE radio on it.",
+                "500 recipes with 'full nutritional data' in the seed script (step 4) \u2014 no source is named. LLM-generated nutritional data would be legally and medically dangerous (incorrect calorie/macro values). USDA-sourced seed data requires bulk download and transformation tooling that is never planned.",
+                "Ingredient unit normalization (step 7, 2% accuracy target) ignores the long tail of non-SI cooking units: 'a pinch', 'to taste', 'one bunch', 'a handful', 'a can'. No handling strategy is defined, and real recipes use these constantly. The deduplication logic will silently drop or miscount these items."
+              ],
+              "suggestions": [
+                "Replace Firebase Dynamic Links with Android App Links (Digital Asset Links JSON) + Apple Universal Links. Both are free, standards-based, and not deprecated. Wire them in step 8 with a /.well-known/ static file served from the FastAPI app.",
+                "Add a dedicated AUTH step between steps 5 and 6: implement JWT issuance, httpOnly refresh token cookie (not localStorage \u2014 XSS safe), /auth/register, /auth/login, /auth/logout, /auth/refresh, and optional OAuth2 (Google) for social login. This is the most critical missing step.",
+                "Scope-gate the hardware work (steps 13\u201316) as a v3 milestone, not a dependency of cooking mode. The mobile cooking mode (step 11) and e-ink companion device are independent products. The app ships without the device. Build the BLE integration as an optional progressive enhancement post-launch.",
+                "Reverse the step 4/5 dependency: design the OpenAPI contract first (step 4), then derive the PostgreSQL schema (step 5). Use the contract as the source of truth and generate Pydantic models from it. This catches impedance mismatches before migrations are written.",
+                "Replace Web Speech API with a graceful-degradation strategy: use the API where available (Chrome desktop, Chrome Android) and fall back to visible tap targets. Document this explicitly in the cooking mode acceptance criteria. For a production app, evaluate Capacitor or React Native for reliable native speech access.",
+                "Add a USDA bulk nutritional data import step. Download the USDA FoodData Central SR Legacy JSON dump (public domain, ~350MB), write an ETL into the nutritional_facts table, and use the live API only for lookup of items not in the local cache. This eliminates rate limit exposure and makes nutritional data available offline.",
+                "Add an ingredient ontology or synonym table to the database schema. 'Scallion', 'green onion', and 'spring onion' are the same ingredient. pg_trgm trigram search will not unify these without explicit synonym expansion. Model this in the schema and wire it into the search layer in step 6.",
+                "Add image content moderation to the photo upload pipeline (step 8). S3 presigned URL uploads bypass your server entirely \u2014 add an S3 event trigger to invoke AWS Rekognition (or equivalent) for NSFW/CSAM detection before the image is made publicly visible. This is a legal requirement for any UGC platform.",
+                "Define the mobile delivery target explicitly before step 10: PWA, React Native, Capacitor, or separate iOS/Android codebases. This decision affects steps 10, 11, 12, 17, and 22. A PWA cannot reliably receive background push notifications on iOS, cannot run background timers, and cannot access native share sheets without polyfills."
+              ],
+              "missing": [
+                "Authentication and session management implementation \u2014 JWT issuance, refresh rotation, logout/revocation, and social OAuth are completely absent as a buildable step.",
+                "USDA FoodData Central API rate limit strategy \u2014 the free tier is 3,600 requests/hour. At 500 RPS load test volume, the live API will be exhausted in seconds. No bulk import, quota management, or fallback nutrition database (Open Food Facts) is planned.",
+                "Content moderation pipeline for UGC \u2014 recipe posts, user-submitted photos, and community recipe submissions have no moderation layer (automated or human). Launching without this exposes the platform to CSAM, spam, and brand risk.",
+                "Mobile app delivery decision \u2014 the plan builds a React web app but references iOS/Android deep links, app store screenshots, and backgrounded session resume. The gap between 'web app' and 'app store app' is never resolved.",
+                "Token storage security decision \u2014 JWT tokens stored in localStorage are XSS-vulnerable. httpOnly cookie strategy vs localStorage is a security-critical choice that must be made before step 6, not discovered during the security review in step 20.",
+                "Right-to-erasure cascade \u2014 step 21 maps GDPR erasure to DELETE /users/{id} but does not address cascading deletion of social posts, likes, follows, saved recipes, pantry entries, and grocery list history. Partial erasure is an Article 17 GDPR violation.",
+                "Offline support strategy for cooking mode \u2014 a user mid-recipe in a kitchen with poor Wi-Fi cannot have cooking mode fail. Service Worker caching for the active recipe is never mentioned.",
+                "Ingredient taxonomy / synonym normalization data model \u2014 'tomato', 'roma tomato', 'cherry tomato', 'tinned tomatoes' are distinct ingredients in some recipes and interchangeable in others. No ontology or synonym resolution layer is planned.",
+                "Recipe content attribution and copyright \u2014 the 500 seed recipes need a clear license (user-submitted, CC-licensed, USDA, public domain). Seeding with scraped or LLM-generated recipes creates copyright and accuracy liability.",
+                "Social feed scalability model \u2014 no fan-out strategy (write-time fan-out vs read-time fan-out) is specified. For users with 10,000 followers, write-time fan-out will cause post creation to block. This needs a design decision before step 8 is implemented."
+              ],
+              "security_risks": [
+                "Photo uploads via S3 presigned URLs (step 8/12) bypass all server-side validation. A malicious actor can upload arbitrary file types by forging the Content-Type header. MIME type sniffing must happen server-side on S3 via Lambda trigger or post-upload validation \u2014 not just in the browser client.",
+                "JWT tokens stored implicitly (localStorage assumed) are exfiltrable via XSS. The social content injection surface (recipe posts, step 20 mitigates with bleach) means a successful stored XSS attack would harvest all auth tokens. Require httpOnly cookies for refresh tokens and short-lived memory-only access tokens.",
+                "IDOR on grocery lists \u2014 step 20 lists this as a known risk but the mitigation is not specified beyond 'OWASP Top 10 checklist'. Grocery list endpoints must enforce that the authenticated user owns the list on every read/write/delete operation. This must be a first-class implementation requirement in step 6, not an afterthought in step 20.",
+                "Ingredient search input is a PostgreSQL FTS query path. Even with SQLAlchemy ORM, complex tsvector/tsquery construction with user input requires explicit sanitization. FTS injection (crafting tsquery syntax to cause query plan denial of service) is not covered by standard parameterized query protection.",
+                "LLM-generated ingredient substitution suggestions (step 7) could recommend allergen substitutions that are medically dangerous (e.g., suggesting almond flour as a 'gluten-free' substitute for someone with tree nut allergy). No disclaimer, no allergen cross-check, and no liability boundary is defined.",
+                "OTA firmware update endpoint (step 13) has no authentication model defined. An unauthenticated or weakly authenticated /ota/firmware endpoint on a public backend is a remote code execution surface for the companion device. Firmware signing (Ed25519 or similar) must be in the acceptance criteria, not just hash verification of an unsigned payload.",
+                "Social sharing deep links contain recipe content. An attacker who crafts a malicious deep link URL could exploit open redirect vulnerabilities in the link resolution layer if URL parsing is not strict. Firebase Dynamic Links (now dead) had this mitigated \u2014 the replacement must explicitly address open redirect.",
+                "The SBOM (step 20, syft) is generated but there is no vulnerability scanning step (Trivy, Grype, or Dependabot). Generating a SBOM without acting on it provides compliance theater, not actual supply chain security. Add a CI gate that fails on critical CVEs in the SBOM."
+              ],
+              "summary": "This plan is structurally coherent for a web-based recipe app but contains two categories of problems that push the score well below acceptable for a production launch. First, a critical missing piece: there is no authentication implementation step anywhere in 23 steps \u2014 JWT appears in the API design as a contract annotation and in the security review as a checklist item, but the actual auth system (registration, login, session management, token lifecycle) has no owner, no step, and no acceptance criteria. Shipping without this is not an MVP gap, it is a non-starter. Second, the plan buries a fully separate hardware product (e-ink display, BLE firmware, SystemC simulation, PCB fabrication) inside a recipe app roadmap. This is not scope creep \u2014 it is a different project entirely, with a 6\u201312 month hardware lifecycle that has no relationship to the web app's delivery timeline. Remove steps 13\u201316 entirely or isolate them as a post-v1 hardware initiative. The remaining flaws \u2014 dead Firebase dependency, background timer impossibility in mobile web, inverted API/DB dependency, missing ingredient ontology, missing content moderation, and UGC copyright exposure \u2014 are individually fixable, but collectively they represent a plan that has not been walked through from a shipping perspective. Fundamental rework on auth, hardware scoping, and the Firebase replacement is required before this plan should be executed.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T10:35:46.538178+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 290.61,
+      "critic_plan": 106.76
+    }
+  }
+}

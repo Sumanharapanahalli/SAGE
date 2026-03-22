@@ -1,0 +1,63 @@
+project_name: pet_care
+display_name: Pet Care
+version: 1.0.0
+domain: consumer_app
+description: Pet care app with vet appointment booking, vaccination reminders, pet
+  health records, pet sitter marketplace, lost pet alerts, and community forums.
+detected_domains: []
+compliance_standards:
+- GDPR
+- CCPA
+- PCI DSS
+- SOC 2
+task_types:
+- AGENTIC
+- API
+- BACKEND
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- LEGAL
+- LOCALIZATION
+- MARKET_RESEARCH
+- PRODUCT_MGMT
+- QA
+- SECURITY
+- TESTS
+- TRAINING
+- UX_DESIGN
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- legal_advisor
+- localization_engineer
+- marketing_strategist
+- product_manager
+- qa_engineer
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

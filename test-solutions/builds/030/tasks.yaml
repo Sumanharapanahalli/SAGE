@@ -1,0 +1,251 @@
+task_types:
+  PRODUCT_MGMT:
+    description: Define product requirements document for the HMI design system covering
+      instrument cluster, HUD overlay, multi-modal input, and ISO 15005 distraction
+      limits
+    agent_role: product_manager
+    acceptance_criteria:
+    - PRD lists all functional and non-functional requirements with unique IDs
+    - ISO 15005 distraction limits explicitly mapped to UX requirements
+    - Success metrics defined for each major feature area
+    - Stakeholder sign-off obtained
+    depends_on: []
+  SAFETY:
+    description: Perform system-level hazard analysis and risk assessment (HARA) per
+      ISO 26262 for all HMI interaction modes; derive ASIL ratings for instrument
+      cluster, HUD, and input subsystems
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All hazards enumerated with severity, exposure, and controllability ratings
+    - ASIL levels assigned to each safety goal per ISO 26262-3
+    - Safety goals are complete, unambiguous, and traceable to hazards
+    - HARA document reviewed and approved by safety_engineer
+    - ASIL level determined for each function
+    - Fault tree analysis complete
+    depends_on:
+    - 1
+  UX_DESIGN:
+    description: 'Design distraction-minimizing HMI interaction model per ISO 15005:
+      glance time analysis, task interruption design, visual hierarchy for instrument
+      cluster and HUD'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - All primary displays comply with ISO 15005 glance time ≤ 2 s per single glance
+    - Total task time for any secondary task ≤ 12 s per ISO 15005
+    - Visual hierarchy wireframes reviewed and approved by UX lead
+    - HUD and cluster layouts avoid safety-critical occlusion zones
+    depends_on:
+    - 1
+    - 2
+  COMPLIANCE:
+    description: Establish Design History File (DHF) skeleton, traceability matrix
+      (requirements → design → verification), and V&V protocol templates for ISO 26262
+      and ISO 15005 compliance
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF structure matches ISO 26262 Part 2 work product list
+    - Traceability matrix links every requirement ID to at least one design item and
+      one test case
+    - V&V protocol templates cover unit, integration, HIL, and system test levels
+    - UNECE R155 cybersecurity work products included in DHF structure
+    depends_on:
+    - 2
+    - 3
+  CONFIG:
+    description: 'Set up hmi_design_system SAGE solution scaffold: project.yaml, prompts.yaml,
+      tasks.yaml; configure AUTOSAR-aware build toolchain (CMake, cross-compiler arm-none-eabi),
+      React workspace for UI components'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - SAGE solution loads without errors via make run PROJECT=hmi_design_system
+    - CMake configures successfully for ARM cross-compilation target
+    - React workspace builds with zero TypeScript errors
+    - CI pipeline runs on push and reports pass/fail
+    depends_on:
+    - 1
+  HARDWARE_SIM:
+    description: Build SystemC simulation model for instrument cluster display controller
+      (resolution 1920×720, 60 Hz refresh), HUD projector timing model, and CAN/SOME-IP
+      message bus stimulus generator
+    agent_role: developer
+    acceptance_criteria:
+    - Display controller model simulates 60 Hz frame delivery with < 1 % timing error
+    - CAN/SOME-IP stimulus generates all vehicle signal types used by cluster and
+      HUD
+    - Simulation runs end-to-end without segfaults for 60-second vehicle drive scenario
+    - Timing reports confirm HUD latency model within 5 ms of hardware spec
+    depends_on:
+    - 6
+  FIRMWARE:
+    description: Implement HAL drivers for display controller (SPI/MIPI-DSI), CAN-FD
+      vehicle bus receiver, and HUD projector interface; implement FreeRTOS task architecture
+      with priority assignments per ASIL requirements
+    agent_role: firmware_engineer
+    acceptance_criteria:
+    - All HAL drivers compile with zero MISRA-C:2012 violations at required severity
+    - FreeRTOS task priorities match ASIL assignments from HARA
+    - Display driver achieves 60 Hz with < 2 ms jitter on target hardware or simulator
+    - CAN-FD receiver processes all defined vehicle signals within 10 ms latency budget
+    - AUTOSAR compliance checked
+    - MISRA C violations zero
+    depends_on:
+    - 7
+    - 3
+  FRONTEND:
+    description: 'Build React 18 + TypeScript HMI design-system component library:
+      design tokens, gauge components, HUD overlay preview, modal input visualizer,
+      and Storybook documentation'
+    agent_role: developer
+    acceptance_criteria:
+    - All components pass WCAG 2.1 AA contrast checks
+    - Storybook renders every component variant without console errors
+    - GaugeWidget animates at ≥ 60 fps in Chromium browser benchmark
+    - Design token set enforces ISO 15005 minimum font and contrast requirements at
+      compile time
+    depends_on:
+    - 4
+    - 6
+  BACKEND:
+    description: 'Implement SAGE solution backend: FastAPI service for vehicle telemetry
+      ingestion (SOME/IP → REST bridge), HMI configuration API, and real-time CAN
+      signal relay via WebSocket'
+    agent_role: developer
+    acceptance_criteria:
+    - All endpoints return correct HTTP status codes and schema-validated responses
+    - WebSocket relay delivers CAN signals with ≤ 50 ms end-to-end latency under 100
+      concurrent clients
+    - SOME/IP bridge decodes all defined service IDs without data corruption
+    - JWT auth rejects unauthenticated requests on all protected endpoints
+    depends_on:
+    - 6
+  AGENTIC:
+    description: 'Implement coordinator agentic pattern for HMI validation pipeline:
+      central coordinator routes distraction analysis tasks to specialist agents (UX
+      scorer, safety checker, rendering QA), aggregates results, and gates build on
+      ISO 15005 pass'
+    agent_role: developer
+    acceptance_criteria:
+    - Coordinator decomposes validation request into parallel specialist subtasks
+    - All three specialist agents return structured results with pass/fail and evidence
+    - Build is blocked if any specialist returns FAIL without human override in SAGE
+      approval queue
+    - Coordinator audit trail written to .sage/audit_log.db for every validation run
+    depends_on:
+    - 13
+    - 11
+  SECURITY:
+    description: 'Threat model and UNECE R155 cybersecurity analysis for HMI system:
+      OBD-II/CAN attack vectors, voice command injection, gesture spoofing, and over-the-air
+      update integrity'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - TARA covers all identified attack surfaces with asset, threat, and risk rating
+    - Cybersecurity goals derived for all HIGH and CRITICAL risks
+    - SBOM generated listing all open-source components with CVE scan results
+    - OTA update integrity verified via cryptographic signing requirements documented
+    depends_on:
+    - 5
+  DATABASE:
+    description: Design SQLite schema for HMI audit log, distraction event history,
+      ISO 15005 glance-time telemetry, and HMI configuration versioning
+    agent_role: developer
+    acceptance_criteria:
+    - Schema migrations run without errors on clean and existing databases
+    - glance_time_log records per-session glance count and duration with vehicle speed
+      context
+    - All tables have created_at, updated_at audit columns
+    - Retention policy deletes telemetry rows older than 90 days on scheduled vacuum
+    depends_on:
+    - 6
+  EMBEDDED_TEST:
+    description: Write HIL test specifications and harness for instrument cluster
+      renderer, HUD overlay, and multi-modal input fusion using SystemC simulation
+      models as the hardware stand-in
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - HIL harness connects to SystemC models and injects all CAN/SOME-IP stimuli programmatically
+    - cluster_renderer_timing suite verifies 60 fps ± 1 ms across 1000 frames
+    - ISO_15005_interlock_validation suite asserts secondary task blocking at correct
+      speed threshold
+    - All test suites execute in CI pipeline and produce JUnit XML reports
+    depends_on:
+    - 7
+    - 9
+    - 10
+    - 11
+  TESTS:
+    description: Write unit and integration tests for firmware HAL drivers, rendering
+      pipeline, input fusion layer, and FastAPI backend using CppUTest (embedded)
+      and pytest (backend)
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Embedded unit tests achieve ≥ 90 % line coverage on HAL driver and renderer
+      modules
+    - Backend pytest suite achieves ≥ 90 % line coverage on all API endpoints
+    - Mock CAN bus tests replay 10-minute drive scenario and assert zero signal drops
+    - All tests pass in CI with zero flaky failures across 5 consecutive runs
+    depends_on:
+    - 8
+    - 9
+    - 10
+    - 11
+    - 13
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite: full vehicle signal playback
+      through cluster + HUD + input fusion, ISO 15005 glance-time compliance validation,
+      and ADAS alert latency verification'
+    agent_role: system_tester
+    acceptance_criteria:
+    - 60-minute drive replay completes with zero rendering crashes or dropped warnings
+    - ISO 15005 glance-time telemetry shows 100 % of test sessions below 2 s limit
+    - ADAS alert latency measured < 150 ms in 99th percentile across 1000 trigger
+      events
+    - 'Graceful degradation test: cluster remains operational when CAN bus disconnected'
+    depends_on:
+    - 17
+    - 18
+    - 14
+  QA:
+    description: 'ISO 15005 usability evaluation: observer-rated distraction test
+      protocol, secondary task performance metrics, and test report for regulatory
+      evidence package'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Test protocol covers all primary HMI interaction flows (cluster read, HUD interaction,
+      voice, gesture)
+    - Mean glance duration ≤ 1.6 s for all instrument cluster tasks
+    - Total secondary task time ≤ 12 s for any single interaction sequence
+    - ISO 15005 compliance statement signed by qualified usability specialist
+    depends_on:
+    - 19
+  DEVOPS:
+    description: 'Set up CI/CD pipeline: cross-compile firmware, run CppUTest + pytest,
+      run HIL simulation tests, build React component library, enforce MISRA-C linting,
+      and generate compliance artifact bundles on release'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - Pipeline completes successfully on main branch push in < 20 minutes
+    - MISRA-C lint gate blocks merge on any new violation
+    - Coverage gate blocks merge if any module drops below 90 %
+    - Release tag triggers compliance artifact bundle generation and uploads to artifact
+      store
+    depends_on:
+    - 18
+    - 17
+    - 12
+    - 13
+  DOCS:
+    description: 'Write technical documentation: system architecture guide, HAL driver
+      API reference, HMI component library usage guide, ISO 15005 integration guide,
+      and developer onboarding README'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - README enables a new developer to build and run the full stack in < 30 minutes
+    - Every public API endpoint documented in OpenAPI spec with request/response examples
+    - HAL driver reference documents all public functions with parameters and return
+      values
+    - ISO 15005 integration guide maps each standard requirement to the implementing
+      code module
+    depends_on:
+    - 21
+    - 22

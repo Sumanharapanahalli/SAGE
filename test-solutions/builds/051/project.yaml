@@ -1,0 +1,58 @@
+project_name: smart_home_hub
+display_name: Smart Home Hub
+version: 1.0.0
+domain: iot
+description: Smart home hub platform with Zigbee/Z-Wave/Matter protocol support, device
+  pairing, automation rules engine, voice assistant integration, and energy monitoring.
+detected_domains: []
+compliance_standards:
+- IEC 62443
+- Matter Standard
+- FCC Part 15
+- GDPR
+task_types:
+- BACKEND
+- COMPLIANCE
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- EMBEDDED_TEST
+- FIRMWARE
+- FRONTEND
+- INFRA
+- ML_MODEL
+- PRODUCT_MGMT
+- SECURITY
+- TESTS
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- firmware_engineer
+- product_manager
+- qa_engineer
+- regulatory_specialist
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

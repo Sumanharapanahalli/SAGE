@@ -1,0 +1,1161 @@
+{
+  "run_id": "3d3a75c6-86da-4afe-85cf-0788ac8f75c3",
+  "status": {
+    "run_id": "3d3a75c6-86da-4afe-85cf-0788ac8f75c3",
+    "solution_name": "scheduling_app",
+    "state": "awaiting_plan",
+    "state_description": "Waiting for human approval of the plan",
+    "created_at": "2026-03-22T05:24:57.558321+00:00",
+    "updated_at": "2026-03-22T05:29:19.435445+00:00",
+    "product_description": "Appointment scheduling SaaS with calendar sync, booking pages, team scheduling, payment collection, reminders, and CRM integration.",
+    "hitl_level": "standard",
+    "hitl_gates": [
+      "plan",
+      "code",
+      "final"
+    ],
+    "plan": [
+      {
+        "step": 1,
+        "task_type": "MARKET_RESEARCH",
+        "description": "Analyze the appointment scheduling SaaS market: identify top competitors (Calendly, Acuity, Cal.com), pricing benchmarks, feature gaps, and target segments (SMB vs enterprise, industry verticals).",
+        "payload": {
+          "deliverables": [
+            "competitor_matrix.md",
+            "market_sizing.md",
+            "positioning_brief.md"
+          ],
+          "competitors": [
+            "Calendly",
+            "Acuity Scheduling",
+            "Cal.com",
+            "HubSpot Meetings",
+            "Doodle"
+          ],
+          "segments": [
+            "freelancers",
+            "SMB teams",
+            "healthcare",
+            "professional services"
+          ]
+        },
+        "acceptance_criteria": [
+          "Competitor feature matrix covers at least 5 direct competitors",
+          "Market sizing includes TAM/SAM/SOM estimates with sources",
+          "Differentiators section identifies at least 3 defensible advantages",
+          "Pricing benchmarks documented across all major tiers"
+        ],
+        "depends_on": [],
+        "agent_role": "marketing_strategist"
+      },
+      {
+        "step": 2,
+        "task_type": "BUSINESS_ANALYSIS",
+        "description": "Define business requirements and user stories for all core personas: host (scheduling owner), invitee (booker), team admin, and billing owner. Map end-to-end booking flow, cancellation/rescheduling, and team availability logic.",
+        "payload": {
+          "personas": [
+            "individual_host",
+            "team_admin",
+            "invitee",
+            "billing_owner"
+          ],
+          "core_flows": [
+            "booking",
+            "cancellation",
+            "rescheduling",
+            "team_round_robin",
+            "collective_scheduling"
+          ],
+          "deliverables": [
+            "user_stories.md",
+            "process_flow_diagrams.md",
+            "acceptance_criteria.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "User stories written for all 4 personas covering happy path and edge cases",
+          "Process flow diagrams cover booking, cancellation, rescheduling, and team scheduling",
+          "ROI analysis quantifies time-saved and no-show reduction metrics",
+          "All stories have testable acceptance criteria",
+          "Pricing tiers defined",
+          "Churn risk factors identified"
+        ],
+        "depends_on": [],
+        "agent_role": "business_analyst"
+      },
+      {
+        "step": 3,
+        "task_type": "FINANCIAL",
+        "description": "Build SaaS pricing model: freemium tier, individual pro, team, and enterprise plans. Model unit economics (CAC, LTV, churn), payment processing cost margins, and 24-month revenue projection.",
+        "payload": {
+          "pricing_tiers": [
+            "free",
+            "pro_individual",
+            "team",
+            "enterprise"
+          ],
+          "revenue_streams": [
+            "subscriptions",
+            "payment_processing_fees"
+          ],
+          "deliverables": [
+            "pricing_strategy.md",
+            "unit_economics_model.xlsx",
+            "revenue_projection.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Pricing tiers clearly differentiated by feature set and user count",
+          "Unit economics model includes CAC, LTV, payback period, and gross margin",
+          "24-month revenue projection covers 3 scenarios (conservative, base, optimistic)",
+          "Payment processing fee margin analysis included for Stripe integration",
+          "MRR/ARR projections modeled",
+          "CAC and LTV estimated"
+        ],
+        "depends_on": [
+          1
+        ],
+        "agent_role": "financial_analyst"
+      },
+      {
+        "step": 4,
+        "task_type": "LEGAL",
+        "description": "Draft Terms of Service, Privacy Policy (GDPR/CCPA compliant), Data Processing Agreement (DPA) for enterprise customers, and cookie policy. Review payment data handling obligations and CRM data sharing terms.",
+        "payload": {
+          "documents": [
+            "terms_of_service.md",
+            "privacy_policy.md",
+            "dpa_template.md",
+            "cookie_policy.md"
+          ],
+          "compliance_frameworks": [
+            "GDPR",
+            "CCPA",
+            "PCI-DSS (via Stripe)"
+          ],
+          "data_categories": [
+            "calendar_data",
+            "payment_data",
+            "contact_data",
+            "booking_history"
+          ]
+        },
+        "acceptance_criteria": [
+          "ToS covers data ownership, liability limits, SLA commitments, and termination",
+          "Privacy Policy addresses GDPR Article 13 disclosure requirements",
+          "DPA template includes data sub-processor list and SCCs for EU transfers",
+          "Cookie policy categorizes all cookies and provides opt-out mechanism",
+          "Subscription terms cover cancellation and refunds",
+          "Data processing agreement drafted"
+        ],
+        "depends_on": [],
+        "agent_role": "legal_advisor"
+      },
+      {
+        "step": 5,
+        "task_type": "UX_DESIGN",
+        "description": "Conduct user research (5-8 interviews with target personas), define information architecture, and produce low-fidelity wireframes for: booking page, host dashboard, team scheduling setup, and payment configuration flows.",
+        "payload": {
+          "research_methods": [
+            "user_interviews",
+            "competitive_ux_audit",
+            "jobs_to_be_done"
+          ],
+          "screens": [
+            "public_booking_page",
+            "host_dashboard",
+            "event_type_editor",
+            "team_availability",
+            "payment_setup",
+            "reminder_config"
+          ],
+          "deliverables": [
+            "ux_research_report.md",
+            "information_architecture.md",
+            "wireframes_lo_fi.fig"
+          ]
+        },
+        "acceptance_criteria": [
+          "At least 5 user interviews conducted and synthesized into key insights",
+          "Information architecture covers all primary user flows",
+          "Wireframes cover all 6 core screens at lo-fi fidelity",
+          "Accessibility audit against WCAG 2.1 AA checklist included"
+        ],
+        "depends_on": [
+          2
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 6,
+        "task_type": "PRODUCT_MGMT",
+        "description": "Produce the Product Requirements Document (PRD) consolidating market research, business requirements, and UX findings. Define MVP scope, v1.0 roadmap, success metrics (activation rate, booking volume, churn), and prioritized backlog.",
+        "payload": {
+          "mvp_features": [
+            "event_type_creation",
+            "public_booking_page",
+            "google_calendar_sync",
+            "email_reminders",
+            "stripe_payments"
+          ],
+          "v1_features": [
+            "outlook_sync",
+            "team_scheduling",
+            "crm_integration",
+            "sms_reminders",
+            "analytics_dashboard"
+          ],
+          "success_metrics": [
+            "weekly_active_hosts",
+            "bookings_per_host",
+            "payment_attach_rate",
+            "monthly_churn_rate"
+          ],
+          "deliverables": [
+            "prd.md",
+            "roadmap.md",
+            "prioritized_backlog.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "PRD defines clear in-scope vs out-of-scope for MVP",
+          "Each roadmap item has owner, estimated effort, and success metric",
+          "Backlog items prioritized using RICE or similar framework",
+          "Success metrics are measurable and baselined"
+        ],
+        "depends_on": [
+          1,
+          2,
+          3,
+          5
+        ],
+        "agent_role": "product_manager"
+      },
+      {
+        "step": 7,
+        "task_type": "UX_DESIGN",
+        "description": "Produce high-fidelity UI designs and interactive prototype for all MVP screens. Establish design system (color tokens, typography, spacing, component library). Validate with 3 usability tests.",
+        "payload": {
+          "screens_hi_fi": [
+            "landing_page",
+            "onboarding_wizard",
+            "dashboard_home",
+            "event_type_editor",
+            "public_booking_page",
+            "confirmation_page",
+            "payment_checkout",
+            "team_setup",
+            "settings"
+          ],
+          "design_system_tokens": [
+            "colors",
+            "typography",
+            "spacing",
+            "icons",
+            "components"
+          ],
+          "deliverables": [
+            "hi_fi_designs.fig",
+            "design_system.fig",
+            "prototype_link.md",
+            "usability_test_report.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Hi-fi designs produced for all 9 screens with desktop and mobile viewports",
+          "Design system documents all tokens and reusable components",
+          "Interactive prototype covers end-to-end booking flow",
+          "3 usability tests conducted and critical issues resolved in designs"
+        ],
+        "depends_on": [
+          5,
+          6
+        ],
+        "agent_role": "ux_designer"
+      },
+      {
+        "step": 8,
+        "task_type": "DATABASE",
+        "description": "Design relational database schema for scheduling_app: users, organizations, event_types, availability_rules, bookings, payments, reminders, calendar_connections, crm_integrations. Include indexes, constraints, and migration files.",
+        "payload": {
+          "database": "PostgreSQL",
+          "core_tables": [
+            "users",
+            "organizations",
+            "event_types",
+            "availability_windows",
+            "bookings",
+            "booking_invitees",
+            "calendar_connections",
+            "payment_intents",
+            "reminders",
+            "crm_mappings",
+            "audit_log"
+          ],
+          "deliverables": [
+            "schema.sql",
+            "migrations/001_initial.sql",
+            "erd.png",
+            "seed_data.sql"
+          ]
+        },
+        "acceptance_criteria": [
+          "ERD covers all entities with cardinality annotations",
+          "All foreign keys have indexes; unique constraints enforced on email+org",
+          "Soft-delete pattern implemented for bookings and event types",
+          "Migration files are idempotent and reversible",
+          "Seed data includes representative fixtures for all entity types"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 9,
+        "task_type": "API",
+        "description": "Design OpenAPI 3.1 spec for all scheduling_app endpoints: auth, event types, availability, bookings, calendar sync, payments, reminders, team management, CRM webhooks, and public booking API.",
+        "payload": {
+          "spec_file": "openapi.yaml",
+          "endpoint_groups": [
+            "auth",
+            "event_types",
+            "availability",
+            "bookings",
+            "calendar_sync",
+            "payments",
+            "reminders",
+            "teams",
+            "crm",
+            "public_booking",
+            "webhooks",
+            "analytics"
+          ],
+          "auth_scheme": "JWT + OAuth2 (Google, Outlook)",
+          "deliverables": [
+            "openapi.yaml",
+            "api_design_decisions.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "OpenAPI spec validates with no errors against 3.1 schema",
+          "All endpoints have request/response schemas, error codes, and examples",
+          "Pagination defined for all list endpoints",
+          "Webhook payload schemas documented for calendar and CRM events",
+          "Rate limiting headers documented in spec"
+        ],
+        "depends_on": [
+          6,
+          8
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 10,
+        "task_type": "CONFIG",
+        "description": "Bootstrap scheduling_app monorepo: Next.js 14 frontend, FastAPI backend, PostgreSQL + Redis, Docker Compose for local dev, environment variable schema, pre-commit hooks, and linting/formatting config.",
+        "payload": {
+          "repo_structure": "monorepo",
+          "frontend": "Next.js 14 (App Router, TypeScript)",
+          "backend": "FastAPI (Python 3.12)",
+          "cache": "Redis 7",
+          "database": "PostgreSQL 16",
+          "tooling": [
+            "docker-compose",
+            "pre-commit",
+            "ruff",
+            "eslint",
+            "prettier",
+            "mypy"
+          ],
+          "deliverables": [
+            "docker-compose.yml",
+            ".env.example",
+            "pyproject.toml",
+            "package.json",
+            ".pre-commit-config.yaml"
+          ]
+        },
+        "acceptance_criteria": [
+          "`docker-compose up` starts all services with health checks passing",
+          ".env.example documents all required environment variables with descriptions",
+          "Pre-commit hooks run linting and type checks on staged files",
+          "Frontend and backend both have hot-reload working in dev mode",
+          "README includes first-run setup instructions"
+        ],
+        "depends_on": [
+          6
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 11,
+        "task_type": "BACKEND",
+        "description": "Implement core scheduling engine: event type CRUD, availability rule calculation (recurring windows, date overrides, buffer times, max daily bookings), conflict detection, booking lifecycle (pending \u2192 confirmed \u2192 cancelled/rescheduled), and timezone handling.",
+        "payload": {
+          "modules": [
+            "event_types",
+            "availability_engine",
+            "booking_service",
+            "conflict_detector",
+            "timezone_service"
+          ],
+          "timezone_library": "python-dateutil + pytz",
+          "patterns": [
+            "repository_pattern",
+            "domain_events"
+          ],
+          "deliverables": [
+            "src/scheduling/",
+            "src/availability/",
+            "src/bookings/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Availability engine correctly computes open slots across timezone boundaries",
+          "Conflict detection prevents double-bookings under concurrent requests (tested with load)",
+          "Buffer time before/after events correctly removed from available slots",
+          "Booking state machine enforces valid transitions only",
+          "All functions have unit tests with >90% coverage"
+        ],
+        "depends_on": [
+          8,
+          9,
+          10
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 12,
+        "task_type": "BACKEND",
+        "description": "Implement calendar sync integrations: Google Calendar (OAuth2, two-way sync via push notifications), Microsoft Outlook (OAuth2, Graph API, delta sync), and iCal export. Handle token refresh, webhook receipt, and sync conflict resolution.",
+        "payload": {
+          "integrations": [
+            "google_calendar",
+            "outlook_calendar",
+            "ical_export"
+          ],
+          "sync_strategy": "two_way_with_conflict_resolution",
+          "auth": "OAuth2 PKCE",
+          "deliverables": [
+            "src/integrations/google_calendar.py",
+            "src/integrations/outlook_calendar.py",
+            "src/integrations/ical.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Google Calendar OAuth flow completes and tokens stored encrypted at rest",
+          "Push notifications received and processed for Google Calendar changes within 30s",
+          "Outlook delta sync handles pagination and throttling per Graph API limits",
+          "iCal export generates valid RFC 5545 feed for any event type",
+          "Token refresh handled silently before expiry"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 13,
+        "task_type": "BACKEND",
+        "description": "Implement payment collection via Stripe: Checkout Session creation, webhook processing (payment_intent.succeeded, charge.refunded), Connect for marketplace payouts, subscription billing for SaaS plans, and refund handling.",
+        "payload": {
+          "provider": "Stripe",
+          "features": [
+            "one_time_payments",
+            "subscriptions",
+            "stripe_connect",
+            "refunds",
+            "webhooks"
+          ],
+          "deliverables": [
+            "src/payments/stripe_service.py",
+            "src/payments/webhook_handler.py",
+            "src/billing/subscription_service.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Checkout session created and booking held until payment confirmed",
+          "Stripe webhook signature verified before processing any event",
+          "Failed payments trigger booking cancellation and invitee notification",
+          "Subscription plan changes (upgrade/downgrade) prorated correctly",
+          "Refund flow reverses payment and updates booking status atomically"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 14,
+        "task_type": "BACKEND",
+        "description": "Implement reminder and notification system: email (SendGrid), SMS (Twilio), and in-app notifications. Support configurable reminder schedules (e.g., 24h + 1h before), no-show follow-ups, and cancellation/reschedule notifications.",
+        "payload": {
+          "channels": [
+            "email_sendgrid",
+            "sms_twilio",
+            "in_app"
+          ],
+          "triggers": [
+            "booking_confirmed",
+            "reminder_scheduled",
+            "booking_cancelled",
+            "booking_rescheduled",
+            "no_show"
+          ],
+          "scheduler": "Celery + Redis",
+          "deliverables": [
+            "src/notifications/",
+            "src/reminders/reminder_scheduler.py",
+            "templates/emails/"
+          ]
+        },
+        "acceptance_criteria": [
+          "Email reminders delivered within 60s of scheduled time",
+          "SMS reminders fall back gracefully if Twilio delivery fails",
+          "Host and invitee both receive appropriate notifications for all trigger types",
+          "Reminder schedule configurable per event type (times, channels, templates)",
+          "Unsubscribe link functional and persisted in preferences"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 15,
+        "task_type": "BACKEND",
+        "description": "Implement CRM integration layer: HubSpot (contacts, deals, activity log), Salesforce (leads, opportunities), and generic webhook outbound. Map booking events to CRM objects bidirectionally. Include field mapping configuration UI backend.",
+        "payload": {
+          "crm_targets": [
+            "hubspot",
+            "salesforce",
+            "generic_webhook"
+          ],
+          "sync_events": [
+            "booking_created",
+            "booking_cancelled",
+            "no_show",
+            "payment_collected"
+          ],
+          "deliverables": [
+            "src/integrations/hubspot.py",
+            "src/integrations/salesforce.py",
+            "src/integrations/webhook_outbound.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "HubSpot contact created/updated on every booking with correct field mapping",
+          "Salesforce integration handles OAuth and API version compatibility",
+          "Generic webhook includes HMAC signature and retry with exponential backoff",
+          "Field mapping configuration stored per-integration and editable via API",
+          "Failed CRM syncs logged to audit log with error detail and do not fail the booking"
+        ],
+        "depends_on": [
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 16,
+        "task_type": "BACKEND",
+        "description": "Implement team scheduling features: round-robin assignment, collective scheduling (all team members must be available), managed event types with team ownership, team member availability aggregation, and host assignment logic.",
+        "payload": {
+          "scheduling_modes": [
+            "round_robin",
+            "collective",
+            "fixed_host"
+          ],
+          "features": [
+            "team_CRUD",
+            "member_availability_merge",
+            "assignment_history",
+            "load_balancing"
+          ],
+          "deliverables": [
+            "src/teams/",
+            "src/scheduling/team_scheduler.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Round-robin assignment distributes bookings evenly, tracked in DB",
+          "Collective scheduling only shows slots where ALL assigned members are free",
+          "Team admin can add/remove members and assign event types",
+          "Availability gaps correctly propagated when any team member is unavailable",
+          "Load balancing respects max daily bookings per team member"
+        ],
+        "depends_on": [
+          11,
+          12
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 17,
+        "task_type": "FRONTEND",
+        "description": "Build public booking page: embeddable iframe and hosted page. Shows event type info, available time slots, timezone selector, invitee form, and payment step. Must be SEO-friendly (SSR) and load under 2s on mobile.",
+        "payload": {
+          "framework": "Next.js 14 App Router",
+          "rendering": "SSR + ISR",
+          "components": [
+            "EventTypeCard",
+            "CalendarSlotPicker",
+            "TimezonePicker",
+            "InviteeForm",
+            "PaymentStep",
+            "ConfirmationPage"
+          ],
+          "embed_support": true
+        },
+        "acceptance_criteria": [
+          "Booking page renders correct slots in invitee's local timezone",
+          "Payment step integrates Stripe Elements with 3DS support",
+          "Page passes Core Web Vitals (LCP < 2.5s, CLS < 0.1, FID < 100ms)",
+          "Iframe embed works without CORS issues and is responsive",
+          "Confirmation page shows booking details and calendar add links (Google, iCal)"
+        ],
+        "depends_on": [
+          7,
+          9,
+          11
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 18,
+        "task_type": "FRONTEND",
+        "description": "Build host dashboard: event type management, booking list with filters, calendar view, availability settings, integration status (calendar, CRM, payments), reminder configuration, and analytics overview (bookings, revenue, no-shows).",
+        "payload": {
+          "pages": [
+            "dashboard_home",
+            "event_types",
+            "bookings_list",
+            "calendar_view",
+            "availability_settings",
+            "integrations",
+            "reminders",
+            "analytics"
+          ],
+          "components": [
+            "BookingTable",
+            "EventTypeEditor",
+            "AvailabilityRuleBuilder",
+            "IntegrationCard",
+            "AnalyticsChart"
+          ],
+          "charting_library": "Recharts"
+        },
+        "acceptance_criteria": [
+          "Event type editor validates all fields and previews public booking URL",
+          "Booking list supports filter by status, date range, event type, and invitee search",
+          "Calendar view shows all bookings with conflict highlighting",
+          "Availability rule builder supports recurring windows and date-specific overrides",
+          "Analytics dashboard shows 7/30/90 day trends for bookings and revenue"
+        ],
+        "depends_on": [
+          7,
+          9,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 19,
+        "task_type": "FRONTEND",
+        "description": "Build team scheduling UI: team creation and member management, team event type assignment, collective vs round-robin mode toggle, per-member availability overrides, and team analytics breakdown.",
+        "payload": {
+          "pages": [
+            "team_settings",
+            "team_event_types",
+            "team_analytics"
+          ],
+          "components": [
+            "TeamMemberList",
+            "SchedulingModeSelector",
+            "MemberAvailabilityOverride",
+            "TeamBookingBreakdown"
+          ]
+        },
+        "acceptance_criteria": [
+          "Team admin can invite members via email with role assignment",
+          "Scheduling mode switch (round-robin/collective) immediately previews slot availability change",
+          "Per-member availability overrides reflected in public booking page within 60s",
+          "Team analytics show per-member booking counts and load distribution"
+        ],
+        "depends_on": [
+          16,
+          18
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 20,
+        "task_type": "SECURITY",
+        "description": "Conduct security review: threat model for scheduling_app (STRIDE), OWASP Top 10 assessment, OAuth token storage audit, Stripe PCI-DSS scope validation, SQL injection and XSS scanning, and SOC 2 security control gap analysis.",
+        "payload": {
+          "frameworks": [
+            "STRIDE",
+            "OWASP_Top_10",
+            "PCI-DSS_SAQ_A",
+            "SOC2_CC6"
+          ],
+          "tools": [
+            "bandit",
+            "semgrep",
+            "OWASP_ZAP"
+          ],
+          "deliverables": [
+            "threat_model.md",
+            "security_assessment.md",
+            "pentest_plan.md",
+            "soc2_security_gap_analysis.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Threat model covers all trust boundaries including calendar OAuth and Stripe webhook",
+          "All High/Critical OWASP findings have remediation plans",
+          "OAuth tokens confirmed encrypted at rest (AES-256) and never logged",
+          "Stripe integration confirmed SAQ-A scope (no raw card data touches servers)",
+          "SOC 2 CC6 (logical access) control gaps documented with remediation owners"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 21,
+        "task_type": "COMPLIANCE",
+        "description": "Produce SOC 2 Type I readiness artifacts: control matrix mapping to Trust Services Criteria (CC, A, PI, C, P), policy documents (access control, incident response, change management, vendor management), evidence collection plan, and audit preparation checklist.",
+        "payload": {
+          "standard": "SOC 2 Type I (path to Type II)",
+          "trust_criteria": [
+            "CC1-CC9",
+            "A1",
+            "PI1"
+          ],
+          "policy_docs": [
+            "access_control_policy.md",
+            "incident_response_policy.md",
+            "change_management_policy.md",
+            "vendor_management_policy.md",
+            "data_classification_policy.md"
+          ],
+          "deliverables": [
+            "soc2_control_matrix.xlsx",
+            "readiness_assessment.md",
+            "evidence_collection_plan.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "Control matrix maps every SOC 2 CC criterion to at least one implemented control",
+          "All 5 policy documents reviewed and approved by designated owner",
+          "Evidence collection plan identifies artifact type, owner, and collection cadence per control",
+          "Readiness assessment scores each criterion as implemented/partial/gap with remediation plan",
+          "No Critical gaps remain unaddressed in the readiness assessment"
+        ],
+        "depends_on": [
+          4,
+          20
+        ],
+        "agent_role": "regulatory_specialist"
+      },
+      {
+        "step": 22,
+        "task_type": "TESTS",
+        "description": "Write unit and integration tests for all backend modules: scheduling engine (availability, conflict detection, timezone), calendar sync, payments (with Stripe test mode), reminders, CRM integrations, and team scheduling logic.",
+        "payload": {
+          "framework": "pytest",
+          "coverage_target": 85,
+          "test_types": [
+            "unit",
+            "integration",
+            "contract"
+          ],
+          "mocking": "pytest-mock for external APIs; Stripe test mode for payments",
+          "deliverables": [
+            "tests/unit/",
+            "tests/integration/",
+            "coverage_report.html"
+          ]
+        },
+        "acceptance_criteria": [
+          "Overall backend test coverage \u226585%",
+          "Availability engine has parametrized tests covering DST transitions and edge cases",
+          "Stripe payment flow tested with test mode covering success, failure, and refund paths",
+          "Calendar sync tests use recorded VCR cassettes for Google and Outlook API calls",
+          "All tests pass in CI with no flaky tests (verified over 5 consecutive runs)"
+        ],
+        "depends_on": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 23,
+        "task_type": "TESTS",
+        "description": "Write frontend unit tests (Vitest + Testing Library) for all booking page and dashboard components, and E2E tests (Playwright) covering: full booking flow with payment, team booking round-robin, calendar sync trigger, and cancellation flow.",
+        "payload": {
+          "unit_framework": "Vitest + React Testing Library",
+          "e2e_framework": "Playwright",
+          "e2e_scenarios": [
+            "solo_booking_with_payment",
+            "team_round_robin_booking",
+            "booking_cancellation",
+            "reschedule_flow",
+            "calendar_sync_verification"
+          ],
+          "deliverables": [
+            "tests/frontend/",
+            "tests/e2e/",
+            "playwright.config.ts"
+          ]
+        },
+        "acceptance_criteria": [
+          "Frontend component coverage \u226580%",
+          "All 5 E2E scenarios pass against staging environment",
+          "Booking page E2E verified on Chrome, Firefox, and mobile Safari viewports",
+          "Payment E2E uses Stripe test cards for success and decline scenarios",
+          "E2E tests run in under 10 minutes in CI"
+        ],
+        "depends_on": [
+          17,
+          18,
+          19
+        ],
+        "agent_role": "qa_engineer"
+      },
+      {
+        "step": 24,
+        "task_type": "DEVOPS",
+        "description": "Set up CI/CD pipeline (GitHub Actions): lint/typecheck, unit tests, integration tests, Docker build, staging deploy (Railway or Render), E2E tests against staging, and production deploy gate with manual approval. Add Datadog monitoring and PagerDuty alerting.",
+        "payload": {
+          "ci_provider": "GitHub Actions",
+          "stages": [
+            "lint",
+            "test",
+            "build",
+            "deploy_staging",
+            "e2e",
+            "deploy_prod"
+          ],
+          "hosting": "Railway (backend + worker) + Vercel (frontend)",
+          "monitoring": "Datadog APM + Log Management",
+          "alerting": "PagerDuty",
+          "deliverables": [
+            ".github/workflows/ci.yml",
+            ".github/workflows/deploy.yml",
+            "datadog_dashboard.json",
+            "runbook_links.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "CI pipeline runs on every PR and completes in under 15 minutes",
+          "Staging deploy is fully automated on merge to main",
+          "Production deploy requires manual approval gate in GitHub Actions",
+          "Datadog monitors p50/p95/p99 latency for /bookings and /availability endpoints",
+          "PagerDuty alert fires within 5 minutes of availability endpoint error rate exceeding 1%"
+        ],
+        "depends_on": [
+          10,
+          22,
+          23
+        ],
+        "agent_role": "devops_engineer"
+      },
+      {
+        "step": 25,
+        "task_type": "OPERATIONS",
+        "description": "Define SLA commitments, write operational runbooks for all critical failure modes (calendar sync outage, Stripe webhook lag, reminder delivery failure, DB failover), and set up incident response process with severity levels and escalation paths.",
+        "payload": {
+          "sla_targets": {
+            "uptime": "99.9%",
+            "booking_api_p99": "500ms",
+            "calendar_sync_lag": "60s"
+          },
+          "runbooks": [
+            "calendar_sync_outage.md",
+            "stripe_webhook_lag.md",
+            "reminder_failure.md",
+            "db_failover.md",
+            "high_booking_volume.md"
+          ],
+          "deliverables": [
+            "sla_definition.md",
+            "runbooks/",
+            "incident_severity_matrix.md",
+            "oncall_schedule.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "SLA document defines uptime calculation methodology and exclusions",
+          "Each runbook includes detection, diagnosis, mitigation, and post-mortem steps",
+          "Incident severity matrix maps symptoms to severity level (P0-P3) unambiguously",
+          "Escalation path documented for each severity level with contact owners",
+          "All runbooks linked from Datadog dashboard for on-call reference"
+        ],
+        "depends_on": [
+          24
+        ],
+        "agent_role": "operations_manager"
+      },
+      {
+        "step": 26,
+        "task_type": "DATA",
+        "description": "Build analytics data pipeline: capture booking events to an analytics schema (booking funnel, drop-off points, revenue by event type, no-show rates). Implement dashboard API endpoints and CSV export for host analytics reports.",
+        "payload": {
+          "analytics_store": "PostgreSQL materialized views (MVP); Snowflake (growth path)",
+          "metrics": [
+            "bookings_created",
+            "booking_funnel_drop_off",
+            "revenue_by_event_type",
+            "no_show_rate",
+            "avg_booking_lead_time",
+            "reminder_open_rate"
+          ],
+          "deliverables": [
+            "src/analytics/",
+            "migrations/analytics_schema.sql",
+            "GET /analytics/summary",
+            "GET /analytics/export"
+          ]
+        },
+        "acceptance_criteria": [
+          "All 6 core metrics computed correctly against test dataset",
+          "Analytics endpoints return data within 500ms for up to 10k bookings",
+          "CSV export includes all booking fields and is importable to Excel/Sheets",
+          "Materialized views refreshed on a schedule (hourly) without blocking booking writes",
+          "Funnel drop-off correctly attributes abandonment at each booking step"
+        ],
+        "depends_on": [
+          11,
+          13,
+          14
+        ],
+        "agent_role": "data_scientist"
+      },
+      {
+        "step": 27,
+        "task_type": "AGENTIC",
+        "description": "Implement AI-powered scheduling assistant using the coordinator pattern: booking summary agent (summarizes invitee context from CRM before meeting), smart availability optimizer (suggests optimal booking windows based on host preferences + historical patterns), and no-show prediction agent (flags high-risk bookings for proactive outreach).",
+        "payload": {
+          "pattern": "coordinator",
+          "agents": [
+            "booking_context_summarizer",
+            "availability_optimizer",
+            "no_show_predictor"
+          ],
+          "llm_provider": "claude-sonnet-4-6",
+          "integration_points": [
+            "POST /bookings/{id}/ai-brief",
+            "GET /availability/suggested-windows",
+            "GET /bookings/high-risk"
+          ],
+          "deliverables": [
+            "src/agents/scheduling_coordinator.py",
+            "src/agents/no_show_predictor.py"
+          ]
+        },
+        "acceptance_criteria": [
+          "Booking brief generated within 10s using CRM contact history and past booking data",
+          "Availability optimizer returns ranked slot suggestions with reasoning",
+          "No-show predictor achieves >70% precision on historical test data",
+          "Coordinator routes to correct specialist agent for each request type",
+          "All agent outputs logged to audit trail with trace_id"
+        ],
+        "depends_on": [
+          15,
+          16,
+          26
+        ],
+        "agent_role": "developer"
+      },
+      {
+        "step": 28,
+        "task_type": "DOCS",
+        "description": "Write developer documentation: API reference (auto-generated from OpenAPI spec), integration guides (Google Calendar, Outlook, Stripe, HubSpot, Salesforce), embed guide for booking page, webhook event catalog, and architecture decision records (ADRs).",
+        "payload": {
+          "doc_site": "Mintlify or Docusaurus",
+          "docs": [
+            "api_reference/",
+            "guides/google_calendar.md",
+            "guides/outlook.md",
+            "guides/stripe.md",
+            "guides/hubspot.md",
+            "guides/embed.md",
+            "webhook_catalog.md",
+            "adrs/"
+          ],
+          "deliverables": [
+            "docs/",
+            "docs/index.md"
+          ]
+        },
+        "acceptance_criteria": [
+          "API reference auto-generated from OpenAPI spec with all examples rendered",
+          "Each integration guide includes step-by-step OAuth setup with screenshots",
+          "Webhook event catalog documents all event types with example payloads",
+          "Embed guide includes iframe snippet, query parameter reference, and CSS override docs",
+          "At least 5 ADRs document key architectural decisions (DB choice, sync strategy, payment scope)"
+        ],
+        "depends_on": [
+          9,
+          12,
+          13,
+          15,
+          17
+        ],
+        "agent_role": "technical_writer"
+      }
+    ],
+    "task_count": 28,
+    "critic_scores": [
+      {
+        "phase": "plan",
+        "score": 63,
+        "passed": false,
+        "iterations": 1
+      }
+    ],
+    "critic_reports": [
+      {
+        "phase": "plan",
+        "result": {
+          "passed": false,
+          "final_score": 63,
+          "final_review": {
+            "score": 63,
+            "flaws": [
+              "Step 11 mandates concurrent conflict detection but specifies no locking strategy. PostgreSQL advisory locks, row-level locks, and optimistic concurrency with version columns all have different failure modes under load. Without specifying which approach, two concurrent bookings of the same slot will race. This is the #1 production failure mode in scheduling systems and the plan hand-waves it.",
+              "Step 12 omits Google Calendar push notification channel renewal. Channels expire every 7 days and must be renewed before expiry or the sync silently stops. No keepalive job, no channel registry, no expiry tracking. This will cause calendar sync outages starting on day 8 of production.",
+              "Step 13 introduces Stripe Connect for marketplace payouts with zero acknowledgment of KYC/onboarding complexity. Express and Custom Connect accounts require identity verification flows, payout schedule configuration, and Stripe's own review process. This is a multi-week integration, not a line item.",
+              "pytz is deprecated since Python 3.9 in favor of zoneinfo (stdlib). Step 11 specifies 'python-dateutil + pytz'. Using pytz for future DST transitions in 2025+ timezone data is a reliability risk; IANA database updates via tzdata package are required and not mentioned.",
+              "Step 17 (booking page with PaymentStep component) has no dependency on Step 13 (Stripe payments backend). The dependency graph is broken \u2014 frontend payment integration cannot be built without the backend payment API.",
+              "Step 27 no-show predictor requires >70% precision but there is zero historical booking data at launch. Acceptance criteria demand ML model validation against 'historical test data' that does not exist. This step cannot pass its own criteria at launch.",
+              "Multi-tenant data isolation is absent from the schema design (Step 8). The schema has organizations table but no PostgreSQL Row-Level Security policies or schema-per-tenant strategy. A misconfigured query at the ORM layer can leak one org's bookings to another \u2014 no structural guardrail prevents this.",
+              "OAuth token refresh race condition is unaddressed across Steps 12 and 15. Multiple concurrent API requests with an expired token will all attempt refresh simultaneously, invalidating each other's refresh tokens. No distributed lock around token refresh is specified.",
+              "Step 14 uses Celery + Redis for reminder scheduling but specifies no Redis HA strategy. If Redis restarts, all scheduled reminder tasks are lost. No mention of Redis persistence (AOF/RDB), Sentinel, or task result backend durability.",
+              "Feature gating between subscription tiers (defined in Step 6, billed in Step 13) has no implementation step. There is no middleware, permission layer, or entitlement service connecting a user's active Stripe subscription plan to which features they can access.",
+              "Step 9 documents rate limiting headers in the OpenAPI spec but no implementation step adds rate limiting to the API. Rate limiting on /bookings and /availability endpoints is critical for preventing abuse of the public booking page.",
+              "Google Calendar OAuth requires app verification by Google for the calendar.events scope before public launch. This is a multi-week review process with a required OAuth consent screen review. It is entirely absent from the plan and will block production launch."
+            ],
+            "suggestions": [
+              "Add an explicit locking strategy to Step 11: define a bookings.slot_lock advisory lock key pattern or a booking_holds table with TTL (e.g., 10 min) to hold a slot during payment. Include a cleanup job for expired holds. Test with at least 50 concurrent booking attempts to the same slot.",
+              "Add a calendar_channel_registry table in Step 8 and a scheduled job (every 6 days) in Step 12 to renew Google Calendar push notification channels before they expire. Include a dead-channel detector that falls back to polling.",
+              "Scope Stripe Connect explicitly in Step 13: decide on Standard vs Express vs Custom accounts now. Standard is 80% simpler and covers most use cases. Document this as an ADR. If marketplace payouts are MVP, budget 3-4 weeks for Stripe Connect onboarding flows alone.",
+              "Replace pytz with zoneinfo + tzdata in Step 11. Change the acceptance criteria to explicitly test a booking made today for a slot 6 months in the future across a DST boundary (e.g., America/New_York in March).",
+              "Add dependency edge from Step 13 to Step 17. Also add Step 12 (calendar sync) as a dependency of Step 17 since the confirmation page shows 'Add to Google Calendar' links that require the OAuth flow.",
+              "Defer Step 27 (AI agents) or replace the precision acceptance criterion with 'generates booking brief from available CRM data within 10s' \u2014 drop the no-show predictor until 6 months of production data exists. Ship the summarizer first.",
+              "Add PostgreSQL RLS policies to Step 8 as a first-class deliverable: CREATE POLICY per table scoped to organization_id. Test with a cross-tenant query in integration tests that must return 0 rows.",
+              "Add a token_refresh_lock Redis key per calendar connection in Step 12. Only one process may hold the lock; others must wait and re-read the refreshed token rather than retrying refresh.",
+              "Add Redis persistence configuration (AOF enabled, fsync everysec) and a Celery task result backend (PostgreSQL or Redis with persistence) to Step 14. Document RPO for reminder delivery: acceptable to lose reminders scheduled within the last N seconds of a Redis restart.",
+              "Add a feature entitlement step (or expand Step 10) defining a plan_features table and a middleware decorator (@require_plan('team')) that checks the org's active Stripe subscription. Wire Stripe webhook subscription.updated to update the org's plan in DB.",
+              "Implement application-level rate limiting in Step 10 bootstrap using slowapi (FastAPI middleware): 60 req/min on public booking endpoints, 10 req/min on /auth/. Add to docker-compose as nginx or rely on Railway's native rate limiting \u2014 pick one and document it.",
+              "Add Google OAuth app verification to the project roadmap between Steps 12 and 24. Submit for review immediately after Step 12 is complete. Do not plan a public launch until verification is approved \u2014 plan 4-6 weeks."
+            ],
+            "missing": [
+              "Email deliverability setup: SPF, DKIM, and DMARC records for SendGrid sending domain. Without these, booking confirmations and reminders will hit spam folders at Gmail and Outlook. Zero mention in Steps 14 or 24.",
+              "Webhook idempotency: Stripe and calendar webhooks can deliver duplicate events. No idempotency key table or processed_event_ids deduplication step is specified. Double-processing a payment.succeeded event could double-confirm a booking.",
+              "GDPR right to erasure implementation: Step 4 creates a Privacy Policy promising erasure rights, but there is no implementation step for a data deletion workflow (cascade delete user data, anonymize booking history, propagate deletion to CRM integrations).",
+              "Database connection pooling: FastAPI + PostgreSQL at production load requires PgBouncer or asyncpg connection pooling. Missing from Step 10 bootstrap and Step 24 infra. Will cause connection exhaustion under moderate load.",
+              "Database backup and recovery: No PITR (Point-in-Time Recovery), no automated snapshot schedule, no RTO/RPO targets. Step 25 has a db_failover runbook but no underlying backup infrastructure to execute against.",
+              "Booking slug enumeration protection: Public booking pages need non-guessable slugs (UUID or random string) and rate limiting on the public route. Sequential or name-based slugs allow scraping all hosted calendars.",
+              "iCal feed authentication: Step 12 generates iCal feeds but no mention of whether they are public or token-authenticated. Unauthenticated feeds leak host booking data (invitee names, meeting topics) to anyone with the URL.",
+              "Celery worker scaling specification: Step 14 specifies Celery + Redis but never defines how workers scale independently from the API tier. At high booking volume, reminder workers queue up. No autoscaling policy or worker count baseline.",
+              "Content Security Policy for iframe embed: Step 17 requires embed support but CSP headers that block iframe embedding are a common production surprise. frame-ancestors policy needs explicit configuration and testing against common embed targets (Wordpress, Squarespace, Webflow).",
+              "Materialized view refresh strategy for analytics (Step 26): REFRESH MATERIALIZED VIEW blocks concurrent reads by default unless CONCURRENTLY is used, which requires a unique index. Neither is specified. Hourly refresh on a large bookings table will cause analytics query timeouts."
+            ],
+            "security_risks": [
+              "SSRF via generic webhook outbound (Step 15): The outbound webhook URL is user-configurable. Without an allowlist or URL validation layer, a malicious user can point it at http://169.254.169.254 (AWS IMDS) or internal network services. The plan specifies HMAC signing of outbound payloads but says nothing about validating the destination URL.",
+              "OAuth token key management: Step 12 specifies tokens 'encrypted at rest (AES-256)' but not where the encryption key lives. If it is in an environment variable alongside the data, it provides no protection against a DB dump. KMS (AWS KMS, GCP Cloud KMS) or a secrets manager is required \u2014 not mentioned.",
+              "Open redirect in OAuth callback: OAuth2 callback handling for Google and Outlook is a well-known vector for open redirect attacks if the state parameter or redirect_uri is not validated server-side. Not mentioned in Step 20's OWASP assessment scope.",
+              "Stripe webhook timestamp validation missing: Step 13 specifies signature verification but Stripe webhooks should also reject events with timestamps older than 5 minutes (replay window). The plan omits this check, leaving a replay window open.",
+              "Booking page slug enumeration: If booking page slugs are derived from user names or are sequential integers, an attacker can enumerate all hosts. Combined with calendar availability data (public by design), this leaks host schedules to scrapers. No mention of anti-enumeration measures.",
+              "JWT secret rotation: Step 9 specifies JWT auth but no mention of secret rotation strategy, token revocation list, or short expiry + refresh token pattern. A leaked JWT with a long TTL cannot be invalidated without a revocation mechanism."
+            ],
+            "summary": "This is an above-average build plan with comprehensive feature coverage, clear acceptance criteria, and good separation of concerns between MVP and v1. However, it has three categories of critical gaps that will cause production failures: (1) concurrency \u2014 the booking conflict detection, OAuth token refresh race, and Celery task durability are all specified at the 'we will handle this' level without concrete mechanisms, which historically means they are not handled; (2) third-party integration operational realities \u2014 Google Calendar push channel renewal, Google OAuth app verification timelines, and Stripe Connect KYC complexity are each multi-week blockers that are invisible in the current plan; (3) data isolation and security fundamentals \u2014 no Row-Level Security, no SSRF protection on outbound webhooks, no key management strategy for OAuth tokens. The AI agents step (27) has acceptance criteria that are impossible to meet at launch. Scoring 63 for an MVP: the feature decomposition and documentation artifacts are solid, but the concurrency and integration gaps are concrete failure modes, not theoretical risks. A developer following this plan faithfully will ship a product that silently stops syncing calendars on day 8, leaks tokens under concurrent load, and blocks launch waiting for Google OAuth verification.",
+            "iteration": 1
+          },
+          "history": [
+            {
+              "score": 63,
+              "flaws": [
+                "Step 11 mandates concurrent conflict detection but specifies no locking strategy. PostgreSQL advisory locks, row-level locks, and optimistic concurrency with version columns all have different failure modes under load. Without specifying which approach, two concurrent bookings of the same slot will race. This is the #1 production failure mode in scheduling systems and the plan hand-waves it.",
+                "Step 12 omits Google Calendar push notification channel renewal. Channels expire every 7 days and must be renewed before expiry or the sync silently stops. No keepalive job, no channel registry, no expiry tracking. This will cause calendar sync outages starting on day 8 of production.",
+                "Step 13 introduces Stripe Connect for marketplace payouts with zero acknowledgment of KYC/onboarding complexity. Express and Custom Connect accounts require identity verification flows, payout schedule configuration, and Stripe's own review process. This is a multi-week integration, not a line item.",
+                "pytz is deprecated since Python 3.9 in favor of zoneinfo (stdlib). Step 11 specifies 'python-dateutil + pytz'. Using pytz for future DST transitions in 2025+ timezone data is a reliability risk; IANA database updates via tzdata package are required and not mentioned.",
+                "Step 17 (booking page with PaymentStep component) has no dependency on Step 13 (Stripe payments backend). The dependency graph is broken \u2014 frontend payment integration cannot be built without the backend payment API.",
+                "Step 27 no-show predictor requires >70% precision but there is zero historical booking data at launch. Acceptance criteria demand ML model validation against 'historical test data' that does not exist. This step cannot pass its own criteria at launch.",
+                "Multi-tenant data isolation is absent from the schema design (Step 8). The schema has organizations table but no PostgreSQL Row-Level Security policies or schema-per-tenant strategy. A misconfigured query at the ORM layer can leak one org's bookings to another \u2014 no structural guardrail prevents this.",
+                "OAuth token refresh race condition is unaddressed across Steps 12 and 15. Multiple concurrent API requests with an expired token will all attempt refresh simultaneously, invalidating each other's refresh tokens. No distributed lock around token refresh is specified.",
+                "Step 14 uses Celery + Redis for reminder scheduling but specifies no Redis HA strategy. If Redis restarts, all scheduled reminder tasks are lost. No mention of Redis persistence (AOF/RDB), Sentinel, or task result backend durability.",
+                "Feature gating between subscription tiers (defined in Step 6, billed in Step 13) has no implementation step. There is no middleware, permission layer, or entitlement service connecting a user's active Stripe subscription plan to which features they can access.",
+                "Step 9 documents rate limiting headers in the OpenAPI spec but no implementation step adds rate limiting to the API. Rate limiting on /bookings and /availability endpoints is critical for preventing abuse of the public booking page.",
+                "Google Calendar OAuth requires app verification by Google for the calendar.events scope before public launch. This is a multi-week review process with a required OAuth consent screen review. It is entirely absent from the plan and will block production launch."
+              ],
+              "suggestions": [
+                "Add an explicit locking strategy to Step 11: define a bookings.slot_lock advisory lock key pattern or a booking_holds table with TTL (e.g., 10 min) to hold a slot during payment. Include a cleanup job for expired holds. Test with at least 50 concurrent booking attempts to the same slot.",
+                "Add a calendar_channel_registry table in Step 8 and a scheduled job (every 6 days) in Step 12 to renew Google Calendar push notification channels before they expire. Include a dead-channel detector that falls back to polling.",
+                "Scope Stripe Connect explicitly in Step 13: decide on Standard vs Express vs Custom accounts now. Standard is 80% simpler and covers most use cases. Document this as an ADR. If marketplace payouts are MVP, budget 3-4 weeks for Stripe Connect onboarding flows alone.",
+                "Replace pytz with zoneinfo + tzdata in Step 11. Change the acceptance criteria to explicitly test a booking made today for a slot 6 months in the future across a DST boundary (e.g., America/New_York in March).",
+                "Add dependency edge from Step 13 to Step 17. Also add Step 12 (calendar sync) as a dependency of Step 17 since the confirmation page shows 'Add to Google Calendar' links that require the OAuth flow.",
+                "Defer Step 27 (AI agents) or replace the precision acceptance criterion with 'generates booking brief from available CRM data within 10s' \u2014 drop the no-show predictor until 6 months of production data exists. Ship the summarizer first.",
+                "Add PostgreSQL RLS policies to Step 8 as a first-class deliverable: CREATE POLICY per table scoped to organization_id. Test with a cross-tenant query in integration tests that must return 0 rows.",
+                "Add a token_refresh_lock Redis key per calendar connection in Step 12. Only one process may hold the lock; others must wait and re-read the refreshed token rather than retrying refresh.",
+                "Add Redis persistence configuration (AOF enabled, fsync everysec) and a Celery task result backend (PostgreSQL or Redis with persistence) to Step 14. Document RPO for reminder delivery: acceptable to lose reminders scheduled within the last N seconds of a Redis restart.",
+                "Add a feature entitlement step (or expand Step 10) defining a plan_features table and a middleware decorator (@require_plan('team')) that checks the org's active Stripe subscription. Wire Stripe webhook subscription.updated to update the org's plan in DB.",
+                "Implement application-level rate limiting in Step 10 bootstrap using slowapi (FastAPI middleware): 60 req/min on public booking endpoints, 10 req/min on /auth/. Add to docker-compose as nginx or rely on Railway's native rate limiting \u2014 pick one and document it.",
+                "Add Google OAuth app verification to the project roadmap between Steps 12 and 24. Submit for review immediately after Step 12 is complete. Do not plan a public launch until verification is approved \u2014 plan 4-6 weeks."
+              ],
+              "missing": [
+                "Email deliverability setup: SPF, DKIM, and DMARC records for SendGrid sending domain. Without these, booking confirmations and reminders will hit spam folders at Gmail and Outlook. Zero mention in Steps 14 or 24.",
+                "Webhook idempotency: Stripe and calendar webhooks can deliver duplicate events. No idempotency key table or processed_event_ids deduplication step is specified. Double-processing a payment.succeeded event could double-confirm a booking.",
+                "GDPR right to erasure implementation: Step 4 creates a Privacy Policy promising erasure rights, but there is no implementation step for a data deletion workflow (cascade delete user data, anonymize booking history, propagate deletion to CRM integrations).",
+                "Database connection pooling: FastAPI + PostgreSQL at production load requires PgBouncer or asyncpg connection pooling. Missing from Step 10 bootstrap and Step 24 infra. Will cause connection exhaustion under moderate load.",
+                "Database backup and recovery: No PITR (Point-in-Time Recovery), no automated snapshot schedule, no RTO/RPO targets. Step 25 has a db_failover runbook but no underlying backup infrastructure to execute against.",
+                "Booking slug enumeration protection: Public booking pages need non-guessable slugs (UUID or random string) and rate limiting on the public route. Sequential or name-based slugs allow scraping all hosted calendars.",
+                "iCal feed authentication: Step 12 generates iCal feeds but no mention of whether they are public or token-authenticated. Unauthenticated feeds leak host booking data (invitee names, meeting topics) to anyone with the URL.",
+                "Celery worker scaling specification: Step 14 specifies Celery + Redis but never defines how workers scale independently from the API tier. At high booking volume, reminder workers queue up. No autoscaling policy or worker count baseline.",
+                "Content Security Policy for iframe embed: Step 17 requires embed support but CSP headers that block iframe embedding are a common production surprise. frame-ancestors policy needs explicit configuration and testing against common embed targets (Wordpress, Squarespace, Webflow).",
+                "Materialized view refresh strategy for analytics (Step 26): REFRESH MATERIALIZED VIEW blocks concurrent reads by default unless CONCURRENTLY is used, which requires a unique index. Neither is specified. Hourly refresh on a large bookings table will cause analytics query timeouts."
+              ],
+              "security_risks": [
+                "SSRF via generic webhook outbound (Step 15): The outbound webhook URL is user-configurable. Without an allowlist or URL validation layer, a malicious user can point it at http://169.254.169.254 (AWS IMDS) or internal network services. The plan specifies HMAC signing of outbound payloads but says nothing about validating the destination URL.",
+                "OAuth token key management: Step 12 specifies tokens 'encrypted at rest (AES-256)' but not where the encryption key lives. If it is in an environment variable alongside the data, it provides no protection against a DB dump. KMS (AWS KMS, GCP Cloud KMS) or a secrets manager is required \u2014 not mentioned.",
+                "Open redirect in OAuth callback: OAuth2 callback handling for Google and Outlook is a well-known vector for open redirect attacks if the state parameter or redirect_uri is not validated server-side. Not mentioned in Step 20's OWASP assessment scope.",
+                "Stripe webhook timestamp validation missing: Step 13 specifies signature verification but Stripe webhooks should also reject events with timestamps older than 5 minutes (replay window). The plan omits this check, leaving a replay window open.",
+                "Booking page slug enumeration: If booking page slugs are derived from user names or are sequential integers, an attacker can enumerate all hosts. Combined with calendar availability data (public by design), this leaks host schedules to scrapers. No mention of anti-enumeration measures.",
+                "JWT secret rotation: Step 9 specifies JWT auth but no mention of secret rotation strategy, token revocation list, or short expiry + refresh token pattern. A leaked JWT with a long TTL cannot be invalidated without a revocation mechanism."
+              ],
+              "summary": "This is an above-average build plan with comprehensive feature coverage, clear acceptance criteria, and good separation of concerns between MVP and v1. However, it has three categories of critical gaps that will cause production failures: (1) concurrency \u2014 the booking conflict detection, OAuth token refresh race, and Celery task durability are all specified at the 'we will handle this' level without concrete mechanisms, which historically means they are not handled; (2) third-party integration operational realities \u2014 Google Calendar push channel renewal, Google OAuth app verification timelines, and Stripe Connect KYC complexity are each multi-week blockers that are invisible in the current plan; (3) data isolation and security fundamentals \u2014 no Row-Level Security, no SSRF protection on outbound webhooks, no key management strategy for OAuth tokens. The AI agents step (27) has acceptance criteria that are impossible to meet at launch. Scoring 63 for an MVP: the feature decomposition and documentation artifacts are solid, but the concurrency and integration gaps are concrete failure modes, not theoretical risks. A developer following this plan faithfully will ship a product that silently stops syncing calendars on day 8, leaks tokens under concurrent load, and blocks launch waiting for Google OAuth verification.",
+              "iteration": 1
+            }
+          ],
+          "iterations": 1,
+          "threshold": 70
+        },
+        "timestamp": "2026-03-22T05:29:19.435433+00:00"
+      }
+    ],
+    "agent_results": [],
+    "integration_result": null,
+    "phase_durations": {
+      "decompose": 153.62,
+      "critic_plan": 108.25
+    }
+  }
+}

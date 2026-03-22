@@ -1,0 +1,56 @@
+project_name: anomaly_detection
+display_name: Anomaly Detection
+version: 1.0.0
+domain: ml_ai
+description: Time-series anomaly detection platform for infrastructure monitoring
+  with unsupervised ML, seasonality handling, alert deduplication, and root cause
+  correlation.
+detected_domains: []
+compliance_standards:
+- SOC 2
+- ISO 27001
+task_types:
+- API
+- BACKEND
+- CONFIG
+- DATA
+- DATABASE
+- DEVOPS
+- DOCS
+- FRONTEND
+- INFRA
+- ML_MODEL
+- PRODUCT_MGMT
+- SECURITY
+- SYSTEM_TEST
+- TESTS
+- UX_DESIGN
+agent_roles:
+- data_scientist
+- developer
+- devops_engineer
+- product_manager
+- qa_engineer
+- system_tester
+- technical_writer
+- ux_designer
+active_modules:
+- dashboard
+- analyst
+- developer
+- monitor
+- approvals
+- queue
+- audit
+- knowledge
+build:
+  critic_threshold: 70
+  hitl_level: standard
+  max_critic_iterations: 3
+integrations:
+- github
+theme:
+  sidebar_bg: '#f0fdf4'
+  sidebar_text: '#166534'
+  badge_bg: '#dcfce7'
+  badge_text: '#15803d'

@@ -1,0 +1,290 @@
+task_types:
+  SAFETY:
+    description: 'Conduct preliminary hazard analysis (PHA) and system-level FMEA
+      for the surgical robot console. Identify all hazard sources: unintended instrument
+      movement, haptic feedback latency failures, 3D visualization dropout, tracking
+      loss. Map each hazard to severity (ISO 14971 S1–S5) and probability. Produce
+      initial risk acceptability matrix.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - All identified hazards mapped to ISO 14971 severity + probability matrix
+    - At least 25 unique hazard scenarios documented
+    - Risk acceptability decision recorded for each hazard (acceptable / ALARP / unacceptable)
+    - FMEA table includes failure mode, effect, detection method, and mitigation for
+      each line item
+    - Document reviewed and signed off by safety_engineer
+    - ISO 14971 risk management file complete
+    - Residual risk acceptable
+    depends_on: []
+  COMPLIANCE:
+    description: 'Establish the Design History File (DHF) skeleton and traceability
+      matrix framework per ISO 13485 and IEC 62304. Create document control structure:
+      design inputs, design outputs, verification records, validation records. Map
+      regulatory requirements (FDA 21 CFR Part 820, IEC 62304 clause 5–9) to planned
+      deliverables. Set up traceability from requirements → design → implementation
+      → test → validation.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF folder structure created with all IEC 62304 clause 5–9 sections
+    - Traceability matrix template populated with regulatory requirement rows
+    - Document control plan defines versioning, review, and approval workflow
+    - Software development plan identifies SIL-3 lifecycle activities and responsible
+      roles
+    - All output document IDs assigned and registered in document register
+    - DHF (Design History File) structure created
+    - V&V protocol drafted
+    depends_on:
+    - 1
+  PRODUCT_MGMT:
+    description: Define software requirements specification (SRS) for the surgical
+      console. Capture functional requirements (3D visualization, haptic rendering,
+      instrument tracking, emergency stop), non-functional requirements (latency <10ms
+      haptic loop, <16ms display refresh, 99.999% uptime in OR), and interface requirements
+      (robot arm CAN bus, haptic device SDK, tracking camera API). Assign SIL levels
+      per IEC 62304 software safety classification.
+    agent_role: product_manager
+    acceptance_criteria:
+    - SRS covers all functional, performance, safety, and interface requirements
+    - Each requirement has unique ID (SRS-001, SRS-002, …) for traceability
+    - Latency budgets explicitly stated and justified for haptic, display, and tracking
+      loops
+    - IEC 62304 software safety class (Class C) documented with rationale
+    - SRS reviewed by safety_engineer and regulatory_specialist before sign-off
+    depends_on:
+    - 1
+    - 2
+  UX_DESIGN:
+    description: 'Design the surgeon console HMI: ergonomic layout for sterile field
+      use, 3D viewport placement, haptic grip control affordances, instrument status
+      overlays, emergency stop placement, and alarm/alert hierarchy. Produce wireframes
+      and interaction flows. Conduct formative usability evaluation against IEC 62366-1.
+      Document use errors and mitigations.'
+    agent_role: ux_designer
+    acceptance_criteria:
+    - Wireframes cover all identified screens including emergency stop and alarm states
+    - 'Interaction flows documented for critical paths: instrument selection, haptic
+      calibration, emergency stop activation'
+    - Formative usability evaluation conducted with at least 3 representative user
+      scenarios
+    - Use error analysis identifies top-5 use errors with mitigation design responses
+    - Color coding and alarm hierarchy comply with IEC 60601-1-8 alarm standard references
+    depends_on:
+    - 3
+  CONFIG:
+    description: 'Establish the software architecture and development environment.
+      Define real-time component boundaries: hard-real-time haptic control loop (RTOS),
+      soft-real-time 3D rendering pipeline, instrument tracking service, and console
+      UI layer. Set up monorepo with CMake/Conan for firmware, Rust/C++ for real-time
+      services, and React/TypeScript for console UI. Configure IEC 62304-compliant
+      SCM (git with signed commits, branch protection, mandatory code review). Set
+      up human-in-the-loop (HITL) agentic pattern for all safety-critical change proposals.'
+    agent_role: developer
+    acceptance_criteria:
+    - Monorepo builds all four layers cleanly from a single `make all` command
+    - MISRA-C:2012 checker integrated into CI and blocks merge on violations
+    - Branch protection enforces signed commits and at least 2 reviewer approvals
+    - Architecture document defines IPC contracts between all four layers
+    - 'HITL approval gate configured: any safety-critical code change generates a
+      proposal requiring safety_engineer sign-off before merge'
+    depends_on:
+    - 3
+  FIRMWARE:
+    description: 'Implement the hard-real-time haptic control loop in FreeRTOS (SIL-3,
+      MISRA-C:2012). Tasks: HAL driver for haptic actuator (force-torque output),
+      1kHz control task with deadline monitoring, watchdog supervision with safe-state
+      transition on deadline miss, force saturation limits per safety requirements,
+      CAN bus driver for robot arm telemetry. Implement IEC 62304 Class C coding standards:
+      no dynamic allocation post-init, all pointer dereferences guarded, bounded loops
+      only.'
+    agent_role: developer
+    acceptance_criteria:
+    - Haptic control task executes at 1kHz ±0.1% jitter measured on HIL bench
+    - Deadline miss triggers safe-state (zero force) within 2ms
+    - All MISRA-C:2012 mandatory rules pass with zero violations
+    - No dynamic memory allocation after RTOS scheduler start (verified by static
+      analysis)
+    - Force output saturates at configured limits; saturation event logged to audit
+      buffer
+    - CAN bus driver handles bus-off condition gracefully with automatic recovery
+    - IEC 62304 software class documented
+    - SOUP components listed
+    depends_on:
+    - 5
+  BACKEND:
+    description: 'Implement the instrument tracking service in Rust. Consumes stereo
+      camera frames via shared memory ring buffer, runs 6-DOF pose estimation for
+      each tracked instrument, publishes instrument state (position, orientation,
+      velocity, confidence) at 200Hz via Unix domain socket to rendering and UI layers.
+      Implement fault detection: tracking loss, confidence below threshold, camera
+      failure. Each fault transitions to defined degraded mode per safety requirements.'
+    agent_role: developer
+    acceptance_criteria:
+    - Instrument state published at 200Hz ±1Hz under nominal load
+    - Tracking loss detected within 50ms and fault event emitted on IPC bus
+    - Confidence threshold (configurable, default 0.85) triggers degraded-mode overlay
+      on UI
+    - Camera failure transitions service to safe-state within 100ms
+    - Service passes 24-hour continuous operation soak test with zero crashes
+    - All public interfaces documented and schema-validated
+    depends_on:
+    - 5
+  FRONTEND:
+    description: Build the 3D surgical visualization viewport using WebGL/Three.js
+      or Vulkan (surgeon console renderer). Render real-time instrument meshes with
+      6-DOF pose from tracking service, stereoscopic depth cues, instrument collision
+      proximity indicators, and anatomical reference overlays. Target <16ms frame
+      time (60fps). Implement degraded-mode rendering (monochrome + alert banner)
+      on tracking confidence loss.
+    agent_role: developer
+    acceptance_criteria:
+    - 3D viewport renders at ≥60fps on target hardware (verified with frame time profiler)
+    - Instrument mesh updates reflect tracking data with ≤16ms end-to-end display
+      latency
+    - Proximity indicator activates and animates when instrument within 5mm of another
+    - Degraded mode (monochrome + alert banner) activates within one frame of tracking
+      confidence drop
+    - Viewport renders correctly in both windowed and full-screen modes
+    - No WebGL context loss in 1-hour continuous operation test
+    depends_on:
+    - 7
+    - 4
+  HARDWARE_SIM:
+    description: 'Build hardware simulation models for HIL testing: simulated haptic
+      device (force-torque model with configurable latency injection), simulated stereo
+      camera feed (synthetic instrument poses with configurable dropout), simulated
+      robot arm CAN bus (replays surgical procedure recordings). Models must be injectable
+      without hardware changes, controlled via simulation control API.'
+    agent_role: developer
+    acceptance_criteria:
+    - All three simulation models injectable via HAL swap with zero production code
+      changes
+    - Simulation control API can trigger any fault condition within 10ms
+    - Nominal procedure replay produces instrument state stream matching reference
+      within 0.1mm RMS
+    - Tracking dropout simulation verified to trigger UI degraded mode within specified
+      latency
+    - 'Simulation models pass deterministic replay: same inputs → same outputs (seed-controlled
+      RNG)'
+    depends_on:
+    - 6
+    - 7
+  EMBEDDED_TEST:
+    description: 'Write Hardware-in-the-Loop (HIL) test harness for the haptic firmware
+      and tracking service. Test suite covers: control loop timing (jitter histogram),
+      safe-state transition on deadline miss, force saturation, CAN bus recovery,
+      tracking fault detection latency, and graceful degradation sequences. Tests
+      execute against simulation models from step 11. Generate IEC 62304 test evidence
+      artifacts automatically.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - Haptic loop jitter histogram shows 99.9th percentile ≤10µs over 1M cycles
+    - Safe-state transition time ≤2ms measured on 1000 consecutive deadline miss injections
+    - MC/DC coverage 100% on all safety-critical functions (haptic_control_task, watchdog,
+      safe_state)
+    - Tracking fault detection latency ≤50ms on 1000 consecutive dropout injections
+    - 24-hour soak test completes with zero crashes, zero missed deadlines, zero alarm
+      suppression failures
+    - All test results exported as signed PDF evidence artifact for DHF inclusion
+    depends_on:
+    - 11
+    - 6
+    - 7
+  TESTS:
+    description: 'Write unit and integration tests for all software components: tracking
+      service unit tests (pose estimation math, fault state machine transitions),
+      WebSocket bridge tests (message prioritization, reconnect, back-pressure), console
+      UI component tests (alarm panel priority ordering, HITL modal blocking behavior,
+      emergency stop activation latency). Achieve IEC 62304 Class C branch coverage
+      ≥85% for all modules.'
+    agent_role: qa_engineer
+    acceptance_criteria:
+    - All unit tests pass in CI on every commit
+    - Branch coverage ≥85% for tracking service, ws-bridge, and console-ui components
+    - Alarm panel tests verify P1 alarm is never blocked by P2/P3 queue entries
+    - HITL modal test verifies safety-critical action is blocked until explicit approval
+    - Emergency stop test verifies UI activation path completes within 100ms in Vitest
+      timing simulation
+    - Test results uploaded as JUnit XML and ingested into traceability matrix
+    depends_on:
+    - 9
+    - 10
+    - 7
+  SYSTEM_TEST:
+    description: 'Execute end-to-end system test suite covering full surgical procedure
+      simulation: operator login (mTLS), instrument tracking nominal flow, haptic
+      calibration, 3D visualization rendering under load, fault injection sequence
+      (tracking dropout → UI degraded mode → recovery), emergency stop activation
+      end-to-end latency, and multi-fault simultaneous scenario. Produce system test
+      report as IEC 62304 V&V evidence.'
+    agent_role: system_tester
+    acceptance_criteria:
+    - All 6 test scenarios pass with zero critical failures
+    - Emergency stop end-to-end latency (button press → zero force output + UI alert)
+      ≤100ms on 50 consecutive trials
+    - Haptic control loop latency ≤10ms at 99th percentile during full procedure simulation
+    - Display latency ≤16ms at 99th percentile (60fps maintained) during full procedure
+      simulation
+    - 'Multi-fault scenario: all active alarms surfaced within 200ms, no alarm suppression
+      observed'
+    - System test report signed by system_tester and safety_engineer, filed in DHF
+    depends_on:
+    - 12
+    - 13
+    - 8
+    - 9
+    - 10
+  SECURITY:
+    description: 'Perform threat model and security review for the surgical console.
+      Scope: operator authentication (mTLS), WebSocket bridge attack surface, firmware
+      update path, audit log integrity, and network isolation. Produce SBOM (Software
+      Bill of Materials) for all components. Assess against IMDRF cybersecurity guidance
+      for medical devices. Document residual security risks.'
+    agent_role: safety_engineer
+    acceptance_criteria:
+    - STRIDE analysis completed for all 5 in-scope components
+    - SBOM generated in SPDX 2.3 format covering all direct and transitive dependencies
+    - All HIGH and CRITICAL threat findings have documented mitigations
+    - Firmware update path requires cryptographic signature verification (documented
+      and verified in test)
+    - Audit log implements append-only protection (tampering attempt logged and alerted)
+    - Security review signed off by technical_reviewer and filed in DHF
+    depends_on:
+    - 10
+    - 6
+  DEVOPS:
+    description: 'Set up CI/CD pipeline for the surgical console monorepo. Pipeline
+      stages: static analysis (MISRA-C, Clippy, ESLint), unit tests, HIL simulation
+      tests, coverage reporting, signed artifact build, and DHF artifact upload. Enforce
+      that no commit merges to main without all stages passing. Generate build provenance
+      attestation for regulatory traceability.'
+    agent_role: devops_engineer
+    acceptance_criteria:
+    - CI pipeline runs on every PR and blocks merge on any stage failure
+    - MISRA-C violation → CI fails with violation report as PR comment
+    - Coverage below gate (85% branch / 100% MC/DC) → CI fails
+    - Release build produces cosign-signed artifact with SLSA provenance attestation
+    - DHF artifact upload stage pushes signed test reports to artifact registry with
+      immutable version tag
+    - Pipeline completes in <15 minutes for incremental changes
+    depends_on:
+    - 12
+    - 13
+  DOCS:
+    description: 'Write comprehensive technical documentation: system architecture
+      document (SAD), operator manual, software maintenance manual (IEC 62304 §8),
+      and API reference for the WebSocket bridge and tracking service IPC. Documentation
+      must meet ISO 13485 document control requirements: version, author, reviewer,
+      approval signature fields on every document.'
+    agent_role: technical_writer
+    acceptance_criteria:
+    - System architecture document covers all four software layers with IPC contracts
+    - 'Operator manual covers: startup, calibration, procedure workflow, emergency
+      stop, shutdown, alarm response'
+    - 'Software maintenance manual covers IEC 62304 §8 requirements: problem resolution,
+      modification process, release process'
+    - All API endpoints/schemas documented with request/response examples
+    - Every document has version, author, reviewer, and approver fields populated
+    - PDF generation from Markdown verified in CI pipeline
+    depends_on:
+    - 16
+    - 14

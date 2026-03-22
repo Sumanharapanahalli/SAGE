@@ -1,0 +1,1147 @@
+{
+  "run_id": "eec3c3fe-a790-46fd-8c8c-7c107a50cf2b",
+  "solution_name": "form_builder",
+  "state": "awaiting_plan",
+  "state_description": "Waiting for human approval of the plan",
+  "created_at": "2026-03-22T05:19:47.566172+00:00",
+  "updated_at": "2026-03-22T05:24:57.538471+00:00",
+  "product_description": "No-code form builder with conditional logic, file uploads, payment collection, webhook integrations, analytics, and embeddable widgets.",
+  "hitl_level": "standard",
+  "hitl_gates": [
+    "plan",
+    "code",
+    "final"
+  ],
+  "plan": [
+    {
+      "step": 1,
+      "task_type": "MARKET_RESEARCH",
+      "description": "Analyze the no-code form builder market: competitors (Typeform, Jotform, Tally, Google Forms, Formstack), pricing tiers, feature gaps, target segments (SMBs, agencies, SaaS teams), and positioning opportunities focusing on payment + conditional logic + webhook depth.",
+      "payload": {
+        "competitors": [
+          "Typeform",
+          "Jotform",
+          "Tally",
+          "Formstack",
+          "Paperform",
+          "Google Forms"
+        ],
+        "dimensions": [
+          "pricing",
+          "feature_matrix",
+          "developer_friendliness",
+          "embed_capabilities",
+          "analytics_depth"
+        ],
+        "output_artifacts": [
+          "competitor_matrix.md",
+          "positioning_map.png",
+          "tam_sam_som.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Competitor matrix covers at least 6 tools across 10+ feature dimensions",
+        "TAM/SAM/SOM estimates with cited sources",
+        "Differentiation narrative identifies at least 3 defensible advantages",
+        "Go-to-market segment priority list ranked by acquisition cost vs LTV"
+      ],
+      "depends_on": [],
+      "agent_role": "marketing_strategist"
+    },
+    {
+      "step": 2,
+      "task_type": "BUSINESS_ANALYSIS",
+      "description": "Define business requirements: user personas (form creator, form respondent, team admin), core user stories, process flows for form creation \u2192 publish \u2192 collect responses \u2192 trigger webhooks \u2192 view analytics, and ROI model for target customers.",
+      "payload": {
+        "personas": [
+          "solo_creator",
+          "agency_builder",
+          "ops_team_admin",
+          "end_respondent"
+        ],
+        "process_flows": [
+          "form_creation_flow",
+          "conditional_logic_flow",
+          "payment_flow",
+          "webhook_dispatch_flow",
+          "analytics_reporting_flow"
+        ],
+        "output_artifacts": [
+          "user_stories.md",
+          "process_flows.md",
+          "roi_analysis.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "At least 40 user stories across all personas in standard format (As a... I want... So that...)",
+        "Process flows cover all 5 core journeys as swim-lane diagrams",
+        "Acceptance criteria defined for every user story",
+        "ROI model quantifies time-saved vs manual form tooling for target customer",
+        "Pricing tiers defined",
+        "Churn risk factors identified"
+      ],
+      "depends_on": [],
+      "agent_role": "business_analyst"
+    },
+    {
+      "step": 3,
+      "task_type": "LEGAL",
+      "description": "Draft Terms of Service, Privacy Policy, Data Processing Agreement (GDPR/CCPA), and payment processing liability clauses. Identify third-party payment processor (Stripe) licensing requirements and data residency obligations for file uploads.",
+      "payload": {
+        "documents": [
+          "terms_of_service.md",
+          "privacy_policy.md",
+          "data_processing_agreement.md",
+          "cookie_policy.md"
+        ],
+        "standards": [
+          "GDPR",
+          "CCPA",
+          "PCI-DSS scope analysis"
+        ],
+        "third_parties": [
+          "Stripe",
+          "S3/storage provider",
+          "webhook endpoints"
+        ]
+      },
+      "acceptance_criteria": [
+        "ToS covers acceptable use, IP ownership of form data, and liability limits",
+        "Privacy policy enumerates all data collected (form responses, file uploads, payment metadata)",
+        "DPA includes data retention schedules and deletion procedures",
+        "PCI-DSS scope note confirms cardholder data never touches form_builder servers (Stripe.js only)",
+        "Subscription terms cover cancellation and refunds",
+        "Data processing agreement drafted"
+      ],
+      "depends_on": [],
+      "agent_role": "legal_advisor"
+    },
+    {
+      "step": 4,
+      "task_type": "FINANCIAL",
+      "description": "Build pricing model (freemium + tiered SaaS), cost structure (infra, Stripe fees, storage, support), unit economics (CAC, LTV, payback), and 3-year P&L projection. Define feature gating per tier (response limits, file storage quota, payment access, analytics depth).",
+      "payload": {
+        "tiers": [
+          "free",
+          "starter",
+          "pro",
+          "business",
+          "enterprise"
+        ],
+        "cost_drivers": [
+          "cloud_infra",
+          "stripe_fees_2.9pct",
+          "cdn_storage",
+          "support_headcount"
+        ],
+        "metrics": [
+          "MRR",
+          "ARR",
+          "churn_target",
+          "CAC",
+          "LTV",
+          "payback_months"
+        ],
+        "output_artifacts": [
+          "pricing_model.xlsx",
+          "unit_economics.md",
+          "feature_gate_matrix.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "Feature gate matrix maps every feature to its minimum tier",
+        "3-year P&L model with monthly granularity in Year 1",
+        "Break-even month identified with sensitivity analysis on churn rate",
+        "Stripe fee impact modeled per tier based on expected payment volume",
+        "MRR/ARR projections modeled",
+        "CAC and LTV estimated"
+      ],
+      "depends_on": [
+        1
+      ],
+      "agent_role": "financial_analyst"
+    },
+    {
+      "step": 5,
+      "task_type": "PRODUCT_MGMT",
+      "description": "Write the Product Requirements Document covering all modules: drag-and-drop form builder, field types (20+), conditional logic engine, file upload fields, payment fields (one-time and recurring), webhook configuration UI, analytics dashboard, embed widget generator, team workspaces, and response inbox. Define success metrics and v1 scope.",
+      "payload": {
+        "modules": [
+          "builder_canvas",
+          "field_library",
+          "logic_engine",
+          "file_upload",
+          "payment_collection",
+          "webhook_manager",
+          "analytics_dashboard",
+          "embed_generator",
+          "response_inbox",
+          "team_workspace"
+        ],
+        "v1_scope": "MoSCoW prioritization applied",
+        "success_metrics": [
+          "time_to_first_form_published",
+          "form_completion_rate",
+          "webhook_delivery_rate",
+          "payment_conversion_rate"
+        ],
+        "output_artifacts": [
+          "prd.md",
+          "roadmap.md",
+          "mvp_scope.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "PRD covers all 10 modules with functional and non-functional requirements",
+        "MoSCoW prioritization applied \u2014 v1 Must-Haves clearly bounded",
+        "Success metrics have baseline targets and measurement methodology",
+        "API contract requirements stated for embed widget (iframe and JS snippet)"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "agent_role": "product_manager"
+    },
+    {
+      "step": 6,
+      "task_type": "UX_DESIGN",
+      "description": "Conduct user research synthesis from competitive analysis, then produce wireframes for: builder canvas (drag-drop with field palette), logic rule editor (if/then visual builder), payment field config, webhook setup UI, analytics dashboard, embed code generator, and response inbox. Include accessibility audit checklist (WCAG 2.1 AA).",
+      "payload": {
+        "deliverables": [
+          "builder_canvas_wireframes",
+          "logic_editor_wireframes",
+          "payment_config_wireframes",
+          "webhook_ui_wireframes",
+          "analytics_dashboard_wireframes",
+          "embed_generator_wireframes",
+          "response_inbox_wireframes"
+        ],
+        "accessibility_standard": "WCAG 2.1 AA",
+        "design_system": "component_library_spec.md",
+        "tool": "Figma"
+      },
+      "acceptance_criteria": [
+        "Wireframes cover all 7 key screens at mid-fidelity",
+        "Interactive prototype demonstrates full form creation \u2192 publish \u2192 embed flow",
+        "Accessibility audit checklist completed with no critical (Level A) violations",
+        "Design system documents color tokens, typography scale, spacing grid, and component states",
+        "Mobile-responsive layouts defined for form respondent-facing views"
+      ],
+      "depends_on": [
+        2,
+        5
+      ],
+      "agent_role": "ux_designer"
+    },
+    {
+      "step": 7,
+      "task_type": "DATABASE",
+      "description": "Design PostgreSQL schema for: workspaces, users, forms (versioned), fields (polymorphic with JSON config), conditional logic rules, responses, file_uploads, payment_transactions, webhooks, webhook_delivery_logs, and analytics_events. Include index strategy, soft-delete pattern, and row-level security for multi-tenancy.",
+      "payload": {
+        "tables": [
+          "workspaces",
+          "users",
+          "workspace_members",
+          "forms",
+          "form_versions",
+          "fields",
+          "logic_rules",
+          "responses",
+          "response_answers",
+          "file_uploads",
+          "payment_transactions",
+          "webhooks",
+          "webhook_deliveries",
+          "analytics_events"
+        ],
+        "patterns": [
+          "soft_delete",
+          "row_level_security",
+          "optimistic_locking_on_form_versions"
+        ],
+        "migrations_tool": "Alembic",
+        "output_artifacts": [
+          "schema.sql",
+          "erd.png",
+          "migrations/001_initial.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "ERD covers all 14 tables with relationships and cardinality",
+        "Row-level security policies isolate workspace data",
+        "Field config stored as JSONB with schema validation at application layer",
+        "Indexes defined for all foreign keys and high-cardinality filter columns",
+        "Migration runs cleanly on Postgres 15+ with rollback script"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 8,
+      "task_type": "API",
+      "description": "Design OpenAPI 3.1 spec for all REST endpoints: workspace CRUD, form CRUD with versioning, field management, logic rule CRUD, response submission (public), file upload pre-signed URL generation, payment intent creation, webhook CRUD + manual retry, analytics query endpoints, and embed token generation. Define auth (JWT + API key) and rate limiting contracts.",
+      "payload": {
+        "auth_methods": [
+          "JWT_bearer",
+          "api_key_header"
+        ],
+        "endpoint_groups": [
+          "workspaces",
+          "forms",
+          "fields",
+          "logic",
+          "responses",
+          "files",
+          "payments",
+          "webhooks",
+          "analytics",
+          "embed"
+        ],
+        "rate_limits": {
+          "public_form_submit": "100/min",
+          "api_key": "1000/min",
+          "free_tier": "100/day"
+        },
+        "output_artifacts": [
+          "openapi.yaml"
+        ]
+      },
+      "acceptance_criteria": [
+        "OpenAPI spec validates with no errors against OAS 3.1 validator",
+        "Every endpoint has request/response schemas with examples",
+        "Error response codes documented (400, 401, 403, 404, 409, 422, 429, 500)",
+        "Webhook delivery payload schema versioned (v1) and documented",
+        "Embed token endpoint documented with CORS and iframe sandbox attributes"
+      ],
+      "depends_on": [
+        5,
+        7
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 9,
+      "task_type": "CONFIG",
+      "description": "Set up the form_builder solution SAGE configuration: project.yaml (domain, active_modules, theme), prompts.yaml (analyst, developer, monitor roles with form-builder domain context), tasks.yaml (task types: form_analysis, webhook_debug, payment_reconciliation, analytics_report). Configure multi-agent coordinator pattern for the AI-assisted form suggestion feature.",
+      "payload": {
+        "solution_name": "form_builder",
+        "files": [
+          "solutions/form_builder/project.yaml",
+          "solutions/form_builder/prompts.yaml",
+          "solutions/form_builder/tasks.yaml"
+        ],
+        "agentic_pattern": "coordinator",
+        "active_modules": [
+          "dashboard",
+          "analyst",
+          "developer",
+          "improvements",
+          "knowledge",
+          "audit"
+        ],
+        "theme": {
+          "sidebar_bg": "#0f1117",
+          "badge_bg": "#1a1f2e",
+          "badge_text": "#60a5fa"
+        }
+      },
+      "acceptance_criteria": [
+        "project.yaml validates against SAGE schema with make test-solution PROJECT=form_builder",
+        "prompts.yaml defines analyst, developer, and monitor roles with form-builder system prompts",
+        "tasks.yaml registers all 4 domain task types with required fields",
+        "Coordinator pattern configured for AI form suggestion with specialist sub-agents"
+      ],
+      "depends_on": [
+        5
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 10,
+      "task_type": "BACKEND",
+      "description": "Implement FastAPI backend core: auth module (JWT + API key), workspace and user management, form CRUD with optimistic locking on versions, field management with polymorphic JSONB config, and the conditional logic rule engine (evaluate if/then trees against response values at submission time).",
+      "payload": {
+        "framework": "FastAPI",
+        "language": "Python 3.12",
+        "modules": [
+          "auth",
+          "workspaces",
+          "forms",
+          "fields",
+          "logic_engine"
+        ],
+        "logic_engine_spec": "recursive boolean tree evaluation supporting eq/neq/gt/lt/contains/regex operators on any field value",
+        "key_files": [
+          "src/api/main.py",
+          "src/models/",
+          "src/services/logic_engine.py",
+          "src/db/session.py"
+        ]
+      },
+      "acceptance_criteria": [
+        "JWT auth with refresh token rotation; API key hashed in DB",
+        "Form version increment on every field/logic change with optimistic lock check",
+        "Logic engine correctly evaluates nested AND/OR trees with 10+ operator types",
+        "All endpoints return typed Pydantic response models",
+        "Startup connects to Postgres and runs pending Alembic migrations"
+      ],
+      "depends_on": [
+        7,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 11,
+      "task_type": "BACKEND",
+      "description": "Implement response collection: public form submission endpoint (no auth, rate limited), file upload via pre-signed S3 URLs (virus scan hook, size/type validation), response storage with field answer denormalization for fast querying, and conditional skip logic applied server-side at submission validation.",
+      "payload": {
+        "storage": "AWS S3 with presigned URLs",
+        "virus_scan": "ClamAV lambda hook or S3 event trigger",
+        "file_constraints": {
+          "max_size_mb": 25,
+          "allowed_types": [
+            "image/*",
+            "application/pdf",
+            "text/*",
+            ".csv",
+            ".xlsx"
+          ]
+        },
+        "rate_limiting": "Redis-backed token bucket per form_id"
+      },
+      "acceptance_criteria": [
+        "Public submission endpoint enforces rate limiting (100 req/min per form)",
+        "Pre-signed URL expires in 10 minutes; upload completion confirmed via S3 event",
+        "File type validated by magic bytes (not just extension)",
+        "Response stored atomically with all answers in single transaction",
+        "Conditional skip logic validated server-side regardless of client UI state"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 12,
+      "task_type": "BACKEND",
+      "description": "Implement payment collection via Stripe: PaymentIntent creation for one-time payments, Subscription creation for recurring, Stripe.js token flow (cardholder data never touches backend), webhook handler for payment events (succeeded/failed/refunded), and payment metadata linked to form responses.",
+      "payload": {
+        "provider": "Stripe",
+        "payment_types": [
+          "one_time",
+          "recurring_subscription"
+        ],
+        "stripe_events": [
+          "payment_intent.succeeded",
+          "payment_intent.payment_failed",
+          "invoice.paid",
+          "customer.subscription.deleted"
+        ],
+        "pci_approach": "SAQ-A (Stripe.js, no cardholder data on server)"
+      },
+      "acceptance_criteria": [
+        "PaymentIntent created server-side; client confirms with Stripe.js \u2014 no raw card data hits backend",
+        "Stripe webhook signature verified on every incoming event (STRIPE_WEBHOOK_SECRET)",
+        "Payment status reflected in response record within 5 seconds of Stripe event",
+        "Refund status propagated to response inbox UI",
+        "PCI SAQ-A self-assessment checklist completed and documented"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 13,
+      "task_type": "BACKEND",
+      "description": "Implement outbound webhook system: webhook registration CRUD per form, delivery worker (Celery + Redis) that POSTs response payload on submission, retry logic (exponential backoff, max 5 attempts), delivery log with request/response capture, manual retry endpoint, and HMAC-SHA256 signature on every delivery.",
+      "payload": {
+        "worker": "Celery with Redis broker",
+        "retry_policy": {
+          "max_attempts": 5,
+          "backoff": "exponential",
+          "initial_delay_sec": 30
+        },
+        "signature": "X-FormBuilder-Signature: HMAC-SHA256(secret, payload)",
+        "timeout_sec": 10,
+        "delivery_log_retention_days": 30
+      },
+      "acceptance_criteria": [
+        "Webhook fires within 2 seconds of successful response submission",
+        "All 5 retry attempts logged with HTTP status and response body captured",
+        "HMAC signature header present on every delivery and documented",
+        "Manual retry from UI triggers immediate re-delivery of specific response",
+        "Dead-letter queue captures permanently failed deliveries for inspection"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 14,
+      "task_type": "BACKEND",
+      "description": "Implement analytics backend: event ingestion (form_view, field_focus, field_complete, form_abandon, form_submit), aggregation jobs (completion rate, drop-off by field, avg completion time, device/browser breakdown, geographic heatmap), and query API with date range filtering and CSV export.",
+      "payload": {
+        "event_store": "TimescaleDB hypertable or Postgres partitioned table",
+        "aggregations": [
+          "completion_rate",
+          "field_dropoff_funnel",
+          "avg_time_to_complete",
+          "device_breakdown",
+          "response_volume_by_day"
+        ],
+        "jobs": "Celery beat \u2014 hourly aggregation, daily summary",
+        "export_formats": [
+          "CSV",
+          "JSON"
+        ]
+      },
+      "acceptance_criteria": [
+        "Event ingestion handles 500 events/sec without dropping (load tested)",
+        "Completion rate and field drop-off funnel accurate to within 1% vs raw event count",
+        "Analytics queries return in under 200ms for 90-day windows on 1M+ events",
+        "CSV export streams response (no timeout for large datasets)",
+        "Date range filter validated \u2014 no future dates, max 365-day window"
+      ],
+      "depends_on": [
+        11
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 15,
+      "task_type": "BACKEND",
+      "description": "Implement embed system: generate signed embed tokens per form (JWT with form_id, expiry, allowed_origins), CORS enforcement based on token, iframe-embeddable public form endpoint, and JavaScript snippet API for headless embedding with postMessage communication for height resize and submission events.",
+      "payload": {
+        "embed_types": [
+          "iframe_snippet",
+          "js_embed_sdk"
+        ],
+        "token_fields": [
+          "form_id",
+          "allowed_origins",
+          "exp",
+          "custom_theme_overrides"
+        ],
+        "postmessage_events": [
+          "form:ready",
+          "form:submit",
+          "form:height_change"
+        ],
+        "js_sdk_output": "form-builder-embed.js (UMD bundle, <10KB gzipped)"
+      },
+      "acceptance_criteria": [
+        "Embed token rejected when Origin header not in allowed_origins list",
+        "iframe embed renders form in under 1 second on 4G connection",
+        "JS SDK postMessage events fire correctly in Chrome, Firefox, Safari, Edge",
+        "Height resize event keeps iframe flush with form content (no scrollbars)",
+        "Embed JS SDK bundle <10KB gzipped"
+      ],
+      "depends_on": [
+        10
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 16,
+      "task_type": "FRONTEND",
+      "description": "Build the form builder canvas: React drag-and-drop editor (dnd-kit) with field palette (20+ field types: short text, long text, email, phone, number, dropdown, multi-select, checkbox, radio, date, time, file upload, payment, rating, signature, NPS, matrix, image choice, section break, statement). Field config panel slides in on selection. Real-time preview pane.",
+      "payload": {
+        "framework": "React 18 + TypeScript",
+        "dnd_library": "dnd-kit",
+        "state_management": "Zustand",
+        "field_types": 20,
+        "key_components": [
+          "FieldPalette",
+          "BuilderCanvas",
+          "FieldConfigPanel",
+          "FormPreview",
+          "PublishModal"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 20+ field types render in palette and are draggable onto canvas",
+        "Field reorder via drag-and-drop updates form schema without page reload",
+        "Config panel shows correct options per field type (no cross-contamination)",
+        "Real-time preview reflects field changes within 100ms",
+        "Undo/redo (Ctrl+Z/Y) works for last 50 actions"
+      ],
+      "depends_on": [
+        6,
+        8
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 17,
+      "task_type": "FRONTEND",
+      "description": "Build the conditional logic visual editor: rule builder UI showing IF [field] [operator] [value] THEN [show/hide/require/skip to] [field/page]. Support AND/OR grouping, nested conditions, and visual rule graph. Validate for circular logic. Show affected fields highlighted in canvas.",
+      "payload": {
+        "ui_pattern": "rule_builder with drag-drop condition blocks",
+        "operators": [
+          "equals",
+          "not_equals",
+          "contains",
+          "not_contains",
+          "greater_than",
+          "less_than",
+          "is_empty",
+          "is_not_empty",
+          "matches_regex"
+        ],
+        "actions": [
+          "show_field",
+          "hide_field",
+          "require_field",
+          "skip_to_field",
+          "skip_to_page",
+          "end_form"
+        ],
+        "validation": "cycle detection on rule graph before save"
+      },
+      "acceptance_criteria": [
+        "Rule editor renders for all 20+ field types with appropriate operator options per type",
+        "Circular logic detected and blocked with clear error message",
+        "AND/OR group nesting to at least 3 levels",
+        "Affected fields highlighted in canvas when rule is selected",
+        "Logic preview mode lets builder test rules against sample values"
+      ],
+      "depends_on": [
+        16
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 18,
+      "task_type": "FRONTEND",
+      "description": "Build the public form renderer: mobile-first, accessible form presentation that evaluates conditional logic client-side, handles file upload with progress bar, renders payment field via Stripe.js Elements, shows multi-page navigation with progress indicator, and displays thank-you/redirect screen on submit.",
+      "payload": {
+        "key_components": [
+          "FormRenderer",
+          "FieldRenderer",
+          "LogicEvaluator",
+          "FileUploadField",
+          "PaymentField",
+          "ProgressBar",
+          "ThankYouScreen"
+        ],
+        "accessibility": "WCAG 2.1 AA",
+        "payment_integration": "Stripe.js Elements",
+        "responsive": "mobile-first CSS, min-width 320px"
+      },
+      "acceptance_criteria": [
+        "Form renders correctly on 320px (iPhone SE) through 1440px (desktop)",
+        "Conditional field show/hide animates without layout shift (CLS < 0.1)",
+        "File upload shows upload progress, error on type/size rejection",
+        "Stripe payment element loads and completes test transaction end-to-end",
+        "Lighthouse accessibility score \u2265 95 on rendered form",
+        "Form submits correctly with no JavaScript enabled (progressive enhancement for non-payment forms)"
+      ],
+      "depends_on": [
+        12,
+        17
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 19,
+      "task_type": "FRONTEND",
+      "description": "Build the analytics dashboard: response volume chart (line, day/week/month toggle), field drop-off funnel visualization, completion rate tile, avg time-to-complete, device/browser pie charts, geographic response map, date range picker, and CSV/JSON export button.",
+      "payload": {
+        "chart_library": "Recharts or Nivo",
+        "components": [
+          "VolumeChart",
+          "DropoffFunnel",
+          "CompletionRateTile",
+          "AvgTimeTile",
+          "DeviceChart",
+          "GeoMap",
+          "DateRangePicker",
+          "ExportButton"
+        ],
+        "date_granularities": [
+          "day",
+          "week",
+          "month"
+        ],
+        "export_formats": [
+          "CSV",
+          "JSON"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 6 chart types render with real data from analytics API",
+        "Date range filter updates all charts simultaneously without full page reload",
+        "Funnel accurately shows drop-off percentage between consecutive fields",
+        "CSV export downloads within 5 seconds for 10k responses",
+        "Dashboard renders correctly on iPad (768px) minimum"
+      ],
+      "depends_on": [
+        14,
+        6
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 20,
+      "task_type": "FRONTEND",
+      "description": "Build the webhook management UI, response inbox, embed code generator, and workspace/team settings pages. Webhook UI shows delivery logs with expandable request/response detail and manual retry button. Response inbox shows paginated answers with file download links and payment status badges.",
+      "payload": {
+        "pages": [
+          "WebhookManager",
+          "WebhookDeliveryLog",
+          "ResponseInbox",
+          "ResponseDetail",
+          "EmbedGenerator",
+          "WorkspaceSettings",
+          "TeamMembers",
+          "BillingSettings"
+        ],
+        "embed_generator": "live preview of iframe snippet and JS snippet with copy button",
+        "response_inbox": "virtual scroll for 10k+ responses, column sort, search, CSV export"
+      },
+      "acceptance_criteria": [
+        "Webhook delivery log shows HTTP status, latency, and response body for each attempt",
+        "Manual retry button triggers re-delivery and updates log in real-time",
+        "Response inbox virtual scroll handles 50k responses without memory leak",
+        "Embed generator previews form in iframe within the UI before copying snippet",
+        "Team member invite flow completes with email delivery confirmation"
+      ],
+      "depends_on": [
+        13,
+        15,
+        19
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 21,
+      "task_type": "SECURITY",
+      "description": "Perform threat model (STRIDE) for the form builder: identify threats to public submission endpoint (spam, injection, SSRF via webhooks, file upload abuse), payment flow (replay attacks), embed tokens (theft, abuse), and multi-tenant data isolation. Produce mitigations list and penetration test plan.",
+      "payload": {
+        "methodology": "STRIDE",
+        "threat_areas": [
+          "public_submission_endpoint",
+          "file_upload",
+          "webhook_outbound_SSRF",
+          "payment_flow",
+          "embed_token",
+          "multi_tenant_isolation",
+          "admin_api"
+        ],
+        "output_artifacts": [
+          "threat_model.md",
+          "pentest_plan.md",
+          "security_controls_matrix.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "STRIDE analysis covers all 7 threat areas with likelihood and impact ratings",
+        "SSRF mitigation defined for webhook URLs (block private IP ranges, require HTTPS)",
+        "File upload abuse mitigations: magic byte check, AV scan, per-workspace quota",
+        "Penetration test plan covers OWASP Top 10 + business logic abuse cases",
+        "Security controls matrix maps each threat to implemented control"
+      ],
+      "depends_on": [
+        10,
+        11,
+        12,
+        13,
+        15
+      ],
+      "agent_role": "developer"
+    },
+    {
+      "step": 22,
+      "task_type": "COMPLIANCE",
+      "description": "Produce SOC 2 Type I readiness artifacts: security policy documentation, access control matrix, encryption-at-rest and in-transit documentation, audit log completeness review, incident response procedure, vendor risk assessment (Stripe, AWS, Redis), and control mapping to SOC 2 Trust Services Criteria.",
+      "payload": {
+        "standard": "SOC 2 Type I (path to Type II)",
+        "trust_service_criteria": [
+          "CC6",
+          "CC7",
+          "CC8",
+          "CC9",
+          "A1"
+        ],
+        "artifacts": [
+          "information_security_policy.md",
+          "access_control_matrix.md",
+          "encryption_documentation.md",
+          "incident_response_plan.md",
+          "vendor_risk_assessments.md",
+          "soc2_control_mapping.md"
+        ],
+        "vendors": [
+          "AWS",
+          "Stripe",
+          "Redis Cloud",
+          "SendGrid"
+        ]
+      },
+      "acceptance_criteria": [
+        "Control mapping covers all applicable SOC 2 Common Criteria with evidence pointers",
+        "Encryption documentation confirms TLS 1.2+ in transit and AES-256 at rest",
+        "Access control matrix documents all system roles and permission boundaries",
+        "Incident response plan includes detection, containment, notification, and post-mortem steps",
+        "Vendor risk assessment completed for all 4 critical vendors with risk ratings"
+      ],
+      "depends_on": [
+        21
+      ],
+      "agent_role": "regulatory_specialist"
+    },
+    {
+      "step": 23,
+      "task_type": "TESTS",
+      "description": "Write unit and integration tests for: logic engine (condition evaluation with all operator types and nested AND/OR), response submission pipeline (validation, file handling, payment flow), webhook delivery worker (retry logic, signature verification), analytics aggregation, and embed token validation.",
+      "payload": {
+        "test_framework": "pytest",
+        "coverage_target": "90%",
+        "test_suites": [
+          "logic_engine_tests",
+          "submission_pipeline_tests",
+          "webhook_worker_tests",
+          "analytics_tests",
+          "embed_token_tests",
+          "auth_tests"
+        ],
+        "fixtures": "pytest-factory-boy for DB fixtures, moto for AWS S3, stripe-mock for Stripe"
+      },
+      "acceptance_criteria": [
+        "Logic engine tests cover all 9 operators \u00d7 5 field types \u00d7 AND/OR nesting",
+        "Submission pipeline tests cover happy path, file rejection, payment failure, rate limit",
+        "Webhook retry tests verify all 5 retry attempts with correct backoff timing",
+        "Test coverage \u2265 90% on src/ (measured by pytest-cov)",
+        "All tests pass in under 60 seconds in CI"
+      ],
+      "depends_on": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 24,
+      "task_type": "QA",
+      "description": "Design and execute manual QA test plan covering: form builder usability (20 field types, drag-and-drop, undo/redo), conditional logic correctness across 15 edge cases, file upload across all allowed types and sizes, end-to-end Stripe payment (test mode), webhook delivery and retry, analytics accuracy, and embed rendering across 4 browsers.",
+      "payload": {
+        "test_cases": 120,
+        "browsers": [
+          "Chrome 120+",
+          "Firefox 120+",
+          "Safari 17+",
+          "Edge 120+"
+        ],
+        "devices": [
+          "iPhone 15",
+          "Samsung Galaxy S23",
+          "iPad Pro",
+          "MacBook Pro"
+        ],
+        "payment_mode": "Stripe test mode",
+        "output_artifacts": [
+          "qa_test_plan.md",
+          "qa_execution_report.md",
+          "bug_report.md"
+        ]
+      },
+      "acceptance_criteria": [
+        "All 120 test cases executed with pass/fail/blocked status",
+        "Zero P0 (data loss, payment error) bugs in final report",
+        "Conditional logic edge cases tested: circular-safe, multi-condition, skip-to-page",
+        "Embed renders correctly in all 4 browsers with no console errors",
+        "Payment flow tested: success, declined card, 3DS required scenarios"
+      ],
+      "depends_on": [
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "agent_role": "qa_engineer"
+    },
+    {
+      "step": 25,
+      "task_type": "SYSTEM_TEST",
+      "description": "Execute end-to-end system test suite and load tests: full flow (create form \u2192 add logic \u2192 add payment \u2192 publish \u2192 submit response \u2192 verify webhook \u2192 check analytics \u2192 export CSV), load test public submission endpoint at 1000 concurrent submissions, and chaos test webhook worker (kill worker mid-retry, verify recovery).",
+      "payload": {
+        "e2e_tool": "Playwright",
+        "load_tool": "k6",
+        "load_target": "1000 concurrent form submissions sustained for 5 minutes",
+        "chaos_scenarios": [
+          "webhook_worker_kill",
+          "database_connection_drop",
+          "S3_upload_timeout",
+          "Stripe_api_timeout"
+        ],
+        "performance_targets": {
+          "p50_submission_latency_ms": 300,
+          "p99_submission_latency_ms": 1000,
+          "webhook_delivery_rate": "99.5%"
+        }
+      },
+      "acceptance_criteria": [
+        "Playwright E2E suite covers full happy-path flow across 3 browsers",
+        "k6 load test: p50 < 300ms, p99 < 1000ms at 1000 concurrent users",
+        "Zero data loss on 10,000 concurrent submissions (all persisted to DB)",
+        "Webhook delivery rate \u2265 99.5% over 1-hour sustained load",
+        "Worker recovers from kill signal and re-queues pending deliveries within 30 seconds"
+      ],
+      "depends_on": [
+        23,
+        24
+      ],
+      "agent_role": "system_tester"
+    },
+    {
+      "step": 26,
+      "task_type": "DEVOPS",
+      "description": "Set up CI/CD pipeline (GitHub Actions): lint \u2192 type-check \u2192 unit tests \u2192 integration tests \u2192 Docker build \u2192 staging deploy \u2192 E2E tests \u2192 production deploy with blue-green. Configure observability: Prometheus metrics, Grafana dashboards (submission rate, webhook delivery rate, p99 latency, error rate), PagerDuty alerting, and structured JSON logging.",
+      "payload": {
+        "ci_cd": "GitHub Actions",
+        "deployment": "Docker Compose (dev) \u2192 Kubernetes (prod) with Helm chart",
+        "deploy_strategy": "blue-green",
+        "observability": {
+          "metrics": "Prometheus + Grafana",
+          "logging": "structured JSON \u2192 Loki",
+          "alerting": "PagerDuty via Alertmanager",
+          "tracing": "OpenTelemetry \u2192 Jaeger"
+        },
+        "key_alerts": [
+          "submission_error_rate > 1%",
+          "webhook_failure_rate > 5%",
+          "p99_latency > 2s",
+          "Stripe_webhook_failures"
+        ]
+      },
+      "acceptance_criteria": [
+        "CI pipeline runs green on every PR with all test stages passing",
+        "Blue-green deploy completes with zero downtime (health check verified)",
+        "Grafana dashboard has panels for all 4 key alerts",
+        "PagerDuty alert fires within 2 minutes of error rate threshold breach in staging",
+        "OpenTelemetry trace spans cover form submission \u2192 DB write \u2192 webhook dispatch chain"
+      ],
+      "depends_on": [
+        23,
+        25
+      ],
+      "agent_role": "devops_engineer"
+    },
+    {
+      "step": 27,
+      "task_type": "OPERATIONS",
+      "description": "Write operational runbooks: incident response (form submission outage, webhook delivery degradation, Stripe integration failure, file upload unavailable), SLA definitions (99.9% uptime, <5 min webhook delivery), on-call rotation setup, capacity planning model (storage growth per workspace, Celery worker scaling rules), and backup/restore procedures.",
+      "payload": {
+        "runbooks": [
+          "submission_outage_runbook.md",
+          "webhook_degradation_runbook.md",
+          "stripe_failure_runbook.md",
+          "file_upload_outage_runbook.md",
+          "database_recovery_runbook.md"
+        ],
+        "sla": {
+          "uptime": "99.9%",
+          "webhook_delivery_sla": "95% within 5 minutes",
+          "support_response": "4h business hours"
+        },
+        "capacity_model": "storage growth: 1GB/1000 file uploads; Celery: 1 worker per 500 active forms"
+      },
+      "acceptance_criteria": [
+        "Each runbook has: detection signals, immediate triage steps, escalation path, resolution steps, post-mortem template",
+        "SLA document defines measurement methodology and exclusions",
+        "Capacity model includes 12-month projection at 3 growth scenarios (base/bull/bear)",
+        "DB backup restore tested and documented with RTO < 1 hour, RPO < 5 minutes",
+        "On-call rotation configured in PagerDuty with escalation policy"
+      ],
+      "depends_on": [
+        26
+      ],
+      "agent_role": "operations_manager"
+    },
+    {
+      "step": 28,
+      "task_type": "DOCS",
+      "description": "Write developer documentation: API reference (auto-generated from OpenAPI spec + enriched examples), webhook integration guide (with HMAC verification code samples in Python, Node, PHP, Ruby), embed guide (iframe and JS SDK), analytics API guide, and getting-started tutorial (build a contact form with payment in 10 minutes).",
+      "payload": {
+        "doc_site": "Docusaurus or Mintlify",
+        "guides": [
+          "quickstart.md",
+          "api_reference/",
+          "webhook_guide.md",
+          "embed_guide.md",
+          "analytics_guide.md",
+          "payment_guide.md"
+        ],
+        "code_samples_languages": [
+          "Python",
+          "Node.js",
+          "PHP",
+          "Ruby",
+          "curl"
+        ],
+        "output_artifacts": [
+          "docs/"
+        ]
+      },
+      "acceptance_criteria": [
+        "Every API endpoint has at least one working curl example",
+        "Webhook HMAC verification shown in 5 languages with runnable samples",
+        "Embed guide covers both iframe snippet and JS SDK with live CodeSandbox demos",
+        "Getting-started tutorial validated by a developer unfamiliar with the system",
+        "Docs site search indexes all pages correctly"
+      ],
+      "depends_on": [
+        8,
+        13,
+        15
+      ],
+      "agent_role": "technical_writer"
+    }
+  ],
+  "task_count": 28,
+  "critic_scores": [
+    {
+      "phase": "plan",
+      "score": 63,
+      "passed": false,
+      "iterations": 1
+    }
+  ],
+  "critic_reports": [
+    {
+      "phase": "plan",
+      "result": {
+        "passed": false,
+        "final_score": 63,
+        "final_review": {
+          "score": 63,
+          "flaws": [
+            "Step 18 acceptance criteria demands progressive enhancement ('form submits with no JavaScript enabled') yet Step 12 mandates Stripe.js and Step 11 mandates pre-signed S3 upload URLs \u2014 both require JavaScript. These criteria directly contradict each other and will fail QA.",
+            "Step 13 (webhook worker) has no SSRF mitigation in its own acceptance criteria. SSRF protection appears only in Step 21 (threat model), which depends on Steps 10-15 being complete. This means the webhook delivery system ships to staging without SSRF controls, exposing internal services to attacker-controlled URLs for the entire build window.",
+            "File upload async gap in Step 11: the response is stored atomically in a single transaction (acceptance criteria), but virus scanning is triggered asynchronously via S3 event. There is no state machine or deferred-accept pattern defined for the race between 'submission stored' and 'file cleared by AV'. A malware file can be linked to a submitted response before the scan completes.",
+            "Step 16 treats undo/redo as a trivial acceptance criterion ('last 50 actions, Ctrl+Z/Y'). In a drag-and-drop form builder with conditional logic that references field IDs, undo is a complex CRDT/command-pattern problem. Zustand alone cannot correctly handle undo when a logic rule references a field that was subsequently deleted and then re-added. This will cause silent data corruption in rule references.",
+            "Step 3 (Legal) has no dependency on Step 4 (Financial). The ToS must include subscription cancellation and refund policies that depend on the pricing tiers defined in Step 4. Drafting ToS before pricing is defined forces a rewrite.",
+            "Step 25 load test target (1000 concurrent submissions for 5 minutes) is insufficiently aggressive for SaaS launch confidence. 1000 concurrent users is a modest number; a single viral embed on a popular site can spike well past this. The load scenario also doesn't test write amplification: 1 submission triggers DB write + S3 event + webhook fanout + analytics event \u2014 the real bottleneck.",
+            "Step 14 analytics performance target (<200ms on 1M+ events) is stated but the plan hedges 'TimescaleDB hypertable OR Postgres partitioned table' without committing. Standard Postgres partitioned tables without TimescaleDB continuous aggregates will not reliably hit 200ms for funnel queries on 1M rows. The target will fail during Step 25 load tests if TimescaleDB is not chosen.",
+            "Step 12 Stripe webhook handler does not explicitly require idempotency key handling. Stripe guarantees at-least-once delivery of webhook events. Without deduplication on the `stripe_event_id`, a retried `payment_intent.succeeded` event will double-credit a response as paid.",
+            "Step 9 (SAGE config for form_builder) is architecturally incoherent with the rest of the plan. Steps 10-28 build a standalone FastAPI product \u2014 not a SAGE solution extension. The SAGE YAML config at Step 9 has no consumers in the subsequent backend steps. It creates false organizational clarity without functional integration.",
+            "Analytics geographic heatmap (Steps 14, 19) has no IP geolocation dependency defined. MaxMind GeoIP2, IPInfo, or equivalent must be licensed and integrated. IP storage also triggers GDPR Article 4(1) personal data obligations not addressed in Step 3's DPA."
+          ],
+          "suggestions": [
+            "Add SSRF mitigation directly to Step 13 acceptance criteria: 'Webhook URLs must be validated against a blocklist of private CIDRs (RFC 1918, loopback, link-local) before dispatch. HTTPS required. DNS rebinding protection via post-resolution IP check.' Do not defer this to Step 21.",
+            "Replace the 'no-JS progressive enhancement' criterion in Step 18 with a split: non-payment forms use semantic HTML form POST fallback; payment and file upload forms explicitly require JS with a clear degraded-state message.",
+            "Define an explicit file upload lifecycle state machine before Step 11: PENDING_UPLOAD \u2192 UPLOADED \u2192 SCANNING \u2192 CLEAN/REJECTED. Response submission should store file references in PENDING state and only surface them in the response inbox after CLEAN status. Add a compensation job to tombstone REJECTED files.",
+            "Add undo/redo architecture as an explicit sub-task of Step 16: define a command registry with typed inverse operations (AddField/RemoveField, UpdateLogicRule/RevertLogicRule). Each command must serialize the field ID references it touches. Test undo after deleting a field that is a logic rule target.",
+            "Add a Step 10.5 (or amend Step 13) for Stripe event idempotency: create a `stripe_events` table indexed on `stripe_event_id`, check-and-insert before processing, return 200 immediately on duplicate.",
+            "Add a dedicated step for IaC (Terraform/Pulumi) covering: VPC, RDS (multi-AZ Postgres 15), ElastiCache (Redis), EKS cluster, S3 buckets with lifecycle policies, CloudFront distribution for embed SDK delivery, and IAM roles. Step 26 assumes this infrastructure exists but no step creates it.",
+            "Add CAPTCHA/bot protection to Step 11 public submission endpoint. Define the mechanism (hCaptcha, Cloudflare Turnstile, or invisible token) and add it to the rate limiting acceptance criteria. Without it, form spam is trivially automated past the 100/min rate limit by distributing across IPs.",
+            "Add email service integration as an explicit dependency. Step 20 requires 'email delivery confirmation' for team invites, Step 22 lists SendGrid as a vendor, but no step configures transactional email. Add SendGrid (or Postmark) setup, template management, and SPF/DKIM configuration.",
+            "Commit to TimescaleDB in Step 14 or lower the analytics query SLA target to 500ms with a caveat that >90-day windows require pre-aggregated rollup tables. The hedge between TimescaleDB and Postgres partitioning is a decision that must be made before Step 7 schema design.",
+            "Add a Stripe Connect architecture decision before Step 12: if agencies collect payments for their clients' forms, raw Stripe charges will credit the platform account, not the end merchant. Decide now: platform model (Stripe Connect) vs. no-marketplace (form owner provides own Stripe keys)."
+          ],
+          "missing": [
+            "Infrastructure as Code (Terraform/Pulumi) \u2014 no step provisions the actual cloud resources. Step 26 deploys to Kubernetes that is never defined.",
+            "CDN strategy for public form renderer and embed JS SDK delivery. The embed SDK must be served from a stable CDN URL, not the API origin.",
+            "Email service setup step (SendGrid/Postmark) \u2014 referenced in Step 22 vendor list but never configured or integrated in any step.",
+            "Form spam/bot protection (CAPTCHA or Cloudflare Turnstile) \u2014 public forms with no bot protection are an easy spam vector.",
+            "Database connection pooling strategy (PgBouncer or asyncpg pool) \u2014 FastAPI + SQLAlchemy on PostgreSQL at submission scale will exhaust connection limits without explicit pooling design.",
+            "Stripe idempotency and event deduplication design \u2014 not in any step's acceptance criteria.",
+            "Form version rollback UI and response compatibility \u2014 Steps 7 and 10 store versions but no acceptance criteria covers what happens to responses submitted against a rolled-back form version.",
+            "In-app response notification system \u2014 no step covers notifying form owners of new submissions (email digest, webhook to themselves, in-app push).",
+            "Multi-tenant data isolation test suite \u2014 RLS is defined in Step 7 but no test step explicitly attempts cross-tenant data access to verify isolation holds under RLS bypass patterns.",
+            "GDPR data subject request flow \u2014 the DPA in Step 3 mentions deletion procedures but no step implements the DELETE /responses/export?respondent_email= endpoint or the right-to-erasure workflow in the API or UI.",
+            "File type validation: Step 11 lists `.csv` and `.xlsx` in allowed_types alongside MIME wildcards, but `.xlsx` is `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` \u2014 the plan mixes extension and MIME notation inconsistently. Magic byte validation needs an explicit library choice (python-magic).",
+            "Celery worker autoscaling rules in production \u2014 Step 27 capacity model mentions '1 worker per 500 active forms' but no step configures KEDA or HPA for Celery workers in Kubernetes."
+          ],
+          "security_risks": [
+            "SSRF via outbound webhooks: Step 13 implements webhook dispatch before Step 21 defines SSRF mitigations. An attacker who registers a webhook pointing to http://169.254.169.254/latest/meta-data/ will exfiltrate cloud metadata before the control is implemented. Mitigation must be in Step 13, not Step 21.",
+            "Embed token leakage: JWT embed tokens in Step 15 contain `allowed_origins` and are delivered to the browser. If the token is stored in localStorage by the JS SDK, XSS on the host page extracts the token, allowing attacker to submit unlimited responses from arbitrary origins using the leaked token outside the origin check.",
+            "Virus scan race window: a malicious file upload can be stored, linked to a response, and the response webhook fired before ClamAV confirms the file is clean. If the webhook recipient downloads the file URL from the response payload, they receive unscanned content.",
+            "Webhook HMAC secret storage: Step 13 defines per-webhook HMAC secrets but no step specifies where these secrets are stored server-side. If stored in the `webhooks` table as plaintext (the obvious implementation), a SQL injection or DB dump exposes all customer webhook secrets.",
+            "Logic engine regex operator (Step 10/17): allowing user-defined regex in conditional logic creates a ReDoS (Regular Expression Denial of Service) vector. A form builder with a malicious regex rule can pin a CPU core on every form submission. The acceptance criteria do not require regex timeout or complexity limits.",
+            "Public form submission with no authentication creates a response-stuffing vector: an attacker can enumerate active form_ids and flood them with synthetic responses, corrupting analytics and exhausting respondent quotas. The rate limit is per-form but doesn't prevent distributed multi-form attacks.",
+            "File upload path traversal: pre-signed S3 URLs in Step 11 must enforce a server-controlled S3 key prefix per workspace. If the S3 key is derived from any user-controlled input (filename, respondent field value), path traversal or key collision attacks can overwrite other workspace files.",
+            "Stripe webhook endpoint must be excluded from CSRF protection middleware and authentication, but the plan does not explicitly flag this endpoint for special routing rules. Applying a JWT auth middleware to the Stripe webhook endpoint will break payment event processing silently in production."
+          ],
+          "summary": "This is a well-structured, comprehensive plan that covers the full product lifecycle from market research to operations. The dependency graph is mostly coherent, acceptance criteria are specific, and critical security surfaces (PCI scope, HMAC signatures, RLS) are addressed in principle. However, several concrete failure modes undermine production readiness: the SSRF vulnerability window between Step 13 and Step 21 is a direct security regression; the virus scan async gap creates a malware delivery path through the response payload; the progressive-enhancement criterion directly contradicts Stripe.js and S3 dependencies; and the analytics performance target is unachievable without a firm commitment to TimescaleDB. The undo/redo requirement is dramatically underscoped for a field-reference-aware conditional logic system. For an MVP targeting SMBs without file uploads or payments, the plan scores higher \u2014 the core builder, webhook, and submission pipeline are sound. For a production multi-tenant SaaS with payment collection and file uploads as Day 1 features, the missing IaC, SSRF controls in the right step, email service integration, and bot protection are gaps that will be discovered in staging at the worst possible time. Recommend: resolve the SSRF step ordering, commit to TimescaleDB, add an IaC step, and remove the no-JS contradiction before starting implementation.",
+          "iteration": 1
+        },
+        "history": [
+          {
+            "score": 63,
+            "flaws": [
+              "Step 18 acceptance criteria demands progressive enhancement ('form submits with no JavaScript enabled') yet Step 12 mandates Stripe.js and Step 11 mandates pre-signed S3 upload URLs \u2014 both require JavaScript. These criteria directly contradict each other and will fail QA.",
+              "Step 13 (webhook worker) has no SSRF mitigation in its own acceptance criteria. SSRF protection appears only in Step 21 (threat model), which depends on Steps 10-15 being complete. This means the webhook delivery system ships to staging without SSRF controls, exposing internal services to attacker-controlled URLs for the entire build window.",
+              "File upload async gap in Step 11: the response is stored atomically in a single transaction (acceptance criteria), but virus scanning is triggered asynchronously via S3 event. There is no state machine or deferred-accept pattern defined for the race between 'submission stored' and 'file cleared by AV'. A malware file can be linked to a submitted response before the scan completes.",
+              "Step 16 treats undo/redo as a trivial acceptance criterion ('last 50 actions, Ctrl+Z/Y'). In a drag-and-drop form builder with conditional logic that references field IDs, undo is a complex CRDT/command-pattern problem. Zustand alone cannot correctly handle undo when a logic rule references a field that was subsequently deleted and then re-added. This will cause silent data corruption in rule references.",
+              "Step 3 (Legal) has no dependency on Step 4 (Financial). The ToS must include subscription cancellation and refund policies that depend on the pricing tiers defined in Step 4. Drafting ToS before pricing is defined forces a rewrite.",
+              "Step 25 load test target (1000 concurrent submissions for 5 minutes) is insufficiently aggressive for SaaS launch confidence. 1000 concurrent users is a modest number; a single viral embed on a popular site can spike well past this. The load scenario also doesn't test write amplification: 1 submission triggers DB write + S3 event + webhook fanout + analytics event \u2014 the real bottleneck.",
+              "Step 14 analytics performance target (<200ms on 1M+ events) is stated but the plan hedges 'TimescaleDB hypertable OR Postgres partitioned table' without committing. Standard Postgres partitioned tables without TimescaleDB continuous aggregates will not reliably hit 200ms for funnel queries on 1M rows. The target will fail during Step 25 load tests if TimescaleDB is not chosen.",
+              "Step 12 Stripe webhook handler does not explicitly require idempotency key handling. Stripe guarantees at-least-once delivery of webhook events. Without deduplication on the `stripe_event_id`, a retried `payment_intent.succeeded` event will double-credit a response as paid.",
+              "Step 9 (SAGE config for form_builder) is architecturally incoherent with the rest of the plan. Steps 10-28 build a standalone FastAPI product \u2014 not a SAGE solution extension. The SAGE YAML config at Step 9 has no consumers in the subsequent backend steps. It creates false organizational clarity without functional integration.",
+              "Analytics geographic heatmap (Steps 14, 19) has no IP geolocation dependency defined. MaxMind GeoIP2, IPInfo, or equivalent must be licensed and integrated. IP storage also triggers GDPR Article 4(1) personal data obligations not addressed in Step 3's DPA."
+            ],
+            "suggestions": [
+              "Add SSRF mitigation directly to Step 13 acceptance criteria: 'Webhook URLs must be validated against a blocklist of private CIDRs (RFC 1918, loopback, link-local) before dispatch. HTTPS required. DNS rebinding protection via post-resolution IP check.' Do not defer this to Step 21.",
+              "Replace the 'no-JS progressive enhancement' criterion in Step 18 with a split: non-payment forms use semantic HTML form POST fallback; payment and file upload forms explicitly require JS with a clear degraded-state message.",
+              "Define an explicit file upload lifecycle state machine before Step 11: PENDING_UPLOAD \u2192 UPLOADED \u2192 SCANNING \u2192 CLEAN/REJECTED. Response submission should store file references in PENDING state and only surface them in the response inbox after CLEAN status. Add a compensation job to tombstone REJECTED files.",
+              "Add undo/redo architecture as an explicit sub-task of Step 16: define a command registry with typed inverse operations (AddField/RemoveField, UpdateLogicRule/RevertLogicRule). Each command must serialize the field ID references it touches. Test undo after deleting a field that is a logic rule target.",
+              "Add a Step 10.5 (or amend Step 13) for Stripe event idempotency: create a `stripe_events` table indexed on `stripe_event_id`, check-and-insert before processing, return 200 immediately on duplicate.",
+              "Add a dedicated step for IaC (Terraform/Pulumi) covering: VPC, RDS (multi-AZ Postgres 15), ElastiCache (Redis), EKS cluster, S3 buckets with lifecycle policies, CloudFront distribution for embed SDK delivery, and IAM roles. Step 26 assumes this infrastructure exists but no step creates it.",
+              "Add CAPTCHA/bot protection to Step 11 public submission endpoint. Define the mechanism (hCaptcha, Cloudflare Turnstile, or invisible token) and add it to the rate limiting acceptance criteria. Without it, form spam is trivially automated past the 100/min rate limit by distributing across IPs.",
+              "Add email service integration as an explicit dependency. Step 20 requires 'email delivery confirmation' for team invites, Step 22 lists SendGrid as a vendor, but no step configures transactional email. Add SendGrid (or Postmark) setup, template management, and SPF/DKIM configuration.",
+              "Commit to TimescaleDB in Step 14 or lower the analytics query SLA target to 500ms with a caveat that >90-day windows require pre-aggregated rollup tables. The hedge between TimescaleDB and Postgres partitioning is a decision that must be made before Step 7 schema design.",
+              "Add a Stripe Connect architecture decision before Step 12: if agencies collect payments for their clients' forms, raw Stripe charges will credit the platform account, not the end merchant. Decide now: platform model (Stripe Connect) vs. no-marketplace (form owner provides own Stripe keys)."
+            ],
+            "missing": [
+              "Infrastructure as Code (Terraform/Pulumi) \u2014 no step provisions the actual cloud resources. Step 26 deploys to Kubernetes that is never defined.",
+              "CDN strategy for public form renderer and embed JS SDK delivery. The embed SDK must be served from a stable CDN URL, not the API origin.",
+              "Email service setup step (SendGrid/Postmark) \u2014 referenced in Step 22 vendor list but never configured or integrated in any step.",
+              "Form spam/bot protection (CAPTCHA or Cloudflare Turnstile) \u2014 public forms with no bot protection are an easy spam vector.",
+              "Database connection pooling strategy (PgBouncer or asyncpg pool) \u2014 FastAPI + SQLAlchemy on PostgreSQL at submission scale will exhaust connection limits without explicit pooling design.",
+              "Stripe idempotency and event deduplication design \u2014 not in any step's acceptance criteria.",
+              "Form version rollback UI and response compatibility \u2014 Steps 7 and 10 store versions but no acceptance criteria covers what happens to responses submitted against a rolled-back form version.",
+              "In-app response notification system \u2014 no step covers notifying form owners of new submissions (email digest, webhook to themselves, in-app push).",
+              "Multi-tenant data isolation test suite \u2014 RLS is defined in Step 7 but no test step explicitly attempts cross-tenant data access to verify isolation holds under RLS bypass patterns.",
+              "GDPR data subject request flow \u2014 the DPA in Step 3 mentions deletion procedures but no step implements the DELETE /responses/export?respondent_email= endpoint or the right-to-erasure workflow in the API or UI.",
+              "File type validation: Step 11 lists `.csv` and `.xlsx` in allowed_types alongside MIME wildcards, but `.xlsx` is `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` \u2014 the plan mixes extension and MIME notation inconsistently. Magic byte validation needs an explicit library choice (python-magic).",
+              "Celery worker autoscaling rules in production \u2014 Step 27 capacity model mentions '1 worker per 500 active forms' but no step configures KEDA or HPA for Celery workers in Kubernetes."
+            ],
+            "security_risks": [
+              "SSRF via outbound webhooks: Step 13 implements webhook dispatch before Step 21 defines SSRF mitigations. An attacker who registers a webhook pointing to http://169.254.169.254/latest/meta-data/ will exfiltrate cloud metadata before the control is implemented. Mitigation must be in Step 13, not Step 21.",
+              "Embed token leakage: JWT embed tokens in Step 15 contain `allowed_origins` and are delivered to the browser. If the token is stored in localStorage by the JS SDK, XSS on the host page extracts the token, allowing attacker to submit unlimited responses from arbitrary origins using the leaked token outside the origin check.",
+              "Virus scan race window: a malicious file upload can be stored, linked to a response, and the response webhook fired before ClamAV confirms the file is clean. If the webhook recipient downloads the file URL from the response payload, they receive unscanned content.",
+              "Webhook HMAC secret storage: Step 13 defines per-webhook HMAC secrets but no step specifies where these secrets are stored server-side. If stored in the `webhooks` table as plaintext (the obvious implementation), a SQL injection or DB dump exposes all customer webhook secrets.",
+              "Logic engine regex operator (Step 10/17): allowing user-defined regex in conditional logic creates a ReDoS (Regular Expression Denial of Service) vector. A form builder with a malicious regex rule can pin a CPU core on every form submission. The acceptance criteria do not require regex timeout or complexity limits.",
+              "Public form submission with no authentication creates a response-stuffing vector: an attacker can enumerate active form_ids and flood them with synthetic responses, corrupting analytics and exhausting respondent quotas. The rate limit is per-form but doesn't prevent distributed multi-form attacks.",
+              "File upload path traversal: pre-signed S3 URLs in Step 11 must enforce a server-controlled S3 key prefix per workspace. If the S3 key is derived from any user-controlled input (filename, respondent field value), path traversal or key collision attacks can overwrite other workspace files.",
+              "Stripe webhook endpoint must be excluded from CSRF protection middleware and authentication, but the plan does not explicitly flag this endpoint for special routing rules. Applying a JWT auth middleware to the Stripe webhook endpoint will break payment event processing silently in production."
+            ],
+            "summary": "This is a well-structured, comprehensive plan that covers the full product lifecycle from market research to operations. The dependency graph is mostly coherent, acceptance criteria are specific, and critical security surfaces (PCI scope, HMAC signatures, RLS) are addressed in principle. However, several concrete failure modes undermine production readiness: the SSRF vulnerability window between Step 13 and Step 21 is a direct security regression; the virus scan async gap creates a malware delivery path through the response payload; the progressive-enhancement criterion directly contradicts Stripe.js and S3 dependencies; and the analytics performance target is unachievable without a firm commitment to TimescaleDB. The undo/redo requirement is dramatically underscoped for a field-reference-aware conditional logic system. For an MVP targeting SMBs without file uploads or payments, the plan scores higher \u2014 the core builder, webhook, and submission pipeline are sound. For a production multi-tenant SaaS with payment collection and file uploads as Day 1 features, the missing IaC, SSRF controls in the right step, email service integration, and bot protection are gaps that will be discovered in staging at the worst possible time. Recommend: resolve the SSRF step ordering, commit to TimescaleDB, add an IaC step, and remove the no-JS contradiction before starting implementation.",
+            "iteration": 1
+          }
+        ],
+        "iterations": 1,
+        "threshold": 70
+      },
+      "timestamp": "2026-03-22T05:24:57.538446+00:00"
+    }
+  ],
+  "agent_results": [],
+  "integration_result": null,
+  "phase_durations": {
+    "decompose": 187.78,
+    "critic_plan": 122.19
+  }
+}
