@@ -69,7 +69,7 @@ export default function FeatureRequestPanel({ module, onClose }: Props) {
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} aria-hidden />
+      <div className="fixed inset-0 bg-zinc-900/30 z-40" onClick={onClose} aria-hidden />
 
       {/* Panel */}
       <div className="fixed right-0 top-0 h-full w-[460px] bg-white shadow-2xl z-50 flex flex-col">
