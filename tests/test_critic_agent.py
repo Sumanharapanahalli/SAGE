@@ -541,3 +541,106 @@ class TestReviewIntegrationEdgeCases:
         prompt = critic._llm_gateway.generate.call_args[0][0]
         # The diff is truncated to 8000 chars inside the prompt
         assert len(prompt) < 20000
+
+
+# ===========================================================================
+# Multi-LLM Critic Tests
+# ===========================================================================
+
+
+class _MockMultiProvider:
+    """Mock provider for multi-LLM critic tests."""
+    def __init__(self, name, response):
+        self._name = name
+        self._response = response
+
+    def provider_name(self):
+        return self._name
+
+    def generate(self, prompt, system_prompt):
+        return self._response
+
+
+class TestReviewPlanMulti:
+    """Tests for CriticAgent.review_plan_multi with provider pool."""
+
+    def test_multi_plan_review_returns_score(self):
+        """review_plan_multi should parse JSON from voting result."""
+        from src.agents.critic import CriticAgent
+        from src.core.llm_gateway import ProviderPool
+
+        review_json = json.dumps({
+            "score": 72,
+            "flaws": ["missing auth"],
+            "suggestions": ["add auth"],
+            "missing": [],
+            "security_risks": [],
+            "summary": "decent plan",
+        })
+
+        pool = ProviderPool()
+        pool.register("a", _MockMultiProvider("a", review_json))
+        pool.register("b", _MockMultiProvider("b", review_json))
+
+        critic = CriticAgent()
+        critic._llm_gateway = MagicMock()
+        critic._llm_gateway.provider_pool = pool
+        critic._audit_logger = MagicMock()
+
+        result = critic.review_plan_multi(
+            [{"task": "build API"}], "A REST API",
+            strategy="voting", provider_names=["a", "b"],
+        )
+        assert result["score"] == 72
+        assert "multi_llm" in result
+        assert result["multi_llm"]["strategy"] == "voting"
+
+    def test_multi_fallback_to_single_when_no_pool(self):
+        """review_plan_multi should fall back to review_plan when pool is empty."""
+        from src.agents.critic import CriticAgent
+        from src.core.llm_gateway import ProviderPool
+
+        review_json = json.dumps({
+            "score": 85,
+            "flaws": [],
+            "suggestions": [],
+            "missing": [],
+            "security_risks": [],
+            "summary": "great plan",
+        })
+
+        critic = CriticAgent()
+        critic._llm_gateway = MagicMock()
+        critic._llm_gateway.generate.return_value = review_json
+        critic._llm_gateway.provider_pool = ProviderPool()  # empty pool
+        critic._audit_logger = MagicMock()
+
+        result = critic.review_plan_multi([{"task": "build"}], "A product")
+        assert result["score"] == 85
+
+    def test_multi_returns_error_when_all_fail(self):
+        """review_plan_multi should return error when all providers fail."""
+        from src.agents.critic import CriticAgent
+        from src.core.llm_gateway import ProviderPool
+
+        class _FailProvider:
+            def provider_name(self):
+                return "fail"
+            def generate(self, prompt, system_prompt):
+                raise ConnectionError("down")
+
+        pool = ProviderPool()
+        pool.register("fail1", _FailProvider())
+        pool.register("fail2", _FailProvider())
+
+        critic = CriticAgent()
+        critic._llm_gateway = MagicMock()
+        critic._llm_gateway.provider_pool = pool
+        critic._audit_logger = MagicMock()
+
+        result = critic.review_plan_multi(
+            [{"task": "build"}], "A product",
+            strategy="fallback", provider_names=["fail1", "fail2"],
+        )
+        assert result["score"] == 0
+        assert "error" in result

@@ -560,6 +560,171 @@ class GenericCLIProvider(LLMProvider):
 
 
 # ===========================================================================
+# Multi-LLM Provider Pool
+# ===========================================================================
+
+
+class ProviderPool:
+    """Registry of multiple LLM providers for parallel generation."""
+
+    def __init__(self):
+        self._providers: dict = {}
+        self._default: str | None = None
+        self._lock = threading.Lock()
+
+    def register(self, name: str, provider) -> None:
+        with self._lock:
+            self._providers[name] = provider
+            if self._default is None:
+                self._default = name
+
+    def get(self, name: str):
+        return self._providers.get(name)
+
+    def get_default(self):
+        if self._default:
+            return self._providers.get(self._default)
+        return None
+
+    @property
+    def default_name(self) -> str | None:
+        return self._default
+
+    def set_default(self, name: str) -> None:
+        if name in self._providers:
+            self._default = name
+
+    def list_providers(self) -> list[str]:
+        return list(self._providers.keys())
+
+    def remove(self, name: str) -> None:
+        with self._lock:
+            self._providers.pop(name, None)
+            if self._default == name:
+                self._default = next(iter(self._providers), None)
+
+    def status(self) -> dict:
+        return {
+            "default": self._default,
+            "providers": self.list_providers(),
+        }
+
+
+def generate_parallel(
+    pool: ProviderPool,
+    prompt: str,
+    system_prompt: str,
+    *,
+    strategy: str = "voting",
+    provider_names: list[str] | None = None,
+) -> dict:
+    """Run prompt across multiple providers in parallel, aggregate by strategy.
+
+    Strategies:
+      - voting:   majority consensus wins
+      - fastest:  first response wins
+      - fallback: try in order, use first success
+      - quality:  pick longest (richest) response
+    """
+    import concurrent.futures
+    logger = logging.getLogger("ProviderPool")
+    names = provider_names or pool.list_providers()
+    start = time.time()
+
+    # -- Collect responses in parallel --
+    def _call(name: str) -> tuple[str, str | None, str | None]:
+        """Returns (name, response_or_None, error_or_None)."""
+        provider = pool.get(name)
+        if provider is None:
+            return name, None, f"provider '{name}' not registered"
+        try:
+            resp = provider.generate(prompt, system_prompt)
+            return name, resp, None
+        except Exception as exc:
+            logger.warning("Provider '%s' failed: %s", name, exc)
+            return name, None, str(exc)
+
+    if strategy == "fallback":
+        # Sequential: try each in order, return first success
+        for name in names:
+            n, resp, err = _call(name)
+            if resp is not None:
+                elapsed = int((time.time() - start) * 1000)
+                return {
+                    "response": resp,
+                    "provider": n,
+                    "strategy": "fallback",
+                    "elapsed_ms": elapsed,
+                }
+        return {"error": "all providers failed", "strategy": "fallback"}
+
+    # Parallel execution for voting / fastest / quality
+    results: list[tuple[str, str | None, str | None]] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(names)) as executor:
+        futures = {executor.submit(_call, n): n for n in names}
+
+        if strategy == "fastest":
+            # Return as soon as the first success comes back
+            for future in concurrent.futures.as_completed(futures):
+                name, resp, err = future.result()
+                if resp is not None:
+                    elapsed = int((time.time() - start) * 1000)
+                    # Cancel remaining futures (best-effort)
+                    for f in futures:
+                        f.cancel()
+                    return {
+                        "response": resp,
+                        "provider": name,
+                        "strategy": "fastest",
+                        "elapsed_ms": elapsed,
+                    }
+            # All failed
+            return {"error": "all providers failed", "strategy": "fastest"}
+
+        # Wait for all (voting / quality)
+        for future in concurrent.futures.as_completed(futures):
+            results.append(future.result())
+
+    elapsed = int((time.time() - start) * 1000)
+    successes = [(n, r) for n, r, e in results if r is not None]
+
+    if not successes:
+        return {"error": "all providers failed", "strategy": strategy}
+
+    if strategy == "voting":
+        from collections import Counter
+        votes = Counter(r for _, r in successes)
+        winner = votes.most_common(1)[0][0]
+        winning_provider = next(n for n, r in successes if r == winner)
+        return {
+            "response": winner,
+            "provider": winning_provider,
+            "strategy": "voting",
+            "votes": dict(votes),
+            "elapsed_ms": elapsed,
+        }
+
+    if strategy == "quality":
+        # Simple heuristic: longest response is richest
+        best_name, best_resp = max(successes, key=lambda x: len(x[1]))
+        return {
+            "response": best_resp,
+            "provider": best_name,
+            "strategy": "quality",
+            "elapsed_ms": elapsed,
+        }
+
+    # Default: return first success
+    name, resp = successes[0]
+    return {
+        "response": resp,
+        "provider": name,
+        "strategy": strategy,
+        "elapsed_ms": elapsed,
+    }
+
+
+# ===========================================================================
 # LLM Gateway (Singleton + Thread Lock)
 # ===========================================================================
 class LLMGateway:
@@ -588,6 +753,7 @@ class LLMGateway:
         self._initialized = True
         self.logger = logging.getLogger("LLMGateway")
         self.provider = None
+        self.provider_pool = ProviderPool()
         self._usage = {
             "calls": 0,
             "calls_today": 0,
@@ -919,6 +1085,20 @@ class LLMGateway:
                 routed_provider, exc,
             )
             return self.generate(prompt, system_prompt, trace_name, metadata, trace_id)
+
+    def generate_multi(
+        self,
+        prompt: str,
+        system_prompt: str,
+        *,
+        strategy: str = "voting",
+        provider_names: list[str] | None = None,
+    ) -> dict:
+        """Delegate to generate_parallel using this gateway's provider_pool."""
+        return generate_parallel(
+            self.provider_pool, prompt, system_prompt,
+            strategy=strategy, provider_names=provider_names,
+        )
 
     def _maybe_reset_daily(self) -> None:
         """Reset calls_today when we cross a UTC midnight boundary."""
