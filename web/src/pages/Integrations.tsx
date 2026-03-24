@@ -56,7 +56,7 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
 
   if (result) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center space-y-4">
           <div className="text-4xl">🔗</div>
           <h3 className="text-lg font-semibold text-gray-800">Connection URL Ready</h3>
@@ -87,7 +87,7 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">

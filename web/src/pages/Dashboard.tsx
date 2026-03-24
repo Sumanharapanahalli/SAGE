@@ -244,7 +244,7 @@ function PendingApprovalsPanel() {
           <Clock size={14} className="text-yellow-400" />
           Pending Approvals
           {proposals.length > 0 && (
-            <span className="ml-1 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded-full">
+            <span className="ml-1 bg-yellow-500 text-zinc-900 text-xs font-bold px-1.5 py-0.5 rounded-full">
               {proposals.length}
             </span>
           )}
