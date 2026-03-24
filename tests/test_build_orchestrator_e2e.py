@@ -139,7 +139,10 @@ def _build_openswe_result(files, tier="llm_react"):
 @pytest.fixture
 def orchestrator():
     """Fresh BuildOrchestrator instance for each test."""
-    return BuildOrchestrator()
+    import tempfile
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp.close()
+    return BuildOrchestrator(checkpoint_db=tmp.name)
 
 
 @pytest.fixture
@@ -338,7 +341,7 @@ class TestFullPipeline:
                 "solution_name": "test",
             }
             # Call the real _decompose
-            orch = BuildOrchestrator()
+            orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
             plan = orch._decompose(run)
 
             assert len(plan) == 2
@@ -396,6 +399,7 @@ class TestReActIteration:
 
         mock_llm = MagicMock()
         mock_llm.generate = MagicMock(side_effect=mock_llm_generate)
+        mock_llm.generate_for_task = MagicMock(side_effect=lambda task_type, prompt, system_prompt, trace_name="", **kw: mock_llm_generate(prompt, system_prompt, trace_name))
 
         runner = OpenSWERunner()
         # Force tier 3 by clearing openswe url and breaking langgraph
@@ -427,8 +431,8 @@ class TestReActIteration:
             # Verify the merged app.py has error handling (from iteration 2)
             assert "except Exception" in result["code"]
 
-            # Verify LLM was called exactly twice
-            assert mock_llm.generate.call_count == 2
+            # Verify LLM was called exactly twice (via generate_for_task)
+            assert mock_llm.generate_for_task.call_count == 2
 
 
 # ---------------------------------------------------------------------------
@@ -531,7 +535,7 @@ class TestWaveExecution:
             {"step": 6, "task_type": "FRONTEND", "description": "Dashboard UI", "depends_on": [4]},
         ]
 
-        orch = BuildOrchestrator()
+        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
         waves = orch._compute_waves(plan)
 
         assert len(waves) == 3
@@ -556,7 +560,7 @@ class TestWaveExecution:
             {"step": 3, "task_type": "TESTS", "description": "C", "depends_on": []},
         ]
 
-        orch = BuildOrchestrator()
+        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
         waves = orch._compute_waves(plan)
 
         assert len(waves) == 1
@@ -571,7 +575,7 @@ class TestWaveExecution:
             {"step": 4, "task_type": "CONFIG", "description": "D", "depends_on": [3]},
         ]
 
-        orch = BuildOrchestrator()
+        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
         waves = orch._compute_waves(plan)
 
         assert len(waves) == 4
@@ -586,7 +590,7 @@ class TestWaveExecution:
             {"step": 2, "task_type": "FRONTEND", "description": "B", "depends_on": [1]},
         ]
 
-        orch = BuildOrchestrator()
+        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
         waves = orch._compute_waves(plan)
 
         # Should still produce waves (forced execution)
@@ -599,7 +603,7 @@ class TestWaveExecution:
 
     def test_empty_plan(self):
         """Empty plan → no waves."""
-        orch = BuildOrchestrator()
+        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
         waves = orch._compute_waves([])
         assert waves == []
 
@@ -668,11 +672,13 @@ class TestErrorRecovery:
         """
         from src.integrations.openswe_runner import OpenSWERunner
 
-        mock_llm = MagicMock()
-        mock_llm.generate = MagicMock(return_value=_make_react_response(
+        react_response = _make_react_response(
             files=[{"path": "app.py", "content": "print('hello')"}],
             status="DONE",
-        ))
+        )
+        mock_llm = MagicMock()
+        mock_llm.generate = MagicMock(return_value=react_response)
+        mock_llm.generate_for_task = MagicMock(return_value=react_response)
 
         runner = OpenSWERunner()
         runner._openswe_url = ""  # No external SWE
@@ -761,6 +767,7 @@ class TestErrorRecovery:
 
         mock_llm = MagicMock()
         mock_llm.generate = MagicMock(side_effect=RuntimeError("LLM service down"))
+        mock_llm.generate_for_task = MagicMock(side_effect=RuntimeError("LLM service down"))
 
         runner = OpenSWERunner()
         runner._openswe_url = ""
@@ -952,10 +959,15 @@ class TestAPIIntegration:
         mock_orch.start.return_value = {
             "run_id": "test-reject-001",
             "state": "awaiting_plan",
+            "plan": [],
         }
         mock_orch.get_status.return_value = {
             "run_id": "test-reject-001",
             "state": "awaiting_plan",
+        }
+        mock_orch.reject.return_value = {
+            "status": "rejected",
+            "run_id": "test-reject-001",
         }
 
         orig_get = api_mod._get_build_orchestrator
@@ -964,7 +976,7 @@ class TestAPIIntegration:
             client = TestClient(app)
 
             resp = client.post("/build/start", json={
-                "product_description": "Test",
+                "product_description": "Test product for wrong state validation",
                 "solution_name": "wrong_state_test",
             })
             run_id = resp.json()["run_id"]
@@ -1014,7 +1026,7 @@ class TestEdgeCases:
 
     def test_scaffold_creates_directories(self):
         """Scaffold creates src/, tests/, docs/, config/ and writes README + AGENTS.md."""
-        orch = BuildOrchestrator()
+        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
         with tempfile.TemporaryDirectory() as tmpdir:
             workspace = os.path.join(tmpdir, "my_project")
             run = {
@@ -1036,7 +1048,7 @@ class TestEdgeCases:
 
     def test_scaffold_skips_without_workspace(self):
         """Scaffold skips when no workspace_dir."""
-        orch = BuildOrchestrator()
+        orch = BuildOrchestrator(checkpoint_db=tempfile.NamedTemporaryFile(suffix=".db", delete=False).name)
         result = orch._scaffold({"workspace_dir": ""})
         assert result["status"] == "skipped"
 

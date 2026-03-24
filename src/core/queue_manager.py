@@ -104,6 +104,111 @@ class TaskStatus:
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    BLOCKED = "blocked"  # dependency failed — cannot execute
+
+
+# ---------------------------------------------------------------------------
+# Transient error classification — retry these, not permanent errors
+# ---------------------------------------------------------------------------
+
+_TRANSIENT_PATTERNS = [
+    "timeout", "timed out", "connection refused", "connection reset",
+    "rate limit", "429", "503", "502", "504", "temporary", "unavailable",
+    "retry", "EAGAIN", "broken pipe", "connection aborted",
+]
+
+
+def _is_transient_error(error_msg: str) -> bool:
+    """Classify an error as transient (retryable) vs permanent."""
+    lower = error_msg.lower()
+    return any(p in lower for p in _TRANSIENT_PATTERNS)
+
+
+# ---------------------------------------------------------------------------
+# Loop Detection — prevents stuck agents from spinning forever
+# Inspired by DeerFlow's LoopDetectionMiddleware
+# ---------------------------------------------------------------------------
+
+class LoopDetector:
+    """Detects repeated identical task dispatches within a sliding window.
+
+    Hashes (task_type, payload_keys_sorted) for each dispatch. If the same
+    hash appears WARN_THRESHOLD times, logs a warning. At STOP_THRESHOLD,
+    raises a LoopDetectedError to force-stop the loop.
+
+    Thread-safe: uses a Lock to guard the sliding window.
+    """
+
+    WARN_THRESHOLD = 3
+    STOP_THRESHOLD = 5
+    WINDOW_SIZE = 20  # sliding window of recent dispatches
+
+    def __init__(self):
+        self._window: list[str] = []
+        self._lock = threading.Lock()
+        self.logger = logging.getLogger("LoopDetector")
+
+    def _hash_task(self, task_type: str, payload: dict) -> str:
+        """Create a deterministic hash of a task dispatch."""
+        import hashlib
+        key = json.dumps(
+            {"type": task_type, "keys": sorted(payload.keys()),
+             "vals": str(sorted(str(v)[:100] for v in payload.values()))},
+            sort_keys=True,
+        )
+        return hashlib.sha256(key.encode()).hexdigest()[:16]
+
+    def check(self, task_type: str, payload: dict) -> None:
+        """Check for loops. Raises LoopDetectedError at STOP_THRESHOLD."""
+        h = self._hash_task(task_type, payload)
+
+        with self._lock:
+            self._window.append(h)
+            if len(self._window) > self.WINDOW_SIZE:
+                self._window = self._window[-self.WINDOW_SIZE:]
+
+            count = self._window.count(h)
+
+        if count >= self.STOP_THRESHOLD:
+            msg = (
+                f"Loop detected: task_type={task_type} dispatched "
+                f"{count} times in last {self.WINDOW_SIZE} calls. Force-stopping."
+            )
+            self.logger.error(msg)
+            raise LoopDetectedError(msg)
+
+        if count >= self.WARN_THRESHOLD:
+            self.logger.warning(
+                "Possible loop: task_type=%s dispatched %d times in last %d calls",
+                task_type, count, self.WINDOW_SIZE,
+            )
+
+    def reset(self):
+        """Clear the sliding window."""
+        with self._lock:
+            self._window.clear()
+
+
+class LoopDetectedError(Exception):
+    """Raised when the LoopDetector identifies a stuck dispatch loop."""
+
+
+# ---------------------------------------------------------------------------
+# Task Timeout defaults per task type (seconds)
+# ---------------------------------------------------------------------------
+
+TASK_TIMEOUT_DEFAULTS: dict[str, int] = {
+    "ANALYZE_LOG": 120,
+    "CREATE_MR": 300,
+    "REVIEW_MR": 180,
+    "FLASH_FIRMWARE": 600,
+    "MONITOR_CHECK": 60,
+    "PLAN_TASK": 300,
+    "WORKFLOW": 600,
+    "CODE_TASK": 600,
+}
+
+DEFAULT_TASK_TIMEOUT = 300  # 5 minutes fallback
 
 
 class Task:
@@ -111,7 +216,8 @@ class Task:
 
     def __init__(self, task_type: str, payload: dict, priority: int = 5,
                  plan_trace_id: str = "", source: str = "",
-                 depends_on: Optional[List[str]] = None):
+                 depends_on: Optional[List[str]] = None,
+                 max_retries: int = 3, timeout: Optional[int] = None):
         self.task_id = str(uuid.uuid4())
         self.task_type = task_type
         self.payload = payload
@@ -128,6 +234,15 @@ class Task:
         self.depends_on: List[str] = depends_on or []
         # Wave metadata populated by ParallelTaskRunner at dispatch time
         self.metadata: dict = {}
+        # Retry tracking
+        self.retry_count: int = 0
+        self.max_retries: int = max_retries
+        self.last_error: Optional[str] = None
+        self.error_history: List[str] = []
+        # Per-task timeout in seconds (None = use default for task_type)
+        self.timeout: int = timeout or TASK_TIMEOUT_DEFAULTS.get(
+            task_type.upper(), DEFAULT_TASK_TIMEOUT
+        )
 
     def __lt__(self, other: "Task") -> bool:
         """Priority queue comparison: lower priority number = higher priority."""
@@ -146,6 +261,9 @@ class Task:
             "payload_keys": list(self.payload.keys()),
             "depends_on": self.depends_on,
             "metadata": self.metadata,
+            "retry_count": self.retry_count,
+            "max_retries": self.max_retries,
+            "timeout": self.timeout,
         }
 
 
@@ -245,6 +363,14 @@ class TaskQueue:
                 task.depends_on = json.loads(raw_depends) if raw_depends else []
                 raw_meta = row["metadata"] if "metadata" in row.keys() else None
                 task.metadata = json.loads(raw_meta) if raw_meta else {}
+                # New fields for retry/timeout — safe defaults for pre-existing tasks
+                task.retry_count = 0
+                task.max_retries = 3
+                task.last_error = None
+                task.error_history = []
+                task.timeout = TASK_TIMEOUT_DEFAULTS.get(
+                    task.task_type.upper(), DEFAULT_TASK_TIMEOUT
+                )
 
                 with self._lock:
                     self._tasks[task.task_id] = task
@@ -399,6 +525,7 @@ class TaskQueue:
                 task.status = TaskStatus.FAILED
                 task.completed_at = datetime.now(timezone.utc).isoformat()
                 task.error = error
+                task.error_history.append(error)
                 self._db_update(task)
                 self.logger.error(
                     "Task FAILED: %s (id: %s) — %s", task.task_type, task_id, error
@@ -407,6 +534,78 @@ class TaskQueue:
             self._queue.task_done()
         except ValueError:
             pass
+
+    def mark_blocked(self, task_id: str, reason: str):
+        """Mark a task as blocked due to failed dependency."""
+        with self._lock:
+            if task_id in self._tasks:
+                task = self._tasks[task_id]
+                task.status = TaskStatus.BLOCKED
+                task.error = reason
+                self._db_update(task)
+                self.logger.warning(
+                    "Task BLOCKED: %s (id: %s) — %s", task.task_type, task_id, reason
+                )
+
+    def retry_task(self, task_id: str) -> bool:
+        """Re-queue a failed task if it has retries remaining and the error is transient.
+
+        Returns True if the task was re-queued, False otherwise.
+        """
+        with self._lock:
+            task = self._tasks.get(task_id)
+            if not task:
+                return False
+            if task.status != TaskStatus.FAILED:
+                return False
+            if task.retry_count >= task.max_retries:
+                self.logger.info(
+                    "Task %s exhausted retries (%d/%d)",
+                    task_id, task.retry_count, task.max_retries,
+                )
+                return False
+            if not _is_transient_error(task.error or ""):
+                self.logger.info(
+                    "Task %s has permanent error, not retrying: %s",
+                    task_id, (task.error or "")[:100],
+                )
+                return False
+
+            task.retry_count += 1
+            task.status = TaskStatus.PENDING
+            task.started_at = None
+            task.completed_at = None
+            task.last_error = task.error
+            task.error = None
+            self._db_update(task)
+
+        # Backoff: 2^retry_count seconds (2, 4, 8...)
+        backoff = min(2 ** task.retry_count, 60)
+        self.logger.info(
+            "Retrying task %s (attempt %d/%d) after %ds backoff",
+            task_id, task.retry_count, task.max_retries, backoff,
+        )
+        time.sleep(backoff)
+        self._queue.put((task.priority, task.created_at, task))
+        return True
+
+    def get_blocked_dependents(self, failed_task_id: str) -> List[str]:
+        """Find all tasks that depend on the failed task and block them."""
+        blocked_ids = []
+        with self._lock:
+            for tid, task in self._tasks.items():
+                if failed_task_id in task.depends_on and task.status == TaskStatus.PENDING:
+                    blocked_ids.append(tid)
+        return blocked_ids
+
+    def propagate_failure(self, failed_task_id: str) -> List[str]:
+        """Block all tasks depending on a failed task. Returns list of blocked task IDs."""
+        blocked = self.get_blocked_dependents(failed_task_id)
+        for tid in blocked:
+            self.mark_blocked(tid, f"Dependency {failed_task_id} failed")
+            # Recursively block downstream
+            blocked.extend(self.propagate_failure(tid))
+        return blocked
 
     def get_status(self, task_id: str) -> Optional[dict]:
         """
@@ -437,12 +636,20 @@ class TaskWorker(threading.Thread):
     Background worker thread that processes tasks from the TaskQueue.
     Dispatches to the appropriate agent based on task_type.
     Single-lane: processes one task at a time (by design).
+
+    Enhanced with:
+    - Loop detection (DeerFlow-inspired)
+    - Retry with exponential backoff for transient errors
+    - Per-task timeout enforcement
+    - Error-to-context feedback for LLM self-correction
+    - Dependency failure propagation
     """
 
     def __init__(self, task_queue: TaskQueue, name: str = "TaskWorker"):
         super().__init__(name=name, daemon=True)
         self._queue = task_queue
         self._running = False
+        self._loop_detector = LoopDetector()
         self.logger = logging.getLogger("TaskWorker")
 
     def run(self):
@@ -457,17 +664,91 @@ class TaskWorker(threading.Thread):
 
             self.logger.info("Processing task: %s (id: %s)", task.task_type, task.task_id)
             try:
-                result = self._dispatch(task)
+                # Loop detection
+                self._loop_detector.check(task.task_type, task.payload)
+
+                # Execute with timeout
+                result = self._dispatch_with_timeout(task)
                 self._queue.mark_done(task.task_id, result)
+            except LoopDetectedError as e:
+                self.logger.error("Loop detected for task %s: %s", task.task_id, e)
+                self._queue.mark_failed(task.task_id, f"LOOP_DETECTED: {e}")
+                self._queue.propagate_failure(task.task_id)
+            except _TaskTimeoutError as e:
+                self.logger.error("Task %s timed out after %ds", task.task_id, task.timeout)
+                self._queue.mark_failed(task.task_id, f"TIMEOUT: {e}")
+                # Retry on timeout (transient)
+                if not self._queue.retry_task(task.task_id):
+                    self._queue.propagate_failure(task.task_id)
             except Exception as e:
-                self.logger.error("Task %s failed with exception: %s", task.task_id, e)
-                self._queue.mark_failed(task.task_id, str(e))
+                error_msg = str(e)
+                self.logger.error("Task %s failed: %s", task.task_id, error_msg)
+                self._queue.mark_failed(task.task_id, error_msg)
+
+                # Auto-retry transient errors
+                if _is_transient_error(error_msg):
+                    if not self._queue.retry_task(task.task_id):
+                        self._queue.propagate_failure(task.task_id)
+                else:
+                    self._queue.propagate_failure(task.task_id)
 
         self.logger.info("TaskWorker stopped.")
+
+    def _dispatch_with_timeout(self, task: Task) -> Any:
+        """Execute dispatch with a per-task timeout.
+
+        Uses a daemon thread + Event to enforce the timeout. If the task
+        exceeds its timeout, raises _TaskTimeoutError.
+        """
+        result_holder: dict = {}
+        error_holder: dict = {}
+        done_event = threading.Event()
+
+        def _run():
+            try:
+                result_holder["result"] = self._dispatch(task)
+            except Exception as exc:
+                error_holder["error"] = exc
+            finally:
+                done_event.set()
+
+        worker_thread = threading.Thread(target=_run, daemon=True)
+        worker_thread.start()
+
+        if not done_event.wait(timeout=task.timeout):
+            raise _TaskTimeoutError(
+                f"Task {task.task_type} (id={task.task_id}) exceeded "
+                f"timeout of {task.timeout}s"
+            )
+
+        if "error" in error_holder:
+            raise error_holder["error"]
+
+        return result_holder.get("result")
 
     def stop(self):
         """Signals the worker to stop after completing the current task."""
         self._running = False
+
+    def build_error_context(self, task: Task) -> str:
+        """Build error context from previous failures for LLM self-correction.
+
+        When a task is being retried, include the error history so the LLM
+        can reason about what went wrong and try a different approach.
+        """
+        error_history = getattr(task, "error_history", [])
+        if not error_history:
+            return ""
+        retry_count = getattr(task, "retry_count", 0)
+        max_retries = getattr(task, "max_retries", 3)
+        lines = [
+            f"\n[RETRY CONTEXT — Attempt {retry_count + 1}/{max_retries}]",
+            "Previous attempts failed with these errors:",
+        ]
+        for i, err in enumerate(error_history[-3:], 1):  # last 3 errors
+            lines.append(f"  Attempt {i}: {err[:200]}")
+        lines.append("Adjust your approach to avoid these errors.")
+        return "\n".join(lines)
 
     def _dispatch(self, task: Task) -> Any:
         """
@@ -481,6 +762,18 @@ class TaskWorker(threading.Thread):
         """
         task_type = task.task_type.upper()
         payload = task.payload
+
+        # Inject error context for retried tasks (error-to-context feedback)
+        error_ctx = self.build_error_context(task)
+        if error_ctx:
+            payload = {**payload}  # shallow copy to avoid mutating original
+            existing = payload.get("log_entry", payload.get("task", payload.get("description", "")))
+            if isinstance(existing, str) and existing:
+                # Append error context to the primary text field
+                for key in ("log_entry", "task", "description"):
+                    if key in payload:
+                        payload[key] = payload[key] + error_ctx
+                        break
 
         from src.core.project_loader import project_config
         hooks = project_config.get_task_hooks(task_type)
@@ -578,6 +871,10 @@ class TaskWorker(threading.Thread):
                 self.logger.warning("Subtask fanout failed for %s: %s", task.task_id, exc)
 
         return result
+
+
+class _TaskTimeoutError(Exception):
+    """Raised when a task exceeds its configured timeout."""
 
 
 # ---------------------------------------------------------------------------
@@ -687,8 +984,9 @@ class ParallelTaskRunner:
 
     def _run_one(self, worker: TaskWorker, task: Task) -> dict:
         """
-        Execute a single task via the worker's _dispatch() method.
+        Execute a single task via the worker's _dispatch_with_timeout() method.
         Updates task status on the queue and returns a result summary.
+        Handles retry for transient errors and dependency propagation.
         This method is called from a thread-pool thread.
         """
         task.started_at = datetime.now(timezone.utc).isoformat()
@@ -697,13 +995,28 @@ class ParallelTaskRunner:
             self._queue._db_update(task)
 
         try:
-            result = worker._dispatch(task)
+            result = worker._dispatch_with_timeout(task)
             self._queue.mark_done(task.task_id, result)
             return {"task_id": task.task_id, "status": TaskStatus.COMPLETED, "result": result}
-        except Exception as exc:
-            self.logger.error("Parallel task %s failed: %s", task.task_id, exc)
-            self._queue.mark_failed(task.task_id, str(exc))
-            return {"task_id": task.task_id, "status": TaskStatus.FAILED, "error": str(exc)}
+        except (_TaskTimeoutError, Exception) as exc:
+            error_msg = str(exc)
+            self.logger.error("Parallel task %s failed: %s", task.task_id, error_msg)
+            self._queue.mark_failed(task.task_id, error_msg)
+
+            # Attempt retry for transient errors
+            if _is_transient_error(error_msg):
+                retried = self._queue.retry_task(task.task_id)
+                if retried:
+                    return {"task_id": task.task_id, "status": "retrying", "error": error_msg}
+
+            # Propagate failure to dependents
+            blocked = self._queue.propagate_failure(task.task_id)
+            return {
+                "task_id": task.task_id,
+                "status": TaskStatus.FAILED,
+                "error": error_msg,
+                "blocked_dependents": blocked,
+            }
 
     def run_wave(self, tasks: List[Task], wave_id: int, worker: TaskWorker) -> List[dict]:
         """
@@ -803,20 +1116,45 @@ class ParallelTaskRunner:
         with self._state_lock:
             self._parallel_active = True
 
+        failed_ids: set = set()
+
         try:
             while remaining:
                 # Collect tasks whose dependencies are all satisfied
-                wave_tasks = [
-                    t for t in remaining
-                    if set(t.depends_on).issubset(completed_ids)
-                ]
+                wave_tasks = []
+                blocked_tasks = []
+                still_waiting = []
+
+                for t in remaining:
+                    dep_set = set(t.depends_on)
+                    # Check if any dependency failed — block this task
+                    if dep_set & failed_ids:
+                        blocked_tasks.append(t)
+                    elif dep_set.issubset(completed_ids):
+                        wave_tasks.append(t)
+                    else:
+                        still_waiting.append(t)
+
+                # Block tasks whose dependencies failed
+                for t in blocked_tasks:
+                    failed_deps = list(set(t.depends_on) & failed_ids)
+                    self._queue.mark_blocked(
+                        t.task_id,
+                        f"Dependencies failed: {failed_deps}",
+                    )
+                    failed_ids.add(t.task_id)
+
+                if not wave_tasks and not still_waiting:
+                    break  # all remaining are blocked
+
                 if not wave_tasks:
                     # Dependency cycle or unresolvable — fall back to sequential remainder
                     self.logger.warning(
                         "Wave scheduler: %d task(s) have unresolvable dependencies, "
-                        "running sequentially.", len(remaining)
+                        "running sequentially.", len(still_waiting)
                     )
-                    wave_tasks = remaining
+                    wave_tasks = still_waiting
+                    still_waiting = []
 
                 with self._state_lock:
                     self._active_wave = wave_id
@@ -828,10 +1166,12 @@ class ParallelTaskRunner:
                 for res in results:
                     if res["status"] == TaskStatus.COMPLETED:
                         completed_ids.add(res["task_id"])
+                    elif res["status"] == TaskStatus.FAILED:
+                        failed_ids.add(res["task_id"])
 
                 # Remove dispatched tasks from remaining
                 dispatched_ids = {t.task_id for t in wave_tasks}
-                remaining = [t for t in remaining if t.task_id not in dispatched_ids]
+                remaining = [t for t in still_waiting if t.task_id not in dispatched_ids]
                 wave_id += 1
         finally:
             with self._state_lock:
@@ -843,6 +1183,7 @@ class ParallelTaskRunner:
 # ---------------------------------------------------------------------------
 # Global instances
 # ---------------------------------------------------------------------------
+loop_detector = LoopDetector()
 parallel_config = ParallelConfig()
 task_queue = TaskQueue()
 task_worker = TaskWorker(task_queue)

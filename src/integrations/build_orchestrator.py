@@ -266,6 +266,52 @@ WORKFORCE_REGISTRY = {
 }
 
 # ---------------------------------------------------------------------------
+# Artifact Type Registry — output expectations per task type
+# Teaches the system what kind of output each task should produce,
+# enabling type-aware validation, file extension checks, and
+# domain-specific tooling hints.
+# ---------------------------------------------------------------------------
+ARTIFACT_TYPES = {
+    # Code artifacts
+    "BACKEND":       {"category": "code", "extensions": [".py", ".go", ".rs", ".java", ".ts", ".js"], "validator": "syntax"},
+    "FRONTEND":      {"category": "code", "extensions": [".tsx", ".jsx", ".vue", ".svelte", ".html", ".css"], "validator": "syntax"},
+    "API":           {"category": "code", "extensions": [".py", ".ts", ".yaml", ".json"], "validator": "openapi"},
+    "DATABASE":      {"category": "code", "extensions": [".sql", ".py", ".prisma"], "validator": "syntax"},
+    "TESTS":         {"category": "code", "extensions": [".py", ".ts", ".js", ".spec"], "validator": "syntax"},
+    "ML_MODEL":      {"category": "code", "extensions": [".py", ".ipynb", ".yaml"], "validator": "syntax"},
+    "DATA":          {"category": "code", "extensions": [".py", ".sql", ".yaml"], "validator": "syntax"},
+    "AGENTIC":       {"category": "code", "extensions": [".py", ".ts"], "validator": "syntax"},
+    "SECURITY":      {"category": "code", "extensions": [".py", ".yaml", ".json"], "validator": "syntax"},
+    # Hardware/firmware artifacts
+    "FIRMWARE":      {"category": "hardware", "extensions": [".c", ".h", ".cpp", ".ld", ".cmake"], "validator": "syntax",
+                      "mcp_tools": ["kicad", "openocd", "gcc-arm"]},
+    "PCB_DESIGN":    {"category": "hardware", "extensions": [".kicad_pcb", ".kicad_sch", ".gbr", ".drl"], "validator": "gerber",
+                      "mcp_tools": ["kicad", "drc_checker"]},
+    "EMBEDDED_TEST": {"category": "hardware", "extensions": [".c", ".py", ".robot"], "validator": "syntax",
+                      "mcp_tools": ["openocd", "gdb"]},
+    "MECHANICAL":    {"category": "hardware", "extensions": [".step", ".stl", ".dxf"], "validator": "cad",
+                      "mcp_tools": ["freecad", "openscad"]},
+    # Infrastructure artifacts
+    "INFRA":         {"category": "infra", "extensions": [".tf", ".yaml", ".yml", ".Dockerfile"], "validator": "syntax"},
+    "DEVOPS":        {"category": "infra", "extensions": [".yaml", ".yml", ".sh", ".Dockerfile"], "validator": "syntax"},
+    "CONFIG":        {"category": "infra", "extensions": [".yaml", ".yml", ".toml", ".json", ".env"], "validator": "syntax"},
+    # Document artifacts
+    "DOCS":          {"category": "document", "extensions": [".md", ".rst", ".txt"], "validator": "prose"},
+    "COMPLIANCE":    {"category": "document", "extensions": [".md", ".pdf", ".docx"], "validator": "prose"},
+    "REGULATORY":    {"category": "document", "extensions": [".md", ".pdf", ".docx"], "validator": "prose"},
+    "LEGAL":         {"category": "document", "extensions": [".md", ".pdf", ".docx"], "validator": "prose"},
+    "SAFETY":        {"category": "document", "extensions": [".md", ".xlsx", ".pdf"], "validator": "prose"},
+    # Design artifacts
+    "UX_DESIGN":     {"category": "design", "extensions": [".fig", ".sketch", ".html", ".md"], "validator": "prose"},
+    # Business artifacts
+    "BUSINESS":      {"category": "document", "extensions": [".md", ".xlsx", ".pptx"], "validator": "prose"},
+    "MARKETING":     {"category": "document", "extensions": [".md", ".html"], "validator": "prose"},
+    "PRODUCT":       {"category": "document", "extensions": [".md", ".yaml"], "validator": "prose"},
+    "OPERATIONS":    {"category": "document", "extensions": [".md", ".yaml"], "validator": "prose"},
+    "LOCALIZATION":  {"category": "code", "extensions": [".json", ".yaml", ".po", ".xliff"], "validator": "syntax"},
+}
+
+# ---------------------------------------------------------------------------
 # Agent Roles Registry — skills, tools, MCP servers per role
 # Used by "Hire an Agent" flow + _build_agent_context()
 # ---------------------------------------------------------------------------
@@ -1137,12 +1183,149 @@ class BuildOrchestrator:
     Orchestrates the full 0→1→N build pipeline.
 
     Thread-safe via a lock on the runs dict.
+
+    Enhanced with:
+    - SQLite checkpointing for crash recovery (DeerFlow-inspired)
+    - Context summarization for long task chains
+    - Dependency failure propagation
     """
 
-    def __init__(self):
+    # Maximum context length (chars) before summarization kicks in
+    MAX_CONTEXT_LENGTH = 8000
+
+    def __init__(self, checkpoint_db: str = ""):
         self.logger = logging.getLogger("BuildOrchestrator")
         self._runs: dict[str, dict] = {}
         self._lock = threading.Lock()
+        self._checkpoint_db = checkpoint_db or os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "data", "build_checkpoints.db",
+        )
+        self._init_checkpoint_db()
+        self._restore_runs()
+
+    # ------------------------------------------------------------------
+    # Checkpoint persistence (SQLite-backed crash recovery)
+    # ------------------------------------------------------------------
+
+    def _init_checkpoint_db(self):
+        """Create the build_checkpoints table if it does not exist."""
+        try:
+            import sqlite3
+            os.makedirs(os.path.dirname(self._checkpoint_db), exist_ok=True)
+            conn = sqlite3.connect(self._checkpoint_db)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS build_runs (
+                    run_id     TEXT PRIMARY KEY,
+                    state      TEXT NOT NULL,
+                    data       TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                )
+            """)
+            conn.commit()
+            conn.close()
+            self.logger.info("Build checkpoint DB initialised at %s", self._checkpoint_db)
+        except Exception as exc:
+            self.logger.warning("Checkpoint DB init failed (non-fatal): %s", exc)
+
+    def _checkpoint(self, run: dict):
+        """Persist current run state to SQLite for crash recovery."""
+        try:
+            import sqlite3
+            # Serialize run — skip non-serialisable fields
+            safe_run = {k: v for k, v in run.items() if k != "_thread"}
+            data = json.dumps(safe_run, default=str)
+            conn = sqlite3.connect(self._checkpoint_db)
+            conn.execute(
+                "INSERT OR REPLACE INTO build_runs (run_id, state, data, updated_at) "
+                "VALUES (?, ?, ?, ?)",
+                (run["run_id"], run["state"], data, run.get("updated_at", "")),
+            )
+            conn.commit()
+            conn.close()
+            self.logger.debug("Checkpointed run %s at state=%s", run["run_id"], run["state"])
+        except Exception as exc:
+            self.logger.warning("Checkpoint failed for run %s: %s", run.get("run_id"), exc)
+
+    def _restore_runs(self):
+        """Restore in-progress builds from checkpoint DB on startup."""
+        try:
+            import sqlite3
+            conn = sqlite3.connect(self._checkpoint_db)
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                "SELECT * FROM build_runs WHERE state NOT IN ('completed', 'failed', 'rejected')"
+            ).fetchall()
+            conn.close()
+
+            restored = 0
+            for row in rows:
+                try:
+                    run = json.loads(row["data"])
+                    with self._lock:
+                        self._runs[run["run_id"]] = run
+                    restored += 1
+                except Exception as exc:
+                    self.logger.warning("Failed to restore run %s: %s", row["run_id"], exc)
+
+            if restored:
+                self.logger.info("Restored %d in-progress build run(s) from checkpoint", restored)
+        except Exception as exc:
+            self.logger.debug("Checkpoint restore skipped: %s", exc)
+
+    # ------------------------------------------------------------------
+    # Context Summarization (DeerFlow-inspired)
+    # ------------------------------------------------------------------
+
+    def _summarize_context(self, results: list[dict]) -> str:
+        """Compress completed task results into a concise summary.
+
+        When the accumulated context from prior wave results exceeds
+        MAX_CONTEXT_LENGTH, summarize to keep the LLM context window lean.
+        Returns a summary string suitable for injection into the next agent's context.
+        """
+        if not results:
+            return ""
+
+        # Build full context
+        parts = []
+        for r in results:
+            task = r.get("task", {})
+            result = r.get("result", {})
+            parts.append(
+                f"[{task.get('task_type', '?')}] {task.get('description', '')[:100]} "
+                f"→ status={result.get('status', '?')}, "
+                f"files={result.get('files_changed', [])[:3]}"
+            )
+
+        full_context = "\n".join(parts)
+
+        if len(full_context) <= self.MAX_CONTEXT_LENGTH:
+            return full_context
+
+        # Summarize: keep task types, status, and key metrics
+        summary_parts = [
+            f"[SUMMARIZED — {len(results)} prior tasks]",
+            f"Completed: {sum(1 for r in results if r.get('result', {}).get('status') == 'completed')}",
+            f"Failed: {sum(1 for r in results if r.get('result', {}).get('status') in ('error', 'failed'))}",
+        ]
+        # Include last 3 results in full detail
+        for r in results[-3:]:
+            task = r.get("task", {})
+            result = r.get("result", {})
+            summary_parts.append(
+                f"  {task.get('task_type', '?')}: {task.get('description', '')[:80]} "
+                f"→ {result.get('status', '?')}"
+            )
+
+        # Include all unique file paths
+        all_files = set()
+        for r in results:
+            all_files.update(r.get("result", {}).get("files_changed", []))
+        if all_files:
+            summary_parts.append(f"Files touched: {sorted(all_files)[:20]}")
+
+        return "\n".join(summary_parts)
 
     # ------------------------------------------------------------------
     # Public API
@@ -1199,6 +1382,7 @@ class BuildOrchestrator:
 
         with self._lock:
             self._runs[run_id] = run
+        self._checkpoint(run)
 
         # Decompose via planner
         try:
@@ -1230,6 +1414,7 @@ class BuildOrchestrator:
             # Move to awaiting human approval
             run["state"] = "awaiting_plan"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
+            self._checkpoint(run)
 
             self._audit(run_id, "BUILD_AWAITING_PLAN_APPROVAL", json.dumps({
                 "task_count": len(plan),
@@ -1305,6 +1490,7 @@ class BuildOrchestrator:
             # Await final human approval
             run["state"] = "awaiting_build"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
+            self._checkpoint(run)
 
             self._audit(run_id, "BUILD_AWAITING_BUILD_APPROVAL", json.dumps({
                 "agent_count": len(run["agent_results"]),
@@ -1336,6 +1522,7 @@ class BuildOrchestrator:
 
             run["state"] = "completed"
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
+            self._checkpoint(run)
 
             self._audit(run_id, "BUILD_COMPLETED", json.dumps({
                 "solution": run["solution_name"],
@@ -1666,8 +1853,10 @@ class BuildOrchestrator:
         a dependency graph, then groups tasks into waves where each wave
         contains only tasks whose dependencies have already completed.
 
-        Within each wave, tasks execute in parallel (sequential in this
-        implementation — true parallelism via threading is a future enhancement).
+        Enhanced with:
+        - Context summarization between waves (DeerFlow-inspired)
+        - Per-wave checkpointing for crash recovery
+        - Dependency failure propagation (skip blocked tasks)
 
         Coordinator routing: each task's 'agent_role' field determines which
         specialist agent handles it (falls back to OpenSWE for all).
@@ -1677,19 +1866,49 @@ class BuildOrchestrator:
         openswe = get_openswe_runner()
         results = []
         plan = run.get("plan", [])
+        failed_steps: set = set()
 
         # Build dependency-aware waves
         waves = self._compute_waves(plan)
 
         for wave_num, wave in enumerate(waves):
+            # Filter out tasks whose dependencies failed
+            executable = []
+            for task in wave:
+                deps = task.get("depends_on", [])
+                if any(d in failed_steps for d in deps):
+                    self.logger.warning(
+                        "Skipping task step=%s (dependency failed): %s",
+                        task.get("step"), task.get("task_type"),
+                    )
+                    results.append({
+                        "task": task,
+                        "result": {"status": "blocked", "reason": "dependency_failed"},
+                        "step": task.get("step", 0),
+                        "wave": wave_num,
+                        "agent_role": task.get("agent_role", "developer"),
+                    })
+                    failed_steps.add(task.get("step", 0))
+                    continue
+                executable.append(task)
+
+            if not executable:
+                self.logger.warning("Wave %d: all tasks blocked, skipping", wave_num)
+                continue
+
             self.logger.info(
                 "Executing wave %d/%d: %d task(s) [%s]",
-                wave_num + 1, len(waves), len(wave),
-                ", ".join(t.get("task_type", "?") for t in wave),
+                wave_num + 1, len(waves), len(executable),
+                ", ".join(t.get("task_type", "?") for t in executable),
             )
 
+            # Inject summarized context from prior waves
+            prior_context = self._summarize_context(results)
+            if prior_context:
+                run["_prior_wave_context"] = prior_context
+
             wave_results = []
-            for task in wave:
+            for task in executable:
                 # Coordinator pattern: route to specialist agent
                 agent_role = task.get("agent_role", "developer")
                 result = self._route_to_agent(task, agent_role, openswe, run)
@@ -1714,6 +1933,11 @@ class BuildOrchestrator:
 
             results.extend(wave_results)
 
+            # Track failed steps for dependency propagation
+            for wr in wave_results:
+                if wr["result"].get("status") in ("error", "failed"):
+                    failed_steps.add(wr["task"].get("step", 0))
+
             # Anti-drift checkpoint: verify wave outputs align with plan intent
             for wr in wave_results:
                 if not self._check_drift(wr["task"], wr["result"]):
@@ -1734,18 +1958,26 @@ class BuildOrchestrator:
                         }),
                     )
 
+            # Checkpoint after each wave for crash recovery
+            run["agent_results"] = results
+            run["_completed_waves"] = wave_num + 1
+            self._checkpoint(run)
+
         # Count drift warnings and add to run metadata
         drift_count = sum(1 for r in results if r.get("drift_warning"))
         if drift_count:
             run["drift_warnings"] = drift_count
 
-        # Count failures and update run state accordingly
-        failed = [r for r in results if r["result"].get("status") == "error"]
+        # Count failures (including blocked) and update run state accordingly
+        failed = [r for r in results if r["result"].get("status") in ("error", "failed", "blocked")]
         if failed and len(failed) == len(results):
             run["state"] = "failed"
-            run["error"] = f"All {len(failed)} agent tasks failed"
+            run["error"] = f"All {len(failed)} agent tasks failed or blocked"
         elif failed:
-            self.logger.warning("%d/%d tasks failed", len(failed), len(results))
+            self.logger.warning(
+                "%d/%d tasks failed/blocked (completed: %d)",
+                len(failed), len(results), len(results) - len(failed),
+            )
 
         run["agent_results"] = results
 
@@ -1817,11 +2049,10 @@ class BuildOrchestrator:
         task_type = task.get("task_type", "")
         files_changed = result.get("files_changed", [])
 
-        # Task types that should produce files
+        # Task types that should produce files — derived from ARTIFACT_TYPES registry
         code_producing_types = {
-            "BACKEND", "FRONTEND", "TESTS", "DATABASE", "API", "CONFIG",
-            "INFRA", "FIRMWARE", "EMBEDDED_TEST", "AGENTIC", "DATA",
-            "ML_MODEL", "SECURITY", "DEVOPS",
+            tt for tt, info in ARTIFACT_TYPES.items()
+            if info.get("category") in ("code", "hardware", "infra")
         }
 
         # Check: code-producing tasks should have files or code
@@ -1904,6 +2135,14 @@ class BuildOrchestrator:
         # Pass acceptance criteria through — the ReAct loop uses them
         # in its OBSERVATION step for self-verification
         enriched_task = {**task}
+
+        # Inject summarized context from prior waves for continuity
+        prior_ctx = run.get("_prior_wave_context", "")
+        if prior_ctx:
+            enriched_task["description"] = (
+                f"{task.get('description', '')}\n\n"
+                f"[Prior wave context]\n{prior_ctx[:2000]}"
+            )
         acceptance = task.get("acceptance_criteria", [])
         if acceptance:
             enriched_task["description"] = (
@@ -1911,6 +2150,24 @@ class BuildOrchestrator:
                 f"Acceptance Criteria (verify in OBSERVATION step):\n"
                 + "\n".join(f"- {c}" for c in acceptance)
             )
+
+        # Artifact type awareness — enrich context with expected output format
+        artifact_info = ARTIFACT_TYPES.get(task_type, {})
+        if artifact_info:
+            extensions = ", ".join(artifact_info.get("extensions", []))
+            category = artifact_info.get("category", "code")
+            mcp_tools = artifact_info.get("mcp_tools", [])
+
+            artifact_hint = f"\n\nExpected output: {category} artifact(s) with extensions: {extensions}"
+            if mcp_tools:
+                artifact_hint += f"\nDomain tools available: {', '.join(mcp_tools)}"
+            enriched_task["description"] = enriched_task.get("description", "") + artifact_hint
+
+            # Add to payload for downstream processing
+            enriched_task.setdefault("payload", {})
+            enriched_task["payload"]["artifact_category"] = category
+            enriched_task["payload"]["expected_extensions"] = artifact_info.get("extensions", [])
+            enriched_task["payload"]["standards"] = run.get("detected_domains", [])
 
         return openswe.build(
             task=enriched_task,
@@ -1968,15 +2225,75 @@ class BuildOrchestrator:
     # Critic integration
     # ------------------------------------------------------------------
 
+    def _revise_plan(self, plan: list, review: dict) -> list:
+        """
+        Revision function for the actor-critic loop.
+
+        Takes the current plan and critic review, asks the LLM to produce
+        a revised plan addressing the critic's feedback. Returns the
+        revised plan (list of task dicts).
+        """
+        from src.core.llm_gateway import llm_gateway
+
+        flaws = review.get("flaws", [])
+        suggestions = review.get("suggestions", [])
+        missing = review.get("missing", [])
+        score = review.get("score", 0)
+
+        feedback_lines = []
+        if flaws:
+            feedback_lines.append("Flaws identified:\n" + "\n".join(f"- {f}" for f in flaws))
+        if suggestions:
+            feedback_lines.append("Suggestions:\n" + "\n".join(f"- {s}" for s in suggestions))
+        if missing:
+            feedback_lines.append("Missing elements:\n" + "\n".join(f"- {m}" for m in missing))
+
+        prompt = (
+            f"You are revising a build plan that scored {score}/100.\n\n"
+            f"Critic feedback:\n{'\\n'.join(feedback_lines)}\n\n"
+            f"Current plan ({len(plan)} tasks):\n"
+            f"{json.dumps(plan[:30], indent=2, default=str)[:6000]}\n\n"
+            f"Revise the plan to address the critic's feedback. "
+            f"Return ONLY a JSON array of task objects. Each task must have: "
+            f"step, task_type, description, agent_role, depends_on, acceptance_criteria.\n"
+            f"Keep existing good tasks. Add missing ones. Fix flawed ones."
+        )
+
+        try:
+            response = llm_gateway.generate(
+                prompt,
+                "You are a build planner that outputs valid JSON arrays of task objects.",
+                trace_name="build.revise_plan",
+            )
+            # Parse JSON array from response
+            import re
+            response = response.replace("```json", "").replace("```", "").strip()
+            arr_match = re.search(r'\[[\s\S]*\]', response)
+            if arr_match:
+                revised = json.loads(arr_match.group(0))
+                if isinstance(revised, list) and len(revised) > 0:
+                    self.logger.info(
+                        "Plan revised: %d → %d tasks",
+                        len(plan), len(revised),
+                    )
+                    return revised
+        except Exception as exc:
+            self.logger.warning("Plan revision failed: %s", exc)
+
+        return plan  # Return unchanged if revision fails
+
     def _critic_review_plan(self, run: dict) -> dict:
         """
-        Review and Critique pattern with bounded evaluation.
+        Review and Critique pattern with bounded evaluation and revision loop.
 
         The critic evaluates the plan against:
         1. Completeness: does it cover all necessary components?
         2. Dependencies: are they correctly declared?
         3. Acceptance criteria: are they concrete and testable?
         4. Agent routing: are tasks assigned to appropriate specialists?
+
+        When the score is below threshold, the revise_fn is called to
+        improve the plan before the next critic iteration.
         """
         try:
             from src.agents.critic import critic_agent
@@ -1998,13 +2315,29 @@ class BuildOrchestrator:
                 f"Task acceptance criteria:\n" + "\n".join(criteria_summary[:20])
             )
 
-            return critic_agent.review_with_loop(
+            # Closure captures run so revised plans update the run in-place
+            def _revise_and_update(plan, review):
+                revised = self._revise_plan(plan, review)
+                if revised is not plan:
+                    run["plan"] = revised
+                return revised
+
+            result = critic_agent.review_with_loop(
                 review_fn="plan",
                 artifact=run["plan"],
                 description=run["product_description"],
                 threshold=run.get("critic_threshold", 70),
                 max_iterations=3,
+                revise_fn=_revise_and_update,
             )
+
+            self.logger.info(
+                "Critic plan review: %d iterations, final score %d",
+                result.get("iterations", 1),
+                result.get("final_score", 0),
+            )
+
+            return result
         except Exception as exc:
             self.logger.warning("Critic plan review failed: %s", exc)
             return {"passed": False, "critic_error": True, "final_score": 0, "error": str(exc), "history": []}

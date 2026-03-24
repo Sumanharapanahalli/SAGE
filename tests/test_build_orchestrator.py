@@ -61,8 +61,11 @@ pytestmark = pytest.mark.unit
 # ---------------------------------------------------------------------------
 
 def _fresh_orchestrator():
+    import tempfile
     from src.integrations.build_orchestrator import BuildOrchestrator
-    return BuildOrchestrator()
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp.close()
+    return BuildOrchestrator(checkpoint_db=tmp.name)
 
 
 def _client():
