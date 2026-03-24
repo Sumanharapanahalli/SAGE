@@ -35,6 +35,26 @@ llm:
   temperature: 0.1                       # Low temp for deterministic outputs
   max_tokens: 3072                       # Context window
 
+  # --- Multi-LLM Provider Pool ---
+  # Register multiple providers for parallel generation strategies
+  # (voting, fastest, fallback, quality). The default provider above
+  # is always registered automatically. Add extras here.
+  multi_provider:
+    enabled: false
+    default: "claude-code"            # which pool entry is the default
+    providers:
+      # Each entry must match a supported provider type.
+      # Only providers listed here AND with valid credentials are loaded.
+      # claude-code:
+      #   model: "claude-sonnet-4-6"
+      # gemini:
+      #   model: "gemini-2.5-flash"
+      # ollama:
+      #   model: "llama3.2"
+      #   host: "http://localhost:11434"
+    # Strategy used when generate_multi is called without an explicit strategy
+    default_strategy: "fallback"
+
   # --- Budget Controls (T1-004) ---
   budgets:
     enabled: false
@@ -43,12 +63,45 @@ llm:
     per_solution: {}          # solution_name: monthly_usd_limit
 
   # --- Task Routing by Task Type (T1-004) ---
+  # Routes build tasks to the best-fit LLM provider.
+  # Format: "provider/model" or just "model" (uses current provider).
+  # Unrouted task types fall back to the default provider.
   task_routing:
-    enabled: false
+    enabled: true
     routes:
-      ANALYZE_LOG:    "ollama/llama3.2"   # cheap model for simple analysis
-      REVIEW_CODE:    "claude-sonnet-4-6" # best model for code review
-      PLAN_TASK:      "gemini-2.5-flash"  # fast model for planning
+      # --- Code-heavy tasks → Claude (best at code generation) ---
+      BACKEND:        "claude-code/claude-sonnet-4-6"
+      FRONTEND:       "claude-code/claude-sonnet-4-6"
+      API:            "claude-code/claude-sonnet-4-6"
+      DATABASE:        "claude-code/claude-sonnet-4-6"
+      TESTS:          "claude-code/claude-sonnet-4-6"
+      FIRMWARE:       "claude-code/claude-sonnet-4-6"
+      EMBEDDED_TEST:  "claude-code/claude-sonnet-4-6"
+      SECURITY:       "claude-code/claude-sonnet-4-6"
+      # --- Documentation/planning tasks → Gemini (fast, good at prose) ---
+      DOCS:           "gemini/gemini-2.5-flash"
+      COMPLIANCE:     "gemini/gemini-2.5-flash"
+      REGULATORY:     "gemini/gemini-2.5-flash"
+      LEGAL:          "gemini/gemini-2.5-flash"
+      BUSINESS:       "gemini/gemini-2.5-flash"
+      MARKETING:      "gemini/gemini-2.5-flash"
+      UX_DESIGN:      "gemini/gemini-2.5-flash"
+      PRODUCT:        "gemini/gemini-2.5-flash"
+      OPERATIONS:     "gemini/gemini-2.5-flash"
+      # --- Infrastructure/DevOps → Claude ---
+      INFRA:          "claude-code/claude-sonnet-4-6"
+      DEVOPS:         "claude-code/claude-sonnet-4-6"
+      CONFIG:         "claude-code/claude-sonnet-4-6"
+      # --- ML/Data tasks → Claude ---
+      ML_MODEL:       "claude-code/claude-sonnet-4-6"
+      DATA:           "claude-code/claude-sonnet-4-6"
+      AGENTIC:        "claude-code/claude-sonnet-4-6"
+      # --- Analysis → Gemini (fast) ---
+      ANALYZE_LOG:    "gemini/gemini-2.5-flash"
+      SAFETY:         "gemini/gemini-2.5-flash"
+      # --- Planning → Gemini ---
+      PLAN_TASK:      "gemini/gemini-2.5-flash"
+      REVIEW_CODE:    "claude-code/claude-sonnet-4-6"
 
 # --- PII Detection & Data Residency (T1-002) ---
 pii:

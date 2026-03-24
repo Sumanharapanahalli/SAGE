@@ -308,6 +308,72 @@ class CriticAgent:
         }
 
     # ------------------------------------------------------------------
+    # Multi-LLM review (provider pool voting)
+    # ------------------------------------------------------------------
+
+    def review_plan_multi(
+        self,
+        plan: Any,
+        product_description: str,
+        context: str = "",
+        strategy: str = "voting",
+        provider_names: list | None = None,
+    ) -> Dict[str, Any]:
+        """Review a plan using multiple LLM providers in parallel.
+
+        Falls back to single-provider review_plan when no pool providers
+        are registered.
+        """
+        pool = self.llm.provider_pool
+        if not pool.list_providers():
+            return self.review_plan(plan, product_description, context)
+
+        user_prompt = (
+            f"## Product Description\n{product_description}\n\n"
+            f"## Plan\n{json.dumps(plan, indent=2, default=str)}\n"
+        )
+        if context:
+            user_prompt += f"\n## Additional Context\n{context}\n"
+
+        from src.core.llm_gateway import generate_parallel
+        result = generate_parallel(
+            pool, user_prompt, self.PLAN_REVIEW_PROMPT,
+            strategy=strategy, provider_names=provider_names,
+        )
+        if "error" in result:
+            return {"error": result["error"], "score": 0}
+
+        return self._parse_critic_json(result.get("response", ""), result)
+
+    def _parse_critic_json(
+        self, response_text: str, meta: dict
+    ) -> Dict[str, Any]:
+        """Parse JSON from a critic response, attach multi-LLM metadata."""
+        import re
+        response_text = response_text.replace("```json", "").replace("```", "").strip()
+        obj_match = re.search(r'\{[\s\S]*\}', response_text)
+        if obj_match:
+            response_text = obj_match.group(0)
+        try:
+            result = json.loads(response_text)
+            if not isinstance(result, dict):
+                raise ValueError("Expected JSON object")
+            result["score"] = int(result.get("score", 0))
+        except (json.JSONDecodeError, ValueError):
+            result = {
+                "score": 0,
+                "summary": "Multi-LLM critic parse error — manual review required",
+                "flaws": ["Could not parse LLM output"],
+                "llm_parse_error": True,
+            }
+        result["multi_llm"] = {
+            "strategy": meta.get("strategy"),
+            "provider": meta.get("provider"),
+            "elapsed_ms": meta.get("elapsed_ms"),
+        }
+        return result
+
+    # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
