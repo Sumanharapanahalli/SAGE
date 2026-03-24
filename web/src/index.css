@@ -17,10 +17,7 @@
    sharp zinc/slate aesthetic.
    ────────────────────────────────────────────────────────────────────────── */
 
-/* Sharp aesthetic: zero border-radius everywhere */
-* {
-  border-radius: 0 !important;
-}
+/* Rounded aesthetic: soft corners throughout the framework */
 
 :root {
   /* Sidebar */
@@ -42,7 +39,7 @@
   --sage-badge-text:          #a1a1aa;   /* zinc-400 */
 
   /* Company rail */
-  --sage-rail-bg:             #09090b;   /* zinc-950 */
+  --sage-rail-bg:             #1e1e24;   /* softer dark — no pure black */
   --sage-rail-text:           #71717a;   /* zinc-500 */
   --sage-rail-active:         #f4f4f5;   /* zinc-100 */
 }
@@ -114,7 +111,7 @@ html.dark .text-zinc-500 { color: #71717a !important; }
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(30, 30, 36, 0.6);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -126,7 +123,7 @@ html.dark .text-zinc-500 { color: #71717a !important; }
   max-width: 560px;
   background: #18181b;
   border: 1px solid #3f3f46;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+  box-shadow: 0 25px 50px rgba(30, 30, 36, 0.5);
   overflow: hidden;
 }
 

@@ -273,7 +273,7 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
 
   if (submitted) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 p-4">
         <div
           className="w-full max-w-md p-8 text-center space-y-4"
           style={{ backgroundColor: '#18181b', border: '1px solid #3f3f46' }}
@@ -300,7 +300,7 @@ function HireAgentModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 p-4">
       <div
         className="w-full max-w-lg max-h-[90vh] overflow-y-auto"
         style={{ backgroundColor: '#18181b', border: '1px solid #3f3f46' }}
