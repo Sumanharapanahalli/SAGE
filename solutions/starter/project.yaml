@@ -85,24 +85,17 @@ ui_labels:
 # All values are CSS colour strings (hex, hsl, rgb, or named colours).
 # Leave this section out to use the default SAGE dark-sidebar theme.
 # ---------------------------------------------------------------------------
-# theme:
-#   sidebar_bg:         "#111827"   # sidebar background
-#   sidebar_text:       "#9ca3af"   # inactive nav item text
-#   sidebar_active_bg:  "#15803d"   # active nav item background
-#   sidebar_active_text:"#ffffff"   # active nav item text
-#   sidebar_hover_bg:   "#1f2937"   # nav item hover background
-#   sidebar_accent:     "#6366f1"   # badge / icon accent colour
-#   accent:             "#6366f1"   # primary action buttons
-#   accent_hover:       "#4f46e5"   # primary button hover
-#   badge_bg:           "#f3f4f6"   # header domain badge background
-#   badge_text:         "#374151"   # header domain badge text
-# Example — green sidebar:
-# theme:
-#   sidebar_bg:         "#14532d"
-#   sidebar_active_bg:  "#166534"
-#   sidebar_accent:     "#86efac"
-#   accent:             "#16a34a"
-#   accent_hover:       "#15803d"
+theme:
+  sidebar_bg:          "#ffffff"   # clean white sidebar
+  sidebar_text:        "#4b5563"   # gray-600 — readable on white
+  sidebar_active_bg:   "#ecfdf5"   # emerald-50 highlight
+  sidebar_active_text: "#047857"   # emerald-700 — strong active state
+  sidebar_hover_bg:    "#f0fdf4"   # green-50 subtle hover
+  sidebar_accent:      "#10b981"   # emerald-500 — primary green
+  accent:              "#10b981"   # emerald-500 — buttons, links
+  accent_hover:        "#059669"   # emerald-600 — hover state
+  badge_bg:            "#ecfdf5"   # emerald-50 — light green badge
+  badge_text:          "#047857"   # emerald-700 — badge text
 
 dashboard:
   badge_color: "bg-gray-100 text-gray-700"
