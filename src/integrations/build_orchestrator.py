@@ -2,8 +2,9 @@
 SAGE Framework — Build Orchestrator
 =====================================
 The brain of the 0→1→N pipeline. Decomposes a product description into
-parallel agent tasks, executes them with OpenSWE (or LLM fallback),
-and gates every critical step behind human approval + critic review.
+parallel agent tasks, executes them through a 3-tier isolation cascade
+(OpenShell → SandboxRunner → OpenSWE), and gates every critical step
+behind human approval + critic review.
 
 Design Patterns Applied (ref: Google Cloud Agentic AI Architecture):
   - ReAct (Reason and Act): the primary execution pattern — each agent task
@@ -200,13 +201,13 @@ TASK_TYPE_TO_AGENT = {
     "CONFIG":   "developer",
     "AGENTIC":  "developer",
     # Hardware / Embedded / Mechanical
-    "FIRMWARE":      "developer",    # firmware engineer role if defined in prompts.yaml
-    "HARDWARE_SIM":  "developer",    # hardware engineer role if defined
-    "PCB_DESIGN":    "developer",    # PCB designer role if defined
+    "FIRMWARE":      "firmware_engineer",
+    "HARDWARE_SIM":  "hardware_sim_engineer",
+    "PCB_DESIGN":    "pcb_designer",
     "MECHANICAL":    "developer",    # mechanical engineer role if defined
     "SAFETY":        "analyst",      # safety officer role if defined
     "COMPLIANCE":    "analyst",      # compliance officer role if defined
-    "EMBEDDED_TEST": "developer",    # test engineer role if defined
+    "EMBEDDED_TEST": "embedded_tester",
     # Quality & Testing
     "QA":           "qa_engineer",
     "SYSTEM_TEST":  "system_tester",
@@ -262,6 +263,11 @@ WORKFORCE_REGISTRY = {
         "lead": "operations_manager",
         "members": ["technical_writer", "marketing_strategist"],
         "capabilities": ["runbooks", "documentation", "go-to-market"],
+    },
+    "hardware": {
+        "lead": "firmware_engineer",
+        "members": ["pcb_designer", "embedded_tester", "hardware_sim_engineer"],
+        "capabilities": ["firmware development", "PCB design", "HIL testing", "hardware simulation"],
     },
 }
 
@@ -711,6 +717,104 @@ AGENT_ROLES_REGISTRY: dict[str, dict[str, Any]] = {
             "generate_content_plan", "analyze_seo",
         ],
         "hire_when": "You need market research, GTM strategy, or marketing plans",
+    },
+
+    # ── Hardware Team ──────────────────────────────────────────────────
+    "firmware_engineer": {
+        "title": "Firmware Engineer",
+        "description": "Embedded firmware, RTOS, HAL drivers, cross-compilation",
+        "team": "hardware",
+        "skills": [
+            "Embedded C/C++ firmware development",
+            "RTOS programming (FreeRTOS, Zephyr, ThreadX)",
+            "Hardware Abstraction Layer (HAL) driver development",
+            "Cross-compilation (GCC-ARM, IAR, Keil)",
+            "Peripheral integration (SPI, I2C, UART, CAN, USB)",
+            "Bootloader and OTA update implementation",
+            "Power management and sleep mode optimization",
+            "Interrupt handling and real-time constraints",
+        ],
+        "tools": ["gcc-arm", "openocd", "gdb", "jlink", "make", "cmake"],
+        "mcp_server": "firmware_tools",
+        "mcp_capabilities": [
+            "compile_firmware", "flash_device", "debug_firmware",
+            "analyze_binary", "read_registers", "run_unit_tests",
+        ],
+        "docker_image": "sage/firmware-toolchain:latest",
+        "docker_packages": ["gcc-arm-none-eabi", "openocd", "cmake", "ninja-build", "gdb-multiarch"],
+        "hire_when": "You need embedded firmware, RTOS tasks, or hardware driver development",
+    },
+    "pcb_designer": {
+        "title": "PCB Designer",
+        "description": "Schematic capture, PCB layout, BOM generation, DRC",
+        "team": "hardware",
+        "skills": [
+            "Schematic capture and symbol creation (KiCad)",
+            "PCB layout and routing (2-layer to 12-layer)",
+            "Design Rule Check (DRC) and ERC validation",
+            "BOM generation and component sourcing",
+            "Gerber and drill file generation for fabrication",
+            "Signal integrity and impedance matching",
+            "Thermal analysis and copper pour optimization",
+            "Component footprint creation and library management",
+        ],
+        "tools": ["kicad", "kicad-cli", "gerber_viewer", "bom_manager"],
+        "mcp_server": "pcb_tools",
+        "mcp_capabilities": [
+            "create_schematic", "layout_pcb", "run_drc",
+            "generate_gerbers", "generate_bom", "check_erc",
+        ],
+        "docker_image": "sage/pcb-toolchain:latest",
+        "docker_packages": ["kicad", "kicad-cli", "python3-kicad"],
+        "hire_when": "You need PCB design, schematic capture, or board layout",
+    },
+    "embedded_tester": {
+        "title": "Embedded Test Engineer",
+        "description": "HIL testing, firmware unit tests, hardware integration tests",
+        "team": "hardware",
+        "skills": [
+            "Hardware-in-the-loop (HIL) test design",
+            "Firmware unit testing (Unity, CppUTest, Google Test)",
+            "Integration test harness development",
+            "Serial protocol testing (UART, SPI, I2C)",
+            "CAN bus testing and diagnostics",
+            "Code coverage analysis for embedded (gcov, lcov)",
+            "Automated test fixture design",
+            "Compliance test execution (EMC, environmental)",
+        ],
+        "tools": ["unity_test", "cppcheck", "valgrind", "gcov", "can_analyzer"],
+        "mcp_server": "embedded_test_tools",
+        "mcp_capabilities": [
+            "run_firmware_tests", "analyze_coverage", "test_serial",
+            "test_can_bus", "run_static_analysis", "generate_test_report",
+        ],
+        "docker_image": "sage/embedded-test:latest",
+        "docker_packages": ["gcc-arm-none-eabi", "cppcheck", "valgrind", "lcov", "can-utils"],
+        "hire_when": "You need firmware testing, HIL tests, or embedded quality assurance",
+    },
+    "hardware_sim_engineer": {
+        "title": "Hardware Simulation Engineer",
+        "description": "SPICE simulation, Verilog/VHDL, SystemC modeling",
+        "team": "hardware",
+        "skills": [
+            "SPICE circuit simulation (ngspice, LTspice)",
+            "Verilog/VHDL digital design and simulation",
+            "SystemC modeling for SoC verification",
+            "FPGA synthesis and implementation",
+            "Waveform analysis and timing verification",
+            "Power analysis and thermal simulation",
+            "Design verification and testbench creation",
+            "Hardware/software co-simulation",
+        ],
+        "tools": ["ngspice", "iverilog", "gtkwave", "yosys", "verilator"],
+        "mcp_server": "hw_sim_tools",
+        "mcp_capabilities": [
+            "run_spice_sim", "simulate_verilog", "synthesize_fpga",
+            "analyze_waveform", "run_power_analysis", "create_testbench",
+        ],
+        "docker_image": "sage/hw-simulation:latest",
+        "docker_packages": ["ngspice", "iverilog", "gtkwave", "yosys", "verilator"],
+        "hire_when": "You need circuit simulation, FPGA design, or hardware verification",
     },
 
     # ── Orchestration Roles (internal, not hireable) ──────────────────
@@ -1859,11 +1963,15 @@ class BuildOrchestrator:
         - Dependency failure propagation (skip blocked tasks)
 
         Coordinator routing: each task's 'agent_role' field determines which
-        specialist agent handles it (falls back to OpenSWE for all).
+        specialist agent handles it. Execution uses the 3-tier isolation
+        cascade: OpenShell (container) → SandboxRunner (local) → OpenSWE (autonomous).
         """
         from src.integrations.openswe_runner import get_openswe_runner
+        from src.integrations.openshell_runner import get_openshell_runner
+        from src.integrations.sandbox_runner import sandbox_runner as local_sandbox
 
         openswe = get_openswe_runner()
+        openshell = get_openshell_runner()
         results = []
         plan = run.get("plan", [])
         failed_steps: set = set()
@@ -1911,7 +2019,10 @@ class BuildOrchestrator:
             for task in executable:
                 # Coordinator pattern: route to specialist agent
                 agent_role = task.get("agent_role", "developer")
-                result = self._route_to_agent(task, agent_role, openswe, run)
+                result = self._route_to_agent(
+                    task, agent_role, openswe, run,
+                    openshell=openshell, local_sandbox=local_sandbox,
+                )
 
                 # Record outcome in adaptive router for future routing decisions
                 task_type = task.get("task_type", "")
@@ -2104,24 +2215,22 @@ class BuildOrchestrator:
         return True
 
     def _route_to_agent(
-        self, task: dict, agent_role: str, openswe, run: dict
+        self, task: dict, agent_role: str, openswe, run: dict,
+        openshell=None, local_sandbox=None,
     ) -> dict:
         """
-        Multi-Agent Coordinator + ReAct dispatch with adaptive routing.
+        Multi-Agent Coordinator + ReAct dispatch with 3-tier isolation cascade.
 
         Uses the AdaptiveRouter to potentially override the static agent_role
         based on learned success rates from prior builds.
 
-        Routes each task to OpenSWE which internally uses:
-        - Tier 1: External Open SWE (its own ReAct loop)
-        - Tier 2: LangGraph swe_workflow
-        - Tier 3: LLM with ReAct pattern (Thought→Action→Observation loop)
+        Execution cascade (tries most-isolated first, falls back):
+          Tier 1: OpenShell — NVIDIA container sandbox (SSH-based, YAML policies)
+          Tier 2: SandboxRunner — local repo clone with branch isolation
+          Tier 3: OpenSWE — autonomous coding agent (external SWE → LangGraph → LLM)
 
         The task's acceptance_criteria are passed through to the agent so
         the ReAct OBSERVATION step can self-verify against them.
-
-        In future, solution-defined roles from prompts.yaml can be wired to
-        UniversalAgent for domain-specific handling.
         """
         # Adaptive routing: let the router suggest a better agent if it has data
         task_type = task.get("task_type", "")
@@ -2132,9 +2241,51 @@ class BuildOrchestrator:
                 task_type, learned_role, agent_role,
             )
             agent_role = learned_role
-        # Pass acceptance criteria through — the ReAct loop uses them
-        # in its OBSERVATION step for self-verification
+
+        enriched_task = self._enrich_task(task, run)
+
+        workspace = run.get("workspace_dir", "")
+
+        # ── Tier 1: OpenShell container sandbox ──────────────────────────
+        if openshell and openshell.is_available():
+            result = self._try_openshell(enriched_task, workspace, openshell, openswe)
+            if result is not None:
+                return result
+            self.logger.info("Tier 1 (OpenShell) unavailable for task, falling through")
+
+        # ── Tier 2: SandboxRunner local isolation ────────────────────────
+        if local_sandbox and workspace:
+            result = self._try_sandbox_runner(enriched_task, workspace, local_sandbox, openswe)
+            if result is not None:
+                return result
+            self.logger.info("Tier 2 (SandboxRunner) failed for task, falling through")
+
+        # ── Tier 3: Domain-aware runner (falls back to OpenSWE) ──────────
+        # Select the correct domain runner based on agent role
+        from src.integrations.base_runner import get_runner_for_role
+        domain_runner = get_runner_for_role(agent_role)
+        if domain_runner and domain_runner.name != "openswe":
+            self.logger.info(
+                "Tier 3 (domain runner '%s') for task_type=%s, role=%s",
+                domain_runner.name, task_type, agent_role,
+            )
+            run_result = domain_runner.execute(
+                task=enriched_task,
+                workspace=workspace,
+            )
+            return run_result.to_dict()
+
+        # Default: OpenSWE direct (software engineering tasks)
+        self.logger.info("Tier 3 (OpenSWE direct) for task_type=%s", task_type)
+        return openswe.build(
+            task=enriched_task,
+            repo_path=workspace,
+        )
+
+    def _enrich_task(self, task: dict, run: dict) -> dict:
+        """Enrich task with context, acceptance criteria, and artifact info."""
         enriched_task = {**task}
+        task_type = task.get("task_type", "")
 
         # Inject summarized context from prior waves for continuity
         prior_ctx = run.get("_prior_wave_context", "")
@@ -2143,6 +2294,9 @@ class BuildOrchestrator:
                 f"{task.get('description', '')}\n\n"
                 f"[Prior wave context]\n{prior_ctx[:2000]}"
             )
+
+        # Pass acceptance criteria through — the ReAct loop uses them
+        # in its OBSERVATION step for self-verification
         acceptance = task.get("acceptance_criteria", [])
         if acceptance:
             enriched_task["description"] = (
@@ -2163,16 +2317,200 @@ class BuildOrchestrator:
                 artifact_hint += f"\nDomain tools available: {', '.join(mcp_tools)}"
             enriched_task["description"] = enriched_task.get("description", "") + artifact_hint
 
-            # Add to payload for downstream processing
             enriched_task.setdefault("payload", {})
             enriched_task["payload"]["artifact_category"] = category
             enriched_task["payload"]["expected_extensions"] = artifact_info.get("extensions", [])
             enriched_task["payload"]["standards"] = run.get("detected_domains", [])
 
-        return openswe.build(
-            task=enriched_task,
-            repo_path=run.get("workspace_dir", ""),
-        )
+        return enriched_task
+
+    def _try_openshell(self, task: dict, workspace: str, openshell, openswe) -> Optional[dict]:
+        """
+        Tier 1: Execute task inside an OpenShell container sandbox.
+
+        Creates an isolated container with YAML security policies, then runs
+        OpenSWE inside it via the sandbox_handle parameter. If OpenShell fails
+        at any point, returns None to fall through to Tier 2.
+        """
+        task_type = task.get("task_type", "")
+        # Sanitize task_type for sandbox name (alphanumeric + dashes only)
+        safe_type = "".join(c if c.isalnum() or c in "-_" else "" for c in task_type)[:32]
+        sandbox_name = f"build-{safe_type}-{uuid.uuid4().hex[:8]}"
+
+        # Build security policy based on task type
+        policy = self._build_sandbox_policy(task)
+
+        try:
+            with openshell.sandbox(sandbox_name, policy) as sb:
+                if sb is None:
+                    return None
+
+                self.logger.info(
+                    "Tier 1 (OpenShell): executing task_type=%s in sandbox %s",
+                    task_type, sandbox_name,
+                )
+
+                # Run OpenSWE inside the container via sandbox_handle
+                result = openswe.build(
+                    task=task,
+                    repo_path=workspace,
+                    sandbox_handle=sb,
+                )
+                result["execution_tier"] = "openshell"
+                return result
+
+        except Exception as exc:
+            self.logger.warning(
+                "Tier 1 (OpenShell) failed for %s: %s", task_type, exc,
+            )
+            return None
+
+    def _try_sandbox_runner(
+        self, task: dict, workspace: str, local_sandbox, openswe,
+    ) -> Optional[dict]:
+        """
+        Tier 2: Execute task in a local repo clone with branch isolation.
+
+        Clones the workspace into a temp dir, creates an isolated branch,
+        runs OpenSWE there, then collects results. Falls through to Tier 3
+        on failure.
+        """
+        task_type = task.get("task_type", "")
+        branch_name = f"sage-build/{task_type}-{uuid.uuid4().hex[:8]}"
+        sandbox_dir = None
+
+        try:
+            # Clone workspace into isolated temp directory
+            import tempfile
+            sandbox_dir = tempfile.mkdtemp(prefix="sage-build-")
+
+            # Copy workspace to sandbox (faster than git clone for local dirs)
+            import shutil
+            if os.path.isdir(workspace):
+                shutil.copytree(workspace, sandbox_dir, dirs_exist_ok=True)
+            else:
+                # If workspace is a remote URL, use SandboxRunner's clone
+                clone_result = local_sandbox.clone_repo(workspace, sandbox_dir)
+                if not clone_result.get("success"):
+                    self.logger.warning(
+                        "Tier 2: clone failed: %s", clone_result.get("error"),
+                    )
+                    return None
+
+            # Create isolated branch
+            local_sandbox.execute(
+                f"git checkout -b {branch_name}", sandbox_dir,
+            )
+
+            self.logger.info(
+                "Tier 2 (SandboxRunner): executing task_type=%s in %s",
+                task_type, sandbox_dir,
+            )
+
+            # Run OpenSWE in the sandboxed directory
+            result = openswe.build(
+                task=task,
+                repo_path=sandbox_dir,
+            )
+
+            # Collect diff from sandbox for the orchestrator
+            diff_result = local_sandbox.get_diff(sandbox_dir)
+            if diff_result.get("success") and diff_result.get("stdout"):
+                result.setdefault("sandbox_diff", diff_result["stdout"][:10000])
+
+            result["execution_tier"] = "sandbox_runner"
+            return result
+
+        except Exception as exc:
+            self.logger.warning(
+                "Tier 2 (SandboxRunner) failed for %s: %s", task_type, exc,
+            )
+            return None
+
+        finally:
+            # Cleanup sandbox directory
+            if sandbox_dir and os.path.isdir(sandbox_dir):
+                try:
+                    import shutil
+                    shutil.rmtree(sandbox_dir, ignore_errors=True)
+                except Exception:
+                    pass
+
+    def _resolve_docker_image(self, task: dict) -> Optional[str]:
+        """
+        Resolve the Docker image for a task based on its agent role.
+
+        When an agent is hired, its docker_image field defines the execution
+        environment. This ensures hiring a firmware_engineer automatically
+        brings gcc-arm, openocd, etc. into the sandbox.
+        """
+        task_type = task.get("task_type", "")
+        agent_role = task.get("agent_role", "")
+
+        # Check agent's docker_image
+        agent_info = AGENT_ROLES_REGISTRY.get(agent_role, {})
+        if agent_info.get("docker_image"):
+            return agent_info["docker_image"]
+
+        # Fallback: resolve from task type → agent mapping
+        mapped_role = TASK_TYPE_TO_AGENT.get(task_type, "")
+        mapped_info = AGENT_ROLES_REGISTRY.get(mapped_role, {})
+        return mapped_info.get("docker_image")
+
+    def _build_sandbox_policy(self, task: dict) -> dict:
+        """
+        Build an OpenShell YAML security policy based on task type.
+
+        More restrictive for code generation tasks, more permissive for
+        tasks that need network access (API integration, deployment).
+        Includes the Docker image from the agent's toolchain.
+        """
+        task_type = task.get("task_type", "")
+
+        # Base policy: restricted filesystem, no network by default
+        policy = {
+            "filesystem_policy": {
+                "read_only_paths": ["/usr", "/lib", "/etc"],
+                "writable_paths": ["/workspace", "/tmp"],
+                "hidden_paths": ["/root", "/home"],
+            },
+            "process": {
+                "run_as_user": "sandbox",
+                "run_as_group": "sandbox",
+            },
+            "network_policies": {
+                "allow_outbound": False,
+                "allowed_hosts": [],
+            },
+        }
+
+        # Task types that need network access
+        network_tasks = {
+            "api_integration", "deployment", "cloud_setup",
+            "ci_cd_pipeline", "package_management", "dependency_setup",
+        }
+        if task_type in network_tasks:
+            policy["network_policies"]["allow_outbound"] = True
+
+        # Task types that need broader filesystem access
+        broad_fs_tasks = {
+            "database_setup", "infrastructure", "deployment",
+            "monitoring_setup", "environment_config",
+        }
+        if task_type in broad_fs_tasks:
+            policy["filesystem_policy"]["writable_paths"].append("/var")
+
+        # Attach Docker image from agent's toolchain
+        docker_image = self._resolve_docker_image(task)
+        if docker_image:
+            policy["docker_image"] = docker_image
+            # Also attach the package list for image building
+            agent_role = task.get("agent_role", TASK_TYPE_TO_AGENT.get(task_type, ""))
+            agent_info = AGENT_ROLES_REGISTRY.get(agent_role, {})
+            if agent_info.get("docker_packages"):
+                policy["docker_packages"] = agent_info["docker_packages"]
+
+        return policy
 
     def _integrate(self, run: dict) -> dict:
         """Merge results and run tests."""

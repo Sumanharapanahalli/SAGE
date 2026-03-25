@@ -965,15 +965,8 @@ class TestTaskTypeToAgentEdgeCases:
 
     def test_all_mapped_agents_are_valid_roles(self):
         """TASK_TYPE_TO_AGENT values should be recognized agent roles."""
-        from src.integrations.build_orchestrator import TASK_TYPE_TO_AGENT
-        valid_roles = {
-            "developer", "analyst", "planner", "monitor", "critic",
-            "qa_engineer", "system_tester", "regulatory_specialist",
-            "business_analyst", "marketing_strategist", "financial_analyst",
-            "ux_designer", "devops_engineer", "product_manager",
-            "legal_advisor", "operations_manager", "technical_writer",
-            "localization_engineer", "data_scientist", "safety_engineer",
-        }
+        from src.integrations.build_orchestrator import TASK_TYPE_TO_AGENT, AGENT_ROLES_REGISTRY
+        valid_roles = set(AGENT_ROLES_REGISTRY.keys())
         for task_type, role in TASK_TYPE_TO_AGENT.items():
             assert role in valid_roles, f"Role '{role}' for {task_type} is not a valid framework role"
 

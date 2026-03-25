@@ -39,6 +39,17 @@ src/                    Framework Python source
     temporal_runner.py  Temporal durable workflows (LangGraph fallback)
     langchain_tools.py  LangChain tool loader per solution
     openswe_runner.py   OpenSWE autonomous coding agent — repo explore, implement, test, PR
+    base_runner.py      BaseRunner ABC, RunResult/VerificationReport, runner registry
+    openswe_adapter.py  OpenSWE → BaseRunner adapter (wraps existing runner)
+    openfw_runner.py    OpenFW firmware runner — cross-compile, static analysis, binary metrics
+    openeda_runner.py   OpenEDA PCB runner — schematic, layout, DRC, ERC, Gerber
+    opensim_runner.py   OpenSim HW simulation — SPICE, Verilog, waveforms, timing
+    openml_runner.py    OpenML machine learning — train, evaluate, experiment track
+    opendoc_runner.py   OpenDoc documentation — drafting, compliance, cross-reference
+    opendesign_runner.py OpenDesign UX — wireframes, accessibility, design tokens
+    openstrategy_runner.py OpenStrategy planning — PRDs, GTM, roadmaps
+    openshell_runner.py NVIDIA OpenShell sandboxed execution — YAML policies, SSH-based exec
+    sandbox_runner.py   Local repo sandbox — clone, branch isolation, file ops, safe execution
 
 web/src/                React 18 + TypeScript dashboard
   pages/                One file per route
@@ -165,8 +176,120 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 12.2 | Workforce registry + 32 task types | `build_orchestrator.py` (`WORKFORCE_REGISTRY` — 19 agents, 5 teams) | — |
 | 12.3 | Adaptive router (Q-learning) | `build_orchestrator.py` (`AdaptiveRouter`) | `GET /build/router/stats` |
 | 12.4 | Anti-drift checkpoints | `build_orchestrator.py` | `BUILD_DRIFT_WARNING` audit events |
+| 13 | Sandboxed Execution (3-tier cascade) | `openshell_runner.py`, `sandbox_runner.py`, `openswe_runner.py` | See Sandbox Execution section |
+| 14 | Domain-Aware Runners (Open\<Role\>) | `base_runner.py`, `openfw_runner.py`, `openeda_runner.py`, `opensim_runner.py`, `openml_runner.py`, `opendoc_runner.py`, `opendesign_runner.py`, `openstrategy_runner.py` | See Domain-Aware Runners section |
 
 ---
+
+## Sandboxed Execution — 3-Tier Cascade
+
+Agent code execution uses a three-tier isolation cascade. The orchestrator tries the most isolated tier first and falls back down.
+
+| Tier | Runner | Isolation | When used |
+|---|---|---|---|
+| **1. OpenShell** | `openshell_runner.py` | NVIDIA container sandbox, YAML security policies, SSH-based exec | Full container isolation available (GPU workloads, untrusted code) |
+| **2. SandboxRunner** | `sandbox_runner.py` | Local repo clone, branch isolation, restricted file ops | Container unavailable, local execution acceptable |
+| **3. OpenSWE** | `openswe_runner.py` | 3-tier internal cascade: external SWE agent → LangGraph workflow → LLM direct | Autonomous coding tasks (explore → implement → test → PR) |
+
+**OpenShell** (`src/integrations/openshell_runner.py`):
+- Connects to NVIDIA OpenShell sandbox environments via SSH
+- Security policies defined in YAML (allowed commands, file access, network rules)
+- Supports GPU-accelerated execution for ML/training tasks
+- Graceful degradation: returns error dict if OpenShell is unavailable
+
+**SandboxRunner** (`src/integrations/sandbox_runner.py`):
+- Clones the solution repo into a temporary working directory
+- Creates isolated branches for each execution
+- Restricts file operations to the sandbox directory
+- Provides `execute()`, `read_file()`, `write_file()`, `list_files()` primitives
+- Cleanup on completion (configurable retain for debugging)
+
+**OpenSWE** (`src/integrations/openswe_runner.py`):
+- Autonomous coding agent: repo explore → implement → test → create PR
+- Internal 3-tier fallback: external SWE agent (if available) → LangGraph orchestrated → direct LLM generation
+- Each tier produces the same output format: `{files_changed, tests_passed, pr_url}`
+
+---
+
+## Domain-Aware Runners — Open\<Role\> Architecture
+
+The 3-tier isolation cascade (OpenShell → Sandbox → Direct) is orthogonal to the **domain runner**. Each runner encapsulates a complete execution environment for a role family: toolchain, workflow, verification, and experience accumulation.
+
+| Runner | File | Roles | Artifacts | Docker Image |
+|---|---|---|---|---|
+| **OpenSWE** | `openswe_adapter.py` | developer, qa_engineer, system_tester, devops_engineer, localization_engineer | Source code, tests, PRs | — |
+| **OpenFW** | `openfw_runner.py` | firmware_engineer, embedded_tester | ARM binaries, HAL drivers, firmware | `sage/firmware-toolchain` |
+| **OpenEDA** | `openeda_runner.py` | pcb_designer | Schematics, PCB layouts, Gerbers, BOMs | `sage/pcb-toolchain` |
+| **OpenSim** | `opensim_runner.py` | hardware_sim_engineer | SPICE netlists, Verilog, waveforms | `sage/hw-simulation` |
+| **OpenML** | `openml_runner.py` | data_scientist | Models, pipelines, metrics | `sage/ml-toolchain` |
+| **OpenDoc** | `opendoc_runner.py` | technical_writer, regulatory_specialist, legal_advisor, safety_engineer, business_analyst, financial_analyst, analyst | Documents, DHFs, compliance reports | `sage/doc-toolchain` |
+| **OpenDesign** | `opendesign_runner.py` | ux_designer | Wireframes, design tokens, SVGs | `sage/design-toolchain` |
+| **OpenStrategy** | `openstrategy_runner.py` | product_manager, marketing_strategist, operations_manager | PRDs, roadmaps, GTM plans | — |
+
+All runners implement `BaseRunner` (`base_runner.py`) with four required methods:
+- `execute(task, workspace, sandbox_handle)` → `RunResult`
+- `verify(result, task)` → `VerificationReport`
+- `get_exercises(difficulty)` → `list[Exercise]` (for Agent Gym)
+- `grade_exercise(exercise, result)` → `ExerciseScore`
+
+The orchestrator selects the correct runner via `get_runner_for_role(agent_role)`. If the role is a software role, OpenSWE handles it. If it's firmware, OpenFW runs cross-compilation. If it's PCB, OpenEDA runs DRC/ERC. Each runner knows what "verified" means in its domain.
+
+---
+
+## Agentic Patterns — 0→1 Greenfield and 1→N Refinement
+
+The Build Orchestrator (`src/core/build_orchestrator.py`) uses 8 agentic patterns that apply to both greenfield builds and incremental refinement. The patterns are the same; the scope differs.
+
+### Core Patterns
+
+| Pattern | Implementation | Purpose |
+|---|---|---|
+| **ReAct** (Reason+Act) | Per-task agent loop: observe → think → act → observe | Each agent reasons about its task before acting |
+| **Hierarchical Task Decomposition** | LLM decomposes description → task graph (32 task types) | Breaks ambiguous goals into concrete, typed tasks |
+| **Wave-Based Parallel Execution** | `_compute_waves()` groups independent tasks | Tasks without dependencies run in parallel waves |
+| **Adaptive Router** (Q-learning) | `AdaptiveRouter` — `scores[task_type][agent_role]` EMA updates | Routes tasks to best-performing agent, learns over time |
+| **Actor-Critic** | `CriticAgent` — `review_plan()`, `review_code()`, `review_integration()` | Scores quality (0-100), identifies flaws before human review |
+| **HITL Gates** | `awaiting_plan_approval`, `awaiting_final_approval` states | Human sign-off at plan and integration stages |
+| **Iterative Refinement** | Critic score < threshold → retry with critic feedback | Agents improve output based on structured critique |
+| **Anti-Drift Checkpoints** | `_checkpoint()` after each state, `_restore_runs()` on startup | Crash recovery + drift detection (`BUILD_DRIFT_WARNING`) |
+
+### 0→1 Greenfield Build
+
+Full pipeline: `POST /build/start` with a product description.
+
+```
+Description → Domain Detection (13 domains via DOMAIN_RULES)
+  → Workforce Assembly (19 agents, 5 teams from WORKFORCE_REGISTRY)
+  → Hierarchical Decomposition (LLM → task graph)
+  → Critic reviews plan (score 0-100)
+  → HITL approval gate
+  → Wave execution (parallel independent tasks)
+  → Critic reviews code per task
+  → Integration merge
+  → Critic reviews integration
+  → HITL final approval
+  → Completed
+```
+
+Key 0→1 specifics:
+- Domain detection auto-selects rules (compliance, testing, toolchains)
+- Full workforce assembled — all relevant agents activated
+- Task graph is complete: architecture → implementation → testing → deployment
+- AdaptiveRouter starts with uniform scores, learns during the build
+
+### 1→N Refinement
+
+Same orchestrator, scoped to changes. Triggered by feature requests, bug fixes, or improvement proposals.
+
+Key 1→N differences:
+- Domain already known — skips detection
+- Workforce is stable — router has learned agent strengths
+- Decomposition scoped to the change, not the whole product
+- Critic calibration is higher (knows existing quality baseline)
+- AdaptiveRouter scores are warm — compounds from prior builds
+- Anti-drift checkpoints compare against established baseline
+
+The feedback loop compounds: every 0→1 build teaches the router and critic, making subsequent 1→N refinements faster and higher quality.
 
 ## The .sage/ Directory — Solution Runtime Isolation
 
