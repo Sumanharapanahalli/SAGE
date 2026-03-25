@@ -1,0 +1,179 @@
+{
+  "name": "sage-ai",
+  "displayName": "SAGE[ai] — Lean AI Agent Framework",
+  "description": "Manage SAGE agents, approvals, and dashboard directly inside VS Code. No external ports needed — works behind corporate firewalls.",
+  "version": "0.1.0",
+  "publisher": "sage-ai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sumanharapanahalli/sage"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "sage",
+    "ai",
+    "agents",
+    "lean",
+    "agentic",
+    "regulated",
+    "approval",
+    "human-in-the-loop"
+  ],
+  "icon": "media/sage-icon.png",
+  "activationEvents": [
+    "workspaceContains:**/project.yaml",
+    "workspaceContains:**/solutions/*/project.yaml"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sage.startBackend",
+        "title": "SAGE: Start Backend",
+        "icon": "$(play)"
+      },
+      {
+        "command": "sage.stopBackend",
+        "title": "SAGE: Stop Backend",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "sage.openDashboard",
+        "title": "SAGE: Open Dashboard",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "sage.openApprovals",
+        "title": "SAGE: Open Approvals",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "sage.openQueue",
+        "title": "SAGE: Open Task Queue",
+        "icon": "$(list-ordered)"
+      },
+      {
+        "command": "sage.switchSolution",
+        "title": "SAGE: Switch Solution",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "sage.switchLLM",
+        "title": "SAGE: Switch LLM Provider",
+        "icon": "$(hubot)"
+      },
+      {
+        "command": "sage.refreshStatus",
+        "title": "SAGE: Refresh Status",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sage-sidebar",
+          "title": "SAGE[ai]",
+          "icon": "media/sage-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "sage-sidebar": [
+        {
+          "id": "sage.status",
+          "name": "Status",
+          "type": "tree"
+        },
+        {
+          "id": "sage.approvals",
+          "name": "Approvals",
+          "type": "tree"
+        },
+        {
+          "id": "sage.agents",
+          "name": "Agents",
+          "type": "tree"
+        },
+        {
+          "id": "sage.solutions",
+          "name": "Solutions",
+          "type": "tree"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "sage.status",
+        "contents": "SAGE backend is not running.\n[Start Backend](command:sage.startBackend)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "sage.refreshStatus",
+          "when": "view == sage.status",
+          "group": "navigation"
+        },
+        {
+          "command": "sage.openDashboard",
+          "when": "view == sage.status",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SAGE[ai]",
+      "properties": {
+        "sage.backendPort": {
+          "type": "number",
+          "default": 8000,
+          "description": "Port for the SAGE backend server"
+        },
+        "sage.pythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Python executable (auto-detected from .venv if empty)"
+        },
+        "sage.defaultSolution": {
+          "type": "string",
+          "default": "starter",
+          "description": "Default solution to load on backend start"
+        },
+        "sage.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start the SAGE backend when the workspace opens"
+        },
+        "sage.pollIntervalMs": {
+          "type": "number",
+          "default": 10000,
+          "description": "Status polling interval in milliseconds"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.50.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  }
+}

@@ -36,7 +36,8 @@ class TestMCPRegistry:
     def test_list_tools_empty_when_no_servers_dir(self):
         """list_tools() must return [] when no mcp_servers directory exists."""
         reg = self._fresh_registry()
-        with patch.object(reg, "_get_mcp_dir", return_value="/nonexistent/path"):
+        with patch.object(reg, "_get_solution_mcp_dir", return_value="/nonexistent/path"), \
+             patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"):
             tools = reg.list_tools()
         assert isinstance(tools, list)
         assert len(tools) == 0
@@ -44,7 +45,8 @@ class TestMCPRegistry:
     def test_invoke_unknown_tool_returns_error(self):
         """invoke() with an unknown tool name must return an error dict, not raise."""
         reg = self._fresh_registry()
-        with patch.object(reg, "_get_mcp_dir", return_value="/nonexistent/path"):
+        with patch.object(reg, "_get_solution_mcp_dir", return_value="/nonexistent/path"), \
+             patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"):
             result = reg.invoke("nonexistent_tool", {})
         assert "error" in result
         assert "nonexistent_tool" in result["error"]
@@ -134,7 +136,8 @@ class TestMCPRegistry:
                 f.write(server_code)
 
             reg = self._fresh_registry()
-            with patch.object(reg, "_get_mcp_dir", return_value=tmpdir):
+            with patch.object(reg, "_get_solution_mcp_dir", return_value=tmpdir), \
+                 patch.object(reg, "_get_framework_mcp_dir", return_value="/nonexistent/fw"):
                 count = reg.load(force=True)
 
             # If FastMCP is installed and tool registration is discoverable
