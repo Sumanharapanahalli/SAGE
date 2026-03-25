@@ -493,22 +493,25 @@ class TestSkillRunnerIntegration(unittest.TestCase):
 class TestAgentGym(unittest.TestCase):
     """Test the self-play training engine."""
 
-    def test_gym_init(self):
+    def _make_gym(self):
+        """Create an AgentGym with a temp SQLite DB."""
         from src.core.agent_gym import AgentGym
-        gym = AgentGym()
+        db_path = os.path.join(tempfile.mkdtemp(), "test_gym.db")
+        return AgentGym(db_path=db_path)
+
+    def test_gym_init(self):
+        gym = self._make_gym()
         self.assertEqual(gym.stats()["total_sessions"], 0)
 
     def test_gym_train_no_runner(self):
         """Training fails gracefully when no runner exists for the role."""
-        from src.core.agent_gym import AgentGym
-        gym = AgentGym()
+        gym = self._make_gym()
         session = gym.train(role="nonexistent_role")
         self.assertEqual(session.status, "failed")
 
     def test_gym_train_with_mock(self):
         """Full training loop with mocked LLM."""
-        from src.core.agent_gym import AgentGym
-        gym = AgentGym()
+        gym = self._make_gym()
 
         with _mock_llm(), \
              patch("src.core.agent_gym.agent_gym", gym), \
@@ -524,8 +527,8 @@ class TestAgentGym(unittest.TestCase):
 
     def test_elo_rating_update(self):
         """ELO rating should change after training."""
-        from src.core.agent_gym import AgentGym, SkillRating
-        gym = AgentGym()
+        from src.core.agent_gym import SkillRating
+        gym = self._make_gym()
 
         rating = SkillRating("test_role", "test_skill")
         initial = rating.rating
@@ -539,8 +542,8 @@ class TestAgentGym(unittest.TestCase):
 
     def test_elo_loss(self):
         """ELO should decrease on poor performance."""
-        from src.core.agent_gym import AgentGym, SkillRating
-        gym = AgentGym()
+        from src.core.agent_gym import SkillRating
+        gym = self._make_gym()
 
         rating = SkillRating("test_role", "test_skill", rating=1200.0)
         new_rating = gym._update_rating("test:test", rating, 20.0, False)
@@ -548,27 +551,35 @@ class TestAgentGym(unittest.TestCase):
         self.assertEqual(rating.losses, 1)
         self.assertEqual(rating.streak, -1)
 
-    def test_elo_k_factor_decreases(self):
-        """K-factor should decrease with more sessions (stability)."""
-        from src.core.agent_gym import AgentGym, SkillRating
-        gym = AgentGym()
+    def test_glicko2_rd_shrinks_with_data(self):
+        """Rating deviation should decrease as more data accumulates (Glicko-2)."""
+        from src.core.agent_gym import SkillRating
+        gym = self._make_gym()
 
-        # K=40 for first 10 sessions
-        rating = SkillRating("r", "s", sessions=5)
-        r1 = gym._update_rating("r:s", rating, 80.0, True)
+        # Fresh rating with high RD (uncertain)
+        rating = SkillRating("r", "s", rating_deviation=350.0)
+        initial_rd = rating.rating_deviation
 
-        # K=20 for sessions 10-30
-        rating2 = SkillRating("r2", "s2", sessions=15)
-        r2 = gym._update_rating("r2:s2", rating2, 80.0, True)
+        # After a few sessions, RD should shrink (more confident)
+        gym._update_rating("r:s", rating, 80.0, True)
+        gym._update_rating("r:s", rating, 75.0, True)
+        gym._update_rating("r:s", rating, 70.0, True)
 
-        # The early rating should move more (higher K)
-        delta1 = abs(r1 - 1000)
-        delta2 = abs(r2 - 1000)
-        self.assertGreater(delta1, delta2)
+        self.assertLess(rating.rating_deviation, initial_rd)
+        self.assertEqual(rating.sessions, 3)
+
+    def test_glicko2_confidence_interval(self):
+        """to_dict should include confidence interval."""
+        from src.core.agent_gym import SkillRating
+        rating = SkillRating("r", "s", rating=1200, rating_deviation=100)
+        d = rating.to_dict()
+        self.assertIn("confidence_interval", d)
+        self.assertEqual(d["confidence_interval"][0], 1000.0)
+        self.assertEqual(d["confidence_interval"][1], 1400.0)
 
     def test_leaderboard(self):
-        from src.core.agent_gym import AgentGym, SkillRating
-        gym = AgentGym()
+        from src.core.agent_gym import SkillRating
+        gym = self._make_gym()
         gym._ratings["a:s1"] = SkillRating("a", "s1", rating=1500)
         gym._ratings["b:s2"] = SkillRating("b", "s2", rating=1200)
         gym._ratings["c:s3"] = SkillRating("c", "s3", rating=1800)
@@ -578,8 +589,8 @@ class TestAgentGym(unittest.TestCase):
         self.assertEqual(board[-1]["rating"], 1200)
 
     def test_history(self):
-        from src.core.agent_gym import AgentGym, TrainingSession
-        gym = AgentGym()
+        from src.core.agent_gym import TrainingSession
+        gym = self._make_gym()
         for i in range(5):
             sid = f"session-{i}"
             gym._sessions[sid] = TrainingSession(
@@ -593,6 +604,123 @@ class TestAgentGym(unittest.TestCase):
         self.assertEqual(len(history), 3)
         # Most recent first
         self.assertEqual(history[0]["session_id"], "session-4")
+
+    def test_sqlite_persistence(self):
+        """Sessions and ratings survive gym restart."""
+        from src.core.agent_gym import AgentGym, SkillRating, TrainingSession
+        db_path = os.path.join(tempfile.mkdtemp(), "persist_test.db")
+
+        # First gym instance: add a rating and session
+        gym1 = AgentGym(db_path=db_path)
+        rating = SkillRating("dev", "swe", rating=1350)
+        gym1._ratings["dev:swe"] = rating
+        gym1._db.save_rating("dev:swe", rating)
+
+        session = TrainingSession(
+            session_id="persist-1", agent_role="dev", runner_name="openswe",
+            skill_name="swe", exercise_id="ex-1", difficulty="intermediate",
+            status="completed", grade={"score": 80, "passed": True},
+        )
+        gym1._db.save_session(session)
+
+        # Second gym instance: should restore ratings
+        gym2 = AgentGym(db_path=db_path)
+        self.assertIn("dev:swe", gym2._ratings)
+        self.assertEqual(gym2._ratings["dev:swe"].rating, 1350)
+
+        # Session queryable
+        loaded = gym2._db.load_session("persist-1")
+        self.assertIsNotNone(loaded)
+        self.assertEqual(loaded["agent_role"], "dev")
+
+    def test_analytics_empty(self):
+        """Analytics on empty gym returns valid structure."""
+        gym = self._make_gym()
+        data = gym.analytics(role="dev")
+        self.assertIn("global_stats", data)
+        self.assertIn("leaderboard", data)
+        self.assertIn("score_trend", data)
+        self.assertEqual(data["global_stats"]["total_sessions"], 0)
+
+    def test_curriculum_advance(self):
+        """Curriculum advances difficulty after enough wins."""
+        from src.core.agent_gym import AgentGym, SkillRating, TrainingSession
+        db_path = os.path.join(tempfile.mkdtemp(), "curriculum_test.db")
+        gym = AgentGym(db_path=db_path)
+
+        # Seed 5 completed sessions at beginner, all passing
+        for i in range(5):
+            s = TrainingSession(
+                session_id=f"cur-{i}", agent_role="dev", runner_name="openswe",
+                skill_name="swe", exercise_id=f"ex-{i}", difficulty="beginner",
+                status="completed", grade={"score": 85, "passed": True},
+                started_at=1000.0 + i,
+            )
+            gym._db.save_session(s)
+
+        rating = SkillRating("dev", "swe", current_difficulty="beginner")
+        gym._ratings["dev:swe"] = rating
+        gym._curriculum_check("dev:swe", rating)
+
+        # Should have advanced to intermediate
+        self.assertEqual(rating.current_difficulty, "intermediate")
+
+    def test_curriculum_demote(self):
+        """Curriculum demotes difficulty after enough losses."""
+        from src.core.agent_gym import AgentGym, SkillRating, TrainingSession
+        db_path = os.path.join(tempfile.mkdtemp(), "demote_test.db")
+        gym = AgentGym(db_path=db_path)
+
+        # Seed 6 completed sessions at intermediate, all failing
+        for i in range(6):
+            s = TrainingSession(
+                session_id=f"dem-{i}", agent_role="dev", runner_name="openswe",
+                skill_name="swe", exercise_id=f"ex-{i}", difficulty="intermediate",
+                status="completed", grade={"score": 15, "passed": False},
+                started_at=1000.0 + i,
+            )
+            gym._db.save_session(s)
+
+        rating = SkillRating("dev", "swe", current_difficulty="intermediate")
+        gym._ratings["dev:swe"] = rating
+        gym._curriculum_check("dev:swe", rating)
+
+        # Should have demoted to beginner
+        self.assertEqual(rating.current_difficulty, "beginner")
+
+    def test_spaced_repetition_scheduling(self):
+        """Failed exercises get scheduled for spaced repetition retry."""
+        from src.core.agent_gym import SkillRating
+        gym = self._make_gym()
+
+        rating = SkillRating("dev", "swe")
+        # Fail exercise ex-1
+        gym._update_rating("dev:swe", rating, 20.0, False, exercise_id="ex-1")
+
+        # Exercise should be in failed_exercises with retry at session+1
+        self.assertIn("ex-1", rating.failed_exercises)
+        self.assertEqual(rating.failed_exercises["ex-1"], 2)  # sessions(1) + interval(1)
+
+    def test_spaced_repetition_clear_on_pass(self):
+        """Passing a previously failed exercise clears it from spaced repetition."""
+        from src.core.agent_gym import SkillRating
+        gym = self._make_gym()
+
+        rating = SkillRating("dev", "swe")
+        # Fail, then pass
+        gym._update_rating("dev:swe", rating, 20.0, False, exercise_id="ex-1")
+        self.assertIn("ex-1", rating.failed_exercises)
+        gym._update_rating("dev:swe", rating, 85.0, True, exercise_id="ex-1")
+        self.assertNotIn("ex-1", rating.failed_exercises)
+
+    def test_batch_training_returns_sessions(self):
+        """Batch training returns a list of sessions."""
+        gym = self._make_gym()
+        # Batch with nonexistent roles should return failed sessions
+        sessions = gym.train_batch(roles=["nonexistent_a", "nonexistent_b"], max_parallel=2)
+        self.assertEqual(len(sessions), 2)
+        for s in sessions:
+            self.assertEqual(s.status, "failed")
 
 
 # ===========================================================================
@@ -628,6 +756,112 @@ class TestSkillDataClass(unittest.TestCase):
         d = s.to_dict()
         self.assertTrue(d["prompt"].endswith("..."))
         self.assertLessEqual(len(d["prompt"]), 204)
+
+
+# ===========================================================================
+# 7. Exercise Catalog Tests
+# ===========================================================================
+
+class TestExerciseCatalog(unittest.TestCase):
+    """Test the scalable exercise catalog system."""
+
+    def _make_catalog(self):
+        from src.core.exercise_catalog import ExerciseCatalog
+        db_path = os.path.join(tempfile.mkdtemp(), "test_catalog.db")
+        return ExerciseCatalog(db_path=db_path)
+
+    def test_seed_catalog_loads(self):
+        """Seed catalog should load exercises for all domains."""
+        catalog = self._make_catalog()
+        stats = catalog.stats()
+        self.assertGreater(stats["total_exercises"], 100)
+        self.assertIn("openfw", stats["domains"])
+        self.assertIn("openswe", stats["domains"])
+        self.assertIn("openml", stats["domains"])
+
+    def test_all_domains_have_seeds(self):
+        """Every domain in VARIANT_AXES should have seed exercises."""
+        from src.core.exercise_catalog import VARIANT_AXES
+        catalog = self._make_catalog()
+        for domain in VARIANT_AXES:
+            exercises = catalog.get_for_domain(domain)
+            self.assertGreater(len(exercises), 0, f"No seeds for {domain}")
+
+    def test_difficulty_filtering(self):
+        """Should filter exercises by difficulty."""
+        catalog = self._make_catalog()
+        beginner = catalog.get_for_domain("openfw", "beginner")
+        advanced = catalog.get_for_domain("openfw", "advanced")
+        self.assertTrue(all(e.difficulty == "beginner" for e in beginner))
+        self.assertTrue(all(e.difficulty == "advanced" for e in advanced))
+
+    def test_tag_search(self):
+        """Should find exercises by tags."""
+        catalog = self._make_catalog()
+        uart_exercises = catalog.get_for_tags(["uart"], "openfw")
+        self.assertGreater(len(uart_exercises), 0)
+        for ex in uart_exercises:
+            self.assertTrue("uart" in ex.tags)
+
+    def test_exercise_ids_deterministic(self):
+        """Same title should produce same ID across runs."""
+        catalog = self._make_catalog()
+        id1 = catalog._make_id("openfw", "LED blink timer")
+        id2 = catalog._make_id("openfw", "LED blink timer")
+        self.assertEqual(id1, id2)
+
+    def test_exercise_to_dict(self):
+        """Exercise should serialize to dict with all fields."""
+        from src.core.exercise_catalog import Exercise
+        ex = Exercise(
+            id="test-1", domain="openfw", skill="fw",
+            title="Test", description="Do the thing",
+            difficulty="beginner", tags=["test"],
+            acceptance_criteria=["It works"],
+        )
+        d = ex.to_dict()
+        self.assertEqual(d["id"], "test-1")
+        self.assertIn("tags", d)
+        self.assertIn("acceptance_criteria", d)
+
+    def test_catalog_count(self):
+        """Count should return per-domain and per-difficulty breakdown."""
+        catalog = self._make_catalog()
+        count = catalog.count("openfw")
+        self.assertIn("total", count)
+        self.assertIn("by_difficulty", count)
+        self.assertGreater(count["total"], 50)
+
+    def test_difficulty_distribution(self):
+        """Each domain should have exercises at multiple difficulty levels."""
+        catalog = self._make_catalog()
+        for domain in ["openfw", "openswe", "openml"]:
+            count = catalog.count(domain)
+            difficulties = count["by_difficulty"]
+            self.assertGreater(len(difficulties), 2,
+                               f"{domain} has only {len(difficulties)} difficulty levels")
+
+    def test_firmware_domain_coverage(self):
+        """Firmware domain should cover key embedded topics."""
+        catalog = self._make_catalog()
+        all_tags = set()
+        for ex in catalog.get_for_domain("openfw"):
+            all_tags.update(ex.tags)
+
+        required_topics = ["gpio", "uart", "spi", "i2c", "dma", "rtos", "safety", "power"]
+        for topic in required_topics:
+            self.assertIn(topic, all_tags, f"Firmware catalog missing topic: {topic}")
+
+    def test_software_domain_coverage(self):
+        """Software domain should cover key development topics."""
+        catalog = self._make_catalog()
+        all_tags = set()
+        for ex in catalog.get_for_domain("openswe"):
+            all_tags.update(ex.tags)
+
+        required_topics = ["api", "testing", "database", "security", "auth"]
+        for topic in required_topics:
+            self.assertIn(topic, all_tags, f"Software catalog missing topic: {topic}")
 
 
 if __name__ == "__main__":

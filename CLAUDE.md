@@ -28,8 +28,10 @@ src/                    Framework Python source
                          AdaptiveRouter (Q-learning), 32 task types, anti-drift checkpoints
     skill_loader.py     Modular skill registry — YAML skills, public/private/disabled visibility,
                          hot-reload, role/runner indexing, prompt building
-    agent_gym.py        Self-play training engine — MuZero-inspired exercise loop, ELO ratings,
+    agent_gym.py        Self-play training engine — Glicko-2 ratings, spaced repetition,
                          N-critic review, reflection, vector memory compounding
+    exercise_catalog.py Scalable exercise catalog — seed exercises + LLM-generated variants,
+                         8 domains, ~160 seeds expandable to 10,000+ via variant generation
   agents/               Analyst, Developer, Monitor, Planner, Universal, Critic
     critic.py           Actor-critic reviewer — N-provider multi-critic (Gemini, Claude, Ollama, etc.)
   interface/api.py      FastAPI — the only public interface
@@ -193,8 +195,15 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 16 | N-Provider Multi-Critic | `critic.py` (`multi_critic_review()`) | Any `ProviderPool` provider |
 | 16.1 | Auto-discover Gemini as critic | `critic.py` (`_ensure_gemini_registered()`) | Falls back to primary-only |
 | 17 | Agent Gym (self-play training) | `agent_gym.py` | `POST /gym/train`, `GET /gym/ratings` |
-| 17.1 | ELO skill ratings | `agent_gym.py` (`SkillRating`) | `GET /gym/ratings/{role}` |
+| 17.1 | Glicko-2 skill ratings | `agent_gym.py` (`SkillRating`) | Rating deviation + confidence intervals |
 | 17.2 | MuZero-style reflection loop | `agent_gym.py` (play → grade → critique → reflect → compound) | Vector memory compounding |
+| 17.3 | Spaced repetition | `agent_gym.py` (failed exercise scheduling) | Retry at +1, +3, +7, +15, +30 sessions |
+| 17.4 | Adaptive exercise selection | `agent_gym.py` (optimal zone 40-70% success rate) | Tier 1: spaced rep → Tier 2: optimal zone → Tier 3: unseen |
+| 17.5 | SQLite persistence + analytics | `agent_gym.py` (`GymDB`) | Score trends, weakness analysis, improvement rate |
+| 17.6 | Batch training + peer review | `agent_gym.py` (`train_batch`, `_get_peer_reviews`) | `POST /gym/train/batch` |
+| 18 | Exercise Catalog (scalable) | `exercise_catalog.py` | `GET /gym/catalog`, `POST /gym/catalog/generate` |
+| 18.1 | Seed exercises (~160 across 8 domains) | `exercise_catalog.py` (`_generate_seed_catalog`) | openfw, openswe, openml, openeda, opensim, opendoc, opendesign, openstrategy |
+| 18.2 | LLM-generated variants | `exercise_catalog.py` (`generate_variants`) | 10 variant axes per domain → 10,000+ exercises |
 
 ---
 
@@ -412,13 +421,34 @@ MuZero/AlphaZero-inspired self-play engine where agents improve skills through p
 
 Phase 5 feeds back into Phase 1. Agents get measurably better over time.
 
-### ELO Skill Ratings
+### Glicko-2 Skill Ratings
 
-Each agent role × skill combination has an ELO rating (starts at 1000):
-- K-factor adapts: K=40 (first 10 sessions), K=20 (10-30), K=10 (30+)
-- Win = exercise passed, Loss = failed
+Each agent role × skill combination has a Glicko-2 rating:
+- **Rating** (starts at 1000): skill level, clamped [100, 3000]
+- **Rating Deviation (RD)**: confidence interval — starts high (350, uncertain), shrinks with data (min 30)
+- **Volatility**: performance consistency — erratic agents have high volatility
+- **Confidence interval**: rating ± 2×RD (95% confidence)
 - Streak tracking for momentum detection
-- Clamped to [100, 3000] range
+
+### Spaced Repetition
+
+Failed exercises are scheduled for retry at increasing intervals:
+- After failure: retry at +1, +3, +7, +15, +30 sessions
+- Cleared from schedule when the exercise is finally passed
+- Highest priority in exercise selection (Tier 1)
+
+### Adaptive Exercise Selection (3 tiers)
+
+1. **Spaced repetition** — failed exercises due for retry (highest priority)
+2. **Optimal zone** — exercises where agent success rate is 40-70% (best learning zone)
+3. **Unseen** — exercises not yet attempted (exploration)
+
+### Exercise Catalog
+
+Scalable exercise system with ~160 seed exercises across 8 domains, expandable to 10,000+ via LLM-generated variants:
+- Each domain has 10 variant axes (platform, scale, constraint, etc.)
+- Variants are generated from seeds by the LLM and persisted in SQLite
+- Difficulty auto-calibration based on agent success rates
 
 ### API Endpoints
 
@@ -429,6 +459,12 @@ Each agent role × skill combination has an ELO rating (starts at 1000):
 | `GET` | `/gym/ratings` | Leaderboard (all agents) |
 | `GET` | `/gym/ratings/{role}` | Ratings for a specific role |
 | `GET` | `/gym/history` | Recent training sessions |
+| `GET` | `/gym/analytics` | Comprehensive analytics dashboard (trends, weaknesses, improvement rate) |
+| `GET` | `/gym/curriculum/{role}` | Curriculum status for a role (current difficulty, progression) |
+| `POST` | `/gym/train/batch` | Train multiple roles in parallel |
+| `GET` | `/gym/catalog` | Exercise catalog statistics |
+| `GET` | `/gym/catalog/{domain}` | Exercises for a domain (filterable by difficulty) |
+| `POST` | `/gym/catalog/generate` | Generate exercise variants from seeds via LLM |
 
 ---
 
