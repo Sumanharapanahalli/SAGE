@@ -26,8 +26,12 @@ src/                    Framework Python source
     build_orchestrator.py 0→1→N product build pipeline — domain detection (13 domains),
                          DOMAIN_RULES, WORKFORCE_REGISTRY (19 agents, 5 teams),
                          AdaptiveRouter (Q-learning), 32 task types, anti-drift checkpoints
+    skill_loader.py     Modular skill registry — YAML skills, public/private/disabled visibility,
+                         hot-reload, role/runner indexing, prompt building
+    agent_gym.py        Self-play training engine — MuZero-inspired exercise loop, ELO ratings,
+                         N-critic review, reflection, vector memory compounding
   agents/               Analyst, Developer, Monitor, Planner, Universal, Critic
-    critic.py           Actor-critic reviewer — scores plan, code, and integration quality
+    critic.py           Actor-critic reviewer — N-provider multi-critic (Gemini, Claude, Ollama, etc.)
   interface/api.py      FastAPI — the only public interface
   memory/               Audit logger, vector memory (CRUD + bulk import), long_term_memory.py
   modules/              Zero-dependency nano-modules
@@ -81,6 +85,11 @@ solutions/              Solution configurations (NOT framework code)
                           .sage/audit_log.db   ← proposals, approvals, audit trail
                           .sage/chroma_db/     ← vector knowledge store
                         .sage/ is runtime state — gitignored, never committed.
+
+skills/                 Modular agent skills (YAML-based, visibility-tiered)
+  public/               Open-source skills — shipped with SAGE (8 role families)
+  disabled/             Hidden skills — retained but not loaded
+  (private via SAGE_SKILLS_DIR env var — never in this repo)
 
 config/config.yaml      Base LLM / memory / integration / GitHub settings
 .venv/                  Python virtual environment (Windows: Scripts/, Unix: bin/)
@@ -178,6 +187,14 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 12.4 | Anti-drift checkpoints | `build_orchestrator.py` | `BUILD_DRIFT_WARNING` audit events |
 | 13 | Sandboxed Execution (3-tier cascade) | `openshell_runner.py`, `sandbox_runner.py`, `openswe_runner.py` | See Sandbox Execution section |
 | 14 | Domain-Aware Runners (Open\<Role\>) | `base_runner.py`, `openfw_runner.py`, `openeda_runner.py`, `opensim_runner.py`, `openml_runner.py`, `opendoc_runner.py`, `opendesign_runner.py`, `openstrategy_runner.py` | See Domain-Aware Runners section |
+| 15 | Modular Skill Marketplace | `skill_loader.py`, `skills/public/*.yaml` | `GET/POST /skills/*`, `SAGE_SKILLS_DIR` env var |
+| 15.1 | JD-sourced skills (8 families) | `skills/public/` (8 YAML files) | Auto-loaded at startup |
+| 15.2 | Visibility tiers (public/private/disabled) | `skill_loader.py` | `POST /skills/visibility` |
+| 16 | N-Provider Multi-Critic | `critic.py` (`multi_critic_review()`) | Any `ProviderPool` provider |
+| 16.1 | Auto-discover Gemini as critic | `critic.py` (`_ensure_gemini_registered()`) | Falls back to primary-only |
+| 17 | Agent Gym (self-play training) | `agent_gym.py` | `POST /gym/train`, `GET /gym/ratings` |
+| 17.1 | ELO skill ratings | `agent_gym.py` (`SkillRating`) | `GET /gym/ratings/{role}` |
+| 17.2 | MuZero-style reflection loop | `agent_gym.py` (play → grade → critique → reflect → compound) | Vector memory compounding |
 
 ---
 
@@ -290,6 +307,130 @@ Key 1→N differences:
 - Anti-drift checkpoints compare against established baseline
 
 The feedback loop compounds: every 0→1 build teaches the router and critic, making subsequent 1→N refinements faster and higher quality.
+
+## Modular Skill Marketplace
+
+Skills are YAML files — modular, hot-swappable, versioned, business-capable intellectual property.
+
+### Directory Structure
+
+```
+skills/
+  public/                    Open-source skills (shipped with SAGE)
+    firmware_engineering.yaml
+    pcb_design.yaml
+    hardware_simulation.yaml
+    machine_learning.yaml
+    technical_writing.yaml
+    ux_design.yaml
+    product_strategy.yaml
+    software_engineering.yaml
+  disabled/                  Hidden skills (not loaded)
+  (private via SAGE_SKILLS_DIR env var)
+```
+
+### Skill YAML Schema
+
+```yaml
+name: firmware_engineering
+version: "1.0.0"
+visibility: public          # public | private | disabled
+runner: openfw              # which runner family
+roles: [firmware_engineer, embedded_tester]
+tools: [gcc-arm-none-eabi, openocd, ...]
+prompt: |                   # system prompt fragment injected into agent
+  You are a senior embedded firmware engineer with expertise in...
+acceptance_criteria: [...]
+grading_rubric: {compilation: 25, binary_metrics: 15, ...}
+certifications: [IEC 62304, ISO 26262, ...]
+seniority_delta: {junior: [...], senior: [...]}
+keywords: [embedded C, RTOS, ...]
+tags: [embedded, firmware, safety-critical]
+```
+
+### Visibility Tiers
+
+| Tier | Purpose | Loaded | Exported |
+|---|---|---|---|
+| `public` | Open-source community skills | Yes | Yes |
+| `private` | Proprietary/trade-secret skills | Yes | Never |
+| `disabled` | Dormant skills (retained for versioning) | No | No |
+
+Private skills: set `SAGE_SKILLS_DIR=/path/to/private/skills` — loaded at startup, never committed to the SAGE repo.
+
+### API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/skills` | List all skills with stats |
+| `GET` | `/skills/{name}` | Get specific skill |
+| `GET` | `/skills/role/{role}` | Skills for an agent role |
+| `GET` | `/skills/runner/{runner}` | Skills for a runner |
+| `GET` | `/skills/search?q=...` | Search by name/keywords |
+| `POST` | `/skills/visibility` | Change skill visibility (framework control) |
+| `POST` | `/skills/reload` | Hot-reload all skills from disk |
+
+---
+
+## N-Provider Multi-Critic
+
+The `CriticAgent` supports any number of LLM providers reviewing in parallel. Not limited to two — add Gemini, OpenAI, Ollama, Mistral, or any `ProviderPool` provider.
+
+```
+POST /build/start → Plan generated
+  → multi_critic_review("plan", plan, description)
+    → Primary (current LLM): score=80
+    → Gemini: score=65
+    → Ollama/Mistral: score=72
+    → Aggregated: weighted mean (primary 1.5x) = 73
+    → Disagreements flagged (>20pt gap from mean)
+    → All flaws merged and deduplicated
+```
+
+Key methods:
+- `critic_agent.multi_critic_review(review_type, artifact, description)` — N-provider parallel review
+- `critic_agent.review_plan_multi(...)` / `review_code_multi(...)` / `review_integration_multi(...)` — per-type multi-provider
+- `critic_agent.dual_critic_review(...)` — backward-compat alias for `multi_critic_review`
+
+Auto-discovery: if Gemini CLI is installed, the critic auto-registers it as a pool provider on first use.
+
+---
+
+## Agent Gym — Self-Play Skill Training
+
+MuZero/AlphaZero-inspired self-play engine where agents improve skills through practice, not just instruction.
+
+### Training Loop
+
+```
+1. PLAY      → Agent attempts an exercise from its runner's skill set
+2. GRADE     → Runner grades the attempt (domain-specific verification)
+3. CRITIQUE  → N critics (Gemini, Claude, Ollama, ...) score independently
+4. REFLECT   → Agent reviews its output vs critic feedback, generates improvement plan
+5. COMPOUND  → Learnings stored in vector memory for next attempt
+```
+
+Phase 5 feeds back into Phase 1. Agents get measurably better over time.
+
+### ELO Skill Ratings
+
+Each agent role × skill combination has an ELO rating (starts at 1000):
+- K-factor adapts: K=40 (first 10 sessions), K=20 (10-30), K=10 (30+)
+- Win = exercise passed, Loss = failed
+- Streak tracking for momentum detection
+- Clamped to [100, 3000] range
+
+### API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/gym/train` | Start a training session |
+| `GET` | `/gym/session/{id}` | Get session details |
+| `GET` | `/gym/ratings` | Leaderboard (all agents) |
+| `GET` | `/gym/ratings/{role}` | Ratings for a specific role |
+| `GET` | `/gym/history` | Recent training sessions |
+
+---
 
 ## The .sage/ Directory — Solution Runtime Isolation
 

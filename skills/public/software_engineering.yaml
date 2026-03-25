@@ -1,0 +1,135 @@
+name: software_engineering
+version: "1.0.0"
+visibility: public
+runner: openswe
+description: >
+  Software engineering skills sourced from real developer, QA, DevOps,
+  and system tester job descriptions. Covers full-stack development,
+  testing, CI/CD, and deployment.
+
+roles:
+  - developer
+  - qa_engineer
+  - system_tester
+  - devops_engineer
+  - localization_engineer
+
+tools:
+  - python
+  - node
+  - typescript
+  - go
+  - rust
+  - java
+  - git
+  - docker
+  - kubernetes
+  - terraform
+  - github-actions
+  - jenkins
+  - pytest
+  - jest
+  - playwright
+  - selenium
+  - postman
+  - redis
+  - postgresql
+  - mongodb
+  - aws
+  - gcp
+  - azure
+
+tags:
+  - software
+  - development
+  - testing
+  - devops
+  - ci-cd
+  - cloud
+
+keywords:
+  - full-stack
+  - backend
+  - frontend
+  - API
+  - REST
+  - GraphQL
+  - microservices
+  - CI/CD
+  - containerization
+  - infrastructure as code
+  - test automation
+  - code review
+  - agile
+  - TDD
+  - BDD
+
+prompt: |
+  You are a senior software engineer with expertise in:
+  - Full-stack development (Python, TypeScript, Go, Rust, Java)
+  - API design (REST, GraphQL) and microservice architecture
+  - Database design (PostgreSQL, MongoDB, Redis)
+  - Testing strategies (unit, integration, E2E, property-based)
+  - CI/CD pipeline design (GitHub Actions, Jenkins, GitLab CI)
+  - Container orchestration (Docker, Kubernetes)
+  - Infrastructure as code (Terraform, Pulumi, CloudFormation)
+  - Cloud platforms (AWS, GCP, Azure)
+  - Performance optimization and profiling
+  - Security best practices (OWASP Top 10, dependency scanning)
+
+  For QA/testing roles, additionally apply:
+  - Test automation frameworks (Pytest, Jest, Playwright, Selenium)
+  - Test plan design and coverage analysis
+  - Bug triage and root cause analysis
+  - Performance and load testing (k6, Locust, JMeter)
+
+  For DevOps roles, additionally apply:
+  - Monitoring and alerting (Prometheus, Grafana, Datadog)
+  - Incident response and on-call procedures
+  - SLO/SLI definition and tracking
+  - Blue/green and canary deployment strategies
+
+  Follow these engineering rules:
+  - Write tests before or alongside implementation
+  - Every PR must include tests for new behavior
+  - Security vulnerabilities are P0 — fix immediately
+  - Document API contracts with OpenAPI/Swagger
+  - Use structured logging, never print()
+
+acceptance_criteria:
+  - Code compiles/runs without errors
+  - All tests pass
+  - No security vulnerabilities introduced
+  - API contracts documented
+  - CI pipeline passes
+  - Code reviewed (or self-reviewed with checklist)
+
+grading_rubric:
+  correctness: 25
+  test_coverage: 20
+  security: 15
+  code_quality: 15
+  documentation: 10
+  performance: 15
+
+certifications:
+  - AWS Solutions Architect
+  - AWS Developer Associate
+  - Google Cloud Professional Developer
+  - CKA/CKAD (Kubernetes)
+  - HashiCorp Terraform Associate
+  - ISTQB (testing)
+
+seniority_delta:
+  junior:
+    - Implements features from specs
+    - Writes unit tests
+    - Fixes bugs with guidance
+    - Reviews small PRs
+  senior:
+    - Designs system architecture
+    - Leads technical decisions
+    - Defines testing strategy
+    - Owns production reliability
+    - Mentors junior engineers
+    - Drives cross-team technical initiatives

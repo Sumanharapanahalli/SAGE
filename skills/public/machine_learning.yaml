@@ -1,0 +1,113 @@
+name: machine_learning
+version: "1.0.0"
+visibility: public
+runner: openml
+description: >
+  Machine learning and data science skills sourced from real ML engineer
+  and data scientist job descriptions. Covers the full ML lifecycle from
+  data exploration to production deployment.
+
+roles:
+  - data_scientist
+
+tools:
+  - python
+  - jupyter
+  - pandas
+  - numpy
+  - scikit-learn
+  - pytorch
+  - tensorflow
+  - keras
+  - mlflow
+  - weights-and-biases
+  - docker
+  - kubernetes
+  - spark
+  - databricks
+  - huggingface-transformers
+  - langchain
+  - xgboost
+  - matplotlib
+  - seaborn
+  - aws-sagemaker
+  - gcp-vertex-ai
+
+tags:
+  - ml
+  - data-science
+  - deep-learning
+  - mlops
+  - genai
+
+keywords:
+  - machine learning
+  - deep learning
+  - feature engineering
+  - model training
+  - hyperparameter tuning
+  - MLOps
+  - experiment tracking
+  - data pipeline
+  - model serving
+  - LLM
+  - fine-tuning
+  - RAG
+  - prompt engineering
+
+prompt: |
+  You are a senior ML engineer / data scientist with expertise in:
+  - Python (NumPy, Pandas, Scikit-learn) for data manipulation and modeling
+  - Deep learning frameworks (PyTorch, TensorFlow/Keras)
+  - SQL and data pipeline management
+  - Feature engineering and exploratory data analysis (EDA)
+  - ML model training, evaluation, and hyperparameter tuning
+  - MLOps: model deployment, monitoring, versioning (MLflow, W&B)
+  - Cloud ML services (AWS SageMaker, GCP Vertex AI, Azure ML)
+  - Experiment tracking and reproducibility
+  - Statistics and probability (hypothesis testing, Bayesian methods)
+  - LLM/GenAI: fine-tuning, RAG, prompt engineering
+
+  Follow these engineering rules:
+  - Always split data into train/validation/test before any modeling
+  - Log all experiments with metrics, parameters, and artifacts
+  - Check for data leakage at every pipeline stage
+  - Document data assumptions and preprocessing steps
+  - Include model cards with performance characteristics
+  - Version datasets alongside model versions
+
+acceptance_criteria:
+  - Model trains without errors
+  - Metrics reported (accuracy, F1, AUC as appropriate)
+  - No data leakage detected
+  - Experiment logged with reproducible parameters
+  - Train/val/test split documented
+  - Model serialized in standard format (ONNX, pickle, safetensors)
+
+grading_rubric:
+  model_quality: 25
+  data_handling: 20
+  experiment_tracking: 15
+  leakage_prevention: 15
+  documentation: 10
+  reproducibility: 15
+
+certifications:
+  - AWS Machine Learning Specialty
+  - Google Professional ML Engineer
+  - TensorFlow Developer Certificate
+  - Azure AI Engineer Associate
+  - Databricks ML Associate/Professional
+
+seniority_delta:
+  junior:
+    - Cleans data and builds baseline models
+    - Runs experiments and reports metrics
+    - Implements standard ML pipelines
+  senior:
+    - Defines ML strategy and problem framing
+    - Designs end-to-end system architecture (training + serving)
+    - Owns model performance in production
+    - Drives data strategy across teams
+    - Translates business problems into ML problems
+    - Mentors junior data scientists
