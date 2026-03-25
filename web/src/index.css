@@ -20,28 +20,28 @@
 /* Rounded aesthetic: soft corners throughout the framework */
 
 :root {
-  /* Sidebar */
-  --sage-sidebar-bg:          #18181b;   /* zinc-900 */
-  --sage-sidebar-text:        #a1a1aa;   /* zinc-400 */
-  --sage-sidebar-active-bg:   transparent;
-  --sage-sidebar-active-text: #f4f4f5;   /* zinc-100 */
-  --sage-sidebar-hover-bg:    #27272a;   /* zinc-800 */
-  --sage-sidebar-accent:      #71717a;   /* zinc-500 */
+  /* Sidebar — clean white + green HMI */
+  --sage-sidebar-bg:          #ffffff;   /* white background */
+  --sage-sidebar-text:        #4b5563;   /* gray-600 */
+  --sage-sidebar-active-bg:   #ecfdf5;   /* emerald-50 */
+  --sage-sidebar-active-text: #047857;   /* emerald-700 */
+  --sage-sidebar-hover-bg:    #f0fdf4;   /* green-50 */
+  --sage-sidebar-accent:      #10b981;   /* emerald-500 */
 
-  /* Primary accent — buttons, focused inputs, selected cards */
-  --sage-accent:              #3f3f46;   /* zinc-700 */
-  --sage-accent-hover:        #52525b;   /* zinc-600 */
-  --sage-accent-light:        #f4f4f5;   /* zinc-100 */
+  /* Primary accent — green action buttons */
+  --sage-accent:              #10b981;   /* emerald-500 */
+  --sage-accent-hover:        #059669;   /* emerald-600 */
+  --sage-accent-light:        #ecfdf5;   /* emerald-50 */
   --sage-accent-text:         #ffffff;
 
   /* Domain badge in header */
-  --sage-badge-bg:            #27272a;   /* zinc-800 */
-  --sage-badge-text:          #a1a1aa;   /* zinc-400 */
+  --sage-badge-bg:            #ecfdf5;   /* emerald-50 */
+  --sage-badge-text:          #047857;   /* emerald-700 */
 
   /* Company rail */
-  --sage-rail-bg:             #1e1e24;   /* softer dark — no pure black */
-  --sage-rail-text:           #71717a;   /* zinc-500 */
-  --sage-rail-active:         #f4f4f5;   /* zinc-100 */
+  --sage-rail-bg:             #f8fafc;   /* slate-50 */
+  --sage-rail-text:           #6b7280;   /* gray-500 */
+  --sage-rail-active:         #047857;   /* emerald-700 */
 }
 
 body {
@@ -54,7 +54,7 @@ body {
    ────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  --sage-user-accent:     #71717a;
+  --sage-user-accent:     #10b981;   /* emerald-500 */
   --sage-content-bg:      #fafafa;
   --sage-font-family:     'Inter', sans-serif;
   --sage-font-size-base:  14px;
