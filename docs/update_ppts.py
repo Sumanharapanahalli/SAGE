@@ -9,15 +9,15 @@ from pptx.enum.text import PP_ALIGN
 import copy
 from lxml import etree
 
-# ── Style constants ──────────────────────────────────────────────────
-BG_DARK    = RGBColor(0x0D, 0x1B, 0x2A)   # header/footer bar fill (matches existing)
-CARD_BG    = RGBColor(0x1e, 0x29, 0x3b)   # card backgrounds
+# ── Style constants — White + Emerald Green (NO blue, NO black) ─────
+BG_DARK    = RGBColor(0x1F, 0x2A, 0x37)   # gray-800 charcoal (NOT black)
+CARD_BG    = RGBColor(0xEC, 0xFD, 0xF5)   # emerald-50 light green cards
 WHITE      = RGBColor(0xff, 0xff, 0xff)
-SUBTITLE_C = RGBColor(0x00, 0xB4, 0xD8)   # subtitle (matches existing 00B4D8)
-ACCENT     = RGBColor(0x38, 0xbd, 0xf8)   # sky blue accent
-BODY_C     = RGBColor(0xcb, 0xd5, 0xe1)   # body text
-FOOTER_C   = RGBColor(0x64, 0x74, 0x87)   # footer text (matches 647487)
-MUTED      = RGBColor(0x94, 0xa3, 0xb8)   # muted / label text
+SUBTITLE_C = RGBColor(0x04, 0x78, 0x57)   # emerald-700 dark accent
+ACCENT     = RGBColor(0x10, 0xB9, 0x81)   # emerald-500 primary accent
+BODY_C     = RGBColor(0x1F, 0x2A, 0x37)   # gray-800 body text
+FOOTER_C   = RGBColor(0x4B, 0x55, 0x63)   # gray-600 footer text
+MUTED      = RGBColor(0x6B, 0x72, 0x80)   # gray-500 muted text
 
 TITLE_SZ   = 381000    # 30pt
 SUBTITLE_SZ = 203200   # 16pt

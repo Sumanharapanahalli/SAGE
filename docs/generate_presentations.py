@@ -11,15 +11,15 @@ from pptx.dml.color import RGBColor
 from pptx.util import Inches, Pt
 import copy, os
 
-# ── colour palette ────────────────────────────────────────────────────────────
-SAGE_DARK   = RGBColor(0x0D, 0x1B, 0x2A)   # near-black navy
-SAGE_BLUE   = RGBColor(0x00, 0x78, 0xD4)   # Microsoft-style blue
-SAGE_TEAL   = RGBColor(0x00, 0xB4, 0xD8)   # accent teal
-SAGE_AMBER  = RGBColor(0xFF, 0xB7, 0x00)   # warning / highlight amber
-SAGE_GREEN  = RGBColor(0x21, 0xC5, 0x5D)   # success green
-SAGE_LIGHT  = RGBColor(0xF0, 0xF4, 0xF8)   # slide background
+# ── colour palette — White + Emerald Green (NO blue, NO black) ───────────────
+SAGE_DARK   = RGBColor(0x1F, 0x2A, 0x37)   # gray-800 (dark charcoal — NOT black)
+SAGE_BLUE   = RGBColor(0x10, 0xB9, 0x81)   # emerald-500 (replaces blue everywhere)
+SAGE_TEAL   = RGBColor(0x04, 0x78, 0x57)   # emerald-700 (dark accent)
+SAGE_AMBER  = RGBColor(0xF5, 0x9E, 0x0B)   # amber-500
+SAGE_GREEN  = RGBColor(0x10, 0xB9, 0x81)   # emerald-500 — primary accent
+SAGE_LIGHT  = RGBColor(0xFA, 0xFA, 0xFA)   # near-white background
 WHITE       = RGBColor(0xFF, 0xFF, 0xFF)
-GREY        = RGBColor(0x64, 0x74, 0x87)
+GREY        = RGBColor(0x4B, 0x55, 0x63)   # gray-600
 
 DISCLAIMER = (
     "IMPORTANT: All financial figures, FTE savings, and ROI estimates "

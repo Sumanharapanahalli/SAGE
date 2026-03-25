@@ -1,6 +1,6 @@
 # Agent Framework Comparison
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage)
 [![GitHub Forks](https://img.shields.io/github/forks/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage/fork)
 
