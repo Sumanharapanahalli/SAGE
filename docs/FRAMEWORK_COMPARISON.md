@@ -6,7 +6,7 @@
 
 *Last updated: 2026-03-24*
 
-Use this document to evaluate SAGE against other agent frameworks when choosing the right tool for a project. SAGE is fully open source under Apache 2.0 at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage).
+Use this document to evaluate SAGE against other agent frameworks when choosing the right tool for a project. SAGE is fully open source under MIT at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage).
 
 ---
 
@@ -14,7 +14,7 @@ Use this document to evaluate SAGE against other agent frameworks when choosing 
 
 | Framework | Maker | Core Model | Primary Strength |
 |---|---|---|---|
-| **SAGE** | Open source (Apache 2.0) | Lean + Human-in-loop | Regulated industries, compliance-critical workflows |
+| **SAGE** | Open source (MIT) | Lean + Human-in-loop | Regulated industries, compliance-critical workflows |
 | **LangGraph** | LangChain Inc | Graph-based state machines | Complex multi-step agent flows, fine-grained control |
 | **CrewAI** | CrewAI Inc | Role-based multi-agent | Collaborative agent teams, business automation |
 | **AutoGen** | Microsoft | Conversational multi-agent | Research, code generation, self-healing agents |
@@ -274,7 +274,7 @@ These frameworks are not mutually exclusive:
 
 ## Open-Source Model
 
-SAGE is released under **Apache 2.0** at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage).
+SAGE is released under **MIT** at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage).
 
 - **Framework is open:** All 136 API endpoints, 27 UI pages, 17+ solution templates, and the complete agent architecture are public and auditable
 - **Solutions are private:** Mount your proprietary domain configs via `SAGE_SOLUTIONS_DIR` from a separate private repository. Your YAML configs, knowledge bases, and `.sage/` audit data never touch the public repo

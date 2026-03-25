@@ -100,7 +100,7 @@ def header_band(slide, title, subtitle=None, bg=SAGE_DARK, title_color=WHITE, su
                      font_size=16, bold=False, color=sub_color, align=PP_ALIGN.LEFT)
 
 
-def footer_band(slide, text="SAGE[ai] — Open Source (Apache 2.0) | github.com/Sumanharapanahalli/sage | March 2026", include_disclaimer=False):
+def footer_band(slide, text="SAGE[ai] — Open Source (MIT) | github.com/Sumanharapanahalli/sage | March 2026", include_disclaimer=False):
     add_rect(slide, 0, Inches(7.1), SLIDE_W, Inches(0.4), fill_color=SAGE_DARK)
     add_text_box(slide, text,
                  Inches(0.3), Inches(7.12), Inches(9), Inches(0.3),
@@ -213,7 +213,7 @@ def build_business_case():
     add_text_box(slide, "Transforming Medical Device Production with Agentic AI",
                  Inches(1), Inches(3.55), Inches(11), Inches(0.55),
                  font_size=18, bold=False, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Open Source (Apache 2.0) — Business Case Presentation — March 2026",
+    add_text_box(slide, "Open Source (MIT) — Business Case Presentation — March 2026",
                  Inches(1), Inches(5.5), Inches(11), Inches(0.45),
                  font_size=14, color=GREY, align=PP_ALIGN.CENTER)
     add_text_box(slide, "github.com/Sumanharapanahalli/sage",
@@ -349,7 +349,7 @@ def build_business_case():
     # ── Slide 8 — Capabilities ─────────────────────────────────────────────────
     table_slide(prs,
         "What SAGE[ai] Does Today",
-        "136 API endpoints across 12 integration phases — all open source (Apache 2.0)",
+        "136 API endpoints across 12 integration phases — all open source (MIT)",
         ["No.", "Capability", "Description"],
         [
             ["01", "Log Analysis",        "AI triage in under 60 s — severity RED / AMBER / GREEN with root-cause reasoning"],
@@ -550,7 +550,7 @@ def build_tech_pitch():
                  "A modular open-source AI agent framework\nbuilt on lean development methodology at machine speed",
                  Inches(1.5), Inches(3.1), Inches(10), Inches(0.9),
                  font_size=17, italic=True, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Open Source (Apache 2.0) — Technical Platform Overview — March 2026",
+    add_text_box(slide, "Open Source (MIT) — Technical Platform Overview — March 2026",
                  Inches(1), Inches(5.7), Inches(11), Inches(0.45),
                  font_size=14, color=GREY, align=PP_ALIGN.CENTER)
 
@@ -1147,7 +1147,7 @@ def build_tech_pitch():
                  Inches(0.8), Inches(0.8), Inches(11.5), Inches(0.9),
                  font_size=44, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
     add_text_box(slide,
-                 "Open Source (Apache 2.0). Lean development at machine speed.\nYAML-first. Agent-native. Human-in-the-loop always.",
+                 "Open Source (MIT). Lean development at machine speed.\nYAML-first. Agent-native. Human-in-the-loop always.",
                  Inches(0.8), Inches(1.75), Inches(11.5), Inches(1.0),
                  font_size=20, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
 
@@ -1197,7 +1197,7 @@ def build_investor_pitch():
                  "Autonomous AI Agent Infrastructure for Regulated Industries",
                  Inches(1.5), Inches(3.1), Inches(10.3), Inches(0.65),
                  font_size=18, italic=True, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Investor Presentation — March 2026 — Open Source (Apache 2.0)",
+    add_text_box(slide, "Investor Presentation — March 2026 — Open Source (MIT)",
                  Inches(1), Inches(5.9), Inches(11.3), Inches(0.45),
                  font_size=13, color=GREY, align=PP_ALIGN.CENTER)
 
@@ -1307,7 +1307,7 @@ def build_investor_pitch():
 
     # -- Slide 6 — Product Capabilities ------------------------------------------
     table_slide(prs,
-        "Platform Capabilities — 136 Endpoints, Open Source (Apache 2.0)",
+        "Platform Capabilities — 136 Endpoints, Open Source (MIT)",
         "From core agent loop to enterprise-grade orchestration — all production-ready, all open source",
         ["Capability", "What It Does", "Value Delivered"],
         [
@@ -1468,7 +1468,7 @@ def build_investor_pitch():
     stats = [
         ("136",  "API endpoints across 22 categories", "27 UI pages, 17+ solution templates",       SAGE_DARK),
         ("79",   "E2E browser tests (78 passing)",     "53 test files, full API lifecycle coverage", SAGE_BLUE),
-        ("5",    "LLM providers — zero API keys",      "Open source Apache 2.0 on GitHub",          SAGE_TEAL),
+        ("5",    "LLM providers — zero API keys",      "Open source MIT on GitHub",          SAGE_TEAL),
     ]
     left = Inches(0.5)
     for big, mid, small, color in stats:
@@ -1485,7 +1485,7 @@ def build_investor_pitch():
         left += Inches(4.3)
 
     milestones = [
-        "Open source release: Apache 2.0 on GitHub — 136 endpoints, 27 pages, 17+ solution templates",
+        "Open source release: MIT on GitHub — 136 endpoints, 27 pages, 17+ solution templates",
         "12 integrations live: SSE streaming, onboarding wizard, Slack, LangGraph, Temporal, eval, multi-tenant",
         "Build Orchestrator: 13 domain detection, 19 agents, 5 teams, Q-learning adaptive router",
         "Community-driven: framework is public, proprietary solutions mounted via SAGE_SOLUTIONS_DIR",
@@ -1580,7 +1580,7 @@ def build_investor_pitch():
                  Inches(0.8), Inches(1.95), Inches(11.7), Inches(0.7),
                  font_size=20, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
     add_text_box(slide,
-                 "Apache 2.0. Lean development at machine speed.\nCompliant by design. Human judgment always in the loop.",
+                 "MIT. Lean development at machine speed.\nCompliant by design. Human judgment always in the loop.",
                  Inches(0.8), Inches(2.75), Inches(11.7), Inches(1.0),
                  font_size=17, italic=True, color=GREY, align=PP_ALIGN.CENTER)
 

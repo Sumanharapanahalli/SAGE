@@ -27,7 +27,7 @@ SAGE is the operating system for that company.
 - **Agents propose. Humans decide.** Every agent action waits for human approval before execution. Compliance is built-in, not bolted on.
 - **Compounding intelligence.** Every approval, rejection, and correction is stored in vector memory. Agents improve with every interaction — no retraining, no cold starts.
 - **Domain-agnostic.** Three YAML files define an entire company function. No Python changes. Swap domains, swap teams, swap industries — the framework stays unchanged.
-- **Open-source first.** Licensed under Apache 2.0. Zero mandatory API keys. Runs fully offline with Ollama. Every dependency has a free, self-hosted alternative. The framework is fully open on GitHub; your proprietary solutions stay in a private repo mounted via `SAGE_SOLUTIONS_DIR`.
+- **Open-source first.** Licensed under MIT. Zero mandatory API keys. Runs fully offline with Ollama. Every dependency has a free, self-hosted alternative. The framework is fully open on GitHub; your proprietary solutions stay in a private repo mounted via `SAGE_SOLUTIONS_DIR`.
 
 ---
 
@@ -233,8 +233,8 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 | LLM (cloud, free) | Gemini CLI, Claude Code CLI | Free tier |
 | Orchestration | LangGraph | MIT |
 | Code Agent | AutoGen | MIT |
-| Vector Memory | ChromaDB + LlamaIndex | Apache 2.0 |
-| Long-term Memory | mem0 | Apache 2.0 |
+| Vector Memory | ChromaDB + LlamaIndex | MIT |
+| Long-term Memory | mem0 | MIT |
 | Tools Standard | FastMCP | MIT |
 | Observability | Langfuse (self-hosted) | MIT |
 | Workflows | Temporal.io | MIT |
@@ -256,7 +256,7 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 
 ---
 
-*SAGE Framework — Open Source (Apache 2.0) · Self-Hosted · Agent-First · Community-Driven*
+*SAGE Framework — Open Source (MIT) · Self-Hosted · Agent-First · Community-Driven*
 *github.com/Sumanharapanahalli/sage*
 
 ---
@@ -265,7 +265,7 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 
 SAGE follows an **open-core** approach:
 
-- **Framework (this repo):** Fully open source under Apache 2.0. All 136 API endpoints, 27 UI pages, 17+ solution templates, and the complete agent architecture are public, auditable, and forkable.
+- **Framework (this repo):** Fully open source under MIT. All 136 API endpoints, 27 UI pages, 17+ solution templates, and the complete agent architecture are public, auditable, and forkable.
 - **Your solutions (private):** Mount via `SAGE_SOLUTIONS_DIR` from a separate private repository. Your proprietary YAML configs, domain knowledge, and `.sage/` runtime data never touch the public repo.
 - **Community contributions welcome:** File issues, submit PRs, propose new solution templates, or build MCP tool servers. See `CONTRIBUTING.md` for guidelines.
 - **Transparent by design:** Every agent decision, every approval, every rejection is logged in an immutable audit trail. The codebase itself is public for security review and regulatory confidence.

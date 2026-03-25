@@ -5,7 +5,7 @@
 
 > **Why regulated teams (medical, fintech, aerospace, defence) choose SAGE over LangGraph, CrewAI, AutoGen, and others.**
 >
-> SAGE is fully open source under Apache 2.0 at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage). The open codebase allows regulators and auditors to inspect the entire AI agent toolchain — a critical advantage in compliance-driven environments.
+> SAGE is fully open source under MIT at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage). The open codebase allows regulators and auditors to inspect the entire AI agent toolchain — a critical advantage in compliance-driven environments.
 
 ---
 
@@ -47,7 +47,7 @@ In regulated environments (ISO 13485, IEC 62304, FDA 21 CFR Part 11, GxP, SOC 2,
 | **Slack two-way approval** | ✅ Block Kit + webhook | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **n8n / webhook triggers** | ✅ 400+ sources | ❌ | ❌ | ❌ | ❌ | ✅ |
 | **Temporal durable workflows** | ✅ | ⚠️ LangGraph Cron | ❌ | ❌ | ❌ | ❌ |
-| **Open source** | ✅ Apache 2.0 | ✅ MIT | ✅ MIT | ✅ MIT | ✅ MIT | ✅ Apache |
+| **Open source** | ✅ MIT | ✅ MIT | ✅ MIT | ✅ MIT | ✅ MIT | ✅ Apache |
 
 ---
 
@@ -242,7 +242,7 @@ Is the team Azure-committed enterprise? ─────────────�
 
 ## Open-Source Advantage for Regulated Industries
 
-SAGE's open-source model (Apache 2.0) provides unique advantages in regulated environments:
+SAGE's open-source model (MIT) provides unique advantages in regulated environments:
 
 - **Auditor transparency:** The entire agent framework codebase is publicly auditable on GitHub. Regulators can inspect how human approval gates, audit trails, and compliance modes are implemented — no black boxes.
 - **No vendor lock-in:** Self-hosted, air-gappable, no mandatory API keys. Fork it, modify it, own the entire stack. Critical for organizations requiring long-term control of their toolchain.
@@ -252,5 +252,5 @@ SAGE's open-source model (Apache 2.0) provides unique advantages in regulated en
 
 ---
 
-*SAGE Framework — Open Source (Apache 2.0) · Built for regulated production from day one.*
+*SAGE Framework — Open Source (MIT) · Built for regulated production from day one.*
 *github.com/Sumanharapanahalli/sage · See also: `ARCHITECTURE.md` · `docs/SAGE_ONE_PAGER.md` · `docs/API_REFERENCE.md`*

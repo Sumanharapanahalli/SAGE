@@ -15,7 +15,7 @@
 - Founder reviews only decisions that require human judgment
 - The rest runs autonomously, with a complete audit trail
 
-**Live today.** Open source under Apache 2.0. Zero mandatory API keys. Community-driven on GitHub.
+**Live today.** Open source under MIT. Zero mandatory API keys. Community-driven on GitHub.
 
 ---
 
@@ -320,7 +320,7 @@ npm install -g @google/gemini-cli && gemini  # free Google login
 
 ---
 
-*SAGE Framework — Open Source (Apache 2.0) · Self-Hosted · Agent-First · Community-Driven*
+*SAGE Framework — Open Source (MIT) · Self-Hosted · Agent-First · Community-Driven*
 *136 API endpoints · 27 UI pages · 79 E2E tests (78 passing) · 17+ solution templates · github.com/Sumanharapanahalli/sage*
 
 ---
@@ -331,7 +331,7 @@ npm install -g @google/gemini-cli && gemini  # free Google login
 
 | Layer | Visibility | How |
 |---|---|---|
-| **SAGE Framework** | Open source (Apache 2.0) | `github.com/Sumanharapanahalli/sage` |
+| **SAGE Framework** | Open source (MIT) | `github.com/Sumanharapanahalli/sage` |
 | **Your solutions** | Private | Mount via `SAGE_SOLUTIONS_DIR` from a separate repo |
 | **Runtime data (.sage/)** | Per-solution, gitignored | Auto-created, never committed |
 

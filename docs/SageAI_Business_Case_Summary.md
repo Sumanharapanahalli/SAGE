@@ -4,7 +4,7 @@
 [![GitHub](https://img.shields.io/badge/GitHub-Sumanharapanahalli%2Fsage-blue)](https://github.com/Sumanharapanahalli/sage)
 
 ### Business Case Presentation — March 2026
-*Open Source under Apache 2.0 — github.com/Sumanharapanahalli/sage*
+*Open Source under MIT — github.com/Sumanharapanahalli/sage*
 
 ---
 
@@ -36,7 +36,7 @@
 - ✅ Human-in-the-loop: AI advises, humans decide — always
 - ✅ Learns from every correction via vector memory (RAG)
 - ✅ Web dashboard for all stakeholders — no CLI required
-- ✅ Fully open source (Apache 2.0) — transparent, auditable, community-driven
+- ✅ Fully open source (MIT) — transparent, auditable, community-driven
 - ✅ Framework is public on GitHub; proprietary solutions stay in private repos via `SAGE_SOLUTIONS_DIR`
 
 ---
@@ -179,7 +179,7 @@
 
 ## Open-Source Advantage
 
-SAGE is released under **Apache 2.0** on GitHub at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage).
+SAGE is released under **MIT** on GitHub at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage).
 
 - **Transparency:** Every line of framework code is publicly auditable — critical for regulated environments where auditors need to inspect the AI toolchain
 - **No vendor lock-in:** Self-hosted, no mandatory API keys, no cloud dependency. Fork it, modify it, own it.
