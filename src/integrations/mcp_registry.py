@@ -2,21 +2,23 @@
 SAGE Framework — MCP Registry
 ==============================
 Discovers and manages MCP (Model Context Protocol) servers for the active
-solution. Provides a unified interface for agents to list and invoke tools
-without knowing which server file they live in.
+solution AND framework-level built-in tools. Provides a unified interface
+for agents to list and invoke tools without knowing which server file they
+live in or which LLM provider is active.
 
 Architecture:
-  solutions/<name>/mcp_servers/*.py   ← each file is an MCP server module
-                                         containing `mcp = FastMCP(...)`
-                                         with @mcp.tool() decorated functions
+  src/mcp_servers/*.py                ← framework tools (filesystem, browser,
+                                         sqlite) — always available, any provider
+  solutions/<name>/mcp_servers/*.py   ← solution-specific tools — loaded per
+                                         active solution
 
   MCPRegistry.list_tools()            ← returns all available tools with docs
   MCPRegistry.invoke(tool, args)      ← calls any tool by name
 
 Every tool invocation is audit-logged with a trace_id.
 
-The registry is domain-agnostic: it discovers whatever tools the active
-solution defines, not a hardcoded list.
+The registry is provider-agnostic: agents call tools as Python functions
+through invoke(). Works identically on Gemini, Ollama, Claude, local, etc.
 """
 
 import importlib
@@ -48,7 +50,11 @@ class MCPRegistry:
     # Discovery
     # ------------------------------------------------------------------
 
-    def _get_mcp_dir(self) -> str:
+    def _get_framework_mcp_dir(self) -> str:
+        """Resolve path to framework-level built-in MCP servers."""
+        return os.path.join(os.path.dirname(os.path.dirname(__file__)), "mcp_servers")
+
+    def _get_solution_mcp_dir(self) -> str:
         """Resolve path to active solution's mcp_servers/ directory."""
         try:
             from src.core.project_loader import project_config, _SOLUTIONS_DIR
@@ -58,7 +64,11 @@ class MCPRegistry:
 
     def load(self, force: bool = False) -> int:
         """
-        Discover and import all MCP server modules for the active solution.
+        Discover and import MCP server modules from both framework-level
+        (src/mcp_servers/) and solution-level (solutions/<name>/mcp_servers/).
+
+        Framework tools are always loaded first. Solution tools are loaded
+        on top and can override framework tools if they share a name.
 
         Args:
             force: Re-discover even if already loaded for this solution.
@@ -79,20 +89,29 @@ class MCPRegistry:
         self._tool_map.clear()
         self._loaded_solution = solution
 
-        mcp_dir = self._get_mcp_dir()
-        if not mcp_dir or not os.path.isdir(mcp_dir):
-            logger.debug("No mcp_servers/ directory found at: %s", mcp_dir)
-            return 0
+        # 1. Load framework-level tools (always available, any LLM provider)
+        fw_dir = self._get_framework_mcp_dir()
+        if fw_dir and os.path.isdir(fw_dir):
+            for filename in sorted(os.listdir(fw_dir)):
+                if not filename.endswith(".py") or filename.startswith("_"):
+                    continue
+                self._load_server(fw_dir, filename)
+            logger.debug(
+                "Framework MCP: loaded %d tool(s) from %s",
+                len(self._tool_map), fw_dir,
+            )
 
-        # Add solution dir to sys.path so servers can do relative imports
-        solution_dir = os.path.dirname(mcp_dir)
-        if solution_dir not in sys.path:
-            sys.path.insert(0, solution_dir)
+        # 2. Load solution-level tools (override framework if name collides)
+        sol_dir = self._get_solution_mcp_dir()
+        if sol_dir and os.path.isdir(sol_dir):
+            solution_dir = os.path.dirname(sol_dir)
+            if solution_dir not in sys.path:
+                sys.path.insert(0, solution_dir)
 
-        for filename in sorted(os.listdir(mcp_dir)):
-            if not filename.endswith(".py") or filename.startswith("_"):
-                continue
-            self._load_server(mcp_dir, filename)
+            for filename in sorted(os.listdir(sol_dir)):
+                if not filename.endswith(".py") or filename.startswith("_"):
+                    continue
+                self._load_server(sol_dir, filename)
 
         logger.info(
             "MCPRegistry loaded %d tool(s) from %d server(s) [solution: %s]",
@@ -130,13 +149,41 @@ class MCPRegistry:
         """
         Extract tool callables from a FastMCP instance.
 
-        FastMCP stores tools in ._tools (dict[name -> Tool]) where each Tool
-        has a .fn callable. Fall back to scanning module functions decorated
-        with __mcp_tool__ if the private attr is absent.
+        Supports multiple FastMCP versions:
+          - v2+: providers[0].list_tools() → FunctionTool with .fn
+          - v1:  _tool_manager._tools or ._tools dict
+          - Fallback: scan module for __mcp_tool__ tagged callables
         """
         count = 0
 
-        # FastMCP internal: _tool_manager._tools or ._tools
+        # --- FastMCP v2+: providers → LocalProvider → list_tools() ---
+        providers = getattr(mcp_instance, "providers", None)
+        if providers:
+            import asyncio
+            for provider in providers:
+                list_fn = getattr(provider, "list_tools", None)
+                if not list_fn:
+                    continue
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+                if loop and loop.is_running():
+                    import concurrent.futures
+                    with concurrent.futures.ThreadPoolExecutor() as pool:
+                        tools = pool.submit(asyncio.run, list_fn()).result()
+                else:
+                    tools = asyncio.run(list_fn())
+                for tool_obj in tools:
+                    fn = getattr(tool_obj, "fn", None)
+                    name = getattr(tool_obj, "name", None)
+                    if callable(fn) and name:
+                        self._tool_map[name] = fn
+                        count += 1
+            if count > 0:
+                return count
+
+        # --- FastMCP v1: _tool_manager._tools or ._tools dict ---
         raw_tools: dict = {}
         for attr in ("_tool_manager", "_tools"):
             obj = getattr(mcp_instance, attr, None)
@@ -156,7 +203,7 @@ class MCPRegistry:
                     count += 1
             return count
 
-        # Fallback: scan module-level callables tagged by FastMCP decorator
+        # --- Fallback: scan module-level callables tagged by decorator ---
         for attr_name in dir(module):
             fn = getattr(module, attr_name, None)
             if callable(fn) and getattr(fn, "_is_mcp_tool", False):
