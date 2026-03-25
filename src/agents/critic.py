@@ -345,6 +345,295 @@ class CriticAgent:
 
         return self._parse_critic_json(result.get("response", ""), result)
 
+    def review_code_multi(
+        self,
+        code_diff: str,
+        task_description: str,
+        context: str = "",
+        strategy: str = "quality",
+        provider_names: list | None = None,
+    ) -> Dict[str, Any]:
+        """Review code using multiple LLM providers in parallel.
+
+        Falls back to single-provider review_code when no pool providers
+        are registered.
+        """
+        pool = self.llm.provider_pool
+        if not pool.list_providers():
+            return self.review_code(code_diff, task_description, context)
+
+        user_prompt = (
+            f"## Task Description\n{task_description}\n\n"
+            f"## Code Diff\n```\n{code_diff[:8000]}\n```\n"
+        )
+        if context:
+            user_prompt += f"\n## Additional Context\n{context}\n"
+
+        from src.core.llm_gateway import generate_parallel
+        result = generate_parallel(
+            pool, user_prompt, self.CODE_REVIEW_PROMPT,
+            strategy=strategy, provider_names=provider_names,
+        )
+        if "error" in result:
+            return {"error": result["error"], "score": 0}
+        return self._parse_critic_json(result.get("response", ""), result)
+
+    def review_integration_multi(
+        self,
+        test_results: str,
+        diff: str,
+        context: str = "",
+        strategy: str = "quality",
+        provider_names: list | None = None,
+    ) -> Dict[str, Any]:
+        """Review integration using multiple LLM providers in parallel.
+
+        Falls back to single-provider review_integration when no pool providers
+        are registered.
+        """
+        pool = self.llm.provider_pool
+        if not pool.list_providers():
+            return self.review_integration(test_results, diff, context)
+
+        user_prompt = (
+            f"## Test Results\n```\n{test_results[:4000]}\n```\n\n"
+            f"## Combined Diff\n```\n{diff[:8000]}\n```\n"
+        )
+        if context:
+            user_prompt += f"\n## Additional Context\n{context}\n"
+
+        from src.core.llm_gateway import generate_parallel
+        result = generate_parallel(
+            pool, user_prompt, self.INTEGRATION_REVIEW_PROMPT,
+            strategy=strategy, provider_names=provider_names,
+        )
+        if "error" in result:
+            return {"error": result["error"], "score": 0}
+        return self._parse_critic_json(result.get("response", ""), result)
+
+    # ------------------------------------------------------------------
+    # N-critic review (any number of providers)
+    # ------------------------------------------------------------------
+
+    def multi_critic_review(
+        self,
+        review_type: str,
+        artifact: Any,
+        description: str,
+        context: str = "",
+        provider_names: list | None = None,
+    ) -> Dict[str, Any]:
+        """
+        Run N-provider critic review for diverse quality assessment.
+
+        Uses all registered providers in the ProviderPool (Gemini, OpenAI,
+        Ollama, Mistral, etc.) plus the primary provider. Each reviews
+        independently, scores are aggregated.
+
+        Aggregation:
+          - Final score = weighted mean (primary gets 1.5x weight)
+          - All flaws/issues merged and deduplicated
+          - Per-provider reviews attached for transparency
+          - Disagreements (>20pt gap from mean) flagged for human attention
+
+        Args:
+            review_type: "plan", "code", or "integration"
+            artifact: The artifact to review.
+            description: What the artifact should accomplish.
+            context: Additional context for the review.
+            provider_names: Optional list of specific providers to use.
+                           If None, uses all registered + primary.
+
+        Returns:
+            Dict with aggregated score, individual reviews, disagreements.
+        """
+        import concurrent.futures
+
+        self.logger.info("Multi-critic review (%s) starting", review_type)
+
+        # 1. Always include primary provider
+        reviews: dict[str, dict] = {}
+
+        # Build the user prompt once
+        system_prompt, user_prompt = self._build_review_prompt(
+            review_type, artifact, description, context
+        )
+
+        # 2. Gather which providers to call
+        pool = self.llm.provider_pool
+        pool_names = provider_names or pool.list_providers()
+
+        # Ensure Gemini is auto-discovered if not already registered
+        if "gemini" not in pool_names:
+            self._ensure_gemini_registered(pool)
+            if pool.get("gemini"):
+                pool_names = pool.list_providers() if not provider_names else provider_names
+
+        # 3. Call primary + all pool providers in parallel
+        def _call_primary():
+            return ("primary", self._get_single_review(review_type, artifact, description, context))
+
+        def _call_pool_provider(name):
+            provider = pool.get(name)
+            if not provider:
+                return (name, {"score": 0, "error": f"Provider '{name}' not found"})
+            try:
+                resp = provider.generate(user_prompt, system_prompt)
+                return (name, self._parse_critic_json(resp, {"provider": name}))
+            except Exception as exc:
+                self.logger.warning("Critic provider '%s' failed: %s", name, exc)
+                return (name, {"score": 0, "error": str(exc)})
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(pool_names) + 1) as executor:
+            futures = [executor.submit(_call_primary)]
+            for name in pool_names:
+                futures.append(executor.submit(_call_pool_provider, name))
+
+            for future in concurrent.futures.as_completed(futures):
+                name, review = future.result()
+                reviews[name] = review
+
+        # 4. Aggregate scores (primary gets 1.5x weight)
+        scored = {n: r.get("score", 0) for n, r in reviews.items() if "error" not in r}
+        if not scored:
+            scored = {"primary": reviews.get("primary", {}).get("score", 0)}
+
+        weight_sum = 0
+        weighted_total = 0
+        for name, score in scored.items():
+            w = 1.5 if name == "primary" else 1.0
+            weighted_total += score * w
+            weight_sum += w
+        final_score = int(weighted_total / max(weight_sum, 1))
+
+        # 5. Merge all flaws
+        all_flaws = []
+        seen_flaws = set()
+        for r in reviews.values():
+            for flaw in r.get("flaws", r.get("issues", r.get("gaps", []))):
+                if flaw not in seen_flaws:
+                    all_flaws.append(flaw)
+                    seen_flaws.add(flaw)
+
+        # 6. Detect disagreements (>20pt from mean)
+        mean_score = sum(scored.values()) / max(len(scored), 1)
+        disagreements = []
+        for name, score in scored.items():
+            gap = abs(score - mean_score)
+            if gap > 20:
+                disagreements.append(
+                    f"{name}={score} vs mean={int(mean_score)} (gap={int(gap)})"
+                )
+
+        # 7. Merge suggestions, missing, security_risks
+        def _merge_key(key):
+            merged = []
+            seen = set()
+            for r in reviews.values():
+                for item in r.get(key, []):
+                    if item not in seen:
+                        merged.append(item)
+                        seen.add(item)
+            return merged
+
+        provider_scores = {n: r.get("score", 0) for n, r in reviews.items()}
+        summary_parts = ", ".join(f"{n}={s}" for n, s in provider_scores.items())
+
+        result = {
+            "score": final_score,
+            "provider_scores": provider_scores,
+            "providers_used": list(reviews.keys()),
+            "flaws": all_flaws,
+            "suggestions": _merge_key("suggestions"),
+            "missing": _merge_key("missing"),
+            "security_risks": _merge_key("security_risks"),
+            "summary": (
+                f"MULTI CRITIC ({review_type}, {len(reviews)} providers): "
+                f"{summary_parts} → Final={final_score}/100. "
+                f"{len(all_flaws)} flaws, {len(disagreements)} disagreements."
+            ),
+            "disagreements": disagreements,
+            "reviews": reviews,
+            "multi_critic": True,
+        }
+
+        # Audit
+        self.audit.log_event(
+            actor="CriticAgent",
+            action_type=f"MULTI_CRITIC_{review_type.upper()}",
+            input_context=description[:300],
+            output_content=json.dumps({
+                "final_score": final_score,
+                "provider_scores": provider_scores,
+                "disagreements": len(disagreements),
+            }),
+            metadata={"score": final_score, **provider_scores},
+        )
+
+        return result
+
+    # Backward compat alias
+    dual_critic_review = multi_critic_review
+
+    def _get_single_review(
+        self, review_type: str, artifact: Any, description: str, context: str
+    ) -> Dict[str, Any]:
+        """Get a review from the current (primary) LLM provider."""
+        try:
+            if review_type == "plan":
+                return self.review_plan(artifact, description, context)
+            elif review_type == "code":
+                return self.review_code(artifact, description, context)
+            elif review_type == "integration":
+                return self.review_integration(artifact, description, context)
+            else:
+                return {"error": f"Unknown review type: {review_type}", "score": 0}
+        except Exception as exc:
+            self.logger.error("Primary critic failed: %s", exc)
+            return {"error": str(exc), "score": 0}
+
+    def _build_review_prompt(
+        self, review_type: str, artifact: Any, description: str, context: str
+    ) -> tuple[str, str]:
+        """Build (system_prompt, user_prompt) for a review type."""
+        system_prompt = {
+            "plan": self.PLAN_REVIEW_PROMPT,
+            "code": self.CODE_REVIEW_PROMPT,
+            "integration": self.INTEGRATION_REVIEW_PROMPT,
+        }.get(review_type, self.PLAN_REVIEW_PROMPT)
+
+        if review_type == "plan":
+            user_prompt = (
+                f"## Product Description\n{description}\n\n"
+                f"## Plan\n{json.dumps(artifact, indent=2, default=str)}\n"
+            )
+        elif review_type == "code":
+            user_prompt = (
+                f"## Task Description\n{description}\n\n"
+                f"## Code Diff\n```\n{str(artifact)[:8000]}\n```\n"
+            )
+        else:
+            user_prompt = (
+                f"## Test Results\n```\n{str(artifact)[:4000]}\n```\n\n"
+                f"## Combined Diff\n```\n{description[:8000]}\n```\n"
+            )
+        if context:
+            user_prompt += f"\n## Additional Context\n{context}\n"
+        return system_prompt, user_prompt
+
+    def _ensure_gemini_registered(self, pool) -> None:
+        """Auto-discover and register Gemini if available."""
+        if pool.get("gemini"):
+            return
+        try:
+            from src.core.llm_gateway import GeminiCLIProvider
+            temp = GeminiCLIProvider({"gemini_model": "gemini-2.5-flash", "timeout": 120})
+            if temp.gemini_path:
+                pool.register("gemini", temp)
+                self.logger.info("Auto-registered Gemini as critic provider")
+        except Exception as exc:
+            self.logger.debug("Gemini auto-register failed: %s", exc)
+
     def _parse_critic_json(
         self, response_text: str, meta: dict
     ) -> Dict[str, Any]:

@@ -1,0 +1,117 @@
+name: firmware_engineering
+version: "1.0.0"
+visibility: public
+runner: openfw
+description: >
+  Embedded firmware engineering skills sourced from real firmware engineer
+  and embedded tester job descriptions. Covers bare-metal, RTOS, HAL,
+  cross-compilation, and safety-critical development.
+
+roles:
+  - firmware_engineer
+  - embedded_tester
+
+tools:
+  - gcc-arm-none-eabi
+  - iar-embedded-workbench
+  - keil-mdk
+  - stm32cubeide
+  - nxp-mcuxpresso
+  - openocd
+  - segger-jlink
+  - gdb-multiarch
+  - cmake
+  - ninja
+  - make
+  - cppcheck
+  - valgrind
+  - lcov
+  - qemu-system-arm
+  - logic-analyzer
+  - oscilloscope
+
+tags:
+  - embedded
+  - firmware
+  - rtos
+  - safety-critical
+  - arm
+  - risc-v
+
+keywords:
+  - embedded C
+  - RTOS
+  - FreeRTOS
+  - Zephyr
+  - VxWorks
+  - bare-metal
+  - cross-compilation
+  - JTAG
+  - SWD
+  - HAL
+  - BSP
+  - MISRA-C
+  - interrupt
+  - DMA
+  - peripheral driver
+
+prompt: |
+  You are a senior embedded firmware engineer with deep expertise in:
+  - Embedded C/C++ for ARM Cortex-M, RISC-V, and legacy 8/16-bit MCUs
+  - RTOS (FreeRTOS, Zephyr, VxWorks, ThreadX) task management and synchronization
+  - Bare-metal register-level hardware interaction
+  - Serial protocols: UART, SPI, I2C, CAN, LIN, Modbus
+  - Cross-compilation toolchains (GCC ARM, IAR, Keil MDK)
+  - JTAG/SWD debugging (Segger J-Link, OpenOCD, Lauterbach TRACE32)
+  - Boot loader development and OTA firmware update mechanisms
+  - Power management and low-power design optimization
+  - Static analysis (cppcheck, PC-lint, Polyspace) and MISRA-C compliance
+  - CI/CD for embedded (Jenkins, GitHub Actions with ARM toolchains)
+
+  Follow these engineering rules:
+  - Use HAL abstraction for all hardware access
+  - All pointer dereferences must check for NULL
+  - Use volatile for memory-mapped peripheral registers
+  - Configure interrupt priorities explicitly
+  - Include proper startup code and linker scripts
+  - Provide Makefile or CMakeLists.txt for cross-compilation
+
+acceptance_criteria:
+  - Code compiles for target MCU architecture
+  - Binary size within flash limit
+  - Uses HAL abstraction (no raw register access in application code)
+  - Static analysis passes with zero critical findings
+  - Interrupt priorities are explicitly configured
+  - Build system (Makefile/CMake) included
+  - Header guards on all .h files
+
+grading_rubric:
+  compilation: 25
+  binary_metrics: 15
+  hal_usage: 15
+  static_analysis: 15
+  build_system: 10
+  documentation: 10
+  test_coverage: 10
+
+certifications:
+  - IEC 62304 (medical device software lifecycle)
+  - ISO 26262 ASIL (automotive functional safety)
+  - IEC 62443 (industrial cybersecurity)
+  - DO-178C (avionics software)
+  - ISTQB (embedded testing)
+
+seniority_delta:
+  junior:
+    - Writes and debugs firmware modules
+    - Follows coding standards
+    - Runs tests on dev boards
+    - Basic peripheral driver implementation
+  senior:
+    - Owns full firmware architecture
+    - Defines BSP/HAL abstractions
+    - Drives RTOS selection and configuration
+    - Handles safety/security certification
+    - Interfaces with silicon vendors
+    - Mentors junior engineers
+    - Designs bootloader and OTA update strategy

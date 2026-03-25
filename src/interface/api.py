@@ -2494,6 +2494,163 @@ async def build_roles():
 
 
 # ---------------------------------------------------------------------------
+# Skills Marketplace Endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/skills")
+async def list_skills(include_disabled: bool = False):
+    """List all registered skills with visibility filtering."""
+    from src.core.skill_loader import skill_registry
+    skills = skill_registry.list_all(include_disabled=include_disabled)
+    return {
+        "skills": [s.to_dict() for s in skills],
+        "stats": skill_registry.stats(),
+    }
+
+
+@app.get("/skills/{name}")
+async def get_skill(name: str):
+    """Get a specific skill by name."""
+    from src.core.skill_loader import skill_registry
+    skill = skill_registry.get_including_disabled(name)
+    if not skill:
+        return {"error": f"Skill '{name}' not found"}
+    return skill.to_dict()
+
+
+@app.get("/skills/role/{role}")
+async def skills_for_role(role: str):
+    """Get all active skills for an agent role."""
+    from src.core.skill_loader import skill_registry
+    skills = skill_registry.get_for_role(role)
+    return {"role": role, "skills": [s.to_dict() for s in skills], "count": len(skills)}
+
+
+@app.get("/skills/runner/{runner}")
+async def skills_for_runner(runner: str):
+    """Get all active skills for a runner."""
+    from src.core.skill_loader import skill_registry
+    skills = skill_registry.get_for_runner(runner)
+    return {"runner": runner, "skills": [s.to_dict() for s in skills], "count": len(skills)}
+
+
+class SkillVisibilityRequest(BaseModel):
+    name: str
+    visibility: str  # "public", "private", "disabled"
+
+
+@app.post("/skills/visibility")
+async def set_skill_visibility(req: SkillVisibilityRequest):
+    """Change a skill's visibility tier. Framework control — no approval needed."""
+    from src.core.skill_loader import skill_registry
+    if req.visibility not in {"public", "private", "disabled"}:
+        return {"error": f"Invalid visibility: {req.visibility}"}
+    ok = skill_registry.set_visibility(req.name, req.visibility)
+    if not ok:
+        return {"error": f"Skill '{req.name}' not found"}
+    return {"status": "updated", "name": req.name, "visibility": req.visibility}
+
+
+@app.post("/skills/reload")
+async def reload_skills():
+    """Hot-reload all skills from disk. Framework control — no approval needed."""
+    from src.core.skill_loader import skill_registry
+    count = skill_registry.reload()
+    return {"status": "reloaded", "skills_loaded": count, "stats": skill_registry.stats()}
+
+
+@app.get("/skills/search")
+async def search_skills(q: str = ""):
+    """Search skills by name, description, or keywords."""
+    from src.core.skill_loader import skill_registry
+    if not q:
+        return {"error": "query parameter 'q' is required"}
+    results = skill_registry.search(q)
+    return {"query": q, "results": [s.to_dict() for s in results], "count": len(results)}
+
+
+# ---------------------------------------------------------------------------
+# Runners Endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/runners")
+async def list_runners():
+    """List all registered domain runners and their capabilities."""
+    from src.integrations.base_runner import list_runners as _list_runners
+    runners = _list_runners()
+    return {"runners": runners, "count": len(runners)}
+
+
+@app.get("/runners/{name}/skills")
+async def runner_skills(name: str):
+    """Get skills registered for a specific runner."""
+    from src.integrations.base_runner import get_runner_by_name
+    runner = get_runner_by_name(name)
+    if not runner:
+        return {"error": f"Runner '{name}' not found"}
+    return {"runner": name, "skills": runner.get_skills()}
+
+
+# ---------------------------------------------------------------------------
+# Agent Gym Endpoints — self-play training
+# ---------------------------------------------------------------------------
+
+class GymTrainRequest(BaseModel):
+    role: str
+    difficulty: str = "intermediate"
+    skill_name: str = ""
+    exercise_id: str = ""
+
+
+@app.post("/gym/train")
+async def gym_train(req: GymTrainRequest):
+    """Start a training session for an agent role (self-play exercise)."""
+    from src.core.agent_gym import agent_gym
+    session = agent_gym.train(
+        role=req.role,
+        difficulty=req.difficulty,
+        skill_name=req.skill_name,
+        exercise_id=req.exercise_id,
+    )
+    return session.to_dict()
+
+
+@app.get("/gym/session/{session_id}")
+async def gym_session(session_id: str):
+    """Get details of a training session."""
+    from src.core.agent_gym import agent_gym
+    session = agent_gym.get_session(session_id)
+    if not session:
+        return {"error": f"Session '{session_id}' not found"}
+    return session.to_dict()
+
+
+@app.get("/gym/ratings")
+async def gym_ratings():
+    """Get all agent skill ratings (leaderboard)."""
+    from src.core.agent_gym import agent_gym
+    return {
+        "leaderboard": agent_gym.get_leaderboard(),
+        "stats": agent_gym.stats(),
+    }
+
+
+@app.get("/gym/ratings/{role}")
+async def gym_role_ratings(role: str):
+    """Get skill ratings for a specific agent role."""
+    from src.core.agent_gym import agent_gym
+    ratings = agent_gym.get_ratings_for_role(role)
+    return {"role": role, "ratings": [r.to_dict() for r in ratings]}
+
+
+@app.get("/gym/history")
+async def gym_history(limit: int = 20):
+    """Get recent training session history."""
+    from src.core.agent_gym import agent_gym
+    return {"sessions": agent_gym.get_history(limit=limit)}
+
+
+# ---------------------------------------------------------------------------
 # SWE Agent Endpoint — open-swe pattern
 # ---------------------------------------------------------------------------
 

@@ -1,0 +1,105 @@
+name: pcb_design
+version: "1.0.0"
+visibility: public
+runner: openeda
+description: >
+  PCB design and layout skills sourced from real PCB designer job descriptions.
+  Covers schematic capture, multi-layer layout, signal/power integrity,
+  DFM, and manufacturing output generation.
+
+roles:
+  - pcb_designer
+
+tools:
+  - altium-designer
+  - cadence-allegro
+  - orcad
+  - kicad
+  - kicad-cli
+  - mentor-xpedition
+  - mentor-pads
+  - hyperlynx
+  - ansys-siwave
+  - python3-kicad
+
+tags:
+  - pcb
+  - eda
+  - hardware
+  - signal-integrity
+  - manufacturing
+
+keywords:
+  - schematic capture
+  - PCB layout
+  - high-speed digital
+  - impedance-controlled routing
+  - DFM
+  - DFA
+  - EMC
+  - EMI
+  - DRC
+  - ERC
+  - Gerber
+  - ODB++
+  - stackup design
+  - BOM
+
+prompt: |
+  You are a senior PCB designer with expertise in:
+  - Schematic capture and multi-layer PCB layout (4-16+ layers)
+  - High-speed digital design (DDR, USB, PCIe signal integrity)
+  - Impedance-controlled routing and stackup design
+  - DFM (Design for Manufacturability) and DFA (Design for Assembly)
+  - Power integrity and PDN (Power Distribution Network) analysis
+  - EMC/EMI compliance design techniques
+  - Thermal management and copper balancing
+  - Component library management and footprint creation
+  - Design rule checks (DRC) and Gerber/ODB++ output generation
+  - Mixed-signal layout (analog/digital isolation, grounding strategies)
+
+  Follow these design rules:
+  - Define stackup before starting layout
+  - Run DRC after every major routing change
+  - Run ERC on schematic before proceeding to layout
+  - Document all impedance targets and stackup parameters
+  - Generate BOM with manufacturer part numbers
+  - Include assembly drawings and pick-and-place files
+
+acceptance_criteria:
+  - Zero DRC errors
+  - Zero ERC errors
+  - All nets routed (no unrouted connections)
+  - Impedance targets documented and met
+  - BOM generated with valid part numbers
+  - Gerber files pass manufacturer preflight check
+  - Assembly drawings included
+
+grading_rubric:
+  drc_clean: 25
+  erc_clean: 15
+  routing_complete: 20
+  signal_integrity: 15
+  documentation: 10
+  manufacturing_outputs: 15
+
+certifications:
+  - IPC CID (Certified Interconnect Designer)
+  - IPC CID+ (Advanced)
+  - IPC-A-610 (acceptability of electronic assemblies)
+  - IPC-2221/2222 (PCB design standards)
+  - Altium certification
+  - Cadence certification
+
+seniority_delta:
+  junior:
+    - Routes boards from completed schematics
+    - Follows design rules
+    - Generates manufacturing outputs
+  senior:
+    - Defines stackups and impedance targets
+    - Drives component selection with EEs
+    - Owns SI/PI analysis
+    - Reviews designs for EMC compliance
+    - Negotiates with fabrication houses
+    - Mentors layout team

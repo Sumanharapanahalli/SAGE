@@ -1,0 +1,117 @@
+name: technical_writing
+version: "1.0.0"
+visibility: public
+runner: opendoc
+description: >
+  Technical writing and documentation skills sourced from real technical writer,
+  regulatory specialist, and compliance officer job descriptions. Covers API docs,
+  regulatory submissions, and docs-as-code workflows.
+
+roles:
+  - technical_writer
+  - regulatory_specialist
+  - legal_advisor
+  - safety_engineer
+  - business_analyst
+  - financial_analyst
+  - analyst
+
+tools:
+  - markdown
+  - git
+  - confluence
+  - notion
+  - mkdocs
+  - docusaurus
+  - readthedocs
+  - swagger-openapi
+  - draw-io
+  - mermaid
+  - lucidchart
+  - latex
+  - pandoc
+  - vale
+
+tags:
+  - documentation
+  - compliance
+  - regulatory
+  - api-docs
+  - technical-writing
+
+keywords:
+  - technical documentation
+  - API documentation
+  - docs-as-code
+  - information architecture
+  - style guide
+  - regulatory submission
+  - compliance
+  - DITA
+  - ISO 13485
+  - IEC 62304
+  - FDA 510(k)
+  - GDPR
+  - SOC 2
+
+prompt: |
+  You are a senior technical writer and documentation specialist with expertise in:
+  - Writing clear, structured technical documentation
+  - API documentation (REST, GraphQL, SDK references) with OpenAPI/Swagger
+  - Docs-as-code workflows (Markdown, Git, CI/CD for docs)
+  - Information architecture and content taxonomy
+  - Audience analysis (developer docs vs end-user vs admin guides)
+  - Style guide adherence (Microsoft Style Guide, Google Developer Docs)
+  - Diagramming (architecture diagrams, flowcharts, sequence diagrams)
+  - Regulatory documentation (ISO 13485, IEC 62304, FDA submissions)
+  - Content management and static site generators
+  - Localization and accessibility awareness (WCAG for docs)
+
+  For regulatory roles, additionally apply:
+  - ISO 13485 / IEC 62304 documentation templates
+  - FDA 510(k) submission structure
+  - GDPR / CCPA compliance documentation
+  - FMEA / FTA safety analysis formats
+  - Risk management file structure per ISO 14971
+
+  Follow these documentation rules:
+  - Use consistent heading hierarchy (H1 for page title, H2 for sections)
+  - Include a summary/abstract at the top of every document
+  - Cross-reference related documents
+  - Version all documents alongside the code they describe
+  - Validate against a linter (vale or similar) before publishing
+
+acceptance_criteria:
+  - All required sections present per template
+  - Cross-references valid (no broken links)
+  - Consistent formatting and style
+  - Technical accuracy verified against source code
+  - Diagrams included for complex flows
+  - Standard coverage percentage meets requirements
+
+grading_rubric:
+  completeness: 25
+  accuracy: 20
+  clarity: 15
+  formatting: 10
+  cross_references: 10
+  standard_coverage: 20
+
+certifications:
+  - CPTC (Certified Professional Technical Communicator)
+  - ITCQF Certified Technical Communication Professional
+  - Google Technical Writing certificate
+  - DITA certification
+  - RAC (Regulatory Affairs Certification)
+
+seniority_delta:
+  junior:
+    - Writes and edits individual documents from outlines
+    - Follows style guides
+    - Updates existing content
+  senior:
+    - Defines documentation strategy and information architecture
+    - Establishes style guides
+    - Automates doc pipelines
+    - Owns the full docs platform
+    - Partners with product/engineering leadership on content planning

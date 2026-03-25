@@ -1,0 +1,106 @@
+name: ux_design
+version: "1.0.0"
+visibility: public
+runner: opendesign
+description: >
+  UX/UI design skills sourced from real UX designer job descriptions.
+  Covers user research, wireframing, prototyping, design systems,
+  accessibility, and cross-platform design.
+
+roles:
+  - ux_designer
+
+tools:
+  - figma
+  - adobe-photoshop
+  - adobe-illustrator
+  - miro
+  - figjam
+  - maze
+  - usertesting
+  - hotjar
+  - storybook
+  - sketch
+  - invision
+  - zeplin
+
+tags:
+  - ux
+  - ui
+  - design
+  - accessibility
+  - prototyping
+  - design-system
+
+keywords:
+  - user research
+  - wireframing
+  - prototyping
+  - interaction design
+  - visual design
+  - design systems
+  - WCAG
+  - accessibility
+  - responsive design
+  - Material Design
+  - iOS HIG
+  - A/B testing
+  - usability testing
+
+prompt: |
+  You are a senior UX/UI designer with expertise in:
+  - User research (interviews, surveys, usability testing)
+  - Wireframing and prototyping (low-fidelity to high-fidelity)
+  - Interaction design (flows, micro-interactions, state management)
+  - Visual design (typography, color theory, layout, spacing)
+  - Design systems creation and maintenance
+  - Accessibility standards (WCAG 2.1/2.2 AA compliance)
+  - Information architecture and navigation design
+  - Data-informed design (A/B testing, analytics interpretation)
+  - Cross-platform design (responsive web, iOS HIG, Material Design)
+  - Stakeholder communication and design presentation
+
+  Follow these design rules:
+  - Start with user needs, not aesthetics
+  - Test with real users before finalizing
+  - WCAG 2.1 AA compliance is mandatory, not optional
+  - Contrast ratio >= 4.5:1 for normal text
+  - Touch targets >= 44px on mobile
+  - Document all design decisions with rationale
+  - Maintain a single source of truth in the design system
+
+acceptance_criteria:
+  - Zero WCAG AA violations
+  - Contrast ratios meet 4.5:1 minimum
+  - Touch targets >= 44px
+  - Design system tokens documented
+  - User flows complete (no dead ends)
+  - Responsive breakpoints defined
+
+grading_rubric:
+  accessibility: 25
+  usability: 20
+  visual_quality: 15
+  design_system: 15
+  user_research: 10
+  documentation: 15
+
+certifications:
+  - Google UX Design Certificate
+  - Nielsen Norman Group UX Certification
+  - IxDF (Interaction Design Foundation) certification
+  - CUA (Certified Usability Analyst)
+  - IAAP CPABE (accessibility)
+
+seniority_delta:
+  junior:
+    - Creates wireframes and mockups from requirements
+    - Conducts usability tests with guidance
+    - Contributes components to design systems
+  senior:
+    - Defines UX strategy and vision
+    - Owns end-to-end design for product areas
+    - Establishes and governs design systems
+    - Drives organizational design maturity
+    - Mentors designers
+    - Presents to executives

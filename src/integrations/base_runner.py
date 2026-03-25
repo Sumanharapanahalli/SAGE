@@ -230,12 +230,16 @@ class BaseRunner(ABC):
         """
 
     def get_toolchain(self) -> dict:
-        """Return required tools, packages, and docker image for this runner."""
+        """Return required tools, packages, and docker image for this runner.
+
+        Merges tools from skill registry with any hardcoded defaults.
+        """
+        skill_tools = self._get_skill_tools()
         return {
             "runner": self.name,
             "docker_image": self.docker_image,
             "roles": self.roles,
-            "tools": [],
+            "tools": skill_tools,
             "packages": [],
         }
 
@@ -246,6 +250,68 @@ class BaseRunner(ABC):
     def get_experience_keys(self) -> list[str]:
         """Return the vector store key dimensions for experience retrieval."""
         return ["task_type", "domain"]
+
+    def get_skill_prompt(self, role: str = "") -> str:
+        """
+        Build a composite system prompt from registered skills for this runner.
+
+        Args:
+            role: Optional specific role. If empty, uses all runner skills.
+
+        Returns:
+            Prompt fragment from skill YAML files (empty string if no skills loaded).
+        """
+        try:
+            from src.core.skill_loader import skill_registry
+            if role:
+                return skill_registry.build_prompt_for_role(role)
+            # All skills for this runner
+            skills = skill_registry.get_for_runner(self.name)
+            parts = []
+            for skill in skills:
+                if skill.prompt:
+                    parts.append(f"## Skill: {skill.name} (v{skill.version})\n{skill.prompt}")
+            return "\n\n".join(parts)
+        except Exception:
+            return ""
+
+    def get_acceptance_criteria(self, role: str = "") -> list[str]:
+        """Get acceptance criteria from registered skills."""
+        try:
+            from src.core.skill_loader import skill_registry
+            if role:
+                return skill_registry.get_acceptance_criteria_for_role(role)
+            skills = skill_registry.get_for_runner(self.name)
+            criteria = []
+            for skill in skills:
+                criteria.extend(skill.acceptance_criteria)
+            return criteria
+        except Exception:
+            return []
+
+    def get_skills(self) -> list[dict]:
+        """List all active skills registered for this runner."""
+        try:
+            from src.core.skill_loader import skill_registry
+            return [s.to_dict() for s in skill_registry.get_for_runner(self.name)]
+        except Exception:
+            return []
+
+    def _get_skill_tools(self) -> list[str]:
+        """Get the union of tools from all skills for this runner."""
+        try:
+            from src.core.skill_loader import skill_registry
+            skills = skill_registry.get_for_runner(self.name)
+            tools = []
+            seen = set()
+            for skill in skills:
+                for tool in skill.tools:
+                    if tool not in seen:
+                        tools.append(tool)
+                        seen.add(tool)
+            return tools
+        except Exception:
+            return []
 
     # ── Shared helpers ──────────────────────────────────────────────────
 

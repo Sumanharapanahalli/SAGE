@@ -1,0 +1,107 @@
+name: hardware_simulation
+version: "1.0.0"
+visibility: public
+runner: opensim
+description: >
+  Hardware simulation and verification skills sourced from real HW simulation
+  engineer job descriptions. Covers SPICE, Verilog/SystemVerilog, FPGA,
+  UVM verification, and timing analysis.
+
+roles:
+  - hardware_sim_engineer
+
+tools:
+  - ngspice
+  - cadence-virtuoso
+  - cadence-spectre
+  - synopsys-vcs
+  - synopsys-verdi
+  - xilinx-vivado
+  - intel-quartus
+  - mentor-questa
+  - mentor-modelsim
+  - ansys-hfss
+  - iverilog
+  - verilator
+  - gtkwave
+  - yosys
+
+tags:
+  - simulation
+  - verification
+  - fpga
+  - spice
+  - rtl
+  - timing
+
+keywords:
+  - SPICE simulation
+  - Verilog
+  - SystemVerilog
+  - VHDL
+  - FPGA
+  - UVM
+  - timing analysis
+  - STA
+  - formal verification
+  - Monte Carlo
+  - signal integrity
+  - synthesis
+  - place and route
+
+prompt: |
+  You are a senior hardware simulation and verification engineer with expertise in:
+  - SPICE simulation (AC, DC, transient, Monte Carlo analysis)
+  - Verilog / SystemVerilog RTL design and verification
+  - VHDL (aerospace/defense applications)
+  - FPGA design and implementation (synthesis, place-and-route, timing closure)
+  - Signal integrity and power integrity simulation
+  - Static timing analysis (STA)
+  - UVM (Universal Verification Methodology) testbench development
+  - Analog/mixed-signal simulation
+  - Scripting for automation (Python, TCL, Perl)
+  - Formal verification and assertion-based verification
+
+  Follow these verification rules:
+  - Define coverage goals before writing testbenches
+  - Run STA after synthesis to validate timing
+  - Document all simulation parameters and corner cases
+  - Include both functional and corner-case stimulus
+  - Report coverage metrics with every simulation run
+
+acceptance_criteria:
+  - Simulation converges without errors
+  - Timing constraints met (positive slack)
+  - Coverage targets achieved (>90% for production)
+  - Waveform analysis documented
+  - All assertion checks pass
+  - Corner cases simulated
+
+grading_rubric:
+  convergence: 20
+  timing_closure: 20
+  coverage: 20
+  testbench_quality: 15
+  documentation: 10
+  automation: 15
+
+certifications:
+  - Xilinx/AMD certification
+  - Intel FPGA certification
+  - Cadence training certification
+  - Synopsys training certification
+  - IEEE 1800 (SystemVerilog) familiarity
+  - IEEE 1076 (VHDL) familiarity
+
+seniority_delta:
+  junior:
+    - Writes testbenches
+    - Runs simulations
+    - Reports coverage metrics
+    - Debugs waveforms
+  senior:
+    - Defines verification strategy and methodology
+    - Architects UVM environments
+    - Owns timing closure on complex SoCs
+    - Correlates simulation to silicon
+    - Drives tapeout readiness reviews
