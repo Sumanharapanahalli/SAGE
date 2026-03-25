@@ -27,7 +27,7 @@ SMALL_SZ   = 152400    # 12pt
 FOOTER_SZ  = 114300    # 9pt
 TINY_SZ    = 139700    # 11pt
 
-FOOTER_TEXT = "SAGE[ai] \u2014 Open Source (Apache 2.0) | github.com/Sumanharapanahalli/sage | March 2026"
+FOOTER_TEXT = "SAGE[ai] \u2014 Open Source (MIT) | github.com/Sumanharapanahalli/sage | March 2026"
 
 # Slide dimensions (from existing files)
 SLIDE_W = 12188952

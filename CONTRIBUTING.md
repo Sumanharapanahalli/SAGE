@@ -31,7 +31,7 @@ SAGE is a modular autonomous AI agent framework built on lean development method
 
 - **[CLAUDE.md](CLAUDE.md)** — Full project layout, architecture, and engineering rules
 - **[.claude/SOUL.md](.claude/SOUL.md)** — Core philosophy and design principles
-- **[LICENSE](LICENSE)** — Apache 2.0
+- **[LICENSE](LICENSE)** — MIT
 
 ---
 
