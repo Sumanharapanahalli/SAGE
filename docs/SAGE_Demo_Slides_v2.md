@@ -1,5 +1,9 @@
 # SAGE[ai] — Intelligence Layer v1 Demo
-### *Demo Script — March 2026*
+
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub Stars](https://img.shields.io/github/stars/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage)
+
+### *Demo Script — March 2026 — Open Source Release*
 
 ---
 
@@ -11,7 +15,7 @@
 - Founder reviews only decisions that require human judgment
 - The rest runs autonomously, with a complete audit trail
 
-**Live today.** Open source. Zero mandatory API keys.
+**Live today.** Open source under Apache 2.0. Zero mandatory API keys. Community-driven on GitHub.
 
 ---
 
@@ -288,7 +292,7 @@ All built. All connected to live backend.
 ## Slide 16 — Quick Start
 
 ```bash
-git clone https://github.com/your-org/sage
+git clone https://github.com/Sumanharapanahalli/sage
 cd sage
 make venv            # one-time setup, creates .venv
 
@@ -316,8 +320,25 @@ npm install -g @google/gemini-cli && gemini  # free Google login
 
 ---
 
-*SAGE Framework — Open Source · Self-Hosted · Agent-First*
-*397 tests passing · 22-page dashboard · 6 regulated domain solutions*
+*SAGE Framework — Open Source (Apache 2.0) · Self-Hosted · Agent-First · Community-Driven*
+*136 API endpoints · 27 UI pages · 79 E2E tests (78 passing) · 17+ solution templates · github.com/Sumanharapanahalli/sage*
+
+---
+
+## Slide — Open-Source Model
+
+**Framework is open. Solutions are private. Community contributions welcome.**
+
+| Layer | Visibility | How |
+|---|---|---|
+| **SAGE Framework** | Open source (Apache 2.0) | `github.com/Sumanharapanahalli/sage` |
+| **Your solutions** | Private | Mount via `SAGE_SOLUTIONS_DIR` from a separate repo |
+| **Runtime data (.sage/)** | Per-solution, gitignored | Auto-created, never committed |
+
+- Star the repo, fork it, submit PRs
+- File issues for bugs or feature requests
+- Build MCP tool servers, solution templates, or workflow plugins
+- See `CONTRIBUTING.md` for guidelines
 
 ---
 

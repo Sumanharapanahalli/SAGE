@@ -22,20 +22,25 @@ task_types:
 - EMBEDDED_TEST
 - FIRMWARE
 - FRONTEND
+- INFRA
+- MECHANICAL
+- ML_MODEL
 - PCB_DESIGN
 - PRODUCT_MGMT
-- QA
 - REGULATORY
 - SAFETY
 - SECURITY
 - SYSTEM_TEST
-- TRAINING
+- TESTS
 - UX_DESIGN
 agent_roles:
+- data_scientist
 - developer
 - devops_engineer
+- firmware_engineer
 - product_manager
 - qa_engineer
+- quality_engineer
 - regulatory_specialist
 - safety_engineer
 - system_tester

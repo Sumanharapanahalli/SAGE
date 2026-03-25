@@ -1,6 +1,8 @@
 # SAGE[ai] MCP Servers Reference
 
-Model Context Protocol (MCP) servers that expose hardware and external systems as tools for LLMs (Gemini CLI and Claude Code).
+*Last updated: 2026-03-24*
+
+Model Context Protocol (MCP) servers that expose hardware and external systems as tools for LLMs (Gemini CLI and Claude Code). MCP is the official cross-vendor standard for tool discovery and invocation (donated to the Agentic AI Foundation, December 2025).
 
 ---
 
@@ -225,3 +227,68 @@ Example usage in Claude Code:
 - "Flash the firmware at /path/to/firmware.bin to the connected STM32"
 - "Check Metabase for new errors in the last hour"
 - "Create a Spira incident for this manufacturing defect"
+
+---
+
+## Framework MCP Registry (`src/integrations/mcp_registry.py`)
+
+The SAGE framework includes a centralized MCP tool registry that discovers and invokes MCP servers for the active solution.
+
+### API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/mcp/tools` | List all registered MCP tools for the active solution |
+| POST | `/mcp/invoke` | Invoke a tool by name with arguments |
+
+### Invoking a Tool
+
+```bash
+curl -X POST http://localhost:8000/mcp/invoke \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tool_name": "list_serial_ports",
+    "args": {}
+  }'
+```
+
+Every MCP invocation is audited through the standard audit log with a trace_id.
+
+### Solution MCP Servers
+
+Each solution can define MCP servers in `solutions/<name>/mcp_servers/`:
+
+```
+solutions/
+  medtech_team/
+    mcp_servers/
+      serial_port_server.py     # COM port communication
+      jlink_server.py           # JTAG/SWD debugger
+      metabase_server.py        # Analytics queries
+      spira_server.py           # Test management
+      teams_server.py           # Teams messages + webhooks
+  starter/
+    mcp_servers/
+      (domain-specific tools)
+```
+
+### Adding a New MCP Server
+
+1. Create a Python file in `solutions/<name>/mcp_servers/` using the `fastmcp` library
+2. Define tools using the `@mcp.tool()` decorator
+3. The framework auto-discovers tools at startup
+
+```python
+# solutions/my_solution/mcp_servers/my_server.py
+from fastmcp import FastMCP
+
+mcp = FastMCP("My Custom Tools")
+
+@mcp.tool()
+def my_custom_tool(arg1: str, arg2: int = 10) -> dict:
+    """Description of what this tool does."""
+    return {"result": f"Processed {arg1} with {arg2}"}
+```
+
+4. Tools are accessible via `GET /mcp/tools` and `POST /mcp/invoke`
+5. In Gemini CLI and Claude Code, tools are auto-registered via settings files

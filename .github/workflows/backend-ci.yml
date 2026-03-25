@@ -1,0 +1,410 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, 'release/**']
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+      - 'infra/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+env:
+  PYTHON_VERSION: '3.12'
+  COVERAGE_THRESHOLD: 80
+  ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+  ECR_REPOSITORY: sage-backend
+  ECS_CLUSTER: sage-staging
+  ECS_SERVICE: sage-backend-staging
+  ECS_TASK_FAMILY: sage-backend
+  CONTAINER_NAME: sage-backend
+
+jobs:
+  # ─────────────────────────────────────────────
+  # JOB 1: Lint & Type Check
+  # ─────────────────────────────────────────────
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Ruff lint
+        run: ruff check . --output-format=github
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Mypy type check
+        run: |
+          mypy . \
+            --ignore-missing-imports \
+            --strict \
+            2>&1 | tee mypy_output.txt
+
+      - name: Upload mypy results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mypy-results
+          path: backend/mypy_output.txt
+
+  # ─────────────────────────────────────────────
+  # JOB 2: Unit & Integration Tests
+  # ─────────────────────────────────────────────
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-22.04
+    needs: lint
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sage_test
+          POSTGRES_PASSWORD: sage_test_pass
+          POSTGRES_DB: sage_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: postgresql://sage_test:sage_test_pass@localhost:5432/sage_test
+      REDIS_URL: redis://localhost:6379
+      ENVIRONMENT: test
+      SECRET_KEY: test-secret-key-not-for-production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run database migrations
+        run: alembic upgrade head
+
+      - name: Run unit tests
+        run: |
+          pytest tests/unit/ \
+            -v \
+            --junitxml=test_results_unit.xml \
+            --cov=src \
+            --cov-report=xml:coverage_unit.xml \
+            -p no:cacheprovider
+
+      - name: Run integration tests with combined coverage
+        run: |
+          pytest tests/integration/ \
+            -v \
+            --junitxml=test_results_integration.xml \
+            --cov=src \
+            --cov-append \
+            --cov-report=xml:coverage_combined.xml \
+            --cov-report=html:coverage_combined_html \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
+            -p no:cacheprovider
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            backend/test_results_unit.xml
+            backend/test_results_integration.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./backend/coverage_combined.xml
+          flags: backend
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: |
+            backend/coverage_combined.xml
+            backend/coverage_combined_html/
+          retention-days: 14
+
+  # ─────────────────────────────────────────────
+  # JOB 3: Docker Build + Trivy SBOM Scan
+  # ─────────────────────────────────────────────
+  docker-build-scan:
+    name: Docker Build & Trivy SBOM Scan
+    runs-on: ubuntu-22.04
+    needs: test
+    permissions:
+      contents: read
+      security-events: write
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
+      - name: Build Docker image (local, no push yet)
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker,dest=/tmp/image.tar
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+      - name: Load image for scanning
+        run: docker load --input /tmp/image.tar
+
+      - name: Run Trivy SBOM generation (CycloneDX)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }}
+          format: 'cyclonedx'
+          output: 'sbom.json'
+          exit-code: '0'
+
+      - name: Run Trivy vulnerability scan — fail on CRITICAL CVEs
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:sha-${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          ignore-unfixed: false
+
+      - name: Upload Trivy SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-container
+
+      - name: Upload SBOM artifact (90-day retention for compliance)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.json
+          retention-days: 90
+
+      - name: Save image tar for deploy job
+        uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        with:
+          name: docker-image
+          path: /tmp/image.tar
+          retention-days: 1
+
+  # ─────────────────────────────────────────────
+  # JOB 4: Deploy to ECS Staging (main branch only)
+  # ─────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy to ECS Staging
+    runs-on: ubuntu-22.04
+    needs: docker-build-scan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://staging.sage.example.com
+    concurrency:
+      group: staging-deploy
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/
+
+      - name: Load image and push to ECR
+        id: push
+        run: |
+          docker load --input /tmp/image.tar
+
+          SHORT_SHA=${GITHUB_SHA::8}
+          IMAGE_TAG="${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:sha-${SHORT_SHA}"
+          LATEST_TAG="${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:staging-latest"
+
+          # Re-tag loaded image
+          LOADED_IMAGE=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep "${{ env.ECR_REPOSITORY }}" | head -1)
+          docker tag "${LOADED_IMAGE}" "${IMAGE_TAG}"
+          docker tag "${LOADED_IMAGE}" "${LATEST_TAG}"
+
+          docker push "${IMAGE_TAG}"
+          docker push "${LATEST_TAG}"
+
+          echo "image=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Save rollback baseline to SSM (before any change)
+        id: save-rollback
+        run: |
+          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+
+          echo "ROLLBACK_TASK_DEF_ARN=${CURRENT_TASK_DEF_ARN}" >> $GITHUB_ENV
+          echo "rollback_arn=${CURRENT_TASK_DEF_ARN}" >> $GITHUB_OUTPUT
+
+          aws ssm put-parameter \
+            --name "/sage/staging/last-known-good-task-def" \
+            --value "${CURRENT_TASK_DEF_ARN}" \
+            --type String \
+            --overwrite
+
+          echo "Rollback baseline saved: ${CURRENT_TASK_DEF_ARN}"
+
+      - name: Download current ECS task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_FAMILY }} \
+            --query taskDefinition \
+            > task-definition.json
+
+      - name: Render new task definition with updated image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ env.IMAGE_TAG }}
+
+      - name: Deploy to ECS Staging
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 10
+
+      - name: Verify deployment health and auto-rollback if degraded
+        run: |
+          RUNNING=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].runningCount' \
+            --output text)
+
+          DESIRED=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].desiredCount' \
+            --output text)
+
+          echo "Running: ${RUNNING} / Desired: ${DESIRED}"
+
+          if [ "${RUNNING}" != "${DESIRED}" ]; then
+            echo "FAIL: running=${RUNNING} != desired=${DESIRED}. Initiating rollback..."
+
+            aws ecs update-service \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --service ${{ env.ECS_SERVICE }} \
+              --task-definition ${{ env.ROLLBACK_TASK_DEF_ARN }}
+
+            echo "Rollback to ${{ env.ROLLBACK_TASK_DEF_ARN }} initiated."
+            exit 1
+          fi
+
+          echo "PASS: ${RUNNING}/${DESIRED} tasks running."
+
+      - name: Emit deployment metric to CloudWatch
+        if: success()
+        run: |
+          aws cloudwatch put-metric-data \
+            --namespace "SAGE/Deployments" \
+            --metric-data \
+              "MetricName=DeploymentCount,Value=1,Unit=Count,\
+              Dimensions=[{Name=Environment,Value=staging},{Name=Service,Value=${{ env.ECS_SERVICE }}}]"
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | ${{ env.IMAGE_TAG }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cluster | ${{ env.ECS_CLUSTER }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | ${{ env.ECS_SERVICE }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Rollback ARN | ${{ env.ROLLBACK_TASK_DEF_ARN }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY

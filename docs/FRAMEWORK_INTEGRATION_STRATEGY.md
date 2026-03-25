@@ -1,5 +1,5 @@
 # SAGE — Best-of-Breed Framework Integration Strategy
-*Last updated: 2026-03-13 — includes 2025/2026 ecosystem review*
+*Last updated: 2026-03-24 — includes 2025/2026 ecosystem review*
 
 **Goal:** Keep SAGE's unique compliance layer intact while replacing its weaker internals
 with best-in-class open-source components. Don't reinvent — integrate.
@@ -582,13 +582,32 @@ pip install pgvector psycopg2-binary
 - [x] `CODE_TASK` task type — requires human approval before execution
 
 ### Phases 5–11 — Additional Platform Features
-- [x] Phase 5: SSE streaming — `POST /analyze/stream`, `POST /agent/stream`
-- [x] Phase 6: Onboarding wizard — `POST /onboarding/generate`
-- [x] Phase 7: Knowledge base CRUD — `GET/POST/DELETE /knowledge/...`
+- [x] Phase 5: SSE streaming — `POST /analyze/stream`, `POST /agent/stream`, `GET /logs/stream`
+- [x] Phase 6: Onboarding wizard — `POST /onboarding/generate`, session-based, folder scanning
+- [x] Phase 7: Knowledge base CRUD — `GET/POST/DELETE /knowledge/...`, bulk sync
 - [x] Phase 8: Slack two-way approval — Block Kit + `POST /webhook/slack`
 - [x] Phase 9: Eval & benchmarking — `POST /eval/run`, `GET /eval/history`
 - [x] Phase 10: Multi-tenant isolation — `X-SAGE-Tenant` header + ContextVar
 - [x] Phase 11: Temporal durable workflows + LangGraph fallback
+
+### Phase 12 — Build Orchestrator
+- [x] Phase 12.0: End-to-end product build pipeline — `POST /build/start`
+- [x] Phase 12.1: Domain-aware build detection — 13+ domains with keyword matching
+- [x] Phase 12.2: Workforce registry — 19 agents, 5 teams, 32 task types
+- [x] Phase 12.3: Adaptive router — Q-learning agent selection per task type
+- [x] Phase 12.4: Anti-drift checkpoints — `BUILD_DRIFT_WARNING` audit events
+
+### Additional Platform Features (Post Phase 12)
+- [x] Multi-LLM provider pool with parallel generation strategies (voting, fastest, fallback, quality)
+- [x] Task routing by task type to different LLM providers
+- [x] PII detection and data residency controls
+- [x] Budget controls per solution and per role
+- [x] OpenShell sandboxed code execution
+- [x] Action-aware chat with audit trail
+- [x] Org graph with knowledge channels and task routing
+- [x] 136 API endpoints across 22 categories
+- [x] 27 UI pages in 5-area sidebar
+- [x] 53 test files including 58 system E2E tests
 
 ---
 

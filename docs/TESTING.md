@@ -1,8 +1,8 @@
 # SAGE Framework — Testing Guide
 
 **Document ID:** SAGE-AI-TEST-001
-**Version:** 3.0
-**Date:** 2026-03-12
+**Version:** 4.0
+**Date:** 2026-03-24
 **Classification:** Quality Management System Documentation
 **Standard:** ISO 13485:2016 Section 7.5.6 — Software Validation
 
@@ -36,16 +36,18 @@ SAGE uses a four-tier testing pyramid aligned with ISO 13485 software validation
          ┌───────────┐
          │  IQ/OQ/PQ │  ← Formal compliance validation (medtech solution)
          ├───────────┤
+         │  System   │  ← Full API lifecycle E2E (58 tests)
+         ├───────────┤
          │    E2E    │  ← Full pipeline, mocked LLM
          ├───────────┤
          │Integration│  ← Live external services, skipped if unconfigured
          ├───────────┤
-         │   Unit    │  ← Isolated, mocked, fast (216 framework tests)
+         │   Unit    │  ← Isolated, mocked, fast (53 test files)
          └───────────┘
 ```
 
 **Tier 1 — Unit Tests** (`@pytest.mark.unit`):
-Self-contained tests with all external dependencies mocked. No network calls, no hardware, no real databases beyond SQLite in tmp_path. Run in seconds. Target: 90%+ line coverage on `src/`. Includes 119 nano-module tests in `tests/modules/`.
+Self-contained tests with all external dependencies mocked. No network calls, no hardware, no real databases beyond SQLite in tmp_path. Run in seconds. Target: 90%+ line coverage on `src/`. Includes nano-module tests in `tests/modules/`.
 
 **Tier 2 — Integration Tests** (`@pytest.mark.integration`):
 Tests that connect to real external services (GitLab, Teams, Metabase, Spira). Auto-skipped when the required environment variables are not present. Run against staging/test environments — never production.
@@ -58,12 +60,13 @@ Formal IQ/OQ/PQ tests per ISO 13485 Section 7.5.6. These live in `solutions/medt
 
 ### Test Counts Summary
 
-| Suite | Location | Tests | Notes |
+| Suite | Location | Files | Notes |
 |---|---|---|---|
-| Framework (all) | `tests/` | 216 | `make test` |
-| — Nano-modules | `tests/modules/` | 119 | Subset of framework, instant |
-| medtech solution | `solutions/medtech/tests/` | 32 | `make test-medtech` |
-| **Total** | | **248** | `make test-all` |
+| Framework (all) | `tests/` | 53 test files | `make test` |
+| — Nano-modules | `tests/modules/` | 5 test files | Subset of framework, instant |
+| — System E2E | `tests/system/` | 1 test file (58 tests) | Full API lifecycle |
+| medtech solution | `solutions/medtech/tests/` | varies | `make test-medtech` |
+| **Total** | | **53+ files** | `make test-all` |
 
 ### Coverage Targets
 
@@ -93,28 +96,72 @@ Formal IQ/OQ/PQ tests per ISO 13485 Section 7.5.6. These live in `solutions/medt
 
 The test suite is split between **framework tests** (in `tests/`) and **solution tests** (in `solutions/<name>/tests/`).
 
-### Framework Tests (`tests/`) — 216 tests
+### Framework Tests (`tests/`) — 53 test files
 
 ```
 tests/
 │
-├── conftest.py                    # Shared fixtures for all test tiers
+├── conftest.py                         # Shared fixtures for all test tiers
 │
-├── modules/                       # Nano-module tests (119 tests)
+├── modules/                            # Nano-module tests
 │   ├── test_severity.py
 │   ├── test_json_extractor.py
 │   ├── test_trace_id.py
 │   ├── test_payload_validator.py
 │   └── test_event_bus.py
 │
-├── test_llm_gateway.py            # LLM Gateway unit tests
-├── test_audit_logger.py           # AuditLogger unit tests
-├── test_vector_store.py           # VectorMemory unit tests
-├── test_analyst_agent.py          # AnalystAgent unit tests
-├── test_developer_agent.py        # DeveloperAgent unit tests
-├── test_monitor_agent.py          # MonitorAgent unit tests
-├── test_queue_manager.py          # TaskQueue/TaskWorker unit tests
-└── test_api.py                    # FastAPI endpoint unit tests
+├── system/                             # System E2E tests (58 tests)
+│   └── test_system_e2e.py
+│
+├── test_llm_gateway.py                 # LLM Gateway unit tests
+├── test_audit_logger.py                # AuditLogger unit tests
+├── test_vector_store.py                # VectorMemory unit tests
+├── test_analyst_agent.py               # AnalystAgent unit tests
+├── test_developer_agent.py             # DeveloperAgent unit tests
+├── test_monitor_agent.py               # MonitorAgent unit tests
+├── test_queue_manager.py               # TaskQueue/TaskWorker unit tests
+├── test_api.py                         # FastAPI endpoint unit tests
+├── test_agent_endpoints.py             # Agent run/stream endpoint tests
+├── test_agent_factory.py               # Agent factory / hire tests
+├── test_agents_active_endpoint.py      # Active agents status endpoint
+├── test_build_orchestrator.py          # Build orchestrator unit tests
+├── test_build_orchestrator_e2e.py      # Build orchestrator E2E tests
+├── test_budget_enforcement.py          # LLM budget enforcement tests
+├── test_chat_audit.py                  # Chat audit trail tests
+├── test_chat_execute_endpoint.py       # Chat execute action tests
+├── test_chat_router.py                 # Chat router unit tests
+├── test_critic_agent.py                # Critic agent tests
+├── test_cross_team_routing.py          # Cross-team task routing tests
+├── test_dev_users_endpoint.py          # Dev users endpoint tests
+├── test_folder_scanner.py              # Folder scanner tests
+├── test_knowledge_channel.py           # Knowledge channel tests
+├── test_knowledge_sync.py              # Knowledge sync tests
+├── test_llm_health_endpoint.py         # LLM health endpoint tests
+├── test_multi_llm.py                   # Multi-LLM provider pool tests
+├── test_onboarding_import_endpoints.py # Onboarding import endpoints
+├── test_onboarding_org.py              # Onboarding org template tests
+├── test_openshell_runner.py            # OpenShell sandbox tests
+├── test_openswe_runner.py              # OpenSWE runner tests
+├── test_org_api.py                     # Org API endpoint tests
+├── test_org_loader.py                  # Org loader unit tests
+├── test_org_project_loader.py          # Org project loader tests
+├── test_org_vector.py                  # Org vector store tests
+├── test_phase15_mcp.py                 # MCP integration tests
+├── test_phase1_integrations.py         # Phase 1 integration tests
+├── test_phase2_n8n.py                  # n8n webhook tests
+├── test_phase3_langgraph.py            # LangGraph integration tests
+├── test_phase4_autogen.py              # AutoGen integration tests
+├── test_phase5_streaming.py            # SSE streaming tests
+├── test_phase6_onboarding.py           # Onboarding feature tests
+├── test_phase7_11_features.py          # Phase 7-11 feature tests
+├── test_proposal_executor.py           # Proposal executor tests
+├── test_repo_map.py                    # Repo map tests
+├── test_task_completion.py             # Task completion tests
+├── test_task_hooks.py                  # Task hook tests
+├── test_task_scheduler.py              # Task scheduler tests
+├── test_undo_endpoint.py               # Proposal undo tests
+├── test_wave_subagents.py              # Wave sub-agent tests
+└── test_worktree_manager.py            # Git worktree manager tests
 ```
 
 ### medtech Solution Tests (`solutions/medtech/tests/`) — 32 tests
@@ -162,11 +209,17 @@ make venv
 ### Make Shortcuts (Recommended)
 
 ```bash
-make test           # Framework tests only (216 tests in tests/)
-make test-medtech   # medtech solution tests (32 tests in solutions/medtech/tests/)
-make test-all       # All tests — 248 total
-make test-compliance # Compliance/IQ/OQ/PQ tests (medtech QMS sign-off)
-make test-api       # API endpoint tests only
+make test               # Framework unit tests (tests/)
+make test-all           # Framework + medtech solution tests
+make test-api           # API endpoint tests only
+make test-compliance    # Compliance/IQ/OQ/PQ tests (medtech QMS sign-off)
+make test-medtech       # medtech solution tests
+make test-medtech-team  # medtech_team solution tests
+make test-meditation-app # meditation_app solution tests
+make test-four-in-a-line # four_in_a_line solution tests
+make test-solution PROJECT=X  # Any solution's tests
+make test-mcp           # MCP server tests (needs fastmcp)
+make test-integration   # Integration tests (needs live services)
 ```
 
 ### Nano-Module Tests (instant)

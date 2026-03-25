@@ -2,7 +2,7 @@
 
 **Domain:** medtech
 **Solution ID:** 001
-**Generated:** 2026-03-22T11:53:39.305383
+**Generated:** 2026-03-22T18:55:19.969329
 **HITL Level:** strict
 
 ---
@@ -24,18 +24,17 @@ Tasks in the build plan that address compliance requirements:
 
 | Task | Type | Description | Compliance Relevance |
 |------|------|-------------|---------------------|
-| Step 1 | SAFETY | Conduct ISO 14971 risk management: identify hazards (missed fall, false alarm, G | Risk management, FMEA, hazard analysis |
-| Step 2 | COMPLIANCE | Establish the Design History File (DHF) skeleton per FDA 21 CFR Part 820.30 and  | Standards mapping, DHF, traceability |
-| Step 4 | SECURITY | Produce threat model (STRIDE) for device-to-cloud and cloud-to-caregiver communi | Threat modeling, penetration testing |
-| Step 15 | EMBEDDED_TEST | Develop hardware-in-the-loop (HIL) test suite for fall detection firmware: autom | Hardware-in-the-loop verification |
-| Step 16 | EMBEDDED_TEST | Develop system-level HIL tests: full device power cycle, LTE-M network registrat | Hardware-in-the-loop verification |
-| Step 17 | QA | Develop and execute QA test plan for cloud backend and mobile app: functional te | Verification & validation |
-| Step 18 | COMPLIANCE | Populate complete DHF per FDA 21 CFR Part 820.30: compile all design verificatio | Standards mapping, DHF, traceability |
-| Step 19 | REGULATORY | Prepare 510(k) premarket notification submission package: cover letter, device d | Submission preparation, audit readiness |
-| Step 21 | SECURITY | Execute penetration test plan against all system surfaces: firmware binary analy | Threat modeling, penetration testing |
-| Step 22 | SYSTEM_TEST | Execute design validation in representative use environment: clinical simulation | End-to-end validation, performance |
+| Step 2 | SAFETY | Perform preliminary hazard analysis (PHA) and initial risk assessment per ISO 14 | Risk management, FMEA, hazard analysis |
+| Step 3 | COMPLIANCE | Establish Design History File (DHF) skeleton and Quality Management System (QMS) | Standards mapping, DHF, traceability |
+| Step 4 | SECURITY | Produce threat model (STRIDE) and cybersecurity risk assessment per IEC 62443 fo | Threat modeling, penetration testing |
+| Step 17 | EMBEDDED_TEST | Write firmware unit tests (Unity framework) and HIL test specifications for elde | Hardware-in-the-loop verification |
+| Step 19 | SYSTEM_TEST | Execute end-to-end system test suite covering full elder_fall_detection workflow | End-to-end validation, performance |
+| Step 20 | COMPLIANCE | Complete DHF with all design verification and validation evidence. Populate trac | Standards mapping, DHF, traceability |
+| Step 21 | REGULATORY | Prepare FDA 510(k) premarket notification package for elder_fall_detection devic | Submission preparation, audit readiness |
+| Step 22 | SAFETY | Complete final FMEA and fault tree analysis (FTA) for elder_fall_detection syste | Risk management, FMEA, hazard analysis |
+| Step 23 | SECURITY | Execute security review and finalize SBOM for elder_fall_detection. Run automate | Threat modeling, penetration testing |
 
-**Total tasks:** 24 | **Compliance tasks:** 10 | **Coverage:** 42%
+**Total tasks:** 24 | **Compliance tasks:** 9 | **Coverage:** 38%
 
 ## 4. Compliance Checklist
 
@@ -62,91 +61,87 @@ Tasks in the build plan that address compliance requirements:
 
 | Agent Role | Tasks Assigned | Team |
 |-----------|---------------|------|
-| developer | 9 | Engineering |
-| safety_engineer | 3 | Compliance |
-| regulatory_specialist | 3 | Compliance |
-| qa_engineer | 2 | Engineering |
-| system_tester | 2 | Engineering |
-| technical_writer | 2 | Operations |
+| developer | 6 | Engineering |
+| regulatory_specialist | 5 | Compliance |
+| devops_engineer | 3 | Engineering |
+| safety_engineer | 2 | Compliance |
 | product_manager | 1 | Design |
 | ux_designer | 1 | Design |
-| devops_engineer | 1 | Engineering |
+| firmware_engineer | 1 | Engineering |
+| data_scientist | 1 | Analysis |
+| quality_engineer | 1 | Engineering |
+| qa_engineer | 1 | Engineering |
+| system_tester | 1 | Engineering |
+| technical_writer | 1 | Operations |
 
 ## 7. Critic Review (Actor-Critic Assessment)
 
 **Plan Score:** 54/100 (FAIL) — 1 iteration(s)
 
-**Summary:** This plan is unusually comprehensive for a medtech IoT system — the technology choices are sensible (nRF9161, LSM6DSO32X ML Core, Zephyr RTOS, TimescaleDB, RapidSOS), the regulatory structure is well-intentioned, and the testing depth is above average for an early-stage plan. However, it cannot score above 54 for an FDA Class II submission target because it contains multiple blocking issues that will cause either FDA rejection or post-market regulatory action: the IEC 62304 software safety class is almost certainly wrong and must be resolved before any V&V work begins; the 510(k) predicate strategy is unvalidated and deferred 17 steps too late; no IRB approval step exists for human subject studies; indoor GPS is the primary use case failure mode with no mitigation; 400mAh supporting 72h with active LTE-M and GPS is a credible but unproven claim that must be budgeted before PCB fabrication; automatic 911 dispatch has zero legal review; and post-market surveillance and MDR complaint handling procedures — both non-negotiable FDA requirements — are entirely absent. The security architecture is solid in concept but has critical gaps in key management and revocation infrastructure. To reach production readiness for a regulated submission, the plan needs a regulatory strategy gate (Step 0: predicate + pathway + Q-Sub), a reclassification decision on IEC 62304 safety class, IRB process, indoor positioning fallback, FCC certification track, post-market procedures, and legal review of the 911 dispatch feature — before committing to the current hardware BOM and firmware architecture.
+**Summary:** This is a structurally comprehensive plan that covers the right domains — hardware, firmware, ML, backend, mobile, compliance, and regulatory — but contains multiple fundamental flaws that would block both FDA clearance and safe production deployment. The most critical are: (1) IEC 62366-1 usability engineering is entirely absent, which is a 510(k) submission blocker; (2) the BLE-only connectivity architecture makes the device unsafe when the caregiver's phone is out of range — for a medical safety device this is a design defect, not a limitation; (3) ML validation on lab-collected young-adult simulation data does not support the ≥95% sensitivity claim for the real elderly target population; (4) the 35x25mm PCB with five major ICs and RF modules is likely infeasible without a feasibility analysis; and (5) the 72h GPS battery claim has no supporting power budget. The compliance documentation framework (DHF, ISO 14971, IEC 62304) is well-structured, but is missing the clinical performance data that will be demanded during 510(k) review. The plan reads like a senior engineer's first pass at a regulated medical device — it knows what boxes to check but underestimates the depth required in hardware feasibility, clinical evidence, and usability engineering. Significant rework on the hardware architecture, connectivity design, ML validation methodology, and missing regulatory artifacts is required before this plan could be executed with confidence.
 
 ### Flaws Identified
 
-1. IEC 62304 Software Safety Class misclassification: Class B ('injury possible') is almost certainly wrong. An undetected fall causing an elderly person to lie unresponsive for hours can be fatal — that is Class C ('death possible'). Class B requires only software unit testing; Class C requires full integration and system testing with traceability to every software item. If FDA reviewers disagree with your Class B justification, the entire IEC 62304 software documentation package must be redone. This is submission-killing if wrong.
-2. 510(k) predicate assumption is unvalidated and deferred too late. The predicate device search is listed as an acceptance criterion in Step 18 — after 17 steps of design work. If no adequate predicate exists under MVO, or if FDA classifies automatic emergency dispatch as a novel feature requiring De Novo, the entire regulatory strategy collapses. Predicate identification must happen in Step 2, not Step 18.
-3. No IRB/Ethics Board approval step. Step 22 involves controlled fall simulations with elderly participants on padded mats and a 30-day field trial. This requires IRB approval (45 CFR Part 46 / 21 CFR Part 50) before any human subject study begins. Proceeding without IRB approval invalidates the clinical data for FDA submission and exposes the organization to serious legal liability.
-4. Indoor GPS is the primary failure mode and it's unaddressed. Falls predominantly happen indoors — bathroom, bedroom, kitchen. u-blox M10 GPS will not achieve ≤10m accuracy indoors; it often cannot acquire a fix at all. There is no fallback positioning strategy (WiFi positioning, BLE beacon triangulation, cell tower triangulation, last-known-outdoors position). The '≤10 meters' GPS spec will fail the majority of real-world use cases.
-5. 400mAh battery vs. 72h runtime with LTE-M + GPS is not credible without a detailed power budget. LTE-M active transmit current on nRF9161 is 220-490mA peak; GPS acquisition is 15-20mA; Zephyr RTOS active MCU is 5-15mA. Even with aggressive duty cycling (eDRX, PSM), 400mAh / 72h = 5.5mA average budget is extremely tight. Step 6 acceptance criteria require a power budget analysis, but the 400mAh figure is already specified as a fixed constraint in the BOM — if the power budget fails, the hardware must be redesigned. This should be validated before committing to the form factor.
-6. 30-second escalation timer for automatic 911 dispatch has no legal framework. Automatic emergency dispatch is regulated differently in each US state. False-positive 911 calls can result in liability under FCC rules and state statutes. No legal review step exists in this plan. RapidSOS NG911 API access requires a signed agreement with RapidSOS, carrier integration agreements, and may not have PSAP coverage in all geographies. The plan treats this as a pure engineering problem.
-7. Clinical validation sample size is inadequate for FDA evidence. 30 participants (10 for field trial) is far below what FDA expects for a Class II device with a primary safety endpoint. Predicate devices in the fall detection space have used 100-300 participants for pivotal validation. The 'controlled fall simulation on padded mats' does not replicate real fall biomechanics. FDA will likely require clinical data from spontaneous or minimally-assisted falls. This validation plan will not support a 510(k) submission.
-8. Fall detection algorithm training data provenance and demographic coverage are unspecified. The ML Core decision tree is 'pre-loaded' but there is no specification of what dataset it was trained on, whether it covers the target demographic (elderly, 65+, varying BMIs, mobility aids like walkers/canes), or whether the training data is independent from the validation data. This is a SOUP qualification gap under IEC 62304 and a performance validation gap for FDA.
-9. No Post-Market Surveillance (PMS) Plan. FDA 21 CFR Part 822 requires a post-market surveillance plan for Class II devices. ISO 13485 requires post-market monitoring. MDR (Medical Device Reporting) procedures under 21 CFR Part 803 for adverse event reporting are completely absent. These are not optional and must exist before commercialization.
-10. No FCC / RF Certification step. The nRF9161 LTE-M radio and BLE 5.3 require FCC Part 15/22 certification. Even using a pre-certified module, the end-product integration requires FCC approval or a Declaration of Conformity. This process takes 6-16 weeks, can require test lab time, and may require hardware modifications. It's entirely absent from the plan.
-11. Caregiver push notification delivery (FCM/APNs) is treated as reliable for a life-safety alert path. FCM/APNs are best-effort, not guaranteed-delivery. The caregiver's phone may have notifications disabled, the app backgrounded/killed by iOS memory pressure, or the phone on DND/airplane mode. There is no SMS fallback SLA, no PSTN voice call fallback, and no multi-caregiver escalation chain specified. A single-point FCM failure means no alert.
-12. OTA signing key management is unspecified. The ECDSA P-256 private key for firmware signing is critical — if compromised, an attacker can push arbitrary firmware to all deployed devices. There is no HSM requirement, no key ceremony procedure, no key rotation policy, and no revocation mechanism specified. This is both a security gap and a regulatory gap (cybersecurity documentation for FDA 510(k)).
-13. Step 1 (risk management) and Step 3 (system architecture) have no dependency on each other and run in parallel. The hazard analysis outputs (risk controls, mitigations) must inform the architecture requirements. If Step 3 produces an architecture before Step 1 identifies a hazard that requires an architectural control (e.g., redundant alert paths for alert delivery failure), the architecture must be revised — causing cascading rework.
-14. False positive rate specification (2%) applies only to 'normal ADL' bench simulation. No specification exists for sleep positions, bed egress, wheelchair use, exercise, or activities by users with mobility aids. The ADL dataset of 500 events is small and likely does not cover clinically relevant edge cases for an elderly population.
+1. ML model (step 10) incorrectly depends on firmware (step 9). Model training requires labeled IMU datasets, not working firmware. This serializes 6+ weeks of parallel work unnecessarily and is a fundamental scheduling error.
+2. BLE-only connectivity architecture is a critical safety gap. If the caregiver's phone is out of BLE range (~10m), the device cannot alert anyone. For a medical safety device, this is a design defect — cellular (LTE-M/NB-IoT) fallback is not optional.
+3. PCB form factor constraint (35mm x 25mm) is likely infeasible. u-blox MAX-M10S alone is 9.6mm x 9.6mm. Fitting STM32L476 + nRF52840 + u-blox MAX-M10S + LSM6DSO + BQ25180 + passives on a 35x25mm PCB while meeting RF keepout zones is implausible without a 6-layer board and 0201 passives. No feasibility analysis justifies this constraint.
+4. Dual-chip architecture (STM32L4 + nRF52840 as co-processor) adds unnecessary BOM cost, PCB area, and inter-chip UART latency. The nRF52840 has its own Cortex-M4 that can run FreeRTOS and handle fall detection. This architectural choice is never justified.
+5. 72h battery life with active GPS is physically implausible without duty cycling. u-blox MAX-M10S draws ~10-15mA at acquisition, ~1mA tracking. At 5mA average GPS draw alone on a typical 180mAh wristband battery, GPS exhausts battery in 36h before accounting for MCU, BLE, or cellular. No power budget analysis exists anywhere in the plan.
+6. ML model validation uses MobiAct and SisFall datasets — both collected from younger, healthy adults performing simulated falls in controlled lab conditions. Validation on these datasets does not transfer to real elderly users with atypical gait, slower falls, partial falls, or falls from seated positions. This invalidates the ≥95% sensitivity claim for the target population.
+7. IEC 62366-1 usability engineering is completely absent. FDA requires a Usability Engineering File (UEF) for 510(k) submissions. Missing use error risk analysis, formative studies, and summative validation with elderly users is a submission blocker — not a gap that can be patched post-submission.
+8. No post-market surveillance (PMS) plan. FDA 21 CFR Part 803 (MDR) and 21 CFR Part 806 requires PMS from day one of commercialization. A Class II fall detection device with missed-fall risk will face MDR reporting obligations. This is entirely absent.
+9. RapidSOS/NG911 integration assumes a contractual API relationship that takes months to establish, has geographic coverage gaps in rural US, and requires specific data formatting per NENA i3 standards. Treating it as a simple API call in step 12 acceptance criteria is unrealistic.
+10. Software Safety Class assignment says 'Class B minimum' without justification. For a device where software failure (missed fall) could lead to serious patient harm (death from undetected fall), IEC 62304 Class C is the defensible classification. Class B underclassification risks FDA refusal-to-accept.
+11. MQTT message buffering during connectivity loss is tested in step 19 but never designed. Step 9 firmware spec says nothing about flash-backed event queue, queue depth, TTL, or replay ordering. The system test will fail because the feature was never specified.
+12. No manufacturing process validation. A Class II medical device requires IQ/OQ/PQ for manufacturing processes (pick-and-place, reflow, IP67 seal testing, functional test fixture). This is entirely absent from the plan — the DHF cannot be complete without it.
+13. JWT authentication for IoT devices (step 4, step 12) conflicts with mutual TLS mentioned in the same plan. AWS IoT Core uses X.509 certificates, not JWTs, for device authentication. The authentication architecture is internally inconsistent.
+14. No device provisioning security model at manufacturing time. How are X.509 certificates injected at the factory? No HSM, no certificate authority, no secure element (ATECC608 or equivalent). Firmware signing is listed as an acceptance criterion but the key management infrastructure is never designed.
 
 ### Suggestions
 
-1. Resolve software safety class (Class B vs C) as the first decision, before any other work begins. Document the hazard severity analysis that justifies the class. If any software function failure could contribute to a death, it is Class C. Get this decision signed off by your regulatory lead and an external notified body if targeting EU MDR simultaneously.
-2. Run predicate device search in parallel with Step 1/2, not deferred to Step 18. Use FDA 510(k) database, product code MVO, and engage FDA pre-submission (Q-Sub) meeting early to confirm the regulatory pathway. Budget 3-6 months for FDA feedback cycles.
-3. Add an IRB protocol submission step immediately before Step 22. Allow 8-12 weeks for IRB approval. Write the clinical protocol (including fall simulation methodology, inclusion/exclusion criteria, stopping rules, adverse event reporting) in Step 2 alongside the DHF structure.
-4. Add a hybrid positioning fallback architecture: GPS (outdoor), WiFi positioning (indoor via Google/Apple location APIs), BLE beacon proximity (home environment option), with cell tower triangulation as last resort. Specify indoor vs outdoor accuracy requirements separately in the design inputs.
-5. Commission a detailed power budget analysis as a blocking gate before PCB layout is finalized. Use nRF9161 Power Profiler Kit 2 measurements. If 400mAh cannot support 72h with representative duty cycle, increase to 600-800mAh or shrink the GPS duty cycle further — this decision must be made before Gerbers are fabricated.
-6. Engage legal counsel specializing in telehealth/emergency services regulation before Step 11 (alert engine) is built. Obtain a RapidSOS partner agreement and confirm PSAP coverage in your target markets. Define false-alarm liability policy. Add a legal review gate before the 911 dispatch feature is enabled in production.
-7. Increase clinical validation to minimum 100 participants for the pivotal study and engage a clinical research organization (CRO) with fall detection experience. Consider a wear-and-detect protocol with instrumented falls rather than supervised padded-mat falls to get more realistic biomechanical data.
-8. Specify ML Core decision tree training dataset: source, size, demographic breakdown, independent validation holdout, and IRB approval for any human-derived data. Treat the decision tree as SOUP requiring qualification evidence per IEC 62304 §8.
-9. Add Step 0: FCC pre-certification assessment and RF test planning. Determine whether to use a pre-certified nRF9161 module or do board-level FCC approval. Add FCC testing to the critical path — it must complete before commercial launch.
-10. Add a Post-Market Surveillance plan and MDR/complaint handling SOP as deliverables in Step 18 or a new Step 18.5. These are required before commercial distribution.
-11. Implement a multi-tier alert delivery chain: FCM push (primary, 0-5s) → SMS via Twilio (secondary, 5-15s) → PSTN voice call to caregiver (tertiary, 15-25s) → RapidSOS dispatch (30s). Each tier should fire if the previous tier is unacknowledged, not just the final escalation.
-12. Specify ECDSA signing key management: HSM (AWS CloudHSM or similar) for key storage, documented key ceremony, dual-control key access, key rotation every 2 years, device revocation list mechanism. This is required for FDA cybersecurity documentation.
-13. Make Step 3 depend on Step 1 (risk management outputs), or explicitly document that Step 3 is a preliminary architecture subject to revision after risk analysis completes. Track all architecture-impacting risk controls in the traceability matrix from Step 1 outputs.
+1. Move step 10 (ML model) to run in parallel with steps 6-9, with only the deployment-to-firmware step blocked on step 9. This recovers 3-4 weeks of critical path time.
+2. Add LTE-M or NB-IoT as the primary alert channel, with BLE as the configuration/pairing interface only. Nordic nRF9161 or Sequans Monarch handles LTE-M and integrates more cleanly than the dual-chip STM32+nRF52840 design.
+3. Commission a 6-layer PCB stack-up analysis before committing to the 35x25mm constraint. If the constraint is from product design requirements, add a feasibility step before PCB layout. If it is aspirational, state it as a target and validate in step 7 (mechanical).
+4. Add an explicit power budget analysis step before PCB design (step 6). Define GPS duty cycle (e.g., 1 fix per 30s when stationary, continuous when motion detected), CPU active/sleep ratios, and BLE advertising intervals. This gates the 72h claim.
+5. Add step 0.5: IEC 62366-1 Usability Engineering Plan, with formative usability studies at step 5 (UX Design) using actual elderly participants, and summative validation scheduled before step 20 (DHF completion).
+6. Add a clinical performance validation step between step 17 (embedded test) and step 20 (DHF). The 510(k) substantial equivalence argument for a fall detection device will be strengthened significantly by even a 30-subject pilot study with elderly users in a care home setting.
+7. Add step 8.5: device identity and certificate provisioning design. Specify secure element (ATECC608B or equivalent), certificate authority architecture, factory provisioning fixture, and certificate revocation mechanism.
+8. Replace IEC 62443 as the primary cybersecurity standard with FDA's 2023 Cybersecurity Guidance (Refuse to Accept policy) and NIST IR 8259. IEC 62443 is industrial control systems — reference it as supplementary only.
+9. Define HIPAA Business Associate Agreements (BAAs) with AWS, Twilio, SendGrid, and RapidSOS explicitly. AWS BAA is available but must be executed. Twilio and SendGrid have their own BAA processes. Missing BAA voids HIPAA safe harbor.
+10. Specify a post-market surveillance plan as a deliverable in step 21 (regulatory). Include MDR decision tree, complaint handling procedure (21 CFR Part 820.198), and field corrective action trigger criteria.
 
 ### Missing Elements
 
-1. Post-Market Surveillance Plan (required by 21 CFR Part 822 and ISO 13485 §8.2.1)
-2. Medical Device Reporting (MDR) and Complaint Handling SOP (21 CFR Part 803 / 820.198)
-3. IRB protocol submission and approval process (21 CFR Part 50, 45 CFR Part 46)
-4. FCC Part 15/22 RF certification step and timeline
-5. Indoor positioning fallback strategy — GPS alone is insufficient for the intended use environment
-6. OTA signing key management procedure (HSM, key ceremony, rotation, revocation)
-7. Legal review of automatic 911 dispatch liability, FCC false-alarm rules, and state-by-state emergency dispatch laws
-8. Multi-tier alert delivery with guaranteed fallback (SMS → voice call → 911) beyond single FCM push
-9. De Novo pathway analysis as alternative to 510(k) if no adequate predicate is found
-10. FDA Pre-Submission (Q-Sub) meeting step to confirm regulatory pathway before significant investment
-11. COOP / multi-region AWS deployment strategy for the life-safety alert engine (single-region outage = no alerts)
-12. Supplier qualification records and component obsolescence risk assessment for critical components (nRF9161, LSM6DSO32X, ATECC608B)
-13. Cleaning and biocompatibility assessment per ISO 10993 — skin-contact wearable requires cytotoxicity and sensitization testing
-14. Quality Management System (QMS) selection and setup (required for ISO 13485 certification and FDA 820.5)
-15. ANVISA (Brazil), Health Canada, TGA (Australia) registration strategy if non-US markets are targeted
-16. EU MDR 2017/745 Technical Documentation and Notified Body engagement if CE marking is required
-17. Software anomaly resolution procedure (IEC 62304 §6.2.5) — defects found during V&V must go through a documented resolution process
+1. IEC 62366-1 Usability Engineering File — formative studies, use error analysis, summative validation with elderly target users. FDA will not accept a 510(k) without this.
+2. Post-market surveillance plan (21 CFR Part 803, 21 CFR Part 806, EU MDR Article 83 if international scope intended).
+3. Cellular (LTE-M/NB-IoT) connectivity design. BLE range limitation makes the device unsafe as a sole-communication-path medical device.
+4. Power budget analysis and GPS duty cycling strategy supporting the 72h battery life claim.
+5. Manufacturing process validation (IQ/OQ/PQ) for PCB assembly, IP67 seal testing, and final functional test.
+6. Secure element and certificate provisioning architecture for device identity at manufacturing time.
+7. Clinical performance data with elderly subjects — lab datasets alone are insufficient for the 510(k) substantial equivalence performance testing section.
+8. HIPAA BAA execution plan for all third-party data processors (AWS, Twilio, SendGrid, RapidSOS).
+9. Data retention and right-to-deletion policy (HIPAA minimum 6-year retention, GDPR if EU market).
+10. PCB feasibility analysis before committing to 35x25mm constraint.
+11. Alert deduplication logic — what prevents duplicate NG911 dispatch if caregiver and auto-dispatch both trigger within seconds?
+12. Firmware OTA update design (mentioned in step 9 acceptance criteria but never designed as a task — rollback, signature verification, atomic swap, and fail-safe boot are all unspecified).
+13. International regulatory pathway — CE marking under EU MDR 2017/745 is not mentioned despite the device's clear EU market applicability.
 
 ### Security Risks
 
-1. OTA signing key stored without HSM: if the ECDSA private key is compromised (developer laptop, CI/CD secret leak), an attacker can push malicious firmware to the entire deployed device fleet — silently disabling fall detection or enabling remote surveillance. No revocation mechanism is specified.
-2. RapidSOS API endpoint is a high-value target: an attacker who can forge a fall event (exploiting a confidence score bypass or MQTT topic ACL gap) can trigger automatic 911 dispatch to any address, causing emergency resource exhaustion. Rate limiting on the fall-event endpoint is specified but its enforcement under a spoofed device identity is not verified.
-3. mTLS device certificates provisioned at manufacturing (ATECC608B) have no revocation mechanism specified. If a device is stolen or its certificate extracted, it can permanently impersonate a legitimate device. No OCSP/CRL infrastructure is defined.
-4. The offline flash buffer (8KB, Step 10) stores unprocessed fall events. If the buffer contents are not encrypted at rest on the nRF9161 flash, an attacker with physical access (JTAG/SWD) can read buffered GPS positions and health events — PHI exposure without decryption.
-5. The 30-second no-response escalation window is a denial-of-service vector: an attacker who can flood the alert engine with high-confidence false fall events (by compromising one device's credentials) can saturate Celery workers, delay legitimate escalations, and potentially deplete the RapidSOS API quota causing real emergencies to go undispatched.
-6. The caregiver app uses OAuth 2.0 + PKCE via Auth0, but biometric unlock on subsequent opens does not re-authenticate to the server — it only unlocks the local token store. A stolen unlocked phone gives permanent caregiver access with no session expiry on the device. Server-side session binding to device fingerprint is not specified.
-7. IEC 62443 is cited as a security standard (Step 4) but it governs industrial control systems, not medical device cybersecurity. The correct references are FDA 2023 Cybersecurity Guidance, IEC 81001-5-1:2021, and NIST SP 800-213 (already cited). Relying on IEC 62443 framing may produce a security architecture that passes an industrial audit but fails FDA cybersecurity review.
-8. GPS position data transmitted at 1Hz during emergencies over MQTT QoS 1 means precise real-time location of a vulnerable elderly person is continuously accessible to anyone who can read the MQTT broker stream. MQTT topic ACLs are mentioned but the broker-level authorization model (per-device topic isolation) and the cloud-side storage encryption for live location data are not fully specified.
+1. BLE bonding without a secure element means pairing keys are stored in MCU flash. A physical device compromise yields all pairing credentials and enables location tracking of the patient. No mention of anti-tamper or key erasure on tamper detection.
+2. JWT tokens for caregiver mobile app without refresh token rotation policy. A stolen JWT provides persistent patient location access. Token lifetime and rotation strategy are unspecified.
+3. GPS coordinates stored as PII in PostgreSQL with pgcrypto — but pgcrypto column-level encryption means the application holds the decryption keys in memory. A backend compromise exposes all patient location history. No mention of key management service (AWS KMS) for column keys.
+4. MQTT/AWS IoT Core device certificates: if a device is stolen, there is no defined certificate revocation workflow. Attacker can impersonate the device, inject false fall events triggering unnecessary emergency dispatch, or suppress real fall events.
+5. OTA firmware update mechanism exists in acceptance criteria but signing/verification design is absent. An unsigned OTA channel on a medical device is a direct patient safety risk — malicious firmware could suppress fall detection entirely.
+6. MobSF scan for mobile app is planned but no runtime application self-protection (RASP) or jailbreak/root detection is specified. On a jailbroken device, screenshot prevention and auto-lock controls are trivially bypassed, exposing patient location and health data.
+7. RapidSOS API credentials stored where? If in Secrets Manager, how are they rotated? If rotation fails and credentials expire, emergency dispatch silently fails — a safety-critical failure mode with no detection mechanism in the plan.
+8. No network segmentation between MQTT ingestion path and caregiver REST API path. A compromised IoT device should not be able to reach the user management or emergency dispatch endpoints. The VPC/WAF design in step 15 does not specify this isolation.
 
 
 ## 8. Audit Trail
 
 - **Generated by:** SAGE Build Orchestrator v2.0
-- **Timestamp:** 2026-03-22T11:53:39.305491
+- **Timestamp:** 2026-03-22T18:55:19.969443
 - **Pipeline:** Domain Detection → Plan Decompose → Critic Review → HITL Approve → Scaffold → Execute → Integrate → Finalize
 - **Approval gates:** All build artifacts subject to HITL approval
 - **Critic threshold:** 70/100 (actor-critic review required before human approval)
