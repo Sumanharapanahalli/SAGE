@@ -195,6 +195,7 @@ These are not dependencies — they are thinking influences:
 | **Paperclip (paperclipai/paperclip)** | Board-of-directors governance model, immutable audit log per company, agent-hire requiring explicit human approval, per-agent budget controls. *Key divergence:* Paperclip targets zero-human operation over time; SAGE mandates human approval always — the regulated-industry version of the same architecture. |
 | **Aider** | Every agent change is a reversible git commit; unified diff preview before apply; repo map for multi-file coherence |
 | **Claude Code** | Pre/post action hooks declarable per project; `.claude/` per-project runtime directory (directly inspired `.sage/`); persistent context injection via CLAUDE.md |
+| **DeerFlow (bytedance/deer-flow)** | Supervisor + sub-agent topology (Researcher/Coder/Reporter), skills as Markdown files, Docker "AIO Sandbox" with full shell/browser/filesystem, adaptive replanning when sub-agents return thin results, tiered memory (working/archival), long-running task durability via LangGraph checkpointing. *Key divergence:* DeerFlow targets general-purpose research/coding; SAGE adds domain-specific execution runners (firmware, PCB, ML, etc.) and HITL approval gates for regulated industries. |
 
 ---
 
