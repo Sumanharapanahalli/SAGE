@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-03-22T19:55:20.070747",
+  "total": 1,
+  "success": 0,
+  "failed": 1,
+  "skipped": 0,
+  "elapsed_seconds": 3909.6,
+  "results": [
+    {
+      "id": "001",
+      "domain": "medtech",
+      "name": "elder_fall_detection",
+      "run_id": "2584da52-1737-40a3-8bcb-87645ca5b01a",
+      "tasks": 24,
+      "state": "awaiting_plan",
+      "compliance": [
+        "FDA Class II",
+        "IEC 62304",
+        "ISO 14971",
+        "ISO 13485"
+      ],
+      "status": "error",
+      "error": "timed out",
+      "phase": "plan_approval"
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # SAGE[ai] — Integrations Guide
 
+*Last updated: 2026-03-24*
+
 Detailed guide for configuring and using each external system integration.
 
 ---
@@ -360,3 +362,130 @@ Find the exact device string in the J-Link device database:
 JLinkExe -commanderscript
 # Then type: ShowEmuList
 ```
+
+---
+
+## Composio
+
+### Overview
+
+Composio provides 500+ pre-built tool integrations with per-user OAuth and tenant isolation. Used as a future-proof replacement for custom tool code when scaling to multi-tenant SaaS.
+
+### Configuration
+
+Connect via the API:
+```bash
+curl -X POST http://localhost:8000/integrations/composio/connect \
+  -H "Content-Type: application/json" \
+  -d '{"api_key": "your-composio-api-key"}'
+```
+
+### Status
+
+```bash
+curl http://localhost:8000/integrations/composio/status
+curl http://localhost:8000/integrations/composio/tools
+```
+
+---
+
+## Slack Two-Way Approval
+
+### Overview
+
+When configured, SAGE posts proposals to a Slack channel as Block Kit interactive messages with Approve/Reject buttons. Button clicks trigger `POST /webhook/slack` callbacks that approve or reject the proposal.
+
+### Configuration
+
+```env
+SLACK_BOT_TOKEN=xoxb-xxxxxxxxxxxx
+SLACK_SIGNING_SECRET=xxxxxxxxxxxxxxxx
+SLACK_CHANNEL_ID=C0123456789
+```
+
+### Sending a Proposal to Slack
+
+```bash
+curl -X POST http://localhost:8000/slack/send-proposal \
+  -H "Content-Type: application/json" \
+  -d '{"trace_id": "abc123"}'
+```
+
+The Slack message includes:
+- Proposal summary and risk tier badge
+- Approve/Reject buttons
+- Trace ID for audit correlation
+
+---
+
+## n8n Webhook Integration
+
+### Overview
+
+SAGE receives events from n8n automation workflows and routes them to the appropriate agent/task queue.
+
+### Endpoint
+
+`POST /webhook/n8n`
+
+### Payload Format
+
+```json
+{
+  "event_type": "log_alert",
+  "payload": {"log_entry": "Error: connection timeout"},
+  "source": "pagerduty",
+  "priority": 5
+}
+```
+
+### Event Type Routing
+
+| event_type | Routed to |
+|---|---|
+| `log_alert` | `ANALYZE_LOG` task |
+| `code_review` | `REVIEW_CODE` task |
+| `monitor` | `MONITOR_EVENT` task |
+| Other | Uppercased as task type |
+
+### Security
+
+Set `N8N_WEBHOOK_SECRET` for HMAC-SHA256 verification via the `X-SAGE-Signature` header.
+
+---
+
+## Integration Phases Summary
+
+All integration phases are complete. See `FRAMEWORK_INTEGRATION_STRATEGY.md` for the full strategy document.
+
+| Phase | Feature | Key Files | Status |
+|---|---|---|---|
+| 0 | Langfuse observability | `llm_gateway.py` | Complete |
+| 1 | LlamaIndex + LangChain + mem0 | `vector_store.py`, `langchain_tools.py`, `long_term_memory.py` | Complete |
+| 1.5 | MCP tool registry | `mcp_registry.py` | Complete |
+| 2 | n8n webhook receiver | `api.py /webhook/n8n` | Complete |
+| 3 | LangGraph orchestration | `langgraph_runner.py` | Complete |
+| 4 | AutoGen code agent | `autogen_runner.py` | Complete |
+| 5 | SSE streaming | `api.py /analyze/stream`, `/agent/stream` | Complete |
+| 6 | Onboarding wizard | `onboarding.py`, `onboarding_session.py` | Complete |
+| 7 | Knowledge base CRUD | `vector_store.py` | Complete |
+| 8 | Slack two-way approval | `slack_approver.py` | Complete |
+| 9 | Eval/benchmarking | `eval_runner.py` | Complete |
+| 10 | Multi-tenant isolation | `tenant.py` | Complete |
+| 11 | Temporal durable workflows | `temporal_runner.py` | Complete |
+| 12 | Build Orchestrator (0-to-N) | `build_orchestrator.py`, `critic.py`, `openswe_runner.py` | Complete |
+| 12.1 | Domain-aware build detection | `build_orchestrator.py` (13+ domains) | Complete |
+| 12.2 | Workforce registry + 32 task types | `build_orchestrator.py` (19 agents, 5 teams) | Complete |
+| 12.3 | Adaptive router (Q-learning) | `build_orchestrator.py` | Complete |
+| 12.4 | Anti-drift checkpoints | `build_orchestrator.py` | Complete |
+
+### Additional Integrations
+
+| Integration | Key File | Purpose |
+|---|---|---|
+| Composio | `composio_tools.py` | Multi-tenant tool integrations (500+ tools) |
+| OpenShell | `openshell_runner.py` | Sandboxed code execution |
+| OpenSWE | `openswe_runner.py` | Autonomous coding agent |
+| Sandbox | `sandbox_runner.py` | Generic sandbox runner |
+| Dual LLM | `dual_llm_runner.py` | Teacher-student distillation |
+| HIL Runner | `hil_runner.py` | Hardware-in-the-loop testing |

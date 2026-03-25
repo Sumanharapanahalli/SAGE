@@ -1,6 +1,12 @@
 # SAGE[ai] — Smart Agentic-Guided Empowerment
+
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub Stars](https://img.shields.io/github/stars/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage)
+[![GitHub Forks](https://img.shields.io/github/forks/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage/fork)
+
 ### *One framework. One founder. A billion-dollar operation.*
-### *2026-03-20*
+### *Open Source — Community-Driven — Transparent — Auditable*
+### *2026-03-24*
 
 ---
 
@@ -21,7 +27,7 @@ SAGE is the operating system for that company.
 - **Agents propose. Humans decide.** Every agent action waits for human approval before execution. Compliance is built-in, not bolted on.
 - **Compounding intelligence.** Every approval, rejection, and correction is stored in vector memory. Agents improve with every interaction — no retraining, no cold starts.
 - **Domain-agnostic.** Three YAML files define an entire company function. No Python changes. Swap domains, swap teams, swap industries — the framework stays unchanged.
-- **Open-source first.** Zero mandatory API keys. Runs fully offline with Ollama. Every dependency has a free, self-hosted alternative.
+- **Open-source first.** Licensed under Apache 2.0. Zero mandatory API keys. Runs fully offline with Ollama. Every dependency has a free, self-hosted alternative. The framework is fully open on GitHub; your proprietary solutions stay in a private repo mounted via `SAGE_SOLUTIONS_DIR`.
 
 ---
 
@@ -107,32 +113,37 @@ Any job role becomes an AI agent. The founder hires, configures, and routes work
 
 ---
 
-## Dashboard (22 Pages)
+## Dashboard (27 Pages)
 
-| Page | Route | Purpose |
-|---|---|---|
-| Dashboard | `/` | Project health overview, quick actions |
-| **Approvals** | `/approvals` | HITL inbox — every AI proposal, risk-sorted |
-| **Issues** | `/issues` | Feature backlog with priority filters |
-| **Activity** | `/activity` | Real-time audit log timeline |
-| Task Queue | `/queue` | Pending/running/completed tasks |
-| Live Console | `/live-console` | Streaming agent output |
-| Agents | `/agents` | Run custom roles, hire agents |
-| **Org Chart** | `/org` | Agent team hierarchy, live status |
-| Analyst | `/analyst` | Log/error triage |
-| Developer | `/developer` | MR review, code diff proposals |
-| Monitor | `/monitor` | System event monitoring |
-| **Goals** | `/goals` | OKR tracker — objectives + key results |
-| Improvements | `/improvements` | SAGE framework ideas backlog |
-| **Workflows** | `/workflows` | Mermaid diagrams auto-generated from LangGraph |
-| Config Editor | `/yaml-editor` | Live YAML editing with hot-reload |
-| Audit Log | `/audit` | Full compliance trail |
-| LLM Settings | `/llm` | Provider switch, token stats |
-| Integrations | `/integrations` | GitLab, Slack, n8n, Composio |
-| New Solution | `/onboarding` | Conversational wizard + domain template chooser |
-| Access Control | `/access-control` | RBAC roles and API keys |
-| Costs | `/costs` | Token spend, budget controls |
-| Settings | `/settings` | Solution config |
+| Area | Page | Route | Purpose |
+|---|---|---|---|
+| **Work** | Approvals | `/approvals` | HITL inbox — every AI proposal, risk-sorted |
+| **Work** | Task Queue | `/queue` | Pending/running/completed tasks |
+| **Work** | Dashboard | `/` | Project health overview, quick actions |
+| **Work** | Build | `/build` | End-to-end product builder |
+| **Work** | Live Console | `/live-console` | Streaming agent output |
+| **Intelligence** | Agents | `/agents` | Run custom roles, hire agents |
+| **Intelligence** | Analyst | `/analyst` | Log/error triage |
+| **Intelligence** | Developer | `/developer` | MR review, code diff proposals |
+| **Intelligence** | Monitor | `/monitor` | System event monitoring |
+| **Intelligence** | Improvements | `/improvements` | Feature request backlog |
+| **Intelligence** | Workflows | `/workflows` | Mermaid diagrams auto-generated from LangGraph |
+| **Intelligence** | Goals | `/goals` | OKR tracker — objectives + key results |
+| **Knowledge** | Vector Store | `/knowledge` | Search and manage knowledge base |
+| **Knowledge** | Channels | `/activity` | Cross-team knowledge channels |
+| **Knowledge** | Audit Log | `/audit` | Full compliance trail |
+| **Knowledge** | Costs | `/costs` | Token spend, budget controls |
+| **Organization** | Org Graph | `/org-graph` | Solutions, channels, task routing graph |
+| **Organization** | Onboarding | `/onboarding` | Conversational wizard + domain template chooser |
+| **Admin** | LLM Settings | `/llm` | Provider switch, token stats |
+| **Admin** | Config Editor | `/yaml-editor` | Live YAML editing with hot-reload |
+| **Admin** | Access Control | `/access-control` | RBAC roles and API keys |
+| **Admin** | Integrations | `/integrations` | GitLab, Slack, n8n, Composio |
+| **Admin** | Settings | `/settings` | Solution config |
+| **Admin** | Organization | `/settings/organization` | Company mission, vision, values |
+| — | Issues | `/issues` | Feature backlog with priority filters |
+| — | Guide | `/guide` | Interactive framework guide |
+| — | Activity | `/activity` | Real-time audit log timeline |
 
 Cmd+K opens the command palette to jump to any page instantly.
 
@@ -166,7 +177,7 @@ Cmd+K opens the command palette to jump to any page instantly.
 
 ```bash
 # 1 — Install
-git clone https://github.com/your-org/sage && cd sage
+git clone https://github.com/Sumanharapanahalli/sage && cd sage
 make venv
 
 # 2 — Start (backend + frontend in one click)
@@ -202,11 +213,15 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 | `starter` | Generic template — any domain | None |
 | `medtech_team` | Medical device (embedded + web + devops) | IEC 62304, ISO 14971, IEC 60601-1, FDA 21 CFR 820 |
 | `automotive` | Infotainment + telematics + ADAS | ISO 26262, UN ECE WP.29, ISO/SAE 21434 |
-| `mobile_app` | iOS + Android + Flutter | Apple App Store, Google Play, GDPR |
-| `railways` | Signalling + traction + TCMS | EN 50128, EN 50129, EN 50126 |
 | `avionics` | Avionics SW + systems + airworthiness | DO-178C, DO-254, ARP4754A, FAA Part 25 |
 | `iot_medical` | IoT medical device (IEC 62304 Class C) | IEC 62304, ISO 14971, IEC 62443 |
-| `your_company` | Mount via `SAGE_SOLUTIONS_DIR` | Whatever you need |
+| `elder_fall_detection` | Elder fall detection IoT | HIPAA, IEC 62304 |
+| `finmarkets` | Financial markets | SOC 2, PCI DSS |
+| `bluedrop_medical` | Medical device startup | IEC 62304, ISO 13485 |
+| `meditation_app` | Flutter mobile + Node.js | GDPR |
+| `four_in_a_line` | Casual game studio | GDPR, COPPA |
+| + 7 more | Various domains | See `solutions/` directory |
+| `your_company` | Mount via `SAGE_SOLUTIONS_DIR` (private repo) | Whatever you need |
 
 ---
 
@@ -241,26 +256,50 @@ Pre-built agent teams with correct roles, system prompts, task types, and compli
 
 ---
 
-*SAGE Framework — Open Source · Self-Hosted · Agent-First*
-*github.com/your-org/sage*
+*SAGE Framework — Open Source (Apache 2.0) · Self-Hosted · Agent-First · Community-Driven*
+*github.com/Sumanharapanahalli/sage*
 
 ---
 
-## What's Shipped (SAGE 9 — March 2026)
+## Open-Source Model
 
-### Intelligence Layer v2 — Action-Aware Chat
-The chat panel routes natural language to framework actions. Say "approve it" on the approvals page — the system identifies the pending proposal, presents a confirmation card, and executes on your approval. Every step is auditable.
+SAGE follows an **open-core** approach:
 
-### SAGE 9 Framework Features
-- **Agent budgets** — Monthly call ceilings per role, declared in YAML
+- **Framework (this repo):** Fully open source under Apache 2.0. All 136 API endpoints, 27 UI pages, 17+ solution templates, and the complete agent architecture are public, auditable, and forkable.
+- **Your solutions (private):** Mount via `SAGE_SOLUTIONS_DIR` from a separate private repository. Your proprietary YAML configs, domain knowledge, and `.sage/` runtime data never touch the public repo.
+- **Community contributions welcome:** File issues, submit PRs, propose new solution templates, or build MCP tool servers. See `CONTRIBUTING.md` for guidelines.
+- **Transparent by design:** Every agent decision, every approval, every rejection is logged in an immutable audit trail. The codebase itself is public for security review and regulatory confidence.
+
+---
+
+## What's Shipped (SAGE 10 — March 2026)
+
+### Intelligence Layer v3
+- **Action-Aware Chat** — chat panel routes natural language to framework actions with audit trail
+- **Multi-LLM Provider Pool** — parallel generation strategies (voting, fastest, fallback, quality)
+- **Task Routing** — route different task types to different LLM providers automatically
+- **Build Orchestrator** — end-to-end product builder with 13+ domain detection, 19+ agents, 5 teams, Q-learning adaptive router, anti-drift checkpoints
+
+### SAGE 10 Framework Features
+- **136 API endpoints** across 22 categories
+- **27 UI pages** in 5-area sidebar (Work, Intelligence, Knowledge, Organization, Admin)
+- **17+ bundled solutions** covering medical, automotive, avionics, IoT, fintech, and more
+- **53 test files** including 58 system E2E tests for full API lifecycle
+- **Agent budgets** — Monthly call ceilings per role with hard/soft cutoff
 - **Undo** — Revert approved code diffs with one click
-- **Live agents panel** — Real-time active-agent visibility on the dashboard
+- **Live agents panel** — Real-time active-agent visibility
 - **Task hooks** — Pre/post shell hooks per task type
 - **Repo map** — File tree + symbols fed to Developer agent context
 - **Scheduled tasks** — Cron-declared recurring tasks in `tasks.yaml`
 - **Git worktrees** — Isolated workspace per concurrent code proposal
 - **Knowledge sync** — Bulk-import docs into the vector store
+- **Knowledge channels** — Cross-team knowledge sharing via org config
 - **Wave execution** — Parallel subtask fan-out from a single queue entry
+- **Org Graph** — React Flow graph of solutions, channels, and task routing
+- **PII detection** — Presidio-based PII scrubbing with redact/mask/flag modes
+- **Data residency** — Region-aware provider routing (EU providers for EU data)
+- **OpenShell sandbox** — Sandboxed code execution for SWE tasks
+- **Folder scanner** — Scan existing codebases to auto-generate solution YAML
 
 ### UX Redesign
-Complete navigation overhaul: 5-area accordion sidebar, 44px solution rail, live stats strip, resizable panels, per-solution accent colors, hover color previews, 6-stop onboarding tour.
+Complete navigation overhaul: 5-area accordion sidebar, 44px solution rail, live stats strip, resizable panels, per-solution accent colors, hover color previews, 6-stop onboarding tour, ChatPanel overlay.

@@ -206,12 +206,25 @@ class TestLangGraphSWE:
 # _try_llm_fallback() — ReAct pattern
 # ---------------------------------------------------------------------------
 
+def _setup_mock_gw(mock_gw, return_value=None, side_effect=None):
+    """Configure both generate and generate_for_task on a mocked llm_gateway."""
+    if side_effect is not None:
+        mock_gw.generate.side_effect = side_effect
+        mock_gw.generate_for_task.side_effect = (
+            [s for s in side_effect] if isinstance(side_effect, list)
+            else side_effect
+        )
+    elif return_value is not None:
+        mock_gw.generate.return_value = return_value
+        mock_gw.generate_for_task.return_value = return_value
+
+
 class TestReActLLMFallback:
 
     def test_uses_react_pattern(self):
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.return_value = REACT_RESPONSE
+            _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE)
             result = runner._try_llm_fallback(
                 {"description": "Build API", "task_type": "BACKEND"}, ""
             )
@@ -222,44 +235,44 @@ class TestReActLLMFallback:
     def test_passes_acceptance_criteria(self):
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.return_value = REACT_RESPONSE
+            _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE)
             runner._try_llm_fallback(
                 {"description": "Build API", "task_type": "BACKEND",
                  "acceptance_criteria": ["Has error handling", "Has tests"]},
                 "",
             )
-            prompt = mock_gw.generate.call_args[0][0]
+            prompt = mock_gw.generate_for_task.call_args[1].get("prompt", mock_gw.generate_for_task.call_args[0][1] if len(mock_gw.generate_for_task.call_args[0]) > 1 else "")
             assert "Has error handling" in prompt
             assert "Has tests" in prompt
 
     def test_stops_when_agent_says_done(self):
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.return_value = REACT_RESPONSE  # STATUS: DONE
+            _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE)
             result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
-            assert mock_gw.generate.call_count == 1
+            assert mock_gw.generate_for_task.call_count == 1
             assert result["output"]["react_iterations"] == 1
 
     def test_iterates_when_status_is_iterate(self):
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.side_effect = [REACT_RESPONSE_ITERATE, REACT_RESPONSE]
+            _setup_mock_gw(mock_gw, side_effect=[REACT_RESPONSE_ITERATE, REACT_RESPONSE])
             result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
-            assert mock_gw.generate.call_count == 2
+            assert mock_gw.generate_for_task.call_count == 2
             assert result["output"]["react_iterations"] == 2
 
     def test_respects_max_iterations(self):
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.return_value = REACT_RESPONSE_ITERATE  # Always ITERATE
+            _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE_ITERATE)
             result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
             # max_iterations=3
-            assert mock_gw.generate.call_count == 3
+            assert mock_gw.generate_for_task.call_count == 3
 
     def test_handles_llm_failure(self):
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.side_effect = RuntimeError("LLM down")
+            _setup_mock_gw(mock_gw, side_effect=RuntimeError("LLM down"))
             result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
             assert result["status"] == "error"
             assert result["tier"] == "llm_react"
@@ -284,7 +297,7 @@ OBSERVATION: Good now
 STATUS: DONE"""
 
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.side_effect = [iter1, iter2]
+            _setup_mock_gw(mock_gw, side_effect=[iter1, iter2])
             result = runner._try_llm_fallback({"description": "test", "task_type": "BACKEND"}, "")
             # app.py should be v2 (overridden), config.py should remain
             assert len(result["files_changed"]) == 2
@@ -427,7 +440,7 @@ class TestTryLlmFallbackEdgeCases:
         """_try_llm_fallback() with empty string from LLM produces no files."""
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.return_value = ""
+            _setup_mock_gw(mock_gw, return_value="")
             result = runner._try_llm_fallback(
                 {"description": "test", "task_type": "BACKEND"}, ""
             )
@@ -445,7 +458,7 @@ ACTION: Generate code
 OBSERVATION: Tried
 STATUS: DONE"""
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.return_value = response
+            _setup_mock_gw(mock_gw, return_value=response)
             result = runner._try_llm_fallback(
                 {"description": "test", "task_type": "BACKEND"}, ""
             )
@@ -462,7 +475,7 @@ ACTION: Generate code
 ```
 STATUS: DONE"""
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.return_value = response
+            _setup_mock_gw(mock_gw, return_value=response)
             result = runner._try_llm_fallback(
                 {"description": "test", "task_type": "BACKEND"}, ""
             )
@@ -473,12 +486,14 @@ STATUS: DONE"""
         """_try_llm_fallback() includes payload in prompt when present."""
         runner = _fresh_runner()
         with patch("src.core.llm_gateway.llm_gateway") as mock_gw:
-            mock_gw.generate.return_value = REACT_RESPONSE
+            _setup_mock_gw(mock_gw, return_value=REACT_RESPONSE)
             runner._try_llm_fallback(
                 {"description": "test", "task_type": "BACKEND",
                  "payload": {"framework": "django"}}, ""
             )
-            prompt = mock_gw.generate.call_args[0][0]
+            # generate_for_task uses keyword args
+            call_kwargs = mock_gw.generate_for_task.call_args
+            prompt = call_kwargs.kwargs.get("prompt", call_kwargs[1].get("prompt", ""))
             assert "django" in prompt
 
 

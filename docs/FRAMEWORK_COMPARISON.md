@@ -1,7 +1,12 @@
 # Agent Framework Comparison
-*Last updated: 2026-03-13*
 
-Use this document to evaluate SAGE against other agent frameworks when choosing the right tool for a project.
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub Stars](https://img.shields.io/github/stars/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage)
+[![GitHub Forks](https://img.shields.io/github/forks/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage/fork)
+
+*Last updated: 2026-03-24*
+
+Use this document to evaluate SAGE against other agent frameworks when choosing the right tool for a project. SAGE is fully open source under Apache 2.0 at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage).
 
 ---
 
@@ -9,7 +14,7 @@ Use this document to evaluate SAGE against other agent frameworks when choosing 
 
 | Framework | Maker | Core Model | Primary Strength |
 |---|---|---|---|
-| **SAGE** | Open / your team | Lean + Human-in-loop | Regulated industries, compliance-critical workflows |
+| **SAGE** | Open source (Apache 2.0) | Lean + Human-in-loop | Regulated industries, compliance-critical workflows |
 | **LangGraph** | LangChain Inc | Graph-based state machines | Complex multi-step agent flows, fine-grained control |
 | **CrewAI** | CrewAI Inc | Role-based multi-agent | Collaborative agent teams, business automation |
 | **AutoGen** | Microsoft | Conversational multi-agent | Research, code generation, self-healing agents |
@@ -37,7 +42,7 @@ Use this document to evaluate SAGE against other agent frameworks when choosing 
 | **Parallel task execution** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **LLM provider flexibility** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ |
 | **Visual / no-code builder** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| **Large community / ecosystem** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Large community / ecosystem** | ⚠️ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Cloud-managed option** | ❌ | ✅ | ✅ | ⚠️ | ✅ | ✅ | ✅ | ✅ |
 | **Production maturity** | ⚠️ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
@@ -57,14 +62,15 @@ Use this document to evaluate SAGE against other agent frameworks when choosing 
 - Compounding intelligence: every rejection feeds ChromaDB vector memory, improving future proposals without model retraining
 - YAML-first domain isolation — add agent roles and new domains without writing Python
 - Air-gapped deployment via local GGUF mode
-- Multi-tenant solution isolation (medtech, poseengine, dfs all run in same instance)
+- Multi-tenant solution isolation — 17+ bundled solutions, mount private solutions via SAGE_SOLUTIONS_DIR
+- 136 API endpoints, 27 UI pages, 13+ domain detection in Build Orchestrator
+- Built-in Build Orchestrator with Q-learning adaptive router (19 agents, 5 teams, 32 task types)
+- Multi-LLM provider pool with parallel generation strategies
 
 **Weaknesses**
-- Small ecosystem — no community plugins, your team owns all extensions
-- Less expressive orchestration than LangGraph (no graph cycles, conditional branching)
+- Growing open-source community — contributions welcome via GitHub PRs and issues
 - No visual builder for non-technical users
 - No cloud-managed option — you own infra and ops
-- Sparse documentation vs LangChain
 
 **Best for:** Regulated industries (medical, manufacturing, legal, finance), teams that need audit trails and approval workflows, air-gapped deployments.
 
@@ -263,3 +269,14 @@ These frameworks are not mutually exclusive:
 | Non-technical team self-service | **Dify** |
 | Integration into existing tool stack | **n8n** |
 | Microsoft enterprise environment | **Semantic Kernel** |
+
+---
+
+## Open-Source Model
+
+SAGE is released under **Apache 2.0** at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage).
+
+- **Framework is open:** All 136 API endpoints, 27 UI pages, 17+ solution templates, and the complete agent architecture are public and auditable
+- **Solutions are private:** Mount your proprietary domain configs via `SAGE_SOLUTIONS_DIR` from a separate private repository. Your YAML configs, knowledge bases, and `.sage/` audit data never touch the public repo
+- **Community contributions:** File issues, submit PRs, build MCP tool servers, or create solution templates. See `CONTRIBUTING.md`
+- **Transparent for regulators:** Open-source codebase means auditors can inspect the entire AI agent toolchain — a significant advantage in regulated environments
