@@ -259,8 +259,10 @@ class OpenSWERunner:
                         f"Only output files that need changes."
                     )
 
-                response = llm_gateway.generate(
-                    user_prompt, system_prompt,
+                response = llm_gateway.generate_for_task(
+                    task_type=task_type,
+                    prompt=user_prompt,
+                    system_prompt=system_prompt,
                     trace_name=f"openswe.react_iter{iteration}",
                 )
 

@@ -754,7 +754,7 @@ def api_post(path: str, data: dict) -> dict:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=600) as resp:
+        with urllib.request.urlopen(req, timeout=3600) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
         body = e.read().decode() if e.fp else ""
@@ -859,6 +859,87 @@ def build_solution(sol: dict, idx: int, total: int) -> dict:
     }
 
 
+def auto_approve_solution(sol: dict, run_id: str, idx: int, total: int) -> dict:
+    """
+    Auto-approve a solution through the full pipeline:
+      awaiting_plan → approve → scaffold → execute → critic → integrate → awaiting_build
+      → approve → finalize → completed
+
+    Returns updated status dict with all phase durations and critic scores.
+    """
+    folder = os.path.join(BUILDS_DIR, sol["id"])
+    result = {"id": sol["id"], "domain": sol["domain"], "name": sol["name"],
+              "run_id": run_id, "status": "ok"}
+
+    # Phase 1: Approve plan (triggers scaffold → execute → critic_code → integrate → critic_integration)
+    print(f"\n[{idx}/{total}] {sol['id']} — {sol['domain']}/{sol['name']} — Approving plan...")
+    print(f"  → POST /build/approve/{run_id[:8]}... (plan) ...", end=" ", flush=True)
+
+    resp = api_post(f"/build/approve/{run_id}", {
+        "approved": True,
+        "feedback": f"Auto-approved for stress test — {sol['domain']}/{sol['name']}",
+    })
+
+    if resp.get("error") or resp.get("detail"):
+        err = resp.get("error", resp.get("detail", "unknown"))
+        print(f"ERROR: {str(err)[:120]}")
+        result["status"] = "error"
+        result["error"] = str(err)[:200]
+        result["phase"] = "plan_approval"
+        return result
+
+    state = resp.get("state", "")
+    print(f"state={state}")
+    result["state_after_plan_approval"] = state
+
+    # Save intermediate status
+    with open(os.path.join(folder, "build_status.json"), "w") as f:
+        json.dump(resp, f, indent=2, default=str)
+
+    # Phase 2: If awaiting_build, approve final build (triggers finalize)
+    if state == "awaiting_build":
+        print(f"  → POST /build/approve/{run_id[:8]}... (build) ...", end=" ", flush=True)
+
+        resp2 = api_post(f"/build/approve/{run_id}", {
+            "approved": True,
+            "feedback": f"Auto-approved final build for stress test — {sol['domain']}/{sol['name']}",
+        })
+
+        if resp2.get("error") or resp2.get("detail"):
+            err = resp2.get("error", resp2.get("detail", "unknown"))
+            print(f"ERROR: {str(err)[:120]}")
+            result["status"] = "error"
+            result["error"] = str(err)[:200]
+            result["phase"] = "build_approval"
+        else:
+            state2 = resp2.get("state", "")
+            print(f"state={state2}")
+            result["final_state"] = state2
+            resp = resp2  # use final status for saving
+
+        # Save final status
+        with open(os.path.join(folder, "build_status.json"), "w") as f:
+            json.dump(resp, f, indent=2, default=str)
+
+    # Extract KPIs
+    result["phase_durations"] = resp.get("phase_durations", {})
+    result["critic_scores"] = resp.get("critic_scores", [])
+    result["agent_results_count"] = len(resp.get("agent_results", []))
+    result["drift_warnings"] = resp.get("drift_warnings", 0)
+
+    # Regenerate regulations.md with full pipeline data
+    plan = resp.get("plan", [])
+    detected_domains = resp.get("detected_domains", [])
+    critic_data = {
+        "critic_scores": resp.get("critic_scores", []),
+        "critic_reports": resp.get("critic_reports", []),
+    }
+    with open(os.path.join(folder, "regulations.md"), "w") as f:
+        f.write(_generate_regulations_md(sol, detected_domains, plan, critic_data))
+
+    return result
+
+
 def regenerate_docs():
     """Re-generate regulations.md for all existing builds using stored data."""
     count = 0
@@ -890,6 +971,10 @@ def main():
     parser.add_argument("--end", type=int, default=100, help="End solution number (1-100)")
     parser.add_argument("--domain", type=str, help="Only build solutions for this domain")
     parser.add_argument("--regenerate-docs", action="store_true", help="Re-generate regulations.md from stored data")
+    parser.add_argument("--auto-approve", action="store_true",
+                        help="Auto-approve all builds through the full pipeline (plan→execute→finalize)")
+    parser.add_argument("--approve-only", action="store_true",
+                        help="Only approve existing builds (skip build/start, use stored run_ids)")
     args = parser.parse_args()
 
     if args.regenerate_docs:
@@ -922,9 +1007,38 @@ def main():
     start_time = time.time()
     results = []
 
-    for i, sol in enumerate(solutions, 1):
-        result = build_solution(sol, i, len(solutions))
-        results.append(result)
+    if args.approve_only:
+        # Approve existing builds using stored run_ids
+        print("\n--- APPROVE-ONLY MODE: progressing existing builds through full pipeline ---\n")
+        for i, sol in enumerate(solutions, 1):
+            folder = os.path.join(BUILDS_DIR, sol["id"])
+            status_file = os.path.join(folder, "build_status.json")
+            if not os.path.exists(status_file):
+                print(f"  [{i}/{len(solutions)}] {sol['id']} — no build_status.json, skipping")
+                results.append({"id": sol["id"], "status": "skipped", "reason": "no status file"})
+                continue
+            with open(status_file) as f:
+                stored = json.load(f)
+            run_id = stored.get("run_id", "")
+            if not run_id:
+                print(f"  [{i}/{len(solutions)}] {sol['id']} — no run_id in status, skipping")
+                results.append({"id": sol["id"], "status": "skipped", "reason": "no run_id"})
+                continue
+            result = auto_approve_solution(sol, run_id, i, len(solutions))
+            results.append(result)
+    elif args.auto_approve:
+        # Full pipeline: start + immediate auto-approve
+        for i, sol in enumerate(solutions, 1):
+            result = build_solution(sol, i, len(solutions))
+            results.append(result)
+            if result["status"] == "ok" and result.get("run_id"):
+                approve_result = auto_approve_solution(sol, result["run_id"], i, len(solutions))
+                # Merge approve results into main result
+                result.update(approve_result)
+    else:
+        for i, sol in enumerate(solutions, 1):
+            result = build_solution(sol, i, len(solutions))
+            results.append(result)
 
     elapsed = time.time() - start_time
 
@@ -932,10 +1046,11 @@ def main():
     print("\n" + "=" * 70)
     print("DEPLOYMENT SUMMARY")
     print("=" * 70)
-    ok = sum(1 for r in results if r["status"] == "ok")
-    err = sum(1 for r in results if r["status"] == "error")
-    print(f"Total: {len(results)} | Success: {ok} | Failed: {err}")
-    print(f"Time: {elapsed:.1f}s ({elapsed/len(results):.1f}s/solution)")
+    ok = sum(1 for r in results if r.get("status") == "ok")
+    err = sum(1 for r in results if r.get("status") == "error")
+    skipped = sum(1 for r in results if r.get("status") == "skipped")
+    print(f"Total: {len(results)} | Success: {ok} | Failed: {err} | Skipped: {skipped}")
+    print(f"Time: {elapsed:.1f}s ({elapsed/max(len(results),1):.1f}s/solution)")
 
     # Domain breakdown
     domains = {}
@@ -951,6 +1066,41 @@ def main():
     for d, counts in sorted(domains.items()):
         print(f"  {d:20s}: {counts['ok']} ok, {counts['err']} failed")
 
+    # KPI summary for auto-approve mode
+    if args.auto_approve or args.approve_only:
+        print(f"\n--- PIPELINE KPIs ---")
+        completed = [r for r in results if r.get("final_state") == "completed"]
+        print(f"  Fully completed: {len(completed)}/{len(results)}")
+
+        # Phase durations
+        all_durations = [r.get("phase_durations", {}) for r in results if r.get("phase_durations")]
+        if all_durations:
+            phases = set()
+            for d in all_durations:
+                phases.update(d.keys())
+            print(f"  Phase timing (avg seconds):")
+            for phase in sorted(phases):
+                vals = [d.get(phase, 0) for d in all_durations if phase in d]
+                if vals:
+                    print(f"    {phase:25s}: {sum(vals)/len(vals):6.1f}s avg  (min={min(vals):.1f}, max={max(vals):.1f})")
+
+        # Critic scores
+        all_critic = [s for r in results for s in r.get("critic_scores", []) if isinstance(s, dict)]
+        plan_scores = [s.get("score", 0) for s in all_critic if s.get("phase") == "plan"]
+        code_scores = [s.get("score", 0) for s in all_critic if s.get("phase") == "code"]
+        int_scores = [s.get("score", 0) for s in all_critic if s.get("phase") == "integration"]
+        if plan_scores:
+            print(f"  Critic scores (plan):  avg={sum(plan_scores)/len(plan_scores):.0f}  min={min(plan_scores)}  max={max(plan_scores)}")
+        if code_scores:
+            print(f"  Critic scores (code):  avg={sum(code_scores)/len(code_scores):.0f}  min={min(code_scores)}  max={max(code_scores)}")
+        if int_scores:
+            print(f"  Critic scores (integ): avg={sum(int_scores)/len(int_scores):.0f}  min={min(int_scores)}  max={max(int_scores)}")
+
+        # Drift warnings
+        drift_total = sum(r.get("drift_warnings", 0) for r in results)
+        if drift_total:
+            print(f"  Drift warnings: {drift_total} total across all builds")
+
     # Save master report
     report_path = os.path.join(BUILDS_DIR, "deployment_report.json")
     with open(report_path, "w") as f:
@@ -959,6 +1109,7 @@ def main():
             "total": len(results),
             "success": ok,
             "failed": err,
+            "skipped": skipped if 'skipped' in dir() else 0,
             "elapsed_seconds": round(elapsed, 1),
             "results": results,
         }, f, indent=2, default=str)

@@ -1,0 +1,35 @@
+Reference,Value,Footprint,Manufacturer,MPN,Qty,Description,Alternative_MPN,Datasheet_URL,Unit_Price_USD,Total_Price_USD,Package
+U1,STM32L476RGT6,Package_QFP:LQFP-64_10x10mm_P0.5mm,STMicroelectronics,STM32L476RGT6,1,ARM Cortex-M4 80MHz 1MB Flash 128KB RAM Ultra-Low-Power MCU,STM32L475RGT6,https://www.st.com/resource/en/datasheet/stm32l476rg.pdf,7.50,7.50,LQFP-64
+U2,LSM6DSOX,Package_LGA:LGA-14_3x2.5mm_P0.5mm,STMicroelectronics,LSM6DSOX,1,6-Axis IMU Accelerometer + Gyroscope 6DoF iNEMO,LSM6DSL,https://www.st.com/resource/en/datasheet/lsm6dso.pdf,2.10,2.10,LGA-14
+U3,MAX-M10S,Package_LCC:LCC-18_4.1x3.1mm,u-blox,MAX-M10S-00B,1,Ultra-Low-Power GNSS Receiver Module GPS/QZSS/GLONASS/Galileo/BeiDou,MAX-M10C,https://content.u-blox.com/sites/default/files/MAX-M10S_DataSheet_UBX-20035208.pdf,12.50,12.50,LCC-18
+U4,nRF52840-QIAA,Package_QFN:QFN-73_7x7mm_P0.5mm,Nordic Semiconductor,NRF52840-QIAA-R,1,BLE 5.0 + IEEE 802.15.4 ARM Cortex-M4F 64MHz 1MB Flash,NRF52833-QIAA,https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf,3.20,3.20,QFN-73
+U5,BQ25180YBGR,Package_BGA:BGA-9_1.5x1.5mm_Layout3x3_P0.5mm,Texas Instruments,BQ25180YBGR,1,1-Cell LiPo Charger 1A I2C Programmable,BQ25155YRYR,https://www.ti.com/lit/ds/symlink/bq25180.pdf,1.85,1.85,DSBGA-9
+U6,DRV2605LYZFR,Package_SON:SON-10_3x3mm_P0.5mm,Texas Instruments,DRV2605LYZFR,1,Haptic Motor Driver ERM/LRA I2C Waveform Library,DRV2604LYZFR,https://www.ti.com/lit/ds/symlink/drv2605l.pdf,1.45,1.45,DSON-10
+U7,AP2112K-3.3TRG1,Package_SOT:SOT-25,Diodes Inc,AP2112K-3.3TRG1,1,LDO 3.3V 600mA Low Dropout,MCP1700-3302,https://www.diodes.com/assets/Datasheets/AP2112.pdf,0.25,0.25,SOT-25
+U8,AP2112K-1.8TRG1,Package_SOT:SOT-25,Diodes Inc,AP2112K-1.8TRG1,1,LDO 1.8V 600mA Low Dropout (GPS/BLE core),TLV70018DBVR,https://www.diodes.com/assets/Datasheets/AP2112.pdf,0.25,0.25,SOT-25
+J1,USB4085-GF-A,Connector_USB:USB_C_Receptacle_GCT_USB4085,GCT,USB4085-GF-A,1,USB Type-C 2.0 Receptacle SMD IP67-rated,CX90M-16P,https://gct.co/files/drawings/usb4085.pdf,0.65,0.65,SMD
+J2,IP67_CONN_8P,Connector_Generic:Conn_01x08,Hirose,GT8E-4S-2H(22),1,IP67 8-pin Waterproof Board-to-Board Connector,BM20B-SRDS-G-TF,https://www.hirose.com/en/product/document,1.20,1.20,Custom
+J3,SWD_DEBUG,Connector_Generic:Conn_01x05,Generic,TC2030-IDC-NL,1,ARM SWD 5-pin Tag-Connect Debug Header (DNP in production),PCD-10-0.5,N/A,0.50,0.50,THT
+ANT1,GPS_ANTENNA,Antenna:Molex_2042820100,Molex,2042820100,1,GPS Chip Antenna 1575.42MHz,AVX ANT1204F003R1575A,https://www.molex.com/molex/products/part-detail/antennas/2042820100,1.80,1.80,SMD
+ANT2,BLE_ANTENNA,Antenna:Yageo_ANT1608F2450RAAHW,Yageo,ANT1608F2450RAAHW,1,BLE 2.4GHz Chip Antenna,Johanson 0433AT62A0020E,N/A,0.45,0.45,0402
+D1,LED_RGB,LED_SMD:LED_1206_3216Metric,Kingbright,APTD1608LZGKSYKC,1,RGB LED Common Cathode 1206 SMD,Wurth 150141M173100,https://www.kingbright.com/attachments/file/psearch/000/00/00/APTD1608LZGKSYKC(Ver.4A).pdf,0.35,0.35,1206
+Q1,SI2301CDS,Package_SOT:SOT-23,Vishay,SI2301CDS-T1-GE3,1,P-MOSFET 20V 3A Battery Disconnect,AO3415,https://www.vishay.com/docs/68508/si2301cds.pdf,0.30,0.30,SOT-23
+Q2,SI2301CDS,Package_SOT:SOT-23,Vishay,SI2301CDS-T1-GE3,1,P-MOSFET 20V 3A Battery Overcurrent,AO3415,https://www.vishay.com/docs/68508/si2301cds.pdf,0.30,0.30,SOT-23
+U9,BQ29700DSER,Package_SON:SON-8_2x2mm_P0.5mm,Texas Instruments,BQ29700DSER,1,1-Cell Li-Ion Battery Protection IC OVP/UVP/OCP/SCP,S-8261ABJMD-G3JT2G,https://www.ti.com/lit/ds/symlink/bq29700.pdf,0.95,0.95,SON-8
+M1,HAPTIC_MOTOR,Haptic:Vybronics_VG1040003D,Vybronics,VG1040003D,1,LRA Haptic Motor 10mm 3V 150Hz,Jinlong FF-IM10240-1,N/A,2.80,2.80,Custom
+C1,100nF,Capacitor_SMD:C_0402_1005Metric,Murata,GRM155R71C104KA88D,8,Bypass Capacitor 0402 10V X7R,Samsung CL05B104KO5NNNC,N/A,0.05,0.40,0402
+C2,1uF,Capacitor_SMD:C_0402_1005Metric,Murata,GRM155R60J105KA12D,4,Bulk Bypass 0402 6.3V X5R,TDK C1005X5R0J105K050BC,N/A,0.08,0.32,0402
+C3,10uF,Capacitor_SMD:C_0805_2012Metric,Murata,GRM21BR60J106ME19L,3,Bulk Capacitor 0805 6.3V X5R,TDK C2012X5R0J106M125AC,N/A,0.15,0.45,0805
+C4,4.7uF,Capacitor_SMD:C_0603_1608Metric,TDK,C1608X5R1A475K080AC,2,LDO Output Cap 0603 10V X5R,Murata GRM188R61A475KAAJ0D,N/A,0.10,0.20,0603
+R1,10k,Resistor_SMD:R_0402_1005Metric,Yageo,RC0402FR-0710KL,6,Pull-up/Pull-down 10kOhm 1% 0402,Vishay CRCW040210K0FKED,N/A,0.02,0.12,0402
+R2,4.7k,Resistor_SMD:R_0402_1005Metric,Yageo,RC0402FR-074K7L,4,I2C Pull-up 4.7kOhm 1% 0402,Vishay CRCW04024K70FKED,N/A,0.02,0.08,0402
+R3,33,Resistor_SMD:R_0402_1005Metric,Yageo,RC0402FR-0733RL,3,LED Current Limit 33Ohm 1% 0402,Vishay CRCW040233R0FKED,N/A,0.02,0.06,0402
+R4,100m,Resistor_SMD:R_0402_1005Metric,Vishay,WSL0402R1000FEA,1,Current Sense Shunt 0.1Ohm 1W 1%,Bourns CSS0402FT100-T,N/A,0.45,0.45,0402
+L1,10uH,Inductor_SMD:L_1210_3225Metric,TDK,VLCF4020T-100MR69-1,1,Power Inductor 10uH 690mA DCR 260mOhm,Bourns SRR4028-100Y,N/A,0.35,0.35,1210
+F1,MF-MSMF050-2,Fuse_SMD:Fuse_0402_1005Metric,Bourns,MF-MSMF050-2,1,PTC Resettable Fuse 500mA 6V 0402,Bel Fuse 0ZCJ0050AF2E,N/A,0.30,0.30,0402
+BT1,LiPo_300mAh,Battery:BatteryHolder_Keystone_1042_1x20mm,Custom,LP302030JU,1,LiPo Battery 300mAh 3.7V 30x20mm,EEMB LP302030,N/A,4.50,4.50,Custom
+SW1,BOOT_SEL,Button_SMD:SW_SPST_B3U-1000P,Panasonic,EVQ-P7C01P,1,Tactile Switch SMD SPST 160gf,C&K PTS645SL50SMTR92LFS,N/A,0.35,0.35,SMD
+TP1-TP12,TESTPAD,TestPoint:TestPoint_Pad_D0.5mm,Keystone,5015,12,SMD Test Point 0.5mm,Harwin S2751-45R,N/A,0.05,0.60,SMD
+,,,,,,,,,,TOTAL:,54.97,
+,,,,,,,,,,BOARD_COUNT:,1,
+,,,,,,,,,,GRAND_TOTAL:,54.97,

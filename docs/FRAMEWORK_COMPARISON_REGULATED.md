@@ -1,6 +1,11 @@
 # SAGE vs Other AI Agent Frameworks — Regulated Environments Guide
 
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub Stars](https://img.shields.io/github/stars/Sumanharapanahalli/sage?style=social)](https://github.com/Sumanharapanahalli/sage)
+
 > **Why regulated teams (medical, fintech, aerospace, defence) choose SAGE over LangGraph, CrewAI, AutoGen, and others.**
+>
+> SAGE is fully open source under MIT at [github.com/Sumanharapanahalli/sage](https://github.com/Sumanharapanahalli/sage). The open codebase allows regulators and auditors to inspect the entire AI agent toolchain — a critical advantage in compliance-driven environments.
 
 ---
 
@@ -30,6 +35,8 @@ In regulated environments (ISO 13485, IEC 62304, FDA 21 CFR Part 11, GxP, SOC 2,
 | **Compounding memory** | ✅ vector store per decision | ❌ | ⚠️ basic | ❌ | ⚠️ | ⚠️ |
 | **Continuous test daemon** | ✅ built-in | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **TDD enforcement hook** | ✅ PostToolUse | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Build orchestrator (0-to-N)** | ✅ 13+ domains | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Multi-LLM provider pool** | ✅ voting/fallback | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ |
 | **Hire any agent role** | ✅ YAML + LLM gen | ❌ | ⚠️ class definition | ⚠️ class definition | ❌ | ⚠️ UI drag |
 | **Org chart / hierarchy** | ✅ reports_to tree | ❌ | ⚠️ crew hierarchy | ❌ | ❌ | ❌ |
 | **SWE agent (open-swe)** | ✅ built-in | ⚠️ build yourself | ❌ | ⚠️ basic | ❌ | ❌ |
@@ -231,5 +238,19 @@ Is the team Azure-committed enterprise? ─────────────�
 
 ---
 
-*SAGE Framework — Built for regulated production from day one.*
-*See also: `ARCHITECTURE.md` · `docs/SAGE_ONE_PAGER.md` · `docs/API_REFERENCE.md`*
+---
+
+## Open-Source Advantage for Regulated Industries
+
+SAGE's open-source model (MIT) provides unique advantages in regulated environments:
+
+- **Auditor transparency:** The entire agent framework codebase is publicly auditable on GitHub. Regulators can inspect how human approval gates, audit trails, and compliance modes are implemented — no black boxes.
+- **No vendor lock-in:** Self-hosted, air-gappable, no mandatory API keys. Fork it, modify it, own the entire stack. Critical for organizations requiring long-term control of their toolchain.
+- **Community security review:** Open-source code benefits from continuous community scrutiny, reducing the risk of undiscovered vulnerabilities in compliance-critical paths.
+- **Private solutions, public framework:** Your proprietary domain configurations, agent prompts, and knowledge bases live in a separate private repository mounted via `SAGE_SOLUTIONS_DIR`. The framework is open; your IP stays private.
+- **Contributor ecosystem:** File issues, submit PRs, or build domain-specific solution templates. See `CONTRIBUTING.md` for guidelines.
+
+---
+
+*SAGE Framework — Open Source (MIT) · Built for regulated production from day one.*
+*github.com/Sumanharapanahalli/sage · See also: `ARCHITECTURE.md` · `docs/SAGE_ONE_PAGER.md` · `docs/API_REFERENCE.md`*

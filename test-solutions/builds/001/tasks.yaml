@@ -1,346 +1,399 @@
 task_types:
-  SAFETY:
-    description: 'Conduct ISO 14971 risk management: identify hazards (missed fall,
-      false alarm, GPS failure, alert delay), estimate severity/probability for each,
-      define risk controls, and produce Risk Management File (RMF) and Hazard Analysis
-      Report.'
-    agent_role: safety_engineer
-    acceptance_criteria:
-    - All identified hazards have severity and probability ratings (S1–S5, P1–P5)
-    - Residual risk for every hazard is ALARP and within FDA/ISO 14971 acceptability
-      thresholds
-    - Risk Management Plan is signed and version-controlled
-    - Hazard-to-requirement traceability is established for each risk control
-    - ISO 14971 risk management file complete
-    - Residual risk acceptable
-    depends_on: []
-  COMPLIANCE:
-    description: Establish the Design History File (DHF) skeleton per FDA 21 CFR Part
-      820.30 and ISO 13485. Define IEC 62304 software lifecycle documentation structure
-      (Software Development Plan, Software Requirements Spec, Software Architecture
-      Doc, V&V protocols). Map all applicable standards and create traceability matrix
-      shell.
-    agent_role: regulatory_specialist
-    acceptance_criteria:
-    - DHF structure covers all 21 CFR 820.30 required sections
-    - IEC 62304 Software Development Plan is drafted with lifecycle phases, roles,
-      and deliverables
-    - Traceability matrix links user needs → design inputs → design outputs → V&V
-    - Document control numbering scheme is defined and applied to all artifacts
-    - Software safety class justification (Class B) is documented with rationale
-    - DHF (Design History File) structure created
-    - V&V protocol drafted
-    depends_on: []
   PRODUCT_MGMT:
-    description: 'Define system architecture and product requirements: wearable hardware
-      specs (MCU, IMU, GPS, cellular/BLE), cloud backend topology, caregiver mobile
-      app scope, fall detection algorithm approach, emergency dispatch integration
-      (911 API or PSAP gateway), and user personas (elderly wearer, caregiver, emergency
-      responder).'
+    description: 'Define product requirements document (PRD) for elder_fall_detection
+      wearable: use cases, user personas (elderly wearer, caregiver, emergency responder),
+      functional requirements (fall detection, GPS, alert dispatch), non-functional
+      requirements (battery life, water resistance, latency SLAs), and success metrics.'
     agent_role: product_manager
     acceptance_criteria:
-    - System architecture diagram approved showing all components and data flows
-    - Numbered design input requirements (≥50) traceable to user needs
-    - Performance requirements have measurable acceptance criteria
-    - Use cases for fall detection, caregiver alert, and emergency dispatch are documented
-    - Out-of-scope items explicitly listed
+    - PRD covers all three user personas with at least 5 user stories each
+    - Functional requirements include fall detection sensitivity/specificity targets
+      (≥95% sensitivity, ≤2 false positives/day)
+    - Non-functional requirements specify battery life (≥72h), IP67 rating, alert
+      latency (<30s)
+    - Success metrics are measurable and time-bound
+    - Document reviewed and signed off by product_manager and regulatory_specialist
     depends_on: []
-  SECURITY:
-    description: 'Produce threat model (STRIDE) for device-to-cloud and cloud-to-caregiver
-      communication paths. Define security architecture: TLS 1.3 for all transport,
-      AES-256 for data at rest, device attestation, OTA firmware signing, HIPAA-aligned
-      PHI handling. Generate SBOM for all software components.'
+  SAFETY:
+    description: 'Perform preliminary hazard analysis (PHA) and initial risk assessment
+      per ISO 14971. Identify all foreseeable hazards: missed fall detection, false
+      alarms causing unnecessary emergency dispatch, GPS failure, battery depletion,
+      communication failure, data breach exposing patient location. Establish risk
+      acceptability criteria and risk control strategy.'
     agent_role: safety_engineer
     acceptance_criteria:
-    - STRIDE analysis completed for all 5 system interfaces
-    - Every HIGH and CRITICAL threat has a documented mitigation control
-    - SBOM lists all third-party libraries with CVE scan results (zero known critical
-      CVEs)
-    - Penetration test plan is drafted for pre-market validation phase
-    - HIPAA PHI data flows are identified and encryption controls documented
+    - All hazard categories documented with severity, probability, and risk level
+      (S×P matrix)
+    - Risk acceptability criteria defined (ALARP principle applied)
+    - Risk management plan references ISO 14971:2019 and maps to FDA 21 CFR Part 820
+    - At least one risk control measure identified per unacceptable risk
+    - Document traceable to PRD requirements from step 1
+    - ISO 14971 risk management file complete
+    - Residual risk acceptable
+    depends_on:
+    - 1
+  COMPLIANCE:
+    description: Establish Design History File (DHF) skeleton and Quality Management
+      System (QMS) artifacts per FDA 21 CFR Part 820 and ISO 13485. Create DHF folder
+      structure, design control plan, document control procedure, and traceability
+      matrix template linking requirements → design → verification → validation.
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - DHF folder structure matches FDA 21 CFR Part 820.30 sections
+    - Software Development Plan references IEC 62304 software safety class (Class
+      B minimum)
+    - 'Traceability matrix template has columns: requirement_id, design_element, verification_method,
+      validation_evidence'
+    - Document control procedure defines revision control, review, and approval workflow
+    - 'ISO 13485 QMS procedures list covers: design control, purchasing, production,
+      CAPA, complaint handling'
+    - DHF (Design History File) structure created
+    - V&V protocol drafted
+    depends_on:
+    - 2
+  SECURITY:
+    description: 'Produce threat model (STRIDE) and cybersecurity risk assessment
+      per IEC 62443 for the elder_fall_detection system. Identify attack surfaces:
+      BLE wearable-to-phone link, MQTT/HTTPS cloud channel, GPS data stream, caregiver
+      mobile app, backend API. Define security controls and generate initial SBOM.'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - STRIDE analysis covers all 6 attack surfaces with threat entries
+    - Each threat rated by DREAD or CVSS score
+    - Security controls mapped to each threat (countermeasure coverage ≥90%)
+    - SBOM template follows SPDX 2.3 or CycloneDX 1.4 format
+    - Document references IEC 62443-3-3 security levels
+    - Penetration test plan outlined with scope and methodology
     - Device identity provisioned
     - Firmware signing enabled
     depends_on:
-    - 3
+    - 2
   UX_DESIGN:
-    description: Design caregiver mobile app UX and wearable device interaction model.
-      Wireframe alert notification flow, location map view, device status dashboard,
-      emergency dispatch confirmation screen, and onboarding flow. Conduct accessibility
-      audit for elderly user interaction with device (single-button SOS, haptic feedback,
-      LED indicators).
+    description: 'Design caregiver mobile app UX and wearable device interaction model.
+      Deliverables: user journey maps, wireframes for iOS/Android caregiver app (alert
+      dashboard, GPS map view, device status, emergency contact management, alert
+      history), wearable button/LED/haptic interaction design, and accessibility audit
+      for elderly users.'
     agent_role: ux_designer
     acceptance_criteria:
-    - All screens wireframed and reviewed by representative caregivers
-    - Alert-to-acknowledge flow completes in ≤3 taps
-    - Device interaction spec defines SOS button hold duration, LED patterns, and
-      haptic sequences
-    - Accessibility audit report shows WCAG 2.1 AA compliance
-    - Usability test with 5 participants shows task success rate ≥90% for critical
-      flows
+    - 'User journey maps cover: fall detected → caregiver alerted → responder dispatched
+      flows'
+    - Wireframes produced for all 7 mobile screens in Figma or equivalent
+    - Wearable interaction spec defines LED patterns (≥4 states) and haptic feedback
+      sequences
+    - Accessibility audit passes WCAG 2.1 AA for mobile app
+    - SOS button interaction spec includes accidental press prevention (hold 3s)
     depends_on:
-    - 3
+    - 1
   PCB_DESIGN:
-    description: 'Capture hardware schematic: MCU (Nordic nRF9161 with LTE-M/NB-IoT
-      + DECT NR+), 6-axis IMU (LSM6DSO32X), GPS module (u-blox M10), BLE 5.3, Li-Po
-      battery with fuel gauge (MAX17048), USB-C charging, secure element (ATECC608B).
-      Generate BOM and apply DRC rules for medical-grade PCB (IPC Class 3).'
+    description: 'Design PCB schematic and layout for the wearable device. Components:
+      ARM Cortex-M4 MCU, 6-axis IMU (accelerometer + gyroscope) for fall detection,
+      GPS/GNSS module, BLE 5.0 module, LiPo battery management IC, USB-C charging,
+      RGB LED, haptic motor driver, IP67-rated connector. Generate BOM and run DRC.'
     agent_role: developer
     acceptance_criteria:
-    - Schematic passes ERC with zero errors
-    - BOM includes manufacturer part numbers and approved alternates for all components
-    - DRC passes for IPC Class 3 spacing rules
-    - Power budget analysis shows ≥72h battery life at nominal operation
-    - IMU interrupt line routed to MCU wake pin for low-power fall detection
+    - Schematic passes ERC (0 errors)
+    - PCB layout passes DRC (0 errors, trace clearances ≥0.15mm)
+    - BOM includes manufacturer part numbers, quantities, and alternatives for all
+      components
+    - IMU placement within 5mm of device center of mass for accurate fall detection
+    - GPS antenna clearance zone respected (>5mm keepout)
+    - Battery protection circuit (overvoltage, overcurrent, short circuit) present
     depends_on:
-    - 3
-  DATABASE:
-    description: 'Design cloud data model: time-series sensor data (accelerometer
-      events, GPS positions), fall events, alert records, device registry, caregiver-wearer
-      relationships, and audit trail. Define retention policies, HIPAA-compliant de-identification
-      strategy, and backup/recovery RPO/RTO targets.'
+    - 2
+    - 4
+  MECHANICAL:
+    description: 'Design wearable enclosure CAD model. Requirements: IP67 sealing,
+      comfortable wristband form factor, SOS button placement, USB-C charging port
+      with waterproof cover, LED window, haptic motor mounting, and medical-grade
+      silicone band. Generate STEP/STL files and tolerance analysis.'
     agent_role: developer
     acceptance_criteria:
-    - ER diagram reviewed and approved by engineering lead
-    - All migrations run cleanly on PostgreSQL 15+ with TimescaleDB extension
-    - PHI columns encrypted and decryption requires authenticated service identity
-    - Audit log table has insert-only policy (no UPDATE/DELETE permissions on app
-      role)
-    - RTO ≤ 4h, RPO ≤ 1h documented and tested with restore drill
+    - STEP files pass import into reference CAD tool without errors
+    - Tolerance analysis confirms IP67 O-ring compression within manufacturer spec
+    - SOS button travel distance 1.5mm ± 0.1mm
+    - Assembly instructions have exploded view diagrams and torque specs
+    - Biocompatibility note references ISO 10993 for skin-contact materials
+    - Weight target ≤45g including band
     depends_on:
-    - 3
-  API:
-    description: 'Design OpenAPI 3.1 specification for all system interfaces: device-to-cloud
-      MQTT/HTTPS protocol (telemetry ingestion, OTA commands), cloud REST API (caregiver
-      app, device management), and webhook contract for emergency dispatch integration.
-      Define versioning strategy and error codes.'
-    agent_role: developer
+    - 6
+  CONFIG:
+    description: 'Set up the elder_fall_detection solution configuration: SAGE project.yaml,
+      prompts.yaml, tasks.yaml. Configure firmware development toolchain (STM32CubeIDE
+      / CMake + ARM GCC), embedded CI (GitHub Actions with QEMU emulation), MQTT broker
+      (AWS IoT Core), and development environment docker-compose for backend services.'
+    agent_role: devops_engineer
     acceptance_criteria:
-    - OpenAPI spec validates against OpenAPI 3.1 schema with zero errors
-    - All endpoints have request/response schemas, error responses (400/401/403/404/500),
-      and examples
-    - MQTT topic hierarchy documented with QoS levels and retention flags
-    - Emergency dispatch webhook contract tested against RapidSOS sandbox
-    - API versioning strategy documented (URI versioning v1/v2)
+    - project.yaml declares solution_name, active_modules, theme, and compliance_standards
+    - 'prompts.yaml defines roles: firmware_engineer, safety_engineer, caregiver_app_developer'
+    - 'tasks.yaml includes task types: fall_analysis, gps_update, alert_dispatch,
+      device_health_check'
+    - CMake builds firmware for STM32L4 target without errors (hello_world blinky
+      test)
+    - GitHub Actions workflow triggers on firmware/ changes and runs unit tests
+    - docker-compose up starts backend, MQTT broker, and database in <60s
     depends_on:
     - 3
-    - 7
   FIRMWARE:
-    description: Implement fall detection firmware on nRF9161 using Zephyr RTOS. IMU
-      HAL driver (LSM6DSO32X SPI), fall detection algorithm (threshold-based + ML
-      Core pattern recognition), RTOS tasks for sensor polling, fall event state machine
-      (free-fall → impact → post-fall posture), and SOS button ISR handler. Implements
-      IEC 62304 Class B software unit requirements.
-    agent_role: developer
+    description: 'Implement FreeRTOS-based firmware for STM32L4 wearable. Tasks: IMU
+      data acquisition task (200Hz sampling, DMA transfer), fall detection algorithm
+      task (threshold + ML-lite inference), GPS NMEA parsing task, BLE GATT server
+      task (custom fall alert service, battery level, device info), power management
+      (sleep/wake), SOS button ISR, LED/haptic control.'
+    agent_role: firmware_engineer
     acceptance_criteria:
-    - IMU driver passes loopback self-test on boot with zero SPI errors
-    - Fall state machine correctly classifies ≥95% of simulated fall sequences in
-      bench test
-    - False positive rate < 2% on 60-minute ADL simulation (walking, sitting, arm
-      raises)
-    - Fall-to-MQTT-publish latency < 2 seconds measured on logic analyzer
-    - SOS button ISR triggers within 50ms of press (measured)
-    - Firmware image signed with ECDSA P-256 private key and signature verified on
-      boot
-    - All firmware modules have IEC 62304 software unit documentation (inputs, outputs,
-      rationale)
+    - All FreeRTOS tasks start without stack overflow on target hardware
+    - IMU samples received at 200Hz ± 2Hz measured via logic analyzer
+    - Fall detection algorithm detects 5/5 scripted fall scenarios in bench test
+    - GPS fix acquired within 60s cold start outdoors
+    - BLE GATT server advertises and pairs with reference phone in <10s
+    - SOS button requires 3s hold, triggers ISR, false trigger <1% with 100 random
+      presses
+    - Device enters low-power sleep when idle, current draw <5mA in sleep mode
+    - All firmware files comply with IEC 62304 software unit identification requirements
     - IEC 62304 software class documented
     - SOUP components listed
     - OTA update mechanism implemented
     - Watchdog timer configured
     depends_on:
+    - 8
     - 6
+  ML_MODEL:
+    description: 'Develop and validate fall detection ML model. Pipeline: collect/curate
+      labeled IMU dataset (falls vs. ADLs), train lightweight CNN or threshold+feature
+      classifier (suitable for MCU deployment), quantize to INT8, export to TFLite
+      or CMSIS-NN format, validate on held-out test set against sensitivity/specificity
+      targets.'
+    agent_role: data_scientist
+    acceptance_criteria:
+    - Training dataset ≥5000 labeled fall events and ≥20000 non-fall ADL windows
+    - 'Model validation on held-out test set: sensitivity ≥0.95, specificity ≥0.90'
+    - INT8 quantized model size ≤100KB (fits STM32L4 flash)
+    - Inference latency ≤20ms on STM32L476 at 80MHz
+    - Model card documents training data, evaluation methodology, known limitations
+    - Validation report signed as IEC 62304 software verification evidence
+    depends_on:
+    - 9
+  DATABASE:
+    description: 'Design and implement PostgreSQL schema for elder_fall_detection
+      backend. Tables: devices (device_id, owner, firmware_version, status), users
+      (user_id, role: wearer/caregiver/admin, emergency_contacts), fall_events (event_id,
+      device_id, timestamp, gps_coords, severity, alert_status), gps_history (device_id,
+      timestamp, lat, lon, accuracy), audit_log (actor, action, timestamp, details).
+      HIPAA-compliant schema with encryption at rest and row-level security.'
+    agent_role: developer
+    acceptance_criteria:
+    - ERD covers all 5 tables with correct cardinality (devices 1:N fall_events, users
+      M:N devices)
+    - All PII columns (name, phone, GPS coords) encrypted using pgcrypto
+    - 'Row-level security policy: caregivers can only query devices they are assigned
+      to'
+    - Alembic migration runs cleanly on fresh PostgreSQL 15 instance
+    - 'Indexes on: fall_events(device_id, timestamp), gps_history(device_id, timestamp)'
+    - Schema passes SQL linter with 0 warnings
+    depends_on:
     - 8
   BACKEND:
-    description: 'Build cloud alert engine and emergency dispatch service: MQTT ingestion
-      from AWS IoT Core, fall event processor (deduplication, confidence filtering),
-      caregiver notification fan-out (push notification + SMS + in-app), 30-second
-      no-response escalation timer, and RapidSOS API integration for automatic 911
-      dispatch with GPS location payload.'
+    description: 'Implement FastAPI backend for elder_fall_detection. Endpoints: device
+      registration and provisioning, MQTT ingestion handler (fall events, GPS updates,
+      heartbeat), real-time caregiver alert dispatch (push notification + SMS via
+      Twilio + email), automatic emergency services dispatch (E911/NG911 API integration),
+      GPS history retrieval, alert management (acknowledge, dismiss, escalate), device
+      management, caregiver/user management. Implement agentic coordinator pattern:
+      coordinator agent routes incoming device events to specialist agents (fall analyzer,
+      GPS tracker, alert dispatcher).'
     agent_role: developer
     acceptance_criteria:
-    - Fall event to caregiver push notification delivered in < 5 seconds (measured
-      end-to-end)
-    - Deduplication correctly suppresses duplicate events within 60s window (unit
-      tested)
-    - 30-second escalation timer fires within ±1 second of deadline
-    - RapidSOS API call succeeds with correct GPS payload in integration test against
-      sandbox
-    - Dead-letter queue captures and retries failed notifications with exponential
-      backoff
-    - Alert engine handles 1000 concurrent fall events without degradation (load test)
+    - POST /devices/register provisions new device and returns certificates for AWS
+      IoT Core
+    - MQTT message ingestion processes fall event and triggers alert within 10s end-to-end
+    - Alert dispatch sends push + SMS within 15s of fall event receipt
+    - Emergency dispatch integrates with RapidSOS API and logs dispatch_id
+    - GET /devices/{id}/location returns latest GPS with timestamp and accuracy
+    - Coordinator agent routes events with ReAct Thought→Action→Observation traces
+      logged
+    - All endpoints return 401 for unauthenticated requests
+    - Backend handles 100 concurrent device connections without timeout
     depends_on:
-    - 7
-    - 8
+    - 11
     - 4
-  FRONTEND:
-    description: 'Build caregiver mobile app (React Native + Expo) implementing all
-      UX wireframes: real-time fall alert with vibration + sound, GPS map view (MapLibre),
-      device health dashboard, alert history, emergency dispatch confirmation, and
-      wearer profile management. Implement push notifications (FCM/APNs) and background
-      location refresh.'
+  API:
+    description: Design and document OpenAPI 3.1 specification for the elder_fall_detection
+      backend API. Cover all endpoints from step 12, define request/response schemas,
+      authentication (JWT Bearer + API key for devices), error codes, webhook schema
+      for MQTT device events, and rate limiting policy. Generate client SDK stubs.
     agent_role: developer
     acceptance_criteria:
-    - Fall alert push notification received and AlertScreen opens within 3 seconds
-      on both iOS 17 and Android 14
-    - Map renders wearer GPS location with ≤2s delay from WebSocket update
-    - Emergency dispatch confirmation dialog requires explicit 2-tap confirmation
-      to prevent accidental 911 calls
-    - App passes Accessibility audit (WCAG 2.1 AA) on both platforms
-    - Background GPS refresh works on iOS with Always location permission (verified
-      in Airplane-mode-then-reconnect test)
-    - All API calls use mTLS certificate pinning (verified with Charles Proxy — certificate
-      substitution rejected)
+    - OpenAPI spec validates with openapi-spec-validator 0 errors
+    - All 20+ endpoints documented with request/response examples
+    - Authentication schemes documented with example JWT claims
+    - Webhook schema defined for MQTT fall_event, gps_update, heartbeat, sos_press
+      message types
+    - Python client SDK generated from spec and passes import test
+    - Rate limiting headers (X-RateLimit-*) documented on all endpoints
+    depends_on:
+    - 12
+  FRONTEND:
+    description: 'Implement caregiver mobile app (React Native or Flutter) for iOS
+      and Android. Screens per UX wireframes (step 5): alert dashboard with real-time
+      push, live GPS map (Google Maps SDK), device status panel (battery, connectivity,
+      firmware version), emergency contact management, alert history with fall event
+      details, device pairing via BLE, notification settings. Implement HIPAA-compliant
+      data display (auto-lock, no screenshots).'
+    agent_role: developer
+    acceptance_criteria:
+    - All 7 screens render without crashes on iOS 16+ and Android 12+
+    - Push notification received and alert displayed within 20s of fall event
+    - GPS map shows device location with <5s refresh interval
+    - BLE pairing completes device setup in <3 steps
+    - App auto-locks after 5min inactivity (HIPAA control)
+    - Screenshot prevention active on sensitive screens (device status, GPS)
+    - Alert dashboard shows fall severity, timestamp, and one-tap call to emergency
+      contact
     depends_on:
     - 5
-    - 12
-  CONFIG:
-    description: 'Configure SAGE solution for elder_fall_detection: create project.yaml
-      (domain, active modules, theme), prompts.yaml (analyst, developer, safety, regulatory
-      roles with domain context), and tasks.yaml (fall detection firmware review,
-      alert engine analysis, regulatory compliance check task types). Configure agentic
-      pattern: Human-in-the-Loop (HITL) for all OTA deployment and emergency dispatch
-      configuration changes.'
-    agent_role: developer
+    - 13
+  INFRA:
+    description: 'Set up production cloud infrastructure for elder_fall_detection
+      on AWS. Components: ECS Fargate for FastAPI backend, AWS IoT Core (MQTT broker,
+      device registry, rules engine), RDS PostgreSQL Multi-AZ, ElastiCache Redis (real-time
+      alert state), CloudFront + S3 (mobile app OTA updates), VPC with private subnets,
+      WAF, CloudWatch monitoring, SNS for alert fanout. IaC with Terraform.'
+    agent_role: devops_engineer
     acceptance_criteria:
-    - make run PROJECT=elder_fall_detection starts without errors
-    - All active_modules appear in sidebar with correct routing
-    - HITL approval queue intercepts OTA deployment proposals (verified via POST /analyze
-      test)
-    - SAGE theme renders correctly in browser
-    - All 3 custom task types appear in POST /analyze task_type dropdown
+    - terraform plan produces 0 errors on clean AWS account
+    - terraform apply provisions all resources in <15min
+    - ECS service passes health check and serves /health endpoint
+    - IoT Core MQTT broker accepts device connections with mutual TLS
+    - RDS Multi-AZ failover completes in <60s (tested via RDS reboot with failover)
+    - WAF rules block SQLi and XSS (OWASP managed rule group enabled)
+    - CloudWatch alarm triggers SNS notification on backend error rate >1%
+    - All secrets stored in Secrets Manager (no plaintext credentials in Terraform
+      state)
     depends_on:
-    - 3
-  EMBEDDED_TEST:
-    description: 'Develop hardware-in-the-loop (HIL) test suite for fall detection
-      firmware: automated fall simulation rig (IMU signal injection via JTAG/SWD),
-      test cases for all fall scenarios, firmware unit tests (Zephyr Test Framework),
-      and integration test harness validating end-to-end flow from IMU trigger to
-      MQTT publish.'
-    agent_role: qa_engineer
+    - 12
+    - 4
+  DEVOPS:
+    description: 'Implement CI/CD pipelines for firmware, backend, and mobile app.
+      Firmware pipeline: build → unit test → static analysis (PC-lint/cppcheck) →
+      MISRA-C check → artifact upload. Backend pipeline: lint → unit test → integration
+      test → Docker build → deploy to ECS staging. Mobile pipeline: lint → test →
+      build IPA/APK → TestFlight/Firebase distribution. Monitoring: CloudWatch dashboards
+      for alert latency, GPS accuracy, device connectivity, fall event throughput.'
+    agent_role: devops_engineer
     acceptance_criteria:
-    - Unit test coverage ≥ 80% of firmware source lines (measured with gcov)
-    - Fall detection sensitivity ≥ 95% on 200-event simfall dataset
-    - ADL false positive rate < 2% on 500-event ADL dataset
-    - All 7 unit test suites pass with zero failures on clean build
-    - HIL integration test for fall-to-MQTT passes 50 consecutive runs without failure
-    - IEC 62304 software unit test records generated and signed for each test suite
+    - All 3 CI pipelines pass on main branch with green status
+    - Firmware MISRA-C check produces report with 0 mandatory violations
+    - Backend pipeline achieves ≥80% code coverage
+    - Trivy SBOM scan integrated and reports critical CVEs as pipeline failures
+    - CloudWatch dashboard shows all 4 monitoring metrics with 5min resolution
+    - Deployment to staging is fully automated on merge to main
+    - Rollback procedure documented and tested (previous ECS task definition restore)
+    depends_on:
+    - 15
+    - 9
+    - 12
+  EMBEDDED_TEST:
+    description: 'Write firmware unit tests (Unity framework) and HIL test specifications
+      for elder_fall_detection wearable. Unit tests: fall detection algorithm with
+      scripted IMU data, GPS NMEA parser, BLE GATT attribute handling, power management
+      state machine, SOS button debounce. HIL test bench: automate fall scenario playback
+      via IMU signal injector, validate end-to-end alert latency on physical hardware.'
+    agent_role: quality_engineer
+    acceptance_criteria:
+    - All 95 unit test cases pass with 0 failures
+    - 'Fall detection unit tests cover: forward fall, backward fall, side fall, stumble
+      (not fall), sitting down'
+    - GPS parser handles malformed NMEA sentences without crash
+    - HIL test plan defines pass/fail criteria for each of 25 physical fall scenarios
+    - Code coverage on fall_detection module ≥90%
+    - HIL test execution log exported as IEC 62304 software verification evidence
+    - Unit tests run in <60s on CI (QEMU STM32 emulation)
     depends_on:
     - 9
     - 10
-  QA:
-    description: 'Develop and execute QA test plan for cloud backend and mobile app:
-      functional test cases for all API endpoints (positive and negative paths), alert
-      delivery reliability test (1000 simulated fall events), caregiver app UI regression
-      suite (Detox), and performance test (Locust: 10,000 concurrent devices).'
+  TESTS:
+    description: 'Write backend unit and integration tests for elder_fall_detection
+      API. Coverage: MQTT event ingestion handler, fall analyzer agent logic, alert
+      dispatch service (mock Twilio/FCM), emergency dispatch service (mock RapidSOS),
+      GPS history queries, device registration flow, JWT authentication middleware,
+      rate limiting. Integration tests use testcontainers (PostgreSQL, Redis, MQTT
+      broker).'
     agent_role: qa_engineer
     acceptance_criteria:
-    - All functional test cases pass with ≥99% pass rate
-    - Alert delivery reliability ≥ 99.9% over 1000-event test (≤1 undelivered alert)
-    - Alert P99 latency < 8 seconds under 10,000 device load
-    - Backend maintains < 2% error rate under full load test
-    - 'Mobile Detox regression suite: 100% pass rate on both iOS and Android simulators'
-    - QA test report with defect log generated and stored in DHF
+    - All unit tests pass with 0 failures
+    - Integration tests verify MQTT → fall event → alert dispatch end-to-end flow
+    - Alert dispatch test confirms Twilio SMS and FCM push mocks called within 10s
+    - JWT middleware rejects expired and malformed tokens (tested with 5 invalid token
+      types)
+    - Backend achieves ≥85% line coverage
+    - testcontainers integration test suite passes in <5min on CI
+    - Emergency dispatch test confirms RapidSOS mock receives correct patient and
+      location data
     depends_on:
-    - 11
     - 12
-    - 13
-  REGULATORY:
-    description: 'Prepare 510(k) premarket notification submission package: cover
-      letter, device description, substantial equivalence comparison, performance
-      testing summary, software documentation summary (IEC 62304 Level of Concern:
-      Moderate), cybersecurity documentation per FDA Cybersecurity Guidance (2023),
-      and labeling (UDI, Rx Only, contraindications).'
-    agent_role: regulatory_specialist
-    acceptance_criteria:
-    - All 510(k) sections complete per FDA guidance document on 510(k) submissions
-    - Software documentation includes SOUP list, anomaly list, and level of concern
-      justification
-    - Cybersecurity section addresses all FDA 2023 guidance requirements (SBOM, vulnerability
-      disclosure policy, update mechanism)
-    - Labeling reviewed by legal_advisor for FDA Part 801 compliance
-    - UDI registered in FDA GUDID database
-    - Submission package reviewed by regulatory_specialist and ready for FDA eCopy
-      submission
-    depends_on:
-    - 18
-    - 4
-  DEVOPS:
-    description: 'Build CI/CD pipelines: firmware build pipeline (GitHub Actions +
-      nRF Connect SDK Docker container, automated HIL test trigger on PR), cloud backend
-      pipeline (Python lint + pytest + Docker build + ECS deploy with blue-green),
-      mobile app pipeline (Expo EAS Build + Detox tests + TestFlight/Play Console
-      deploy). Add infrastructure-as-code (Terraform) for all AWS resources.'
-    agent_role: devops_engineer
-    acceptance_criteria:
-    - Firmware pipeline builds and runs HIL tests automatically on every PR (< 15min
-      pipeline)
-    - Backend pipeline deploys to staging on PR merge and production on release tag
-      (blue-green, zero downtime)
-    - Mobile pipeline produces signed builds for both platforms on every main merge
-    - Terraform plan applies cleanly to fresh AWS account with zero manual steps
-    - CloudWatch dashboards show all critical metrics with correct alarm thresholds
-    - PagerDuty alert fires within 2 minutes of simulated alert delivery failure
-    depends_on:
     - 11
-    - 12
-    - 13
-    - 10
   SYSTEM_TEST:
-    description: 'Execute design validation in representative use environment: clinical
-      simulation with elderly volunteer participants wearing device during ADL (30
-      participants), caregiver alert workflow user acceptance test (20 caregiver participants),
-      emergency dispatch integration test with RapidSOS production sandbox, and 30-day
-      field reliability trial.'
+    description: 'Execute end-to-end system test suite covering full elder_fall_detection
+      workflow: device boot → BLE pairing → cloud registration → fall event detection
+      → MQTT publish → backend processing → caregiver alert (push+SMS) → optional
+      emergency dispatch. Test scenarios: happy path, GPS unavailable (indoor), communication
+      loss and recovery, low battery alert, SOS manual trigger, concurrent alerts
+      from 10 devices.'
     agent_role: system_tester
     acceptance_criteria:
-    - 'Clinical simulation: sensitivity ≥ 95%, false positive rate ≤ 2% per 4h (primary
-      validation endpoints)'
-    - 'Caregiver UAT: SUS score ≥ 80, task completion ≥ 95%'
-    - 'RapidSOS sandbox: 10/10 test incidents created with correct GPS and wearer
-      data'
-    - '30-day field trial: device uptime ≥ 99%, battery life ≥ 72h, zero data loss
-      events'
-    - Design Validation Report signed by clinical lead and regulatory_specialist
-    - All validation deviations documented with impact assessment in DHF
+    - 'Happy path: fall-to-caregiver-alert latency <30s in 95% of runs (50 repetitions)'
+    - GPS unavailable scenario uses last known location with timestamp warning in
+      alert
+    - 'MQTT reconnect scenario: device reconnects and sends buffered events within
+      60s'
+    - '10 concurrent devices: all alerts delivered within 45s, 0 dropped'
+    - 'SOS trigger: emergency dispatch initiated within 15s of button hold'
+    - System test report generated as PDF with pass/fail for all scenarios
+    - System test report accepted as IEC 62304 system integration testing evidence
     depends_on:
-    - 16
     - 17
-    - 13
-  DOCS:
-    description: 'Produce all documentation: developer README (local setup, build,
-      test), API reference (auto-generated from OpenAPI spec with Redoc), firmware
-      architecture document (IEC 62304 §5.3), user manual for caregivers, quick-start
-      guide for wearers, and maintenance/service manual for clinical staff.'
-    agent_role: technical_writer
-    acceptance_criteria:
-    - README allows a new engineer to set up dev environment and run tests in < 30
-      minutes
-    - API reference covers all endpoints with request/response examples and error
-      codes
-    - IEC 62304 Software Architecture Document reviewed and approved by technical
-      lead
-    - Caregiver user manual tested with 5 participants unfamiliar with the app (all
-      complete onboarding unaided)
-    - Wearer quick start card reviewed by occupational therapist for clarity with
-      elderly users
-    - All documents version-controlled and referenced in DHF index
-    depends_on:
     - 18
-    - 19
-  TRAINING:
-    description: 'Develop training materials: clinical staff onboarding (device setup,
-      caregiver app admin, alert response protocol), caregiver app onboarding video
-      series (5 x 3-minute videos), and regulatory training record for IEC 62304 compliance
-      (all engineering staff trained on software lifecycle procedures).'
+    - 14
+    - 16
+  REGULATORY:
+    description: 'Prepare FDA 510(k) premarket notification package for elder_fall_detection
+      device. Sections: device description, substantial equivalence comparison to
+      predicate device, performance testing summary, software documentation summary
+      (IEC 62304 compliance), cybersecurity documentation (IEC 62443, FDA cybersecurity
+      guidance), labeling review, and biocompatibility summary (ISO 10993).'
+    agent_role: regulatory_specialist
+    acceptance_criteria:
+    - 510(k) package includes all FDA required sections per 21 CFR Part 807
+    - Substantial equivalence comparison identifies predicate device with 510(k) clearance
+      number
+    - Software documentation summary references IEC 62304 and lists software safety
+      class justification
+    - Cybersecurity documentation aligns with FDA's 2023 cybersecurity guidance for
+      medical devices
+    - Instructions For Use (IFU) written at ≤8th grade reading level
+    - Labeling includes all required symbols (IEC 60601-1, ISO 15223-1)
+    - Package reviewed by legal_advisor for IP and trademark clearance
+    depends_on:
+    - 20
+    - 4
+  DOCS:
+    description: 'Produce final documentation suite for elder_fall_detection: developer
+      README (firmware build, backend setup, mobile setup), architecture decision
+      records (ADRs), API reference (from OpenAPI spec), caregiver user guide, device
+      setup guide (pairing, charging, wearing), system architecture diagram, and data
+      flow diagram showing device → cloud → caregiver alert path.'
     agent_role: technical_writer
     acceptance_criteria:
-    - Clinical training materials reviewed and approved by clinical operations manager
-    - Caregiver video series tested with 5 representative caregivers (all complete
-      setup unaided after viewing)
-    - 'IEC 62304 training: 100% of engineering staff complete training with ≥80% quiz
-      score'
-    - Training records stored in QMS with employee signatures and completion dates
-    - Training materials version-controlled and updated with each major software release
+    - 'README has: project overview, quick start (firmware build in <5 steps, backend
+      up in 1 docker-compose command)'
+    - 'Architecture doc covers all 5 system layers: device, BLE, cloud, backend, mobile'
+    - 'At least 5 ADRs covering key decisions: RTOS choice, ML model format, alert
+      channel priority, cloud provider, database choice'
+    - Caregiver user guide has screenshots for all 7 app screens
+    - Data flow diagram shows MQTT message path from IMU sample to caregiver push
+      notification
+    - All docs reviewed by technical_writer for clarity and completeness
     depends_on:
-    - 23
-    - 22
+    - 13
+    - 20

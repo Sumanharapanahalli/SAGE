@@ -100,7 +100,7 @@ def header_band(slide, title, subtitle=None, bg=SAGE_DARK, title_color=WHITE, su
                      font_size=16, bold=False, color=sub_color, align=PP_ALIGN.LEFT)
 
 
-def footer_band(slide, text="SAGE[ai] — Confidential | March 2026", include_disclaimer=False):
+def footer_band(slide, text="SAGE[ai] — Open Source (MIT) | github.com/Sumanharapanahalli/sage | March 2026", include_disclaimer=False):
     add_rect(slide, 0, Inches(7.1), SLIDE_W, Inches(0.4), fill_color=SAGE_DARK)
     add_text_box(slide, text,
                  Inches(0.3), Inches(7.12), Inches(9), Inches(0.3),
@@ -213,10 +213,10 @@ def build_business_case():
     add_text_box(slide, "Transforming Medical Device Production with Agentic AI",
                  Inches(1), Inches(3.55), Inches(11), Inches(0.55),
                  font_size=18, bold=False, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Business Case Presentation — March 2026",
+    add_text_box(slide, "Open Source (MIT) — Business Case Presentation — March 2026",
                  Inches(1), Inches(5.5), Inches(11), Inches(0.45),
                  font_size=14, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "CONFIDENTIAL — Internal Business Case",
+    add_text_box(slide, "github.com/Sumanharapanahalli/sage",
                  Inches(1), Inches(6.1), Inches(11), Inches(0.4),
                  font_size=12, italic=True, color=SAGE_AMBER, align=PP_ALIGN.CENTER)
 
@@ -349,7 +349,7 @@ def build_business_case():
     # ── Slide 8 — Capabilities ─────────────────────────────────────────────────
     table_slide(prs,
         "What SAGE[ai] Does Today",
-        "Production-ready capabilities across 12 integration phases — available now",
+        "136 API endpoints across 12 integration phases — all open source (MIT)",
         ["No.", "Capability", "Description"],
         [
             ["01", "Log Analysis",        "AI triage in under 60 s — severity RED / AMBER / GREEN with root-cause reasoning"],
@@ -513,7 +513,7 @@ def build_business_case():
                  Inches(0.8), Inches(1.8), Inches(11.5), Inches(1.8),
                  font_size=30, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
 
-    add_text_box(slide, "Let's talk about your pilot.",
+    add_text_box(slide, "Open source. Self-hosted. Start today at github.com/Sumanharapanahalli/sage",
                  Inches(0.8), Inches(3.7), Inches(11.5), Inches(0.65),
                  font_size=22, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
 
@@ -547,10 +547,10 @@ def build_tech_pitch():
                  Inches(1), Inches(2.3), Inches(11), Inches(0.65),
                  font_size=24, bold=False, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
     add_text_box(slide,
-                 "A modular autonomous AI agent framework\nbuilt on lean development methodology at machine speed",
+                 "A modular open-source AI agent framework\nbuilt on lean development methodology at machine speed",
                  Inches(1.5), Inches(3.1), Inches(10), Inches(0.9),
                  font_size=17, italic=True, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Technical Platform Overview — March 2026",
+    add_text_box(slide, "Open Source (MIT) — Technical Platform Overview — March 2026",
                  Inches(1), Inches(5.7), Inches(11), Inches(0.45),
                  font_size=14, color=GREY, align=PP_ALIGN.CENTER)
 
@@ -1121,8 +1121,8 @@ def build_tech_pitch():
 
     # ── Slide 22 — Phase Summary ───────────────────────────────────────────────
     table_slide(prs,
-        "Platform Completeness — 12 Integration Phases",
-        "From core agent loop to enterprise-grade orchestration — all live",
+        "Platform Completeness — 136 Endpoints, 27 Pages, 17+ Solutions",
+        "From core agent loop to enterprise-grade orchestration — all open source",
         ["Phase", "Feature", "Status"],
         [
             ["0-4",  "Core agents, API, Web UI, Approval gate, Audit log",           "Complete"],
@@ -1147,14 +1147,14 @@ def build_tech_pitch():
                  Inches(0.8), Inches(0.8), Inches(11.5), Inches(0.9),
                  font_size=44, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
     add_text_box(slide,
-                 "Lean development at machine speed.\nYAML-first. Agent-native. Human-in-the-loop always.",
+                 "Open Source (MIT). Lean development at machine speed.\nYAML-first. Agent-native. Human-in-the-loop always.",
                  Inches(0.8), Inches(1.75), Inches(11.5), Inches(1.0),
                  font_size=20, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
 
     links = [
-        "github.com/your-org/sage",
-        "/docs — SETUP.md · USER_GUIDE.md · ADDING_A_PROJECT.md",
-        "make test-all — full test suite in under 2 min",
+        "github.com/Sumanharapanahalli/sage — Star, Fork, Contribute",
+        "136 API endpoints · 27 UI pages · 17+ solution templates · 79 E2E tests",
+        "Framework is open — solutions are private (SAGE_SOLUTIONS_DIR)",
         "make run PROJECT=medtech — running in 60 seconds",
     ]
     top = Inches(4.3)
@@ -1197,7 +1197,7 @@ def build_investor_pitch():
                  "Autonomous AI Agent Infrastructure for Regulated Industries",
                  Inches(1.5), Inches(3.1), Inches(10.3), Inches(0.65),
                  font_size=18, italic=True, color=GREY, align=PP_ALIGN.CENTER)
-    add_text_box(slide, "Investor Presentation — March 2026 — CONFIDENTIAL",
+    add_text_box(slide, "Investor Presentation — March 2026 — Open Source (MIT)",
                  Inches(1), Inches(5.9), Inches(11.3), Inches(0.45),
                  font_size=13, color=GREY, align=PP_ALIGN.CENTER)
 
@@ -1307,8 +1307,8 @@ def build_investor_pitch():
 
     # -- Slide 6 — Product Capabilities ------------------------------------------
     table_slide(prs,
-        "Platform Capabilities — 12 Integration Phases Complete",
-        "From core agent loop to enterprise-grade orchestration — all production-ready",
+        "Platform Capabilities — 136 Endpoints, Open Source (MIT)",
+        "From core agent loop to enterprise-grade orchestration — all production-ready, all open source",
         ["Capability", "What It Does", "Value Delivered"],
         [
             ["Intelligent Analysis",   "AI triage of error logs, severity scoring, root-cause reasoning",     "45 min reduced to under 60 seconds"],
@@ -1466,9 +1466,9 @@ def build_investor_pitch():
                 "12 integration phases shipped, test suite green, first regulated deployment in progress")
 
     stats = [
-        ("12",   "Integration phases complete",      "Phases 0-11 all production-ready",          SAGE_DARK),
-        ("383+", "Automated tests passing",           "Framework and all solution test suites",     SAGE_BLUE),
-        ("5",    "LLM providers supported",           "All without API keys — zero credential risk",SAGE_TEAL),
+        ("136",  "API endpoints across 22 categories", "27 UI pages, 17+ solution templates",       SAGE_DARK),
+        ("79",   "E2E browser tests (78 passing)",     "53 test files, full API lifecycle coverage", SAGE_BLUE),
+        ("5",    "LLM providers — zero API keys",      "Open source MIT on GitHub",          SAGE_TEAL),
     ]
     left = Inches(0.5)
     for big, mid, small, color in stats:
@@ -1485,10 +1485,10 @@ def build_investor_pitch():
         left += Inches(4.3)
 
     milestones = [
-        "Core framework complete: agents, API, audit log, vector memory, web dashboard",
+        "Open source release: MIT on GitHub — 136 endpoints, 27 pages, 17+ solution templates",
         "12 integrations live: SSE streaming, onboarding wizard, Slack, LangGraph, Temporal, eval, multi-tenant",
-        "Solutions active: medtech (ISO 13485), poseengine (ML/mobile), kappture (human tracking)",
-        "Pilot in progress: regulated engineering team, first KPI measurement expected Q2 2026",
+        "Build Orchestrator: 13 domain detection, 19 agents, 5 teams, Q-learning adaptive router",
+        "Community-driven: framework is public, proprietary solutions mounted via SAGE_SOLUTIONS_DIR",
     ]
     top = Inches(4.65)
     for m in milestones:
@@ -1576,18 +1576,18 @@ def build_investor_pitch():
                  Inches(0.8), Inches(0.9), Inches(11.7), Inches(0.95),
                  font_size=46, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
     add_text_box(slide,
-                 "The infrastructure layer for AI-augmented engineering in regulated industries.",
+                 "Open source infrastructure for AI-augmented engineering in regulated industries.",
                  Inches(0.8), Inches(1.95), Inches(11.7), Inches(0.7),
                  font_size=20, color=SAGE_TEAL, align=PP_ALIGN.CENTER)
     add_text_box(slide,
-                 "Lean development at machine speed.\nCompliant by design. Human judgment always in the loop.",
+                 "MIT. Lean development at machine speed.\nCompliant by design. Human judgment always in the loop.",
                  Inches(0.8), Inches(2.75), Inches(11.7), Inches(1.0),
                  font_size=17, italic=True, color=GREY, align=PP_ALIGN.CENTER)
 
     contact = [
-        "github.com/your-org/sage",
-        "contact@sage-framework.ai",
-        "/docs — SETUP.md, API_REFERENCE.md, USER_GUIDE.md",
+        "github.com/Sumanharapanahalli/sage — Star, Fork, Contribute",
+        "136 endpoints · 27 pages · 17+ solutions · 79 E2E tests",
+        "CONTRIBUTING.md — Community guidelines and contributor setup",
     ]
     top = Inches(4.35)
     for c in contact:

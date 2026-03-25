@@ -1,0 +1,300 @@
+name: Firmware CI
+
+on:
+  push:
+    branches: [main, 'release/**']
+    paths:
+      - 'firmware/**'
+      - '.github/workflows/firmware-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'firmware/**'
+      - '.github/workflows/firmware-ci.yml'
+
+env:
+  FIRMWARE_DIR: firmware
+  BUILD_DIR: firmware/build
+  COVERAGE_THRESHOLD: 80
+  MISRA_REPORT: misra_report.txt
+
+jobs:
+  # ─────────────────────────────────────────────
+  # JOB 1: Build (cross-compile for ARM Cortex-M)
+  # ─────────────────────────────────────────────
+  build:
+    name: Build Firmware
+    runs-on: ubuntu-22.04
+    outputs:
+      artifact-name: ${{ steps.meta.outputs.artifact_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-arm-none-eabi \
+            binutils-arm-none-eabi \
+            libnewlib-arm-none-eabi \
+            cmake \
+            ninja-build \
+            qemu-system-arm
+
+      - name: Configure CMake
+        working-directory: ${{ env.FIRMWARE_DIR }}
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCOVERAGE_ENABLED=ON \
+            -DMISRA_ENABLED=ON
+
+      - name: Build
+        working-directory: ${{ env.FIRMWARE_DIR }}
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Set artifact metadata
+        id: meta
+        run: |
+          SHORT_SHA=${GITHUB_SHA::8}
+          echo "artifact_name=firmware-${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.artifact_name }}-build
+          path: |
+            ${{ env.BUILD_DIR }}/**/*.elf
+            ${{ env.BUILD_DIR }}/**/*.bin
+            ${{ env.BUILD_DIR }}/**/*.hex
+            ${{ env.BUILD_DIR }}/**/*.map
+          retention-days: 30
+          if-no-files-found: error
+
+  # ─────────────────────────────────────────────
+  # JOB 2: Unit Tests on QEMU
+  # ─────────────────────────────────────────────
+  unit-test:
+    name: Unit Tests (QEMU)
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-arm-none-eabi \
+            libnewlib-arm-none-eabi \
+            cmake ninja-build qemu-system-arm \
+            gcovr lcov
+
+      - name: Build test firmware (host target for coverage)
+        working-directory: ${{ env.FIRMWARE_DIR }}
+        run: |
+          cmake -B build_test \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTS=ON \
+            -DCOVERAGE_ENABLED=ON \
+            -DTARGET_HOST=ON
+          cmake --build build_test --parallel $(nproc)
+
+      - name: Run unit tests
+        working-directory: ${{ env.FIRMWARE_DIR }}
+        run: |
+          ctest --test-dir build_test \
+                --output-on-failure \
+                --parallel $(nproc) \
+                --output-junit test_results.xml
+
+      - name: Generate coverage report
+        working-directory: ${{ env.FIRMWARE_DIR }}
+        run: |
+          gcovr \
+            --root . \
+            --exclude '.*/test/.*' \
+            --exclude '.*/third_party/.*' \
+            --exclude '.*/build.*/.*' \
+            --xml-pretty \
+            --output coverage.xml \
+            --html-details coverage_html/index.html \
+            --fail-under-line ${{ env.COVERAGE_THRESHOLD }}
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: ${{ env.FIRMWARE_DIR }}/test_results.xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-coverage
+          path: |
+            ${{ env.FIRMWARE_DIR }}/coverage.xml
+            ${{ env.FIRMWARE_DIR }}/coverage_html/
+          retention-days: 14
+
+  # ─────────────────────────────────────────────
+  # JOB 3: Static Analysis — cppcheck
+  # ─────────────────────────────────────────────
+  static-analysis:
+    name: Static Analysis (cppcheck)
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck
+        working-directory: ${{ env.FIRMWARE_DIR }}
+        run: |
+          cppcheck \
+            --enable=all \
+            --std=c11 \
+            --platform=arm32-wchar_t2 \
+            --suppress=missingIncludeSystem \
+            --suppress=unusedFunction \
+            --inline-suppr \
+            --error-exitcode=1 \
+            --xml \
+            --xml-version=2 \
+            -I src/include \
+            -I third_party/cmsis/include \
+            --exclude=third_party \
+            src/ 2> cppcheck_report.xml
+
+      - name: Upload cppcheck report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cppcheck-report
+          path: ${{ env.FIRMWARE_DIR }}/cppcheck_report.xml
+          retention-days: 14
+
+  # ─────────────────────────────────────────────
+  # JOB 4: MISRA-C 2012 Check (cppcheck MISRA addon)
+  # ─────────────────────────────────────────────
+  misra-check:
+    name: MISRA-C 2012 Check
+    runs-on: ubuntu-22.04
+    needs: build
+    env:
+      MISRA_MANDATORY_VIOLATIONS: 0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cppcheck (with MISRA addon support)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cppcheck python3-pip cmake ninja-build
+
+      - name: Run MISRA-C 2012 check via cppcheck addon
+        working-directory: ${{ env.FIRMWARE_DIR }}
+        run: |
+          # Generate compile_commands.json for accurate file-list analysis
+          cmake -B build_misra \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DTARGET_HOST=ON 2>/dev/null || true
+
+          # Run cppcheck with MISRA addon — capture all output
+          cppcheck \
+            --addon=misra \
+            --std=c11 \
+            --enable=all \
+            --suppress=missingIncludeSystem \
+            --error-exitcode=0 \
+            --template='{file}:{line}: {severity} [{id}]: {message}' \
+            --project=build_misra/compile_commands.json \
+            --exclude=third_party \
+            2>&1 | tee ${{ env.MISRA_REPORT }}
+
+      - name: Validate MISRA mandatory violations = 0
+        working-directory: ${{ env.FIRMWARE_DIR }}
+        run: |
+          echo "=== MISRA-C 2012 Report Summary ==="
+          cat ${{ env.MISRA_REPORT }}
+          echo ""
+
+          # Count mandatory rule violations (cppcheck tags them as misra-mandatory)
+          MANDATORY_COUNT=$(grep -c '\[misra-mandatory\]\|\[MISRA-mandatory\]\|mandatory' \
+            ${{ env.MISRA_REPORT }} 2>/dev/null || echo 0)
+
+          echo "Mandatory violations found: ${MANDATORY_COUNT}"
+          echo "Threshold: ${{ env.MISRA_MANDATORY_VIOLATIONS }}"
+
+          if [ "${MANDATORY_COUNT}" -gt "${{ env.MISRA_MANDATORY_VIOLATIONS }}" ]; then
+            echo "FAIL: ${MANDATORY_COUNT} mandatory MISRA-C violations detected"
+            exit 1
+          fi
+          echo "PASS: MISRA-C mandatory violation check passed (${MANDATORY_COUNT} violations)"
+
+      - name: Upload MISRA report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: misra-report
+          path: ${{ env.FIRMWARE_DIR }}/${{ env.MISRA_REPORT }}
+          retention-days: 90
+
+  # ─────────────────────────────────────────────
+  # JOB 5: Package release artifacts
+  # ─────────────────────────────────────────────
+  package:
+    name: Package Release Artifacts
+    runs-on: ubuntu-22.04
+    needs: [build, unit-test, static-analysis, misra-check]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: firmware-*-build
+          path: artifacts/
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware-coverage
+          path: artifacts/coverage/
+
+      - name: Download MISRA report
+        uses: actions/download-artifact@v4
+        with:
+          name: misra-report
+          path: artifacts/misra/
+
+      - name: Create release package
+        run: |
+          SHORT_SHA=${GITHUB_SHA::8}
+          VERSION=$(cat firmware/VERSION 2>/dev/null || echo "0.0.0")
+          PACKAGE_NAME="firmware-v${VERSION}-${SHORT_SHA}"
+
+          tar -czf "${PACKAGE_NAME}.tar.gz" artifacts/
+          sha256sum "${PACKAGE_NAME}.tar.gz" > "${PACKAGE_NAME}.sha256"
+
+          echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_ENV
+
+      - name: Upload final release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_NAME }}
+          path: |
+            ${{ env.PACKAGE_NAME }}.tar.gz
+            ${{ env.PACKAGE_NAME }}.sha256
+          retention-days: 90
