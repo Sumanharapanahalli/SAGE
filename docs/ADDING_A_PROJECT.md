@@ -25,7 +25,7 @@ That is all. The framework loads your three files, agents adapt to your domain, 
 
 ---
 
-## Three Ways to Create a Solution
+## Five Ways to Create a Solution
 
 ### Option 1 — Onboarding wizard (fastest, recommended)
 
@@ -47,7 +47,24 @@ Review the generated YAML at `solutions/invoicing_saas/`, edit anything you want
 make run PROJECT=invoicing_saas
 ```
 
-### Option 2 — Copy the starter template
+### Option 2 — Conversational onboarding (web UI)
+
+Open `/onboarding` in the web UI. Two paths:
+
+- **Path A** — Point to an existing local repo. The LLM analyzes your stack, CI config, and compliance hints, then generates all 3 YAML files.
+- **Path B** — Guided Q&A wizard. Answer questions about your domain, team, and compliance needs.
+
+### Option 3 — Scan existing folder
+
+```bash
+curl -X POST http://localhost:8000/onboarding/scan-folder \
+  -H "Content-Type: application/json" \
+  -d '{"path": "/path/to/your/project", "solution_name": "my_project"}'
+```
+
+The LLM analyzes the folder structure and generates YAML tailored to the detected stack.
+
+### Option 4 — Copy the starter template
 
 ```bash
 cp -r solutions/starter solutions/your_project
@@ -55,7 +72,7 @@ cp -r solutions/starter solutions/your_project
 make run PROJECT=your_project
 ```
 
-### Option 3 — Write from scratch
+### Option 5 — Write from scratch
 
 Follow the field-by-field guide below.
 
@@ -312,14 +329,19 @@ task_payloads:
 
 ## Complete Examples
 
-Three real-world example solutions are included in the repository. Each is fully runnable.
+17 example solutions are included in the repository. Key examples:
+
+### Starter — Generic template
+
+`solutions/starter/` — blank template for any domain. Copy this to start fresh.
+
+```bash
+make run PROJECT=starter
+```
 
 ### Meditation App — Flutter mobile + Node.js backend
 
-`solutions/meditation_app/` — consumer mobile app, no compliance standards.
-
-Roles: product advisor, QA analyst, release manager.
-Tasks: crash analysis, app store review analysis, Flutter/backend code review, CI pipeline monitoring.
+`solutions/meditation_app/` — consumer mobile app, GDPR compliance.
 
 ```bash
 make run PROJECT=meditation_app
@@ -329,9 +351,6 @@ make run PROJECT=meditation_app
 
 `solutions/four_in_a_line/` — cross-platform casual game, GDPR and app store guidelines.
 
-Roles: game designer, monetisation advisor, AI opponent specialist.
-Tasks: crash triage, player analytics, game logic review, UI review.
-
 ```bash
 make run PROJECT=four_in_a_line
 ```
@@ -340,12 +359,32 @@ make run PROJECT=four_in_a_line
 
 `solutions/medtech_team/` — embedded firmware + clinical web + DevOps, full ISO 13485 / IEC 62304 compliance.
 
-Roles: embedded developer, web developer, devops engineer, quality engineer.
-Tasks: firmware log analysis, web error analysis, infra alert, code review by layer, IEC 62304-annotated MR creation.
-
 ```bash
 make run PROJECT=medtech_team
 ```
+
+### Automotive — Infotainment & telematics
+
+`solutions/automotive/` — ISO 26262, UN ECE WP.29, ISO/SAE 21434 compliance.
+
+```bash
+make run PROJECT=automotive
+```
+
+### Additional Solutions
+
+| Solution | Domain |
+|---|---|
+| `avionics` | Avionics SW (DO-178C, DO-254, ARP4754A) |
+| `iot_medical` | IoT medical device (IEC 62304, ISO 14971) |
+| `elder_fall_detection` | Fall detection IoT (HIPAA) |
+| `fall_detection_firmware` | Fall detection firmware (IEC 62304) |
+| `finmarkets` | Financial markets (SOC 2, PCI DSS) |
+| `kappture` | Point-of-sale (PCI DSS) |
+| `poseengine` | Pose estimation ML |
+| `bluedrop_medical` | Medical device (IEC 62304, ISO 13485) |
+| `tictac_arena` | Board game |
+| `sol_a`, `sol_b` | Multi-solution org examples |
 
 ---
 

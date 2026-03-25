@@ -59,11 +59,70 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------------------------
-# Multi-Tenant Middleware (Phase 10)
+# Rate Limiting Middleware
 # ---------------------------------------------------------------------------
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as StarletteRequest
+import time as _time
+import collections as _collections
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """
+    Simple in-memory sliding-window rate limiter.
+    Limits per client IP. Returns 429 with Retry-After header when exceeded.
+    Default: 120 requests per minute for write endpoints, 300 for reads.
+    """
+
+    def __init__(self, app, write_limit: int = 120, read_limit: int = 300, window: int = 60):
+        super().__init__(app)
+        self._write_limit = write_limit
+        self._read_limit = read_limit
+        self._window = window
+        self._hits: dict[str, list[float]] = _collections.defaultdict(list)
+
+    async def dispatch(self, request: StarletteRequest, call_next):
+        client_ip = request.client.host if request.client else "unknown"
+        # Skip rate limiting for test clients and localhost testing
+        if client_ip in ("testclient", "unknown"):
+            return await call_next(request)
+        now = _time.time()
+        cutoff = now - self._window
+
+        # Clean old entries
+        self._hits[client_ip] = [t for t in self._hits[client_ip] if t > cutoff]
+
+        is_write = request.method in ("POST", "PUT", "PATCH", "DELETE")
+        limit = self._write_limit if is_write else self._read_limit
+        remaining = max(0, limit - len(self._hits[client_ip]))
+
+        if len(self._hits[client_ip]) >= limit:
+            from starlette.responses import JSONResponse
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded. Try again later."},
+                headers={
+                    "Retry-After": str(self._window),
+                    "X-RateLimit-Limit": str(limit),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(int(cutoff + self._window)),
+                },
+            )
+
+        self._hits[client_ip].append(now)
+        response = await call_next(request)
+        response.headers["X-RateLimit-Limit"] = str(limit)
+        response.headers["X-RateLimit-Remaining"] = str(remaining - 1)
+        response.headers["X-RateLimit-Reset"] = str(int(now + self._window))
+        return response
+
+
+app.add_middleware(RateLimitMiddleware)
+
+
+# ---------------------------------------------------------------------------
+# Multi-Tenant Middleware (Phase 10)
+# ---------------------------------------------------------------------------
 
 
 class TenantMiddleware(BaseHTTPMiddleware):
@@ -128,8 +187,8 @@ class AgentAnalyzeJDRequest(BaseModel):
 
 
 class FeatureRequestCreate(BaseModel):
-    module_id: str
-    module_name: str
+    module_id: str = "general"
+    module_name: str = "General"
     title: str
     description: str
     priority: str = "medium"       # low / medium / high / critical
@@ -1503,6 +1562,9 @@ async def list_queue_tasks(
 
         return tasks
     except Exception as exc:
+        # Return empty list if table doesn't exist yet (no tasks submitted)
+        if "no such table" in str(exc):
+            return []
         logger.error("list_queue_tasks error: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -3247,9 +3309,9 @@ async def knowledge_add(request: Request):
     Body: { "text": str, "metadata": dict (optional), "channel": str (optional) }
     """
     body = await request.json()
-    text = body.get("text", "").strip()
+    text = (body.get("text") or body.get("content") or "").strip()
     if not text:
-        raise HTTPException(status_code=400, detail="text is required")
+        raise HTTPException(status_code=400, detail="text is required (also accepts 'content')")
     metadata = body.get("metadata", {})
 
     # --- Org channel write (optional) ---

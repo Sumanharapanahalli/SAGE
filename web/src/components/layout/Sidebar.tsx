@@ -135,8 +135,8 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
       <div
         data-tour="solution-rail"
         style={{ width: '44px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                 height: '100%', padding: '8px 0', backgroundColor: '#020617',
-                 borderRight: '1px solid #0f172a', flexShrink: 0 }}
+                 height: '100%', padding: '8px 0', backgroundColor: 'var(--sage-rail-bg)',
+                 borderRight: '1px solid #e5e7eb', flexShrink: 0 }}
       >
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
                       overflowY: 'auto', width: '100%', paddingTop: '4px' }}>
@@ -158,7 +158,7 @@ function SolutionRail({ onOpenWizard }: { onOpenWizard: () => void }) {
           {pinnedToShow.map(id => {
             const sol = solutions.find(s => s.id === id)
             if (!sol) return null
-            const solAccent = (sol as any).theme?.accent ?? '#1e293b'
+            const solAccent = (sol as any).theme?.accent ?? '#e5e7eb'
             return (
               <Tooltip key={id} text={sol.name}>
                 <button
@@ -236,7 +236,7 @@ interface SwitcherProps {
 function SolutionSwitcher({ projectName, solutions, activeId, onSwitch, showRestartTour, onRestartTour }: SwitcherProps) {
   const [open, setOpen] = useState(false)
   return (
-    <div style={{ position: 'relative', borderBottom: '1px solid #1e293b' }}>
+    <div style={{ position: 'relative', borderBottom: '1px solid #e5e7eb' }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{ display: 'flex', width: '100%', alignItems: 'center', gap: '6px',
@@ -252,8 +252,8 @@ function SolutionSwitcher({ projectName, solutions, activeId, onSwitch, showRest
         <>
           <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setOpen(false)} />
           <div style={{ position: 'absolute', left: 0, top: '100%', width: '100%', zIndex: 20,
-                        backgroundColor: '#0f172a', border: '1px solid #1e293b',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+                        backgroundColor: '#ffffff', border: '1px solid #e5e7eb',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
             {solutions.map(sol => (
               <button
                 key={sol.id}
@@ -269,7 +269,7 @@ function SolutionSwitcher({ projectName, solutions, activeId, onSwitch, showRest
             ))}
             {showRestartTour && (
               <>
-                <div style={{ borderTop: '1px solid #1e293b', margin: '4px 0' }} />
+                <div style={{ borderTop: '1px solid #e5e7eb', margin: '4px 0' }} />
                 <button
                   onClick={() => { onRestartTour(); setOpen(false) }}
                   style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px',
@@ -330,7 +330,7 @@ export default function Sidebar() {
     <aside style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
       <SolutionRail onOpenWizard={openWizard} />
       <div style={{ width: '220px', display: 'flex', flexDirection: 'column', height: '100%',
-                    backgroundColor: 'var(--sage-sidebar-bg)', borderRight: '1px solid #1e293b' }}>
+                    backgroundColor: 'var(--sage-sidebar-bg)', borderRight: '1px solid #e5e7eb' }}>
         <SolutionSwitcher
           projectName={projectName}
           solutions={solutions}
@@ -395,7 +395,7 @@ export default function Sidebar() {
             )
           })}
         </nav>
-        <div style={{ padding: '8px 12px', borderTop: '1px solid #1e293b', color: '#334155', fontSize: '11px' }}>
+        <div style={{ padding: '8px 12px', borderTop: '1px solid #e5e7eb', color: '#334155', fontSize: '11px' }}>
           SAGE Framework {SAGE_VERSION}
         </div>
       </div>

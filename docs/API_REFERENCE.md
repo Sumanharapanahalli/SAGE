@@ -2,19 +2,28 @@
 
 All endpoints are served at `http://localhost:8000`. Every response is JSON.
 
+**Total endpoints: 136** across 22 categories.
+
 ---
 
-## Core
+## Core & Health
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/health` | System health, provider, memory mode |
+| GET | `/health` | System health, provider, memory mode, configured integrations |
+| GET | `/health/llm` | LLM-specific health: provider reachability, last call time |
 | POST | `/shutdown` | Graceful shutdown |
-| GET | `/config/project` | Active solution config |
-| GET | `/config/projects` | List all available solutions |
+| GET | `/config/project` | Active solution config (metadata, active_modules, theme) |
+| GET | `/config/projects` | List all available solutions with metadata and themes |
 | POST | `/config/switch` | Switch active solution `{"project": "name"}` |
-| GET | `/config/yaml/{file}` | Read project/prompts/tasks YAML |
-| PUT | `/config/yaml/{file}` | Write and hot-reload a solution YAML |
+| POST | `/config/modules` | Enable/disable UI modules `{"modules": ["dashboard", ...]}` |
+| GET | `/config/yaml/{file_name}` | Read project/prompts/tasks YAML |
+| PUT | `/config/yaml/{file_name}` | Write and hot-reload a solution YAML |
+| GET | `/config/skill` | Get current solution skill level |
+| POST | `/config/skill` | Set solution skill level |
+| GET | `/config/approval-roles` | Get RBAC approval role mappings |
+| GET | `/config/dev-users` | List developer user identifiers |
+| PATCH | `/config/project/theme` | Update active solution's theme block |
 
 ---
 
@@ -29,8 +38,10 @@ All endpoints are served at `http://localhost:8000`. Every response is JSON.
 | GET | `/agent/roles` | List available roles for active solution |
 | GET | `/agents/status` | Live status of all agents (active/idle, last task, daily counts) |
 | GET | `/agents/active` | List currently running agents with task info |
-| GET | `/audit` | Query audit log |
-| GET | `/repo/map` | Returns markdown file tree with symbol extraction for the active solution |
+| POST | `/agents/hire` | Propose a new agent role (HITL) |
+| POST | `/agents/analyze-jd` | Analyze a job description to extract role definition |
+| GET | `/agents/{role_key}/performance` | Performance metrics for a specific agent role |
+| GET | `/repo/map` | Returns markdown file tree with symbol extraction for active solution |
 
 ---
 
@@ -41,11 +52,13 @@ Every AI write action generates a proposal. Nothing executes without human appro
 | Method | Path | Description |
 |---|---|---|
 | GET | `/proposals/pending` | List all pending proposals, sorted by risk |
+| GET | `/proposals/{trace_id}` | Get a specific proposal by trace_id |
+| POST | `/proposals/approve-batch` | Batch-approve multiple proposals `{"trace_ids": [...]}` |
 | POST | `/approve/{trace_id}` | Approve a pending proposal `{"feedback": "..."}` |
 | POST | `/reject/{trace_id}` | Reject with feedback `{"feedback": "reason"}` |
 | POST | `/proposals/{trace_id}/undo` | Revert an approved code_diff proposal |
 
-**Risk tiers (low → high):** `INFORMATIONAL` · `EPHEMERAL` · `STATEFUL` · `EXTERNAL` · `DESTRUCTIVE`
+**Risk tiers (low to high):** `INFORMATIONAL` / `EPHEMERAL` / `STATEFUL` / `EXTERNAL` / `DESTRUCTIVE`
 
 Low-risk proposals can be batch-approved. DESTRUCTIVE proposals never expire and require an explicit human note.
 
@@ -58,7 +71,6 @@ Low-risk proposals can be batch-approved. DESTRUCTIVE proposals never expire and
 | POST | `/chat` | Send a message — returns plain answer OR action proposal |
 | POST | `/chat/execute` | Execute a confirmed chat action |
 | POST | `/chat/cancel` | Log a cancelled action to the audit trail |
-| GET | `/chat/history` | Retrieve chat history for a session |
 | DELETE | `/chat/history` | Clear display history (compliance_audit_log is never touched) |
 
 **`POST /chat` — response shape:**
@@ -82,16 +94,7 @@ or (when LLM routes to an action):
 }
 ```
 
-**`POST /chat/execute` — execute confirmed action:**
-```json
-// Request
-{"action": "approve_proposal", "params": {"trace_id": "abc123"}, "user_id": "...", "session_id": "...", "solution": "..."}
-
-// Response
-{"status": "success", "message": "Proposal abc123 approved.", "result": {"trace_id": "abc123"}}
-```
-
-**Available actions:** `approve_proposal` · `reject_proposal` · `undo_proposal` · `submit_task` · `propose_yaml_edit`
+**Available actions:** `approve_proposal` / `reject_proposal` / `undo_proposal` / `submit_task` / `propose_yaml_edit`
 
 Every `/chat/execute` call writes to `compliance_audit_log` with `actor="human_via_chat"`.
 
@@ -103,7 +106,7 @@ Every `/chat/execute` call writes to `compliance_audit_log` with `actor="human_v
 |---|---|---|
 | GET | `/knowledge/entries?limit=50` | List stored knowledge entries |
 | POST | `/knowledge/add` | Add entry `{"text": "...", "metadata": {}}` |
-| DELETE | `/knowledge/entry/{id}` | Delete by entry ID |
+| DELETE | `/knowledge/entry/{entry_id}` | Delete by entry ID |
 | POST | `/knowledge/import` | Bulk import `{"entries": [...]}` |
 | POST | `/knowledge/search` | Semantic/keyword search `{"query": "...", "k": 5}` |
 | POST | `/knowledge/sync` | Bulk sync files from a directory into the knowledge base |
@@ -115,12 +118,20 @@ Every `/chat/execute` call writes to `compliance_audit_log` with `actor="human_v
 
 ---
 
+## Audit Log
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/audit` | Query audit log with pagination (limit, offset, action_type filter) |
+
+---
+
 ## LLM Provider
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/llm/status` | Current provider, model, usage stats |
-| POST | `/llm/switch` | Switch provider at runtime |
+| GET | `/llm/status` | Current provider, model, usage stats, PII config, data residency |
+| POST | `/llm/switch` | Switch provider at runtime `{"provider": "ollama", "model": "llama3.2"}` |
 | GET | `/llm/dual-status` | Teacher + student LLM status and confidence thresholds |
 
 **Supported providers (no API key):** `gemini`, `claude-code`, `ollama`, `local`, `generic-cli`
@@ -158,7 +169,11 @@ On-device small language model for meta-operations — zero cloud calls for fram
 | GET | `/onboarding/org-templates` | Domain org structure templates (6 domains) |
 | POST | `/onboarding/session` | Start conversational onboarding session |
 | POST | `/onboarding/session/{session_id}/message` | Continue session `{"message": "..."}` |
+| POST | `/onboarding/session/{session_id}/generate` | Generate solution YAML from session state |
 | GET | `/onboarding/session/{session_id}` | Get session state |
+| POST | `/onboarding/scan-folder` | Scan an existing project folder and generate YAML |
+| POST | `/onboarding/refine` | Refine generated YAML based on feedback |
+| POST | `/onboarding/save-solution` | Save generated solution to disk |
 
 **Single-turn generate body:**
 ```json
@@ -187,7 +202,7 @@ curl -X POST http://localhost:8000/onboarding/session \
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/swe/task` | Submit coding task → autonomous explore/plan/implement/PR |
+| POST | `/swe/task` | Submit coding task — autonomous explore/plan/implement/PR |
 
 **Body:**
 ```json
@@ -216,10 +231,9 @@ Mermaid diagrams are auto-generated from `StateGraph.draw_mermaid()` — always 
 | Method | Path | Description |
 |---|---|---|
 | GET | `/queue/status` | Queue depth, running tasks, worker count |
+| GET | `/queue/tasks` | List tasks with optional status filter |
 | POST | `/queue/config` | `?max_workers=4&parallel_enabled=true` |
-| POST | `/task` | Submit task `{"task_type": "...", "input_data": {...}, "depends_on": []}` |
-| GET | `/tasks` | List tasks with optional status filter |
-| GET | `/tasks/{task_id}` | Get task details |
+| POST | `/tasks/submit` | Submit task `{"task_type": "...", "payload": {...}, "priority": 5}` |
 | GET | `/tasks/{task_id}/subtasks` | List sub-tasks spawned by a wave-scheduled task |
 
 When a task payload includes `"subtasks": [...]`, the queue manager spawns them in parallel waves.
@@ -233,15 +247,6 @@ YAML-declared scheduled tasks — defined in `tasks.yaml` under `scheduled:`, ex
 | Method | Path | Description |
 |---|---|---|
 | GET | `/scheduler/status` | Active schedules, next-run times, last-run results |
-
-**Example `tasks.yaml` scheduled block:**
-```yaml
-scheduled:
-  - task_type: ANALYZE_LOG
-    cron: "0 9 * * 1"        # every Monday 9am
-    payload: {"log_source": "production"}
-    description: "Weekly production log review"
-```
 
 ---
 
@@ -260,7 +265,7 @@ scheduled:
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/code/plan` | Generate code plan `{"task": "..."}` → `awaiting_approval` |
+| POST | `/code/plan` | Generate code plan `{"task": "..."}` — `awaiting_approval` |
 | POST | `/code/approve` | Approve plan `{"run_id": "...", "comment": ""}` |
 | POST | `/code/execute` | Execute approved plan in Docker sandbox |
 | GET | `/code/status/{run_id}` | Get run status |
@@ -285,7 +290,7 @@ scheduled:
 | POST | `/hil/run-suite` | Run test suite `{"suite_name": "...", "firmware_path": "..."}` |
 | GET | `/hil/report/{session_id}` | Get regulatory evidence report for session |
 
-**Supported transports:** `mock` · `serial` · `jlink` · `can` · `openocd`
+**Supported transports:** `mock` / `serial` / `jlink` / `can` / `openocd`
 
 ---
 
@@ -298,7 +303,7 @@ scheduled:
 | GET | `/compliance/checklist/{domain}` | Generate compliance checklist |
 | POST | `/compliance/gap-assessment` | Assess gap `{"solution_name": "...", "domain": "..."}` |
 
-**Supported domains:** `medtech` · `automotive` · `railways` · `avionics` · `iot_ics`
+**Supported domains:** `medtech` / `automotive` / `railways` / `avionics` / `iot_ics`
 
 ---
 
@@ -316,14 +321,14 @@ scheduled:
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/webhook/n8n` | Receive n8n event → route to task queue |
+| POST | `/webhook/n8n` | Receive n8n event — route to task queue |
 | POST | `/webhook/teams` | Receive Teams approval callbacks |
 | POST | `/webhook/slack` | Receive Slack button click callbacks |
 
 **n8n payload:**
 ```json
 {
-  "event_type": "log_alert",     // log_alert | code_review | monitor | any_string
+  "event_type": "log_alert",
   "payload": {"log_entry": "..."},
   "source": "pagerduty"
 }
@@ -350,49 +355,10 @@ Set `N8N_WEBHOOK_SECRET` for HMAC validation (`X-SAGE-Signature` header).
 | Method | Path | Description |
 |---|---|---|
 | POST | `/temporal/workflow/start` | Start durable workflow (LangGraph fallback) |
-| GET | `/temporal/workflow/status/{id}` | Get workflow status |
+| GET | `/temporal/workflow/status/{workflow_id}` | Get workflow status |
 | GET | `/temporal/workflow/list` | List all tracked runs |
 
 **Environment:** `TEMPORAL_HOST` (default: `localhost:7233`), `TEMPORAL_NAMESPACE`
-
----
-
-## Multi-Tenant
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/tenant/context` | Show resolved tenant for current request |
-
-Add `X-SAGE-Tenant: <team_name>` header to any request to scope it to a team.
-
----
-
-## Developer (GitLab)
-
-| Method | Path | Description |
-|---|---|---|
-| POST | `/mr/create` | Create MR from issue |
-| POST | `/mr/review` | AI review of merge request |
-| GET | `/mr/open` | List open MRs |
-| GET | `/mr/pipeline` | Pipeline status |
-
----
-
-## Monitor
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/monitor/status` | Monitor agent status |
-
----
-
-## Planner / Improvements
-
-| Method | Path | Description |
-|---|---|---|
-| POST | `/feedback/feature-request` | Log improvement idea |
-| GET | `/feedback/feature-requests` | List improvement requests |
-| POST | `/feedback/feature-requests/{id}/plan` | Generate AI plan for a request |
 
 ---
 
@@ -406,8 +372,7 @@ End-to-end product build pipeline — from plain-language description to working
 | GET | `/build/status/{run_id}` | Get build run status, phase, and progress |
 | POST | `/build/approve/{run_id}` | Approve or reject a plan or build at a HITL gate |
 | GET | `/build/runs` | List all build runs |
-| GET | `/build/domains` | List all 13 supported domain rules |
-| GET | `/build/router/stats` | Adaptive router performance — per-task-type agent scores and observation counts |
+| GET | `/build/roles` | List workforce registry roles and agent teams |
 
 **`POST /build/start` body:**
 ```json
@@ -427,54 +392,8 @@ End-to-end product build pipeline — from plain-language description to working
 | `solution_name` | Yes | — | Solution name for YAML generation |
 | `repo_url` | No | — | Git repo to clone or work in |
 | `workspace_dir` | No | auto | Local directory for build artifacts |
-| `critic_threshold` | No | `0.7` | Minimum critic score to pass review (0.0–1.0) |
+| `critic_threshold` | No | `0.7` | Minimum critic score to pass review (0.0-1.0) |
 | `hitl_level` | No | `"standard"` | `"minimal"` / `"standard"` / `"strict"` |
-
-**Returns:** `{"run_id": "...", "status": "planning"}`
-
-**Domain detection:** The orchestrator automatically detects the product domain from the description using keyword matching against `DOMAIN_RULES`. Each domain injects required task types, compliance standards, HITL overrides, and extra acceptance criteria into the build plan. No manual domain selection needed.
-
-**`POST /build/approve/{run_id}` body:**
-```json
-{"approved": true, "feedback": "Looks good, proceed with implementation"}
-```
-
-**`GET /build/status/{run_id}` response:**
-```json
-{
-  "run_id": "...",
-  "status": "awaiting_approval",
-  "phase": "plan_review",
-  "progress": 0.25,
-  "plan": { "components": [...], "agents": [...] },
-  "critic_scores": { "plan": 0.82, "code": null, "integration": null },
-  "detected_domain": "saas_product",
-  "router_stats": { "BACKEND": {"best_agent": "developer", "score": 0.87} }
-}
-```
-
-**`GET /build/domains` response:**
-```json
-{
-  "domains": [
-    {"id": "medical_device", "keywords": ["medical", "clinical", ...], "required_tasks": ["SAFETY", "COMPLIANCE", ...], "compliance": ["IEC 62304", "ISO 13485", ...]},
-    ...
-  ]
-}
-```
-
-**`GET /build/router/stats` response:**
-```json
-{
-  "task_scores": {
-    "BACKEND": {"developer": 0.87, "devops_engineer": 0.62},
-    "SAFETY": {"safety_engineer": 0.91}
-  },
-  "observation_counts": {"BACKEND": 12, "SAFETY": 5},
-  "learning_rate": 0.3,
-  "min_observations": 3
-}
-```
 
 **HITL levels:**
 
@@ -484,7 +403,112 @@ End-to-end product build pipeline — from plain-language description to working
 | `standard` | Plan review + final build | Default — balanced oversight |
 | `strict` | Plan review + per-component code review + final build | Regulated industries |
 
-**Supported domains (13):** `medical_device` · `automotive` · `avionics` · `robotics` · `iot` · `fintech` · `hardware_generic` · `ml_ai` · `saas_product` · `consumer_app` · `enterprise` · `ecommerce` · `healthcare_software` · `edtech`
+**Supported domains (13+):** `medical_device` / `automotive` / `avionics` / `robotics` / `iot` / `fintech` / `hardware_generic` / `ml_ai` / `saas_product` / `consumer_app` / `enterprise` / `ecommerce` / `healthcare_software` / `edtech`
+
+---
+
+## Developer (GitLab/GitHub)
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/mr/create` | Create MR from issue |
+| POST | `/mr/review` | AI review of merge request |
+| GET | `/mr/open` | List open MRs |
+| GET | `/mr/pipeline` | Pipeline status |
+
+---
+
+## Monitor
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/monitor/status` | Monitor agent status and polling threads |
+
+---
+
+## Planner / Improvements
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/feedback/feature-request` | Log improvement idea |
+| GET | `/feedback/feature-requests` | List improvement requests |
+| POST | `/feedback/feature-requests/{req_id}/plan` | Generate AI plan for a request |
+| PATCH | `/feedback/feature-requests/{req_id}` | Update request status (approve/reject/archive) |
+
+---
+
+## Organization (Org Graph)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/org` | Get org configuration (solutions, channels, routes) |
+| PUT | `/org` | Update full org configuration |
+| POST | `/org/reload` | Reload org config from disk |
+| POST | `/org/channels` | Create a knowledge channel |
+| DELETE | `/org/channels/{name}` | Delete a knowledge channel |
+| POST | `/org/solutions` | Register a solution in the org |
+| DELETE | `/org/solutions/{name}` | Remove a solution from the org |
+| POST | `/org/routes` | Add a task routing rule |
+| DELETE | `/org/routes` | Remove a task routing rule |
+
+---
+
+## Composio Integration
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/integrations/composio/status` | Composio connection status |
+| POST | `/integrations/composio/connect` | Connect to Composio `{"api_key": "..."}` |
+| GET | `/integrations/composio/tools` | List available Composio tools |
+
+---
+
+## Authentication & Access Control
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/auth/me` | Current authenticated user info |
+| POST | `/auth/api-keys` | Create an API key |
+| GET | `/auth/api-keys` | List API keys |
+| DELETE | `/auth/api-keys/{key_id}` | Revoke an API key |
+| GET | `/auth/roles` | List RBAC roles |
+| POST | `/auth/roles` | Create/update RBAC role |
+
+---
+
+## Cost Tracking
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/costs/summary` | Token usage and cost summary |
+| GET | `/costs/daily` | Daily cost breakdown |
+| POST | `/costs/budget` | Set budget limits per solution |
+
+---
+
+## Multi-Tenant
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/tenant/context` | Show resolved tenant for current request |
+
+Add `X-SAGE-Tenant: <team_name>` header to any request to scope it to a team.
+
+---
+
+## Sandbox
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/sandbox/status` | OpenShell sandbox availability and config |
+
+---
+
+## SSE Streaming
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/logs/stream` | Real-time server-sent events for backend log output |
 
 ---
 
@@ -492,5 +516,5 @@ End-to-end product build pipeline — from plain-language description to working
 
 - All write endpoints that affect shared state go through the **Proposal Store** and require `POST /approve/{trace_id}` before executing.
 - Add `X-SAGE-Tenant` header to scope any request to a team/tenant.
-- SSE streaming endpoints (`/analyze/stream`, `/agent/stream`) return `text/event-stream`.
+- SSE streaming endpoints (`/analyze/stream`, `/agent/stream`, `/logs/stream`) return `text/event-stream`.
 - The SWE agent and HIL runner each return a `run_id` for async tracking via `/workflow/status/{run_id}`.

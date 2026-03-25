@@ -26,9 +26,12 @@ make venv
 
 # Alternative: manual setup
 python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Linux/Mac
+source .venv/bin/activate       # Linux/Mac
+# .venv\Scripts\activate        # Windows
 pip install -r requirements.txt
+
+# Install web UI dependencies
+make install-ui
 ```
 
 For machines with under 8 GB RAM:
@@ -85,6 +88,63 @@ Then set `provider: "claude"` in `config/config.yaml`.
 
 ---
 
+## Make Targets Reference
+
+### Setup
+
+| Target | Description |
+|---|---|
+| `make venv` | Create `.venv` and install all dependencies |
+| `make venv-minimal` | Create `.venv` with minimal deps (low-RAM machines) |
+| `make install-ui` | Install Node.js dependencies for the web UI |
+| `make install` | Install Python deps into current active env |
+| `make install-dev` | Install Python deps + pytest/coverage tools |
+
+### Run
+
+| Target | Description |
+|---|---|
+| `make run [PROJECT=starter]` | Start FastAPI backend on `:8000` |
+| `make ui` | Start React web UI on `:5173` |
+| `make cli [PROJECT=...]` | Interactive CLI mode |
+| `make monitor [PROJECT=...]` | Background monitor daemon |
+| `make demo [PROJECT=...]` | Demo mode |
+
+### Test
+
+| Target | Description |
+|---|---|
+| `make test` | Framework unit tests |
+| `make test-api` | API endpoint tests only |
+| `make test-all` | Framework + medtech solution tests |
+| `make test-solution PROJECT=X` | Any solution's tests |
+| `make test-medtech` | medtech solution tests |
+| `make test-medtech-team` | medtech_team solution tests |
+| `make test-meditation-app` | meditation_app solution tests |
+| `make test-four-in-a-line` | four_in_a_line solution tests |
+| `make test-mcp` | MCP server tests (needs fastmcp) |
+| `make test-integration` | Integration tests (needs live services) |
+| `make test-compliance` | IQ/OQ/PQ validation protocol |
+
+### Deploy
+
+| Target | Description |
+|---|---|
+| `make docker-up [PROJECT=...]` | Start via Docker Compose |
+| `make docker-up-d [PROJECT=...]` | Start via Docker Compose (detached) |
+| `make docker-down` | Stop Docker Compose |
+
+### Utilities
+
+| Target | Description |
+|---|---|
+| `make list-solutions` | List all solution directories |
+| `make doctor` | Run health checks |
+| `make clean` | Remove `__pycache__` and `.pyc` files |
+| `make help` | Show all available targets |
+
+---
+
 ## Optional Integrations
 
 The sections below are only needed if you want to connect SAGE to external systems. None of them are required to run the framework.
@@ -101,7 +161,7 @@ cp .env.example .env
 
 Used for: merge request creation, code review, pipeline status.
 
-1. Go to GitLab → Profile → Access Tokens
+1. Go to GitLab -> Profile -> Access Tokens
 2. Create a token with scopes: `api`, `read_user`, `read_repository`
 3. Add to `.env`:
 
@@ -151,11 +211,11 @@ In your n8n workflow, add a Header Auth credential with `X-SAGE-Signature` set t
 
 Used for: reading channel messages, sending notifications and approval requests.
 
-1. Go to [Azure Portal](https://portal.azure.com) → Azure Active Directory → App registrations → New registration
+1. Go to [Azure Portal](https://portal.azure.com) -> Azure Active Directory -> App registrations -> New registration
 2. Note the **Application (client) ID** and **Directory (tenant) ID**
 3. Create a client secret under Certificates & secrets
 4. Add Microsoft Graph API permissions: `ChannelMessage.Read.All`, `Team.ReadBasic.All`, `Channel.ReadBasic.All` (Application permissions) and grant admin consent
-5. For sending messages: in Teams, go to a channel → ... → Connectors → Incoming Webhook → Configure
+5. For sending messages: in Teams, go to a channel -> ... -> Connectors -> Incoming Webhook -> Configure
 
 ```env
 TEAMS_TENANT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -174,7 +234,7 @@ Used for: polling error dashboards and routing anomalies to the analyst agent.
 
 1. Log in to Metabase as admin
 2. Create a service account with view access to your error dashboard
-3. Find the question ID from the URL when viewing it: `/question/123` → ID is `123`
+3. Find the question ID from the URL when viewing it: `/question/123` -> ID is `123`
 
 ```env
 METABASE_URL=https://metabase.yourcompany.com
@@ -189,8 +249,8 @@ METABASE_ERROR_QUESTION_ID=123
 
 Used for: creating and reading incidents in SpiraTeam / SpiraTest.
 
-1. Log in to SpiraTeam → My Profile → My API Keys → Add New Key
-2. Find your project ID from Administration → Projects
+1. Log in to SpiraTeam -> My Profile -> My API Keys -> Add New Key
+2. Find your project ID from Administration -> Projects
 
 ```env
 SPIRA_URL=https://spira.yourcompany.com
@@ -234,6 +294,21 @@ SERIAL_PORT=COM3         # Serial port for UART output (Windows example)
 
 ---
 
+### Composio
+
+Used for: multi-tenant tool integrations (500+ pre-built tools with per-user OAuth).
+
+Connect via the API:
+```bash
+curl -X POST http://localhost:8000/integrations/composio/connect \
+  -H "Content-Type: application/json" \
+  -d '{"api_key": "your-composio-key"}'
+```
+
+Check status: `GET /integrations/composio/status`
+
+---
+
 ## Environment Variable Reference
 
 | Variable | Service | Required for |
@@ -266,6 +341,7 @@ SERIAL_PORT=COM3         # Serial port for UART output (Windows example)
 | `LLM_PROVIDER` | Framework | Override config.yaml provider at runtime |
 | `SAGE_PROJECT` | Framework | Active project (overrides --project flag) |
 | `SAGE_SOLUTIONS_DIR` | Framework | Path to solutions outside the repo root |
+| `SAGE_MINIMAL` | Framework | Set to `1` for minimal mode (no ChromaDB) |
 
 ---
 
@@ -287,7 +363,7 @@ make venv    # Recreate the virtual environment from scratch
 **"No module named chromadb"**
 ```bash
 # If you used make venv-minimal and want full vector search:
-.venv/Scripts/pip install chromadb sentence-transformers
+.venv/bin/pip install chromadb sentence-transformers
 ```
 
 **Web UI shows blank or error on a page**
