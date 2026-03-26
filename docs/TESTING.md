@@ -96,7 +96,7 @@ Formal IQ/OQ/PQ tests per ISO 13485 Section 7.5.6. These live in `solutions/medt
 
 The test suite is split between **framework tests** (in `tests/`) and **solution tests** (in `solutions/<name>/tests/`).
 
-### Framework Tests (`tests/`) — 53 test files
+### Framework Tests (`tests/`) — 55 test files
 
 ```
 tests/
@@ -110,8 +110,9 @@ tests/
 │   ├── test_payload_validator.py
 │   └── test_event_bus.py
 │
-├── system/                             # System E2E tests (58 tests)
-│   └── test_system_e2e.py
+├── system/                             # System E2E tests (106 tests)
+│   ├── test_system_e2e.py             # Core API lifecycle E2E (58 tests)
+│   └── test_agent_gym_e2e.py          # Agent Gym system tests (48 tests)
 │
 ├── test_llm_gateway.py                 # LLM Gateway unit tests
 ├── test_audit_logger.py                # AuditLogger unit tests
@@ -161,7 +162,8 @@ tests/
 ├── test_task_scheduler.py              # Task scheduler tests
 ├── test_undo_endpoint.py               # Proposal undo tests
 ├── test_wave_subagents.py              # Wave sub-agent tests
-└── test_worktree_manager.py            # Git worktree manager tests
+├── test_worktree_manager.py            # Git worktree manager tests
+└── test_skills_and_gym.py             # Skill marketplace + Agent Gym unit tests (61 tests)
 ```
 
 ### medtech Solution Tests (`solutions/medtech/tests/`) — 32 tests
@@ -621,6 +623,36 @@ All integration tests auto-skip when the required environment variables are not 
 | E2E-009 | Teams error triggers analyst | Registered callback | _on_event("teams_error", payload) | analyst.analyze_log() called with error content |
 | E2E-010 | Metabase error triggers notification | Registered callback | _on_event("metabase_error", payload) | Teams alert function called |
 | E2E-011 | GitLab issue triggers MR creation | Registered callback | _on_event("gitlab_issue", payload) | developer.create_mr_from_issue() called with issue_iid |
+
+### Agent Gym System Tests (`tests/system/test_agent_gym_e2e.py`)
+
+48 tests across 9 test classes covering the full Agent Gym training system.
+
+| Class | Tests | Coverage |
+|---|---|---|
+| `TestGymAPIEndpoints` | 10 | All gym HTTP endpoints via TestClient |
+| `TestCatalogAPIEndpoints` | 5 | Exercise catalog HTTP endpoints |
+| `TestExerciseCatalogIntegration` | 10 | Seed loading, domain coverage, difficulty, tag search |
+| `TestGlicko2RatingSystem` | 7 | Rating updates, RD shrinkage, confidence intervals, clamping |
+| `TestSpacedRepetition` | 4 | Failed exercise scheduling, interval progression, clearing |
+| `TestCurriculumSystem` | 4 | Auto-advance, demotion, minimum session gates |
+| `TestSQLitePersistence` | 3 | Ratings and sessions survive across instances |
+| `TestFullTrainingLoop` | 3 | Complete play→grade→critique→reflect→compound pipeline |
+| `TestVariantAxes` | 2 | Domain variant axis coverage and types |
+
+### Skill Marketplace + Gym Unit Tests (`tests/test_skills_and_gym.py`)
+
+61 tests across 7 test classes.
+
+| Class | Tests | Coverage |
+|---|---|---|
+| `TestSkillLoader` | 7 | YAML loading, role/runner indexing, hot-reload |
+| `TestSkillVisibility` | 5 | Public/private/disabled tier enforcement |
+| `TestSkillPromptBuilding` | 3 | System prompt injection for agent roles |
+| `TestSkillAPIEndpoints` | 7 | Skills HTTP endpoints via TestClient |
+| `TestAgentGym` | 16 | Glicko-2 ratings, SQLite persistence, spaced repetition, curriculum |
+| `TestExerciseCatalog` | 10 | Seed exercises, domain coverage, deterministic IDs |
+| `TestAgentGymAPIEndpoints` | 13 | Gym HTTP endpoints via TestClient |
 
 ---
 
