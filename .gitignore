@@ -53,6 +53,9 @@ logs/
 # .sage_worktrees/ — per-proposal git worktree isolation (auto-created, never committed)
 .sage_worktrees/
 
+# Agent Gym runtime DB (auto-created, never committed)
+.gym_data.db
+
 # IDE
 .vscode/
 .idea/

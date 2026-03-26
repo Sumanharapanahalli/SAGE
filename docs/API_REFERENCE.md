@@ -2,7 +2,7 @@
 
 All endpoints are served at `http://localhost:8000`. Every response is JSON.
 
-**Total endpoints: 136** across 22 categories.
+**Total endpoints: 155** across 25 categories.
 
 ---
 
@@ -509,6 +509,95 @@ Add `X-SAGE-Tenant: <team_name>` header to any request to scope it to a team.
 | Method | Path | Description |
 |---|---|---|
 | GET | `/logs/stream` | Real-time server-sent events for backend log output |
+
+---
+
+## Agent Gym — Self-Play Skill Training
+
+MuZero-inspired training engine with Glicko-2 ratings, spaced repetition, and adaptive exercise selection. Agents improve through practice loops: play → grade → critique → reflect → compound.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/gym/train` | Start a single training session for one agent role |
+| POST | `/gym/train/batch` | Parallel training across multiple roles |
+| GET | `/gym/session/{session_id}` | Get training session details (memory + SQLite fallback) |
+| GET | `/gym/ratings` | Leaderboard — all agent roles ranked by Glicko-2 rating |
+| GET | `/gym/ratings/{role}` | Ratings breakdown for a specific agent role |
+| GET | `/gym/history` | Recent training sessions (default limit: 50) |
+| GET | `/gym/analytics` | Comprehensive analytics: score trends, weakness map, improvement rate |
+| GET | `/gym/curriculum/{role}` | Curriculum status — current difficulty, progress, spaced repetition queue |
+
+**`POST /gym/train` body:**
+```json
+{
+  "role": "firmware_engineer",
+  "difficulty": "intermediate",
+  "enable_peer_review": false
+}
+```
+
+**`POST /gym/train/batch` body:**
+```json
+{
+  "roles": ["firmware_engineer", "developer", "data_scientist"],
+  "difficulty": "intermediate",
+  "sessions_per_role": 3
+}
+```
+
+**`GET /gym/analytics` query params:**
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `role` | No | — | Filter analytics to a specific role |
+| `skill` | No | — | Filter to a specific skill name |
+
+**Glicko-2 rating fields:** `rating` (skill estimate), `rating_deviation` (confidence — lower = more certain), `volatility` (consistency of performance), `confidence_interval` (95% CI bounds).
+
+---
+
+## Exercise Catalog
+
+Scalable exercise catalog: ~160 seed exercises across 8 domains, expandable to 10,000+ via LLM variant generation along domain-specific axes.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/gym/catalog` | Catalog stats — total exercises, per-domain counts, variant axes |
+| GET | `/gym/catalog/{domain}` | List exercises for a domain, optionally filtered by difficulty |
+| POST | `/gym/catalog/generate` | Generate LLM-powered exercise variants from seed exercises |
+
+**`GET /gym/catalog/{domain}` query params:**
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `difficulty` | No | — | Filter by difficulty level: `beginner`, `intermediate`, `advanced`, `expert` |
+
+**`POST /gym/catalog/generate` body:**
+```json
+{
+  "domain": "openfw",
+  "count": 100,
+  "difficulty": "intermediate"
+}
+```
+
+**Supported domains:** `openfw`, `openswe`, `openml`, `openeda`, `opensim`, `opendoc`, `opendesign`, `openstrategy`
+
+---
+
+## Skills Marketplace
+
+Modular YAML-based skill registry with visibility tiers (public/private/disabled) and hot-reload.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/skills` | List all loaded skills with stats |
+| GET | `/skills/{name}` | Get a specific skill by name |
+| GET | `/skills/role/{role}` | Skills available to an agent role |
+| GET | `/skills/runner/{runner}` | Skills for a runner family |
+| GET | `/skills/search` | Search skills by keyword (`?q=embedded`) |
+| POST | `/skills/visibility` | Change skill visibility tier (framework control — immediate) |
+| POST | `/skills/reload` | Hot-reload all skills from disk |
 
 ---
 

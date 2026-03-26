@@ -344,7 +344,7 @@ npm install -g @google/gemini-cli && gemini  # free Google login
 
 ## Slide 8 — What's New: SAGE 9 Features
 
-Nine production-ready features shipped in SAGE 9:
+Ten production-ready features shipped in SAGE 9:
 
 | Feature | What it does |
 |---|---|
@@ -357,6 +357,7 @@ Nine production-ready features shipped in SAGE 9:
 | **F — Git Worktrees** | Isolated worktree per `code_diff` proposal — concurrent proposals, no conflicts |
 | **K — Knowledge Sync** | Bulk-import docs/code into the vector store via `POST /knowledge/sync` |
 | **G — Wave Execution** | Parallel subtask waves — queue one task, it fans out to many |
+| **H — Agent Gym** | Self-play training with Glicko-2 ratings, spaced repetition, 10,000+ exercises |
 
 **Demo:** Open Dashboard → Active Agents panel → see live tasks in flight.
 
@@ -488,3 +489,44 @@ curl -X POST http://localhost:8000/build/start \
 | **Contextual chat** | Persistent chat panel in every page — knows your current page and live data |
 | **Onboarding tour** | 6-stop spotlight tour for new solutions — auto-triggers on first load |
 | **LLM heartbeat** | Amber disconnection popup if LLM provider drops — shows reconnect options |
+
+---
+
+## Slide — Agent Gym: Self-Play Skill Training
+
+**MuZero-inspired training engine — agents improve through practice, not just instruction.**
+
+```
+PLAY → Agent attempts exercise from its runner's skill set
+GRADE → Runner grades the attempt (domain-specific verification)
+CRITIQUE → N critics (Gemini, Claude, Ollama, ...) score independently
+REFLECT → Agent reviews output vs feedback, generates improvement plan
+COMPOUND → Learnings stored in vector memory for next attempt
+```
+
+| Feature | Detail |
+|---|---|
+| **Glicko-2 ratings** | Rating + confidence (RD) + volatility — not flat ELO. Tracks *how sure* the system is about each agent's skill level |
+| **Spaced repetition** | Failed exercises return at intervals [1, 3, 7, 15, 30] sessions — weaknesses don't get buried |
+| **3-tier exercise selection** | Tier 1: spaced rep due → Tier 2: optimal zone (40-70% success) → Tier 3: unseen |
+| **Curriculum auto-progression** | Advance at >70% win rate (min 3 sessions), demote at <25% (min 5 sessions) |
+| **N-provider multi-critic** | Any number of LLM providers review in parallel — disagreements flagged |
+| **Peer review** | Cross-role critique: firmware reviews security, QA reviews edge cases |
+| **Batch training** | `POST /gym/train/batch` — parallel training across multiple roles |
+
+---
+
+## Slide — Exercise Catalog: 10,000+ Training Exercises
+
+**Template-based generation: seed exercises × variant axes → LLM-generated variants.**
+
+| Domain | Seed Count | Variant Axes | Potential Exercises |
+|---|---|---|---|
+| **Firmware** (openfw) | 65 | platform, rtos, peripheral, optimization, safety, concurrency, power, protocol, debugging, testing | 65 × 10 × 5+ = 3,250+ |
+| **Software** (openswe) | 45 | language, framework, scale, pattern, infra, testing, api_style, data_store, auth, deployment | 45 × 10 × 5+ = 2,250+ |
+| **ML/AI** (openml) | 15 | framework, data_type, task, scale, deployment | 15 × 5 × 5+ = 375+ |
+| **PCB** (openeda) | 15 | complexity, standard, component | 15 × 3 × 5+ = 225+ |
+| **Simulation** (opensim) | 12 | domain, complexity, tool | 12 × 3 × 5+ = 180+ |
+| **Docs/Design/Strategy** | 30 | Multiple per domain | 30 × 3 × 5+ = 450+ |
+
+**API:** `GET /gym/catalog` (stats), `GET /gym/catalog/{domain}` (browse), `POST /gym/catalog/generate` (expand via LLM)
