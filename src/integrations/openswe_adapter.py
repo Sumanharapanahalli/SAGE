@@ -47,7 +47,7 @@ class OpenSWEAdapter(BaseRunner):
                 run_id=raw.get("run_id", run_id),
                 status=raw.get("status", "completed"),
                 tier=raw.get("tier", "direct"),
-                output=raw.get("code", "") or raw.get("output", ""),
+                output=raw.get("code", "") or str(raw.get("output", "")),
                 files_changed=raw.get("files_changed", []),
                 metrics={"raw_tier": raw.get("tier", "unknown")},
             )
@@ -130,92 +130,95 @@ class OpenSWEAdapter(BaseRunner):
     # ── Exercises ───────────────────────────────────────────────────────
 
     def get_exercises(self, difficulty="intermediate"):
-        exercises = {
+        """Load exercises from central catalog (75 openswe seeds), fall back to hardcoded."""
+        catalog = self._load_catalog_exercises(difficulty)
+        if catalog:
+            return catalog
+        fallback = {
             "beginner": [
-                Exercise(
-                    id="swe-b01", role="developer", task_type="BACKEND",
-                    difficulty="beginner",
-                    description="Create a REST API endpoint that returns a greeting with the user's name",
-                    acceptance_criteria=["Endpoint returns 200", "Response includes name", "Input validation present"],
-                    expected_artifacts=["app.py", "test_app.py"],
-                    tags=["api", "python"],
-                ),
-                Exercise(
-                    id="swe-b02", role="developer", task_type="FRONTEND",
-                    difficulty="beginner",
-                    description="Build a React component that displays a list of items with a search filter",
-                    acceptance_criteria=["Component renders", "Filter works", "Tests pass"],
-                    expected_artifacts=["ItemList.tsx", "ItemList.test.tsx"],
-                    tags=["react", "typescript"],
-                ),
+                Exercise(id="swe-b01", role="developer", task_type="BACKEND",
+                         difficulty="beginner",
+                         description="Create a REST API endpoint that returns a greeting with the user's name",
+                         acceptance_criteria=["Endpoint returns 200", "Response includes name", "Input validation"],
+                         expected_artifacts=["app.py", "test_app.py"], tags=["api", "python"]),
             ],
             "intermediate": [
-                Exercise(
-                    id="swe-i01", role="developer", task_type="BACKEND",
-                    difficulty="intermediate",
-                    description="Implement a rate limiter middleware with sliding window algorithm",
-                    acceptance_criteria=["Rate limits enforced", "Sliding window accurate", "Thread-safe", "Tests pass"],
-                    expected_artifacts=["rate_limiter.py", "test_rate_limiter.py"],
-                    tags=["middleware", "python"],
-                ),
+                Exercise(id="swe-i01", role="developer", task_type="BACKEND",
+                         difficulty="intermediate",
+                         description="Implement a rate limiter middleware with sliding window algorithm",
+                         acceptance_criteria=["Rate limits enforced", "Sliding window accurate", "Thread-safe"],
+                         expected_artifacts=["rate_limiter.py", "test_rate_limiter.py"], tags=["middleware", "python"]),
             ],
             "advanced": [
-                Exercise(
-                    id="swe-a01", role="developer", task_type="BACKEND",
-                    difficulty="advanced",
-                    description="Build a distributed task queue with priority scheduling and dead letter handling",
-                    acceptance_criteria=["Priority ordering correct", "Dead letter after 3 retries", "Concurrent safe", "Integration tests pass"],
-                    expected_artifacts=["task_queue.py", "worker.py", "test_task_queue.py"],
-                    tags=["distributed", "python"],
-                ),
+                Exercise(id="swe-a01", role="developer", task_type="BACKEND",
+                         difficulty="advanced",
+                         description="Build a distributed task queue with priority scheduling and dead letter handling",
+                         acceptance_criteria=["Priority ordering", "Dead letter after 3 retries", "Concurrent safe"],
+                         expected_artifacts=["task_queue.py", "worker.py"], tags=["distributed", "python"]),
             ],
         }
-        return exercises.get(difficulty, exercises["intermediate"])
+        return fallback.get(difficulty, fallback["intermediate"])
 
     def grade_exercise(self, exercise, result):
+        """Structural checks (40%) + LLM-as-judge (60%)."""
         score = 0.0
-        criteria_results = {}
+        criteria = {}
+        hints = []
 
-        # Check artifacts produced
-        expected = set(exercise.expected_artifacts)
-        produced = set(result.files_changed)
-        artifact_match = len(expected & produced) / max(len(expected), 1)
-        score += artifact_match * 40
-        criteria_results["artifacts_produced"] = artifact_match >= 0.5
-
-        # Check status
+        # Structural: execution success
         if result.status == "completed":
             score += 30
-            criteria_results["execution_success"] = True
+            criteria["execution_success"] = True
         else:
-            criteria_results["execution_success"] = False
+            criteria["execution_success"] = False
+            hints.append("Code must execute without errors")
 
-        # Check output quality
+        # Structural: output quality
         if result.output and len(result.output) > 50:
-            score += 15
-            criteria_results["has_output"] = True
+            score += 20
+            criteria["has_output"] = True
         else:
-            criteria_results["has_output"] = False
+            criteria["has_output"] = False
+            hints.append("Generate substantial code output")
 
-        # Check verification passed
-        if result.verification and result.verification.passed:
+        # Structural: code patterns (language-appropriate)
+        output_lower = (result.output or "").lower()
+        code_patterns = ["def ", "class ", "import ", "function ", "const ", "return ", "async "]
+        pattern_hits = sum(1 for p in code_patterns if p in output_lower)
+        if pattern_hits >= 2:
             score += 15
-            criteria_results["verification_passed"] = True
+            criteria["code_patterns"] = True
 
-        score = min(score, 100.0)
-        hints = []
-        if not criteria_results.get("artifacts_produced"):
-            hints.append(f"Expected artifacts: {exercise.expected_artifacts}")
-        if not criteria_results.get("has_output"):
-            hints.append("Generate more substantial code output")
+        # Structural: testing patterns
+        test_patterns = ["test", "assert", "expect", "describe", "it("]
+        test_hits = sum(1 for p in test_patterns if p in output_lower)
+        if test_hits >= 1:
+            score += 15
+            criteria["has_tests"] = True
+        else:
+            hints.append("Include unit tests")
 
-        return ExerciseScore(
-            exercise_id=exercise.id,
-            passed=score >= 60,
-            score=score,
-            criteria_results=criteria_results,
-            feedback="Good" if score >= 60 else "Needs improvement",
-            improvement_hints=hints,
+        # Structural: error handling
+        error_patterns = ["try", "except", "catch", "error", "raise", "throw"]
+        if any(p in output_lower for p in error_patterns):
+            score += 10
+            criteria["error_handling"] = True
+
+        # Verification bonus
+        if result.verification and result.verification.passed:
+            score += 10
+            criteria["verification_passed"] = True
+
+        return self._combined_grade(
+            exercise, result, min(score, 100.0), criteria, hints,
+            domain_context=(
+                "Grade as a senior software engineer. Check for:\n"
+                "- Clean architecture, SOLID principles, separation of concerns\n"
+                "- Proper error handling, input validation, edge cases\n"
+                "- Test coverage and test quality\n"
+                "- Security: no SQL injection, XSS, or OWASP Top 10 vulnerabilities\n"
+                "- Code readability and maintainability"
+            ),
         )
 
 

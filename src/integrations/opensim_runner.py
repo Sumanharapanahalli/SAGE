@@ -155,91 +155,92 @@ class OpenSimRunner(BaseRunner):
         return ["task_type", "circuit_type", "sim_tool", "frequency_range", "domain"]
 
     def get_exercises(self, difficulty="intermediate"):
-        exercises = {
+        """Load from central catalog (~45 opensim seeds), fall back to hardcoded."""
+        catalog = self._load_catalog_exercises(difficulty)
+        if catalog:
+            return catalog
+        fallback = {
             "beginner": [
-                Exercise(
-                    id="sim-b01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
-                    difficulty="beginner",
-                    description="Simulate an RC low-pass filter with cutoff at 1kHz using SPICE",
-                    acceptance_criteria=[
-                        "SPICE netlist is valid",
-                        "Simulation converges",
-                        "Waveform shows -3dB at 1kHz cutoff",
-                        "Includes .tran and .ac analysis",
-                    ],
-                    expected_artifacts=["rc_filter.spice", "testbench.spice"],
-                    tags=["spice", "analog", "filter"],
-                ),
+                Exercise(id="sim-b01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
+                         difficulty="beginner",
+                         description="Simulate an RC low-pass filter with cutoff at 1kHz using SPICE",
+                         acceptance_criteria=["SPICE netlist valid", "Simulation converges", "-3dB at 1kHz"],
+                         expected_artifacts=["rc_filter.spice"], tags=["spice", "analog"]),
             ],
             "intermediate": [
-                Exercise(
-                    id="sim-i01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
-                    difficulty="intermediate",
-                    description="Write Verilog for a synchronous FIFO (depth 16, width 8) with full/empty flags",
-                    acceptance_criteria=[
-                        "Verilog syntax valid",
-                        "Simulation converges with iverilog",
-                        "Testbench covers empty, full, wrap-around",
-                        "Timing constraints met at 100MHz",
-                    ],
-                    expected_artifacts=["fifo.v", "fifo_tb.v"],
-                    tags=["verilog", "digital", "fifo"],
-                ),
+                Exercise(id="sim-i01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
+                         difficulty="intermediate",
+                         description="Write Verilog for a synchronous FIFO (depth 16, width 8)",
+                         acceptance_criteria=["Verilog valid", "Testbench covers edge cases", "100MHz timing met"],
+                         expected_artifacts=["fifo.v", "fifo_tb.v"], tags=["verilog", "digital"]),
             ],
             "advanced": [
-                Exercise(
-                    id="sim-a01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
-                    difficulty="advanced",
-                    description="Design a PLL with 100MHz output from 25MHz reference and verify lock time",
-                    acceptance_criteria=[
-                        "SPICE model of PLL loop",
-                        "Simulation converges",
-                        "Lock time measured from waveform",
-                        "Phase noise analysis included",
-                    ],
-                    expected_artifacts=["pll.spice", "pll_tb.spice", "analysis.txt"],
-                    tags=["pll", "analog", "mixed-signal"],
-                ),
+                Exercise(id="sim-a01", role="hardware_sim_engineer", task_type="HARDWARE_SIM",
+                         difficulty="advanced",
+                         description="Design a PLL with 100MHz output from 25MHz reference",
+                         acceptance_criteria=["PLL model complete", "Lock time measured", "Phase noise analysis"],
+                         expected_artifacts=["pll.spice", "analysis.txt"], tags=["pll", "mixed-signal"]),
             ],
         }
-        return exercises.get(difficulty, exercises["intermediate"])
+        return fallback.get(difficulty, fallback["intermediate"])
 
     def grade_exercise(self, exercise, result):
+        """Structural checks (40%) + LLM-as-judge (60%)."""
         score = 0.0
-        criteria_results = {}
+        criteria = {}
         hints = []
 
         if result.status == "completed":
             score += 25
-            criteria_results["execution_success"] = True
+            criteria["execution_success"] = True
 
-        expected = set(exercise.expected_artifacts)
-        produced = set(result.files_changed)
-        match = len(expected & produced) / max(len(expected), 1)
-        score += match * 25
-        criteria_results["artifacts_match"] = match >= 0.5
-
+        # Convergence check
         metrics = result.metrics or {}
         if metrics.get("converged") is True:
-            score += 25
-            criteria_results["sim_converged"] = True
+            score += 20
+            criteria["sim_converged"] = True
         else:
             hints.append("Ensure simulation converges — check parameters")
 
+        # Simulation keywords
         output_lower = (result.output or "").lower()
-        sim_kws = ["spice", "verilog", "module", "testbench", ".tran", ".ac", "wire", "reg"]
-        if sum(1 for k in sim_kws if k in output_lower) >= 2:
-            score += 15
-
-        if result.verification and result.verification.passed:
+        sim_kws = ["spice", "verilog", "module", "testbench", ".tran", ".ac", "wire",
+                    "reg", "assign", "always", "initial", "netlist", "subckt"]
+        kw_hits = sum(1 for k in sim_kws if k in output_lower)
+        if kw_hits >= 3:
+            score += 20
+            criteria["sim_patterns"] = True
+        elif kw_hits >= 1:
             score += 10
 
-        score = min(score, 100.0)
-        return ExerciseScore(
-            exercise_id=exercise.id, passed=score >= 50, score=score,
-            criteria_results=criteria_results,
-            feedback="Good simulation work" if score >= 70 else "Review simulation practices",
-            improvement_hints=hints,
+        # Waveform / measurement patterns
+        measure_kws = ["waveform", "frequency", "phase", "amplitude", "delay",
+                       "rise time", "overshoot", "bandwidth"]
+        if sum(1 for k in measure_kws if k in output_lower) >= 1:
+            score += 10
+            criteria["has_measurements"] = True
+
+        # Testbench present
+        if "testbench" in output_lower or "_tb" in output_lower:
+            score += 10
+            criteria["has_testbench"] = True
+        else:
+            hints.append("Include a testbench for verification")
+
+        if result.verification and result.verification.passed:
+            score += 15
+            criteria["verification_passed"] = True
+
+        return self._combined_grade(
+            exercise, result, min(score, 100.0), criteria, hints,
+            domain_context=(
+                "Grade as a senior HW simulation engineer. Check for:\n"
+                "- Correct SPICE syntax or synthesizable Verilog\n"
+                "- Simulation convergence and numerical stability\n"
+                "- Proper testbench with stimulus and assertions\n"
+                "- Timing analysis, corner cases, and measurement extraction\n"
+                "- Signal integrity awareness (crosstalk, noise margins)"
+            ),
         )
 
 

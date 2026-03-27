@@ -13,6 +13,8 @@ roles:
   - system_tester
   - devops_engineer
   - localization_engineer
+  - data_engineer
+  - agentic_engineer
 
 tools:
   - python

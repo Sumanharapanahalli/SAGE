@@ -166,108 +166,103 @@ class OpenStrategyRunner(BaseRunner):
         return ["task_type", "industry", "stage", "framework_type", "domain"]
 
     def get_exercises(self, difficulty="intermediate"):
-        exercises = {
+        """Load from central catalog (~45 openstrategy seeds), fall back to hardcoded."""
+        catalog = self._load_catalog_exercises(difficulty)
+        if catalog:
+            return catalog
+        fallback = {
             "beginner": [
-                Exercise(
-                    id="strat-b01", role="product_manager", task_type="PRODUCT_STRATEGY",
-                    difficulty="beginner",
-                    description="Prioritize 5 features for a SaaS dashboard using RICE scoring",
-                    acceptance_criteria=[
-                        "Uses RICE framework (Reach, Impact, Confidence, Effort)",
-                        "Has actionable priority ranking",
-                        "Each feature scored with rationale",
-                        "Final recommendation with reasoning",
-                    ],
-                    expected_artifacts=["prioritization.md"],
-                    tags=["rice", "prioritization", "saas"],
-                ),
-                Exercise(
-                    id="strat-b02", role="marketing_strategist", task_type="MARKETING",
-                    difficulty="beginner",
-                    description="Create a competitive analysis for a developer tools startup",
-                    acceptance_criteria=[
-                        "Identifies at least 3 competitors",
-                        "Uses structured comparison (features, pricing, positioning)",
-                        "Has actionable differentiation recommendations",
-                        "Includes market positioning map",
-                    ],
-                    expected_artifacts=["competitive_analysis.md"],
-                    tags=["competitive", "devtools"],
-                ),
+                Exercise(id="strat-b01", role="product_manager", task_type="PRODUCT_STRATEGY",
+                         difficulty="beginner",
+                         description="Prioritize 5 features for a SaaS dashboard using RICE scoring",
+                         acceptance_criteria=["RICE framework used", "Priority ranking", "Rationale per feature"],
+                         expected_artifacts=["prioritization.md"], tags=["rice", "prioritization"]),
             ],
             "intermediate": [
-                Exercise(
-                    id="strat-i01", role="product_manager", task_type="PRODUCT_STRATEGY",
-                    difficulty="intermediate",
-                    description="Write a PRD for a mobile app notification system with personalization",
-                    acceptance_criteria=[
-                        "Problem statement with user data",
-                        "Success metrics (OKRs)",
-                        "User stories with acceptance criteria",
-                        "Technical constraints section",
-                        "Launch plan with phases",
-                    ],
-                    expected_artifacts=["prd.md", "user_stories.md"],
-                    tags=["prd", "mobile", "notifications"],
-                ),
+                Exercise(id="strat-i01", role="product_manager", task_type="PRODUCT_STRATEGY",
+                         difficulty="intermediate",
+                         description="Write a PRD for a mobile app notification system with personalization",
+                         acceptance_criteria=["Problem statement", "OKRs", "User stories", "Launch plan"],
+                         expected_artifacts=["prd.md"], tags=["prd", "mobile"]),
             ],
             "advanced": [
-                Exercise(
-                    id="strat-a01", role="product_manager", task_type="PRODUCT_STRATEGY",
-                    difficulty="advanced",
-                    description="Create a complete GTM strategy for launching an AI developer tool in enterprise market",
-                    acceptance_criteria=[
-                        "TAM/SAM/SOM analysis",
-                        "Buyer persona definitions",
-                        "Pricing strategy with tiers",
-                        "Sales motion (PLG vs enterprise)",
-                        "12-month launch roadmap",
-                        "Success metrics and milestones",
-                    ],
-                    expected_artifacts=["gtm_strategy.md", "pricing.md", "roadmap.md"],
-                    tags=["gtm", "enterprise", "ai", "advanced"],
-                ),
+                Exercise(id="strat-a01", role="product_manager", task_type="PRODUCT_STRATEGY",
+                         difficulty="advanced",
+                         description="Create a GTM strategy for an AI developer tool in enterprise market",
+                         acceptance_criteria=["TAM/SAM/SOM", "Buyer personas", "Pricing tiers", "12-month roadmap"],
+                         expected_artifacts=["gtm_strategy.md", "roadmap.md"], tags=["gtm", "enterprise"]),
             ],
         }
-        return exercises.get(difficulty, exercises["intermediate"])
+        return fallback.get(difficulty, fallback["intermediate"])
 
     def grade_exercise(self, exercise, result):
+        """Structural checks (40%) + LLM-as-judge (60%)."""
         score = 0.0
-        criteria_results = {}
+        criteria = {}
         hints = []
 
         if result.status == "completed":
             score += 20
-            criteria_results["execution_success"] = True
+            criteria["execution_success"] = True
 
-        expected = set(exercise.expected_artifacts)
-        produced = set(result.files_changed) | {a.get("path", "") for a in result.artifacts}
-        match = len(expected & produced) / max(len(expected), 1)
-        score += match * 25
-        criteria_results["artifacts_match"] = match >= 0.5
-
-        metrics = result.metrics or {}
-        if metrics.get("action_items"):
-            score += 15
-            criteria_results["has_actions"] = True
-        else:
-            hints.append("Include concrete, actionable next steps")
-
+        # Strategic vocabulary
         output_lower = (result.output or "").lower()
-        strat_kws = ["market", "customer", "revenue", "priority", "metric", "strategy", "plan"]
-        if sum(1 for k in strat_kws if k in output_lower) >= 3:
+        strat_kws = ["market", "customer", "revenue", "priority", "metric", "strategy",
+                      "plan", "competitor", "segment", "persona", "pricing", "roadmap"]
+        kw_hits = sum(1 for k in strat_kws if k in output_lower)
+        if kw_hits >= 4:
             score += 20
-            criteria_results["strategy_patterns"] = True
+            criteria["strategy_vocabulary"] = True
+        elif kw_hits >= 2:
+            score += 10
+
+        # Framework usage
+        framework_kws = ["rice", "tam", "sam", "som", "swot", "porter", "okr",
+                         "jtbd", "jobs to be done", "value proposition", "canvas"]
+        if sum(1 for k in framework_kws if k in output_lower) >= 1:
+            score += 15
+            criteria["uses_frameworks"] = True
+        else:
+            hints.append("Apply recognized strategic frameworks (RICE, SWOT, TAM/SAM/SOM)")
+
+        # Actionability
+        action_kws = ["action", "next step", "timeline", "milestone", "deliverable",
+                       "owner", "deadline", "kpi", "success metric"]
+        if sum(1 for k in action_kws if k in output_lower) >= 2:
+            score += 15
+            criteria["actionable"] = True
+        else:
+            hints.append("Include concrete, actionable next steps with owners and timelines")
+
+        # Data-driven (numbers, metrics)
+        import re
+        numbers = re.findall(r'\b\d+[%$KMB]?\b', result.output or "")
+        if len(numbers) >= 3:
+            score += 10
+            criteria["data_driven"] = True
+        else:
+            hints.append("Support claims with data points and quantified metrics")
+
+        # Depth
+        word_count = len((result.output or "").split())
+        if word_count > 300:
+            score += 10
+            criteria["sufficient_depth"] = True
 
         if result.verification and result.verification.passed:
             score += 10
+            criteria["verification_passed"] = True
 
-        score = min(score, 100.0)
-        return ExerciseScore(
-            exercise_id=exercise.id, passed=score >= 50, score=score,
-            criteria_results=criteria_results,
-            feedback="Good strategic thinking" if score >= 70 else "Strengthen frameworks and actionability",
-            improvement_hints=hints,
+        return self._combined_grade(
+            exercise, result, min(score, 100.0), criteria, hints,
+            domain_context=(
+                "Grade as a senior product strategist / PM. Check for:\n"
+                "- Use of recognized frameworks (RICE, SWOT, Porter's, TAM/SAM/SOM)\n"
+                "- Data-driven reasoning with quantified metrics\n"
+                "- Clear actionability: who does what by when\n"
+                "- Customer empathy and market awareness\n"
+                "- Realistic assumptions and risk acknowledgment"
+            ),
         )
 
 

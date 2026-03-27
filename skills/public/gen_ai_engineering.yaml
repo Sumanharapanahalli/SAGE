@@ -1,0 +1,108 @@
+name: gen_ai_engineering
+version: "1.0.0"
+visibility: public
+runner: openml
+description: >
+  Generative AI engineering skills for building LLM-powered applications.
+  Covers RAG pipelines, prompt engineering, fine-tuning, agent frameworks,
+  evaluation, and production LLM systems.
+
+roles:
+  - gen_ai_engineer
+
+tools:
+  - python
+  - langchain
+  - llamaindex
+  - openai-api
+  - anthropic-api
+  - huggingface-transformers
+  - vllm
+  - chromadb
+  - pinecone
+  - weaviate
+  - pgvector
+  - unstructured
+  - guardrails-ai
+  - lmeval-harness
+  - ragas
+  - dspy
+
+tags:
+  - genai
+  - llm
+  - rag
+  - prompt-engineering
+  - fine-tuning
+  - agents
+
+keywords:
+  - LLM
+  - generative AI
+  - RAG
+  - retrieval augmented generation
+  - prompt engineering
+  - fine-tuning
+  - RLHF
+  - vector database
+  - embeddings
+  - chunking
+  - guardrails
+  - hallucination detection
+  - token optimization
+  - context window
+
+prompt: |
+  You are a senior generative AI engineer specializing in LLM applications:
+  - RAG pipeline design (chunking, embedding, retrieval, reranking, generation)
+  - Prompt engineering (few-shot, chain-of-thought, structured output)
+  - Fine-tuning (LoRA, QLoRA, full fine-tuning, RLHF, DPO)
+  - LLM evaluation (RAGAS, LM-eval-harness, custom evals)
+  - Vector databases (ChromaDB, Pinecone, Weaviate, pgvector)
+  - Agent frameworks (LangGraph, CrewAI, AutoGen, custom)
+  - Guardrails and safety (content filtering, PII detection, hallucination)
+  - Token optimization and context window management
+  - Multi-modal AI (vision, audio, document understanding)
+  - Production LLM serving (vLLM, TGI, API gateway patterns)
+
+  Follow these engineering rules:
+  - Always evaluate RAG quality with retrieval metrics (recall@k, MRR)
+  - Include hallucination detection in every generation pipeline
+  - Implement guardrails for safety-critical outputs
+  - Version prompts alongside code — prompts are code
+  - Design for graceful degradation when LLM is unavailable
+  - Monitor token usage and cost per query
+
+acceptance_criteria:
+  - RAG pipeline retrieves relevant context (recall@5 > 0.8)
+  - Generated output passes factuality checks
+  - Guardrails prevent harmful/incorrect outputs
+  - Prompts versioned and documented
+  - Evaluation suite with automated metrics
+  - Cost per query estimated and within budget
+
+grading_rubric:
+  rag_quality: 25
+  prompt_design: 20
+  evaluation: 20
+  guardrails: 15
+  architecture: 10
+  documentation: 10
+
+certifications:
+  - AWS Generative AI Specialty (planned)
+  - Google Cloud Generative AI
+  - DeepLearning.AI GenAI with LLMs
+  - LangChain Certified Developer
+
+seniority_delta:
+  junior:
+    - Builds RAG pipelines from established patterns
+    - Writes and iterates on prompts
+    - Runs evaluation suites and reports metrics
+  senior:
+    - Architects GenAI platform strategy
+    - Designs evaluation frameworks and quality gates
+    - Owns LLM selection, fine-tuning, and cost strategy
+    - Defines guardrails and safety policies
+    - Bridges AI capabilities with business requirements

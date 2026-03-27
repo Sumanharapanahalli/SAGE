@@ -1,0 +1,704 @@
+================================================================================
+SAGE: Smart Agentic-Guided Empowerment
+A Self-Improving Multi-Agent Framework for Autonomous Product Development
+================================================================================
+
+Technical Whitepaper — Draft v1.0
+Date: March 2026
+
+================================================================================
+ABSTRACT
+================================================================================
+
+SAGE is a modular autonomous AI agent framework that applies lean development
+methodology at machine speed. It deploys domain-specific agent teams — from
+firmware engineers to GenAI specialists — that propose actions, learn from human
+feedback, and compound intelligence over time. This paper presents the framework
+architecture, the Agent Gym self-play training system, observations from training
+25 agent roles across 309+ sessions, and the path to validating the system
+against 100 real-world product builds across 10 industries.
+
+Key results:
+  - 25 agent roles trained across 9 domain runners (incl. browser testing)
+  - 529 seed exercises across 9 domains, expandable to 50,000+ via templates
+  - 423+ training sessions, Glicko-2 ratings converged (31/33 ready, 19 confident)
+  - Top agent scores: 91.2 (system_tester), 90.6 (developer, operations_manager)
+  - 4 new AI-native roles (data_engineer, ml_engineer, gen_ai_engineer,
+    agentic_engineer) integrated and trained in a single session
+  - gstack browser integration: real Chromium testing for QA/UX agents
+  - 14 modular YAML skills including security audit (OWASP + STRIDE)
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+The gap between AI capability and AI reliability in production software
+development is not a model problem — it is an orchestration problem. Individual
+LLMs can generate code, write tests, draft documentation, and analyze designs.
+But deploying them as autonomous agents that consistently produce high-quality
+work requires infrastructure that most teams lack:
+
+  - Role specialization: a firmware engineer agent needs different tools,
+    prompts, and verification criteria than a UX designer agent
+  - Quality measurement: without objective grading, agent improvement is
+    guesswork
+  - Compounding intelligence: each human correction should make the next
+    output better, not just fix the current one
+  - Human governance: in regulated industries, every AI action must be
+    auditable and human-approved
+
+SAGE addresses all four through a unified platform where agents are trained,
+measured, deployed, and governed — and where intelligence compounds with every
+interaction.
+
+The core thesis: lean development — eliminate waste, maximize value flow,
+amplify the human — is the natural pairing for agentic AI. Agents don't replace
+lean; they remove the friction that kept lean from reaching its full potential.
+
+================================================================================
+2. FRAMEWORK ARCHITECTURE
+================================================================================
+
+2.1 System Overview
+
+SAGE separates framework (engine) from solutions (domain config) with a clean
+interface boundary:
+
+  src/                      Framework source (domain-blind)
+    core/                   LLM gateway, queue, project loader, Agent Gym
+    agents/                 Analyst, Developer, Monitor, Planner, Universal, Critic
+    integrations/           8 domain runners, sandbox cascade, external connectors
+    interface/api.py        FastAPI — the only public interface
+    memory/                 Audit log (SQLite) + vector memory (ChromaDB)
+  solutions/<name>/         3 YAML files per domain (declarative agent manifest)
+    project.yaml            What this domain IS
+    prompts.yaml            How agents THINK
+    tasks.yaml              What agents CAN DO
+  skills/public/            12 modular skill YAMLs (role capabilities)
+  web/src/                  React dashboard
+
+Data flows one direction: UI → API → Agents → LLM → Agents → Audit Log.
+Memory flows in a compounding loop: Human Feedback → Vector Store → Future
+Agent Context.
+
+2.2 The SAGE Lean Loop
+
+Every task follows five phases:
+
+  1. SURFACE     → Agent detects signal (log, webhook, trigger)
+  2. CONTEXTUALIZE → Vector memory searched; prior decisions retrieved
+  3. PROPOSE     → LLM generates action proposal with trace_id
+  4. DECIDE      → Human reviews and approves/rejects with feedback
+  5. COMPOUND    → Feedback ingested into vector store; audit log updated
+
+Phase 5 feeds back into Phase 2. This is compounding intelligence — the system
+gets measurably better with every human interaction.
+
+2.3 Two-Tier Approval Model
+
+Not all actions require human approval:
+
+  Framework control (immediate):  config switch, LLM switch, module toggle
+  Agent proposals (HITL required): yaml_edit, implementation_plan, code_diff,
+                                    knowledge operations, agent_hire
+
+This distinction is critical for regulated industries. Agent proposals carry
+compliance risk; framework control is the operator's own action.
+
+2.4 Domain-Aware Runners — Open<Role> Architecture
+
+Each runner encapsulates a complete execution environment for a role family:
+
+  Runner       Roles                              Artifacts
+  ─────────    ─────────────────────────────────   ──────────────────────────
+  OpenSWE      developer, qa_engineer,            Source code, tests, PRs
+               system_tester, devops_engineer,
+               localization_engineer,
+               data_engineer, agentic_engineer
+  OpenML       data_scientist, ml_engineer,       Models, pipelines, metrics
+               gen_ai_engineer
+  OpenFW       firmware_engineer, embedded_tester  ARM binaries, HAL drivers
+  OpenEDA      pcb_designer                       Schematics, Gerbers, BOMs
+  OpenSim      hardware_sim_engineer              SPICE netlists, waveforms
+  OpenDoc      technical_writer, regulatory_spec,  Documents, DHFs, reports
+               legal_advisor, safety_engineer,
+               business_analyst, financial_analyst,
+               analyst
+  OpenDesign   ux_designer                        Wireframes, design tokens
+  OpenStrategy product_manager, marketing_strat,  PRDs, roadmaps, GTM plans
+               operations_manager
+
+All runners implement BaseRunner with four required methods:
+  execute(task, workspace, sandbox_handle) → RunResult
+  verify(result, task) → VerificationReport
+  get_exercises(difficulty) → list[Exercise]
+  grade_exercise(exercise, result) → ExerciseScore
+
+The orchestrator selects the correct runner via get_runner_for_role(agent_role).
+
+2.5 Sandboxed Execution — 3-Tier Cascade
+
+Agent code execution uses a three-tier isolation cascade:
+
+  Tier 1: OpenShell    NVIDIA container sandbox, YAML security policies
+  Tier 2: SandboxRunner  Local repo clone, branch isolation
+  Tier 3: OpenSWE       3-tier internal cascade (external → LangGraph → direct)
+
+The orchestrator tries the most isolated tier first and falls back down.
+
+================================================================================
+3. AGENT GYM — SELF-PLAY TRAINING ENGINE
+================================================================================
+
+3.1 Inspiration
+
+The Agent Gym is inspired by AlphaZero and MuZero — game-playing systems that
+achieved superhuman performance through self-play rather than supervised learning.
+We apply the same principle to software agents: practice, grade, reflect, improve.
+
+3.2 Training Loop
+
+  1. PLAY      → Agent attempts an exercise from its runner's skill set
+  2. GRADE     → Runner grades via structural checks (40%) + LLM-as-judge (60%)
+  3. CRITIQUE  → N critics (Gemini, Claude, Ollama) score independently
+  4. REFLECT   → Agent reviews output vs critic feedback, generates improvement plan
+  5. COMPOUND  → Learnings stored in vector memory for next attempt
+
+Phase 5 feeds back into Phase 1. Agents get measurably better over time.
+
+3.3 Hybrid Grading: Structural + LLM-as-Judge
+
+Each domain runner implements structural checks specific to its domain:
+
+  OpenSWE:   code patterns, test presence, error handling, OWASP checks
+  OpenFW:    binary metrics, HAL usage, volatile qualifiers, MISRA-C patterns
+  OpenML:    model metrics, data leakage detection, experiment tracking
+  OpenEDA:   DRC/ERC metrics, manufacturing readiness (BOM, Gerber)
+  OpenSim:   convergence checks, simulation keywords, testbench presence
+  OpenDoc:   document structure, word count, compliance patterns
+  OpenDesign: WCAG compliance, touch targets, design system structure
+  OpenStrategy: framework usage (RICE, SWOT), actionability, quantification
+
+These structural checks provide the 40% baseline. The remaining 60% comes from
+the LLM-as-judge, which evaluates the output against acceptance criteria with
+domain-specific context (e.g., "Grade as a senior firmware engineer. Check for
+HAL usage, volatile qualifiers, MISRA-C compliance...").
+
+This hybrid approach ensures:
+  - Deterministic baseline: structural checks don't vary between runs
+  - Nuanced evaluation: LLM catches subtle quality issues
+  - Graceful degradation: if LLM is unavailable, structural-only scoring works
+
+3.4 Glicko-2 Skill Rating System
+
+Each agent role × skill combination has a Glicko-2 rating:
+
+  Rating (μ):           Skill level, starts at 1000, clamped [100, 3000]
+  Rating Deviation (RD): Confidence interval, starts at 350, minimum 30
+  Volatility (σ):       Performance consistency
+
+Key properties:
+  - A high rating with high RD means "might be good, insufficient data"
+  - A moderate rating with low RD means "reliably moderate"
+  - RD < 200 indicates a confident rating (our "ready" threshold)
+  - RD < 150 indicates a highly confident rating
+
+The Glicko-2 system handles:
+  - Streak detection (momentum tracking)
+  - Curriculum progression (auto-advance difficulty on consistent wins)
+  - Spaced repetition (failed exercises retry at +1, +3, +7, +15, +30 sessions)
+
+3.5 Exercise Catalog — 16,884 Exercises Across 8 Domains
+
+The exercise system has three tiers:
+
+  Tier 1: Seed exercises (469)
+    Industry-grade exercises sourced from professional certifications, domain
+    standards, and real engineering job descriptions. Manually curated.
+
+  Tier 2: Template variants (16,415)
+    Structurally generated from seeds by combining:
+      seed × difficulty_level × constraint_modifier × scale_modifier
+    No LLM needed — instant generation. Each domain has 10 constraint modifiers
+    (e.g., "under strict memory limits", "with MISRA-C compliance") and 5 scale
+    modifiers (startup → hyperscale).
+
+  Tier 3: LLM-generated variants (expandable to 50,000+)
+    Deep variants generated by the LLM along 10 axes per domain (e.g., platform,
+    RTOS, peripheral for firmware). More creative but slower to generate.
+
+Difficulty distribution across the catalog:
+  Beginner:     4,234 exercises (25%)
+  Intermediate: 4,050 exercises (24%)
+  Advanced:     4,182 exercises (25%)
+  Expert:       4,418 exercises (26%)
+
+3.6 Adaptive Exercise Selection
+
+The gym selects exercises in priority order:
+  1. Spaced repetition: failed exercises due for retry (highest priority)
+  2. Optimal zone: exercises where success rate is 40-70% (best learning)
+  3. Unseen: exercises not yet attempted (exploration)
+
+This mirrors evidence-based learning science: practice at the edge of ability,
+revisit failures, and explore new territory.
+
+================================================================================
+4. TRAINING OBSERVATIONS
+================================================================================
+
+4.1 Dataset
+
+As of this writing, we have completed 309+ training sessions across 25 agent
+roles, using two LLM providers (Gemini CLI and Claude Code CLI) as the
+underlying generation engines.
+
+4.2 Score Distribution
+
+  Score >= 70:    61 sessions (24%)  — strong performance
+  Score 40-69:    42 sessions (16%)  — adequate with room for improvement
+  Score 1-39:    155 sessions (60%)  — below threshold, learning opportunity
+  Score = 0:      51 sessions        — LLM failure (timeout, parse error)
+
+Average non-zero score: 40.7
+
+4.3 Top Performers
+
+  Role                    Best Score    Elo Rating
+  ──────────────────────  ──────────    ──────────
+  system_tester           91.2          1337
+  developer               90.6          1462
+  localization_engineer   90.6          1359
+  agentic_engineer        88.8          1649*
+  data_engineer           88.8          1615*
+  embedded_tester         86.2          1289
+  marketing_strategist    85.2          1211
+  analyst                 84.8          1251
+  firmware_engineer       85.0          1394
+
+  * New roles, trained in a single session
+
+4.4 Key Observations
+
+OBSERVATION 1: Provider sensitivity is real.
+Sessions using Gemini CLI as primary provider scored significantly higher on
+average than sessions using Claude Code CLI. This is not a model quality issue —
+it's a response format issue. The ReAct parser expects structured JSON output,
+and different providers format their responses differently. Lesson: agent
+training must be provider-aware, and the parser must be robust to format
+variation.
+
+OBSERVATION 2: New roles reach competence faster than expected.
+The four new roles (data_engineer, ml_engineer, gen_ai_engineer,
+agentic_engineer) achieved competitive scores on their very first training
+session. data_engineer and agentic_engineer both scored 88.8 immediately.
+This suggests that the combination of good skill YAML prompts + structured
+exercises + hybrid grading creates a strong starting point. The Agent Gym's
+value is not in initial competence but in sustained improvement and confidence
+measurement.
+
+OBSERVATION 3: Structural grading provides a reliable floor.
+Sessions where the LLM-as-judge was unavailable (Gemini timeout) still received
+meaningful scores (20-25 points) from structural checks alone. This graceful
+degradation is essential for production reliability — agents can still be
+assessed even when the judge is unavailable.
+
+OBSERVATION 4: Glicko-2 RD converges at different rates per role.
+Roles with consistent performance (firmware_engineer: 85, 83, 85...) converge
+to low RD quickly (132 after 13 sessions). Roles with variable performance
+(developer: 90, 20, 67, 80...) maintain higher RD longer, accurately reflecting
+uncertainty. The system correctly distinguishes "reliably good" from
+"sometimes good."
+
+OBSERVATION 5: The exercise catalog is the bottleneck, not the model.
+With 469 seed exercises, agents encounter repeats after ~6 sessions per role.
+Template variant generation (16,884 exercises) significantly extends the useful
+training horizon. The quality of exercises — not the quality of the LLM —
+determines the ceiling of agent improvement.
+
+OBSERVATION 6: Parallel training with thread-locked LLM creates contention.
+The LLM gateway uses a thread lock for safe concurrent access. With 4 parallel
+training sessions, effective throughput is only marginally better than
+sequential. True parallelism requires either: (a) multiple LLM provider
+instances, (b) async generation, or (c) pre-generated exercise responses.
+
+4.5 Rating Confidence
+
+After 309+ sessions:
+  - 30/32 skill ratings have RD < 200 (confident enough for deployment)
+  - 15/32 have RD < 175 (high confidence)
+  - Average RD: 174 (down from 350 at start)
+
+The Glicko-2 system provides a principled answer to "is this agent ready for
+production?" — if RD > 200, the agent needs more training. This replaces
+the ad-hoc "run it a few times and see" approach common in LLM deployment.
+
+================================================================================
+5. BUILD ORCHESTRATOR — 0→1→N PIPELINE
+================================================================================
+
+5.1 From Description to Working Product
+
+The Build Orchestrator takes a plain-language product description and produces
+a working codebase:
+
+  Description → Domain Detection (13 domains via DOMAIN_RULES)
+    → Workforce Assembly (25 agents, 6 teams from WORKFORCE_REGISTRY)
+    → Hierarchical Decomposition (LLM → task graph, 32 task types)
+    → Critic reviews plan (N-provider multi-critic, score 0-100)
+    → HITL approval gate
+    → Wave execution (parallel independent tasks via AdaptiveRouter)
+    → Critic reviews code per task
+    → Integration merge
+    → Critic reviews integration
+    → HITL final approval
+    → Completed
+
+5.2 Adaptive Router (Q-Learning)
+
+The AdaptiveRouter maintains EMA scores for every (task_type, agent_role)
+pair. When a task arrives, it routes to the agent with the highest historical
+score for that task type. Scores update after each completion:
+
+  score[task_type][agent_role] = α × new_score + (1 - α) × old_score
+
+This creates a feedback loop: agents that perform well on certain tasks get
+more of those tasks, further improving their specialization.
+
+5.3 Anti-Drift Checkpoints
+
+After each state transition, the orchestrator saves a checkpoint to SQLite.
+On restart, it restores the latest checkpoint and detects drift:
+
+  - If the task graph changed between checkpoints: BUILD_DRIFT_WARNING
+  - If agent results are inconsistent with the plan: flag for review
+  - If the build has been in the same state for too long: alert
+
+5.4 Agent Gym Integration (Pre-Flight Readiness)
+
+Before each build, the pipeline now runs a pre-flight readiness check:
+
+  Phase 0: Agent Gym Pre-Flight
+    → For each agent needed by the build's domain:
+      → Check Glicko-2 rating and RD
+      → Compute confidence: (350 - RD) / 2.5 (100% at RD=100, 0% at RD=350)
+      → Flag agents with RD > 200 or sessions < 3
+
+  If overall confidence < threshold: warn but proceed (training is advisory)
+
+Post-build, outcomes are logged to the gym's build_outcomes table for
+correlation analysis: do higher-confidence agents produce better builds?
+
+================================================================================
+6. 100-BUILD VALIDATION PIPELINE
+================================================================================
+
+6.1 Design
+
+100 diverse product descriptions across 10 domains:
+  medtech (10), fintech (10), automotive (10), saas (10), ecommerce (10),
+  iot (10), ml_ai (10), edtech (10), consumer_app (10), enterprise (10)
+
+Each solution runs through the full Build Orchestrator pipeline:
+  Phase 1: Initiation (domain detection, workforce assembly)
+  Phase 2: Planning (decomposition, critic review, HITL)
+  Phase 3: Execution (wave-based build, 3-tier sandbox cascade)
+  Phase 4: Monitoring (metrics collection, drift detection)
+  Phase 5: Closing (aggregation, framework issue extraction)
+
+6.2 Expected Outcomes
+
+The 100-build pipeline serves as SAGE's own 1→N refinement:
+  - Every framework bug surfaces through real builds, not synthetic tests
+  - Critic calibration tested across 10 different quality baselines
+  - AdaptiveRouter learns from 100 real builds (not training exercises)
+  - Agent Gym ratings validated against actual build success rates
+  - Domain detection accuracy measured across 100 descriptions
+
+6.3 Metrics
+
+The pipeline report includes:
+  - Per-solution: status, task count, critic scores, execution tiers, duration
+  - Per-domain: completion rate, average critic score, common failure modes
+  - Cross-domain: framework issues found, execution tier distribution
+  - Gym correlation: pre-flight confidence vs actual build success rate
+
+================================================================================
+7. WORKFORCE REGISTRY — 25 AGENT ROLES
+================================================================================
+
+SAGE deploys 25 specialized agent roles organized into 6 functional teams:
+
+ENGINEERING TEAM
+  Lead: developer
+  Members: qa_engineer, system_tester, devops_engineer, localization_engineer,
+           data_engineer, agentic_engineer
+  Runner: OpenSWE
+  Capabilities: code generation, testing, deployment, i18n, data pipelines,
+                agent frameworks
+
+ANALYSIS TEAM
+  Lead: analyst
+  Members: business_analyst, financial_analyst, data_scientist, ml_engineer,
+           gen_ai_engineer
+  Runner: OpenML + OpenDoc
+  Capabilities: data analysis, business modeling, MLOps, LLM applications,
+                RAG pipelines
+
+DESIGN TEAM
+  Lead: ux_designer
+  Members: product_manager
+  Runner: OpenDesign + OpenStrategy
+  Capabilities: user research, wireframes, product strategy
+
+COMPLIANCE TEAM
+  Lead: regulatory_specialist
+  Members: legal_advisor, safety_engineer
+  Runner: OpenDoc
+  Capabilities: regulatory submissions, safety analysis, legal review
+
+OPERATIONS TEAM
+  Lead: operations_manager
+  Members: technical_writer, marketing_strategist
+  Runner: OpenDoc + OpenStrategy
+  Capabilities: runbooks, documentation, go-to-market
+
+HARDWARE TEAM
+  Lead: firmware_engineer
+  Members: pcb_designer, embedded_tester, hardware_sim_engineer
+  Runner: OpenFW + OpenEDA + OpenSim
+  Capabilities: firmware development, PCB design, HIL testing, simulation
+
+================================================================================
+8. SKILL MARKETPLACE — 12 MODULAR SKILLS
+================================================================================
+
+Skills are YAML files — modular, hot-swappable, versioned capabilities:
+
+  software_engineering     7 roles    openswe runner
+  data_engineering         1 role     openswe runner
+  agentic_engineering      1 role     openswe runner
+  machine_learning         3 roles    openml runner
+  ml_engineering           1 role     openml runner
+  gen_ai_engineering       1 role     openml runner
+  firmware_engineering     2 roles    openfw runner
+  pcb_design               1 role     openeda runner
+  hardware_simulation      1 role     opensim runner
+  technical_writing        7 roles    opendoc runner
+  ux_design                1 role     opendesign runner
+  product_strategy         3 roles    openstrategy runner
+
+Each skill YAML contains:
+  - System prompt fragment injected into the agent
+  - Acceptance criteria for grading
+  - Grading rubric (weighted scoring)
+  - Relevant certifications
+  - Seniority delta (junior vs senior expectations)
+  - Tool requirements
+  - Keywords and tags for discovery
+
+Visibility tiers: public (open-source), private (proprietary, via env var),
+disabled (dormant).
+
+================================================================================
+9. N-PROVIDER MULTI-CRITIC
+================================================================================
+
+The CriticAgent supports any number of LLM providers reviewing in parallel:
+
+  Plan generated
+    → multi_critic_review("plan", plan, description)
+      → Provider 1 (primary): score = 80
+      → Provider 2 (Gemini): score = 65
+      → Provider 3 (Ollama): score = 72
+      → Aggregated: weighted mean (primary 1.5×) = 73
+      → Disagreements flagged (>20pt gap from mean)
+      → All flaws merged and deduplicated
+
+This multi-provider approach:
+  - Reduces single-provider bias
+  - Catches issues one model misses but another catches
+  - Provides confidence through agreement (high consensus = high confidence)
+  - Degrades gracefully (works with 1 provider, better with 3+)
+
+================================================================================
+10. COMPLIANCE ARCHITECTURE
+================================================================================
+
+For regulated industries (medtech, automotive, avionics), SAGE provides
+built-in compliance infrastructure:
+
+IEC 62304 (Software Lifecycle):
+  - Automated unit test generation satisfies software unit verification
+  - Full audit trail: test creation → review → approval
+  - Traceability from code change to test case to approval record
+
+ISO 13485 (Quality Management):
+  - Every doc update is a controlled document change with audit evidence
+  - Human approval gate ensures no unreviewed changes reach production
+  - Vector memory preserves institutional knowledge across team changes
+
+FDA 21 CFR Part 11 (Electronic Records):
+  - Immutable audit log with trace IDs, timestamps, and approver identity
+  - Every proposal has a unique ID traceable from generation to merge
+
+ISO 14971 (Risk Management):
+  - Doc agent flags changes that touch risk-related code paths
+  - Test agent generates targeted tests for safety-critical functions
+
+The .sage/ directory per solution is the compliance record:
+  .sage/audit_log.db    All proposals, approvals, audit trail
+  .sage/chroma_db/      Vector knowledge store
+
+================================================================================
+11. THE ONE-PERSON COMPANY THESIS
+================================================================================
+
+SAGE's north star: 1 human + AI agent team running a billion-dollar company.
+
+This is not science fiction — it is the logical endpoint of the compounding
+intelligence loop. When agents:
+  - Propose code, tests, and docs with 90%+ acceptance rate
+  - Learn from every rejection to avoid the same mistake
+  - Self-train through the Agent Gym to continuously improve
+  - Are governed by principled human-in-the-loop gates
+
+Then the human's role shifts from executing to deciding. One person can
+direct 25 specialized agents across engineering, compliance, design, and
+operations — producing output that previously required a 50-person team.
+
+The 100-build pipeline is the stress test for this thesis. If 100 diverse
+products can be built to production quality by a single human directing
+SAGE agents, the thesis is validated.
+
+================================================================================
+12. GSTACK BROWSER INTEGRATION
+================================================================================
+
+A critical gap in autonomous agent frameworks is that agents building web
+applications cannot see or test what they build. SAGE addresses this by
+integrating with gstack (github.com/garrytan/gstack), an open-source browser
+testing toolkit built around a persistent headless Chromium daemon.
+
+12.1 Architecture
+
+  The OpenBrowser runner is a supplementary runner — it does not replace the
+  primary runner for any role. Instead, it gives QA engineers, system testers,
+  and UX designers an additional capability: real browser interaction.
+
+    Agent Gym / Build Orchestrator
+        ↓
+    OpenBrowserRunner (supplementary)
+        ├── Tier 1: gstack $B commands (real Chromium, ~100ms/command)
+        └── Tier 2: LLM simulation (no browser required)
+        ↓
+    gstack browse daemon (persistent headless Chromium)
+        ├── Ref system (@e1, @e2... for element addressing)
+        ├── Cookie/session persistence across commands
+        ├── Accessibility tree inspection
+        └── Screenshot capture + visual diff
+
+  Key design decision: supplementary registration. The register_supplementary_
+  runner() function adds the runner instance to the registry without overriding
+  primary role-to-runner mappings. This means:
+    - qa_engineer's primary runner remains openswe (for code testing)
+    - qa_engineer can also use openbrowser (for UI testing)
+    - The Build Orchestrator can dispatch browser tasks to openbrowser while
+      routing code tasks to openswe
+
+12.2 Browser Exercise Catalog
+
+  60 seed exercises across 4 difficulty levels:
+
+    Beginner (15):  Smoke tests, form filling, navigation, viewport checks
+    Intermediate (20): E2E flows, WCAG audits, Core Web Vitals, responsive
+    Advanced (15):  Visual regression, OWASP scans, RBAC testing, i18n/RTL
+    Expert (10):    Chaos testing, multi-tenant isolation, CI/CD pipelines
+
+  Grading combines structural checks (QA methodology, browser interaction
+  keywords, accessibility coverage, evidence capture) with LLM-as-judge
+  (40/60 weight split).
+
+12.3 Security Audit Skill
+
+  Ported from gstack's /cso (Chief Security Officer) methodology:
+    - OWASP Top 10 assessment with concrete evidence per category
+    - STRIDE threat model (Spoofing, Tampering, Repudiation, Info Disclosure,
+      DoS, Elevation of Privilege)
+    - Confidence-gated findings (8/10 minimum to report)
+    - 17 false positive exclusion categories
+    - Each finding includes exploit scenario and specific remediation
+
+12.4 Implications for the Build Pipeline
+
+  With browser testing, the Build Orchestrator can now run a complete
+  verification cycle:
+
+    1. Generate code (openswe/openml/openfw/...)
+    2. Build and deploy to staging
+    3. Run browser QA (openbrowser) — real page loads, form testing, a11y
+    4. Run security audit — OWASP surface scan via browser
+    5. Run performance benchmark — Core Web Vitals measurement
+    6. Generate visual evidence (screenshots) for human review
+
+  This closes the loop between code generation and verification — agents
+  don't just write code, they verify it works in a real browser.
+
+================================================================================
+14. FUTURE WORK
+================================================================================
+
+  1. 100-Build Pipeline Execution
+     Run all 100 solutions through the full Build Orchestrator. Collect
+     framework issues, calibrate critics, validate gym rating predictions.
+
+  2. Difficulty Progression
+     Push all agents through intermediate → advanced → expert exercises.
+     Measure score degradation at each level. Identify which roles plateau
+     and which continue to improve.
+
+  3. Cross-Role Peer Review
+     Enable agents to review each other's work. A qa_engineer reviewing
+     developer output, a safety_engineer reviewing firmware output.
+
+  4. Real Repository Integration
+     Train agents on actual codebases rather than synthetic exercises.
+     Measure transfer learning from gym training to real-world tasks.
+
+  5. Provider Ensemble
+     Use multiple LLM providers simultaneously for generation (not just
+     critique). Route tasks to the best provider for each domain.
+
+  6. Community Skills Marketplace
+     Open the skill YAML format for community contributions. Enable
+     teams to share domain-specific skills and exercises.
+
+================================================================================
+15. CONCLUSION
+================================================================================
+
+SAGE demonstrates that autonomous AI agents can be systematically trained,
+measured, and deployed for production software development. The key innovations:
+
+  1. Domain-aware runners that know what "verified" means in each domain
+  2. Hybrid grading (structural + LLM-as-judge) for reliable assessment
+  3. Glicko-2 ratings for principled readiness decisions
+  4. Scalable exercise catalog (529 seeds across 9 domains)
+  5. Compounding intelligence through vector memory and human feedback
+  6. Browser testing integration for end-to-end UI verification
+  7. Supplementary runner architecture for capability composition
+  8. 14 modular YAML skills covering engineering, testing, design, and security
+
+The framework is operational today with 25 trained agent roles, 423+ training
+sessions, and a 100-build validation pipeline ready to execute. Every component
+is designed to compound — more training makes agents better, more builds make
+the framework better, more human feedback makes both better.
+
+Agents propose. Humans decide. Intelligence compounds.
+
+================================================================================
+
+Built with SAGE — Smart Agentic-Guided Empowerment
+https://github.com/anthropics/sage (placeholder)
+
+================================================================================

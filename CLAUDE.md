@@ -31,7 +31,7 @@ src/                    Framework Python source
     agent_gym.py        Self-play training engine — Glicko-2 ratings, spaced repetition,
                          N-critic review, reflection, vector memory compounding
     exercise_catalog.py Scalable exercise catalog — seed exercises + LLM-generated variants,
-                         8 domains, ~160 seeds expandable to 10,000+ via variant generation
+                         8 domains, ~470 industry-grade seeds expandable to 50,000+ via variant generation
   agents/               Analyst, Developer, Monitor, Planner, Universal, Critic
     critic.py           Actor-critic reviewer — N-provider multi-critic (Gemini, Claude, Ollama, etc.)
   interface/api.py      FastAPI — the only public interface
@@ -89,7 +89,7 @@ solutions/              Solution configurations (NOT framework code)
                         .sage/ is runtime state — gitignored, never committed.
 
 skills/                 Modular agent skills (YAML-based, visibility-tiered)
-  public/               Open-source skills — shipped with SAGE (8 role families)
+  public/               Open-source skills — shipped with SAGE (14 skill files, 9+ domains)
   disabled/             Hidden skills — retained but not loaded
   (private via SAGE_SKILLS_DIR env var — never in this repo)
 
@@ -202,8 +202,12 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 17.5 | SQLite persistence + analytics | `agent_gym.py` (`GymDB`) | Score trends, weakness analysis, improvement rate |
 | 17.6 | Batch training + peer review | `agent_gym.py` (`train_batch`, `_get_peer_reviews`) | `POST /gym/train/batch` |
 | 18 | Exercise Catalog (scalable) | `exercise_catalog.py` | `GET /gym/catalog`, `POST /gym/catalog/generate` |
-| 18.1 | Seed exercises (~160 across 8 domains) | `exercise_catalog.py` (`_generate_seed_catalog`) | openfw, openswe, openml, openeda, opensim, opendoc, opendesign, openstrategy |
+| 18.1 | Seed exercises (~529 across 9 domains) | `exercise_catalog.py` (`_generate_seed_catalog`) | openfw, openswe, openml, openeda, opensim, opendoc, opendesign, openbrowser, openstrategy |
 | 18.2 | LLM-generated variants | `exercise_catalog.py` (`generate_variants`) | 10 variant axes per domain → 10,000+ exercises |
+| 19 | gstack Browser Integration | `openbrowser_runner.py` | Supplementary runner, `get_runner_by_name("openbrowser")` |
+| 19.1 | Real browser QA (gstack) | `openbrowser_runner.py` | gstack `$B` commands, persistent Chromium daemon |
+| 19.2 | Browser exercise catalog (60 seeds) | `exercise_seeds.py` (`OPENBROWSER_SEEDS`) | 4 difficulty tiers, WCAG/OWASP/perf/e2e |
+| 19.3 | Security audit skill | `skills/public/security_audit.yaml` | OWASP Top 10 + STRIDE threat model |
 
 ---
 
@@ -250,7 +254,10 @@ The 3-tier isolation cascade (OpenShell → Sandbox → Direct) is orthogonal to
 | **OpenML** | `openml_runner.py` | data_scientist | Models, pipelines, metrics | `sage/ml-toolchain` |
 | **OpenDoc** | `opendoc_runner.py` | technical_writer, regulatory_specialist, legal_advisor, safety_engineer, business_analyst, financial_analyst, analyst | Documents, DHFs, compliance reports | `sage/doc-toolchain` |
 | **OpenDesign** | `opendesign_runner.py` | ux_designer | Wireframes, design tokens, SVGs | `sage/design-toolchain` |
+| **OpenBrowser** | `openbrowser_runner.py` | qa_engineer*, system_tester*, ux_designer* | QA reports, screenshots, a11y audits | — (gstack) |
 | **OpenStrategy** | `openstrategy_runner.py` | product_manager, marketing_strategist, operations_manager | PRDs, roadmaps, GTM plans | — |
+
+\* OpenBrowser is a **supplementary runner** — these roles keep their primary runner (OpenSWE/OpenDesign) but gain browser testing capabilities via gstack integration.
 
 All runners implement `BaseRunner` (`base_runner.py`) with four required methods:
 - `execute(task, workspace, sandbox_handle)` → `RunResult`
@@ -259,6 +266,57 @@ All runners implement `BaseRunner` (`base_runner.py`) with four required methods
 - `grade_exercise(exercise, result)` → `ExerciseScore`
 
 The orchestrator selects the correct runner via `get_runner_for_role(agent_role)`. If the role is a software role, OpenSWE handles it. If it's firmware, OpenFW runs cross-compilation. If it's PCB, OpenEDA runs DRC/ERC. Each runner knows what "verified" means in its domain.
+
+Supplementary runners (e.g., OpenBrowser) are available via `get_runner_by_name()` and provide additional capabilities without overriding primary role assignments.
+
+---
+
+## gstack Integration — Browser Testing for Agents
+
+SAGE integrates with [gstack](https://github.com/garrytan/gstack) (Garry Tan's AI engineering toolkit) for real browser testing capabilities via the `OpenBrowserRunner`.
+
+### Architecture
+
+```
+Agent Gym / Build Orchestrator
+    ↓
+OpenBrowserRunner (supplementary runner)
+    ├── Tier 1: gstack $B commands (real Chromium, ~100ms/command)
+    └── Tier 2: LLM simulation (no browser required)
+    ↓
+gstack browse daemon (persistent headless Chromium)
+    ├── Ref system (@e1, @e2... for element addressing)
+    ├── Cookie persistence across commands
+    ├── Screenshot capture
+    ├── Console/network monitoring
+    └── Accessibility tree inspection
+```
+
+### Setup
+
+```bash
+# Install gstack (one-time)
+git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack
+cd ~/.claude/skills/gstack && ./setup
+```
+
+Once installed, OpenBrowser auto-detects gstack and uses real Chromium for testing. Without gstack, it falls back to LLM-simulated testing.
+
+### Capabilities
+
+| Capability | gstack Command | SAGE Integration |
+|---|---|---|
+| Navigate & interact | `$B goto`, `$B click @eN`, `$B fill @eN` | QA test execution |
+| Visual snapshots | `$B snapshot -i`, `$B screenshot` | Visual evidence capture |
+| Accessibility audit | `$B snapshot -a` | WCAG compliance check |
+| Performance metrics | `$B js "performance.timing"` | Core Web Vitals |
+| Error detection | `$B console`, `$B network` | Runtime error checking |
+| Responsive testing | `$B responsive`, `$B viewport` | Multi-viewport QA |
+
+### Skills
+
+- `browser_testing.yaml` — QA automation, accessibility, performance, visual regression
+- `security_audit.yaml` — OWASP Top 10, STRIDE threat model, CSP audit
 
 ---
 
@@ -445,7 +503,7 @@ Failed exercises are scheduled for retry at increasing intervals:
 
 ### Exercise Catalog
 
-Scalable exercise system with ~160 seed exercises across 8 domains, expandable to 10,000+ via LLM-generated variants:
+Scalable exercise system with ~470 industry-grade seed exercises across 8 domains, expandable to 50,000+ via LLM-generated variants:
 - Each domain has 10 variant axes (platform, scale, constraint, etc.)
 - Variants are generated from seeds by the LLM and persisted in SQLite
 - Difficulty auto-calibration based on agent success rates

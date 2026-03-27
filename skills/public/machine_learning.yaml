@@ -9,6 +9,8 @@ description: >
 
 roles:
   - data_scientist
+  - ml_engineer
+  - gen_ai_engineer
 
 tools:
   - python

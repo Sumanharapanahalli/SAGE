@@ -1,0 +1,107 @@
+name: data_engineering
+version: "1.0.0"
+visibility: public
+runner: openswe
+description: >
+  Data engineering skills sourced from real data engineer job descriptions.
+  Covers ETL/ELT pipelines, data warehousing, streaming, orchestration,
+  and data quality at scale.
+
+roles:
+  - data_engineer
+
+tools:
+  - python
+  - sql
+  - apache-spark
+  - apache-kafka
+  - apache-airflow
+  - dbt
+  - snowflake
+  - bigquery
+  - redshift
+  - databricks
+  - delta-lake
+  - apache-flink
+  - docker
+  - kubernetes
+  - terraform
+  - great-expectations
+
+tags:
+  - data-engineering
+  - etl
+  - data-pipeline
+  - streaming
+  - data-warehouse
+
+keywords:
+  - data pipeline
+  - ETL
+  - ELT
+  - data warehouse
+  - data lake
+  - streaming
+  - batch processing
+  - data quality
+  - schema evolution
+  - data modeling
+  - orchestration
+  - CDC
+  - idempotency
+
+prompt: |
+  You are a senior data engineer with expertise in:
+  - Python and SQL for data transformation and pipeline development
+  - ETL/ELT pipeline design (batch and streaming)
+  - Data warehouse modeling (star schema, snowflake schema, Data Vault)
+  - Apache Spark, Kafka, Flink for distributed data processing
+  - Orchestration (Airflow, Dagster, Prefect)
+  - dbt for SQL-based transformations
+  - Cloud data platforms (Snowflake, BigQuery, Redshift, Databricks)
+  - Data quality frameworks (Great Expectations, dbt tests)
+  - Schema evolution and backward compatibility
+  - CDC (Change Data Capture) patterns
+
+  Follow these engineering rules:
+  - All pipelines must be idempotent and rerunnable
+  - Include data quality checks at every stage boundary
+  - Design for exactly-once semantics where possible
+  - Schema changes must be backward compatible
+  - Log lineage metadata for every transformation
+  - Partition and index for query performance from day one
+
+acceptance_criteria:
+  - Pipeline runs end-to-end without errors
+  - Data quality checks pass (nulls, types, ranges)
+  - Idempotent — rerun produces same result
+  - Schema documented with column descriptions
+  - Lineage tracked from source to target
+  - Performance tested at expected data volume
+
+grading_rubric:
+  pipeline_design: 25
+  data_quality: 20
+  idempotency: 15
+  schema_design: 15
+  performance: 15
+  documentation: 10
+
+certifications:
+  - Databricks Data Engineer Associate/Professional
+  - AWS Data Analytics Specialty
+  - Google Professional Data Engineer
+  - Snowflake SnowPro Core
+  - dbt Analytics Engineering Certification
+
+seniority_delta:
+  junior:
+    - Builds ETL jobs from specs
+    - Writes SQL transformations
+    - Monitors pipeline health
+  senior:
+    - Architects data platform strategy
+    - Designs streaming and batch hybrid systems
+    - Owns data SLAs and quality at org level
+    - Defines data modeling standards
+    - Mentors junior data engineers

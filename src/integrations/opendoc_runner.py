@@ -211,111 +211,93 @@ class OpenDocRunner(BaseRunner):
         return ["task_type", "document_type", "standard", "audience", "domain"]
 
     def get_exercises(self, difficulty="intermediate"):
-        exercises = {
+        """Load from central catalog (~50 opendoc seeds), fall back to hardcoded."""
+        catalog = self._load_catalog_exercises(difficulty)
+        if catalog:
+            return catalog
+        fallback = {
             "beginner": [
-                Exercise(
-                    id="doc-b01", role="technical_writer", task_type="DOCUMENTATION",
-                    difficulty="beginner",
-                    description="Write a quickstart guide for a REST API with authentication",
-                    acceptance_criteria=[
-                        "Has installation section",
-                        "Has authentication section with example",
-                        "Has first API call section with complete code",
-                        "Document is under 1000 words",
-                    ],
-                    expected_artifacts=["quickstart.md"],
-                    tags=["api", "quickstart"],
-                ),
-                Exercise(
-                    id="doc-b02", role="business_analyst", task_type="REQUIREMENTS",
-                    difficulty="beginner",
-                    description="Write user stories for a mobile app login feature",
-                    acceptance_criteria=[
-                        "Uses Given-When-Then format",
-                        "Covers happy path and error cases",
-                        "Each story has acceptance criteria",
-                        "Follows INVEST principles",
-                    ],
-                    expected_artifacts=["user_stories.md"],
-                    tags=["requirements", "user-stories"],
-                ),
+                Exercise(id="doc-b01", role="technical_writer", task_type="DOCUMENTATION",
+                         difficulty="beginner",
+                         description="Write a quickstart guide for a REST API with authentication",
+                         acceptance_criteria=["Installation section", "Auth example", "First API call"],
+                         expected_artifacts=["quickstart.md"], tags=["api", "quickstart"]),
             ],
             "intermediate": [
-                Exercise(
-                    id="doc-i01", role="regulatory_specialist", task_type="REGULATORY",
-                    difficulty="intermediate",
-                    description="Create an ISO 14971 risk management plan for a patient monitoring device",
-                    acceptance_criteria=[
-                        "Covers ISO 14971:2019 required sections",
-                        "Includes risk acceptability criteria",
-                        "Has FMEA template with severity/occurrence/detection",
-                        "Traceability to design inputs",
-                    ],
-                    expected_artifacts=["risk_management_plan.md", "fmea_template.md"],
-                    tags=["iso-14971", "medical", "risk"],
-                ),
+                Exercise(id="doc-i01", role="regulatory_specialist", task_type="REGULATORY",
+                         difficulty="intermediate",
+                         description="Create an ISO 14971 risk management plan for a patient monitoring device",
+                         acceptance_criteria=["ISO 14971 sections", "Risk acceptability", "FMEA template"],
+                         expected_artifacts=["risk_management_plan.md"], tags=["iso-14971", "medical"]),
             ],
             "advanced": [
-                Exercise(
-                    id="doc-a01", role="regulatory_specialist", task_type="REGULATORY",
-                    difficulty="advanced",
-                    description="Prepare a 510(k) pre-submission package for an AI-powered diagnostic tool",
-                    acceptance_criteria=[
-                        "Predicate device comparison included",
-                        "Software level of concern classified (IEC 62304)",
-                        "Algorithm description with training data summary",
-                        "Clinical evidence section",
-                        "Complete traceability matrix",
-                    ],
-                    expected_artifacts=["presubmission.md", "predicate_comparison.md", "traceability.md"],
-                    tags=["510k", "fda", "ai-medical", "advanced"],
-                ),
+                Exercise(id="doc-a01", role="regulatory_specialist", task_type="REGULATORY",
+                         difficulty="advanced",
+                         description="Prepare a 510(k) pre-submission package for an AI diagnostic tool",
+                         acceptance_criteria=["Predicate comparison", "IEC 62304 classification", "Traceability"],
+                         expected_artifacts=["presubmission.md", "traceability.md"], tags=["510k", "fda"]),
             ],
         }
-        return exercises.get(difficulty, exercises["intermediate"])
+        return fallback.get(difficulty, fallback["intermediate"])
 
     def grade_exercise(self, exercise, result):
+        """Structural checks (40%) + LLM-as-judge (60%)."""
         score = 0.0
-        criteria_results = {}
+        criteria = {}
         hints = []
 
         if result.status == "completed":
             score += 20
-            criteria_results["execution_success"] = True
+            criteria["execution_success"] = True
 
-        expected = set(exercise.expected_artifacts)
-        produced = set(result.files_changed) | {a.get("path", "") for a in result.artifacts}
-        match = len(expected & produced) / max(len(expected), 1)
-        score += match * 25
-        criteria_results["artifacts_match"] = match >= 0.5
-
-        # Check content quality
+        # Document structure
         output_lower = (result.output or "").lower()
-        doc_kws = ["section", "requirement", "criteria", "scope", "purpose", "reference", "appendix"]
+        doc_kws = ["section", "requirement", "criteria", "scope", "purpose",
+                    "reference", "appendix", "revision", "approval", "traceability"]
         kw_hits = sum(1 for k in doc_kws if k in output_lower)
         if kw_hits >= 3:
             score += 20
-            criteria_results["structured_content"] = True
+            criteria["structured_content"] = True
         else:
             hints.append("Include clear section headers and structured content")
 
-        # Word count check
+        # Word count (substance check)
         word_count = result.metrics.get("word_count", 0) or len((result.output or "").split())
-        if word_count > 100:
+        if word_count > 500:
             score += 15
-            criteria_results["sufficient_content"] = True
+            criteria["sufficient_depth"] = True
+        elif word_count > 100:
+            score += 10
+            criteria["sufficient_content"] = True
         else:
             hints.append("Provide more detailed content")
 
-        if result.verification and result.verification.passed:
-            score += 10
+        # Compliance/regulatory patterns
+        reg_kws = ["iso", "iec", "fda", "compliance", "audit", "risk", "hazard",
+                    "dhf", "dhr", "verification", "validation", "capa"]
+        if sum(1 for k in reg_kws if k in output_lower) >= 2:
+            score += 15
+            criteria["regulatory_awareness"] = True
 
-        score = min(score, 100.0)
-        return ExerciseScore(
-            exercise_id=exercise.id, passed=score >= 50, score=score,
-            criteria_results=criteria_results,
-            feedback="Good documentation" if score >= 70 else "Improve document structure",
-            improvement_hints=hints,
+        # Cross-referencing
+        if any(k in output_lower for k in ["cross-reference", "traceability", "trace matrix", "req-"]):
+            score += 10
+            criteria["cross_references"] = True
+
+        if result.verification and result.verification.passed:
+            score += 15
+            criteria["verification_passed"] = True
+
+        return self._combined_grade(
+            exercise, result, min(score, 100.0), criteria, hints,
+            domain_context=(
+                "Grade as a senior technical writer / regulatory specialist. Check for:\n"
+                "- Document follows the relevant standard's required structure\n"
+                "- Content is specific and actionable, not generic boilerplate\n"
+                "- Traceability to requirements / design inputs\n"
+                "- Proper revision control and approval blocks\n"
+                "- Regulatory language accuracy (e.g., correct FDA terminology)"
+            ),
         )
 
 

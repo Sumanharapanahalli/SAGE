@@ -196,146 +196,104 @@ class OpenFWRunner(BaseRunner):
     # ── Exercises ───────────────────────────────────────────────────────
 
     def get_exercises(self, difficulty="intermediate"):
-        exercises = {
+        """Load exercises from central catalog (469 seeds), fall back to hardcoded."""
+        catalog = self._load_catalog_exercises(difficulty)
+        if catalog:
+            return catalog
+        # Fallback: minimal hardcoded set
+        fallback = {
             "beginner": [
-                Exercise(
-                    id="fw-b01", role="firmware_engineer", task_type="FIRMWARE",
-                    difficulty="beginner",
-                    description="Write a GPIO driver to blink an LED on STM32F4 at 1Hz",
-                    acceptance_criteria=[
-                        "Compiles for ARM Cortex-M4",
-                        "Binary size under 64KB",
-                        "Uses HAL GPIO functions",
-                        "Includes build system (Makefile or CMake)",
-                    ],
-                    expected_artifacts=["main.c", "gpio_driver.c", "gpio_driver.h", "Makefile"],
-                    tags=["gpio", "stm32", "beginner"],
-                ),
-                Exercise(
-                    id="fw-b02", role="firmware_engineer", task_type="FIRMWARE",
-                    difficulty="beginner",
-                    description="Implement a UART echo program that reads and writes characters",
-                    acceptance_criteria=[
-                        "Compiles for ARM target",
-                        "Binary size under 32KB",
-                        "Handles baud rate configuration",
-                        "Includes interrupt-driven receive",
-                    ],
-                    expected_artifacts=["main.c", "uart_driver.c", "uart_driver.h"],
-                    tags=["uart", "serial", "beginner"],
-                ),
+                Exercise(id="fw-b01", role="firmware_engineer", task_type="FIRMWARE",
+                         difficulty="beginner",
+                         description="Write a GPIO driver to blink an LED on STM32F4 at 1Hz",
+                         acceptance_criteria=["Compiles for ARM Cortex-M4", "Binary under 64KB",
+                                              "Uses HAL GPIO functions", "Includes Makefile or CMake"],
+                         expected_artifacts=["main.c", "gpio_driver.c", "Makefile"],
+                         tags=["gpio", "stm32"]),
             ],
             "intermediate": [
-                Exercise(
-                    id="fw-i01", role="firmware_engineer", task_type="FIRMWARE",
-                    difficulty="intermediate",
-                    description="Write an I2C driver for BME280 temperature/humidity sensor on STM32",
-                    acceptance_criteria=[
-                        "Compiles for ARM",
-                        "I2C read/write functions",
-                        "Handles NACK errors",
-                        "Includes calibration data parsing",
-                        "Binary under 128KB flash",
-                    ],
-                    expected_artifacts=["bme280.c", "bme280.h", "i2c_driver.c", "main.c"],
-                    tags=["i2c", "sensor", "stm32"],
-                ),
-                Exercise(
-                    id="fw-i02", role="embedded_tester", task_type="EMBEDDED_TEST",
-                    difficulty="intermediate",
-                    description="Write unit tests for a ring buffer implementation using Unity framework",
-                    acceptance_criteria=[
-                        "Compiles and runs with Unity test framework",
-                        "Tests empty buffer, full buffer, wrap-around",
-                        "Tests concurrent read/write safety",
-                        "Build system included",
-                    ],
-                    expected_artifacts=["ring_buffer.c", "ring_buffer.h", "test_ring_buffer.c", "Makefile"],
-                    tags=["testing", "unity", "data-structure"],
-                ),
+                Exercise(id="fw-i01", role="firmware_engineer", task_type="FIRMWARE",
+                         difficulty="intermediate",
+                         description="Write an I2C driver for BME280 sensor on STM32",
+                         acceptance_criteria=["Compiles for ARM", "I2C read/write", "Handles NACK errors"],
+                         expected_artifacts=["bme280.c", "bme280.h", "main.c"],
+                         tags=["i2c", "sensor"]),
             ],
             "advanced": [
-                Exercise(
-                    id="fw-a01", role="firmware_engineer", task_type="FIRMWARE",
-                    difficulty="advanced",
-                    description="Implement a FreeRTOS-based CAN bus gateway with message filtering and priority queues",
-                    acceptance_criteria=[
-                        "Compiles for ARM Cortex-M4",
-                        "FreeRTOS tasks with proper priorities",
-                        "CAN message filtering by ID range",
-                        "Priority queue for outgoing messages",
-                        "Watchdog timer integration",
-                        "Binary under 256KB flash, under 64KB RAM",
-                    ],
-                    expected_artifacts=["main.c", "can_gateway.c", "can_gateway.h", "freertos_config.h", "CMakeLists.txt"],
-                    tags=["rtos", "can", "gateway", "advanced"],
-                ),
+                Exercise(id="fw-a01", role="firmware_engineer", task_type="FIRMWARE",
+                         difficulty="advanced",
+                         description="Implement FreeRTOS CAN bus gateway with message filtering",
+                         acceptance_criteria=["FreeRTOS tasks", "CAN filtering", "Watchdog"],
+                         expected_artifacts=["main.c", "can_gateway.c", "CMakeLists.txt"],
+                         tags=["rtos", "can"]),
             ],
         }
-        return exercises.get(difficulty, exercises["intermediate"])
+        return fallback.get(difficulty, fallback["intermediate"])
 
     def grade_exercise(self, exercise, result):
+        """Structural checks (40%) + LLM-as-judge (60%)."""
         score = 0.0
-        criteria_results = {}
+        criteria = {}
         hints = []
 
-        # Check execution success
+        # Structural: execution success
         if result.status == "completed":
             score += 25
-            criteria_results["execution_success"] = True
+            criteria["execution_success"] = True
         else:
-            criteria_results["execution_success"] = False
+            criteria["execution_success"] = False
             hints.append("Ensure code compiles without errors")
 
-        # Check artifacts
-        expected = set(exercise.expected_artifacts)
-        produced = set(result.files_changed)
-        match_ratio = len(expected & produced) / max(len(expected), 1)
-        score += match_ratio * 25
-        criteria_results["artifacts_match"] = match_ratio >= 0.5
-
-        # Check binary size
+        # Structural: binary metrics
         binary_size = result.metrics.get("binary_size", result.metrics.get("binary_estimate_kb", 0))
         if isinstance(binary_size, (int, float)) and binary_size > 0:
             score += 15
-            criteria_results["has_binary_metrics"] = True
+            criteria["has_binary_metrics"] = True
         else:
-            criteria_results["has_binary_metrics"] = False
-            hints.append("Include binary size estimation in output")
+            criteria["has_binary_metrics"] = False
+            hints.append("Include binary size estimation")
 
-        # Check embedded code patterns
+        # Structural: embedded patterns
         output_lower = (result.output or "").lower()
         fw_keywords = ["hal_", "gpio", "uart", "spi", "i2c", "interrupt", "#include", "volatile"]
         kw_hits = sum(1 for k in fw_keywords if k in output_lower)
         if kw_hits >= 2:
-            score += 15
-            criteria_results["embedded_patterns"] = True
+            score += 20
+            criteria["embedded_patterns"] = True
         else:
-            criteria_results["embedded_patterns"] = False
+            criteria["embedded_patterns"] = False
             hints.append("Use proper HAL/peripheral abstractions")
 
-        # Check build system present
+        # Structural: build system
         build_files = [f for f in result.files_changed if "make" in f.lower() or "cmake" in f.lower()]
         if build_files:
-            score += 10
-            criteria_results["has_build_system"] = True
+            score += 15
+            criteria["has_build_system"] = True
         else:
-            criteria_results["has_build_system"] = False
+            criteria["has_build_system"] = False
             hints.append("Include Makefile or CMakeLists.txt")
+
+        # Structural: MISRA / safety patterns
+        safety_patterns = ["null", "assert", "error", "timeout", "watchdog"]
+        safety_hits = sum(1 for p in safety_patterns if p in output_lower)
+        if safety_hits >= 2:
+            score += 10
+            criteria["safety_patterns"] = True
 
         # Verification bonus
         if result.verification and result.verification.passed:
-            score += 10
-            criteria_results["verification_passed"] = True
+            score += 15
+            criteria["verification_passed"] = True
 
-        score = min(score, 100.0)
-        return ExerciseScore(
-            exercise_id=exercise.id,
-            passed=score >= 50,
-            score=score,
-            criteria_results=criteria_results,
-            feedback="Solid embedded implementation" if score >= 70 else "Needs improvement in firmware practices",
-            improvement_hints=hints,
+        return self._combined_grade(
+            exercise, result, min(score, 100.0), criteria, hints,
+            domain_context=(
+                "Grade as a firmware/embedded engineer. Check for:\n"
+                "- Correct HAL usage, volatile qualifiers, interrupt safety\n"
+                "- MISRA-C compliance, NULL checks, error handling\n"
+                "- Memory-mapped register access patterns\n"
+                "- Cross-compilation readiness (ARM Cortex-M target)"
+            ),
         )
 
 

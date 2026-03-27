@@ -140,7 +140,11 @@ class SkillRating:
             "best_score": round(self.best_score, 1),
             "current_difficulty": self.current_difficulty,
             "pending_reviews": len([
-                eid for eid, threshold in self.failed_exercises.items()
+                eid for eid, threshold in (
+                    self.failed_exercises.items()
+                    if isinstance(self.failed_exercises, dict)
+                    else []
+                )
                 if self.sessions >= threshold
             ]),
         }
@@ -637,10 +641,18 @@ class AgentGym:
         if not runner:
             return self._failed_session(session_id, role, f"No runner for role '{role}'")
 
-        # Get skill name from registry
+        # Get skill name from registry — prefer skill that lists this role
         if not skill_name:
             skills = runner.get_skills()
-            skill_name = skills[0]["name"] if skills else runner.name
+            skill_name = runner.name  # fallback
+            for s in skills:
+                s_roles = s.get("roles", [])
+                if role in s_roles:
+                    skill_name = s["name"]
+                    break
+            else:
+                if skills:
+                    skill_name = skills[0]["name"]
 
         # Curriculum: auto-select difficulty if not specified
         rating_key = f"{role}:{skill_name}"
