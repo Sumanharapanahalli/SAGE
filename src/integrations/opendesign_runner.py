@@ -167,97 +167,98 @@ class OpenDesignRunner(BaseRunner):
         return ["task_type", "platform", "screen_type", "component_type", "domain"]
 
     def get_exercises(self, difficulty="intermediate"):
-        exercises = {
+        """Load from central catalog (~45 opendesign seeds), fall back to hardcoded."""
+        catalog = self._load_catalog_exercises(difficulty)
+        if catalog:
+            return catalog
+        fallback = {
             "beginner": [
-                Exercise(
-                    id="design-b01", role="ux_designer", task_type="UI_DESIGN",
-                    difficulty="beginner",
-                    description="Design a button component system with primary, secondary, and disabled states",
-                    acceptance_criteria=[
-                        "WCAG AA accessible contrast for all states",
-                        "Touch target minimum 44x44px",
-                        "Design tokens exported for colors and spacing",
-                        "Wireframe shows all button states",
-                    ],
-                    expected_artifacts=["button.svg", "tokens.json", "button_spec.md"],
-                    tags=["component", "button", "design-system"],
-                ),
+                Exercise(id="design-b01", role="ux_designer", task_type="UI_DESIGN",
+                         difficulty="beginner",
+                         description="Design a button component system with primary, secondary, disabled states",
+                         acceptance_criteria=["WCAG AA contrast", "44px touch targets", "Design tokens"],
+                         expected_artifacts=["button.svg", "tokens.json"], tags=["component", "button"]),
             ],
             "intermediate": [
-                Exercise(
-                    id="design-i01", role="ux_designer", task_type="UI_DESIGN",
-                    difficulty="intermediate",
-                    description="Design a mobile app login flow with email, social login, and password reset",
-                    acceptance_criteria=[
-                        "Wireframes for login, signup, password reset screens",
-                        "WCAG AA compliant",
-                        "Error state handling visible",
-                        "Loading states defined",
-                        "Design tokens for the flow",
-                    ],
-                    expected_artifacts=["login_flow.svg", "wireframes.md", "tokens.json"],
-                    tags=["mobile", "auth", "flow"],
-                ),
+                Exercise(id="design-i01", role="ux_designer", task_type="UI_DESIGN",
+                         difficulty="intermediate",
+                         description="Design a mobile login flow with email, social login, password reset",
+                         acceptance_criteria=["Wireframes for all screens", "WCAG AA", "Error states"],
+                         expected_artifacts=["login_flow.svg", "tokens.json"], tags=["mobile", "auth"]),
             ],
             "advanced": [
-                Exercise(
-                    id="design-a01", role="ux_designer", task_type="UI_DESIGN",
-                    difficulty="advanced",
-                    description="Design a complete design system with 10 core components, dark/light themes",
-                    acceptance_criteria=[
-                        "10 components defined with states",
-                        "Dark and light theme tokens",
-                        "WCAG AA for both themes",
-                        "8px grid spacing system",
-                        "Typography scale defined",
-                    ],
-                    expected_artifacts=["design_system.md", "tokens_light.json", "tokens_dark.json", "components.svg"],
-                    tags=["design-system", "theming", "advanced"],
-                ),
+                Exercise(id="design-a01", role="ux_designer", task_type="UI_DESIGN",
+                         difficulty="advanced",
+                         description="Design a complete design system with 10 components, dark/light themes",
+                         acceptance_criteria=["10 components", "Dark/light tokens", "WCAG AA both themes"],
+                         expected_artifacts=["design_system.md", "tokens_light.json"], tags=["design-system"]),
             ],
         }
-        return exercises.get(difficulty, exercises["intermediate"])
+        return fallback.get(difficulty, fallback["intermediate"])
 
     def grade_exercise(self, exercise, result):
+        """Structural checks (40%) + LLM-as-judge (60%)."""
         score = 0.0
-        criteria_results = {}
+        criteria = {}
         hints = []
 
         if result.status == "completed":
-            score += 25
-            criteria_results["execution_success"] = True
+            score += 20
+            criteria["execution_success"] = True
 
-        expected = set(exercise.expected_artifacts)
-        produced = set(result.files_changed)
-        match = len(expected & produced) / max(len(expected), 1)
-        score += match * 25
-        criteria_results["artifacts_match"] = match >= 0.5
-
+        # WCAG compliance
         metrics = result.metrics or {}
         if metrics.get("wcag_violations", -1) == 0:
             score += 20
-            criteria_results["wcag_clean"] = True
+            criteria["wcag_clean"] = True
         else:
             hints.append("Ensure all designs pass WCAG AA audit")
 
+        # Touch targets
         if isinstance(metrics.get("min_touch_target"), (int, float)) and metrics["min_touch_target"] >= 44:
             score += 10
-            criteria_results["touch_targets"] = True
+            criteria["touch_targets"] = True
 
+        # Design patterns in output
         output_lower = (result.output or "").lower()
-        if sum(1 for k in ["token", "color", "spacing", "component"] if k in output_lower) >= 2:
+        design_kws = ["token", "color", "spacing", "component", "typography",
+                       "grid", "breakpoint", "responsive", "state", "variant"]
+        kw_hits = sum(1 for k in design_kws if k in output_lower)
+        if kw_hits >= 3:
+            score += 15
+            criteria["design_patterns"] = True
+        elif kw_hits >= 1:
+            score += 8
+
+        # Accessibility awareness
+        a11y_kws = ["wcag", "aria", "contrast", "screen reader", "focus", "keyboard",
+                     "alt text", "semantic", "accessible"]
+        if sum(1 for k in a11y_kws if k in output_lower) >= 2:
+            score += 15
+            criteria["accessibility_aware"] = True
+        else:
+            hints.append("Address accessibility: WCAG, ARIA, keyboard navigation")
+
+        # Design system structure
+        system_kws = ["atomic", "molecule", "organism", "template", "page", "design system"]
+        if sum(1 for k in system_kws if k in output_lower) >= 1:
             score += 10
-            criteria_results["design_patterns"] = True
+            criteria["design_system_thinking"] = True
 
         if result.verification and result.verification.passed:
             score += 10
+            criteria["verification_passed"] = True
 
-        score = min(score, 100.0)
-        return ExerciseScore(
-            exercise_id=exercise.id, passed=score >= 50, score=score,
-            criteria_results=criteria_results,
-            feedback="Good design work" if score >= 70 else "Review accessibility and design system practices",
-            improvement_hints=hints,
+        return self._combined_grade(
+            exercise, result, min(score, 100.0), criteria, hints,
+            domain_context=(
+                "Grade as a senior UX designer. Check for:\n"
+                "- WCAG 2.2 AA compliance (contrast, touch targets, keyboard nav)\n"
+                "- Proper design token structure (colors, spacing, typography)\n"
+                "- Responsive design considerations\n"
+                "- User flow completeness (happy path + error states + loading)\n"
+                "- Atomic design principles and component reusability"
+            ),
         )
 
 

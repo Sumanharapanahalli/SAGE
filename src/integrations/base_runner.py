@@ -11,13 +11,14 @@ Each runner encapsulates a complete execution environment for a role family:
 
 Runner hierarchy:
   BaseRunner (abstract)
-    ├── OpenSWERunner   — Software engineering (explore → code → test → PR)
-    ├── OpenFWRunner    — Firmware (HAL code → cross-compile → static analysis → binary metrics)
-    ├── OpenEDARunner   — Electronics (schematic → layout → DRC → Gerber)
-    ├── OpenSimRunner   — Simulation (model → simulate → waveform → timing)
-    ├── OpenMLRunner    — Machine learning (data → train → evaluate → track)
-    ├── OpenDocRunner   — Documentation (research → draft → cross-ref → validate)
-    ├── OpenDesignRunner— UX/Design (wireframe → prototype → accessibility → tokens)
+    ├── OpenSWERunner     — Software engineering (explore → code → test → PR)
+    ├── OpenFWRunner      — Firmware (HAL code → cross-compile → static analysis → binary metrics)
+    ├── OpenEDARunner     — Electronics (schematic → layout → DRC → Gerber)
+    ├── OpenSimRunner     — Simulation (model → simulate → waveform → timing)
+    ├── OpenMLRunner      — Machine learning (data → train → evaluate → track)
+    ├── OpenDocRunner     — Documentation (research → draft → cross-ref → validate)
+    ├── OpenDesignRunner  — UX/Design (wireframe → prototype → accessibility → tokens)
+    ├── OpenBrowserRunner — Browser testing/QA (navigate → interact → verify → screenshot)
     └── OpenStrategyRunner — Strategy (analyze → framework → plan → action)
 
 The 3-tier isolation cascade (OpenShell → SandboxRunner → Direct) is orthogonal
@@ -110,7 +111,7 @@ class RunResult:
             "runner": self.runner,
             "tier": self.tier,
             "artifacts": self.artifacts,
-            "output": self.output[:2000] if self.output else "",
+            "output": (str(self.output)[:2000] if not isinstance(self.output, str) else self.output[:2000]) if self.output else "",
             "files_changed": self.files_changed,
             "verification": self.verification.to_dict() if self.verification else None,
             "experience": self.experience,
@@ -313,6 +314,167 @@ class BaseRunner(ABC):
         except Exception:
             return []
 
+    # ── Catalog-aware exercise loading ──────────────────────────────────
+
+    def _load_catalog_exercises(self, difficulty: str = "") -> list["Exercise"]:
+        """
+        Load exercises from the central exercise catalog for this runner's domain.
+
+        Converts catalog Exercise objects (exercise_catalog.py) to runner Exercise
+        objects (base_runner.py). Falls back to empty list if catalog unavailable.
+        """
+        try:
+            from src.core.exercise_seeds import get_all_seeds
+            seeds = get_all_seeds().get(self.name, [])
+            if not seeds:
+                return []
+
+            exercises = []
+            for i, seed in enumerate(seeds):
+                if difficulty and seed.get("difficulty", "") != difficulty:
+                    continue
+                # Build deterministic ID from domain + index + difficulty
+                diff = seed.get("difficulty", "intermediate")
+                prefix = self.name[:3]
+                ex_id = f"{prefix}-{diff[0]}{i+1:02d}"
+                exercises.append(Exercise(
+                    id=ex_id,
+                    role=self.roles[0] if self.roles else "",
+                    task_type=seed.get("task_type", ""),
+                    difficulty=diff,
+                    description=seed.get("description", seed.get("title", "")),
+                    acceptance_criteria=seed.get("acceptance_criteria", []),
+                    expected_artifacts=[],
+                    tags=seed.get("tags", []),
+                ))
+            return exercises
+        except Exception as exc:
+            self.logger.debug("Catalog load failed: %s", exc)
+            return []
+
+    # ── LLM-as-judge grading ─────────────────────────────────────────────
+
+    def _llm_grade(
+        self,
+        exercise: "Exercise",
+        result: "RunResult",
+        domain_context: str = "",
+    ) -> dict:
+        """
+        Use the LLM as a judge to evaluate an exercise attempt.
+
+        Returns dict with: score (0-100), passed (bool), criteria_results (dict),
+        feedback (str), improvement_hints (list[str]).
+
+        Falls back to {"score": 0, "error": ...} if LLM unavailable.
+        """
+        try:
+            from src.core.llm_gateway import llm_gateway
+
+            output_preview = (result.output or "")[:3000]
+            criteria_text = "\n".join(f"  - {c}" for c in exercise.acceptance_criteria)
+
+            prompt = (
+                f"You are a senior {self.name} domain expert grading a training exercise.\n\n"
+                f"## Exercise\n"
+                f"**Title:** {exercise.description[:200]}\n"
+                f"**Difficulty:** {exercise.difficulty}\n"
+                f"**Acceptance Criteria:**\n{criteria_text}\n\n"
+                f"## Agent Output\n"
+                f"**Status:** {result.status}\n"
+                f"**Files produced:** {result.files_changed}\n"
+                f"**Output (truncated):**\n```\n{output_preview}\n```\n\n"
+                f"{domain_context}\n\n"
+                f"## Grading Instructions\n"
+                f"Score the attempt 0-100. For each acceptance criterion, mark pass/fail.\n"
+                f"Be strict but fair. Partial credit is OK.\n\n"
+                f"Return JSON only:\n"
+                f'{{"score": N, "passed": true/false, '
+                f'"criteria_results": {{"criterion_text": true/false, ...}}, '
+                f'"feedback": "one paragraph assessment", '
+                f'"improvement_hints": ["hint1", "hint2"]}}'
+            )
+
+            response = llm_gateway.generate(
+                prompt,
+                system_prompt="You are a strict but fair technical grader. Return valid JSON only.",
+                trace_name=f"gym.llm_grade.{self.name}",
+            )
+
+            # Parse JSON from response
+            import json as _json
+            import re as _re
+            cleaned = response.replace("```json", "").replace("```", "").strip()
+            match = _re.search(r'\{[\s\S]*\}', cleaned)
+            if match:
+                parsed = _json.loads(match.group(0))
+                return {
+                    "score": max(0, min(100, float(parsed.get("score", 0)))),
+                    "passed": bool(parsed.get("passed", False)),
+                    "criteria_results": parsed.get("criteria_results", {}),
+                    "feedback": str(parsed.get("feedback", "")),
+                    "improvement_hints": list(parsed.get("improvement_hints", [])),
+                }
+
+            return {"score": 0, "error": "Could not parse LLM grading response"}
+
+        except Exception as exc:
+            self.logger.debug("LLM grading failed: %s", exc)
+            return {"score": 0, "error": str(exc)}
+
+    def _combined_grade(
+        self,
+        exercise: "Exercise",
+        result: "RunResult",
+        structural_score: float,
+        structural_criteria: dict,
+        structural_hints: list[str],
+        domain_context: str = "",
+    ) -> "ExerciseScore":
+        """
+        Combine structural grading (fast, deterministic) with LLM-as-judge (deep, semantic).
+
+        Weights: 40% structural + 60% LLM judgment.
+        Falls back to 100% structural if LLM unavailable.
+        """
+        llm_result = self._llm_grade(exercise, result, domain_context)
+
+        if "error" in llm_result:
+            # LLM unavailable — use structural only
+            final_score = min(structural_score, 100.0)
+            return ExerciseScore(
+                exercise_id=exercise.id,
+                passed=final_score >= 50,
+                score=final_score,
+                criteria_results=structural_criteria,
+                feedback="Graded by structural checks only (LLM unavailable)",
+                improvement_hints=structural_hints,
+            )
+
+        # Blend: 40% structural + 60% LLM
+        llm_score = llm_result["score"]
+        final_score = min(structural_score * 0.4 + llm_score * 0.6, 100.0)
+
+        # Merge criteria
+        merged_criteria = {**structural_criteria}
+        for k, v in llm_result.get("criteria_results", {}).items():
+            merged_criteria[f"llm:{k}"] = v
+
+        # Merge hints
+        merged_hints = list(structural_hints)
+        for h in llm_result.get("improvement_hints", []):
+            if h not in merged_hints:
+                merged_hints.append(h)
+
+        return ExerciseScore(
+            exercise_id=exercise.id,
+            passed=final_score >= 50,
+            score=round(final_score, 1),
+            criteria_results=merged_criteria,
+            feedback=llm_result.get("feedback", ""),
+            improvement_hints=merged_hints,
+        )
+
     # ── Shared helpers ──────────────────────────────────────────────────
 
     def _new_run_id(self) -> str:
@@ -377,6 +539,19 @@ def register_runner(runner: BaseRunner) -> None:
     logger.info("Registered runner '%s' for roles: %s", runner.name, runner.roles)
 
 
+def register_supplementary_runner(runner: BaseRunner) -> None:
+    """
+    Register a supplementary runner (does NOT override primary role mappings).
+
+    The runner instance is available via get_runner_by_name() but does NOT
+    replace the primary runner for any role. Use for runners that provide
+    additional capabilities to roles that already have a primary runner
+    (e.g., browser testing for qa_engineer who primarily uses openswe).
+    """
+    _RUNNER_INSTANCES[runner.name] = runner
+    logger.info("Registered supplementary runner '%s' for roles: %s", runner.name, runner.roles)
+
+
 def get_runner_for_role(role: str) -> Optional[BaseRunner]:
     """Get the appropriate domain runner for an agent role."""
     runner_name = _RUNNER_REGISTRY.get(role)
@@ -415,7 +590,7 @@ def get_role_to_runner_map() -> dict[str, str]:
 
 SWE_ROLES = [
     "developer", "qa_engineer", "system_tester", "devops_engineer",
-    "localization_engineer",
+    "localization_engineer", "data_engineer", "agentic_engineer",
 ]
 
 FIRMWARE_ROLES = [
@@ -431,7 +606,7 @@ SIM_ROLES = [
 ]
 
 ML_ROLES = [
-    "data_scientist",
+    "data_scientist", "ml_engineer", "gen_ai_engineer",
 ]
 
 DOC_ROLES = [
@@ -442,6 +617,10 @@ DOC_ROLES = [
 
 DESIGN_ROLES = [
     "ux_designer",
+]
+
+BROWSER_ROLES = [
+    "qa_engineer", "system_tester", "ux_designer",
 ]
 
 STRATEGY_ROLES = [
@@ -466,6 +645,12 @@ ALL_ROLE_FAMILIES = {
     "orchestration": ORCHESTRATION_ROLES,
 }
 
+# Supplementary runner families — roles that have ADDITIONAL capabilities
+# beyond their primary family. Not in ALL_ROLE_FAMILIES to avoid overlap.
+SUPPLEMENTARY_FAMILIES = {
+    "openbrowser": BROWSER_ROLES,  # qa_engineer, system_tester, ux_designer can also do browser testing
+}
+
 
 # ---------------------------------------------------------------------------
 # Auto-import all domain runners to trigger registration
@@ -482,6 +667,7 @@ def _auto_register_runners():
         "src.integrations.openml_runner",
         "src.integrations.opendoc_runner",
         "src.integrations.opendesign_runner",
+        "src.integrations.openbrowser_runner",
         "src.integrations.openstrategy_runner",
     ]
     for mod in runner_modules:

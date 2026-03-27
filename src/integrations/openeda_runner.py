@@ -165,95 +165,86 @@ class OpenEDARunner(BaseRunner):
         return ["task_type", "board_type", "layer_count", "domain"]
 
     def get_exercises(self, difficulty="intermediate"):
-        exercises = {
+        """Load from central catalog (~50 openeda seeds), fall back to hardcoded."""
+        catalog = self._load_catalog_exercises(difficulty)
+        if catalog:
+            return catalog
+        fallback = {
             "beginner": [
-                Exercise(
-                    id="eda-b01", role="pcb_designer", task_type="PCB_DESIGN",
-                    difficulty="beginner",
-                    description="Design a simple LED circuit with resistor on a single-layer PCB",
-                    acceptance_criteria=[
-                        "Schematic has LED and current-limiting resistor",
-                        "DRC clean with 0.2mm minimum clearance",
-                        "ERC shows no unconnected pins",
-                        "Gerber files generated",
-                    ],
-                    expected_artifacts=["led_circuit.kicad_sch", "led_circuit.kicad_pcb"],
-                    tags=["basic", "single-layer"],
-                ),
+                Exercise(id="eda-b01", role="pcb_designer", task_type="PCB_DESIGN",
+                         difficulty="beginner",
+                         description="Design a simple LED circuit with resistor on a single-layer PCB",
+                         acceptance_criteria=["DRC clean", "ERC clean", "Gerber files generated"],
+                         expected_artifacts=["led_circuit.kicad_sch"], tags=["basic", "single-layer"]),
             ],
             "intermediate": [
-                Exercise(
-                    id="eda-i01", role="pcb_designer", task_type="PCB_DESIGN",
-                    difficulty="intermediate",
-                    description="Design a 2-layer Arduino shield with I2C and SPI connectors",
-                    acceptance_criteria=[
-                        "DRC clean", "ERC clean", "2-layer stackup",
-                        "BOM complete with part numbers",
-                        "Layout fits standard Arduino shield dimensions",
-                    ],
-                    expected_artifacts=["shield.kicad_sch", "shield.kicad_pcb", "bom.csv"],
-                    tags=["arduino", "2-layer", "connectors"],
-                ),
+                Exercise(id="eda-i01", role="pcb_designer", task_type="PCB_DESIGN",
+                         difficulty="intermediate",
+                         description="Design a 2-layer Arduino shield with I2C and SPI connectors",
+                         acceptance_criteria=["DRC clean", "ERC clean", "BOM complete"],
+                         expected_artifacts=["shield.kicad_sch", "bom.csv"], tags=["arduino", "2-layer"]),
             ],
             "advanced": [
-                Exercise(
-                    id="eda-a01", role="pcb_designer", task_type="PCB_DESIGN",
-                    difficulty="advanced",
-                    description="Design a 4-layer USB-C power delivery board with ESD protection",
-                    acceptance_criteria=[
-                        "DRC clean", "ERC clean", "4-layer controlled impedance stackup",
-                        "USB differential pair: 90 ohm impedance",
-                        "ESD protection on all external connectors",
-                        "Gerber output with drill files",
-                    ],
-                    expected_artifacts=["usb_pd.kicad_sch", "usb_pd.kicad_pcb", "stackup.txt", "bom.csv"],
-                    tags=["usb-c", "4-layer", "impedance", "advanced"],
-                ),
+                Exercise(id="eda-a01", role="pcb_designer", task_type="PCB_DESIGN",
+                         difficulty="advanced",
+                         description="Design a 4-layer USB-C power delivery board with ESD protection",
+                         acceptance_criteria=["DRC clean", "4-layer impedance controlled", "ESD protection"],
+                         expected_artifacts=["usb_pd.kicad_sch", "stackup.txt"], tags=["usb-c", "4-layer"]),
             ],
         }
-        return exercises.get(difficulty, exercises["intermediate"])
+        return fallback.get(difficulty, fallback["intermediate"])
 
     def grade_exercise(self, exercise, result):
+        """Structural checks (40%) + LLM-as-judge (60%)."""
         score = 0.0
-        criteria_results = {}
+        criteria = {}
         hints = []
 
         if result.status == "completed":
             score += 25
-            criteria_results["execution_success"] = True
-
-        # Artifacts
-        expected = set(exercise.expected_artifacts)
-        produced = set(result.files_changed) | {a.get("path", "") for a in result.artifacts}
-        match = len(expected & produced) / max(len(expected), 1)
-        score += match * 25
-        criteria_results["artifacts_match"] = match >= 0.5
+            criteria["execution_success"] = True
 
         # DRC/ERC metrics
         metrics = result.metrics or {}
         if metrics.get("drc_errors", -1) == 0:
             score += 20
-            criteria_results["drc_clean"] = True
+            criteria["drc_clean"] = True
         else:
-            criteria_results["drc_clean"] = False
+            criteria["drc_clean"] = False
             hints.append("Ensure DRC passes with zero errors")
 
         if metrics.get("erc_errors", -1) == 0:
             score += 15
-            criteria_results["erc_clean"] = True
+            criteria["erc_clean"] = True
 
-        # EDA keywords in output
-        eda_kws = ["schematic", "pcb", "trace", "clearance", "component", "footprint", "net"]
+        # EDA keywords
         output_lower = (result.output or "").lower()
-        if sum(1 for k in eda_kws if k in output_lower) >= 2:
+        eda_kws = ["schematic", "pcb", "trace", "clearance", "component", "footprint",
+                    "net", "via", "copper", "layer", "stackup", "impedance"]
+        if sum(1 for k in eda_kws if k in output_lower) >= 3:
             score += 15
+            criteria["eda_patterns"] = True
 
-        score = min(score, 100.0)
-        return ExerciseScore(
-            exercise_id=exercise.id, passed=score >= 50, score=score,
-            criteria_results=criteria_results,
-            feedback="Good PCB design" if score >= 70 else "Review EDA best practices",
-            improvement_hints=hints,
+        # BOM / manufacturing readiness
+        mfg_kws = ["bom", "gerber", "drill", "part number", "footprint"]
+        if sum(1 for k in mfg_kws if k in output_lower) >= 1:
+            score += 10
+            criteria["manufacturing_ready"] = True
+
+        if result.verification and result.verification.passed:
+            score += 15
+            criteria["verification_passed"] = True
+
+        return self._combined_grade(
+            exercise, result, min(score, 100.0), criteria, hints,
+            domain_context=(
+                "Grade as a senior PCB/EDA engineer. Check for:\n"
+                "- Correct schematic symbols and connections\n"
+                "- DRC/ERC compliance, trace width/spacing rules\n"
+                "- Controlled impedance for high-speed signals\n"
+                "- Proper decoupling, power plane integrity\n"
+                "- Manufacturing readiness (Gerbers, BOM, drill files)"
+            ),
         )
 
 

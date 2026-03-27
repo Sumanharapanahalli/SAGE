@@ -170,102 +170,102 @@ class OpenMLRunner(BaseRunner):
         return ["task_type", "data_type", "model_family", "metric_target", "domain"]
 
     def get_exercises(self, difficulty="intermediate"):
-        exercises = {
+        """Load from central catalog (~60 openml seeds), fall back to hardcoded."""
+        catalog = self._load_catalog_exercises(difficulty)
+        if catalog:
+            return catalog
+        fallback = {
             "beginner": [
-                Exercise(
-                    id="ml-b01", role="data_scientist", task_type="ML_MODEL",
-                    difficulty="beginner",
-                    description="Train an iris flower classifier using scikit-learn",
-                    acceptance_criteria=[
-                        "Model accuracy > 0.90 on test set",
-                        "Uses stratified train/test split",
-                        "Evaluates with classification report",
-                        "No data leakage (scaler fit on train only)",
-                    ],
-                    expected_artifacts=["train.py", "requirements.txt"],
-                    tags=["classification", "sklearn", "beginner"],
-                ),
+                Exercise(id="ml-b01", role="data_scientist", task_type="ML_MODEL",
+                         difficulty="beginner",
+                         description="Train an iris flower classifier using scikit-learn",
+                         acceptance_criteria=["Accuracy > 0.90", "Stratified split", "No data leakage"],
+                         expected_artifacts=["train.py"], tags=["classification", "sklearn"]),
             ],
             "intermediate": [
-                Exercise(
-                    id="ml-i01", role="data_scientist", task_type="ML_MODEL",
-                    difficulty="intermediate",
-                    description="Build a credit card fraud detector handling class imbalance",
-                    acceptance_criteria=[
-                        "Handles class imbalance (SMOTE or class weights)",
-                        "F1 score > 0.75 on minority class",
-                        "No data leakage in pipeline",
-                        "Experiment tracked with MLflow",
-                        "Model evaluation includes precision-recall curve",
-                    ],
-                    expected_artifacts=["fraud_detector.py", "evaluate.py", "requirements.txt"],
-                    tags=["classification", "imbalanced", "fraud"],
-                ),
+                Exercise(id="ml-i01", role="data_scientist", task_type="ML_MODEL",
+                         difficulty="intermediate",
+                         description="Build a credit card fraud detector handling class imbalance",
+                         acceptance_criteria=["Handles imbalance", "F1 > 0.75 on minority", "No leakage"],
+                         expected_artifacts=["fraud_detector.py"], tags=["classification", "imbalanced"]),
             ],
             "advanced": [
-                Exercise(
-                    id="ml-a01", role="data_scientist", task_type="ML_MODEL",
-                    difficulty="advanced",
-                    description="Build an end-to-end time series forecasting pipeline for energy demand",
-                    acceptance_criteria=[
-                        "Feature engineering includes lag, rolling, calendar features",
-                        "Model comparison (at least 2 approaches)",
-                        "RMSE and MAPE metrics reported",
-                        "Walk-forward validation (not random split)",
-                        "Inference latency < 100ms",
-                    ],
-                    expected_artifacts=["pipeline.py", "features.py", "evaluate.py", "requirements.txt"],
-                    tags=["timeseries", "forecasting", "advanced"],
-                ),
+                Exercise(id="ml-a01", role="data_scientist", task_type="ML_MODEL",
+                         difficulty="advanced",
+                         description="Build end-to-end time series forecasting pipeline",
+                         acceptance_criteria=["Feature engineering", "Model comparison", "Walk-forward validation"],
+                         expected_artifacts=["pipeline.py", "evaluate.py"], tags=["timeseries", "forecasting"]),
             ],
         }
-        return exercises.get(difficulty, exercises["intermediate"])
+        return fallback.get(difficulty, fallback["intermediate"])
 
     def grade_exercise(self, exercise, result):
+        """Structural checks (40%) + LLM-as-judge (60%)."""
         score = 0.0
-        criteria_results = {}
+        criteria = {}
         hints = []
 
         if result.status == "completed":
             score += 20
-            criteria_results["execution_success"] = True
+            criteria["execution_success"] = True
 
-        expected = set(exercise.expected_artifacts)
-        produced = set(result.files_changed)
-        match = len(expected & produced) / max(len(expected), 1)
-        score += match * 20
-        criteria_results["artifacts_match"] = match >= 0.5
-
+        # Model metrics from runner
         metrics = result.metrics or {}
-        # Check model metrics
         acc = metrics.get("accuracy")
         f1 = metrics.get("f1")
         if acc is not None and acc > 0:
             score += 15
-            criteria_results["has_accuracy"] = True
+            criteria["has_accuracy"] = True
             if acc >= 0.99:
                 hints.append("Perfect accuracy may indicate data leakage")
                 score -= 5
         if f1 is not None and f1 > 0:
             score += 10
-            criteria_results["has_f1"] = True
+            criteria["has_f1"] = True
 
-        # ML keywords
+        # ML patterns
         output_lower = (result.output or "").lower()
-        ml_kws = ["train", "test", "split", "fit", "predict", "score", "accuracy"]
-        if sum(1 for k in ml_kws if k in output_lower) >= 3:
+        ml_kws = ["train", "test", "split", "fit", "predict", "score", "accuracy",
+                   "loss", "epoch", "batch", "pipeline", "cross_val", "grid_search"]
+        kw_hits = sum(1 for k in ml_kws if k in output_lower)
+        if kw_hits >= 3:
             score += 15
-            criteria_results["ml_patterns"] = True
+            criteria["ml_patterns"] = True
+
+        # Data leakage awareness
+        leakage_kws = ["data leakage", "train_test_split", "pipeline", "stratif", "cross_val"]
+        if sum(1 for k in leakage_kws if k in output_lower) >= 1:
+            score += 10
+            criteria["leakage_awareness"] = True
+
+        # Evaluation rigor
+        eval_kws = ["classification_report", "confusion_matrix", "precision", "recall",
+                     "roc_auc", "rmse", "mape", "r2_score"]
+        if sum(1 for k in eval_kws if k in output_lower) >= 1:
+            score += 10
+            criteria["proper_evaluation"] = True
+        else:
+            hints.append("Include proper evaluation metrics (classification_report, confusion_matrix)")
+
+        # Experiment tracking
+        if any(k in output_lower for k in ["mlflow", "wandb", "experiment", "log_metric"]):
+            score += 5
+            criteria["experiment_tracking"] = True
 
         if result.verification and result.verification.passed:
-            score += 10
+            score += 15
+            criteria["verification_passed"] = True
 
-        score = max(0.0, min(score, 100.0))
-        return ExerciseScore(
-            exercise_id=exercise.id, passed=score >= 50, score=score,
-            criteria_results=criteria_results,
-            feedback="Solid ML work" if score >= 70 else "Review ML best practices",
-            improvement_hints=hints,
+        return self._combined_grade(
+            exercise, result, max(0.0, min(score, 100.0)), criteria, hints,
+            domain_context=(
+                "Grade as a senior ML engineer. Check for:\n"
+                "- No data leakage (scaler/encoder fit on train only, no future info)\n"
+                "- Proper train/val/test splits (stratified for classification)\n"
+                "- Appropriate metrics for the problem type\n"
+                "- Reproducibility (random seeds, versioned data, experiment tracking)\n"
+                "- Model selection methodology (cross-validation, not just accuracy)"
+            ),
         )
 
 

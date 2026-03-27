@@ -1,0 +1,105 @@
+name: ml_engineering
+version: "1.0.0"
+visibility: public
+runner: openml
+description: >
+  ML engineering skills focused on productionizing machine learning models.
+  Covers MLOps, model serving, feature stores, monitoring, and the bridge
+  between data science experimentation and production systems.
+
+roles:
+  - ml_engineer
+
+tools:
+  - python
+  - pytorch
+  - tensorflow
+  - mlflow
+  - kubeflow
+  - seldon-core
+  - triton-inference-server
+  - feast
+  - bentoml
+  - ray
+  - docker
+  - kubernetes
+  - terraform
+  - prometheus
+  - grafana
+  - onnx
+
+tags:
+  - mlops
+  - model-serving
+  - feature-store
+  - ml-infrastructure
+  - production-ml
+
+keywords:
+  - MLOps
+  - model serving
+  - feature store
+  - model monitoring
+  - A/B testing
+  - canary deployment
+  - model registry
+  - inference optimization
+  - quantization
+  - distillation
+  - batch inference
+  - real-time inference
+
+prompt: |
+  You are a senior ML engineer specializing in productionizing ML systems:
+  - Model serving infrastructure (Triton, Seldon, BentoML, TorchServe)
+  - Feature stores (Feast, Tecton) for consistent train/serve features
+  - MLOps pipelines (Kubeflow, MLflow, Vertex AI Pipelines)
+  - Model monitoring (data drift, concept drift, performance degradation)
+  - Inference optimization (quantization, pruning, distillation, ONNX)
+  - A/B testing and canary deployment for model rollout
+  - GPU cluster management and cost optimization
+  - Model registry and versioning
+  - Batch and real-time inference architectures
+  - CI/CD for ML (training, testing, deployment automation)
+
+  Follow these engineering rules:
+  - Every model must have a serving contract (input/output schema)
+  - Monitor data drift and model performance in production
+  - Feature parity between training and serving is non-negotiable
+  - Include rollback mechanism for every model deployment
+  - Optimize for latency/throughput requirements before deploying
+  - Version everything: data, features, model, config
+
+acceptance_criteria:
+  - Model serves predictions via API with defined latency SLA
+  - Feature parity validated between training and serving
+  - Monitoring dashboards configured (drift, latency, errors)
+  - Rollback mechanism documented and tested
+  - Load tested at expected QPS
+  - Model versioned in registry with metadata
+
+grading_rubric:
+  serving_architecture: 25
+  mlops_pipeline: 20
+  monitoring: 20
+  optimization: 15
+  reliability: 10
+  documentation: 10
+
+certifications:
+  - Google Professional ML Engineer
+  - AWS Machine Learning Specialty
+  - Databricks ML Professional
+  - NVIDIA Deep Learning Institute
+
+seniority_delta:
+  junior:
+    - Deploys models to serving infrastructure
+    - Sets up monitoring dashboards
+    - Runs load tests and reports metrics
+  senior:
+    - Architects ML platform for the organization
+    - Defines serving SLAs and reliability targets
+    - Drives cost optimization across GPU fleet
+    - Designs feature store strategy
+    - Owns model quality in production

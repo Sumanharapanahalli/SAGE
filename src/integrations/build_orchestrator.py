@@ -241,13 +241,17 @@ TASK_TYPE_TO_AGENT = {
 WORKFORCE_REGISTRY = {
     "engineering": {
         "lead": "developer",
-        "members": ["qa_engineer", "system_tester", "devops_engineer", "localization_engineer"],
-        "capabilities": ["code generation", "testing", "deployment", "i18n"],
+        "members": ["qa_engineer", "system_tester", "devops_engineer", "localization_engineer",
+                     "data_engineer", "agentic_engineer"],
+        "capabilities": ["code generation", "testing", "deployment", "i18n",
+                         "data pipelines", "agent frameworks"],
     },
     "analysis": {
         "lead": "analyst",
-        "members": ["business_analyst", "financial_analyst", "data_scientist"],
-        "capabilities": ["data analysis", "business modeling", "market research"],
+        "members": ["business_analyst", "financial_analyst", "data_scientist",
+                     "ml_engineer", "gen_ai_engineer"],
+        "capabilities": ["data analysis", "business modeling", "market research",
+                         "MLOps", "LLM applications", "RAG pipelines"],
     },
     "design": {
         "lead": "ux_designer",
@@ -268,6 +272,12 @@ WORKFORCE_REGISTRY = {
         "lead": "firmware_engineer",
         "members": ["pcb_designer", "embedded_tester", "hardware_sim_engineer"],
         "capabilities": ["firmware development", "PCB design", "HIL testing", "hardware simulation"],
+    },
+    "quality": {
+        "lead": "qa_engineer",
+        "members": ["system_tester", "ux_designer"],
+        "capabilities": ["browser testing", "QA automation", "accessibility auditing",
+                         "visual regression", "performance benchmarking", "security scanning"],
     },
 }
 
@@ -315,6 +325,11 @@ ARTIFACT_TYPES = {
     "PRODUCT":       {"category": "document", "extensions": [".md", ".yaml"], "validator": "prose"},
     "OPERATIONS":    {"category": "document", "extensions": [".md", ".yaml"], "validator": "prose"},
     "LOCALIZATION":  {"category": "code", "extensions": [".json", ".yaml", ".po", ".xliff"], "validator": "syntax"},
+    # QA/Browser artifacts
+    "BROWSER_QA":    {"category": "qa", "extensions": [".json", ".png", ".md"], "validator": "prose"},
+    "BROWSER_A11Y":  {"category": "qa", "extensions": [".json", ".md"], "validator": "prose"},
+    "BROWSER_PERF":  {"category": "qa", "extensions": [".json", ".md"], "validator": "prose"},
+    "SECURITY_AUDIT":{"category": "qa", "extensions": [".json", ".md"], "validator": "prose"},
 }
 
 # ---------------------------------------------------------------------------

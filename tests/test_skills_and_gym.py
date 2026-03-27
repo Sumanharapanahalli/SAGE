@@ -235,6 +235,12 @@ class TestPublicSkillYAMLs(unittest.TestCase):
         "ux_design",
         "product_strategy",
         "software_engineering",
+        "data_engineering",
+        "ml_engineering",
+        "gen_ai_engineering",
+        "agentic_engineering",
+        "browser_testing",
+        "security_audit",
     ]
 
     REQUIRED_FIELDS = ["name", "version", "roles", "runner", "tools", "prompt", "acceptance_criteria"]
