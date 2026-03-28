@@ -626,8 +626,11 @@ class CriticAgent:
         if pool.get("gemini"):
             return
         try:
-            from src.core.llm_gateway import GeminiCLIProvider
-            temp = GeminiCLIProvider({"gemini_model": "gemini-2.5-flash", "timeout": 120})
+            from src.core.llm_gateway import GeminiCLIProvider, _load_config
+            cfg = _load_config()
+            llm_cfg = cfg.get("llm", {})
+            gemini_timeout = llm_cfg.get("gemini_timeout", llm_cfg.get("timeout", 30))
+            temp = GeminiCLIProvider({"gemini_model": "gemini-2.5-flash", "gemini_timeout": gemini_timeout})
             if temp.gemini_path:
                 pool.register("gemini", temp)
                 self.logger.info("Auto-registered Gemini as critic provider")
