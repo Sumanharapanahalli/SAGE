@@ -1511,6 +1511,12 @@ class BuildOrchestrator:
             run["plan"] = plan
             run["updated_at"] = datetime.now(timezone.utc).isoformat()
 
+            # Store detected domains for downstream use
+            matched = self._matched_domains(product_description)
+            run["detected_domains"] = [
+                did for did, rule in DOMAIN_RULES.items() if rule in matched
+            ]
+
             if not plan:
                 run["state"] = "failed"
                 run["error"] = "Planner could not decompose the product description"
@@ -2578,13 +2584,22 @@ class BuildOrchestrator:
     # Critic integration
     # ------------------------------------------------------------------
 
-    def _revise_plan(self, plan: list, review: dict) -> list:
+    def _revise_plan(
+        self, plan: list, review: dict, *,
+        product_description: str = "", domain_hints: str = "",
+    ) -> list:
         """
         Revision function for the actor-critic loop.
 
         Takes the current plan and critic review, asks the LLM to produce
         a revised plan addressing the critic's feedback. Returns the
         revised plan (list of task dicts).
+
+        Key principles:
+        - Surgical: only modify tasks flagged by the critic
+        - Product-aware: always include the product description
+        - Constrained: only use valid BUILD_TASK_TYPES
+        - Preserving: keep unflagged tasks verbatim
         """
         from src.core.llm_gateway import llm_gateway
 
@@ -2593,29 +2608,51 @@ class BuildOrchestrator:
         missing = review.get("missing", [])
         score = review.get("score", 0)
 
+        # Build focused feedback — only what needs changing
         feedback_lines = []
         if flaws:
-            feedback_lines.append("Flaws identified:\n" + "\n".join(f"- {f}" for f in flaws))
-        if suggestions:
-            feedback_lines.append("Suggestions:\n" + "\n".join(f"- {s}" for s in suggestions))
+            feedback_lines.append("FLAWS (must fix):\n" + "\n".join(f"- {f}" for f in flaws[:5]))
         if missing:
-            feedback_lines.append("Missing elements:\n" + "\n".join(f"- {m}" for m in missing))
+            feedback_lines.append("MISSING (must add):\n" + "\n".join(f"- {m}" for m in missing[:5]))
+        if suggestions:
+            feedback_lines.append("SUGGESTIONS (optional):\n" + "\n".join(f"- {s}" for s in suggestions[:3]))
+
+        # Build compact plan representation (all tasks, compressed)
+        compact_plan = []
+        for t in plan:
+            compact_plan.append({
+                "step": t.get("step"),
+                "task_type": t.get("task_type"),
+                "description": t.get("description", "")[:100],
+                "agent_role": t.get("agent_role"),
+                "depends_on": t.get("depends_on", []),
+            })
+
+        # Valid task types for reference
+        valid_types = ", ".join(sorted(BUILD_TASK_TYPES))
 
         prompt = (
-            f"You are revising a build plan that scored {score}/100.\n\n"
-            f"Critic feedback:\n{'\\n'.join(feedback_lines)}\n\n"
-            f"Current plan ({len(plan)} tasks):\n"
-            f"{json.dumps(plan[:30], indent=2, default=str)[:6000]}\n\n"
-            f"Revise the plan to address the critic's feedback. "
-            f"Return ONLY a JSON array of task objects. Each task must have: "
-            f"step, task_type, description, agent_role, depends_on, acceptance_criteria.\n"
-            f"Keep existing good tasks. Add missing ones. Fix flawed ones."
+            f"## Product\n{product_description[:500]}\n\n"
+            f"{'## Domain Context' + chr(10) + domain_hints[:300] + chr(10)*2 if domain_hints else ''}"
+            f"## Current Plan ({len(plan)} tasks, scored {score}/100)\n"
+            f"{json.dumps(compact_plan, indent=1, default=str)}\n\n"
+            f"## Critic Feedback\n{''.join(feedback_lines)}\n\n"
+            f"## Valid Task Types\n{valid_types}\n\n"
+            f"## Revision Rules\n"
+            f"1. PRESERVE all tasks NOT mentioned in flaws — copy them verbatim\n"
+            f"2. FIX only the tasks flagged as flawed — make targeted changes\n"
+            f"3. ADD new tasks only for items listed in MISSING\n"
+            f"4. Every task_type MUST be from the valid types list above\n"
+            f"5. Keep the total task count within ±5 of the original ({len(plan)} tasks)\n"
+            f"6. Return ONLY a JSON array of task objects with: "
+            f"step, task_type, description, agent_role, depends_on, acceptance_criteria\n"
         )
 
         try:
             response = llm_gateway.generate(
                 prompt,
-                "You are a build planner that outputs valid JSON arrays of task objects.",
+                "You are a build planner. Output ONLY a valid JSON array. "
+                "Make surgical fixes — do not rewrite the entire plan.",
                 trace_name="build.revise_plan",
             )
             # Parse JSON array from response
@@ -2625,11 +2662,18 @@ class BuildOrchestrator:
             if arr_match:
                 revised = json.loads(arr_match.group(0))
                 if isinstance(revised, list) and len(revised) > 0:
-                    self.logger.info(
-                        "Plan revised: %d → %d tasks",
-                        len(plan), len(revised),
+                    # Validate task types — strip invalid ones
+                    valid = [t for t in revised if t.get("task_type") in BUILD_TASK_TYPES]
+                    if len(valid) >= len(plan) * 0.6:  # don't accept if >40% tasks lost
+                        self.logger.info(
+                            "Plan revised: %d → %d tasks (valid: %d)",
+                            len(plan), len(revised), len(valid),
+                        )
+                        return valid
+                    self.logger.warning(
+                        "Revision lost too many tasks (%d valid out of %d) — keeping original",
+                        len(valid), len(revised),
                     )
-                    return revised
         except Exception as exc:
             self.logger.warning("Plan revision failed: %s", exc)
 
@@ -2670,7 +2714,11 @@ class BuildOrchestrator:
 
             # Closure captures run so revised plans update the run in-place
             def _revise_and_update(plan, review):
-                revised = self._revise_plan(plan, review)
+                revised = self._revise_plan(
+                    plan, review,
+                    product_description=run["product_description"],
+                    domain_hints=self._detect_domain(run["product_description"]),
+                )
                 if revised is not plan:
                     run["plan"] = revised
                 return revised
@@ -2727,9 +2775,30 @@ class BuildOrchestrator:
             from src.agents.critic import critic_agent
 
             integration = run.get("integration_result", {})
+            diff_preview = integration.get("combined_diff_preview", "")
+
+            # Build a meaningful summary for the critic even if diff is sparse
+            if not diff_preview or len(diff_preview.strip()) < 50:
+                # Synthesize a summary from agent results
+                summary_lines = []
+                for r in run.get("agent_results", []):
+                    task_desc = r.get("task", {}).get("description", "")[:80]
+                    res = r.get("result", {})
+                    status = res.get("status", "unknown")
+                    files = res.get("files_changed", [])
+                    code_len = len(res.get("code", ""))
+                    summary_lines.append(
+                        f"- [{status}] {task_desc} — {len(files)} files, {code_len} chars"
+                    )
+                diff_preview = (
+                    f"Integration Summary ({integration.get('total_tasks', 0)} tasks, "
+                    f"{integration.get('completed_tasks', 0)} completed):\n"
+                    + "\n".join(summary_lines[:30])
+                )
+
             return critic_agent.review_with_loop(
                 review_fn="integration",
-                artifact=integration.get("combined_diff_preview", ""),
+                artifact=diff_preview,
                 description=run["product_description"],
                 threshold=run.get("critic_threshold", 70),
                 max_iterations=2,
@@ -2764,6 +2833,7 @@ class BuildOrchestrator:
             "product_description": run["product_description"],
             "hitl_level": run.get("hitl_level", "standard"),
             "hitl_gates": run.get("hitl_gates", []),
+            "detected_domains": run.get("detected_domains", []),
             "plan": run.get("plan", []),
             "task_count": len(run.get("plan", [])),
             "critic_scores": critic_scores,

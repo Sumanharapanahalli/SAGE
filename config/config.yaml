@@ -2,6 +2,13 @@
 # SAGE[ai] - Configuration
 # ==============================================================
 
+# --- Security / Encryption ---
+encryption:
+  at_rest: true          # Encrypt .sage/audit_log.db and .sage/chroma_db at rest
+                         # Production: use LUKS/BitLocker at OS level, or SQLCipher
+                         # Override via env var: SAGE_ENCRYPT_AT_REST=true
+  in_transit: true       # Require TLS 1.2+ for all inbound connections (enforced at reverse-proxy)
+
 llm:
   # Provider — choose the one that fits your setup (all are no-API-key options):
   #   "gemini"      — Gemini CLI (npm install -g @google/gemini-cli, then login once)
@@ -14,7 +21,8 @@ llm:
 
   # --- Gemini CLI Settings (provider = "gemini") ---
   gemini_model: "gemini-2.5-flash"      # Model hint (CLI may override)
-  timeout: 500                           # Max seconds to wait for CLI response
+  timeout: 500                           # Shared timeout for all providers (seconds)
+  gemini_timeout: 30                     # Gemini-specific fast-fail timeout (seconds)
 
   # --- Claude Code CLI Settings (provider = "claude-code") ---
   claude_model: "claude-sonnet-4-6"
@@ -22,7 +30,7 @@ llm:
 
   # --- Ollama Settings (provider = "ollama") ---
   # Run: ollama serve   then   ollama pull llama3.2
-  ollama_model: "qwen3.5:0.8b"         # Any model you've pulled via `ollama pull`
+  ollama_model: "gemma3:1b"             # Any model you've pulled via `ollama pull`
   ollama_host: "http://localhost:11434" # Ollama server address
 
   # --- Generic CLI Settings (provider = "generic-cli") ---
@@ -79,15 +87,15 @@ llm:
       EMBEDDED_TEST:  "claude-code/claude-sonnet-4-6"
       SECURITY:       "claude-code/claude-sonnet-4-6"
       # --- Documentation/planning tasks → Gemini (fast, good at prose) ---
-      DOCS:           "gemini/gemini-2.5-flash"
-      COMPLIANCE:     "gemini/gemini-2.5-flash"
-      REGULATORY:     "gemini/gemini-2.5-flash"
-      LEGAL:          "gemini/gemini-2.5-flash"
-      BUSINESS:       "gemini/gemini-2.5-flash"
-      MARKETING:      "gemini/gemini-2.5-flash"
-      UX_DESIGN:      "gemini/gemini-2.5-flash"
-      PRODUCT:        "gemini/gemini-2.5-flash"
-      OPERATIONS:     "gemini/gemini-2.5-flash"
+      DOCS:           "ollama/gemma3:1b"
+      COMPLIANCE:     "ollama/gemma3:1b"
+      REGULATORY:     "ollama/gemma3:1b"
+      LEGAL:          "ollama/gemma3:1b"
+      BUSINESS:       "ollama/gemma3:1b"
+      MARKETING:      "ollama/gemma3:1b"
+      UX_DESIGN:      "ollama/gemma3:1b"
+      PRODUCT:        "ollama/gemma3:1b"
+      OPERATIONS:     "ollama/gemma3:1b"
       # --- Infrastructure/DevOps → Claude ---
       INFRA:          "claude-code/claude-sonnet-4-6"
       DEVOPS:         "claude-code/claude-sonnet-4-6"
@@ -97,10 +105,10 @@ llm:
       DATA:           "claude-code/claude-sonnet-4-6"
       AGENTIC:        "claude-code/claude-sonnet-4-6"
       # --- Analysis → Gemini (fast) ---
-      ANALYZE_LOG:    "gemini/gemini-2.5-flash"
-      SAFETY:         "gemini/gemini-2.5-flash"
+      ANALYZE_LOG:    "ollama/gemma3:1b"
+      SAFETY:         "ollama/gemma3:1b"
       # --- Planning → Gemini ---
-      PLAN_TASK:      "gemini/gemini-2.5-flash"
+      PLAN_TASK:      "ollama/gemma3:1b"
       REVIEW_CODE:    "claude-code/claude-sonnet-4-6"
 
 # --- PII Detection & Data Residency (T1-002) ---

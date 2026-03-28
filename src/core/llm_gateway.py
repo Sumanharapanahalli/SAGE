@@ -133,7 +133,7 @@ class GeminiCLIProvider(LLMProvider):
     def __init__(self, config):
         self.logger = logging.getLogger("GeminiCLI")
         self.model = config.get("gemini_model", "gemini-2.5-flash")
-        self.timeout = config.get("timeout", 120)
+        self.timeout = config.get("gemini_timeout", config.get("timeout", 120))
         self.gemini_path = self._find_gemini()
         self.logger.info("Gemini CLI provider ready (model: %s, path: %s)", self.model, self.gemini_path)
 
@@ -178,11 +178,10 @@ class GeminiCLIProvider(LLMProvider):
             + prompt + "\n"
         )
 
-        # Build environment with required project settings
+        # Build environment with required project settings.
+        # GOOGLE_CLOUD_PROJECT must be set in the environment — no hardcoded fallback (T-I-05).
         env = os.environ.copy()
-        if "GOOGLE_CLOUD_PROJECT" not in env:
-            env["GOOGLE_CLOUD_PROJECT"] = "db-dev-bms-apps"
-        if "GOOGLE_CLOUD_PROJECT_ID" not in env:
+        if "GOOGLE_CLOUD_PROJECT_ID" not in env and "GOOGLE_CLOUD_PROJECT" in env:
             env["GOOGLE_CLOUD_PROJECT_ID"] = env["GOOGLE_CLOUD_PROJECT"]
         # Ensure npm global bin is on PATH
         npm_bin = os.path.join(env.get("APPDATA", ""), "npm")

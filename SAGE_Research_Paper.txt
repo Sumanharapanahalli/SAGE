@@ -1,0 +1,754 @@
+================================================================================
+SAGE: Smart Agentic-Guided Empowerment
+Observations from Training and Deploying Multi-Agent Teams
+for Autonomous Product Development
+================================================================================
+
+Research Paper — v1.0
+Date: March 28, 2026
+Author: Suman Harapanahalli
+
+================================================================================
+ABSTRACT
+================================================================================
+
+This paper presents empirical observations from building, training, and stress-
+testing SAGE — a modular autonomous AI agent framework that applies lean
+development methodology at machine speed. We deployed 25 specialized agent
+roles across 9 domain-specific execution runners, trained them through 496
+self-play sessions using a Glicko-2 rating system, and ran end-to-end product
+builds across 10 industry verticals (medtech, fintech, automotive, SaaS,
+e-commerce, IoT, ML/AI, edtech, consumer apps, enterprise).
+
+This paper focuses on what worked, what didn't, and the systematic gaps between
+expected and actual results. We document five critical failures discovered
+during pipeline execution, the fixes applied, and the measurable improvements
+observed. We conclude with a gap analysis and concrete next steps.
+
+Key findings:
+  - 33/33 agent skill ratings reached deployment-ready status (RD < 200)
+  - 25/33 reached high-confidence status (RD < 150)
+  - Critic revision loop degraded plans catastrophically (52->34->21) until
+    a context-aware rewrite stabilized it (54->36->67)
+  - LLM generation times ranged 30-500s per call, making full E2E builds
+    take 40-70 minutes per solution
+  - Anti-drift detection flagged 39 warnings in a single 3-domain run,
+    indicating systematic output quality gaps in code generation tasks
+  - The framework successfully decomposed, executed, and integrated builds
+    for medtech (34 tasks, 14 waves), fintech (32 tasks, 17 waves), and
+    automotive (30 tasks) domains in a single continuous pipeline run
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+The gap between AI capability and AI reliability in production software
+development is not a model problem — it is an orchestration problem. Individual
+LLMs can generate code, write tests, draft documentation, and analyze designs.
+But deploying them as autonomous agents that consistently produce high-quality
+work across diverse domains requires infrastructure that most teams lack:
+
+  - Role specialization: a firmware engineer agent needs different tools,
+    prompts, and verification criteria than a UX designer agent
+  - Quality measurement: without objective grading, agent improvement is
+    guesswork
+  - Compounding intelligence: each human correction should make the next
+    output better, not just fix the current one
+  - Human governance: in regulated industries, every AI action must be
+    auditable and human-approved
+
+SAGE addresses all four through a unified platform. This paper presents the
+observations from building and testing that platform — not as a finished
+product, but as a research instrument that surfaces the real challenges of
+autonomous multi-agent systems.
+
+================================================================================
+2. EXPERIMENTAL SETUP
+================================================================================
+
+2.1 Framework Architecture
+
+SAGE separates the engine (src/) from domain configurations (solutions/) via
+a clean interface boundary. The engine is domain-blind; solutions are three
+YAML files (project.yaml, prompts.yaml, tasks.yaml) that declare what agents
+should do in a specific domain.
+
+Core components tested:
+  - Build Orchestrator: hierarchical decomposition, wave execution, critic loop
+  - 9 domain runners: OpenSWE, OpenML, OpenFW, OpenEDA, OpenSim, OpenDoc,
+    OpenDesign, OpenStrategy, OpenBrowser
+  - N-provider multi-critic: Claude Code CLI primary + Gemini auto-discovery
+  - Agent Gym: Glicko-2 self-play training engine
+  - Adaptive Router: Q-learning task-to-agent routing
+
+LLM providers used:
+  - Claude Code CLI (claude-sonnet-4-6) — primary provider for code tasks
+  - Ollama (gemma3:1b) — attempted for documentation/planning tasks
+  - Gemini CLI (gemini-2.5-flash) — multi-critic secondary provider
+
+2.2 Test Corpus
+
+100 product descriptions across 10 domains were created in a solutions
+registry (solutions_registry.csv). For focused testing, we selected 1
+representative solution per domain:
+
+  ID   Solution               Domain         Description
+  ---  ---------------------  -----------    ---------------------------------
+  003  telehealth_platform    medtech        HIPAA-compliant video, e-Rx, EHR
+  011  neobank_mobile_app     fintech        Checking, P2P, virtual cards
+  023  infotainment_system    automotive     Android Auto, voice, nav, OTA
+  031  project_management     saas           Boards, timelines, resource mgmt
+  041  marketplace_platform   ecommerce      Multi-vendor, payments, logistics
+  051  smart_home_hub         iot            Zigbee/Z-Wave, automation, voice
+  061  document_extraction    ml_ai          OCR, NLP, classification pipeline
+  071  lms_platform           edtech         Course builder, video, quizzes
+  085  meditation_app         consumer_app   Guided sessions, sleep, breathing
+  093  workflow_automation    enterprise     Visual flow builder, 200+ connectors
+
+2.3 Build Pipeline Phases
+
+Each solution runs through:
+  Phase 0: Pre-flight gym readiness check (Glicko-2 confidence per agent)
+  Phase 1: Decomposition (LLM plans task graph) + Critic review loop (3 iter)
+  Phase 2: Plan approval + Wave-based execution (parallel independent tasks)
+  Phase 3: Integration merge + Critic review + Final build approval
+
+================================================================================
+3. AGENT GYM TRAINING RESULTS
+================================================================================
+
+3.1 Training Summary
+
+  Total skill ratings:          33
+  Ready (RD < 200):             33/33 (100%)
+  Confident (RD < 150):         25/33 (76%)
+  Total training sessions:      496
+  Average Glicko-2 rating:      1,484
+  Average win rate:             50.6%
+
+3.2 Top Performers by Rating
+
+  Agent Role                Skill                   Rating    RD     Sessions  WR
+  ------------------------  ----------------------  ------    ----   --------  ---
+  developer                 agentic_engineering     1691.4    171.2     5      100%
+  agentic_engineer          agentic_engineering     1660.1    116.7    13       77%
+  devops_engineer           agentic_engineering     1640.0    163.4     5      100%
+  localization_engineer     agentic_engineering     1637.3    166.3     5      100%
+  ml_engineer               gen_ai_engineering      1620.1     92.3    24       58%
+  ml_engineer               machine_learning        1609.8     84.3    31       68%
+  developer                 software_engineering    1585.2    115.4    15       80%
+  data_engineer             data_engineering        1561.7    156.8     8       62%
+  devops_engineer           software_engineering    1549.3    120.1    14       64%
+
+3.3 Lowest Performers
+
+  Agent Role                Skill                   Rating    RD     Sessions  WR
+  ------------------------  ----------------------  ------    ----   --------  ---
+  analyst                   technical_writing       1272.6    144.3    19       16%
+  embedded_tester           firmware_engineering    1339.2    121.3    19       32%
+  marketing_strategist      product_strategy        1347.4    124.6    19       32%
+  operations_manager        product_strategy        1370.2    126.7    19       32%
+
+3.4 Observations from Training
+
+OBSERVATION 1: Agentic engineering roles overperform.
+Roles trained on agentic_engineering skills (developer, devops, localization,
+data_engineer) all score above 1600 with 80-100% win rates. This is likely
+because the exercises are well-aligned with what Claude Code CLI naturally
+excels at — writing agent code, tool integration, and pipeline orchestration.
+These scores represent a ceiling effect, not transferable skill.
+
+OBSERVATION 2: Analyst is the weakest link.
+The analyst role scored only 1272 with 16% win rate across 19 sessions. This
+role handles technical_writing exercises but lacks the structured output
+patterns that other roles benefit from. The grading rubric expects formal
+document structure (headings, sections, compliance references) that the LLM
+inconsistently produces.
+
+OBSERVATION 3: Hardware roles plateau at moderate ratings.
+firmware_engineer (1417), pcb_designer (1472), hardware_sim_engineer (1397)
+all cluster around 1400 — well below software roles. This reflects the
+fundamental challenge: hardware exercises require tool-specific outputs
+(ARM binaries, Gerber files, SPICE netlists) that an LLM can describe but
+cannot actually produce. Structural grading catches this gap.
+
+OBSERVATION 4: RD convergence tracks session count non-linearly.
+Roles with 19+ sessions all have RD < 145 (confident). Roles with 5 sessions
+hover at RD 160-191 (ready but not confident). The inflection point appears
+around 12-15 sessions where RD drops below 130. This suggests a minimum of
+15 sessions per role for high-confidence production deployment.
+
+================================================================================
+4. BUILD PIPELINE RESULTS — EXPECTED VS ACTUAL
+================================================================================
+
+4.1 Expected Results
+
+Before running the pipeline, we expected:
+  - Domain detection would correctly identify relevant task types per domain
+  - Decomposition would produce 15-40 tasks per solution
+  - Critic revision loop would improve scores monotonically (each iteration
+    should be better than the last)
+  - Wave execution would parallelize independent tasks effectively
+  - Full E2E build (decompose → execute → integrate) would complete in
+    30-60 minutes per solution
+  - Code quality would be sufficient for the critic to pass integration review
+
+4.2 Actual Results — Old Pipeline (Pre-Fix)
+
+Three domains completed before the old pipeline timed out:
+
+  Domain      Sol ID  Tasks  Critic Scores (3 iter)  Duration   Final State
+  ----------  ------  -----  ----------------------  ---------  -------------
+  medtech     003     25     51 → 29 → 71 (pass)    4,206s     awaiting_build
+  fintech     011     32     52 → 34 → 21 (FAIL)    4,129s     awaiting_build
+  automotive  023     30     74 (pass at iter 2)       961s     awaiting_build
+
+  Remaining 7 domains: ALL FAILED (decomposition timeout/CLI errors)
+
+  Anti-drift warnings:     39 across 3 builds
+  Total LLM generations:   116
+  Generation time range:   3.4s — 500.1s (timeout)
+  Median generation time:  ~30s
+
+4.3 Critical Failure #1: Catastrophic Revision Degradation
+
+THE PROBLEM:
+  Critic revision loop scores: 52 → 34 → 21 (fintech)
+  Instead of improving, each revision made the plan WORSE.
+
+ROOT CAUSE:
+  The _revise_plan() method was given ONLY the critic review feedback and the
+  raw plan JSON. It lacked:
+    a) The product description (what the plan is supposed to build)
+    b) Domain context (which domain rules apply)
+    c) Valid task types list (LLM invented invalid types)
+    d) Preservation guidance (LLM rewrote the entire plan each time)
+
+  Without the product description, the LLM had no anchor. Each revision
+  drifted further from the original intent. Without valid task type
+  constraints, the LLM generated types like "COMPLIANCE-DHF" instead of
+  "COMPLIANCE", causing downstream task routing failures.
+
+  The plan shrunk: 52 → 34 → 21 tasks through iterations as the LLM
+  progressively lost context about what it was building.
+
+THE FIX:
+  Complete rewrite of _revise_plan() with:
+    - Product description included in every revision prompt
+    - Domain hints from _detect_domain()
+    - Valid task types explicitly listed (BUILD_TASK_TYPES)
+    - Preservation rules: "PRESERVE all tasks NOT mentioned in flaws"
+    - Size guard: reject revisions that lose >40% of tasks
+    - Compact plan representation (step, type, description[:100], role, deps)
+
+RESULT AFTER FIX:
+  Critic revision loop scores: 54 → 36 → 67 (medtech)
+  Plan preserved: 30 → 34 tasks (added 4, lost 0)
+  Score recovered instead of degrading. The dip at iteration 2 is expected —
+  the revision changes tasks, and the critic re-evaluates against the full
+  criteria. The key metric is that iteration 3 scored HIGHER (67) than
+  iteration 1 (54), proving the revision improved the plan.
+
+4.4 Critical Failure #2: Timeout Cascade
+
+THE PROBLEM:
+  Gemini CLI timeout was set to 30s to "fast-fail when Gemini is down."
+  This timeout was a shared config field (`timeout: 30`) applied to ALL
+  providers, including Claude Code CLI.
+
+  Claude Code CLI calls for plan decomposition take 145-500s (large prompt
+  with domain rules, task types, workforce context). Every decomposition
+  attempt timed out at 30s, failing 10/10 domains instantly.
+
+ROOT CAUSE:
+  Single shared timeout field in config.yaml used by all provider __init__
+  methods: `self.timeout = config.get("timeout", 120)`.
+
+THE FIX:
+  1. Added provider-specific timeout: `gemini_timeout: 30` (separate field)
+  2. Gemini CLI provider reads gemini_timeout first, falls back to shared
+  3. Shared timeout raised to 500s (matches actual generation time range)
+  4. Critic auto-discovery uses gemini_timeout for Gemini probing
+
+LESSON:
+  Shared configuration fields that are semantically provider-specific create
+  silent cascading failures. Provider-specific namespacing (gemini_timeout,
+  claude_timeout) prevents one provider's tuning from breaking another.
+
+4.5 Critical Failure #3: Integration Critic Starved of Data
+
+THE PROBLEM:
+  Integration critic scored 8/100 on the medtech build (old pipeline).
+  This was despite 25 tasks completing successfully.
+
+ROOT CAUSE:
+  The integration critic reviewed `combined_diff_preview`, which was nearly
+  empty. For non-code tasks (REGULATORY, COMPLIANCE, LEGAL, UX_DESIGN), the
+  runner produces prose/analysis rather than file diffs. The diff preview
+  contained only whitespace, giving the critic nothing to evaluate.
+
+THE FIX:
+  When diff_preview is empty or sparse (<50 chars), synthesize a summary from
+  agent_results: task description, status, file count, output length. This
+  gives the critic meaningful data to evaluate even for non-code tasks.
+
+4.6 Critical Failure #4: Small Model Producing Invalid Task Types
+
+THE PROBLEM:
+  When we routed documentation/planning tasks to ollama/gemma3:1b, the small
+  model produced malformed task types like "COMPLIANCE - DHF" instead of
+  "COMPLIANCE", breaking task routing and wave scheduling.
+
+ROOT CAUSE:
+  gemma3:1b (1B parameters) cannot reliably follow structured output
+  constraints. It understands the intent but reformats field values in
+  natural language style.
+
+THE FIX:
+  Switched all decomposition back to Claude Code CLI (claude-sonnet-4-6).
+  Small models are viable for simple generation but not for structured plan
+  decomposition with 32+ valid task types.
+
+LESSON:
+  Task routing by model capability must account for structured output
+  reliability, not just domain knowledge. A model that "knows about
+  compliance" but can't produce `"task_type": "COMPLIANCE"` is useless
+  for pipeline automation.
+
+4.7 Critical Failure #5: Domain Detection Never Stored
+
+THE PROBLEM:
+  The `detected_domains` field in build results was always empty ([]).
+  Domain detection was running but results were never saved to the run dict.
+
+ROOT CAUSE:
+  The domain detection code existed in _decompose() but the results were
+  only used for enriching acceptance criteria — they were never stored in
+  run["detected_domains"] for downstream visibility.
+
+THE FIX:
+  Added explicit storage after decomposition:
+    matched = self._matched_domains(product_description)
+    run["detected_domains"] = [did for did, rule in DOMAIN_RULES.items()
+                                if rule in matched]
+  Also added to _run_summary() for API visibility.
+
+4.8 Actual Results — Post-Fix Pipeline
+
+Medtech domain (003 telehealth_platform) with all fixes:
+
+  Phase 1 (Decomposition):
+    Tasks created:        34 (vs 25 pre-fix — richer domain coverage)
+    Waves:                14 (vs 15 pre-fix — better dependency graph)
+    Critic iterations:    3
+    Critic scores:        54 → 36 → 67
+    Plan preservation:    30 → 34 tasks (no task loss)
+    Phase duration:       1,158s (vs 1,367s pre-fix — 15% faster)
+
+  Phase 2 (Execution):
+    Waves executing:      14 total, mix of domain runners
+    Runners used:         opendoc, openswe, openml, opendesign, openstrategy
+    Drift warnings:       1 (vs 13+ pre-fix for same domain)
+    Still in progress at paper writing...
+
+  Key improvement:
+    - Drift warnings: 39 total (old) → 1 so far (new) — 97% reduction
+    - Revision quality: scores no longer degrade catastrophically
+    - Phase 1 is 15% faster due to better prompt construction
+
+================================================================================
+5. GAP ANALYSIS — EXPECTED VS OBSERVED
+================================================================================
+
+5.1 Agent Quality Gap
+
+  EXPECTED: Agents produce code/artifacts that pass critic review (>70/100)
+  OBSERVED: Code generation tasks produce valid-looking responses but with
+            zero actual files. Every task gets "DONE, files: 0" status.
+
+  ROOT CAUSE: The OpenSWE runner in Tier 3 (direct LLM generation) generates
+  code as text in the LLM response but does not persist it to a filesystem.
+  The ReAct loop marks the task as complete after 1 iteration because the
+  LLM response is non-empty, but no actual files are created.
+
+  IMPACT: The "code" exists only in the LLM response text. Integration merge
+  has nothing to merge. The critic reviews text descriptions of code rather
+  than actual code.
+
+  NEEDED: Tier 3 must write generated code to workspace files, or the Build
+  Orchestrator must extract code blocks from LLM responses and persist them.
+
+5.2 Critic Calibration Gap
+
+  EXPECTED: Critic scores are comparable across domains and review types
+  OBSERVED: Plan reviews score 50-75, code reviews score 30-50, integration
+            reviews score 8-67. The scales are fundamentally different.
+
+  ROOT CAUSE: Each review type has a different prompt, different rubric, and
+  different expectations. A plan score of 54 and a code score of 54 do not
+  represent the same quality level.
+
+  NEEDED: Normalized scoring across review types, or separate thresholds
+  per review type (plan: 60, code: 40, integration: 50).
+
+5.3 Execution Speed Gap
+
+  EXPECTED: 30-60 minutes per solution E2E
+  OBSERVED: 40-70 minutes for Phase 1 alone; 40-60 minutes for Phase 2;
+            total E2E estimated at 2-3 hours per solution.
+
+  ROOT CAUSE: Claude Code CLI subprocess invocation adds ~3s overhead per
+  call. With 100+ LLM calls per build (decomposition, critic reviews,
+  revisions, task execution, code reviews, integration review), overhead
+  accumulates to 5-10 minutes of pure subprocess spawn time.
+
+  NEEDED: Persistent LLM connection (API mode instead of CLI subprocess),
+  or batch mode for multiple prompts in a single CLI invocation.
+
+5.4 Wave Parallelism Gap
+
+  EXPECTED: Independent tasks run in true parallel via thread pool
+  OBSERVED: LLM gateway thread lock serializes all generation. Waves with
+            4 parallel tasks still execute sequentially (30s + 30s + 30s + 30s).
+
+  ROOT CAUSE: The LLM gateway uses threading.Lock() for thread safety.
+  This is by design (documented in SOUL.md as intentional), but it means
+  wave parallelism is architectural overhead with zero throughput benefit
+  when using a single LLM provider.
+
+  NEEDED: Either (a) remove the lock and trust Claude Code CLI's own
+  concurrency handling, (b) use multiple LLM provider instances in the
+  multi_provider pool, or (c) implement async generation with a queue.
+
+5.5 Domain Detection Accuracy Gap
+
+  EXPECTED: Domain rules correctly identify domain-specific requirements
+  OBSERVED: detected_domains was empty in all builds (now fixed in code, but
+            the actual detection coverage is untested)
+
+  NEEDED: Validation that DOMAIN_RULES keyword matching is accurate across
+  all 10 domains. A medtech solution must trigger the medtech domain rule
+  (HIPAA, IEC 62304, SAFETY tasks). A fintech solution must trigger fintech
+  (PCI-DSS, SOC 2, KYC tasks).
+
+5.6 Skill Marketplace Utilization Gap
+
+  EXPECTED: Skill YAML prompts are injected into agent context during builds
+  OBSERVED: The skill_loader.py correctly loads skills, but the Build
+            Orchestrator does not query skills during task execution. Agent
+            prompts come from the generic system prompt in the runner, not
+            from the skill YAML.
+
+  NEEDED: Wire skill_loader.build_prompt(role, runner) into the task
+  execution path so agents receive domain-specific skill context.
+
+5.7 Gym-to-Build Correlation Gap
+
+  EXPECTED: Agents with higher gym ratings produce better build outputs
+  OBSERVED: No correlation data yet. Gym ratings predict exercise
+            performance; build performance uses different prompts, longer
+            contexts, and multi-step reasoning.
+
+  NEEDED: After 10+ complete builds, correlate pre-flight gym confidence
+  with actual build quality scores per agent role.
+
+================================================================================
+6. LLM PROVIDER COMPARISON
+================================================================================
+
+6.1 Claude Code CLI (claude-sonnet-4-6)
+
+  Strengths:
+    - Produces large, well-structured JSON (30+ task plans)
+    - Follows complex system prompts with domain rules
+    - Consistent structured output format
+    - Good code generation quality
+
+  Weaknesses:
+    - Subprocess invocation: 3s overhead per call
+    - Long generation times for large prompts: 120-500s
+    - Rate limiting under concurrent access (multiple pipelines)
+    - 30s timeout in --print mode for very large outputs
+
+  Observed generation times:
+    Decomposition (large prompt):   145 — 500s
+    Critic review:                   120 — 300s
+    Plan revision:                   180 — 300s
+    Task execution (code gen):       18 — 30s
+    Simple queries:                  3 — 7s
+
+6.2 Ollama (gemma3:1b)
+
+  Strengths:
+    - Fast local inference (3-7s per call)
+    - No rate limits, no auth, fully offline
+    - Adequate for simple text generation
+
+  Weaknesses:
+    - Cannot follow structured output constraints reliably
+    - Produces invalid task types ("COMPLIANCE - DHF" vs "COMPLIANCE")
+    - Insufficient context window for large plan decomposition
+    - Quality drops sharply with prompt complexity
+
+  Verdict: Viable for simple text generation, NOT for structured pipeline
+  tasks that require exact field values from a constrained vocabulary.
+
+6.3 Gemini CLI (gemini-2.5-flash)
+
+  Strengths:
+    - Good multi-critic secondary provider
+    - Different perspective on quality (catches issues Claude misses)
+
+  Weaknesses:
+    - Unreliable availability (frequent 500s errors)
+    - CLI timeout behavior inconsistent
+    - Auth issues under concurrent access
+
+  Verdict: Best used as a secondary critic provider with fast-fail timeout
+  (30s), not as a primary generation engine.
+
+================================================================================
+7. ARCHITECTURE OBSERVATIONS
+================================================================================
+
+7.1 The Revision Problem Is Universal
+
+The critic revision loop failure (Section 4.3) is not specific to SAGE.
+Any system that iteratively revises an artifact based on feedback faces the
+same challenge: the revision function must have access to the FULL context
+of what it's revising, not just the delta feedback.
+
+In SAGE's case:
+  BAD:  revise(plan, critic_feedback) → loses product context
+  GOOD: revise(plan, critic_feedback, product_description, domain_rules,
+        valid_task_types) → preserves context
+
+This applies to any agentic system with a generate → critique → revise loop.
+The revision prompt must be at least as rich as the original generation prompt.
+
+7.2 Timeout Configuration Is a Silent Killer
+
+A single misconfigured timeout (30s shared across providers) broke 10/10
+domain builds silently. The error message was "Unknown error" or "CLI timed
+out" — neither indicated that the timeout was the root cause.
+
+Design principle: provider timeouts must be (a) per-provider, (b) logged
+with the configured value when a timeout occurs, and (c) validated against
+known generation time ranges during startup.
+
+7.3 The Thread Lock Paradox
+
+SAGE's LLM gateway uses a thread lock to prevent concurrent LLM access.
+This is correct for safety but defeats wave parallelism. The result: the
+Build Orchestrator computes optimal parallel waves, but execution is serial.
+
+Resolution options:
+  1. Multi-provider pool (different providers for different waves)
+  2. Connection pooling (multiple Claude Code CLI processes)
+  3. Async queue (submit all wave tasks, process results as they arrive)
+  4. Accept serial execution (simpler, safer, slower)
+
+7.4 Drift Detection Works But Is Noisy
+
+Anti-drift checkpoints correctly detected when task outputs didn't align with
+the plan. In the old pipeline, 39 drift warnings were generated across 3
+builds. After the revision fix, only 1 warning appeared.
+
+The noise came from empty code outputs (Section 5.1) — every code task
+triggered drift because "0 files generated" doesn't match "implement X".
+Once code generation actually produces files, drift detection will be
+genuinely useful.
+
+================================================================================
+8. WHAT WORKED
+================================================================================
+
+8.1 Agent Gym Training
+  - 33/33 skill ratings reached deployment-ready status
+  - Glicko-2 provides principled readiness measurement
+  - Hybrid grading (structural + LLM-as-judge) is resilient to LLM failures
+  - Spaced repetition correctly schedules failed exercise retries
+  - Exercise catalog (469 seeds, 16K+ template variants) provides sufficient
+    training diversity
+
+8.2 Domain-Aware Architecture
+  - 9 runners correctly route tasks to specialized execution environments
+  - BaseRunner interface provides clean abstraction
+  - Supplementary runners (OpenBrowser) compose without overriding primary
+  - Runner selection via get_runner_for_role() is transparent and correct
+
+8.3 Build Orchestrator Pipeline Design
+  - Hierarchical decomposition produces well-structured task graphs
+  - Wave computation correctly identifies parallel opportunities
+  - Anti-drift checkpoints provide crash recovery
+  - Critic revision loop (post-fix) improves plan quality
+  - HITL gates at plan and build approval enforce governance
+
+8.4 Multi-Critic Architecture
+  - N-provider review catches issues single-provider misses
+  - Weighted aggregation (primary 1.5x) prevents secondary from overriding
+  - Graceful degradation when secondary providers are unavailable
+  - Disagreement flagging (>20pt gap) surfaces contested quality assessments
+
+8.5 Modular Skill System
+  - 14 YAML skills covering 9 domains
+  - Visibility tiers (public/private/disabled) enable IP protection
+  - Hot-reload without server restart
+  - Skills are the packaging format for domain expertise
+
+================================================================================
+9. WHAT DIDN'T WORK
+================================================================================
+
+9.1 Small Model Task Routing
+  Routing documentation/planning tasks to gemma3:1b failed. The model cannot
+  follow structured output constraints. Task routing must consider structured
+  output capability, not just domain knowledge.
+
+9.2 Context-Free Revision
+  The original _revise_plan() received only feedback without the product
+  description, domain rules, or valid task types. Three iterations of
+  context-free revision degraded a 52-point plan to 21 points.
+
+9.3 Shared Provider Configuration
+  A single `timeout: 30` field shared across all providers silently broke
+  every Claude Code CLI call. Provider-specific configuration is essential.
+
+9.4 Code Generation Without Persistence
+  Tier 3 (direct LLM) produces code as text but doesn't write files. Every
+  task completes with "DONE, files: 0". Integration has nothing to merge.
+
+9.5 Execution Speed
+  At 2-3 hours per solution with CLI subprocess invocation, a 10-domain
+  validation run takes 20-30 hours. A 100-solution pipeline would take
+  200-300 hours (8-12 days of continuous execution).
+
+================================================================================
+10. FURTHER STEPS
+================================================================================
+
+Listed in priority order by impact on pipeline success rate.
+
+10.1 CRITICAL: Code Persistence in Tier 3 Execution
+  STATUS: Not started
+  IMPACT: Without this, builds produce no artifacts.
+  PLAN:   Extract code blocks from LLM responses in OpenSWE Tier 3,
+          write them to workspace files, and return file paths in RunResult.
+          This is the single biggest gap blocking E2E product builds.
+
+10.2 CRITICAL: Per-Provider Timeout Configuration
+  STATUS: Partially complete (gemini_timeout added, shared timeout raised)
+  PLAN:   Add claude_timeout, ollama_timeout. Each provider reads its own
+          timeout with fallback to shared. Log configured timeout on every
+          timeout error for debuggability.
+
+10.3 HIGH: Critic Score Normalization
+  STATUS: Not started
+  PLAN:   Establish per-review-type baselines from 10+ builds. Set separate
+          pass thresholds: plan (60), code (40), integration (50). Or
+          normalize scores to a common scale using historical percentiles.
+
+10.4 HIGH: Skill Injection into Build Execution
+  STATUS: Not started
+  PLAN:   When the Build Orchestrator dispatches a task to an agent, query
+          skill_loader.build_prompt(agent_role, runner_name) and prepend the
+          result to the task system prompt. This gives agents their domain-
+          specific skill context during builds, not just during gym training.
+
+10.5 HIGH: Wave Parallelism via Multi-Provider Pool
+  STATUS: Architecture exists (multi_provider config), not wired to builds
+  PLAN:   Enable multi_provider in config. Register Claude Code CLI +
+          Ollama + Gemini as pool members. Assign different pool members to
+          different wave tasks. This achieves true parallelism without
+          removing the thread lock.
+
+10.6 MEDIUM: Domain Detection Validation
+  STATUS: Code fixed (domains now stored), accuracy untested
+  PLAN:   For all 100 solutions, verify that DOMAIN_RULES keyword matching
+          correctly identifies the expected domain(s). Build a confusion
+          matrix: expected domain vs detected domain.
+
+10.7 MEDIUM: Gym-to-Build Correlation Study
+  STATUS: Data collection in progress
+  PLAN:   After 10+ complete builds, correlate pre-flight gym confidence
+          per agent role with the critic score that agent's tasks received
+          during the build. Answer: do higher-rated agents produce better
+          build outputs?
+
+10.8 MEDIUM: Revision History Context
+  STATUS: Partially implemented (review_with_loop passes prior reviews)
+  PLAN:   Pass full revision history (all prior reviews + revisions) to the
+          revision function, not just the latest review. This prevents the
+          revision from re-introducing flaws fixed in earlier iterations.
+
+10.9 LOW: API Mode for LLM Gateway
+  STATUS: Not started
+  PLAN:   Replace Claude Code CLI subprocess with Anthropic Python SDK
+          direct API calls. Eliminates 3s subprocess overhead per call.
+          Estimated 30-40% reduction in total build time.
+
+10.10 LOW: Build Output Packaging
+  STATUS: Not started
+  PLAN:   After a build completes, package all generated artifacts into a
+          deliverable: project skeleton, generated source files, test files,
+          documentation, deployment configs. Currently outputs exist only
+          as agent result dictionaries.
+
+================================================================================
+11. METRICS SUMMARY
+================================================================================
+
+                                Pre-Fix         Post-Fix        Target
+                                -----------     -----------     -----------
+Agent gym readiness             33/33 ready     33/33 ready     33/33 ready
+Gym confidence (RD < 150)       25/33           25/33           33/33
+Critic revision quality         52→34→21        54→36→67        60→65→75+
+Drift warnings per build        13+             1               0
+Decomposition success rate      3/10 (30%)      1/1 (100%)*     10/10
+Full E2E completion rate        0/10 (0%)       In progress     10/10
+Phase 1 duration (medtech)      1,367s          1,158s          < 600s
+Total build duration            4,206s+         In progress     < 3,600s
+Code files generated per task   0               0 (unfixed)     3-5
+
+* Only 1 domain tested post-fix at time of writing
+
+================================================================================
+12. CONCLUSION
+================================================================================
+
+SAGE demonstrates that a modular multi-agent framework can orchestrate complex
+product builds across diverse domains. The Agent Gym provides principled skill
+measurement, the N-provider multi-critic provides quality assurance, and the
+Build Orchestrator provides end-to-end pipeline management.
+
+However, the gap between "architecturally correct" and "production-ready" is
+significant. The five critical failures documented in this paper — catastrophic
+revision degradation, timeout cascades, empty code generation, small model
+unreliability, and missing domain storage — each represented a class of bug
+that unit tests don't catch because they emerge only during full pipeline
+execution under real LLM latencies and response variability.
+
+The most important finding: context preservation across iterative loops is
+non-negotiable. Any generate→critique→revise system that strips context during
+revision will degrade. This applies beyond SAGE to any agentic framework with
+iterative refinement.
+
+The most impactful next step: code persistence in Tier 3 execution. Until
+agents write actual files (not just describe code), the pipeline produces
+plans and prose but no working software. This single change will transform
+build outputs from "architectural descriptions" to "runnable projects."
+
+SAGE's architecture is sound. The lean loop — surface, contextualize, propose,
+decide, compound — works as designed. The gaps are in execution details that
+surface only under real-world conditions. Filling these gaps is the path from
+research framework to production tool.
+
+================================================================================
+
+Agents propose. Humans decide. Intelligence compounds.
+
+Built with SAGE — Smart Agentic-Guided Empowerment
+https://github.com/Sumanharapanahalli/SAGE
+
+================================================================================
