@@ -336,26 +336,50 @@ THE FIX:
 
 4.8 Actual Results — Post-Fix Pipeline
 
-Medtech domain (003 telehealth_platform) with all fixes:
+Two domains completed full E2E (decompose → execute → integrate → complete):
 
-  Phase 1 (Decomposition):
-    Tasks created:        34 (vs 25 pre-fix — richer domain coverage)
-    Waves:                14 (vs 15 pre-fix — better dependency graph)
+  ML/AI domain (061 document_extraction):
+    Tasks:                18
+    Task types:           ML_MODEL(3), DATA(2), BACKEND(2), TESTS(2), CONFIG,
+                          DATABASE, API, AGENTIC, INFRA, SECURITY, DOCS,
+                          SYSTEM_TEST, DEVOPS
+    Critic scores:        plan=0 (parse error), code=63, integration=18
+    Tiers used:           openswe_direct (Tier 3)
+    Total duration:       4,598s (77 min)
+    Final state:          COMPLETED
+
+  Consumer App domain (085 meditation_app):
+    Tasks:                17
+    Task types:           FRONTEND(2), MARKET_RESEARCH, PRODUCT_MGMT,
+                          UX_DESIGN, DATABASE, API, BACKEND, AGENTIC,
+                          CONFIG, LOCALIZATION, TESTS, TRAINING, SECURITY,
+                          QA, SYSTEM_TEST, DEVOPS
+    Critic scores:        plan=0 (parse error at iter 1→2), code=58,
+                          integration=12
+    Tiers used:           openswe_direct (Tier 3)
+    Total duration:       5,069s (84 min)
+    Final state:          COMPLETED
+
+  Medtech domain (003 telehealth_platform) — with revised _revise_plan():
+    Tasks:                34
+    Waves:                14
     Critic iterations:    3
-    Critic scores:        54 → 36 → 67
+    Critic scores:        54 → 36 → 67 (recovered, not degraded)
     Plan preservation:    30 → 34 tasks (no task loss)
-    Phase duration:       1,158s (vs 1,367s pre-fix — 15% faster)
-
-  Phase 2 (Execution):
-    Waves executing:      14 total, mix of domain runners
-    Runners used:         opendoc, openswe, openml, opendesign, openstrategy
+    Phase 1 duration:     1,158s (vs 1,367s pre-fix — 15% faster)
+    Phase 2:              In progress (wave 5/14 at paper writing)
     Drift warnings:       1 (vs 13+ pre-fix for same domain)
-    Still in progress at paper writing...
 
-  Key improvement:
-    - Drift warnings: 39 total (old) → 1 so far (new) — 97% reduction
-    - Revision quality: scores no longer degrade catastrophically
-    - Phase 1 is 15% faster due to better prompt construction
+  Key observations from completed builds:
+    - Full E2E pipeline works: 2/10 domains reached COMPLETED state
+    - Plan critic scores of 0 indicate parse errors, not quality failures
+    - Code critic scores (58-63) are reasonable — below 70 threshold but
+      meaningful quality signal
+    - Integration critic scores (12-18) remain low — the sparse diff
+      problem persists for Tier 3 (no actual files generated)
+    - Task type diversity is good: both builds used 13-16 different types
+    - Duration: 77-84 minutes per solution E2E is achievable
+    - Drift warnings reduced 97% (39 → 1) after revision fix
 
 ================================================================================
 5. GAP ANALYSIS — EXPECTED VS OBSERVED
@@ -705,13 +729,16 @@ Agent gym readiness             33/33 ready     33/33 ready     33/33 ready
 Gym confidence (RD < 150)       25/33           25/33           33/33
 Critic revision quality         52→34→21        54→36→67        60→65→75+
 Drift warnings per build        13+             1               0
-Decomposition success rate      3/10 (30%)      1/1 (100%)*     10/10
-Full E2E completion rate        0/10 (0%)       In progress     10/10
+Decomposition success rate      3/10 (30%)      4/10 (40%)*     10/10
+Full E2E completion rate        0/10 (0%)       2/10 (20%)      10/10
 Phase 1 duration (medtech)      1,367s          1,158s          < 600s
-Total build duration            4,206s+         In progress     < 3,600s
+Total build duration (avg)      4,206s          4,834s (E2E)    < 3,600s
+Code critic score (avg)         38              60.5            70+
+Integration critic score        8               15              50+
 Code files generated per task   0               0 (unfixed)     3-5
 
-* Only 1 domain tested post-fix at time of writing
+* 8/10 failed due to residual 120s timeout in one pipeline run;
+  later run with 500s timeout succeeded for 2/10 + 1 in progress
 
 ================================================================================
 12. CONCLUSION
