@@ -35,6 +35,9 @@ tags:
   - ml-infrastructure
   - production-ml
 
+engines:
+  - auto_research
+
 keywords:
   - MLOps
   - model serving

@@ -42,6 +42,9 @@ tags:
   - mlops
   - genai
 
+engines:
+  - auto_research
+
 keywords:
   - machine learning
   - deep learning

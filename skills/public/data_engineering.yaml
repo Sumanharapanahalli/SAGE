@@ -35,6 +35,9 @@ tags:
   - streaming
   - data-warehouse
 
+engines:
+  - auto_research
+
 keywords:
   - data pipeline
   - ETL

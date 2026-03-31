@@ -34,6 +34,9 @@ tags:
   - rtl
   - timing
 
+engines:
+  - auto_research
+
 keywords:
   - SPICE simulation
   - Verilog

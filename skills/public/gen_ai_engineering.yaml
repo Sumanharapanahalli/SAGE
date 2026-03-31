@@ -36,6 +36,9 @@ tags:
   - fine-tuning
   - agents
 
+engines:
+  - auto_research
+
 keywords:
   - LLM
   - generative AI

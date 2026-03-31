@@ -49,6 +49,9 @@ tags:
   - ci-cd
   - cloud
 
+engines:
+  - auto_research
+
 keywords:
   - full-stack
   - backend

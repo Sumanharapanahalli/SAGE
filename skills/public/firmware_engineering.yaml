@@ -38,6 +38,9 @@ tags:
   - arm
   - risc-v
 
+engines:
+  - auto_research
+
 keywords:
   - embedded C
   - RTOS

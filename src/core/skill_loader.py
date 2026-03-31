@@ -64,6 +64,9 @@ class Skill:
     seniority_delta: dict = field(default_factory=dict)  # {junior: [...], senior: [...]}
     keywords: list[str] = field(default_factory=list)
 
+    # Cross-cutting engines this skill can use (e.g. autoresearch)
+    engines: list[str] = field(default_factory=list)
+
     # Skill file path for hot-reload
     source_path: str = ""
     tags: list[str] = field(default_factory=list)
@@ -80,6 +83,7 @@ class Skill:
             "prompt": self.prompt[:200] + "..." if len(self.prompt) > 200 else self.prompt,
             "acceptance_criteria": self.acceptance_criteria,
             "certifications": self.certifications,
+            "engines": self.engines,
             "tags": self.tags,
         }
 
@@ -176,6 +180,7 @@ class SkillRegistry:
                 certifications=data.get("certifications", []),
                 seniority_delta=data.get("seniority_delta", {}),
                 keywords=data.get("keywords", []),
+                engines=data.get("engines", []),
                 source_path=filepath,
                 tags=data.get("tags", []),
             )
@@ -345,16 +350,33 @@ class SkillRegistry:
     def build_prompt_for_role(self, role: str, include_private: bool = True) -> str:
         """
         Build a composite system prompt fragment from all active skills for a role.
-        Skills are concatenated in registration order.
+        Skills are concatenated in registration order. Cross-cutting engines
+        (e.g. autoresearch) are appended when a skill declares them.
         """
         skills = self.get_for_role(role, include_private=include_private)
         if not skills:
             return ""
 
         parts = []
+        engines_seen: set[str] = set()
         for skill in skills:
             if skill.prompt:
                 parts.append(f"## Skill: {skill.name} (v{skill.version})\n{skill.prompt}")
+            for engine in skill.engines:
+                engines_seen.add(engine)
+
+        # Inject engine prompts from referenced engine skills
+        for engine_name in sorted(engines_seen):
+            engine_skill = self.get(engine_name)
+            if engine_skill and engine_skill.prompt:
+                parts.append(
+                    f"## Engine: {engine_skill.name} (v{engine_skill.version})\n"
+                    f"You have access to the {engine_skill.name} engine for autonomous "
+                    f"experimentation. Use it to propose changes, run experiments with "
+                    f"fixed budgets, extract metrics, and keep/discard results via git.\n\n"
+                    f"{engine_skill.prompt}"
+                )
+
         return "\n\n".join(parts)
 
     def get_tools_for_role(self, role: str) -> list[str]:

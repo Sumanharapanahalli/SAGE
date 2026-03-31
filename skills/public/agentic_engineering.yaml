@@ -33,6 +33,9 @@ tags:
   - orchestration
   - mcp
 
+engines:
+  - auto_research
+
 keywords:
   - agentic AI
   - agent framework
