@@ -2,7 +2,7 @@
 
 All endpoints are served at `http://localhost:8000`. Every response is JSON.
 
-**Total endpoints: 155** across 25 categories.
+**Total endpoints: 159** across 26 categories.
 
 ---
 
@@ -558,7 +558,7 @@ MuZero-inspired training engine with Glicko-2 ratings, spaced repetition, and ad
 
 ## Exercise Catalog
 
-Scalable exercise catalog: ~160 seed exercises across 8 domains, expandable to 10,000+ via LLM variant generation along domain-specific axes.
+Scalable exercise catalog: ~470 industry-grade seed exercises across 8 domains, expandable to 50,000+ via LLM variant generation along domain-specific axes.
 
 | Method | Path | Description |
 |---|---|---|
@@ -581,7 +581,44 @@ Scalable exercise catalog: ~160 seed exercises across 8 domains, expandable to 1
 }
 ```
 
-**Supported domains:** `openfw`, `openswe`, `openml`, `openeda`, `opensim`, `opendoc`, `opendesign`, `openstrategy`
+**Supported domains:** `openfw`, `openswe`, `openml`, `openeda`, `opensim`, `opendoc`, `opendesign`, `openstrategy`, `openterminal`
+
+---
+
+## Meta-Optimization — Harness Evolution
+
+Outer optimization loop inspired by Stanford IRIS Lab's Meta-Harness. Evolves agent harnesses (prompts, tools, strategies) using full execution traces from Agent Gym sessions.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/meta/optimize` | Run a meta-optimization iteration `{"runner_name": "openswe"}` |
+| GET | `/meta/history` | Iteration history `?runner_name=openswe` |
+| GET | `/meta/stats` | Statistics: iterations, acceptance rate, trend, convergence `?runner_name=openswe` |
+| GET | `/meta/best` | Best-scoring iteration for a runner `?runner_name=openswe` |
+
+**`POST /meta/optimize` body:**
+```json
+{
+  "runner_name": "openswe"
+}
+```
+
+**Response:**
+```json
+{
+  "iteration_id": "iter-a1b2c3d4",
+  "runner_name": "openswe",
+  "proposal": {
+    "target": "system_prompt",
+    "changes": [{"component": "system_prompt", "before": "...", "after": "...", "rationale": "..."}],
+    "confidence": 0.7
+  },
+  "evaluation": {"score": 85.0, "improvement": 15.0, "delta": 15.0},
+  "accepted": true
+}
+```
+
+**Valid proposal targets:** `system_prompt`, `tool_schema`, `strategy`, `config`
 
 ---
 

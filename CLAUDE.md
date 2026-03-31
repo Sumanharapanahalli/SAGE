@@ -31,7 +31,9 @@ src/                    Framework Python source
     agent_gym.py        Self-play training engine — Glicko-2 ratings, spaced repetition,
                          N-critic review, reflection, vector memory compounding
     exercise_catalog.py Scalable exercise catalog — seed exercises + LLM-generated variants,
-                         8 domains, ~470 industry-grade seeds expandable to 50,000+ via variant generation
+                         10 domains, ~597 industry-grade seeds expandable to 50,000+ via variant generation
+    meta_optimizer.py   Meta-optimization loop — harness evolution using execution traces,
+                         LLM-proposed improvements, SQLite-persisted iteration history
   agents/               Analyst, Developer, Monitor, Planner, Universal, Critic
     critic.py           Actor-critic reviewer — N-provider multi-critic (Gemini, Claude, Ollama, etc.)
   interface/api.py      FastAPI — the only public interface
@@ -54,6 +56,8 @@ src/                    Framework Python source
     opendoc_runner.py   OpenDoc documentation — drafting, compliance, cross-reference
     opendesign_runner.py OpenDesign UX — wireframes, accessibility, design tokens
     openstrategy_runner.py OpenStrategy planning — PRDs, GTM, roadmaps
+    openterminal_runner.py OpenTerminal runner — tmux sessions, marker-based polling,
+                         env bootstrapping, structured reasoning, double-confirmation
     openshell_runner.py NVIDIA OpenShell sandboxed execution — YAML policies, SSH-based exec
     sandbox_runner.py   Local repo sandbox — clone, branch isolation, file ops, safe execution
 
@@ -202,12 +206,23 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 17.5 | SQLite persistence + analytics | `agent_gym.py` (`GymDB`) | Score trends, weakness analysis, improvement rate |
 | 17.6 | Batch training + peer review | `agent_gym.py` (`train_batch`, `_get_peer_reviews`) | `POST /gym/train/batch` |
 | 18 | Exercise Catalog (scalable) | `exercise_catalog.py` | `GET /gym/catalog`, `POST /gym/catalog/generate` |
-| 18.1 | Seed exercises (~529 across 9 domains) | `exercise_catalog.py` (`_generate_seed_catalog`) | openfw, openswe, openml, openeda, opensim, opendoc, opendesign, openbrowser, openstrategy |
+| 18.1 | Seed exercises (~597 across 10 domains) | `exercise_catalog.py` (`_generate_seed_catalog`) | openfw, openswe, openml, openeda, opensim, opendoc, opendesign, openbrowser, openstrategy, openterminal |
 | 18.2 | LLM-generated variants | `exercise_catalog.py` (`generate_variants`) | 10 variant axes per domain → 10,000+ exercises |
 | 19 | gstack Browser Integration | `openbrowser_runner.py` | Supplementary runner, `get_runner_by_name("openbrowser")` |
 | 19.1 | Real browser QA (gstack) | `openbrowser_runner.py` | gstack `$B` commands, persistent Chromium daemon |
 | 19.2 | Browser exercise catalog (60 seeds) | `exercise_seeds.py` (`OPENBROWSER_SEEDS`) | 4 difficulty tiers, WCAG/OWASP/perf/e2e |
 | 19.3 | Security audit skill | `skills/public/security_audit.yaml` | OWASP Top 10 + STRIDE threat model |
+| 20 | OpenTerminal Runner (Meta-Harness) | `openterminal_runner.py` | `terminal_operator`, `shell_expert` roles |
+| 20.1 | Marker-based command polling | `openterminal_runner.py` (`_poll_for_marker`) | `__CMDEND__N__` markers, no fixed sleeps |
+| 20.2 | Environment bootstrapping | `openterminal_runner.py` (`_gather_env_snapshot`) | Pre-discover tools/OS/languages, saves 2-5 turns |
+| 20.3 | Structured reasoning enforcement | `openterminal_runner.py` (`_parse_agent_response`) | analysis + plan + commands required per turn |
+| 20.4 | Double-confirmation completion | `openterminal_runner.py` (`_handle_task_complete`) | 3-perspective checklist before task_complete |
+| 20.5 | Terminal exercise catalog (68 seeds) | `exercise_seeds.py` (`OPENTERMINAL_SEEDS`) | Shell, sysadmin, networking, security, automation |
+| 21 | Meta-Optimization Loop | `meta_optimizer.py` | `POST /meta/optimize`, `GET /meta/history` |
+| 21.1 | Trace-based harness evolution | `meta_optimizer.py` (`propose_improvement`) | Full execution traces, not just scores |
+| 21.2 | Proposal evaluation | `meta_optimizer.py` (`evaluate_proposal`) | Baseline comparison, delta scoring |
+| 21.3 | Convergence detection | `meta_optimizer.py` (`check_convergence`) | Score variance < threshold over N iterations |
+| 21.4 | SQLite iteration history | `meta_optimizer.py` (`MetaOptimizer`) | Per-runner history, best iteration tracking |
 
 ---
 
@@ -256,6 +271,7 @@ The 3-tier isolation cascade (OpenShell → Sandbox → Direct) is orthogonal to
 | **OpenDesign** | `opendesign_runner.py` | ux_designer | Wireframes, design tokens, SVGs | `sage/design-toolchain` |
 | **OpenBrowser** | `openbrowser_runner.py` | qa_engineer*, system_tester*, ux_designer* | QA reports, screenshots, a11y audits | — (gstack) |
 | **OpenStrategy** | `openstrategy_runner.py` | product_manager, marketing_strategist, operations_manager | PRDs, roadmaps, GTM plans | — |
+| **OpenTerminal** | `openterminal_runner.py` | terminal_operator, shell_expert | Command output, scripts, reports | — (tmux) |
 
 \* OpenBrowser is a **supplementary runner** — these roles keep their primary runner (OpenSWE/OpenDesign) but gain browser testing capabilities via gstack integration.
 
@@ -392,6 +408,7 @@ skills/
     ux_design.yaml
     product_strategy.yaml
     software_engineering.yaml
+    terminal_operations.yaml
   disabled/                  Hidden skills (not loaded)
   (private via SAGE_SKILLS_DIR env var)
 ```
@@ -523,6 +540,78 @@ Scalable exercise system with ~470 industry-grade seed exercises across 8 domain
 | `GET` | `/gym/catalog` | Exercise catalog statistics |
 | `GET` | `/gym/catalog/{domain}` | Exercises for a domain (filterable by difficulty) |
 | `POST` | `/gym/catalog/generate` | Generate exercise variants from seeds via LLM |
+
+---
+
+## OpenTerminal Runner — Meta-Harness-Inspired Terminal Execution
+
+Terminal-native execution runner using tmux sessions, inspired by Stanford IRIS Lab's Meta-Harness (arXiv:2603.28052). Achieves faster task completion through five key innovations:
+
+### Architecture
+
+```
+Agent Gym / Build Orchestrator
+    ↓
+OpenTerminalRunner (primary runner for terminal_operator, shell_expert)
+    ├── Environment Bootstrapping (pre-discover tools/OS/languages)
+    ├── Agent Loop (ReAct: reason → command → poll → observe)
+    │     ├── Structured Reasoning (analysis + plan + commands enforced)
+    │     ├── Marker-Based Polling (__CMDEND__N__ — no fixed sleeps)
+    │     └── Proactive Context Summarization (condense before overflow)
+    └── Double-Confirmation Completion (3-perspective checklist)
+    ↓
+tmux session (isolated terminal per task)
+```
+
+### Key Innovations from Meta-Harness
+
+| Feature | Implementation | Benefit |
+|---|---|---|
+| **Environment bootstrapping** | `_gather_env_snapshot()` — single compound shell command | Saves 2-5 exploratory turns |
+| **Marker-based polling** | `__CMDEND__N__` echo markers, poll tmux pane | Fast commands finish instantly, no fixed sleeps |
+| **Structured reasoning** | `execute_commands` requires `analysis` + `plan` + `commands` | Forces reasoning before every action |
+| **Double-confirmation** | First `task_complete` → verification checklist → second confirms | Prevents premature termination |
+| **Context summarization** | Proactive history condensation before overflow | Long sessions don't crash on context limits |
+
+### API
+
+Accessed through standard runner/gym endpoints. The runner auto-registers for roles `terminal_operator` and `shell_expert`.
+
+---
+
+## Meta-Optimization Loop — Harness Evolution Engine
+
+Inspired by Meta-Harness's outer optimization loop. Instead of only training agents on exercises, evolves the **harness itself** (prompts, tools, strategies) using full execution traces.
+
+### How It Works
+
+```
+1. COLLECT  → Gather execution traces from Agent Gym sessions
+2. PROPOSE  → LLM reads traces + prior candidates → proposes harness changes
+3. EVALUATE → Run proposal against exercise set, measure vs baseline
+4. PERSIST  → Save iteration (accepted/rejected) in SQLite
+5. CONVERGE → Detect when optimization has plateaued
+```
+
+Key insight from the paper: **full execution traces yield 50% accuracy vs 34.6% with scores-only**. SAGE already stores traces in audit logs — this module adds the optimization loop.
+
+### Proposal Targets
+
+| Target | What Changes | Example |
+|---|---|---|
+| `system_prompt` | Agent system prompt | "Always read existing code before modifying" |
+| `tool_schema` | Tool definitions/parameters | Add `analysis` field to tool call |
+| `strategy` | Execution strategy | Switch from sequential to parallel commands |
+| `config` | Runner configuration | Increase max_episodes, adjust poll interval |
+
+### API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/meta/optimize` | Run a meta-optimization iteration for a runner |
+| `GET` | `/meta/history` | Get iteration history (filterable by runner) |
+| `GET` | `/meta/stats` | Statistics: total iterations, acceptance rate, trend |
+| `GET` | `/meta/best` | Best-scoring iteration for a runner |
 
 ---
 
