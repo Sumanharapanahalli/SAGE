@@ -2606,6 +2606,46 @@ async def build_roles():
     return {"roles": roles, "count": len(roles)}
 
 
+@app.get("/build/router/stats")
+async def build_router_stats():
+    """Adaptive router Q-learning statistics — scores per task_type × agent_role."""
+    orchestrator = _get_build_orchestrator()
+    return orchestrator.router.get_stats()
+
+
+@app.get("/llm/dual-stats")
+async def dual_llm_stats():
+    """Teacher-student LLM generation stats (requests, agreement rate, distillation count)."""
+    try:
+        from src.integrations.dual_llm_runner import DualLLMRunner
+        import yaml as _yaml
+        _cfg_path = os.path.join("config", "config.yaml")
+        _raw_cfg = {}
+        if os.path.exists(_cfg_path):
+            with open(_cfg_path) as _f:
+                _raw_cfg = _yaml.safe_load(_f) or {}
+        strategy_cfg = _raw_cfg.get("llm_strategy", {})
+        pc = _get_project_config()
+        runner = DualLLMRunner(strategy_cfg, solution_name=pc.project_name if pc else "starter")
+        return runner.get_stats()
+    except Exception as e:
+        return {"error": str(e), "stats": {}}
+
+
+@app.get("/research/program")
+async def research_load_program(path: str = "program.md"):
+    """Load a research program (Markdown-as-skill) to guide experiment hypotheses."""
+    try:
+        from src.core.auto_research import AutoResearchEngine
+        engine = AutoResearchEngine()
+        program = engine.load_program(path)
+        return {"path": path, "program": program, "loaded": bool(program)}
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Research program not found: {path}")
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # ---------------------------------------------------------------------------
 # Skills Marketplace Endpoints
 # ---------------------------------------------------------------------------
@@ -4672,6 +4712,25 @@ async def distillation_comparisons(solution: str, limit: int = 20):
                         pass
         records = records[-limit:]
         return {"comparisons": records, "total": len(records)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/distillation/{solution}/export")
+async def distillation_export(solution: str, fmt: str = "alpaca"):
+    """Export teacher-student distillation data in Alpaca or ShareGPT format for fine-tuning."""
+    try:
+        from src.integrations.dual_llm_runner import DualLLMRunner
+        import yaml as _yaml
+        _cfg_path = os.path.join("config", "config.yaml")
+        _raw_cfg = {}
+        if os.path.exists(_cfg_path):
+            with open(_cfg_path) as _f:
+                _raw_cfg = _yaml.safe_load(_f) or {}
+        strategy_cfg = _raw_cfg.get("llm_strategy", {})
+        runner = DualLLMRunner(strategy_cfg, solution_name=solution)
+        data = runner.export_training_data(fmt=fmt)
+        return {"solution": solution, "format": fmt, "records": len(data), "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
