@@ -340,7 +340,25 @@ class RunnerUnavailableError(SAGEError): pass
 | **Microkernel / Plugin** | ✅ Already used | BaseRunner + SkillLoader + MCP. SAGE's strongest pattern. |
 | **CQRS + Event Sourcing** | ✅ Already used | Audit log + proposal store. Could be formalized further. |
 
-### 6.2 Recommended Pattern: Modular Monolith
+### 6.2 Deployment Architecture Patterns
+
+| Pattern | Description | Scalability | Complexity | SAGE Fit |
+|---|---|---|---|---|
+| **Monolithic** | Single process, everything co-located | ~10-50 concurrent users | Low | ✅ Current |
+| **Modular Monolith** | Single process, enforced module boundaries | Same as monolith + better maintainability | Low-Medium | ✅✅ Recommended |
+| **Microservices** | Each agent/subsystem is a service | Horizontal, per-subsystem | Very High | ❌ Overkill until 50+ users |
+| **Serverless/FaaS** | Agents as functions (Lambda) | Auto-scale to thousands | Medium | ❌ Wrong fit — agent tasks are long-running, cold starts kill UX |
+| **Hybrid (Majestic Monolith)** | Monolith core + extracted worker services | Core scales vertically, workers horizontally | Medium | 🟡 Future target |
+
+**The Majestic Monolith path (from DHH / Basecamp):** Start monolith, extract services only when specific pain points demand it. For SAGE, the extraction order when needed:
+1. **First:** Code execution workers (runners) — different security/scaling profile
+2. **Second:** LLM gateway — connection pooling, multi-provider routing
+3. **Third:** Vector store — already semi-external (ChromaDB server mode)
+4. **Never extract:** Approval flow, audit log, agent orchestration — these must remain consistent and transactional
+
+Each extraction should be triggered by a **measured** pain point. "We hit the connection limit on our LLM provider" is valid. "We might need to scale someday" is not.
+
+### 6.3 Recommended Pattern: Modular Monolith
 
 A **Modular Monolith** keeps the single-process, single-deployment simplicity while enforcing clean boundaries between subsystems:
 
@@ -407,7 +425,42 @@ This is achievable with Python's existing module system — no new dependencies 
 
 **Claude Agent SDK** — Lightweight, tool-focused. The `human` tool for HITL is minimal but effective. SAGE's proposal queue is more sophisticated for regulated workflows.
 
-### 7.3 What SAGE Has That Others Don't
+### 7.3 Subsystem Pattern Deep-Dive
+
+#### LLM Gateway Concurrency Models
+
+| Model | How It Works | Used By | When Right for SAGE |
+|---|---|---|---|
+| **Single lock (mutex)** | One inference at a time, all agents queue | SAGE (`threading.Lock`) | CLI providers (Gemini CLI, Claude Code) — the CLI itself is the serialization point |
+| **Connection pool / semaphore** | N concurrent connections, semaphore controls concurrency | LiteLLM, most production frameworks | API providers (Anthropic API, Ollama HTTP) with server-side concurrency |
+| **Async (asyncio)** | Non-blocking I/O, event loop handles many requests | LangChain async, Haystack | Best throughput for I/O-bound LLM calls; requires async-compatible stack |
+| **Worker processes** | Separate processes communicate via queue | Distributed AutoGen | Local model inference where you need CPU/GPU isolation |
+
+Key insight: SAGE's single lock is not inherently wrong — it's a deliberate choice that simplifies reasoning about concurrent state. The bottleneck is LLM inference time (seconds to minutes), not lock acquisition (microseconds). The lock only becomes a problem when using API-based providers with high concurrency limits.
+
+#### Execution Sandbox Landscape
+
+| Technology | Isolation | Startup | Capability | Example Users |
+|---|---|---|---|---|
+| **Docker** | Process + FS + network namespace | 1-5s | Full OS, GPU passthrough | SAGE runners, AutoGen |
+| **Firecracker microVMs** | Full VM, minimal overhead | 125ms | Lightweight VM, strong isolation | E2B.dev, AWS Lambda |
+| **gVisor** | Syscall interception | 1-3s | Same as Docker + intercepted syscalls | Google Cloud Run |
+| **WASM** | Language-level sandbox | <10ms | Very fast, very limited (no FS, no network) | Experimental only |
+| **tmux session** | None (same user, same FS) | Instant | Full system access | SAGE OpenTerminal |
+
+SAGE's 3-tier cascade (OpenShell → Sandbox → OpenSWE) is well-designed: try most isolated first, fall back gracefully. The cascade is transparent to the agent — it doesn't know which tier executed its code.
+
+#### Memory Tier Architecture (Emerging Consensus)
+
+| Tier | Scope | Persistence | SAGE Implementation | Gap |
+|---|---|---|---|---|
+| **Short-term** | Single agent turn | In-process | Context window (implicit) | None |
+| **Medium-term (session)** | Multi-turn task / build run | Session duration | ❌ Not explicit | Add per-build session memory that accumulates during workflow and summarizes to long-term at completion |
+| **Long-term** | Cross-session, cross-agent | Permanent | vector_store + audit_log | None — this is SAGE's strength |
+
+The missing **session memory tier** causes vector store pollution with intermediate state. The OpenTerminal runner's "proactive context summarization" already implements session memory for terminal tasks — generalizing this to all runners would be valuable.
+
+### 7.4 What SAGE Has That Others Don't
 
 1. **Domain-specific execution runners** (11 and growing) — no other framework has firmware cross-compilation, PCB DRC, SPICE simulation, etc.
 2. **3-tier execution cascade** — graceful degradation from container → local → LLM-direct
@@ -526,6 +579,15 @@ Add an eviction policy to `BuildOrchestrator._runs` and `QueueManager`:
 - Completed runs: evict after 24 hours (persist to SQLite first)
 - Active runs: keep in memory
 - Failed runs: keep for 1 hour for debugging
+
+#### R7.5: JSON Schema Validation for All YAML Files
+SAGE's YAML-first approach (project.yaml, prompts.yaml, tasks.yaml, skills/*.yaml) is a differentiator. Add JSON Schema validation at load time to catch config errors at startup, not at runtime when an agent fails:
+```python
+# In project_loader.py or skill_loader.py:
+import jsonschema
+schema = load_schema("schemas/project.schema.json")
+jsonschema.validate(yaml_data, schema)  # Fail fast at startup
+```
 
 ### 9.3 Priority 3 — Plan for Future (Strategic)
 
