@@ -3551,6 +3551,35 @@ async def onboarding_templates():
     return {"templates": templates, "count": len(templates)}
 
 
+@app.post("/onboarding/analyze")
+async def onboarding_analyze(request: Request):
+    """
+    Analyze a project description, local path, or GitHub URL to auto-detect
+    stack, CI, compliance requirements, and suggest SAGE configuration.
+
+    Body: {"text": str} or {"path": str} or {"url": str}
+    Returns: ProjectSignals dict with detected_stack, detected_ci, compliance_hints, etc.
+    """
+    body = await request.json()
+    from src.core.onboarding_analyzer import OnboardingAnalyzer
+    analyzer = OnboardingAnalyzer()
+
+    text = body.get("text", "")
+    path = body.get("path", "")
+    url = body.get("url", "")
+
+    if url:
+        signals = analyzer.analyze_github_repo(url)
+    elif path:
+        signals = analyzer.analyze_local_path(path)
+    elif text:
+        signals = analyzer.analyze_text(text)
+    else:
+        raise HTTPException(400, detail="Provide 'text', 'path', or 'url'")
+
+    return signals.to_dict()
+
+
 @app.post("/onboarding/scan-folder")
 async def onboarding_scan_folder(req: ScanFolderRequest):
     """Scan a local folder and generate solution YAML using the LLM."""

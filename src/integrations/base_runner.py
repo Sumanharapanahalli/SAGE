@@ -680,6 +680,7 @@ def _auto_register_runners():
         "src.integrations.openbrowser_runner",
         "src.integrations.openstrategy_runner",
         "src.integrations.openterminal_runner",
+        "src.integrations.autoresearch_runner",
     ]
     for mod in runner_modules:
         try:
