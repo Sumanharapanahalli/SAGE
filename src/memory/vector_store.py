@@ -15,6 +15,7 @@ Memory footprint:
 
 import os
 import logging
+import threading
 import yaml
 from typing import List
 
@@ -108,6 +109,7 @@ class VectorMemory:
         self._vector_store        = None
         self._llamaindex_index    = None   # set when backend == "llamaindex"
         self._fallback_memory: List[str] = []
+        self._fallback_lock = threading.Lock()  # protects _fallback_memory
         self._ready = False
         self._mode  = "minimal"
 
@@ -277,13 +279,14 @@ class VectorMemory:
                 logger.error("Vector search failed: %s", exc)
 
         # Keyword fallback — works with zero ML deps
-        if self._fallback_memory:
-            query_lower = query.lower()
-            matches = [
-                m for m in self._fallback_memory
-                if any(word in m.lower() for word in query_lower.split()[:5])
-            ]
-            return matches[:k]
+        with self._fallback_lock:
+            if self._fallback_memory:
+                query_lower = query.lower()
+                matches = [
+                    m for m in self._fallback_memory
+                    if any(word in m.lower() for word in query_lower.split()[:5])
+                ]
+                return matches[:k]
         return []
 
     # ------------------------------------------------------------------
@@ -313,8 +316,9 @@ class VectorMemory:
                 logger.warning("ChromaDB list_entries failed: %s", exc)
 
         # Fallback list — IDs are positional
-        for i, text in enumerate(self._fallback_memory[:limit]):
-            results.append({"id": str(i), "text": text, "metadata": {}})
+        with self._fallback_lock:
+            for i, text in enumerate(self._fallback_memory[:limit]):
+                results.append({"id": str(i), "text": text, "metadata": {}})
         return results
 
     def add_entry(self, text: str, metadata: dict = None) -> str:
@@ -324,7 +328,8 @@ class VectorMemory:
         """
         import uuid as _uuid
         entry_id = str(_uuid.uuid4())
-        self._fallback_memory.append(text)
+        with self._fallback_lock:
+            self._fallback_memory.append(text)
 
         if self._mode == "llamaindex" and self._ready:
             try:
@@ -363,13 +368,14 @@ class VectorMemory:
                 logger.warning("ChromaDB delete_entry failed: %s", exc)
 
         # Fallback: try positional removal if id is an integer string
-        try:
-            idx = int(entry_id)
-            if 0 <= idx < len(self._fallback_memory):
-                self._fallback_memory.pop(idx)
-                return True
-        except (ValueError, IndexError):
-            pass
+        with self._fallback_lock:
+            try:
+                idx = int(entry_id)
+                if 0 <= idx < len(self._fallback_memory):
+                    self._fallback_memory.pop(idx)
+                    return True
+            except (ValueError, IndexError):
+                pass
         return False
 
     def bulk_import(self, entries: list[dict]) -> int:
@@ -390,7 +396,8 @@ class VectorMemory:
 
     def add_feedback(self, text: str, metadata: dict = None):
         """Learn from human feedback — saved to vector DB or fallback list."""
-        self._fallback_memory.append(text)   # always save (cheap)
+        with self._fallback_lock:
+            self._fallback_memory.append(text)   # always save (cheap)
 
         # LlamaIndex path
         if self._mode == "llamaindex" and self._ready:

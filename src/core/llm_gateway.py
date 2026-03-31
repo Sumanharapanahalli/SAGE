@@ -728,7 +728,12 @@ def generate_parallel(
 # ===========================================================================
 class LLMGateway:
     """
-    Thread-safe singleton that routes all LLM calls through a single lock.
+    Thread-safe singleton that routes LLM calls through a provider-aware
+    semaphore.
+
+    Cloud API providers (gemini, claude, claude-code, ollama HTTP) support
+    server-side concurrency, so we allow multiple parallel inferences.
+    Local/GPU providers (local, generic-cli) are single-lane.
 
     Usage:
         from src.core.llm_gateway import llm_gateway
@@ -736,7 +741,17 @@ class LLMGateway:
     """
 
     _instance = None
-    _lock = threading.Lock()
+    _lock = threading.Lock()   # singleton creation lock only
+
+    # Provider-aware concurrency limits
+    PROVIDER_CONCURRENCY = {
+        "local": 1,         # Single GPU — must serialise
+        "generic-cli": 1,   # Unknown CLI — conservative
+        "ollama": 2,        # Ollama HTTP — moderate concurrency
+        "gemini": 4,        # Cloud API — server-side concurrency
+        "claude": 4,        # Cloud API
+        "claude-code": 2,   # CLI tool — moderate
+    }
 
     def __new__(cls):
         if cls._instance is None:
@@ -787,7 +802,15 @@ class LLMGateway:
             self.logger.error("Unknown provider '%s'. Defaulting to gemini.", backend)
             self.provider = GeminiCLIProvider(llm_cfg)
 
-        self.logger.info("LLM Gateway active: %s", self.provider.provider_name())
+        # ── Provider-aware inference semaphore ──────────────────────────
+        # Replaces the old single threading.Lock with a semaphore whose
+        # concurrency limit matches the provider's capability.
+        _concurrency = self.PROVIDER_CONCURRENCY.get(backend, 1)
+        self._inference_semaphore = threading.Semaphore(_concurrency)
+        self.logger.info(
+            "LLM Gateway active: %s (concurrency=%d)",
+            self.provider.provider_name(), _concurrency,
+        )
 
     def generate_stream(self, prompt, system_prompt="You are a helpful AI assistant.",
                         trace_name: str = "llm_stream", metadata: dict = None):
@@ -809,7 +832,7 @@ class LLMGateway:
             yield "Error: No LLM provider configured."
             return
 
-        with self._lock:
+        with self._inference_semaphore:
             self.logger.debug("Streaming generation started. Provider: %s", self.provider.provider_name())
             start = time.time()
 
@@ -870,8 +893,8 @@ class LLMGateway:
         start = time.time()
         self.logger.debug("Acquiring inference lock...")
 
-        with self._lock:
-            self.logger.debug("Lock acquired. Provider: %s", self.provider.provider_name())
+        with self._inference_semaphore:
+            self.logger.debug("Semaphore acquired. Provider: %s", self.provider.provider_name())
 
             # ----------------------------------------------------------------
             # T1-002: PII detection and data residency check

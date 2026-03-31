@@ -19,6 +19,7 @@ pytestmark = pytest.mark.unit
 
 def _make_fallback_vm():
     """Returns a fresh VectorMemory instance forced into fallback mode."""
+    import threading
     with patch("src.memory.vector_store._HAS_CHROMADB", False), \
          patch("src.memory.vector_store.Chroma", None):
         from src.memory.vector_store import VectorMemory
@@ -26,6 +27,7 @@ def _make_fallback_vm():
         import logging
         vm.logger = logging.getLogger("VectorMemory.test")
         vm._fallback_memory    = []
+        vm._fallback_lock      = threading.Lock()
         vm._vector_store       = None
         vm._llamaindex_index   = None
         vm._embedding_function = None
@@ -107,6 +109,7 @@ def test_fallback_used_when_chromadb_unavailable():
     When chromadb is not importable, VectorMemory must initialize without exception
     and use the in-memory fallback (vector_store is None).
     """
+    import threading
     with patch("src.memory.vector_store._HAS_CHROMADB", False), \
          patch("src.memory.vector_store.Chroma", None):
         from src.memory.vector_store import VectorMemory
@@ -115,6 +118,7 @@ def test_fallback_used_when_chromadb_unavailable():
             import logging
             vm.logger = logging.getLogger("VectorMemory.test2")
             vm._fallback_memory    = []
+            vm._fallback_lock      = threading.Lock()
             vm._vector_store       = None
             vm._llamaindex_index   = None
             vm._embedding_function = None

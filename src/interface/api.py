@@ -40,6 +40,8 @@ _SAFE_SOLUTION_NAME = re.compile(r'^[a-zA-Z0-9_-]{1,64}$')
 # ---------------------------------------------------------------------------
 from src.interface.routes.data_transformation import router as _data_transformation_router  # noqa: E402
 from src.interface.routes.voice_data import router as _voice_data_router  # noqa: E402
+from src.interface.routes.gym import router as _gym_router  # noqa: E402
+from src.interface.routes.research import router as _research_router  # noqa: E402
 
 # Module-level import so tests can patch src.interface.api.reload_org_loader
 try:
@@ -127,6 +129,8 @@ app.add_middleware(RateLimitMiddleware)
 
 app.include_router(_data_transformation_router)
 app.include_router(_voice_data_router)
+app.include_router(_gym_router)
+app.include_router(_research_router)
 
 
 # ---------------------------------------------------------------------------
@@ -2632,18 +2636,7 @@ async def dual_llm_stats():
         return {"error": str(e), "stats": {}}
 
 
-@app.get("/research/program")
-async def research_load_program(path: str = "program.md"):
-    """Load a research program (Markdown-as-skill) to guide experiment hypotheses."""
-    try:
-        from src.core.auto_research import AutoResearchEngine
-        engine = AutoResearchEngine()
-        program = engine.load_program(path)
-        return {"path": path, "program": program, "loaded": bool(program)}
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Research program not found: {path}")
-    except Exception as e:
-        return {"error": str(e)}
+# /research/program moved to src/interface/routes/research.py
 
 
 # ---------------------------------------------------------------------------
@@ -2748,287 +2741,10 @@ async def runner_skills(name: str):
 # Agent Gym Endpoints — self-play training
 # ---------------------------------------------------------------------------
 
-class GymTrainRequest(BaseModel):
-    role: str
-    difficulty: str = ""
-    skill_name: str = ""
-    exercise_id: str = ""
-    enable_peer_review: bool = False
+# ── Gym & Catalog endpoints moved to src/interface/routes/gym.py ──
 
 
-class GymBatchRequest(BaseModel):
-    roles: Optional[List[str]] = None
-    difficulty: str = ""
-    enable_peer_review: bool = False
-    max_parallel: int = 4
-
-
-@app.post("/gym/train")
-async def gym_train(req: GymTrainRequest):
-    """Start a training session for an agent role (self-play exercise)."""
-    from src.core.agent_gym import agent_gym
-    session = agent_gym.train(
-        role=req.role,
-        difficulty=req.difficulty,
-        skill_name=req.skill_name,
-        exercise_id=req.exercise_id,
-        enable_peer_review=req.enable_peer_review,
-    )
-    return session.to_dict()
-
-
-@app.post("/gym/train/batch")
-async def gym_train_batch(req: GymBatchRequest):
-    """Train multiple roles in parallel. If roles is empty, trains all registered roles."""
-    from src.core.agent_gym import agent_gym
-    sessions = agent_gym.train_batch(
-        roles=req.roles,
-        difficulty=req.difficulty,
-        enable_peer_review=req.enable_peer_review,
-        max_parallel=req.max_parallel,
-    )
-    completed = sum(1 for s in sessions if s.status == "completed")
-    return {
-        "total": len(sessions),
-        "completed": completed,
-        "failed": len(sessions) - completed,
-        "sessions": [s.to_dict() for s in sessions],
-    }
-
-
-@app.get("/gym/session/{session_id}")
-async def gym_session(session_id: str):
-    """Get details of a training session."""
-    from src.core.agent_gym import agent_gym
-    session = agent_gym.get_session(session_id)
-    if not session:
-        # Try loading from SQLite (may be from a previous restart)
-        db_session = agent_gym._db.load_session(session_id)
-        if db_session:
-            return db_session
-        return {"error": f"Session '{session_id}' not found"}
-    return session.to_dict()
-
-
-@app.get("/gym/ratings")
-async def gym_ratings():
-    """Get all agent skill ratings (leaderboard)."""
-    from src.core.agent_gym import agent_gym
-    return {
-        "leaderboard": agent_gym.get_leaderboard(),
-        "stats": agent_gym.stats(),
-    }
-
-
-@app.get("/gym/ratings/{role}")
-async def gym_role_ratings(role: str):
-    """Get skill ratings for a specific agent role."""
-    from src.core.agent_gym import agent_gym
-    ratings = agent_gym.get_ratings_for_role(role)
-    return {"role": role, "ratings": [r.to_dict() for r in ratings]}
-
-
-@app.get("/gym/history")
-async def gym_history(limit: int = 20):
-    """Get recent training session history."""
-    from src.core.agent_gym import agent_gym
-    return {"sessions": agent_gym.get_history(limit=limit)}
-
-
-@app.get("/gym/analytics")
-async def gym_analytics(role: str = "", skill: str = ""):
-    """
-    Comprehensive gym analytics dashboard data.
-
-    Returns score trends, weakness maps, improvement rates, difficulty breakdowns,
-    critic agreement rates, and leaderboard — everything needed for charts.
-    """
-    from src.core.agent_gym import agent_gym
-    return agent_gym.analytics(role=role, skill=skill)
-
-
-@app.get("/gym/curriculum/{role}")
-async def gym_curriculum(role: str):
-    """Get curriculum status for a role — current difficulty and progression data."""
-    from src.core.agent_gym import agent_gym
-    ratings = agent_gym.get_ratings_for_role(role)
-    if not ratings:
-        return {"role": role, "skills": [], "message": "No training data yet"}
-    return {
-        "role": role,
-        "skills": [
-            {
-                "skill": r.skill_name,
-                "current_difficulty": r.current_difficulty,
-                "sessions": r.sessions,
-                "win_rate": round(r.wins / max(r.sessions, 1), 3),
-                "rating": round(r.rating, 1),
-            }
-            for r in ratings
-        ],
-    }
-
-
-# ---------------------------------------------------------------------------
-# Exercise Catalog Endpoints — scalable exercise generation
-# ---------------------------------------------------------------------------
-
-@app.get("/gym/catalog")
-async def gym_catalog_stats():
-    """Get exercise catalog statistics — total exercises per domain and difficulty."""
-    from src.core.exercise_catalog import exercise_catalog
-    return exercise_catalog.stats()
-
-
-@app.get("/gym/catalog/{domain}")
-async def gym_catalog_domain(domain: str, difficulty: str = ""):
-    """Get exercises for a specific domain, optionally filtered by difficulty."""
-    from src.core.exercise_catalog import exercise_catalog
-    exercises = exercise_catalog.get_for_domain(domain, difficulty)
-    return {
-        "domain": domain,
-        "difficulty": difficulty or "all",
-        "count": len(exercises),
-        "exercises": [e.to_dict() for e in exercises[:100]],  # cap at 100 per response
-    }
-
-
-class CatalogGenerateRequest(BaseModel):
-    domain: str
-    count: int = 50
-    difficulty: str = ""
-    axis: str = ""
-
-
-@app.post("/gym/catalog/generate")
-async def gym_catalog_generate(req: CatalogGenerateRequest):
-    """Generate exercise variants from seed exercises using LLM."""
-    from src.core.exercise_catalog import exercise_catalog
-    generated = exercise_catalog.generate_variants(
-        domain=req.domain,
-        count=req.count,
-        difficulty=req.difficulty,
-        axis=req.axis,
-    )
-    return {
-        "generated": len(generated),
-        "domain": req.domain,
-        "exercises": [e.to_dict() for e in generated],
-        "catalog_stats": exercise_catalog.stats(),
-    }
-
-
-# ---------------------------------------------------------------------------
-# Meta-Optimizer Endpoints
-# ---------------------------------------------------------------------------
-
-@app.post("/meta/optimize")
-async def meta_optimize(request: Request):
-    """Run a meta-optimization iteration for a runner."""
-    body = await request.json()
-    runner_name = body.get("runner_name", "openswe")
-    from src.core.meta_optimizer import MetaOptimizer
-    optimizer = MetaOptimizer()
-    result = optimizer.run_iteration(runner_name=runner_name)
-    return result
-
-
-@app.get("/meta/history")
-async def meta_history(runner_name: str = ""):
-    """Get meta-optimization iteration history."""
-    from src.core.meta_optimizer import MetaOptimizer
-    optimizer = MetaOptimizer()
-    return {"history": optimizer.get_history(runner_name=runner_name)}
-
-
-@app.get("/meta/stats")
-async def meta_stats(runner_name: str = ""):
-    """Get meta-optimizer statistics."""
-    from src.core.meta_optimizer import MetaOptimizer
-    optimizer = MetaOptimizer()
-    return optimizer.stats(runner_name=runner_name)
-
-
-@app.get("/meta/best")
-async def meta_best(runner_name: str = ""):
-    """Get the best optimization iteration for a runner."""
-    from src.core.meta_optimizer import MetaOptimizer
-    optimizer = MetaOptimizer()
-    best = optimizer.get_best_iteration(runner_name=runner_name)
-    return best or {"message": "No iterations found"}
-
-
-# ---------------------------------------------------------------------------
-# AutoResearch — Autonomous Experiment Engine
-# ---------------------------------------------------------------------------
-
-@app.post("/research/experiment")
-async def research_experiment(request: Request):
-    """Run a single autonomous experiment."""
-    body = await request.json()
-    workspace = body.get("workspace", ".")
-    metric_name = body.get("metric_name", "val_loss")
-    run_command = body.get("run_command", "")
-    budget_s = body.get("budget_s")
-    direction = body.get("direction", "lower")
-    from src.core.auto_research import AutoResearchEngine
-    engine = AutoResearchEngine()
-    result = engine.run_experiment(
-        workspace=workspace,
-        metric_name=metric_name,
-        run_command=run_command,
-        budget_s=budget_s,
-        direction=direction,
-    )
-    return result
-
-
-@app.post("/research/session")
-async def research_session(request: Request, background_tasks: BackgroundTasks):
-    """Start a research session (N experiments in a loop)."""
-    body = await request.json()
-    workspace = body.get("workspace", ".")
-    metric_name = body.get("metric_name", "val_loss")
-    run_command = body.get("run_command", "")
-    max_experiments = body.get("max_experiments", 10)
-    budget_s = body.get("budget_s")
-    direction = body.get("direction", "lower")
-    from src.core.auto_research import AutoResearchEngine
-    engine = AutoResearchEngine()
-    result = engine.run_session(
-        workspace=workspace,
-        metric_name=metric_name,
-        run_command=run_command,
-        max_experiments=max_experiments,
-        budget_s=budget_s,
-        direction=direction,
-    )
-    return result
-
-
-@app.get("/research/results")
-async def research_results(limit: int = 100):
-    """Get experiment results."""
-    from src.core.auto_research import AutoResearchEngine
-    engine = AutoResearchEngine()
-    return {"results": engine.get_results(limit=limit)}
-
-
-@app.get("/research/best")
-async def research_best(direction: str = "lower"):
-    """Get the best experiment result."""
-    from src.core.auto_research import AutoResearchEngine
-    engine = AutoResearchEngine()
-    best = engine.get_best_result(direction=direction)
-    return best or {"message": "No experiments found"}
-
-
-@app.get("/research/stats")
-async def research_stats():
-    """Get experiment analytics."""
-    from src.core.auto_research import AutoResearchEngine
-    engine = AutoResearchEngine()
-    return engine.stats()
+# ── Meta-Optimizer & AutoResearch endpoints moved to src/interface/routes/research.py ──
 
 
 # ---------------------------------------------------------------------------

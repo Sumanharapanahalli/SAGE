@@ -1,10 +1,11 @@
-import sqlite3
 import json
-import time
 import logging
 import os
+import time
 import uuid
 from datetime import datetime, timezone
+
+from src.core.db import get_connection
 
 
 def _resolve_db_path() -> str:
@@ -51,7 +52,7 @@ class AuditLogger:
     def _initialize_db(self):
         """Create the Audit Table if not exists. ISO 13485 requires traceability."""
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection(self.db_path, row_factory=None)
         cursor = conn.cursor()
 
         # Schema: Immutable log of interactions
@@ -59,6 +60,9 @@ class AuditLogger:
             CREATE TABLE IF NOT EXISTS compliance_audit_log (
                 id TEXT PRIMARY KEY,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                trace_id TEXT,               -- Correlation ID linking proposal → approval → execution
+                event_type TEXT,             -- 'ACCESS', 'ANALYSIS', 'PROPOSAL', 'APPROVAL', 'REJECTION'
+                status TEXT DEFAULT 'OK',    -- 'OK', 'DENIED', 'ERROR'
                 actor TEXT NOT NULL,         -- 'AI_Agent', 'Human_Engineer', 'System_Trigger'
                 action_type TEXT NOT NULL,   -- 'ANALYSIS', 'PROPOSAL', 'APPROVAL', 'REJECTION'
                 input_context TEXT,          -- The prompt or data triggering the action
@@ -73,8 +77,11 @@ class AuditLogger:
         ''')
         conn.commit()
 
-        # Idempotent migrations for databases created before named-approvals feature
+        # Idempotent migrations for databases created before named-approvals / access-audit features
         _identity_columns = [
+            ("trace_id",           "TEXT"),
+            ("event_type",         "TEXT"),
+            ("status",             "TEXT DEFAULT 'OK'"),
             ("approved_by",        "TEXT"),
             ("approver_role",      "TEXT"),
             ("approver_email",     "TEXT"),
@@ -131,7 +138,7 @@ class AuditLogger:
         created_at = datetime.now(timezone.utc).isoformat()
         meta_str = json.dumps(metadata) if metadata else None
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             conn.execute(
                 """INSERT INTO chat_messages
                    (id, user_id, session_id, solution, role, content, page_context, created_at,
@@ -155,7 +162,7 @@ class AuditLogger:
     ) -> list:
         """Return the last N messages for a user+session+solution (oldest first)."""
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             rows = conn.execute(
                 """SELECT role, content FROM chat_messages
                    WHERE user_id = ? AND session_id = ? AND solution = ?
@@ -171,7 +178,7 @@ class AuditLogger:
     def clear_chat_history(self, user_id: str, solution: str) -> int:
         """Delete all chat messages for a user+solution. Returns rows deleted."""
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             cur = conn.execute(
                 "DELETE FROM chat_messages WHERE user_id = ? AND solution = ?",
                 (user_id, solution),
@@ -208,7 +215,7 @@ class AuditLogger:
         metadata_json = json.dumps(metadata) if metadata else "{}"
 
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             cursor = conn.cursor()
             cursor.execute(
                 '''

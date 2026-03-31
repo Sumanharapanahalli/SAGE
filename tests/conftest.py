@@ -67,8 +67,10 @@ def tmp_vector_memory():
             from src.memory.vector_store import VectorMemory
             vm = VectorMemory.__new__(VectorMemory)
             import logging
+            import threading
             vm.logger = logging.getLogger("VectorMemory.test")
             vm._fallback_memory = []
+            vm._fallback_lock = threading.Lock()
             vm.vector_store = None
             vm._ready = False
             return vm

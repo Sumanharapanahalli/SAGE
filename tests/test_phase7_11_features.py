@@ -32,12 +32,14 @@ def _client():
 class TestKnowledgeCRUD:
 
     def _fresh_vm(self):
+        import threading
         from src.memory.vector_store import VectorMemory
         vm = VectorMemory.__new__(VectorMemory)
         vm._embedding_function = None
         vm._vector_store = None
         vm._llamaindex_index = None
         vm._fallback_memory = []
+        vm._fallback_lock = threading.Lock()
         vm._ready = False
         vm._mode = "minimal"
         return vm

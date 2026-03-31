@@ -42,6 +42,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from src.core.db import get_connection
+
 logger = logging.getLogger("AgentGym")
 
 
@@ -194,7 +196,7 @@ class GymDB:
 
     def _init_db(self):
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 conn.executescript("""
                     CREATE TABLE IF NOT EXISTS training_sessions (
@@ -250,7 +252,7 @@ class GymDB:
 
     def save_session(self, session: TrainingSession) -> None:
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 conn.execute("""
                     INSERT OR REPLACE INTO training_sessions
@@ -277,7 +279,7 @@ class GymDB:
 
     def save_rating(self, key: str, rating: SkillRating) -> None:
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 conn.execute("""
                     INSERT OR REPLACE INTO skill_ratings
@@ -299,7 +301,7 @@ class GymDB:
     def load_ratings(self) -> dict[str, SkillRating]:
         ratings = {}
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 # Get column names to handle schema evolution gracefully
                 cursor = conn.execute("SELECT * FROM skill_ratings")
@@ -334,8 +336,7 @@ class GymDB:
 
     def load_session(self, session_id: str) -> Optional[dict]:
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
-            conn.row_factory = sqlite3.Row
+            conn = get_connection(self.db_path, row_factory=sqlite3.Row)
             try:
                 row = conn.execute(
                     "SELECT * FROM training_sessions WHERE session_id = ?",
@@ -369,8 +370,7 @@ class GymDB:
         params.extend([limit, offset])
 
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
-            conn.row_factory = sqlite3.Row
+            conn = get_connection(self.db_path, row_factory=sqlite3.Row)
             try:
                 rows = conn.execute(
                     f"SELECT * FROM training_sessions WHERE {where} "
@@ -395,7 +395,7 @@ class GymDB:
         params.append(limit)
 
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 rows = conn.execute(
                     f"SELECT session_id, score, elo_after, difficulty, started_at "
@@ -414,7 +414,7 @@ class GymDB:
     def weakness_analysis(self, role: str) -> list[dict]:
         """Find exercises/skills where the agent consistently scores low."""
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 rows = conn.execute("""
                     SELECT exercise_id, skill_name, difficulty,
@@ -446,7 +446,7 @@ class GymDB:
     def improvement_rate(self, role: str, window: int = 10) -> dict:
         """Calculate improvement rate over sliding windows."""
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 rows = conn.execute("""
                     SELECT score, elo_after, started_at
@@ -492,7 +492,7 @@ class GymDB:
     def critic_agreement_rate(self, limit: int = 100) -> dict:
         """Measure how often critics agree with each other."""
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 rows = conn.execute("""
                     SELECT critic_json FROM training_sessions
@@ -533,7 +533,7 @@ class GymDB:
     def per_difficulty_stats(self, role: str) -> dict:
         """Stats broken down by difficulty level."""
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 rows = conn.execute("""
                     SELECT difficulty, COUNT(*) as attempts,
@@ -555,7 +555,7 @@ class GymDB:
     def global_stats(self) -> dict:
         """Overall gym statistics."""
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection(self.db_path, row_factory=None)
             try:
                 total = conn.execute("SELECT COUNT(*) FROM training_sessions").fetchone()[0]
                 completed = conn.execute(
