@@ -2,7 +2,7 @@
 
 All endpoints are served at `http://localhost:8000`. Every response is JSON.
 
-**Total endpoints: 159** across 26 categories.
+**Total endpoints: 164** across 27 categories.
 
 ---
 
@@ -581,7 +581,7 @@ Scalable exercise catalog: ~470 industry-grade seed exercises across 8 domains, 
 }
 ```
 
-**Supported domains:** `openfw`, `openswe`, `openml`, `openeda`, `opensim`, `opendoc`, `opendesign`, `openstrategy`, `openterminal`
+**Supported domains:** `openfw`, `openswe`, `openml`, `openeda`, `opensim`, `opendoc`, `opendesign`, `openstrategy`, `openterminal`, `autoresearch`
 
 ---
 
@@ -619,6 +619,69 @@ Outer optimization loop inspired by Stanford IRIS Lab's Meta-Harness. Evolves ag
 ```
 
 **Valid proposal targets:** `system_prompt`, `tool_schema`, `strategy`, `config`
+
+---
+
+## AutoResearch — Autonomous Experiment Engine
+
+Hill-climbing experiment loop inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch). LLM proposes code changes, experiments run with fixed budgets, metrics are extracted, and changes are kept or discarded.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/research/experiment` | Run a single autonomous experiment |
+| POST | `/research/session` | Start a research session (N experiments in a loop) |
+| GET | `/research/results` | Get experiment results `?limit=100` |
+| GET | `/research/best` | Best experiment result `?direction=lower` |
+| GET | `/research/stats` | Analytics: total, kept, discarded, crashed, best metric |
+
+**`POST /research/experiment` body:**
+```json
+{
+  "workspace": "/path/to/project",
+  "metric_name": "val_bpb",
+  "run_command": "uv run train.py",
+  "budget_s": 300,
+  "direction": "lower"
+}
+```
+
+**Response:**
+```json
+{
+  "experiment_id": "exp-a1b2c3d4",
+  "description": "Increase model depth from 8 to 12 layers",
+  "hypothesis": "Deeper model should capture more complex patterns",
+  "metric_value": 2.80,
+  "baseline": 2.90,
+  "decision": "keep",
+  "commit_hash": "abc1234def",
+  "status": "completed"
+}
+```
+
+**`POST /research/session` body:**
+```json
+{
+  "workspace": "/path/to/project",
+  "metric_name": "val_bpb",
+  "run_command": "uv run train.py",
+  "max_experiments": 10,
+  "budget_s": 300,
+  "direction": "lower"
+}
+```
+
+**Response:**
+```json
+{
+  "total_experiments": 10,
+  "kept": 4,
+  "discarded": 5,
+  "crashed": 1,
+  "final_baseline": 2.65,
+  "results": [...]
+}
+```
 
 ---
 

@@ -2819,6 +2819,79 @@ async def meta_best(runner_name: str = ""):
 
 
 # ---------------------------------------------------------------------------
+# AutoResearch — Autonomous Experiment Engine
+# ---------------------------------------------------------------------------
+
+@app.post("/research/experiment")
+async def research_experiment(request: Request):
+    """Run a single autonomous experiment."""
+    body = await request.json()
+    workspace = body.get("workspace", ".")
+    metric_name = body.get("metric_name", "val_loss")
+    run_command = body.get("run_command", "")
+    budget_s = body.get("budget_s")
+    direction = body.get("direction", "lower")
+    from src.core.auto_research import AutoResearchEngine
+    engine = AutoResearchEngine()
+    result = engine.run_experiment(
+        workspace=workspace,
+        metric_name=metric_name,
+        run_command=run_command,
+        budget_s=budget_s,
+        direction=direction,
+    )
+    return result
+
+
+@app.post("/research/session")
+async def research_session(request: Request, background_tasks: BackgroundTasks):
+    """Start a research session (N experiments in a loop)."""
+    body = await request.json()
+    workspace = body.get("workspace", ".")
+    metric_name = body.get("metric_name", "val_loss")
+    run_command = body.get("run_command", "")
+    max_experiments = body.get("max_experiments", 10)
+    budget_s = body.get("budget_s")
+    direction = body.get("direction", "lower")
+    from src.core.auto_research import AutoResearchEngine
+    engine = AutoResearchEngine()
+    result = engine.run_session(
+        workspace=workspace,
+        metric_name=metric_name,
+        run_command=run_command,
+        max_experiments=max_experiments,
+        budget_s=budget_s,
+        direction=direction,
+    )
+    return result
+
+
+@app.get("/research/results")
+async def research_results(limit: int = 100):
+    """Get experiment results."""
+    from src.core.auto_research import AutoResearchEngine
+    engine = AutoResearchEngine()
+    return {"results": engine.get_results(limit=limit)}
+
+
+@app.get("/research/best")
+async def research_best(direction: str = "lower"):
+    """Get the best experiment result."""
+    from src.core.auto_research import AutoResearchEngine
+    engine = AutoResearchEngine()
+    best = engine.get_best_result(direction=direction)
+    return best or {"message": "No experiments found"}
+
+
+@app.get("/research/stats")
+async def research_stats():
+    """Get experiment analytics."""
+    from src.core.auto_research import AutoResearchEngine
+    engine = AutoResearchEngine()
+    return engine.stats()
+
+
+# ---------------------------------------------------------------------------
 # SWE Agent Endpoint — open-swe pattern
 # ---------------------------------------------------------------------------
 

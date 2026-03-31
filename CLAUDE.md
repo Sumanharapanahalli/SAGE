@@ -31,7 +31,9 @@ src/                    Framework Python source
     agent_gym.py        Self-play training engine — Glicko-2 ratings, spaced repetition,
                          N-critic review, reflection, vector memory compounding
     exercise_catalog.py Scalable exercise catalog — seed exercises + LLM-generated variants,
-                         10 domains, ~597 industry-grade seeds expandable to 50,000+ via variant generation
+                         11 domains, ~661 industry-grade seeds expandable to 50,000+ via variant generation
+    auto_research.py    Autonomous experiment engine — hill-climbing optimization,
+                         git-based tracking, fixed-budget execution, metric extraction
     meta_optimizer.py   Meta-optimization loop — harness evolution using execution traces,
                          LLM-proposed improvements, SQLite-persisted iteration history
   agents/               Analyst, Developer, Monitor, Planner, Universal, Critic
@@ -93,7 +95,7 @@ solutions/              Solution configurations (NOT framework code)
                         .sage/ is runtime state — gitignored, never committed.
 
 skills/                 Modular agent skills (YAML-based, visibility-tiered)
-  public/               Open-source skills — shipped with SAGE (14 skill files, 9+ domains)
+  public/               Open-source skills — shipped with SAGE (16 skill files, 10+ domains)
   disabled/             Hidden skills — retained but not loaded
   (private via SAGE_SKILLS_DIR env var — never in this repo)
 
@@ -206,7 +208,7 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 17.5 | SQLite persistence + analytics | `agent_gym.py` (`GymDB`) | Score trends, weakness analysis, improvement rate |
 | 17.6 | Batch training + peer review | `agent_gym.py` (`train_batch`, `_get_peer_reviews`) | `POST /gym/train/batch` |
 | 18 | Exercise Catalog (scalable) | `exercise_catalog.py` | `GET /gym/catalog`, `POST /gym/catalog/generate` |
-| 18.1 | Seed exercises (~597 across 10 domains) | `exercise_catalog.py` (`_generate_seed_catalog`) | openfw, openswe, openml, openeda, opensim, opendoc, opendesign, openbrowser, openstrategy, openterminal |
+| 18.1 | Seed exercises (~661 across 11 domains) | `exercise_catalog.py` (`_generate_seed_catalog`) | openfw, openswe, openml, openeda, opensim, opendoc, opendesign, openbrowser, openstrategy, openterminal, autoresearch |
 | 18.2 | LLM-generated variants | `exercise_catalog.py` (`generate_variants`) | 10 variant axes per domain → 10,000+ exercises |
 | 19 | gstack Browser Integration | `openbrowser_runner.py` | Supplementary runner, `get_runner_by_name("openbrowser")` |
 | 19.1 | Real browser QA (gstack) | `openbrowser_runner.py` | gstack `$B` commands, persistent Chromium daemon |
@@ -223,6 +225,14 @@ SAGE-scope feature requests (improvements to the framework itself) are routed to
 | 21.2 | Proposal evaluation | `meta_optimizer.py` (`evaluate_proposal`) | Baseline comparison, delta scoring |
 | 21.3 | Convergence detection | `meta_optimizer.py` (`check_convergence`) | Score variance < threshold over N iterations |
 | 21.4 | SQLite iteration history | `meta_optimizer.py` (`MetaOptimizer`) | Per-runner history, best iteration tracking |
+| 22 | AutoResearch Engine (Karpathy) | `auto_research.py` | `POST /research/experiment`, `POST /research/session` |
+| 22.1 | Hill-climbing experiment loop | `auto_research.py` (`run_experiment`) | Propose → apply → execute → measure → keep/discard |
+| 22.2 | Git-based experiment tracking | `auto_research.py` (`_git_commit`, `_git_reset`) | Commit = checkpoint, reset = discard |
+| 22.3 | Fixed-budget execution | `auto_research.py` (`_execute_experiment`) | Wall-clock timeout, crash recovery |
+| 22.4 | Metric extraction | `auto_research.py` (`_extract_metric`) | Regex-based, last-occurrence, any named metric |
+| 22.5 | Research program (Markdown-as-skill) | `auto_research.py` (`load_program`) | program.md guides experiment hypotheses |
+| 22.6 | Research exercise catalog (64 seeds) | `exercise_seeds.py` (`AUTORESEARCH_SEEDS`) | Hyperparameters, architecture, training, evaluation |
+| 22.7 | Auto-research skill YAML | `skills/public/auto_research.yaml` | research_engineer, ml_researcher roles |
 
 ---
 
@@ -272,6 +282,7 @@ The 3-tier isolation cascade (OpenShell → Sandbox → Direct) is orthogonal to
 | **OpenBrowser** | `openbrowser_runner.py` | qa_engineer*, system_tester*, ux_designer* | QA reports, screenshots, a11y audits | — (gstack) |
 | **OpenStrategy** | `openstrategy_runner.py` | product_manager, marketing_strategist, operations_manager | PRDs, roadmaps, GTM plans | — |
 | **OpenTerminal** | `openterminal_runner.py` | terminal_operator, shell_expert | Command output, scripts, reports | — (tmux) |
+| **AutoResearch** | `auto_research.py` | research_engineer, ml_researcher | Experiment results, metrics, git checkpoints | — |
 
 \* OpenBrowser is a **supplementary runner** — these roles keep their primary runner (OpenSWE/OpenDesign) but gain browser testing capabilities via gstack integration.
 
@@ -409,6 +420,7 @@ skills/
     product_strategy.yaml
     software_engineering.yaml
     terminal_operations.yaml
+    auto_research.yaml
   disabled/                  Hidden skills (not loaded)
   (private via SAGE_SKILLS_DIR env var)
 ```
@@ -612,6 +624,58 @@ Key insight from the paper: **full execution traces yield 50% accuracy vs 34.6% 
 | `GET` | `/meta/history` | Get iteration history (filterable by runner) |
 | `GET` | `/meta/stats` | Statistics: total iterations, acceptance rate, trend |
 | `GET` | `/meta/best` | Best-scoring iteration for a runner |
+
+---
+
+## AutoResearch Engine — Autonomous Experiment Loop
+
+Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch). Hill-climbing optimization loop where the LLM proposes code changes, experiments run with fixed budgets, and results are kept or discarded based on metric comparison.
+
+### Core Loop
+
+```
+1. PROPOSE  → LLM generates hypothesis + code change (search/replace)
+2. APPLY    → Changes written to workspace, committed to git
+3. EXECUTE  → Experiment runs with wall-clock timeout (default 300s)
+4. MEASURE  → Metric extracted from stdout (regex, last occurrence)
+5. DECIDE   → If improved: keep (commit stays). If not: discard (git reset)
+6. LOOP     → Repeat with updated baseline and history context
+```
+
+Git is the experiment tracker: commit = checkpoint, reset = discard. The commit log IS the experiment log.
+
+### Key Capabilities
+
+| Feature | Implementation | Details |
+|---|---|---|
+| **Hill climbing** | `run_experiment()` | Single experiment: propose → apply → execute → measure → keep/discard |
+| **Session mode** | `run_session()` | N experiments in a loop with progressive baseline updates |
+| **Fixed budget** | `_execute_experiment()` | Wall-clock timeout prevents runaway experiments |
+| **Metric extraction** | `_extract_metric()` | Regex-based, supports any named metric (val_bpb, accuracy, loss, etc.) |
+| **Git tracking** | `_git_commit()`, `_git_reset()` | Branch per session, commit per experiment, reset on discard |
+| **Research program** | `load_program()` | Markdown-as-skill: program.md guides hypothesis generation |
+| **Crash recovery** | Automatic | Crashed experiments trigger git reset, loop continues |
+| **SQLite persistence** | `log_result()`, `get_results()` | Full experiment history across restarts |
+
+### Exercise Catalog
+
+64 industry-grade research exercises across 4 difficulty tiers:
+- **Beginner** (15): Grid search, optimizer comparison, reproducibility, data normalization
+- **Intermediate** (20): Bayesian optimization, scaling experiments, knowledge distillation, curriculum learning
+- **Advanced** (15): NAS, contrastive learning, compound scaling, adversarial training
+- **Expert** (14): Chinchilla-optimal training, LoRA ablation, speculative decoding, MoE routing
+
+Each exercise specifies `metric_name` and `metric_direction` (lower/higher) for automated evaluation.
+
+### API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/research/experiment` | Run a single autonomous experiment |
+| `POST` | `/research/session` | Start a research session (N experiments) |
+| `GET` | `/research/results` | Get experiment results (with limit) |
+| `GET` | `/research/best` | Best experiment result by metric direction |
+| `GET` | `/research/stats` | Analytics: total, kept, discarded, crashed, best metric |
 
 ---
 

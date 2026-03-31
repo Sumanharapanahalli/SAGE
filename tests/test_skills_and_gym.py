@@ -242,6 +242,7 @@ class TestPublicSkillYAMLs(unittest.TestCase):
         "browser_testing",
         "security_audit",
         "terminal_operations",
+        "auto_research",
     ]
 
     REQUIRED_FIELDS = ["name", "version", "roles", "runner", "tools", "prompt", "acceptance_criteria"]
