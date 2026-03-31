@@ -979,6 +979,12 @@ async def analyze(request: AnalyzeRequest):
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "status": "pending",
             }
+            # Notify Teams for approval (best-effort)
+            try:
+                from src.interface.teams_bot import teams_bot
+                teams_bot.send_approval_request(trace_id, result, "http://localhost:8000")
+            except Exception:
+                pass
 
         return result
 
@@ -1062,6 +1068,9 @@ async def approve(trace_id: str, request: Request, body: ApproveProposalRequest 
     Args:
         trace_id: The trace ID from a previous proposal response.
     """
+    from src.modules.trace_id import is_valid as _is_valid_trace
+    if not _is_valid_trace(trace_id):
+        raise HTTPException(status_code=400, detail="Invalid trace_id format — must be a valid UUID.")
     from src.core.proposal_executor import execute_approved_proposal
     from src.core.auth import optional_auth as _optional_auth
 
@@ -1187,6 +1196,9 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
 
     Request body: {"feedback": "The real root cause is..."}
     """
+    from src.modules.trace_id import is_valid as _is_valid_trace
+    if not _is_valid_trace(trace_id):
+        raise HTTPException(status_code=400, detail="Invalid trace_id format — must be a valid UUID.")
     from src.core.auth import optional_auth as _optional_auth
 
     # Capture identity when auth is enabled (transparent when auth.enabled: false)
@@ -1211,6 +1223,17 @@ async def reject(trace_id: str, http_request: Request, request: RejectRequest):
             )
         except Exception as e:
             logger.error("Audit log failed on reject: %s", e)
+        # Store rejection feedback in long-term memory for compounding intelligence
+        if request.feedback:
+            try:
+                from src.memory.long_term_memory import long_term_memory
+                long_term_memory.remember(
+                    f"Rejected {proposal.action_type}: {request.feedback}",
+                    user_id=auth_user.name if auth_user else "human",
+                    metadata={"trace_id": trace_id, "action_type": proposal.action_type},
+                )
+            except Exception:
+                pass  # long-term memory is non-critical
         # If rejecting a code_diff proposal, revert the working tree
         if rejected and rejected.action_type == "code_diff":
             try:
@@ -1337,6 +1360,16 @@ async def create_mr(request: MRCreateRequest):
 
         if "error" in result:
             raise HTTPException(status_code=500, detail=result["error"])
+
+        # Notify Teams channel about new MR (best-effort)
+        try:
+            from src.interface.teams_bot import teams_bot
+            teams_bot.send_mr_created(
+                mr_url=result.get("web_url", ""),
+                issue_title=result.get("title", f"Issue #{request.issue_iid}"),
+            )
+        except Exception:
+            pass  # Teams notification is non-critical
 
         return result
 
@@ -1763,6 +1796,73 @@ async def get_pipeline_status(project_id: int, mr_iid: int):
         raise
     except Exception as e:
         logger.error("MR pipeline status endpoint error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/developer/propose-patch")
+async def developer_propose_patch(request: Request):
+    """
+    Use the Developer Agent to propose a code patch for a file error.
+
+    Request body: {"file_path": "src/foo.py", "error_description": "...", "current_code": "..."}
+    """
+    body = await request.json()
+    file_path = body.get("file_path", "")
+    error_description = body.get("error_description", "")
+    current_code = body.get("current_code", "")
+    if not file_path or not error_description:
+        raise HTTPException(status_code=422, detail="file_path and error_description are required")
+    try:
+        dev = _get_developer()
+        result = dev.propose_code_patch(file_path, error_description, current_code)
+        return result
+    except Exception as e:
+        logger.error("Propose patch error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/mr/comment")
+async def mr_add_comment(request: Request):
+    """
+    Post a comment on a GitLab merge request.
+
+    Request body: {"project_id": 123, "mr_iid": 7, "comment": "LGTM"}
+    """
+    body = await request.json()
+    project_id = body.get("project_id")
+    mr_iid = body.get("mr_iid")
+    comment = body.get("comment", "")
+    if not project_id or not mr_iid or not comment:
+        raise HTTPException(status_code=422, detail="project_id, mr_iid, and comment are required")
+    try:
+        dev = _get_developer()
+        result = dev.add_mr_comment(int(project_id), int(mr_iid), comment)
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("MR comment error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/planner/status")
+async def planner_plan_status(request: Request):
+    """
+    Get the execution status of plan tasks.
+
+    Request body: {"task_ids": ["tid-001", "tid-002", ...]}
+    """
+    body = await request.json()
+    task_ids = body.get("task_ids", [])
+    if not task_ids:
+        raise HTTPException(status_code=422, detail="task_ids list is required")
+    try:
+        from src.agents.planner import planner_agent
+        return {"statuses": planner_agent.get_plan_status(task_ids)}
+    except Exception as e:
+        logger.error("Plan status error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -3851,10 +3951,18 @@ async def knowledge_search(request: Request):
     body = await request.json()
     query = body.get("query", "").strip()
     k     = min(int(body.get("k", 5)), 20)
+    org_filter = body.get("org_filter", False)
     if not query:
         raise HTTPException(status_code=400, detail="query is required")
-    from src.memory.vector_store import vector_memory
-    results = vector_memory.search(query, k=k)
+
+    if org_filter:
+        # Org-aware search scoped to the active solution tenant
+        from src.memory.vector_store import org_aware_query
+        from src.core.project_loader import project_config
+        results = org_aware_query(query, solution_name=project_config.project_name, limit=k)
+    else:
+        from src.memory.vector_store import vector_memory
+        results = vector_memory.search(query, k=k)
     return {"results": results, "count": len(results), "query": query}
 
 
@@ -4165,6 +4273,29 @@ async def composio_tools_list():
         ],
         "count": len(tool_dict),
     }
+
+
+@app.get("/integrations/langchain/tools")
+async def langchain_tools_list():
+    """
+    List LangChain tool integrations enabled for the active solution.
+    Reads the integrations list from project.yaml and loads matching tool loaders.
+    """
+    from src.core.project_loader import project_config
+    try:
+        from src.integrations.langchain_tools import get_tools_for_solution
+        tool_dict = get_tools_for_solution(project_config.project_name)
+        return {
+            "solution": project_config.project_name,
+            "tools": [
+                {"name": name, "description": getattr(t, "description", str(type(t).__name__))}
+                for name, t in tool_dict.items()
+            ],
+            "count": len(tool_dict),
+        }
+    except Exception as e:
+        logger.warning("LangChain tools listing failed: %s", e)
+        return {"solution": project_config.project_name, "tools": [], "count": 0, "error": str(e)}
 
 
 # ---------------------------------------------------------------------------

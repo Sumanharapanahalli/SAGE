@@ -2,7 +2,7 @@
 
 All endpoints are served at `http://localhost:8000`. Every response is JSON.
 
-**Total endpoints: 164** across 27 categories.
+**Total endpoints: 170** across 28 categories.
 
 ---
 
@@ -411,10 +411,13 @@ End-to-end product build pipeline — from plain-language description to working
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/mr/create` | Create MR from issue |
+| POST | `/mr/create` | Create MR from issue (Teams notification on success) |
 | POST | `/mr/review` | AI review of merge request |
+| POST | `/mr/comment` | Post comment on a merge request |
 | GET | `/mr/open` | List open MRs |
 | GET | `/mr/pipeline` | Pipeline status |
+| POST | `/developer/propose-patch` | AI-generated code patch for a file error |
+| POST | `/planner/status` | Get execution status of plan tasks |
 
 ---
 
@@ -460,6 +463,7 @@ End-to-end product build pipeline — from plain-language description to working
 | GET | `/integrations/composio/status` | Composio connection status |
 | POST | `/integrations/composio/connect` | Connect to Composio `{"api_key": "..."}` |
 | GET | `/integrations/composio/tools` | List available Composio tools |
+| GET | `/integrations/langchain/tools` | List LangChain tool integrations for active solution |
 
 ---
 

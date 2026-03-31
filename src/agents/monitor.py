@@ -448,6 +448,13 @@ class MonitorAgent:
         except Exception as e:
             self.logger.error("Audit log failed for event %s: %s", event_type, e)
 
+        # Publish to EventBus for decoupled subscribers
+        try:
+            from src.modules.event_bus import event_bus
+            event_bus.publish(event_type, payload)
+        except Exception:
+            pass  # event bus is supplementary
+
         # Dispatch to registered callbacks
         dispatched = 0
         for registered_type, callbacks in self._callbacks.items():

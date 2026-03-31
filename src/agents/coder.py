@@ -160,6 +160,14 @@ class CodingAgent:
             "git_diff":     self._tool_git_diff,
         }
 
+        # Merge MCP tools exported in React-compatible format (best-effort)
+        try:
+            from src.integrations.mcp_registry import mcp_registry
+            mcp_tools = mcp_registry.as_react_tools()
+            tools.update(mcp_tools)
+        except Exception:
+            pass  # MCP tools are supplementary
+
         tool_descriptions = "\n".join(
             f"  - {name}({', '.join(fn.__code__.co_varnames[1:fn.__code__.co_argcount])}): {fn.__doc__.strip().splitlines()[0]}"
             for name, fn in tools.items()

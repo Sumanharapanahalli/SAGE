@@ -179,10 +179,10 @@ def test_approve_valid_trace_id(client):
 
 
 def test_approve_invalid_trace_id(client):
-    """Approving a non-existent trace_id must return 404."""
+    """Approving a non-existent trace_id must return 400 (malformed UUID) or 404 (not found)."""
     c, _ = client
     resp = c.post("/approve/nonexistent-trace-id-does-not-exist")
-    assert resp.status_code == 404, f"Expected 404 for unknown trace_id, got {resp.status_code}"
+    assert resp.status_code in (400, 404), f"Expected 400/404, got {resp.status_code}"
 
 
 def test_approve_creates_audit_record(client):
@@ -245,10 +245,10 @@ def test_reject_valid_trace_id(client):
 
 
 def test_reject_invalid_trace_id(client):
-    """Rejecting a non-existent trace_id must return 404."""
+    """Rejecting a non-existent trace_id must return 400 (malformed UUID) or 404 (not found)."""
     c, _ = client
     resp = c.post("/reject/nonexistent-trace-id", json={"feedback": "some feedback"})
-    assert resp.status_code == 404
+    assert resp.status_code in (400, 404)
 
 
 def test_reject_triggers_learning(client):

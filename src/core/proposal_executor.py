@@ -392,32 +392,27 @@ async def _revert_code_diff(proposal: Proposal):
 
 
 async def _execute_agent_hire(proposal: Proposal):
-    """Append a new agent role to prompts.yaml and optionally task types to tasks.yaml."""
+    """Append a new agent role to prompts.yaml and optionally task types to tasks.yaml.
+
+    Delegates YAML persistence to RoleGenerator for consistency.
+    """
     import yaml as _yaml
     from src.core.project_loader import project_config, _SOLUTIONS_DIR
+    from src.core.role_generator import role_generator
 
     p         = proposal.payload
     role_id   = p["role_id"]
     solution  = p.get("solution", project_config.project_name)
     sol_dir   = os.path.join(_SOLUTIONS_DIR, solution)
 
-    # ── 1. Update prompts.yaml ─────────────────────────────────────────────
-    prompts_path = os.path.join(sol_dir, "prompts.yaml")
-    with open(prompts_path, "r", encoding="utf-8") as fh:
-        prompts = _yaml.safe_load(fh) or {}
-
-    if "roles" not in prompts:
-        prompts["roles"] = {}
-
-    prompts["roles"][role_id] = {
+    # ── 1. Update prompts.yaml via RoleGenerator ──────────────────────────
+    role_data = {
         "name":          p["name"],
         "description":   p["description"],
         "icon":          p["icon"],
         "system_prompt": p["system_prompt"],
     }
-
-    with open(prompts_path, "w", encoding="utf-8") as fh:
-        _yaml.dump(prompts, fh, allow_unicode=True, default_flow_style=False, sort_keys=False)
+    role_generator.add_role_to_yaml(solution, role_id, role_data)
 
     # ── 2. Update tasks.yaml (if task_types provided) ─────────────────────
     new_task_types = p.get("task_types", [])
