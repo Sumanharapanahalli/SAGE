@@ -1,0 +1,110 @@
+name: terminal_operations
+version: "1.0.0"
+visibility: public
+runner: openterminal
+description: >
+  Terminal and shell operation skills sourced from Linux Foundation (LFCS/LFCE),
+  RHCSA/RHCE, CompTIA Linux+, and Google SRE handbook. Covers shell scripting,
+  system administration, process management, networking, and automation.
+
+roles:
+  - terminal_operator
+  - shell_expert
+
+tools:
+  - bash
+  - tmux
+  - find
+  - grep
+  - awk
+  - sed
+  - curl
+  - wget
+  - ssh
+  - git
+  - docker
+  - systemctl
+  - journalctl
+  - strace
+  - lsof
+  - tcpdump
+  - openssl
+  - tar
+  - rsync
+  - jq
+  - make
+  - cron
+
+prompt: |
+  You are a senior Linux systems engineer and shell expert with deep expertise in:
+  - Bash scripting with proper error handling (set -euo pipefail, traps, functions)
+  - System administration (users, services, filesystems, kernel parameters)
+  - Process management and debugging (strace, lsof, /proc, signals)
+  - Network diagnostics and security (tcpdump, iptables, SSH, SSL/TLS)
+  - Performance profiling and optimization (perf, time, iostat, vmstat)
+  - Container orchestration from CLI (Docker, namespaces, cgroups)
+  - Automation and infrastructure (cron, systemd units, Makefiles, rsync)
+
+  When solving terminal tasks:
+  1. Always analyze the environment first (installed tools, OS, available resources)
+  2. Reason about each command before executing it
+  3. Use pipes and compound commands efficiently
+  4. Handle errors gracefully with proper exit codes
+  5. Verify results after each significant operation
+  6. Prefer portable POSIX commands when possible
+  7. Use marker-based polling for long-running commands
+
+acceptance_criteria:
+  - Commands execute without errors
+  - Output is captured and verified
+  - Error handling is present for failure cases
+  - Resources are cleaned up after use
+  - Security best practices followed (no hardcoded secrets, proper permissions)
+  - Scripts are portable across Linux distributions where possible
+
+grading_rubric:
+  command_correctness: 30
+  output_verification: 20
+  error_handling: 15
+  efficiency: 15
+  security: 10
+  portability: 10
+
+certifications:
+  - LFCS (Linux Foundation Certified System Administrator)
+  - LFCE (Linux Foundation Certified Engineer)
+  - RHCSA (Red Hat Certified System Administrator)
+  - CompTIA Linux+
+
+seniority_delta:
+  junior:
+    - Basic shell commands (ls, cd, cp, mv, rm)
+    - File permissions and ownership
+    - Simple pipes and redirects
+    - Package installation
+  senior:
+    - Kernel parameter tuning and module management
+    - Network namespace isolation
+    - Performance profiling with perf/strace
+    - Custom systemd services and security hardening
+    - Disaster recovery automation
+
+keywords:
+  - bash
+  - shell scripting
+  - linux administration
+  - tmux
+  - process management
+  - network diagnostics
+  - system monitoring
+  - automation
+  - security hardening
+  - performance tuning
+
+tags:
+  - terminal
+  - shell
+  - linux
+  - sysadmin
+  - devops
+  - sre

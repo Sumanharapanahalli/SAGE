@@ -35,6 +35,12 @@ logger = logging.getLogger(__name__)
 
 _SAFE_SOLUTION_NAME = re.compile(r'^[a-zA-Z0-9_-]{1,64}$')
 
+# ---------------------------------------------------------------------------
+# Sub-routers
+# ---------------------------------------------------------------------------
+from src.interface.routes.data_transformation import router as _data_transformation_router  # noqa: E402
+from src.interface.routes.voice_data import router as _voice_data_router  # noqa: E402
+
 # Module-level import so tests can patch src.interface.api.reload_org_loader
 try:
     from src.core.org_loader import reload_org_loader
@@ -118,6 +124,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(RateLimitMiddleware)
+
+app.include_router(_data_transformation_router)
+app.include_router(_voice_data_router)
 
 
 # ---------------------------------------------------------------------------
@@ -465,11 +474,15 @@ _pending_proposals: dict = {}
 
 
 @app.post("/shutdown")
-async def shutdown():
+async def shutdown(request: Request):
     """
     Gracefully stop the SAGE backend and the Vite frontend dev server.
-    Called by the web UI Stop button.
+    Called by the web UI Stop button. Requires ADMIN role (T-D-03).
     """
+    from src.core.auth import get_current_user as _get_current_user
+    from src.core.rbac import require_role as _require_role, Role as _Role
+    user = await _get_current_user(request)
+    await _require_role(_Role.ADMIN)(user)
     import threading
     import subprocess
 
@@ -2763,6 +2776,46 @@ async def gym_catalog_generate(req: CatalogGenerateRequest):
         "exercises": [e.to_dict() for e in generated],
         "catalog_stats": exercise_catalog.stats(),
     }
+
+
+# ---------------------------------------------------------------------------
+# Meta-Optimizer Endpoints
+# ---------------------------------------------------------------------------
+
+@app.post("/meta/optimize")
+async def meta_optimize(request: Request):
+    """Run a meta-optimization iteration for a runner."""
+    body = await request.json()
+    runner_name = body.get("runner_name", "openswe")
+    from src.core.meta_optimizer import MetaOptimizer
+    optimizer = MetaOptimizer()
+    result = optimizer.run_iteration(runner_name=runner_name)
+    return result
+
+
+@app.get("/meta/history")
+async def meta_history(runner_name: str = ""):
+    """Get meta-optimization iteration history."""
+    from src.core.meta_optimizer import MetaOptimizer
+    optimizer = MetaOptimizer()
+    return {"history": optimizer.get_history(runner_name=runner_name)}
+
+
+@app.get("/meta/stats")
+async def meta_stats(runner_name: str = ""):
+    """Get meta-optimizer statistics."""
+    from src.core.meta_optimizer import MetaOptimizer
+    optimizer = MetaOptimizer()
+    return optimizer.stats(runner_name=runner_name)
+
+
+@app.get("/meta/best")
+async def meta_best(runner_name: str = ""):
+    """Get the best optimization iteration for a runner."""
+    from src.core.meta_optimizer import MetaOptimizer
+    optimizer = MetaOptimizer()
+    best = optimizer.get_best_iteration(runner_name=runner_name)
+    return best or {"message": "No iterations found"}
 
 
 # ---------------------------------------------------------------------------
