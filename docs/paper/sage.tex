@@ -1,0 +1,652 @@
+% SAGE: Smart Agentic-Guided Empowerment
+% arXiv preprint — uses standard article class with minimal dependencies
+% Compile: pdflatex sage.tex && bibtex sage && pdflatex sage.tex && pdflatex sage.tex
+
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,fit,calc}
+\usepackage{listings}
+\usepackage{natbib}
+\usepackage{url}
+\usepackage{multirow}
+
+% --- Hyperref setup ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=blue!60!black,
+    urlcolor=blue!60!black
+}
+
+% --- Code listing style ---
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue!70!black},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red!60!black},
+    showstringspaces=false,
+    tabsize=2
+}
+
+% --- Title ---
+\title{
+    \textbf{SAGE: Smart Agentic-Guided Empowerment} \\[0.5em]
+    \large A Governance-First Multi-Agent Framework for Regulated Industries
+}
+
+\author{
+    Suman Harapanahalli \\
+    \texttt{github.com/Sumanharapanahalli/SAGE} \\
+    \texttt{MIT License}
+}
+
+\date{April 2026}
+
+\begin{document}
+
+\maketitle
+
+% ============================================================================
+\begin{abstract}
+We present SAGE (Smart Agentic-Guided Empowerment), an open-source, modular multi-agent orchestration framework designed for regulated industries where auditability, human oversight, and compliance are non-negotiable. Unlike existing frameworks (LangGraph, CrewAI, AutoGen) that treat human approval as optional per-node configuration, SAGE enforces a two-tier governance architecture: framework control operations execute immediately, while all agent proposals require mandatory human-in-the-loop (HITL) approval with immutable audit trails and trace-level accountability.
+
+SAGE introduces several novel contributions: (1) a YAML-first declarative agent manifest system enabling domain-agnostic configuration without code changes; (2) a Build Orchestrator implementing eight agentic patterns including Q-learning adaptive routing and N-provider multi-critic review; (3) an Agent Gym self-play training engine with Glicko-2 skill ratings and spaced repetition; (4) nine domain-specific execution runners spanning software, firmware, PCB design, ML, and documentation; (5) OpenTelemetry distributed tracing and CloudEvents structured messaging for observability; and (6) zero mandatory API keys enabling fully air-gapped deployment.
+
+The system comprises 35,000+ lines of production Python, 156 REST API endpoints, 27 React UI pages, and 14 modular skills. Empirical evaluation across 496 Agent Gym training sessions demonstrates measurable skill improvement (average Glicko-2 rating: 1,484), while a 100-solution stress test reveals current scaling limitations (2\% end-to-end success rate) with documented root cause analysis.
+
+\medskip
+\noindent\textbf{Keywords:} multi-agent systems, human-in-the-loop, regulated AI, lean development, agent training, governance
+\end{abstract}
+
+% ============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+The rapid proliferation of large language model (LLM)-powered agent frameworks has produced increasingly capable systems for task decomposition, code generation, and autonomous decision-making~\citep{yao2023react, shinn2023reflexion, hong2023metagpt}. However, the current generation of open-source frameworks --- LangGraph~\citep{langgraph2024}, CrewAI~\citep{crewai2024}, AutoGen~\citep{wu2023autogen}, Semantic Kernel~\citep{semantickernel2024}, and Dify~\citep{dify2024} --- share a common architectural assumption: agent output can be acted upon immediately, with human inspection occurring post-hoc via execution logs.
+
+This assumption fails catastrophically in regulated industries. Medical device development (ISO~13485, IEC~62304), automotive systems (ISO~26262), financial services (SOC~2, PCI~DSS), and aerospace software (DO-178C) require provable human oversight for every consequential decision. The question is not ``does the system work?'' but rather \textit{``can you prove it worked correctly, with human oversight, for every decision?''}
+
+No existing open-source framework provides the combination of:
+\begin{itemize}[noitemsep]
+    \item Mandatory human approval gates (not optional per-node configuration)
+    \item Immutable per-decision audit trails with trace identifiers
+    \item Rejection feedback loops that improve future agent behavior
+    \item Domain-agnostic YAML-only configuration for new industries
+    \item Zero mandatory API keys (fully air-gappable deployment)
+\end{itemize}
+
+SAGE addresses this gap by applying lean development methodology~\citep{poppendieck2003lean} to multi-agent orchestration: eliminate waste, shorten feedback loops, and amplify human judgment at machine speed. The framework's north-star design principle is enabling one human operator supported by an AI agent team to manage operations that traditionally require large teams --- but only with governance guarantees sufficient for regulated environments.
+
+\subsection{Contributions}
+
+This paper makes the following contributions:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Two-tier governance architecture} separating immediate framework control from approval-gated agent proposals, with risk-classified proposals and trace-level audit trails (\S\ref{sec:governance}).
+
+    \item \textbf{Build Orchestrator} implementing eight agentic patterns --- ReAct, hierarchical decomposition, wave-based parallelism, Q-learning adaptive routing, N-provider multi-critic review, HITL gates, iterative refinement, and anti-drift checkpoints --- for end-to-end product construction (\S\ref{sec:orchestrator}).
+
+    \item \textbf{Agent Gym} self-play training engine with Glicko-2 skill ratings, spaced repetition scheduling, and adaptive exercise selection across 529 seed exercises in 9 domains (\S\ref{sec:gym}).
+
+    \item \textbf{Domain-aware runner architecture} with nine specialized execution environments (OpenSWE, OpenFW, OpenEDA, OpenSim, OpenML, OpenDoc, OpenDesign, OpenStrategy, OpenBrowser) implementing a common \texttt{BaseRunner} interface (\S\ref{sec:runners}).
+
+    \item \textbf{Communication layers} comprising OpenTelemetry distributed tracing with graceful no-op degradation and CloudEvents v1.0 structured messaging (\S\ref{sec:communication}).
+
+    \item \textbf{Empirical evaluation} across 496 training sessions and 100-solution stress tests with transparent reporting of both successes and failures (\S\ref{sec:evaluation}).
+\end{enumerate}
+
+% ============================================================================
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Multi-Agent Frameworks.}
+LangGraph~\citep{langgraph2024} provides a graph-based orchestration model with optional \texttt{interrupt\_before} nodes for human intervention. CrewAI~\citep{crewai2024} introduces role-based agent hierarchies but lacks audit trails. AutoGen~\citep{wu2023autogen} supports multi-agent conversations with code execution sandboxing. MetaGPT~\citep{hong2023metagpt} assigns agents SOPs (Standard Operating Procedures) modeled on software company roles. None enforce mandatory governance or provide domain-agnostic configuration.
+
+\paragraph{Agent Training and Evaluation.}
+AlphaCode~\citep{li2022alphacode} and AlphaCode~2~\citep{leblond2023alphacode2} demonstrate competitive programming via large-scale sampling and filtering. SWE-Bench~\citep{jimenez2024swebench} evaluates agents on real GitHub issues. AgentBench~\citep{liu2023agentbench} provides multi-environment benchmarks. Our Agent Gym differs by implementing continuous Glicko-2~\citep{glickman2001glicko2} rating with spaced repetition~\citep{leitner1972} for progressive skill development, rather than static benchmarking.
+
+\paragraph{Human-in-the-Loop AI.}
+Constitutional AI~\citep{bai2022constitutional} and RLHF~\citep{ouyang2022rlhf} incorporate human feedback during training. Interactive machine learning~\citep{amershi2014power} enables runtime human guidance. SAGE's approach is distinct: human feedback at the proposal level is stored in vector memory and used to improve future proposals without model retraining, following the Memento principle~\citep{memento2025}.
+
+\paragraph{Lean Development and AI.}
+Lean software development~\citep{poppendieck2003lean} emphasizes eliminating waste, building quality in, and deferring commitment. SAGE applies these principles to agent orchestration: the five-phase lean loop (Surface $\rightarrow$ Contextualize $\rightarrow$ Propose $\rightarrow$ Decide $\rightarrow$ Compound) eliminates manual steps while preserving human judgment at decision points.
+
+\paragraph{Governance in AI Systems.}
+The EU AI Act~\citep{euaiact2024} and FDA AI/ML guidance~\citep{fdaaiml2023} establish regulatory requirements for AI systems in high-risk applications. Paperclip~\citep{paperclip2024} implements board-of-directors governance targeting eventual zero-human operation. SAGE takes the opposite stance: human approval is permanent, not transitional, reflecting the requirements of regulated industries.
+
+% ============================================================================
+\section{System Architecture}
+\label{sec:architecture}
+
+\subsection{Design Principles}
+
+SAGE is built on five foundational laws:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Agents propose, humans decide} --- for all agent proposals. Framework control operations (configuration, LLM switching) execute immediately as operator actions.
+    \item \textbf{Eliminate waste at every layer} --- no manual steps that an agent can perform correctly; no ceremonies that don't add value.
+    \item \textbf{Compounding intelligence over cold-start lookup} --- every human correction feeds vector memory, improving future proposals without model retraining.
+    \item \textbf{Vertical slices, not horizontal layers} --- every task produces a complete, reviewable end-to-end slice of value.
+    \item \textbf{Atomic verification is non-negotiable} --- every agent action has a defined verification step.
+\end{enumerate}
+
+\subsection{Architecture Overview}
+
+Figure~\ref{fig:architecture} illustrates SAGE's layered architecture.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    box/.style={rectangle, draw, rounded corners, minimum width=3cm, minimum height=0.7cm, fill=#1!15, font=\small},
+    box/.default=blue,
+    arrow/.style={->, thick, >=stealth}
+]
+    % Solution Layer
+    \node[box=orange] (sol) {Solutions (YAML)};
+    \node[right=0.3cm of sol, font=\scriptsize\ttfamily, text=gray] {project.yaml, prompts.yaml, tasks.yaml};
+
+    % Core Layer
+    \node[box=blue, below=of sol] (core) {Core Engine};
+    \node[right=0.3cm of core, font=\scriptsize\ttfamily, text=gray] {LLM Gateway, Queue, Skills};
+
+    % Agent Layer
+    \node[box=green, below=of core] (agents) {Agent Layer};
+    \node[right=0.3cm of agents, font=\scriptsize\ttfamily, text=gray] {Analyst, Developer, Planner, Critic};
+
+    % Runner Layer
+    \node[box=purple, below=of agents] (runners) {Domain Runners};
+    \node[right=0.3cm of runners, font=\scriptsize\ttfamily, text=gray] {OpenSWE, OpenFW, OpenEDA, ...};
+
+    % API Layer
+    \node[box=red, below=of runners] (api) {FastAPI (156 endpoints)};
+
+    % Memory
+    \node[box=teal, left=2.5cm of agents] (memory) {\shortstack{Memory\\(Audit + Vector)}};
+
+    % UI
+    \node[box=yellow, below=of api] (ui) {React Dashboard (27 pages)};
+
+    % Arrows
+    \draw[arrow] (sol) -- (core);
+    \draw[arrow] (core) -- (agents);
+    \draw[arrow] (agents) -- (runners);
+    \draw[arrow] (runners) -- (api);
+    \draw[arrow] (api) -- (ui);
+    \draw[arrow] (agents) -- (memory);
+    \draw[arrow] (memory) -- (core);
+
+\end{tikzpicture}
+\caption{SAGE layered architecture. Solutions plug in via YAML only. Data flows downward through agents to the API. Memory creates a compounding feedback loop (dashed path) from human decisions back to agent context.}
+\label{fig:architecture}
+\end{figure}
+
+The framework enforces strict separation between the \textit{framework} (\texttt{src/}, \texttt{web/}) and \textit{solutions} (\texttt{solutions/<name>/}). The framework is domain-agnostic; solutions encode all industry-specific knowledge via three YAML files:
+
+\begin{itemize}[noitemsep]
+    \item \texttt{project.yaml} --- declarative agent manifest (what this domain \textit{is})
+    \item \texttt{prompts.yaml} --- role definitions and system prompts (how agents \textit{think})
+    \item \texttt{tasks.yaml} --- task type registry (what agents \textit{can do})
+\end{itemize}
+
+Adding a new industry domain requires editing only these three YAML files. No Python code changes are needed.
+
+\subsection{LLM Gateway}
+\label{sec:llm}
+
+The \texttt{LLMGateway} provides a unified interface across six provider backends:
+
+\begin{table}[h]
+\centering
+\caption{Supported LLM providers. All except Claude API work without API keys.}
+\label{tab:providers}
+\begin{tabular}{lll}
+\toprule
+\textbf{Provider} & \textbf{Setup} & \textbf{API Key Required} \\
+\midrule
+Gemini CLI & \texttt{npm install -g @google/gemini-cli} & No \\
+Claude Code CLI & \texttt{npm install -g @anthropic-ai/claude-code} & No \\
+Ollama & \texttt{ollama serve \&\& ollama pull llama3.2} & No \\
+Local (GGUF) & \texttt{pip install llama-cpp-python} + model & No \\
+Generic CLI & Any CLI tool via \texttt{generic\_cli\_path} & No \\
+Claude API & \texttt{ANTHROPIC\_API\_KEY} env var & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The gateway is a singleton with a thread lock ensuring single-lane inference. Provider switching is available at runtime via \texttt{POST /llm/switch} without server restart. OpenTelemetry spans wrap every \texttt{generate()} call with GenAI semantic conventions (\S\ref{sec:communication}).
+
+% ============================================================================
+\section{Two-Tier Governance Architecture}
+\label{sec:governance}
+
+SAGE's central design contribution is the separation of operations into two governance tiers:
+
+\begin{table}[h]
+\centering
+\caption{Two-tier governance. Framework control executes immediately; agent proposals require human approval.}
+\label{tab:governance}
+\begin{tabular}{lll}
+\toprule
+\textbf{Tier} & \textbf{Operations} & \textbf{Behavior} \\
+\midrule
+Framework Control & \texttt{config\_switch}, \texttt{llm\_switch}, \texttt{module\_toggle} & Immediate execution \\
+Agent Proposals & \texttt{yaml\_edit}, \texttt{code\_diff}, \texttt{agent\_hire}, ... & HITL approval required \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Proposal Lifecycle}
+
+Every agent proposal follows a structured lifecycle:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Creation} --- Agent generates a proposal with a unique \texttt{trace\_id}, action type, and payload.
+    \item \textbf{Risk Classification} --- Proposals are classified across five tiers: \textsc{Informational}, \textsc{Low}, \textsc{Medium}, \textsc{High}, and \textsc{Destructive}. Each tier has risk-appropriate expiry windows.
+    \item \textbf{Review} --- Human reviews the proposal in the dashboard or via Slack integration.
+    \item \textbf{Decision} --- Approval triggers execution via \texttt{ProposalExecutor}. Rejection with feedback stores the human's reasoning.
+    \item \textbf{Compounding} --- Both approvals and rejections are indexed in vector memory, enriching future agent context.
+\end{enumerate}
+
+The immutable audit log (SQLite, per-solution isolation via \texttt{.sage/audit\_log.db}) records every event with timestamps, trace IDs, and decision metadata. This satisfies traceability requirements for IEC~62304, ISO~13485, and similar regulatory standards.
+
+\subsection{The Lean Loop}
+
+Every task processed by SAGE follows a five-phase compounding cycle:
+
+\begin{equation}
+\text{Surface} \rightarrow \text{Contextualize} \rightarrow \text{Propose} \rightarrow \text{Decide} \rightarrow \text{Compound}
+\label{eq:lean-loop}
+\end{equation}
+
+Phase 5 (Compound) feeds back into Phase 2 (Contextualize) for subsequent tasks. The system improves with every human interaction through accumulated experience retrieval --- no model retraining required.
+
+% ============================================================================
+\section{Build Orchestrator}
+\label{sec:orchestrator}
+
+The Build Orchestrator (\texttt{build\_orchestrator.py}, 2,878 lines) transforms plain-language product descriptions into structured codebases through eight integrated agentic patterns:
+
+\subsection{Agentic Pattern Composition}
+
+\begin{table}[h]
+\centering
+\caption{Eight agentic patterns in the Build Orchestrator.}
+\label{tab:patterns}
+\begin{tabular}{llp{6cm}}
+\toprule
+\textbf{\#} & \textbf{Pattern} & \textbf{Implementation} \\
+\midrule
+1 & ReAct & Per-task observe $\rightarrow$ think $\rightarrow$ act $\rightarrow$ observe loop \\
+2 & Hierarchical Decomposition & LLM decomposes descriptions into task graphs (32 types) \\
+3 & Wave-Based Parallelism & Independent tasks execute concurrently in waves \\
+4 & Adaptive Router & Q-learning EMA updates: $Q(s,a) \leftarrow (1-\alpha)Q(s,a) + \alpha \cdot r$ \\
+5 & N-Provider Multi-Critic & Parallel review by $N$ LLM providers, weighted aggregation \\
+6 & HITL Gates & Human sign-off at plan and integration stages \\
+7 & Iterative Refinement & Critic score $<$ threshold triggers retry with feedback \\
+8 & Anti-Drift Checkpoints & Crash recovery + quality degradation detection \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pipeline Stages}
+
+The 0$\rightarrow$1 greenfield build pipeline proceeds through the following states:
+
+\begin{equation*}
+\text{Description} \xrightarrow{\text{detect}} \text{Domain} \xrightarrow{\text{assemble}} \text{Workforce} \xrightarrow{\text{decompose}} \text{Tasks} \xrightarrow{\text{critique}} \text{Plan}
+\end{equation*}
+\begin{equation*}
+\xrightarrow{\text{HITL}} \text{Approved} \xrightarrow{\text{execute}} \text{Waves} \xrightarrow{\text{review}} \text{Integration} \xrightarrow{\text{HITL}} \text{Complete}
+\end{equation*}
+
+Domain detection covers 13 industries via pattern-matched \texttt{DOMAIN\_RULES}, with workforce assembly from 19 agent roles across 5 teams defined in \texttt{WORKFORCE\_REGISTRY}.
+
+\subsection{Adaptive Router}
+
+The Q-learning adaptive router maintains a score matrix $Q[\text{task\_type}][\text{agent\_role}]$ initialized uniformly. After each task completion with critic score $r \in [0, 100]$:
+
+\begin{equation}
+Q[t][a] \leftarrow (1 - \alpha) \cdot Q[t][a] + \alpha \cdot r
+\label{eq:router}
+\end{equation}
+
+where $\alpha = 0.3$ is the learning rate. The router selects the highest-scoring agent for each task type, compounding performance data across builds.
+
+\subsection{N-Provider Multi-Critic}
+
+The \texttt{CriticAgent} supports $N$ LLM providers reviewing in parallel. Given scores $\{s_1, \ldots, s_N\}$ from providers with weights $\{w_1, \ldots, w_N\}$ (primary provider receives weight $1.5\times$):
+
+\begin{equation}
+s_{\text{agg}} = \frac{\sum_{i=1}^{N} w_i \cdot s_i}{\sum_{i=1}^{N} w_i}
+\label{eq:critic}
+\end{equation}
+
+Disagreements exceeding 20 points from the mean are flagged. All individual assessments and flaws are merged and deduplicated.
+
+% ============================================================================
+\section{Agent Gym}
+\label{sec:gym}
+
+The Agent Gym implements a self-play training engine inspired by MuZero~\citep{schrittwieser2020muzero} and AlphaZero~\citep{silver2018alphazero}, where agents improve through practice rather than instruction alone.
+
+\subsection{Training Loop}
+
+Each training session executes a five-phase loop:
+
+\begin{algorithm}[h]
+\caption{Agent Gym Training Session}
+\label{alg:gym}
+\begin{algorithmic}[1]
+\REQUIRE Agent role $r$, skill $s$, exercise $e$
+\STATE $\text{attempt} \leftarrow \text{agent}(r).\text{execute}(e)$ \COMMENT{PLAY}
+\STATE $\text{score} \leftarrow \text{runner}(s).\text{grade}(e, \text{attempt})$ \COMMENT{GRADE}
+\STATE $\text{critiques} \leftarrow \text{multi\_critic}(\text{attempt}, e)$ \COMMENT{CRITIQUE}
+\STATE $\text{reflection} \leftarrow \text{agent}(r).\text{reflect}(\text{attempt}, \text{critiques})$ \COMMENT{REFLECT}
+\STATE $\text{vector\_store}.\text{add}(r, s, \text{reflection})$ \COMMENT{COMPOUND}
+\STATE \text{update\_glicko2}(r, s, \text{score})
+\IF{$\text{score} < \text{threshold}$}
+    \STATE $\text{schedule\_spaced\_repetition}(e, \text{session\_count})$
+\ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Glicko-2 Skill Ratings}
+
+Each agent role $\times$ skill combination maintains a Glicko-2 rating triplet $(\mu, \phi, \sigma)$~\citep{glickman2001glicko2}:
+
+\begin{itemize}[noitemsep]
+    \item $\mu$ (rating): skill level, initialized at 1000, clamped $[100, 3000]$
+    \item $\phi$ (rating deviation): confidence interval, starts at 350, minimum 30
+    \item $\sigma$ (volatility): performance consistency
+\end{itemize}
+
+The 95\% confidence interval is $\mu \pm 2\phi$. Agents are considered deployment-ready when $\phi < 200$ (sufficient data for confident assessment).
+
+\subsection{Spaced Repetition}
+
+Failed exercises are scheduled for retry at increasing intervals following a modified Leitner system~\citep{leitner1972}:
+
+\begin{equation}
+\text{retry\_at} = \text{current\_session} + \{1, 3, 7, 15, 30\}[\min(\text{failure\_count} - 1, 4)]
+\end{equation}
+
+Exercises are cleared from the schedule upon successful completion.
+
+\subsection{Adaptive Exercise Selection}
+
+Exercise selection follows a three-tier priority system:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Spaced repetition} --- failed exercises due for retry (highest priority)
+    \item \textbf{Optimal zone} --- exercises with 40--70\% historical success rate (maximal learning)
+    \item \textbf{Unseen} --- exercises not yet attempted (exploration)
+\end{enumerate}
+
+\subsection{Exercise Catalog}
+
+The catalog contains 529 seed exercises across 9 domains (OpenSWE, OpenFW, OpenEDA, OpenSim, OpenML, OpenDoc, OpenDesign, OpenBrowser, OpenTerminal), expandable to 50,000+ via LLM-generated variants along 10 axes per domain (platform, scale, constraint, compliance, etc.).
+
+% ============================================================================
+\section{Domain-Aware Runner Architecture}
+\label{sec:runners}
+
+SAGE introduces a runner abstraction where each runner encapsulates a complete execution environment for a role family.
+
+\subsection{BaseRunner Interface}
+
+All runners implement four required methods:
+
+\begin{lstlisting}[language=Python, caption={BaseRunner abstract interface.}]
+class BaseRunner(ABC):
+    @abstractmethod
+    def execute(self, task, workspace, sandbox) -> RunResult: ...
+    @abstractmethod
+    def verify(self, result, task) -> VerificationReport: ...
+    @abstractmethod
+    def get_exercises(self, difficulty) -> list[Exercise]: ...
+    @abstractmethod
+    def grade_exercise(self, exercise, result) -> ExerciseScore: ...
+\end{lstlisting}
+
+\subsection{Runner Catalog}
+
+\begin{table}[h]
+\centering
+\caption{Nine domain-aware runners with their role bindings and capabilities.}
+\label{tab:runners}
+\begin{tabular}{llp{5cm}}
+\toprule
+\textbf{Runner} & \textbf{Roles} & \textbf{Key Capability} \\
+\midrule
+OpenSWE & developer, qa\_engineer & 3-tier: external SWE $\rightarrow$ LangGraph $\rightarrow$ LLM \\
+OpenFW & firmware\_engineer & Cross-compilation, HAL, binary metrics \\
+OpenEDA & pcb\_designer & Schematics, DRC/ERC, Gerber generation \\
+OpenSim & hw\_sim\_engineer & SPICE, Verilog, waveform analysis \\
+OpenML & data\_scientist & Train, evaluate, experiment tracking \\
+OpenDoc & technical\_writer & Compliance documents, cross-references \\
+OpenDesign & ux\_designer & Wireframes, accessibility, design tokens \\
+OpenStrategy & product\_manager & PRDs, GTM plans, roadmaps \\
+OpenBrowser & qa (supplementary) & Real Chromium via gstack, WCAG audits \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Sandboxed Execution Cascade}
+
+Agent code execution uses a three-tier isolation cascade, attempting the most isolated environment first:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{OpenShell} --- NVIDIA container sandbox with YAML security policies and SSH-based execution
+    \item \textbf{SandboxRunner} --- Local repository clone with branch isolation and restricted file operations
+    \item \textbf{Direct} --- LLM-based code generation with verification
+\end{enumerate}
+
+% ============================================================================
+\section{Communication Layers}
+\label{sec:communication}
+
+SAGE implements two communication layers for observability and structured messaging.
+
+\subsection{Layer 1: OpenTelemetry Distributed Tracing}
+
+The tracing module (\texttt{src/core/tracing.py}) provides OpenTelemetry integration with graceful degradation. When the OpenTelemetry SDK is absent, all tracing functions operate as no-ops via stub classes (\texttt{\_NoOpSpan}, \texttt{\_NoOpTracer}), ensuring zero impact on calling code.
+
+Key capabilities:
+\begin{itemize}[noitemsep]
+    \item Span creation with GenAI semantic conventions on every \texttt{generate()} call
+    \item Cross-process context propagation via carrier dictionaries
+    \item EventBus span linkage for event-driven architectures
+    \item Thread-safe tracer initialization with caching
+\end{itemize}
+
+\subsection{Layer 2: CloudEvents v1.0 Envelope}
+
+The CloudEvents module (\texttt{src/modules/cloud\_events.py}) implements the CloudEvents v1.0 specification~\citep{cloudevents2024} as a zero-dependency Python dataclass. Typed factory functions (\texttt{proposal\_event}, \texttt{build\_event}, \texttt{gym\_event}, \texttt{llm\_event}) ensure consistent event creation. Events integrate with the existing EventBus for pub/sub distribution.
+
+% ============================================================================
+\section{Modular Skill Marketplace}
+\label{sec:skills}
+
+Skills are YAML files defining agent capabilities with runner bindings, role mappings, grading rubrics, and certification requirements. The skill system supports three visibility tiers:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Public} --- open-source skills shipped with SAGE (14 skills across 10 domains)
+    \item \textbf{Private} --- proprietary skills loaded via \texttt{SAGE\_SKILLS\_DIR} environment variable, never committed to the open-source repository
+    \item \textbf{Disabled} --- dormant skills retained for versioning but not loaded
+\end{itemize}
+
+Skills are hot-reloadable at runtime without server restart. Each skill defines acceptance criteria and grading rubrics used by the Agent Gym for automated evaluation.
+
+% ============================================================================
+\section{Evaluation}
+\label{sec:evaluation}
+
+We evaluate SAGE across two dimensions: agent skill development via the Agent Gym, and end-to-end product construction via the Build Orchestrator.
+
+\subsection{Agent Gym Training Results}
+
+\begin{table}[h]
+\centering
+\caption{Agent Gym training results: 496 sessions across 33 skill-role combinations.}
+\label{tab:gym-results}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Agent Role} & \textbf{Skill} & \textbf{Rating ($\mu$)} & \textbf{RD ($\phi$)} & \textbf{Win Rate} \\
+\midrule
+developer & agentic\_engineering & 1691 & 171 & 100\% \\
+agentic\_engineer & agentic\_engineering & 1660 & 117 & 77\% \\
+ml\_engineer & gen\_ai\_engineering & 1620 & 92 & 58\% \\
+ml\_engineer & machine\_learning & 1610 & 84 & 68\% \\
+developer & software\_engineering & 1585 & 115 & 80\% \\
+\midrule
+\multicolumn{2}{l}{\textit{Average across all 33 combinations}} & 1484 & --- & --- \\
+\midrule
+analyst & technical\_writing & 1273 & 98 & 16\% \\
+embedded\_tester & firmware\_eng. & 1339 & 102 & 32\% \\
+marketing\_strategist & product\_strategy & 1347 & 95 & 32\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key findings:}
+\begin{itemize}[noitemsep]
+    \item 100\% of agent-skill combinations reached deployment readiness ($\phi < 200$)
+    \item 76\% achieved confident deployment ($\phi < 150$)
+    \item Engineering-domain agents significantly outperform non-technical agents ($\mu = 1691$ vs.\ $\mu = 1273$), suggesting fundamental LLM capability boundaries
+    \item Spaced repetition scheduling improved retention of previously failed exercises
+\end{itemize}
+
+\subsection{100-Solution Stress Test}
+
+We evaluated the Build Orchestrator on 100 product descriptions spanning 10 industry domains (10 per domain).
+
+\begin{table}[h]
+\centering
+\caption{100-solution pipeline stress test results.}
+\label{tab:pipeline}
+\begin{tabular}{lc}
+\toprule
+\textbf{Outcome} & \textbf{Count} \\
+\midrule
+End-to-end success & 2 \\
+Planner decomposition failure & 19 \\
+Incomplete (timeout/resource) & 80 \\
+Error & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Root causes:}
+\begin{enumerate}[noitemsep]
+    \item \textbf{Context overflow} --- complex product descriptions exceeded context windows during decomposition
+    \item \textbf{Critic revision degradation} --- plan quality dropped across iterations (52 $\rightarrow$ 34 $\rightarrow$ 21) before context-aware rewrite stabilized at 54 $\rightarrow$ 36 $\rightarrow$ 67
+    \item \textbf{LLM latency variance} --- 30--500s per generation call; full builds required 40--70 minutes
+    \item \textbf{Anti-drift warnings} --- 39 quality drift events in a single 3-domain run
+\end{enumerate}
+
+The 2\% success rate demonstrates the architecture's end-to-end viability while honestly exposing the significant prompt engineering and context management work required for production-scale deployment.
+
+\subsection{Test Infrastructure}
+
+\begin{table}[h]
+\centering
+\caption{Test suite coverage.}
+\label{tab:tests}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Suite} & \textbf{Tests} & \textbf{Pass Rate} \\
+\midrule
+Framework unit tests & 1,429 & 100\% \\
+E2E system tests & 58 & 100\% \\
+Agent Gym system tests & 48 & 100\% \\
+Browser E2E tests & 25 & 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Strengths}
+
+SAGE occupies a unique position at the intersection of open-source, compliance-first, multi-domain, and agent training capabilities. The YAML-first configuration model enables new industry adoption without code changes, validated across 17 bundled solution templates spanning medical devices, automotive, aerospace, fintech, and IoT.
+
+The compounding memory architecture --- where every human approval and rejection enriches future agent context --- provides measurable improvement without model retraining. This follows the Memento principle~\citep{memento2025}: behavioral optimization via memory retrieval, decoupled from the underlying LLM.
+
+\subsection{Limitations}
+
+\textbf{Build Orchestrator scaling.} The 2\% success rate on the 100-solution test is the most significant limitation. Root causes are well-understood (context overflow, critic degradation), but closing the gap to commercial viability (target: 50\%+) requires substantial prompt engineering and possibly architectural changes to context management.
+
+\textbf{Non-technical agent performance.} The 418-point Glicko-2 gap between top engineering agents ($\mu = 1691$) and bottom non-technical agents ($\mu = 1273$) may reflect fundamental LLM capability boundaries rather than addressable prompt engineering deficits.
+
+\textbf{No production deployment.} All evaluation was performed in development environments. Production validation in regulated organizations with real compliance audits remains future work.
+
+\textbf{Single-developer risk.} The entire system was developed by one engineer over 16 days (181 commits). While this demonstrates achievable velocity, bus factor 1 is a real concern for any production adoption.
+
+\subsection{Comparison to Existing Frameworks}
+
+\begin{table}[h]
+\centering
+\caption{Feature comparison with existing frameworks for regulated environments.}
+\label{tab:comparison}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Capability} & \textbf{SAGE} & \textbf{LangGraph} & \textbf{CrewAI} & \textbf{AutoGen} & \textbf{Dify} \\
+\midrule
+Mandatory HITL & \checkmark & -- & -- & -- & $\sim$ \\
+Immutable audit & \checkmark & -- & -- & -- & $\sim$ \\
+Trace IDs & \checkmark & -- & -- & -- & -- \\
+Rejection feedback & \checkmark & -- & -- & -- & -- \\
+YAML-only domains & \checkmark & -- & $\sim$ & -- & -- \\
+Zero API keys & \checkmark & $\sim$ & $\sim$ & $\sim$ & -- \\
+Build orchestrator & \checkmark & -- & -- & -- & -- \\
+Agent training & \checkmark & -- & -- & -- & -- \\
+Domain runners & \checkmark & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+SAGE demonstrates that governance-first multi-agent orchestration is architecturally viable for regulated industries. The two-tier governance model, compounding memory architecture, and domain-aware runner system provide the structural guarantees that compliance-bound organizations require.
+
+The honest assessment is that SAGE is early-stage. The Build Orchestrator works end-to-end but fails at scale. Non-technical agents underperform. There are zero production deployments. However, the market gap is real --- no competing framework provides mandatory human governance with immutable audit trails and domain-agnostic configuration. The EU AI Act and FDA AI/ML guidance are creating regulatory demand that will only grow.
+
+Future work includes: (1) improving Build Orchestrator success rate to 50\%+ through context management and prompt engineering; (2) hardening three priority domain runners (OpenSWE, OpenML, OpenDoc) to production quality; (3) conducting first pilot deployments in regulated organizations; and (4) scaling the Agent Gym exercise catalog to validate the 50,000+ variant generation pipeline.
+
+SAGE is available under the MIT License at \url{https://github.com/Sumanharapanahalli/SAGE}.
+
+% ============================================================================
+\section*{Acknowledgments}
+
+The architectural design of SAGE was influenced by several open-source projects and research efforts: LangGraph for graph-based orchestration patterns, DeerFlow (ByteDance) for supervisor-agent topology, Paperclip for governance models, Aider for git-integrated code changes, Claude Code for project-level runtime directories, and the Meta-Harness paper (arXiv:2603.28052) for terminal execution innovations.
+
+% ============================================================================
+\bibliographystyle{plainnat}
+\bibliography{sage}
+
+\end{document}
